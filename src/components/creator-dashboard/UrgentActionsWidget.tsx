@@ -38,17 +38,17 @@ const actionConfig = {
         icon: Calendar,
         color: 'blue',
         label: 'Signature Needed',
-        bgClass: 'from-blue-500/20 to-indigo-500/20',
+        bgClass: 'from-blue-600/20 to-indigo-600/20',
         borderClass: 'border-blue-400/30',
-        iconClass: 'bg-blue-500/20 text-blue-400',
+        iconClass: 'bg-blue-600/20 text-blue-400',
     },
     response_needed: {
         icon: AlertTriangle,
-        color: 'purple',
+        color: 'cyan',
         label: 'Response Needed',
-        bgClass: 'from-purple-500/20 to-pink-500/20',
-        borderClass: 'border-purple-400/30',
-        iconClass: 'bg-purple-500/20 text-purple-400',
+        bgClass: 'from-cyan-600/20 to-blue-600/20',
+        borderClass: 'border-cyan-400/30',
+        iconClass: 'bg-cyan-600/20 text-cyan-400',
     },
 };
 

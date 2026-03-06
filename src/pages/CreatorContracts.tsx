@@ -667,15 +667,15 @@ const CreatorContracts = () => {
                 whileTap={animations.microTap}
                 className={cn(
                   "w-full",
-                  "relative bg-gradient-to-r from-purple-600/30 to-pink-600/20",
+                  "relative bg-gradient-to-r from-blue-600/30 to-indigo-600/20",
                   "backdrop-blur-xl rounded-2xl p-4",
-                  "border border-purple-400/40 shadow-lg shadow-purple-500/20",
+                  "border border-blue-400/40 shadow-lg shadow-blue-500/20",
                   "hover:bg-white/12 transition-all"
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <div className="bg-purple-500/30 w-10 h-10 rounded-full flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-purple-200" />
+                  <div className="bg-blue-500/30 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-blue-200" />
                   </div>
                   <div className="text-left">
                     <div className="text-sm font-semibold text-white">Protect a New Deal</div>
@@ -750,14 +750,14 @@ const CreatorContracts = () => {
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
                       "bg-white/8 text-white border-white/15 hover:bg-white/12",
-                      hasActiveAdvancedFilters && "bg-purple-500/20 border-purple-400/30 text-purple-300",
+                      hasActiveAdvancedFilters && "bg-blue-500/20 border-blue-400/30 text-blue-300",
                       "text-sm h-9"
                     )}
                   >
                     <Filter className="w-4 h-4" />
                     <span className="hidden sm:inline">Filters</span>
                     {hasActiveAdvancedFilters && (
-                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-500/30 text-xs font-semibold">
+                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-blue-500/30 text-xs font-semibold">
                         {[statusFilter !== 'all', brandFilter !== 'all', minAmount || maxAmount, dateRangeFilter !== 'all'].filter(Boolean).length}
                       </span>
                     )}
@@ -774,7 +774,7 @@ const CreatorContracts = () => {
                     <SelectTrigger className={cn(
                       "w-full sm:w-[180px]",
                       "bg-white/8 text-white border-white/15",
-                      "hover:bg-white/12 focus:ring-2 focus:ring-purple-500/50",
+                      "hover:bg-white/12 focus:ring-2 focus:ring-blue-500/50",
                       "h-9 text-sm"
                     )}>
                       <div className="flex items-center gap-2">
@@ -812,7 +812,7 @@ const CreatorContracts = () => {
                       {hasActiveAdvancedFilters && (
                         <button
                           onClick={clearAdvancedFilters}
-                          className="text-sm text-purple-300 hover:text-purple-200 underline"
+                          className="text-sm text-blue-300 hover:text-blue-200 underline"
                         >
                           Clear All
                         </button>
@@ -872,7 +872,7 @@ const CreatorContracts = () => {
                           placeholder="Min"
                           value={minAmount}
                           onChange={(e) => setMinAmount(e.target.value)}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         />
                         <span className="text-white/60">-</span>
                         <input
@@ -880,7 +880,7 @@ const CreatorContracts = () => {
                           placeholder="Max"
                           value={maxAmount}
                           onChange={(e) => setMaxAmount(e.target.value)}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         />
                       </div>
                     </div>
@@ -1018,7 +1018,7 @@ const CreatorContracts = () => {
                             triggerHaptic(HapticPatterns.light);
                             setActiveFilter('all');
                           }}
-                          className="text-sm font-medium text-purple-300 hover:text-purple-200 underline"
+                          className="text-sm font-medium text-blue-300 hover:text-blue-200 underline"
                         >
                           View all deals
                         </button>

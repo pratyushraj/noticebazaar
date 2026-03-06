@@ -162,7 +162,7 @@ const CreatorOnboarding = () => {
       <OnboardingContainer>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-400" />
             <p className="text-white/80">Loading...</p>
           </div>
         </div>
@@ -176,7 +176,7 @@ const CreatorOnboarding = () => {
       <OnboardingContainer>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-400" />
             <p className="text-white/80">Redirecting...</p>
           </div>
         </div>
@@ -190,7 +190,7 @@ const CreatorOnboarding = () => {
       <OnboardingContainer>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-400" />
             <p className="text-white/80">Redirecting to dashboard...</p>
           </div>
         </div>

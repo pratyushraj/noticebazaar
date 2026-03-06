@@ -212,7 +212,7 @@ const CollabRequestsPage = () => {
       <CreatorNavigationWrapper title="Collaboration Requests" subtitle="Manage incoming brand requests">
         <div className={cn(spacing.loose, "pb-24")}>
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
           </div>
         </div>
       </CreatorNavigationWrapper>
@@ -232,13 +232,12 @@ const CollabRequestsPage = () => {
   return (
     <CreatorNavigationWrapper title="Collaboration Requests" subtitle="Manage incoming brand requests">
       <div className={cn(spacing.loose, "pb-24")}>
-        {pendingRequests.length > 0 && (
-          <div className="mb-4 rounded-xl border border-white/15 bg-white/[0.05] px-4 py-3">
-            <p className="text-purple-100 text-sm font-medium">Requests from brands using your public link</p>
-            <p className="text-purple-200/75 text-xs mt-0.5">
-              {pendingRequests.length} pending • newest first
-            </p>
-          </div>
+        <div className="mb-4 rounded-xl border border-white/15 bg-white/[0.05] px-4 py-3">
+          <p className="text-blue-100 text-sm font-medium">Requests from brands using your public link</p>
+          <p className="text-blue-200/75 text-xs mt-0.5">
+            {pendingRequests.length} pending • newest first
+          </p>
+        </div>
         )}
 
         {/* Empty state or request cards */}
@@ -246,10 +245,10 @@ const CollabRequestsPage = () => {
           <Card className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
             <CardContent className="p-8 text-center">
               <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-5">
-                <Briefcase className="h-10 w-10 text-purple-300/80" />
+                <Briefcase className="h-10 w-10 text-blue-300/80" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">No brand requests yet</h3>
-              <p className="text-sm text-purple-200/80 mb-6 max-w-xs mx-auto">
+              <p className="text-sm text-blue-200/80 mb-6 max-w-xs mx-auto">
                 Share your collab link to receive protected deals
               </p>
               {hasUsername && (
@@ -279,7 +278,7 @@ const CollabRequestsPage = () => {
                   )}
                 >
                   {/* Header: Incoming Brand Request — darker purple band */}
-                  <div className="bg-gradient-to-r from-purple-800/90 to-indigo-800/90 px-4 py-2 text-center border-b border-white/10">
+                  <div className="bg-gradient-to-r from-blue-800/90 to-indigo-800/90 px-4 py-2 text-center border-b border-white/10">
                     <h2 className="text-xs font-bold text-white tracking-wide uppercase">
                       Incoming Brand Request
                     </h2>
@@ -294,8 +293,8 @@ const CollabRequestsPage = () => {
                         <span className={cn(
                           "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-white shrink-0",
                           request.collab_type === 'paid' && "bg-green-500/30 border border-green-400/40",
-                          request.collab_type === 'barter' && "bg-purple-500/40 border border-purple-400/50",
-                          isHybrid(request.collab_type) && "bg-purple-500/40 border border-purple-400/50"
+                          request.collab_type === 'barter' && "bg-blue-500/40 border border-blue-400/50",
+                          isHybrid(request.collab_type) && "bg-blue-500/40 border border-blue-400/50"
                         )}>
                           {getCollabTypeLabel(request.collab_type)}
                         </span>
@@ -305,7 +304,7 @@ const CollabRequestsPage = () => {
 
                     {/* Estimated value — gift icon + label + bold ₹ */}
                     <div className="flex items-center gap-2">
-                      <Gift className="h-4 w-4 text-purple-300/90 shrink-0" aria-hidden />
+                      <Gift className="h-4 w-4 text-blue-300/90 shrink-0" aria-hidden />
                       <span className="text-sm text-white/85">Estimated value</span>
                       <span className="text-lg font-bold text-white ml-auto">
                         {formatBudget(request)}
@@ -366,11 +365,11 @@ const CollabRequestsPage = () => {
                     {/* Campaign Description - Now directly on card */}
                     {request.campaign_description && (
                       <div className="pt-1.5 border-t border-white/10 mt-1">
-                        <p className="text-[11px] font-medium text-purple-300/60 uppercase tracking-wider mb-1">
+                        <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-1">
                           Campaign details
                         </p>
                         <p className={cn(
-                          "text-sm text-purple-100/95 leading-relaxed whitespace-pre-wrap",
+                          "text-sm text-blue-100/95 leading-relaxed whitespace-pre-wrap",
                           !isDescriptionExpanded && "[display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden"
                         )}>
                           {request.campaign_description}
@@ -379,7 +378,7 @@ const CollabRequestsPage = () => {
                           <button
                             type="button"
                             onClick={() => setExpandedDescriptions((prev) => ({ ...prev, [request.id]: !prev[request.id] }))}
-                            className="mt-1.5 inline-flex items-center gap-1 text-xs text-violet-200 hover:text-white"
+                            className="mt-1.5 inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white"
                           >
                             {isDescriptionExpanded ? (
                               <>
@@ -405,8 +404,8 @@ const CollabRequestsPage = () => {
                             "w-full min-h-[44px] font-bold text-white rounded-xl text-sm transition-colors duration-200",
                             "shadow-[0_2px_12px_rgba(139,92,246,0.25)] border-0",
                             acceptingRequestId === request.id
-                              ? "bg-[#4C1D95] text-[#A78BFA] opacity-70 cursor-not-allowed"
-                              : "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]"
+                              ? "bg-indigo-900 text-indigo-400 opacity-70 cursor-not-allowed"
+                              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
                           )}
                         >
                           {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept Deal'}
@@ -419,7 +418,7 @@ const CollabRequestsPage = () => {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
-                          className="text-sm font-medium text-[#DDD6FE] hover:text-white min-h-[40px] px-1.5"
+                          className="text-sm font-medium text-indigo-200 hover:text-white min-h-[40px] px-1.5"
                         >
                           Counter
                         </button>
@@ -441,25 +440,24 @@ const CollabRequestsPage = () => {
         )}
 
         {/* Counter sent section */}
-        {counteredRequests.length > 0 && (
-          <div className="mt-8 space-y-4">
-            <p className="text-purple-200/80 text-sm">Counter sent — awaiting brand response</p>
-            {counteredRequests.map((request) => (
-              <Card key={request.id} className="rounded-[20px] bg-white/5 border border-white/10 overflow-hidden">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white">{request.brand_name}</h3>
-                    <span className="text-[11px] font-medium bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-md">Counter Sent</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="mt-8 space-y-4">
+          <p className="text-blue-200/80 text-sm">Counter sent — awaiting brand response</p>
+          {counteredRequests.map((request) => (
+            <Card key={request.id} className="rounded-[20px] bg-white/5 border border-white/10 overflow-hidden">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-white">{request.brand_name}</h3>
+                  <span className="text-[11px] font-medium bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-md">Counter Sent</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
         )}
 
         {/* Decline confirmation */}
         <AlertDialog open={showDeclineDialog} onOpenChange={(showDeclineDialog) => setShowDeclineDialog(showDeclineDialog)}>
-          <AlertDialogContent className="bg-purple-900 border-white/20 text-white">
+          <AlertDialogContent className="bg-indigo-950 border-white/20 text-white">
             <AlertDialogHeader>
               <AlertDialogTitle>Decline request?</AlertDialogTitle>
             </AlertDialogHeader>

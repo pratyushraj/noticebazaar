@@ -1531,7 +1531,7 @@ Best regards`;
   if (isLoadingDeal) {
     return (
       <>
-        <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
+        <div className="nb-screen-height bg-[#0B0F14]" />
         <NativeLoadingSheet isOpen={true} message="Loading deal details..." />
       </>
     );
@@ -1540,14 +1540,14 @@ Best regards`;
   // Deal not found
   if (!deal) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-[#0B0F14] text-white flex items-center justify-center p-4">
         <div className="text-center">
           <FileText className="w-16 h-16 mx-auto mb-4 text-white/60" />
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
           <p className="text-white/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => navigate('/creator-contracts')}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
           >
             Back to Deals
           </button>
@@ -1559,9 +1559,9 @@ Best regards`;
   // Deal data already computed above in useMemo hooks
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-[#0B0F14] text-white">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-[#0B0F14]/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <button
             onClick={() => navigate('/creator-contracts')}
@@ -1675,7 +1675,7 @@ Best regards`;
             return (
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
                     {deal.brand_name.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -2040,8 +2040,8 @@ ${link}`;
                   )}
 
                   {responseMessage && (
-                    <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
-                      <div className="text-sm font-medium text-purple-300 mb-2">Brand's Message:</div>
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                      <div className="text-sm font-medium text-blue-300 mb-2">Brand's Message:</div>
                       <div className="text-white/90 whitespace-pre-wrap">{responseMessage}</div>
                       <p className="text-xs text-white/50 mt-1 italic">
                         This response was submitted via your secure NoticeBazaar link and is saved for records.
@@ -2115,8 +2115,8 @@ ${link}`;
                             className={cn(
                               "w-full py-4 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-3",
                               !isSendingReminder
-                                ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xl shadow-purple-500/20"
-                                : "bg-purple-500/20 text-purple-300/50 border border-purple-400/20 cursor-not-allowed"
+                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-500/20"
+                                : "bg-blue-500/20 text-blue-300/50 border border-blue-400/20 cursor-not-allowed"
                             )}
                           >
                             {isSendingReminder ? (
@@ -2148,7 +2148,7 @@ ${link}`;
                                 type="text"
                                 readOnly
                                 value={link || 'Link will be generated when you share.'}
-                                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                                 onClick={(e) => (e.target as HTMLInputElement).select()}
                               />
                               <motion.button
@@ -2164,7 +2164,7 @@ ${link}`;
                                 onClick={handleCopyLink}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="p-2 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 transition-all"
+                                className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 transition-all"
                                 title="Copy link"
                               >
                                 <Copy className="w-4 h-4" />
@@ -2207,7 +2207,7 @@ ${link}`;
                               onClick={handleCopyLink}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-purple-500/20 text-purple-300 border border-purple-400/30 hover:bg-purple-500/30"
+                              className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-blue-500/20 text-blue-300 border border-blue-400/30 hover:bg-blue-500/30"
                             >
                               <Link2 className="w-5 h-5" />
                               <span className="text-sm">Copy Link</span>
@@ -2289,9 +2289,9 @@ ${link}`;
           const statusText = getStatusText();
 
           return (
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 border-l-4 border-l-purple-500">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 border-l-4 border-l-blue-500">
               <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-white/90">
-                <Bell className="w-5 h-5 text-purple-400" />
+                <Bell className="w-5 h-5 text-blue-400" />
                 Requested Contract Clarifications
               </h2>
               <p className="text-sm text-white/60 mb-4">
@@ -2314,8 +2314,8 @@ ${link}`;
               {statusText && (
                 <div className="pt-4 border-t border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-purple-400">{statusText}</p>
+                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-blue-400">{statusText}</p>
                   </div>
                   <span className="text-[10px] text-white/30 uppercase font-bold">Auto-tracked</span>
                 </div>
@@ -2336,7 +2336,7 @@ ${link}`;
                     {bothSigned ? (
                       <ShieldCheck className="w-6 h-6 text-emerald-400" />
                     ) : (
-                      <FileText className="w-6 h-6 text-purple-400" />
+                      <FileText className="w-6 h-6 text-blue-400" />
                     )}
                     {bothSigned ? 'Final Contract' : 'Final Agreement'}
                   </h2>
@@ -2410,7 +2410,7 @@ ${link}`;
                         whileTap={{ scale: 0.98 }}
                         className="w-full bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-3 group"
                       >
-                        <Share2 className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
+                        <Share2 className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
                         Send for Brand Signature
                       </motion.button>
                     )}
@@ -2625,7 +2625,7 @@ ${link}`;
                   <button className="w-full flex items-center justify-between group">
                     <div className="text-left">
                       <h3 className="font-semibold text-lg flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-purple-400" />
+                        <Lock className="w-4 h-4 text-blue-400" />
                         Audit Trail & Verification
                       </h3>
                       <p className="text-xs text-white/50 mt-1">Immutable record of all legal actions.</p>
@@ -2759,7 +2759,7 @@ ${link}`;
                           }
                         }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-3 py-1.5 text-xs bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg transition-colors text-purple-300"
+                        className="px-3 py-1.5 text-xs bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg transition-colors text-blue-300"
                         title="Auto-fill from contract analysis"
                       >
                         ✨ Auto-fill
@@ -2895,7 +2895,7 @@ ${link}`;
                               setBrandPhoneInput(value);
                             }}
                             placeholder="+91 9876543210"
-                            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                             autoFocus
                           />
                           <motion.button
@@ -3011,7 +3011,7 @@ ${link}`;
                       onClick={handleDownloadContractSummary}
                       disabled={isGeneratingPDF}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium text-white shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium text-white shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isGeneratingPDF ? (
                         <>
@@ -3035,7 +3035,7 @@ ${link}`;
 
         {/* Confirm Signed Contract Received Modal */}
         <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
-          <DialogContent className="bg-purple-900/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
+          <DialogContent className="bg-blue-950/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
               <DialogDescription className="text-white/70">
@@ -3087,7 +3087,7 @@ ${link}`;
                       setIsUploadingSignedContract(false);
                     }
                   }}
-                  className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-purple-500/20 file:text-purple-200 hover:file:bg-purple-500/30"
+                  className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-500/20 file:text-blue-200 hover:file:bg-blue-500/30"
                 />
                 <p className="text-xs text-white/50 mt-1">
                   PDF only. This helps with records and audits.
@@ -3168,7 +3168,7 @@ ${link}`;
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/30 text-purple-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                className="w-full bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
               >
                 <Download className="w-5 h-5" />
                 Download Invoice

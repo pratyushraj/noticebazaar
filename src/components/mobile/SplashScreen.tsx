@@ -34,7 +34,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             duration: 0.2,
             ease: [0.22, 1, 0.36, 1], // ease-out-quart
           }}
-          className="fixed inset-0 z-[99999] bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center"
+          className="fixed inset-0 z-[99999] bg-[#0B0F14] flex items-center justify-center"
           style={{
             paddingTop: 'env(safe-area-inset-top)',
             paddingBottom: 'env(safe-area-inset-bottom)',
@@ -52,12 +52,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             }}
             className="text-center"
           >
-            <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center mb-4 mx-auto shadow-2xl">
-              <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <div className="w-24 h-24 rounded-3xl bg-slate-900 border border-white/10 flex items-center justify-center mb-4 mx-auto shadow-2xl">
+              <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-slate-400 bg-clip-text text-transparent">
                 CA
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-white">Creator Armour</h1>
+            <h1 className="text-2xl font-bold text-white tracking-tight">CreatorArmour</h1>
           </motion.div>
         </motion.div>
       )}

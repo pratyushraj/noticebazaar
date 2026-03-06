@@ -13,7 +13,7 @@ interface StatCardProps {
         isPositive: boolean;
     };
     icon: React.ReactNode;
-    color: 'blue' | 'green' | 'purple' | 'orange';
+    color: 'blue' | 'green' | 'indigo' | 'orange';
     delay?: number;
 }
 
@@ -30,11 +30,11 @@ const colorClasses = {
         icon: 'bg-green-500/20 text-green-400',
         text: 'text-green-400',
     },
-    purple: {
-        bg: 'from-purple-500/20 to-pink-500/20',
-        border: 'border-purple-400/30',
-        icon: 'bg-purple-500/20 text-purple-400',
-        text: 'text-purple-400',
+    indigo: {
+        bg: 'from-indigo-500/20 to-violet-500/20',
+        border: 'border-indigo-400/30',
+        icon: 'bg-indigo-500/20 text-indigo-400',
+        text: 'text-indigo-400',
     },
     orange: {
         bg: 'from-orange-500/20 to-red-500/20',
@@ -141,7 +141,7 @@ export const DashboardStats = ({ stats, trends }: DashboardStatsProps) => {
                 label="Completed"
                 value={stats.completedDeals}
                 icon={<CheckCircle className="w-5 h-5 md:w-6 md:h-6" />}
-                color="purple"
+                color="indigo"
                 delay={0.3}
             />
         </div>

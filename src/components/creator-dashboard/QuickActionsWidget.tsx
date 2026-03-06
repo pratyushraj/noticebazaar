@@ -6,7 +6,7 @@ interface QuickAction {
     id: string;
     label: string;
     icon: React.ReactNode;
-    color: 'blue' | 'green' | 'purple' | 'orange';
+    color: 'blue' | 'green' | 'indigo' | 'orange';
     onClick: () => void;
     badge?: number;
 }
@@ -16,10 +16,10 @@ interface QuickActionsWidgetProps {
 }
 
 const colorClasses = {
-    blue: 'from-blue-500/20 to-indigo-500/20 border-blue-400/30 hover:border-blue-400/50',
-    green: 'from-green-500/20 to-emerald-500/20 border-green-400/30 hover:border-green-400/50',
-    purple: 'from-purple-500/20 to-pink-500/20 border-purple-400/30 hover:border-purple-400/50',
-    orange: 'from-orange-500/20 to-red-500/20 border-orange-400/30 hover:border-orange-400/50',
+    blue: 'from-blue-600/25 to-indigo-600/20 border-blue-400/40 hover:border-blue-400/60 shadow-blue-500/10',
+    green: 'from-green-600/25 to-emerald-600/20 border-green-400/40 hover:border-green-400/60 shadow-green-500/10',
+    indigo: 'from-indigo-600/25 to-violet-600/20 border-indigo-400/40 hover:border-indigo-400/60 shadow-indigo-500/10',
+    orange: 'from-orange-600/25 to-amber-600/20 border-orange-400/40 hover:border-orange-400/60 shadow-orange-500/10',
 };
 
 export const QuickActionsWidget = ({ actions }: QuickActionsWidgetProps) => {
@@ -40,7 +40,7 @@ export const QuickActionsWidget = ({ actions }: QuickActionsWidgetProps) => {
                     )}
                 >
                     {action.badge !== undefined && action.badge > 0 && (
-                        <div className="absolute -top-1.5 -right-1.5 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 bg-red-500 text-white text-[10px] md:text-xs font-bold rounded-full flex items-center justify-center border-2 border-purple-900">
+                        <div className="absolute -top-1.5 -right-1.5 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 bg-red-500 text-white text-[10px] md:text-xs font-bold rounded-full flex items-center justify-center border-2 border-[#121722]">
                             {action.badge > 9 ? '9+' : action.badge}
                         </div>
                     )}
@@ -89,7 +89,7 @@ export const getDefaultQuickActions = (handlers: {
             id: 'contracts',
             label: 'Contracts',
             icon: <FileText className="w-5 h-5 md:w-6 md:h-6" />,
-            color: 'purple',
+            color: 'blue',
             onClick: handlers.onViewContracts,
             badge: badges?.contracts,
         },
@@ -104,7 +104,7 @@ export const getDefaultQuickActions = (handlers: {
             id: 'messages',
             label: 'Messages',
             icon: <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />,
-            color: 'blue',
+            color: 'indigo',
             onClick: handlers.onViewMessages,
             badge: badges?.messages,
         },
@@ -112,7 +112,7 @@ export const getDefaultQuickActions = (handlers: {
             id: 'calendar',
             label: 'Calendar',
             icon: <Calendar className="w-5 h-5 md:w-6 md:h-6" />,
-            color: 'purple',
+            color: 'indigo',
             onClick: handlers.onViewCalendar,
         },
     ];

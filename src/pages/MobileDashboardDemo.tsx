@@ -61,8 +61,8 @@ const MobileDashboardDemo = ({
     const username = profile?.instagram_handle?.replace('@', '') || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
     const avatarUrl = profile?.avatar_url || 'https://i.pravatar.cc/150?img=47';
     const earnings = stats?.earnings ?? 0;
-    const activeDealsCount = brandDeals.length > 0 ? brandDeals.length : 7;
-    const pendingOffersCount = collabRequests.length > 0 ? collabRequests.length : 10;
+    const activeDealsCount = (brandDeals || []).length;
+    const pendingOffersCount = (collabRequests || []).length;
 
     useEffect(() => {
         const titles: Record<string, string> = {
@@ -129,11 +129,26 @@ const MobileDashboardDemo = ({
     };
 
     const getBrandIcon = (logo?: string, category?: string) => {
-        if (logo) return <img src={logo} className="w-full h-full object-cover" />;
-        const cat = category?.toLowerCase() || '';
-        if (cat.includes('fit') || cat.includes('gym') || cat.includes('sport')) return <Dumbbell className="w-5 h-5 text-slate-400" />;
-        if (cat.includes('cloth') || cat.includes('fash') || cat.includes('beauty') || cat.includes('skin')) return <Shirt className="w-5 h-5 text-slate-400" />;
-        return <Target className="w-5 h-5 text-slate-400" />;
+        const fallback = (cat: string) => {
+            const catLower = cat.toLowerCase();
+            if (catLower.includes('fit') || catLower.includes('gym') || catLower.includes('sport')) return <Dumbbell className="w-5 h-5 text-slate-400" />;
+            if (catLower.includes('cloth') || catLower.includes('fash') || catLower.includes('beauty') || catLower.includes('skin')) return <Shirt className="w-5 h-5 text-slate-400" />;
+            return <Target className="w-5 h-5 text-slate-400" />;
+        };
+
+        if (logo) {
+            return (
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <img
+                        src={logo}
+                        className="w-full h-full object-cover absolute inset-0 z-10"
+                        onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                    />
+                    {fallback(category || '')}
+                </div>
+            );
+        }
+        return fallback(category || '');
     };
 
     const formatCurrency = (amt: number) => {
@@ -141,10 +156,15 @@ const MobileDashboardDemo = ({
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amt);
     };
 
-    const upcomingCampaigns = [
-        { id: '1', title: 'Brand Shoot with FitScience', date: '12 April, 2:00 PM', status: 'Confirmed' },
-        { id: '2', title: 'GlowSkin Story Drop', date: '18 April, 6:00 PM', status: 'Pending' },
-    ];
+    const upcomingCampaigns = brandDeals
+        .filter(d => d.status === 'Active' || d.status === 'confirmed')
+        .map(d => ({
+            id: d.id,
+            title: d.campaign_name || d.title || 'Brand Project',
+            date: d.due_date ? new Date(d.due_date).toLocaleDateString() : 'TBD',
+            status: d.status
+        }))
+        .slice(0, 3);
 
     return (
         <div
@@ -322,9 +342,22 @@ const MobileDashboardDemo = ({
                                                 }
 
                                                 // Mock/Get ID and time
-                                                const fakeId = req.id ? req.id.slice(0, 4).toUpperCase() + Math.floor(Math.random() * 1000) : 'CA-2024-018';
-                                                const createdStr = idx === 0 ? '3 hours ago' : idx === 1 ? 'Yesterday' : '2 days ago';
-                                                const createdTime = req.created_at ? new Date(req.created_at).toLocaleDateString() : createdStr;
+                                                const fakeId = req.id ? req.id.slice(0, 4).toUpperCase() : 'DEAL';
+                                                const timeAgo = (date: string) => {
+                                                    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+                                                    let interval = seconds / 31536000;
+                                                    if (interval > 1) return Math.floor(interval) + " years ago";
+                                                    interval = seconds / 2592000;
+                                                    if (interval > 1) return Math.floor(interval) + " months ago";
+                                                    interval = seconds / 86400;
+                                                    if (interval > 1) return Math.floor(interval) + " days ago";
+                                                    interval = seconds / 3600;
+                                                    if (interval > 1) return Math.floor(interval) + " hours ago";
+                                                    interval = seconds / 60;
+                                                    if (interval > 1) return Math.floor(interval) + " minutes ago";
+                                                    return Math.floor(seconds) + " seconds ago";
+                                                };
+                                                const createdTime = req.created_at ? timeAgo(req.created_at) : 'recently';
 
                                                 return (
                                                     <motion.div
@@ -416,7 +449,45 @@ const MobileDashboardDemo = ({
                     )}
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
-                    {activeTab !== 'dashboard' && (
+                    {activeTab === 'profile' && (
+                        <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className={cn("p-6 rounded-2xl border mb-6", cardBgColor, borderColor)}>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className={cn("w-16 h-16 rounded-full border overflow-hidden", borderColor)}>
+                                        <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                        <h2 className={cn("text-xl font-bold", textColor)}>{profile?.full_name || 'Creator'}</h2>
+                                        <p className={cn("text-sm", secondaryTextColor)}>@{username}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                        <div className="flex items-center gap-3">
+                                            <Instagram className="w-5 h-5 text-blue-500" />
+                                            <span className={cn("text-sm font-medium", textColor)}>Instagram</span>
+                                        </div>
+                                        <span className={cn("text-sm", secondaryTextColor)}>Connected</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                                        <div className="flex items-center gap-3">
+                                            <Shield className="w-5 h-5 text-blue-500" />
+                                            <span className={cn("text-sm font-medium", textColor)}>Status</span>
+                                        </div>
+                                        <span className="text-sm text-emerald-500 font-bold">Verified</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => { triggerHaptic(); navigate('/creator-profile'); }}
+                                className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                            >
+                                Edit Full Profile Settings
+                            </button>
+                        </div>
+                    )}
+
+                    {activeTab !== 'dashboard' && activeTab !== 'profile' && (
                         <div className="px-5 pt-8 text-center">
                             <p className={secondaryTextColor}>Content for {activeTab} goes here in the real refactor mapping.</p>
                         </div>
@@ -453,7 +524,7 @@ const MobileDashboardDemo = ({
                             )}>
                                 <Link2 className="w-7 h-7" />
                             </div>
-                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 absolute -bottom-5 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>+ Collab Link</span>
+                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>+ Collab Link</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">

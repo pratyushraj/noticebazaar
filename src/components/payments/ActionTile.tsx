@@ -16,8 +16,8 @@ export const ActionTile: React.FC<ActionTileProps> = ({
   icon: Icon,
   label,
   onClick,
-  iconBgColor = 'bg-purple-500/20',
-  iconColor = 'text-purple-400',
+  iconBgColor = 'bg-indigo-500/20',
+  iconColor = 'text-indigo-400',
 }) => {
   return (
     <motion.button

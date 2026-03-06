@@ -88,6 +88,7 @@ const CreatorDashboard = () => {
     exact_budget?: number | null;
     barter_value?: number | null;
     deadline?: string | null;
+    brand_logo?: string;
     created_at: string;
     // Keep full request for Counter page navigation
     raw: any;
@@ -147,6 +148,7 @@ const CreatorDashboard = () => {
           exact_budget: r.exact_budget ?? null,
           barter_value: r.barter_value ?? null,
           deadline: r.deadline ?? null,
+          brand_logo: r.brand_logo || r.raw?.brand_logo || (r as any).brand?.logo_url,
           created_at: r.created_at || '',
           raw: r,
         }))
@@ -1120,9 +1122,7 @@ const CreatorDashboard = () => {
           "border-b border-white/15",
           shadows.depthStrong,
           // Inner shadow for depth
-          "shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]",
-          // Purple theme integration
-          "before:absolute before:inset-0 before:bg-gradient-to-b before:from-purple-500/10 before:to-transparent before:pointer-events-none"
+          "shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
         )}
         style={{
           paddingTop: 'max(8px, env(safe-area-inset-top, 8px))',
@@ -1141,8 +1141,8 @@ const CreatorDashboard = () => {
         {/* Inner border for depth - enhanced */}
         <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-        {/* Subtle purple glow at bottom */}
-        <div className="absolute inset-x-0 bottom-0 h-px bg-purple-400/30 blur-sm" />
+        {/* Subtle glow at bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-blue-400/30 blur-sm" />
 
         <div className={cn(
           "flex items-center justify-between gap-3",
@@ -1192,7 +1192,7 @@ const CreatorDashboard = () => {
               className={cn(
                 "w-10 h-10",
                 radius.full,
-                "bg-gradient-to-br from-blue-600 to-purple-600",
+                "bg-gradient-to-br from-blue-600 to-slate-800",
                 "flex items-center justify-center",
                 typography.body,
                 "font-semibold flex-shrink-0",
@@ -1232,13 +1232,13 @@ const CreatorDashboard = () => {
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+        <AlertDialogContent className="bg-[#121826] border border-white/10 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
-              <LogOut className="w-5 h-5 text-red-400" />
+              <LogOut className="w-5 h-5 text-red-500" />
               Confirm Logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-purple-200">
+            <AlertDialogDescription className="text-slate-400">
               Are you sure you want to log out? You'll need to sign in again to access your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1247,7 +1247,7 @@ const CreatorDashboard = () => {
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
               }}
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
+              className="bg-white/5 text-white border-white/10 hover:bg-white/10 focus:ring-2 focus:ring-blue-400/50"
             >
               Cancel
             </AlertDialogCancel>
@@ -1320,7 +1320,7 @@ const CreatorDashboard = () => {
       {/* Skip to main content link for accessibility */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-purple-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
       >
         Skip to main content
       </a>
@@ -1543,7 +1543,7 @@ const CreatorDashboard = () => {
                     whileTap={animations.microTap}
                     className={cn(
                       buttons.secondary,
-                      "w-full min-h-[44px] flex items-center justify-center gap-2 border-purple-400/40 text-purple-100"
+                      "w-full min-h-[44px] flex items-center justify-center gap-2 border-blue-400/40 text-white/40"
                     )}
                   >
                     Go to Collaboration Requests
@@ -1555,7 +1555,7 @@ const CreatorDashboard = () => {
                 <SectionCard
                   variant="secondary"
                   title="How Creator Armour Works"
-                  icon={<Target className="w-5 h-5 text-purple-400" />}
+                  icon={<Target className="w-5 h-5 text-slate-500" />}
                   className="mb-6 md:mb-24 border-t border-white/10 pt-6 mt-6"
                 >
                   <div className="grid md:grid-cols-3 gap-4 md:gap-3">
@@ -1565,7 +1565,7 @@ const CreatorDashboard = () => {
                       whileHover={{ y: -2, transition: { duration: 0.2 } }}
                       className="cursor-pointer h-full"
                     >
-                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200">
+                      <BaseCard variant="tertiary" interactive className="h-full md:p-4 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
                         <div className="w-10 h-10 md:w-9 md:h-9 rounded-lg bg-blue-500/10 flex items-center justify-center mb-2 md:mb-1.5">
                           <Link2 className={cn(iconSizes.md, "md:w-4 md:h-4 text-blue-400")} />
                         </div>
@@ -1713,14 +1713,14 @@ const CreatorDashboard = () => {
                       onClick={() => navigate('/collab-requests')}
                     >
                       <p className={cn(typography.bodySmall, "text-white/80")}>No brand requests yet</p>
-                      <p className={cn(typography.caption, "mt-1 text-purple-300/70")}>Share your collab link to get your first request.</p>
+                      <p className={cn(typography.caption, "mt-1 text-slate-400/70")}>Share your collab link to get your first request.</p>
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); triggerHaptic(HapticPatterns.light); navigate('/collab-requests'); }}
                         className={cn(
                           "mt-3 w-full min-h-[40px] rounded-lg text-xs font-semibold text-white",
-                          "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]",
-                          "shadow-[0_2px_12px_rgba(139,92,246,0.35)] transition-colors"
+                          "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500",
+                          "shadow-[0_2px_12px_rgba(37,99,235,0.35)] transition-colors"
                         )}
                       >
                         Open Requests Page →
@@ -1751,10 +1751,10 @@ const CreatorDashboard = () => {
                               onClick={() => { triggerHaptic(HapticPatterns.light); acceptCollabRequest(r.raw); }}
                               className={cn(
                                 "w-full min-h-[38px] inline-flex items-center justify-center gap-2 rounded-lg font-semibold text-sm text-white",
-                                "transition-colors duration-200 shadow-[0_2px_12px_rgba(139,92,246,0.25)]",
+                                "transition-colors duration-200 shadow-[0_2px_12px_rgba(37,99,235,0.25)]",
                                 acceptingRequestId === r.id
-                                  ? "bg-[#4C1D95] text-[#A78BFA] opacity-70 pointer-events-none cursor-not-allowed"
-                                  : "bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5]"
+                                  ? "bg-indigo-900 text-indigo-200 opacity-70 pointer-events-none cursor-not-allowed"
+                                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
                               )}
                             >
                               {acceptingRequestId === r.id ? <><Loader2 className="w-4 h-4 animate-spin" /> Accepting…</> : <><Check className="w-4 h-4" /> Accept Deal</>}
@@ -1788,7 +1788,7 @@ const CreatorDashboard = () => {
                               <button
                                 type="button"
                                 onClick={() => { triggerHaptic(HapticPatterns.light); navigate(`/collab-requests/${r.id}/counter`, { state: { request: r.raw } }); }}
-                                className="flex-1 min-h-[36px] rounded-lg border border-[#A78BFA] bg-transparent text-[#DDD6FE] text-xs font-medium hover:bg-purple-500/10 transition-colors inline-flex items-center justify-center gap-1.5"
+                                className="flex-1 min-h-[36px] rounded-lg border border-indigo-400 bg-transparent text-indigo-100 text-xs font-medium hover:bg-indigo-500/10 transition-colors inline-flex items-center justify-center gap-1.5"
                                 aria-label="Counter offer"
                               >
                                 <FileEdit className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -1984,7 +1984,7 @@ const CreatorDashboard = () => {
                                         </p>
                                       </>
                                     ) : (
-                                      <span className={cn("inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-purple-200", sectionHeader.action)}>
+                                      <span className={cn("inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-white/60", sectionHeader.action)}>
                                         View deal
                                         <ChevronRight className="w-3.5 h-3.5" />
                                       </span>
@@ -2003,13 +2003,13 @@ const CreatorDashboard = () => {
                     {/* Collab Link — utility card (Copy | Preview only) */}
                     <div className="space-y-6 md:space-y-8">
                       <div className="flex items-center gap-2">
-                        <Link2 className="w-4 h-4 text-purple-300 flex-shrink-0" />
+                        <Link2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
                         <p className={cn("text-sm font-medium text-white/90")}>All brand deals start here</p>
                       </div>
                       {(profile?.instagram_handle || profile?.username) ? (
                         <BaseCard variant="tertiary" className="p-4 border border-white/15 bg-white/8">
                           <div className="flex items-center gap-2">
-                            <code className="flex-1 min-w-0 truncate text-sm text-purple-100 bg-white/10 px-3 py-2 rounded-lg border border-white/20">
+                            <code className="flex-1 min-w-0 truncate text-sm text-white/40 bg-white/10 px-3 py-2 rounded-lg border border-white/20">
                               creatorarmour.com/collab/{profile?.instagram_handle || profile?.username}
                             </code>
                             <motion.button
@@ -2059,7 +2059,7 @@ const CreatorDashboard = () => {
                                 toast.success('Opening WhatsApp…');
                                 triggerHaptic(HapticPatterns.light);
                               }}
-                              className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                              className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-white/40 border-purple-400/40")}
                               aria-label="Share via WhatsApp"
                             >
                               <MessageCircle className="w-4 h-4" />
@@ -2076,7 +2076,7 @@ const CreatorDashboard = () => {
                                 triggerHaptic(HapticPatterns.light);
                                 setTimeout(() => setCollabLinkCopied(false), 2000);
                               }}
-                              className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                              className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-white/40 border-purple-400/40")}
                               aria-label="Share via Instagram"
                             >
                               <Instagram className="w-4 h-4" />
@@ -2086,7 +2086,7 @@ const CreatorDashboard = () => {
                               type="button"
                               whileTap={animations.microTap}
                               onClick={() => { triggerHaptic(HapticPatterns.light); window.open(`/collab/${profile?.instagram_handle || profile?.username}`, '_blank'); }}
-                              className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-purple-100 border-purple-400/40")}
+                              className={cn(buttons.secondary, "flex-1 min-h-[44px] min-w-[80px] flex items-center justify-center gap-2 text-white/40 border-purple-400/40")}
                             >
                               <ExternalLink className="w-4 h-4" />
                               Preview
@@ -2094,7 +2094,7 @@ const CreatorDashboard = () => {
                           </div>
                         </BaseCard>
                       ) : (
-                        <p className={cn(typography.caption, "text-purple-300/60")}>Complete your profile to get your link.</p>
+                        <p className={cn(typography.caption, "text-slate-400/60")}>Complete your profile to get your link.</p>
                       )}
                     </div>
 
@@ -2139,7 +2139,7 @@ const CreatorDashboard = () => {
                                           : stage.label === 'Activity Signal'
                                             ? "border-blue-300/45 bg-blue-500/15 text-blue-200"
                                             : stage.label === 'Collaboration Ready'
-                                              ? "border-violet-300/45 bg-violet-500/15 text-violet-200"
+                                              ? "border-blue-300/45 bg-blue-500/15 text-blue-200"
                                               : "border-amber-300/50 bg-amber-500/15 text-amber-200"
                                       : "border-white/20 bg-white/5 text-white/50"
                                   )}
@@ -2160,7 +2160,7 @@ const CreatorDashboard = () => {
                                 triggerHaptic(HapticPatterns.light);
                                 setTimeout(() => setCollabLinkCopied(false), 2000);
                               }}
-                              className={cn(buttons.secondary, "min-h-[36px] px-3 text-xs flex items-center gap-1.5 border-purple-400/40 text-purple-100")}
+                              className={cn(buttons.secondary, "min-h-[36px] px-3 text-xs flex items-center gap-1.5 border-blue-400/40 text-white/40")}
                             >
                               <Copy className="w-3.5 h-3.5" />
                               {collabLinkCopied ? 'Copied' : 'Copy Link'}
@@ -2223,7 +2223,7 @@ const CreatorDashboard = () => {
                                     </p>
                                   ))}
                                 </div>
-                                <p className="mt-2 text-[11px] text-violet-200/85">→ {tile.unlockLabel}</p>
+                                <p className="mt-2 text-[11px] text-blue-200/85">→ {tile.unlockLabel}</p>
                               </button>
                             ))}
                           </div>
@@ -2254,7 +2254,7 @@ const CreatorDashboard = () => {
                               triggerHaptic(HapticPatterns.light);
                               navigate('/creator-profile');
                             }}
-                            className={cn(buttons.primary, "w-full min-h-[42px] text-sm font-semibold shadow-[0_8px_24px_rgba(139,92,246,0.35)]")}
+                            className={cn(buttons.primary, "w-full min-h-[42px] text-sm font-semibold shadow-[0_8px_24px_rgba(37,99,235,0.35)]")}
                           >
                             Improve Page Signal
                           </button>
@@ -2281,10 +2281,10 @@ const CreatorDashboard = () => {
                             <div className={cn("flex items-start justify-between gap-4 mb-4")}>
                               <div className="flex-1">
                                 <h3 className={cn(typography.h3, "mb-2")}>Legal Power Ready</h3>
-                                <p className={cn(typography.bodySmall, "text-purple-200")}>
+                                <p className={cn(typography.bodySmall, "text-white/60")}>
                                   Send a legal notice instantly if a brand delays or refuses payment.
                                 </p>
-                                <p className={cn(typography.caption, "mt-1 text-purple-300/80")}>
+                                <p className={cn(typography.caption, "mt-1 text-slate-400/80")}>
                                   A formal notice is sent to the brand to resolve the payment.
                                 </p>
                               </div>
@@ -2313,10 +2313,10 @@ const CreatorDashboard = () => {
                                 <Shield className={iconSizes.md} />
                                 Send Legal Notice
                               </motion.button>
-                              <p className={cn(typography.caption, "text-center text-purple-300/70")}>
+                              <p className={cn(typography.caption, "text-center text-slate-400/70")}>
                                 We&apos;ll send a formal notice to the brand
                               </p>
-                              <p className={cn(typography.caption, "text-center text-purple-300/60")}>
+                              <p className={cn(typography.caption, "text-center text-slate-400/60")}>
                                 Includes free legal notices & lawyer reviews
                               </p>
                             </div>

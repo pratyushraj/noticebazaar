@@ -31,8 +31,8 @@ const activityConfig = {
     },
     contract_signed: {
         icon: CheckCircle,
-        color: 'purple',
-        iconClass: 'bg-purple-500/20 text-purple-400',
+        color: 'indigo',
+        iconClass: 'bg-indigo-500/20 text-indigo-400',
     },
     deliverable_completed: {
         icon: Clock,

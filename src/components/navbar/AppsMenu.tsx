@@ -51,28 +51,28 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
     {
       title: "Tools",
       items: [
-    { name: "Calendar Sync", icon: Calendar, path: "/creator-dashboard?tab=calendar", roles: ['creator'] },
-    { name: "Documents Vault", icon: FolderOpen, path: "/documents-vault", roles: ['creator'] },
+        { name: "Calendar Sync", icon: Calendar, path: "/creator-dashboard?tab=calendar", roles: ['creator'] },
+        { name: "Documents Vault", icon: FolderOpen, path: "/documents-vault", roles: ['creator'] },
         { name: "Invoice Generator", icon: FileText, path: "/creator-dashboard?tab=invoices", roles: ['creator'] },
       ]
     },
     {
       title: "Support",
       items: [
-    { name: "Disputes Center", icon: AlertTriangle, path: "/creator-dashboard?tab=disputes", roles: ['creator'] },
+        { name: "Disputes Center", icon: AlertTriangle, path: "/creator-dashboard?tab=disputes", roles: ['creator'] },
       ]
     },
     {
       title: "Business",
       items: [
-    { name: "Tax Summary", icon: Receipt, path: "/creator-tax-compliance", roles: ['creator'] },
-    { name: "Partner Program", icon: Sparkles, path: "/partner-program", roles: ['creator'] },
+        { name: "Tax Summary", icon: Receipt, path: "/creator-tax-compliance", roles: ['creator'] },
+        { name: "Partner Program", icon: Sparkles, path: "/partner-program", roles: ['creator'] },
       ]
     },
     {
       title: "Settings",
       items: [
-    { name: "Settings", icon: Settings, path: "/settings", roles: ['creator'] },
+        { name: "Settings", icon: Settings, path: "/settings", roles: ['creator'] },
       ]
     }
   ];
@@ -81,19 +81,19 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
   const visibleSections = menuSections.map(section => ({
     ...section,
     items: section.items.filter(item => {
-    if (!item.roles) return true;
-    return item.roles.includes(profileRole || '');
+      if (!item.roles) return true;
+      return item.roles.includes(profileRole || '');
     })
   })).filter(section => section.items.length > 0);
 
   // Filter items by search query
   const filteredSections = searchQuery
     ? visibleSections.map(section => ({
-        ...section,
-        items: section.items.filter(item =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      })).filter(section => section.items.length > 0)
+      ...section,
+      items: section.items.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(section => section.items.length > 0)
     : visibleSections;
 
   // Close menu when clicking outside
@@ -138,7 +138,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
     if (path.includes('?')) {
       const [basePath, query] = path.split('?');
       navigate(`${basePath}?${query}`, { replace: false });
-      
+
       // For dashboard tabs, scroll to the appropriate section after a small delay
       if (basePath === '/creator-dashboard') {
         setTimeout(() => {
@@ -152,7 +152,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
               disputes: '[data-section="disputes-center"]',
               invoices: '[data-section="invoice-generator"]',
             };
-            
+
             const selector = sectionMap[tab];
             if (selector) {
               const element = document.querySelector(selector);
@@ -172,7 +172,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
   const isActive = (path: string) => {
     const currentPath = location.pathname;
     const basePath = path.split('?')[0];
-    
+
     if (basePath === '/creator-dashboard') {
       return currentPath === basePath || currentPath === '/creator-dashboard';
     }
@@ -239,9 +239,9 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
               <div className="px-4 py-4 border-b border-white/5">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 ring-2 ring-white/10">
-                    <AvatarImage 
-                      src={profile.avatar_url || DEFAULT_AVATAR_URL} 
-                      alt={profile.first_name || "User"} 
+                    <AvatarImage
+                      src={profile.avatar_url || DEFAULT_AVATAR_URL}
+                      alt={profile.first_name || "User"}
                     />
                     <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-medium">
                       {getInitials(profile.first_name, profile.last_name)}
@@ -260,7 +260,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
             )}
 
             {/* iOS-style Menu List */}
-            <div className="py-2 bg-gradient-to-br from-[#3B82F6]/10 via-[#8B5CF6]/10 to-[#3B82F6]/5">
+            <div className="py-2 bg-gradient-to-br from-[#3B82F6]/5 via-blue-500/5 to-slate-500/5">
               {filteredSections.map((section, sectionIndex) => (
                 <div key={section.title} className={cn(
                   "mb-6",
@@ -272,7 +272,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
                       {section.title}
                     </h3>
                   </div>
-                  
+
                   {/* iOS-style List Items */}
                   <div className="bg-white/5 rounded-xl overflow-hidden border border-white/5">
                     {section.items.map((item, itemIndex) => {
@@ -283,7 +283,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
                       // iOS-style icon colors
                       const iconColors: Record<string, string> = {
                         'Calendar Sync': 'text-blue-400',
-                        'Documents Vault': 'text-purple-400',
+                        'Documents Vault': 'text-blue-400',
                         'Invoice Generator': 'text-green-400',
                         'Disputes Center': 'text-orange-400',
                         'Tax Summary': 'text-yellow-400',
@@ -310,18 +310,18 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
                           {/* Icon with iOS-style colored background */}
                           <div className={cn(
                             "w-7 h-7 flex items-center justify-center rounded-lg flex-shrink-0",
-                            active 
-                              ? "bg-blue-500/20" 
+                            active
+                              ? "bg-blue-500/20"
                               : "bg-white/5 group-hover:bg-white/10"
                           )}>
                             <Icon className={cn(
                               "w-4 h-4",
-                              active 
-                                ? "text-blue-400" 
+                              active
+                                ? "text-blue-400"
                                 : iconColors[item.name] || "text-white/70"
                             )} />
                           </div>
-                          
+
                           {/* Text */}
                           <span className={cn(
                             "text-[15px] flex-1 text-left",
@@ -329,7 +329,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
                           )}>
                             {item.name}
                           </span>
-                          
+
                           {/* Chevron */}
                           <ChevronRight className={cn(
                             "w-4 h-4 flex-shrink-0 transition-colors",

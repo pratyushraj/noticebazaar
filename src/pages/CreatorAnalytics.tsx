@@ -64,9 +64,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
       className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-purple-300">{title}</span>
-        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-          <Icon className="w-4 h-4 text-purple-400" />
+        <span className="text-sm text-slate-400">{title}</span>
+        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+          <Icon className="w-4 h-4 text-slate-500" />
         </div>
       </div>
 
@@ -77,13 +77,12 @@ const MetricCard: React.FC<MetricCardProps> = ({
       </div>
 
       <div
-        className={`flex items-center gap-1 text-sm ${
-          isPositive ? 'text-green-400' : 'text-red-400'
-        }`}
+        className={`flex items-center gap-1 text-sm ${isPositive ? 'text-green-400' : 'text-red-400'
+          }`}
       >
         <TrendIcon className="w-4 h-4" />
         <span>{Math.abs(change).toFixed(1)}%</span>
-        <span className="text-purple-300 ml-1">vs last period</span>
+        <span className="text-slate-400 ml-1">vs last period</span>
       </div>
     </motion.div>
   );
@@ -111,7 +110,7 @@ const BarChart: React.FC<BarChartProps> = ({ data }) => {
           transition={{ delay: index * 0.1 }}
         >
           <div className="flex items-center justify-between mb-1 text-sm">
-            <span className="text-purple-300">{item.month}</span>
+            <span className="text-slate-400">{item.month}</span>
             <span className="font-semibold">{formatCurrency(item.amount)}</span>
           </div>
           <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
@@ -119,7 +118,7 @@ const BarChart: React.FC<BarChartProps> = ({ data }) => {
               initial={{ width: 0 }}
               animate={{ width: `${(item.amount / maxAmount) * 100}%` }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full"
+              className="bg-gradient-to-r from-blue-600 to-slate-800 h-3 rounded-full"
             />
           </div>
         </motion.div>
@@ -152,7 +151,7 @@ const PieChartLegend: React.FC<PieChartLegendProps> = ({ data }) => {
             <div className={`w-4 h-4 ${item.color} rounded`}></div>
             <div>
               <div className="font-medium">{item.source}</div>
-              <div className="text-sm text-purple-300">{item.percentage}%</div>
+              <div className="text-sm text-slate-400">{item.percentage}%</div>
             </div>
           </div>
           <div className="font-semibold">{formatCurrency(item.amount)}</div>
@@ -221,19 +220,19 @@ const CreatorAnalytics = () => {
     const monthly: Array<{ month: string; amount: number }> = [];
     const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
     const now = new Date();
-    
+
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthName = months[date.getMonth()] || months[i];
-      
+
       // Simulate earnings (in real app, would filter by date)
       const monthEarnings = i === 5 ? currentEarnings * 0.5 : currentEarnings * (0.5 + (5 - i) * 0.1);
       monthly.push({ month: monthName, amount: Math.round(monthEarnings) });
     }
 
     const previousEarnings = monthly[monthly.length - 2]?.amount || 0;
-    const growth = previousEarnings > 0 
-      ? ((currentEarnings - previousEarnings) / previousEarnings) * 100 
+    const growth = previousEarnings > 0
+      ? ((currentEarnings - previousEarnings) / previousEarnings) * 100
       : 0;
 
     // Revenue breakdown by platform (simulated - would need platform data)
@@ -301,7 +300,7 @@ const CreatorAnalytics = () => {
         icon: Target,
         title: 'Revenue Goal',
         message: `You're ${goalProgress.toFixed(0)}% toward your ₹3L monthly goal. Keep adding deals!`,
-        color: 'from-blue-500 to-purple-500',
+        color: 'from-blue-500 to-cyan-500',
       });
     }
 
@@ -312,7 +311,7 @@ const CreatorAnalytics = () => {
         icon: Award,
         title: 'Milestone Reached',
         message: `You've earned ₹${(earningsData.current / 1000).toFixed(0)}K total! Great work!`,
-        color: 'from-purple-500 to-pink-500',
+        color: 'from-indigo-500 to-blue-500',
       });
     }
 
@@ -349,9 +348,9 @@ const CreatorAnalytics = () => {
   ];
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-[#0B0F14] text-white">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-blue-900/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <button
@@ -363,7 +362,7 @@ const CreatorAnalytics = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold">Analytics</h1>
-              <p className="text-sm text-purple-300">Your performance insights</p>
+              <p className="text-sm text-slate-400">Your performance insights</p>
             </div>
           </div>
 
@@ -393,11 +392,10 @@ const CreatorAnalytics = () => {
             <button
               key={tf.id}
               onClick={() => setTimeframe(tf.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                timeframe === tf.id
-                  ? 'bg-purple-600 text-white shadow-lg'
-                  : 'bg-white/10 text-purple-200 hover:bg-white/15'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${timeframe === tf.id
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white/10 text-blue-200 hover:bg-white/15'
+                }`}
             >
               {tf.label}
             </button>
@@ -448,7 +446,7 @@ const CreatorAnalytics = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-lg">Earnings Trend</h2>
             <button
-              className="text-sm text-purple-300 hover:text-white transition-colors flex items-center gap-1"
+              className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1"
               aria-label="Earnings trend info"
             >
               <Info className="w-4 h-4" />
@@ -463,9 +461,8 @@ const CreatorAnalytics = () => {
             </div>
             <div className="flex items-center gap-2">
               <span
-                className={`flex items-center gap-1 text-sm font-medium ${
-                  earningsData.trend === 'up' ? 'text-green-400' : 'text-red-400'
-                }`}
+                className={`flex items-center gap-1 text-sm font-medium ${earningsData.trend === 'up' ? 'text-green-400' : 'text-red-400'
+                  }`}
               >
                 {earningsData.trend === 'up' ? (
                   <TrendingUp className="w-4 h-4" />
@@ -474,7 +471,7 @@ const CreatorAnalytics = () => {
                 )}
                 {Math.abs(earningsData.growth).toFixed(1)}%
               </span>
-              <span className="text-sm text-purple-300">
+              <span className="text-sm text-slate-400">
                 vs{' '}
                 {earningsData.previous >= 100000
                   ? `₹${(earningsData.previous / 1000).toFixed(0)}K`
@@ -510,7 +507,7 @@ const CreatorAnalytics = () => {
                   <span className="text-2xl font-bold">{item.percentage}%</span>
                 </div>
                 <div className="text-xs font-medium mb-1">{item.source}</div>
-                <div className="text-xs text-purple-300">
+                <div className="text-xs text-slate-400">
                   {item.amount >= 100000
                     ? `₹${(item.amount / 1000).toFixed(0)}K`
                     : `₹${item.amount.toLocaleString()}`}
@@ -534,7 +531,7 @@ const CreatorAnalytics = () => {
               <h2 className="font-semibold text-lg">Top Deals</h2>
               <button
                 onClick={() => navigate('/creator-contracts')}
-                className="text-sm text-purple-300 hover:text-white transition-colors"
+                className="text-sm text-slate-400 hover:text-white transition-colors"
               >
                 View All →
               </button>
@@ -551,12 +548,12 @@ const CreatorAnalytics = () => {
                   className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center font-bold">
                       {index + 1}
                     </div>
                     <div>
                       <div className="font-medium">{deal.name}</div>
-                      <div className="text-xs text-purple-300">{deal.platform}</div>
+                      <div className="text-xs text-slate-400">{deal.platform}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -566,9 +563,8 @@ const CreatorAnalytics = () => {
                         : `₹${deal.value.toLocaleString()}`}
                     </div>
                     <div
-                      className={`text-xs ${
-                        deal.status === 'active' ? 'text-green-400' : 'text-purple-400'
-                      }`}
+                      className={`text-xs ${deal.status === 'active' ? 'text-green-400' : 'text-slate-500'
+                        }`}
                     >
                       {deal.status === 'active' ? '● Active' : '✓ Completed'}
                     </div>
@@ -626,11 +622,11 @@ const CreatorAnalytics = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-white/5 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <Briefcase className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-purple-300">Total Deals</span>
+                <Briefcase className="w-4 h-4 text-slate-500" />
+                <span className="text-sm text-slate-400">Total Deals</span>
               </div>
               <div className="text-2xl font-bold">{brandDeals.length}</div>
-              <div className="text-xs text-purple-400 mt-1">
+              <div className="text-xs text-slate-500 mt-1">
                 {brandDeals.filter((d) => d.status !== 'Completed' && d.status !== 'Drafting').length} active,{' '}
                 {brandDeals.filter((d) => d.status === 'Completed').length} completed
               </div>
@@ -638,8 +634,8 @@ const CreatorAnalytics = () => {
 
             <div className="p-4 bg-white/5 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-purple-300">This Month</span>
+                <Calendar className="w-4 h-4 text-slate-500" />
+                <span className="text-sm text-slate-400">This Month</span>
               </div>
               <div className="text-2xl font-bold">
                 {brandDeals.filter((d) => d.status !== 'Completed' && d.status !== 'Drafting').length}
@@ -649,20 +645,20 @@ const CreatorAnalytics = () => {
 
             <div className="p-4 bg-white/5 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-purple-300">Success Rate</span>
+                <Target className="w-4 h-4 text-slate-500" />
+                <span className="text-sm text-slate-400">Success Rate</span>
               </div>
               <div className="text-2xl font-bold">{metrics.closingRate.value.toFixed(0)}%</div>
-              <div className="text-xs text-purple-400 mt-1">Deals closed</div>
+              <div className="text-xs text-slate-500 mt-1">Deals closed</div>
             </div>
 
             <div className="p-4 bg-white/5 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-purple-300">Avg Response</span>
+                <Zap className="w-4 h-4 text-slate-500" />
+                <span className="text-sm text-slate-400">Avg Response</span>
               </div>
               <div className="text-2xl font-bold">2.5</div>
-              <div className="text-xs text-purple-400 mt-1">Days to reply</div>
+              <div className="text-xs text-slate-500 mt-1">Days to reply</div>
             </div>
           </div>
         </motion.div>
@@ -672,13 +668,13 @@ const CreatorAnalytics = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 rounded-[20px] p-5 border border-purple-400/30"
+          className="bg-gradient-to-r from-blue-600/20 to-slate-800/20 rounded-[20px] p-5 border border-blue-400/20"
         >
           <div className="flex items-start gap-3 mb-4">
-            <Download className="w-6 h-6 text-purple-300 flex-shrink-0" />
+            <Download className="w-6 h-6 text-slate-400 flex-shrink-0" />
             <div>
               <h3 className="font-semibold mb-1">Export Your Data</h3>
-              <p className="text-sm text-purple-200">Download detailed reports for tax filing or analysis</p>
+              <p className="text-sm text-blue-200">Download detailed reports for tax filing or analysis</p>
             </div>
           </div>
 

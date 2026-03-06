@@ -82,7 +82,7 @@ export default function DealDeliveryDetailsPage() {
           setAddressLine(fullAddress);
         }
       } else {
-      setAddressLine(fullAddress);
+        setAddressLine(fullAddress);
       }
       setDeliveryNotes((deal as any).delivery_notes ?? "");
     }
@@ -190,9 +190,9 @@ export default function DealDeliveryDetailsPage() {
 
   // Force readable input contrast across webviews/browsers where input backgrounds may be normalized to white.
   const fieldClass =
-    "h-11 sm:h-12 !bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-purple-400 focus:ring-2 focus:ring-purple-400/20";
+    "h-11 sm:h-12 !bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-blue-400 focus:ring-2 focus:ring-blue-400/20";
   const textAreaFieldClass =
-    "!bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-purple-400 focus:ring-2 focus:ring-purple-400/20";
+    "!bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-blue-400 focus:ring-2 focus:ring-blue-400/20";
 
   if (isSubmitted) {
     return (
@@ -212,7 +212,7 @@ export default function DealDeliveryDetailsPage() {
   }
 
   return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-safe">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-safe">
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-3 px-4 py-3 max-w-xl mx-auto">
           <button
@@ -396,7 +396,7 @@ export default function DealDeliveryDetailsPage() {
             />
           </div>
 
-          <div className="sticky bottom-0 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-[#1b1034] via-[#1b1034]/95 to-transparent backdrop-blur border-t border-white/10 space-y-3">
+          <div className="sticky bottom-0 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14]/95 to-transparent backdrop-blur border-t border-white/10 space-y-3">
             {submitError && (
               <div className="rounded-xl border border-red-400/40 bg-red-500/10 text-red-200 text-sm px-3 py-2">
                 {submitError}

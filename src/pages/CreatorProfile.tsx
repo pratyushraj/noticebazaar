@@ -917,7 +917,7 @@ const ProfileSettings = () => {
     Nano: 'bg-[#6b7280]',
     Micro: 'bg-[#3b82f6]',
     Rising: 'bg-[#14b8a6]',
-    Pro: 'bg-[#8b5cf6]',
+    Pro: 'bg-indigo-600',
     Macro: 'bg-[#f59e0b]',
   };
   const pastBrandWorkValue = Number(formData.collabBrandsCountOverride || 0);
@@ -2208,7 +2208,7 @@ const ProfileSettings = () => {
                   handleSave();
                 }}
                 disabled={isSaving}
-                className="w-full h-11 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-semibold shadow-[0_8px_24px_rgba(139,92,246,0.35)] disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full h-11 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-[0_8px_24px_rgba(37,99,235,0.35)] disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isSaving ? 'Saving...' : 'Save Profile'}
               </button>
@@ -2263,7 +2263,7 @@ const ProfileSettings = () => {
                         }}
                         className={cn(
                           "h-10 bg-white/8 border-white/25 text-white/85 hover:bg-white/15 transition-all",
-                          copyPulse && "shadow-[0_0_0_1px_rgba(167,139,250,0.55),0_0_18px_rgba(167,139,250,0.35)]"
+                          copyPulse && "shadow-[0_0_0_1px_rgba(37,99,235,0.55),0_0_18px_rgba(37,99,235,0.35)]"
                         )}
                         aria-label="Copy collaboration link"
                       >
@@ -2302,9 +2302,7 @@ const ProfileSettings = () => {
                     disabled={!editMode}
                     className={`w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none transition-colors ${editMode ? 'focus:border-slate-300/60 focus:ring-2 focus:ring-slate-400/20 focus:bg-white/12' : 'cursor-not-allowed opacity-80'}`}
                   >
-                    {CREATOR_CATEGORY_OPTIONS.map((option) => (
-                      <option key={option} value={option} className="bg-[#1b1037] text-white">{option}</option>
-                    ))}
+                    <option key={option} value={option} className="bg-indigo-950 text-white">{option}</option>
                   </select>
                 </div>
 
@@ -2352,7 +2350,7 @@ const ProfileSettings = () => {
                           className={cn(
                             "w-full text-left rounded-xl p-3 border transition-all duration-200 hover:scale-[1.01]",
                             selected
-                              ? "scale-[1.03] bg-white/10 backdrop-blur-md border-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.16),0_10px_24px_rgba(139,92,246,0.3)]"
+                              ? "scale-[1.03] bg-white/10 backdrop-blur-md border-white/20 shadow-[0_0_0_1px_rgba(255,255,255,0.16),0_10px_24px_rgba(37,99,235,0.3)]"
                               : "bg-white/5 border-white/10"
                           )}
                         >
@@ -2724,7 +2722,7 @@ const ProfileSettings = () => {
                 }}
                 disabled={isSaving}
                 className={cn(
-                  "relative overflow-hidden w-full h-11 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] text-white font-semibold shadow-[0_8px_24px_rgba(139,92,246,0.35)] disabled:opacity-70 disabled:cursor-not-allowed transition-transform duration-150",
+                  "relative overflow-hidden w-full h-11 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold shadow-[0_8px_24px_rgba(37,99,235,0.35)] disabled:opacity-70 disabled:cursor-not-allowed transition-transform duration-150",
                   ctaPressed && "scale-[0.98]"
                 )}
               >
@@ -2814,7 +2812,7 @@ const ProfileSettings = () => {
                 <button className="flex-1 bg-white/12 hover:bg-white/18 font-medium py-2 rounded-lg transition-colors text-sm">
                   Manage Plan
                 </button>
-                <button className="flex-1 bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] hover:from-[#7C3AED] hover:to-[#4F46E5] font-semibold py-2 rounded-lg transition-colors text-sm shadow-[0_2px_12px_rgba(139,92,246,0.35)]">
+                <button className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-semibold py-2 rounded-lg transition-colors text-sm shadow-[0_2px_12px_rgba(37,99,235,0.35)]">
                   Upgrade
                 </button>
               </div>
@@ -3026,7 +3024,7 @@ const ProfileSettings = () => {
               <LogOut className="w-5 h-5 text-red-400" />
               Confirm Logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-200">
+            <AlertDialogDescription className="text-blue-100/70">
               Are you sure you want to log out? You'll need to sign in again to access your account.
             </AlertDialogDescription>
           </AlertDialogHeader>

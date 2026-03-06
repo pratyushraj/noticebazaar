@@ -200,7 +200,7 @@ body {
   .tutorial-highlight {
     position: relative;
     z-index: 10000 !important;
-    outline: 4px solid rgb(168, 85, 247) !important; /* purple-500 */
+    outline: 4px solid rgb(59, 130, 246) !important; /* blue-500 */
     outline-offset: 2px;
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
     border-radius: 0.75rem;
@@ -210,11 +210,11 @@ body {
   @keyframes tutorial-pulse {
     0%, 100% {
       outline-width: 4px;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.5);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.5);
     }
     50% {
       outline-width: 6px;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.8);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.8);
     }
   }
 
@@ -504,7 +504,7 @@ body {
 :root {
   /* Primary Colors */
   --ios-primary: #007AFF;
-  --ios-purple: #A855F7;
+  --ios-purple: #3B82F6; /* map to blue instead of purple */
   --ios-blue: #3B82F6;
   --ios-indigo: #6366F1;
   

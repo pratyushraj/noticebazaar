@@ -96,13 +96,13 @@ const CollabRequestBriefPage = () => {
             <h2 className="text-lg font-bold text-white uppercase break-words flex-1">{request.brand_name ?? 'Brand'}</h2>
             <span className={cn(
               "flex-shrink-0 px-2 py-0.5 rounded-md text-[11px] font-medium border",
-              request.collab_type === 'barter' ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : request.collab_type === 'paid' ? "bg-green-500/20 text-green-200 border-green-500/30" : "bg-purple-500/20 text-purple-200 border-purple-500/30"
+              request.collab_type === 'barter' ? "bg-blue-500/20 text-blue-200 border-blue-500/30" : request.collab_type === 'paid' ? "bg-green-500/20 text-green-200 border-green-500/30" : "bg-indigo-500/20 text-indigo-200 border-indigo-500/30"
             )}>
               {collabTypeLabel(request.collab_type)}
             </span>
           </div>
           {request.brand_email && (
-            <p className="text-xs text-purple-300/70">{request.brand_email}</p>
+            <p className="text-xs text-blue-300/70">{request.brand_email}</p>
           )}
 
           {/* Value + deadline */}
@@ -118,8 +118,8 @@ const CollabRequestBriefPage = () => {
             <span className="text-sm font-semibold text-white">{formatBudget(request)}</span>
             {request.deadline && (
               <>
-                <span className="text-purple-400/60 text-sm">•</span>
-                <span className="text-sm text-purple-200/90">
+                <span className="text-blue-400/60 text-sm">•</span>
+                <span className="text-sm text-blue-200/90">
                   Deadline: {new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                 </span>
               </>
@@ -129,10 +129,10 @@ const CollabRequestBriefPage = () => {
           {/* Requested deliverables */}
           {deliverablesList.length > 0 && (
             <div>
-              <p className="text-[10px] font-medium text-purple-300/60 uppercase tracking-wider mb-2">Requested deliverables</p>
+              <p className="text-[10px] font-medium text-blue-300/60 uppercase tracking-wider mb-2">Requested deliverables</p>
               <div className="flex flex-wrap gap-1.5">
                 {deliverablesList.map((d, idx) => (
-                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-[11px] border border-white/10 text-purple-200/90 bg-white/[0.04]">
+                  <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-[11px] border border-white/10 text-blue-200/90 bg-white/[0.04]">
                     {d}
                   </span>
                 ))}
@@ -142,13 +142,13 @@ const CollabRequestBriefPage = () => {
 
           {/* Full campaign description */}
           <div>
-            <p className="text-[10px] font-medium text-purple-300/60 uppercase tracking-wider mb-1.5">Campaign description</p>
-            <p className="text-sm text-purple-200 leading-relaxed whitespace-pre-wrap">
+            <p className="text-[10px] font-medium text-blue-300/60 uppercase tracking-wider mb-1.5">Campaign description</p>
+            <p className="text-sm text-blue-200 leading-relaxed whitespace-pre-wrap">
               {request.campaign_description || '—'}
             </p>
           </div>
 
-          <p className="text-[10px] text-purple-300/50 flex items-center gap-1.5 pt-2">
+          <p className="text-[10px] text-blue-300/50 flex items-center gap-1.5 pt-2">
             <Lock className="h-3 w-3 flex-shrink-0" aria-hidden />
             This request is timestamped and protected by Creator Armour
           </p>
