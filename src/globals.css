@@ -11,6 +11,7 @@
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -25,6 +26,7 @@
   0% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -54,6 +56,7 @@ body {
     transform: scale(0);
     opacity: 0.3;
   }
+
   100% {
     transform: scale(4);
     opacity: 0;
@@ -117,7 +120,8 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: none; /* Disable weird elastic scroll */
+  overscroll-behavior-y: none;
+  /* Disable weird elastic scroll */
 }
 
 /* Calendar-specific fixes */
@@ -140,8 +144,10 @@ body {
 body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  -webkit-font-smoothing: antialiased; /* Better font rendering on Apple devices */
-  text-rendering: optimizeLegibility; /* Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+  /* Better font rendering on Apple devices */
+  text-rendering: optimizeLegibility;
+  /* Improve text rendering */
 }
 
 /* iOS Safari Scrolling helpers (per-container, not global) */
@@ -174,6 +180,7 @@ body {
 }
 
 @layer base {
+
   html,
   body {
     height: auto;
@@ -192,15 +199,18 @@ body {
 
   /* Prevent nested scroll on most elements while allowing main page scroll */
   body {
-    -webkit-font-smoothing: antialiased; /* Better font rendering on Apple devices */
-    text-rendering: optimizeLegibility; /* Improve text rendering */
+    -webkit-font-smoothing: antialiased;
+    /* Better font rendering on Apple devices */
+    text-rendering: optimizeLegibility;
+    /* Improve text rendering */
   }
 
   /* Tutorial Highlight Effect */
   .tutorial-highlight {
     position: relative;
     z-index: 10000 !important;
-    outline: 4px solid rgb(59, 130, 246) !important; /* blue-500 */
+    outline: 4px solid rgb(59, 130, 246) !important;
+    /* blue-500 */
     outline-offset: 2px;
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
     border-radius: 0.75rem;
@@ -208,10 +218,13 @@ body {
   }
 
   @keyframes tutorial-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
       outline-width: 4px;
       box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.5);
     }
+
     50% {
       outline-width: 6px;
       box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.8);
@@ -248,6 +261,7 @@ body {
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -262,35 +276,44 @@ body {
 @layer base {
   :root {
     /* New Dark Mode Colors (Default) */
-    --background: 220 10% 7%; /* #0B1325 */
-    --foreground: 0 0% 98%; /* White text */
+    --background: 220 10% 7%;
+    /* #0B1325 */
+    --foreground: 0 0% 98%;
+    /* White text */
 
-    --card: 220 10% 10%; /* #131F3B (base for gradient) */
+    --card: 220 10% 10%;
+    /* #131F3B (base for gradient) */
     --card-foreground: 0 0% 98%;
 
     --popover: 220 10% 15%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 217.2 91.2% 59.8%; /* #3B82F6 */
+    --primary: 217.2 91.2% 59.8%;
+    /* #3B82F6 */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 220 10% 20%; /* Darker grey secondary */
+    --secondary: 220 10% 20%;
+    /* Darker grey secondary */
     --secondary-foreground: 0 0% 98%;
 
     --muted: 220 10% 20%;
-    --muted-foreground: 215 14% 70%; /* Muted light grey text */
+    --muted-foreground: 215 14% 70%;
+    /* Muted light grey text */
 
     --accent: 220 10% 20%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%; /* #EF4444 */
+    --destructive: 0 84.2% 60.2%;
+    /* #EF4444 */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 10% 25%; /* Darker border */
+    --border: 220 10% 25%;
+    /* Darker border */
     --input: 220 10% 20%;
     --ring: 217.2 91.2% 59.8%;
 
-    --radius: 0.75rem; /* Increased to 12px */
+    --radius: 0.75rem;
+    /* Increased to 12px */
 
     --sidebar-background: 220 10% 10%;
     --sidebar-foreground: 0 0% 98%;
@@ -304,23 +327,30 @@ body {
 
   /* Optional: Light mode class if needed for specific elements */
   .light {
-    --background: 0 0% 100%; /* White background */
-    --foreground: 222.2 84% 4.9%; /* Dark text */
+    --background: 0 0% 100%;
+    /* White background */
+    --foreground: 222.2 84% 4.9%;
+    /* Dark text */
 
-    --card: 0 0% 100%; /* White card background */
+    --card: 0 0% 100%;
+    /* White card background */
     --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%; /* Dark blue for primary actions */
-    --primary-foreground: 210 40% 98%; /* White text on primary */
+    --primary: 222.2 47.4% 11.2%;
+    /* Dark blue for primary actions */
+    --primary-foreground: 210 40% 98%;
+    /* White text on primary */
 
-    --secondary: 210 40% 96.1%; /* Light grey secondary */
+    --secondary: 210 40% 96.1%;
+    /* Light grey secondary */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Muted grey text */
+    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted grey text */
 
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
@@ -328,7 +358,8 @@ body {
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%; /* Light grey border */
+    --border: 214.3 31.8% 91.4%;
+    /* Light grey border */
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
@@ -350,7 +381,8 @@ body {
 
   body {
     @apply bg-background text-foreground;
-    line-height: 1.45; /* Increased line height globally */
+    line-height: 1.45;
+    /* Increased line height globally */
     /* Safe-area padding via padding, not margin */
     padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
   }
@@ -370,70 +402,81 @@ body {
 
 /* Custom utility to hide scrollbar */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
 /* Base gradient for all Creator Dashboard cards */
 .creator-card-base {
-  background: linear-gradient(180deg, #131F3B 0%, #0E1629 100%); /* Card gradient */
-  border: 1px solid rgba(255,255,255,0.08); /* Subtle card border */
+  background: linear-gradient(180deg, #131F3B 0%, #0E1629 100%);
+  /* Card gradient */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Subtle card border */
 }
 
 /* Custom gradient for Quick Action buttons */
 .quick-action-button-gradient {
-  background: linear-gradient(145deg, rgba(23,26,51,0.8), rgba(16,20,42,0.8));
-  border: 1px solid rgba(255,255,255,0.05);
+  background: linear-gradient(145deg, rgba(23, 26, 51, 0.8), rgba(16, 20, 42, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s ease-in-out;
 }
 
 .quick-action-button-gradient:hover {
   transform: scale(1.02);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Custom gradient for destructive Quick Action button */
 .quick-action-button-destructive-gradient {
-  background: linear-gradient(145deg, rgba(255,0,0,0.2), rgba(139,0,0,0.2));
-  border: 1px solid rgba(255,0,0,0.3);
-  color: hsl(var(--destructive-foreground)); /* Ensure text color is readable */
+  background: linear-gradient(145deg, rgba(255, 0, 0, 0.2), rgba(139, 0, 0, 0.2));
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: hsl(var(--destructive-foreground));
+  /* Ensure text color is readable */
   transition: all 0.2s ease-in-out;
 }
 
 .quick-action-button-destructive-gradient:hover {
   transform: scale(1.02);
-  box-shadow: 0 4px 10px rgba(255,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(255, 0, 0, 0.2);
 }
 
 /* Custom gradient for Drafting badge */
 .badge-drafting-gradient {
-  background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2)); /* Blueish subtle gradient */
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+  /* Blueish subtle gradient */
   border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #93C5FD; /* Light blue text */
+  color: #93C5FD;
+  /* Light blue text */
 }
 
 /* Custom gradient for Payment Pending badge */
 .badge-payment-pending-gradient {
-  background: linear-gradient(145deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2)); /* Yellowish subtle gradient */
+  background: linear-gradient(145deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+  /* Yellowish subtle gradient */
   border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #FCD34D; /* Light yellow text */
+  color: #FCD34D;
+  /* Light yellow text */
 }
 
 /* Custom gradient for brand pills */
 .brand-pill-gradient {
-  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
 }
 
 /* Hero primary CTA glow + tactile feedback */
@@ -484,11 +527,14 @@ body {
 
 /* Slow pulse animation for critical icons */
 @keyframes pulse-slow {
-  0%, 100% { 
-    opacity: 0.8; 
+
+  0%,
+  100% {
+    opacity: 0.8;
   }
-  50% { 
-    opacity: 1; 
+
+  50% {
+    opacity: 1;
   }
 }
 
@@ -503,45 +549,46 @@ body {
 /* iOS 17 Color System */
 :root {
   /* Primary Colors */
-  --ios-primary: #007AFF;
-  --ios-purple: #3B82F6; /* map to blue instead of purple */
+  --ios-primary: #3B82F6;
+  --ios-purple: #3B82F6;
+  /* mapped to blue */
   --ios-blue: #3B82F6;
-  --ios-indigo: #6366F1;
-  
+  --ios-indigo: #2563EB;
+
   /* Background Colors */
   --ios-background: #000000;
   --ios-surface: rgba(255, 255, 255, 0.05);
   --ios-surface-elevated: rgba(255, 255, 255, 0.08);
   --ios-surface-high: rgba(255, 255, 255, 0.12);
-  
+
   /* Text Colors */
   --ios-text-primary: rgba(255, 255, 255, 0.95);
   --ios-text-secondary: rgba(255, 255, 255, 0.7);
   --ios-text-tertiary: rgba(255, 255, 255, 0.5);
-  
+
   /* Border Colors */
   --ios-border: rgba(255, 255, 255, 0.1);
   --ios-border-strong: rgba(255, 255, 255, 0.2);
-  
+
   /* Shadow System (iOS Soft Drop Shadows) */
   --ios-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
   --ios-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
   --ios-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
   --ios-shadow-xl: 0 12px 48px rgba(0, 0, 0, 0.4);
   --ios-shadow-2xl: 0 16px 64px rgba(0, 0, 0, 0.5);
-  
+
   /* Blur System (iOS Frosted Glass) */
   --ios-blur-sm: blur(20px) saturate(150%);
   --ios-blur-md: blur(40px) saturate(180%);
   --ios-blur-lg: blur(60px) saturate(200%);
-  
+
   /* Border Radius (iOS 17 Style) */
   --ios-radius-sm: 12px;
   --ios-radius-md: 20px;
   --ios-radius-lg: 24px;
   --ios-radius-xl: 28px;
   --ios-radius-full: 9999px;
-  
+
   /* Spacing Scale (8px Grid) */
   --ios-space-1: 4px;
   --ios-space-2: 8px;
@@ -552,7 +599,7 @@ body {
   --ios-space-8: 32px;
   --ios-space-10: 40px;
   --ios-space-12: 48px;
-  
+
   /* Typography Scale (iOS 17) */
   --ios-text-xs: 11px;
   --ios-text-sm: 13px;
@@ -647,7 +694,8 @@ body {
   font-size: var(--ios-text-base);
   font-weight: 600;
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 44px; /* iOS minimum touch target */
+  min-height: 44px;
+  /* iOS minimum touch target */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -706,56 +754,64 @@ body {
 
 /* Typography Scale */
 .text-display {
-  font-size: 2.5rem; /* 40px */
+  font-size: 2.5rem;
+  /* 40px */
   line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .text-h1 {
-  font-size: 1.5rem; /* 24px */
+  font-size: 1.5rem;
+  /* 24px */
   line-height: 1.33;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 
 .text-h2 {
-  font-size: 1.25rem; /* 20px */
+  font-size: 1.25rem;
+  /* 20px */
   line-height: 1.4;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .text-h3 {
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.125rem;
+  /* 18px */
   line-height: 1.44;
   font-weight: 600;
   letter-spacing: 0;
 }
 
 .text-h4 {
-  font-size: 1rem; /* 16px */
+  font-size: 1rem;
+  /* 16px */
   line-height: 1.5;
   font-weight: 600;
   letter-spacing: 0;
 }
 
 .text-body {
-  font-size: 0.875rem; /* 14px */
+  font-size: 0.875rem;
+  /* 14px */
   line-height: 1.43;
   font-weight: 400;
   letter-spacing: 0;
 }
 
 .text-small {
-  font-size: 0.75rem; /* 12px */
+  font-size: 0.75rem;
+  /* 12px */
   line-height: 1.33;
   font-weight: 400;
   letter-spacing: 0;
 }
 
 .text-micro {
-  font-size: 0.625rem; /* 10px */
+  font-size: 0.625rem;
+  /* 10px */
   line-height: 1.4;
   font-weight: 400;
   letter-spacing: 0.05em;
@@ -808,6 +864,7 @@ body {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -818,6 +875,7 @@ body {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -828,12 +886,10 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 100%);
   background-size: 1000px 100%;
   animation: skeleton-shimmer 2s infinite;
 }
@@ -931,11 +987,25 @@ body {
 }
 
 /* Stagger Animation Delays */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+
+.stagger-5 {
+  animation-delay: 0.25s;
+}
 
 /* ============================================ */
 /* LIQUID GLASS DESIGN SYSTEM */
@@ -947,7 +1017,7 @@ body {
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -957,7 +1027,7 @@ body {
   backdrop-filter: blur(50px) saturate(200%);
   -webkit-backdrop-filter: blur(50px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -967,7 +1037,7 @@ body {
   backdrop-filter: blur(30px) saturate(150%);
   -webkit-backdrop-filter: blur(30px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
+  box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
@@ -981,9 +1051,12 @@ body {
 
 /* Animated gradient background */
 @keyframes gradient-shift {
-  0%, 100% {
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -1061,6 +1134,7 @@ body {
 /* PRINT STYLES */
 /* ============================================ */
 @media print {
+
   /* Hide non-essential UI elements */
   .no-print,
   nav,
@@ -1125,11 +1199,9 @@ body {
 
 /* Safari gradient fix for better rendering */
 .nb-safari-gradient-fix {
-  background: linear-gradient(
-    180deg,
-    rgba(79, 70, 229, 0.98) 0%,
-    rgba(124, 58, 237, 0.98) 50%,
-    rgba(168, 85, 247, 0.98) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(37, 99, 235, 0.98) 0%,
+      rgba(30, 58, 138, 0.98) 50%,
+      rgba(11, 15, 20, 0.98) 100%);
   filter: saturate(105%) contrast(105%);
 }

@@ -1207,7 +1207,7 @@ const CollabLinkLanding = () => {
         <div className="text-center max-w-md mx-auto px-4">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-8">
             <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
-            <p className="text-purple-200 mb-6">{error}</p>
+            <p className="text-slate-400 mb-6">{error}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={() => navigate('/')}
@@ -1407,7 +1407,7 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-      <div className="min-h-screen bg-[#0A0B0D] text-white selection:bg-purple-500/30">
+      <div className="min-h-screen bg-[#0B0F14] selection:bg-blue-500/30">
         <div className="container mx-auto px-4 pt-4 pb-0 md:py-6 md:pb-28 max-w-lg md:max-w-[960px] relative">
           {/* Header - Deal Desk Intake Portal */}
           <div className="mb-4 pt-2 md:mb-8 md:pt-4">
@@ -1672,7 +1672,7 @@ const CollabLinkLanding = () => {
                       <p className="text-xs text-slate-400 mb-1">Content niches</p>
                       <div className="flex flex-wrap gap-2">
                         {creator.content_niches.map((niche, i) => (
-                          <Badge key={i} variant="secondary" className="bg-white/10 text-purple-200 border-white/20">
+                          <Badge key={i} variant="secondary" className="bg-white/10 text-slate-400 border-white/20">
                             {niche}
                           </Badge>
                         ))}
@@ -1685,7 +1685,7 @@ const CollabLinkLanding = () => {
                         href={creator.media_kit_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-purple-200 hover:text-white inline-flex items-center gap-1"
+                        className="text-sm text-slate-400 hover:text-white inline-flex items-center gap-1"
                       >
                         <ExternalLink className="h-4 w-4 shrink-0" />
                         Media kit
@@ -2077,10 +2077,10 @@ const CollabLinkLanding = () => {
                         accept="image/jpeg,image/png,image/webp,image/gif"
                         onChange={handleBarterImageChange}
                         disabled={barterImageUploading}
-                        className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500/30 file:text-purple-100 file:text-sm file:font-medium"
+                        className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-500/30 file:text-slate-500 file:text-sm file:font-medium"
                       />
                       {barterProductImageUrl && (
-                        <div className="mt-2 flex items-start gap-3 rounded-lg border border-purple-500/20 bg-white/5 p-2">
+                        <div className="mt-2 flex items-start gap-3 rounded-lg border border-blue-500/20 bg-white/5 p-2">
                           <img
                             src={barterProductImageUrl}
                             alt="Product"
@@ -2287,7 +2287,7 @@ const CollabLinkLanding = () => {
                         id="usage-rights"
                         checked={usageRights}
                         onCheckedChange={(checked) => setUsageRights(checked === true)}
-                        className="border-white/30 data-[state=checked]:bg-purple-600"
+                        className="border-white/30 data-[state=checked]:bg-blue-600"
                       />
                       <label htmlFor="usage-rights" className="text-sm text-slate-100/85 cursor-pointer">
                         Usage rights needed?
@@ -2649,7 +2649,7 @@ const CollabLinkLanding = () => {
 
           {/* Save and continue later modal */}
           <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-            <DialogContent className="bg-purple-900/95 border-white/20 text-white">
+            <DialogContent className="bg-slate-900/95 border-white/20 text-white">
               <DialogHeader>
                 <DialogTitle>Save and continue later</DialogTitle>
               </DialogHeader>
@@ -2732,7 +2732,7 @@ const CollabLinkLanding = () => {
           {/* Sticky Bottom CTA (desktop full) */}
           <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
             <div className="relative max-w-4xl mx-auto">
-              <div className="absolute inset-0 bg-purple-600/30 blur-[40px] rounded-full animate-pulse -z-10" />
+              <div className="absolute inset-0 bg-blue-600/30 blur-[40px] rounded-full animate-pulse -z-10" />
               {showSubmittingTrust && (
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-violet-300/30 animate-ping" />
               )}

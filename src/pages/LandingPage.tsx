@@ -83,7 +83,7 @@ const LandingPage = () => {
   if (loading || (session && profile)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -269,8 +269,8 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#090B14] text-white overflow-x-hidden">
-      <div className="pointer-events-none fixed inset-0 opacity-60 [background:radial-gradient(ellipse_at_top,rgba(88,28,135,0.32),transparent_50%),radial-gradient(ellipse_at_bottom,rgba(14,116,144,0.22),transparent_55%)]" />
+    <div className="min-h-screen bg-[#0B0F14] text-white overflow-x-hidden font-inter">
+      <div className="pointer-events-none fixed inset-0 opacity-40 [background:radial-gradient(ellipse_at_top,rgba(37,99,235,0.15),transparent_50%),radial-gradient(ellipse_at_bottom,rgba(30,58,138,0.1),transparent_55%)]" />
       <SEOHead
         title={seoTitle}
         description={seoDescription}
@@ -283,34 +283,33 @@ const LandingPage = () => {
       <BreadcrumbSchema items={[{ name: 'Creator Armour', url: canonicalUrl }]} />
       {/* Navigation */}
       <nav
-        className="sticky top-0 z-50 bg-[#090B14]/80 backdrop-blur-xl border-b border-white/10"
+        className="sticky top-0 z-50 bg-[#0B0F14]/80 backdrop-blur-xl border-b border-white/5"
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)'
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-20">
             <div className="flex items-center">
               <Link
                 to="/"
-                className="text-2xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(0,0,0,0.45)]"
+                className="text-xl font-black tracking-tighter text-white uppercase"
               >
-                CreatorArmour
+                Creator<span className="text-blue-600">Armour</span>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#problem" className="text-purple-200 hover:text-white transition-colors">Why DMs Suck</a>
-              <a href="#solution" className="text-purple-200 hover:text-white transition-colors">The Solution</a>
-              <a href="#protection" className="text-purple-200 hover:text-white transition-colors">Protection</a>
-              <a href="#pricing" className="text-purple-200 hover:text-white transition-colors">Pricing</a>
-              <Link to="/login" className="text-purple-200 hover:text-white transition-colors">Login</Link>
+            <div className="hidden md:flex items-center space-x-10">
+              <a href="#problem" className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Why DMs Suck</a>
+              <a href="#solution" className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Workflow</a>
+              <a href="#protection" className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Protection</a>
+              <Link to="/login" className="text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">Login</Link>
               <Link
                 to="/signup"
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-2 rounded-full font-semibold transition-all transform hover:scale-105"
+                className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
               >
-                Get Started Free
+                Join Armour
               </Link>
             </div>
 
@@ -334,11 +333,11 @@ const LandingPage = () => {
             className="md:hidden bg-purple-900/95 backdrop-blur-lg border-t border-white/10"
           >
             <div className="px-4 py-4 space-y-3">
-              <a href="#problem" onClick={() => setIsMenuOpen(false)} className="block py-2 text-purple-200 hover:text-white transition-colors">Why DMs Suck</a>
-              <a href="#solution" onClick={() => setIsMenuOpen(false)} className="block py-2 text-purple-200 hover:text-white transition-colors">The Solution</a>
-              <a href="#protection" onClick={() => setIsMenuOpen(false)} className="block py-2 text-purple-200 hover:text-white transition-colors">Protection</a>
-              <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block py-2 text-purple-200 hover:text-white transition-colors">Pricing</a>
-              <Link to="/login" className="block py-2 text-purple-200 hover:text-white transition-colors">Login</Link>
+              <a href="#problem" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-400 hover:text-white transition-colors">Why DMs Suck</a>
+              <a href="#solution" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-400 hover:text-white transition-colors">The Solution</a>
+              <a href="#protection" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-400 hover:text-white transition-colors">Protection</a>
+              <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block py-2 text-slate-400 hover:text-white transition-colors">Pricing</a>
+              <Link to="/login" className="block py-2 text-slate-400 hover:text-white transition-colors">Login</Link>
               <Link
                 to="/signup"
                 className="block bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-2 rounded-full font-semibold text-center transition-all"
@@ -375,35 +374,28 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="flex items-center justify-center gap-4 mb-6 text-sm"
+                className="flex items-center justify-center gap-4 mb-8 text-[11px] font-black uppercase tracking-[0.2em]"
               >
-                <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-purple-200 font-medium">4.9/5 from 500+ creators</span>
+                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/5 shadow-sm">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span className="text-slate-400 font-black">4.9/5 RATING</span>
                 </div>
-                <div className="hidden md:block h-4 w-px bg-purple-400/30"></div>
-                <span className="hidden md:inline text-purple-200 font-medium">₹50Cr+ protected</span>
+                <div className="hidden md:block h-4 w-px bg-slate-800"></div>
+                <span className="hidden md:inline text-blue-500 font-black">₹50Cr+ Value Protected</span>
               </motion.div>
 
               {/* Main Headline */}
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight mb-6 leading-tight">
-                <span className="block mb-2">Stop Negotiating in DMs.</span>
-                <span className="block mb-2">Run Every Brand Deal Through</span>
-                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 text-transparent bg-clip-text">
-                  One Structured Link
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-8 leading-[0.95]">
+                <span className="block mb-2 text-white">Scale Your</span>
+                <span className="block mb-2 text-white">Creator Business</span>
+                <span className="block text-blue-600">
+                  Through Protocol.
                 </span>
               </h1>
 
               {/* Subheadline */}
-              <p className="text-lg md:text-2xl text-white/85 font-medium mb-4 max-w-3xl mx-auto">
-                Creator Armour turns inbound collabs into a clean workflow: offer details, contract setup, and payment visibility in one place.
-              </p>
-              {/* Emotional sub-line */}
-              <p className="text-base md:text-lg text-slate-300 mb-2 max-w-3xl mx-auto font-medium">
-                Less chaos, fewer payment surprises, better deal quality.
-              </p>
-              <p className="text-sm text-slate-400 mb-8 max-w-3xl mx-auto">
-                Built for creators who want structure without slowing down.
+              <p className="text-lg md:text-xl text-slate-400 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
+                Armour turns chaotic DMs into a structured operating system for your brand deals. Protect your work, track your money, and scale with confidence.
               </p>
             </motion.div>
 
@@ -412,15 +404,14 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4"
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
             >
               <Link
                 to="/signup"
-                className="group relative bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 active:scale-95 shadow-2xl shadow-violet-900/50 flex items-center gap-2 border border-white/20 overflow-hidden min-h-[56px]"
+                className="group relative bg-blue-600 hover:bg-blue-700 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 active:scale-95 shadow-2xl shadow-blue-600/20 flex items-center gap-3 border border-blue-500/50 min-h-[64px]"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
-                <span className="relative z-10">Get My Collab Link</span>
-                <ArrowRight className="w-5 h-5 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                <span className="relative z-10">Get Started Now</span>
+                <ArrowRight className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
 
               <button
@@ -430,43 +421,30 @@ const LandingPage = () => {
                     element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }
                 }}
-                className="hidden sm:flex items-center gap-2 px-6 py-3 rounded-full text-base md:text-lg text-slate-200 hover:text-white transition-all font-medium bg-white/5 hover:bg-white/10 border border-white/20 min-h-[48px]"
+                className="hidden sm:flex items-center gap-3 px-8 py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-all bg-white/5 hover:bg-white/10 border border-white/5 min-h-[64px]"
               >
-                View Demo
+                View Workflow
               </button>
             </motion.div>
-            <button
-              onClick={() => {
-                const element = document.getElementById('solution');
-                if (element) {
-                  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-              }}
-              className="sm:hidden text-sm text-purple-200/80 hover:text-white/90 underline underline-offset-4"
-            >
-              View demo
-            </button>
 
             {/* Micro-trust line */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="hidden md:flex flex-wrap items-center justify-center gap-3 md:gap-6 mb-12 text-sm text-purple-200/60"
+              className="hidden md:flex flex-wrap items-center justify-center gap-8 mb-12 text-[10px] uppercase font-black tracking-widest text-slate-500"
             >
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400" />
-                <span>No card required</span>
+                <CheckCircle className="w-4 h-4 text-blue-500" />
+                <span>Zero Cost Setup</span>
               </div>
-              <div className="hidden md:block h-1 w-1 rounded-full bg-purple-500/30"></div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-400" />
-                <span>Takes 60 seconds</span>
+                <Clock className="w-4 h-4 text-blue-500" />
+                <span>60 Sec Deployment</span>
               </div>
-              <div className="hidden md:block h-1 w-1 rounded-full bg-purple-500/30"></div>
               <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-pink-400" />
-                <span>Free forever plan</span>
+                <Shield className="w-4 h-4 text-blue-500" />
+                <span>Pro Guard Active</span>
               </div>
             </motion.div>
 
@@ -498,11 +476,11 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={`group bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all ${index > 1 ? 'hidden md:block' : ''}`}
               >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${pain.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <pain.icon className="w-7 h-7 text-white" />
+                <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg border border-white/5`}>
+                  <pain.icon className="w-6 h-6 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{pain.title}</h3>
-                <p className="text-purple-200">{pain.description}</p>
+                <h3 className="text-xl font-bold mb-3">{pain.title}</h3>
+                <p className="text-slate-400 text-sm font-medium leading-relaxed">{pain.description}</p>
               </motion.div>
             ))}
           </div>
@@ -532,23 +510,23 @@ const LandingPage = () => {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">No written contract</span>
+                    <span className="text-slate-400">No written contract</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Payment promises, not guarantees</span>
+                    <span className="text-slate-400">Payment promises, not guarantees</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Endless back-and-forth</span>
+                    <span className="text-slate-400">Endless back-and-forth</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">No payment tracking</span>
+                    <span className="text-slate-400">No payment tracking</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Easy to ghost after delivery</span>
+                    <span className="text-slate-400">Easy to ghost after delivery</span>
                   </li>
                 </ul>
               </div>
@@ -562,23 +540,23 @@ const LandingPage = () => {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Auto-generated contracts</span>
+                    <span className="text-slate-400">Auto-generated contracts</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Structured deal submissions</span>
+                    <span className="text-slate-400">Structured deal submissions</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">One-click accept/counter/decline</span>
+                    <span className="text-slate-400">One-click accept/counter/decline</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Payment tracking & reminders</span>
+                    <span className="text-slate-400">Payment tracking & reminders</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">Legal protection built-in</span>
+                    <span className="text-slate-400">Legal protection built-in</span>
                   </li>
                 </ul>
               </div>
@@ -609,17 +587,17 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={`relative ${index > 1 ? 'hidden md:block' : ''}`}
               >
-                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 h-full">
-                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                <div className="bg-slate-900 shadow-xl rounded-[2.5rem] p-10 border border-slate-800 h-full">
+                  <div className="absolute -top-4 -left-4 w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-lg shadow-xl shadow-blue-600/20">
                     {step.step}
                   </div>
-                  <step.icon className="w-12 h-12 text-purple-400 mb-4 mt-4" />
-                  <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
-                  <p className="text-purple-200">{step.description}</p>
+                  <step.icon className="w-10 h-10 text-blue-500 mb-6 mt-4" />
+                  <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
+                  <p className="text-slate-400 font-medium leading-relaxed">{step.description}</p>
                 </div>
                 {index < solutionSteps.length - 1 && (
                   <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-10">
-                    <ChevronRight className="w-8 h-8 text-purple-400" />
+                    <ChevronRight className="w-8 h-8 text-slate-400" />
                   </div>
                 )}
               </motion.div>
@@ -661,8 +639,8 @@ const LandingPage = () => {
                   <p className="text-sm text-purple-200 mt-1">{step.description}</p>
                 )}
                 {index < brandFlowSteps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-purple-500 to-transparent transform translate-x-2">
-                    <ChevronRight className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-purple-400" />
+                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-blue-500 to-transparent transform translate-x-2">
+                    <ChevronRight className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-blue-400" />
                   </div>
                 )}
               </motion.div>
@@ -693,11 +671,11 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className={`group bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all ${index > 1 ? 'hidden md:block' : ''}`}
               >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <feature.icon className="w-7 h-7 text-white" />
+                <div className={`w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg border border-white/5`}>
+                  <feature.icon className="w-6 h-6 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-purple-200">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-slate-400 text-sm font-medium leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -760,10 +738,10 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <div className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
+                <div className="text-5xl md:text-6xl font-black mb-3 text-white tracking-tighter">
                   {stat.value}
                 </div>
-                <div className="text-purple-200 text-sm md:text-base">{stat.label}</div>
+                <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{stat.label}</div>
               </motion.div>
             ))}
           </div>
@@ -784,7 +762,7 @@ const LandingPage = () => {
                     <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-purple-100 mb-6 italic">"{testimonial.content}"</p>
+                <p className="text-slate-300 mb-6 italic">"{testimonial.content}"</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center font-bold">
                     {testimonial.avatar}
@@ -947,15 +925,17 @@ const LandingPage = () => {
             </div>
             <div>
               <h4 className="font-semibold mb-3">Company</h4>
-              <ul className="space-y-2 text-sm text-purple-300">
+              <ul className="space-y-2 text-sm text-blue-300">
                 <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
                 <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link to="/login" className="text-slate-500 hover:text-white transition-colors">Creator Login</Link></li>
+                <li><Link to="/signup" className="text-slate-500 hover:text-white transition-colors">Join Armour</Link></li>
                 <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-3">Legal</h4>
-              <ul className="space-y-2 text-sm text-purple-300">
+              <ul className="space-y-2 text-sm text-blue-300">
                 <li><Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy</Link></li>
                 <li><Link to="/terms-of-service" className="hover:text-white transition-colors">Terms</Link></li>
                 <li><Link to="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>

@@ -52,7 +52,7 @@ const MarketingHome = () => {
     // Floating CTA logic
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      
+
       // Bottom Floating CTA (appears after scrolling past hero)
       if (scrollY > 600) {
         setShowFloatingCta(true);
@@ -116,11 +116,11 @@ const MarketingHome = () => {
           <Link to="/pricing-comparison" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Pricing</Link>
           <a href="#testimonials" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Clients</a>
           <a href="#contact" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Contact</a>
-          
+
           <div className="pt-6 space-y-4 border-t border-white/10">
             <Link to="/login" className="w-full inline-flex justify-center text-lg border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10">Client Login</Link>
-            <button 
-              onClick={() => openCalendly(CALENDLY_URL)} 
+            <button
+              onClick={() => openCalendly(CALENDLY_URL)}
               className="w-full cta-secondary py-2 rounded-lg text-lg font-semibold"
             >
               Book Free Call
@@ -136,7 +136,7 @@ const MarketingHome = () => {
       const yearlyPriceFloat = monthly * 12 * 0.8;
       let yearlyPrice = Math.ceil(yearlyPriceFloat);
       if (yearlyPrice % 100 !== 99) {
-          yearlyPrice = yearlyPrice + (100 - (yearlyPrice % 100)) - 1;
+        yearlyPrice = yearlyPrice + (100 - (yearlyPrice % 100)) - 1;
       }
       return `₹${yearlyPrice.toLocaleString('en-IN')}`;
     }
@@ -152,8 +152,8 @@ const MarketingHome = () => {
           --bg:#0B1325; /* Deep Navy Blue */
           --card:#131F3B; /* Slightly lighter Navy for cards */
           --muted: #9CA3AF;
-          --accent-blue:#3B82F6;
-          --accent-purple:#8B5CF6; /* New Purple Accent */
+          --accent-blue: #3B82F6;
+          --accent-purple: #3B82F6; /* mapped to blue */
           --accent-green:#22C55E; /* New Green Accent */
           --accent-yellow:#FACC15; /* New Yellow Accent */
           --accent-red:#EF4444; /* New Red Accent */
@@ -231,7 +231,7 @@ const MarketingHome = () => {
       <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-sm border-b border-white/5">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="font-bold text-lg bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(0,0,0,0.45)]">
+            <span className="font-bold text-lg text-white uppercase font-black tracking-tighter">
               CreatorArmour
             </span>
           </div>
@@ -246,14 +246,14 @@ const MarketingHome = () => {
 
           <div className="flex items-center gap-3">
             {/* Desktop CTAs */}
-            <button 
-              onClick={() => openCalendly(CALENDLY_URL)} 
+            <button
+              onClick={() => openCalendly(CALENDLY_URL)}
               className="cta-secondary py-2 px-4 rounded-lg text-sm font-semibold hidden md:inline-block"
             >
               Book Free Call
             </button>
             <a href="https://wa.me/919205376316?text=Hi%20CreatorArmour,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
               WhatsApp
             </a>
             <Link to="/login" className="text-sm border border-white/10 px-3 py-2 rounded-lg hidden md:inline-block">Client Login</Link>
@@ -263,7 +263,7 @@ const MarketingHome = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(true)}
-              className="md:hidden text-white hover:bg-white/10 active:bg-white/15 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
+              className="md:hidden text-white hover:bg-white/10 active:bg-white/15 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
               aria-label="Open menu"
             >
               <Menu className="h-6 w-6" />
@@ -279,9 +279,9 @@ const MarketingHome = () => {
         {/* SECTION 1 — Creator-Focused Hero */}
         <section className="grid md:grid-cols-2 gap-8 items-center py-20 hero-bg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
           <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 10% 10%, #3B82F6, transparent 50%), radial-gradient(circle at 90% 90%, #2563EB, transparent 50%)' }}></div>
-          
+
           <div className="relative z-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
+            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
               Protect Your Brand Deals. Get Paid On Time.
             </h1>
             <p className="mt-4 text-gray-300 max-w-xl text-lg">
@@ -297,7 +297,7 @@ const MarketingHome = () => {
               */}
               <Link
                 to="/free-legal-check"
-                className="cta-primary nb-hero-cta inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg text-lg flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
+                className="cta-primary nb-hero-cta inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg text-lg flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
               >
                 Protect My Deals
                 <ArrowRight className="h-5 w-5 transition-transform duration-150 ease-out group-hover:translate-x-1 group-active:translate-x-0.5" />
@@ -323,7 +323,7 @@ const MarketingHome = () => {
             />
           </div>
         </section>
-        
+
         {/* SECTION 2 — Creator Focus */}
         <section className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
@@ -331,9 +331,9 @@ const MarketingHome = () => {
             <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Monitor deals, recover payments, and take legal action when brands don't pay.</p>
           </div>
           <div className="max-w-2xl mx-auto">
-            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border border-purple-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
+            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border border-blue-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
               <div>
-                <h3 className="text-3xl font-bold text-purple-400 mb-4">For Creators & Influencers</h3>
+                <h3 className="text-3xl font-bold text-blue-500 mb-4">For Creators & Influencers</h3>
                 <ul className="space-y-2 text-gray-300 text-lg">
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Brand deal contract review</li>
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Payment recovery</li>
@@ -382,7 +382,7 @@ const MarketingHome = () => {
                   </div>
                 </div>
                 <div className="card p-4 flex items-start gap-3">
-                  <MessageSquare className="h-5 w-5 text-purple-400 mt-1" />
+                  <MessageSquare className="h-5 w-5 text-blue-500 mt-1" />
                   <div>
                     <p className="font-semibold text-foreground">Legal Assistance</p>
                     <p className="text-xs text-muted">Talk to verified legal advisors when disputes arise.</p>
@@ -463,14 +463,14 @@ const MarketingHome = () => {
           {/* Monthly / Yearly Toggle */}
           <div className="flex justify-center mb-8" data-aos="fade-up">
             <div className="relative flex p-1 bg-card rounded-full border border-white/10">
-              <button 
-                onClick={() => setIsYearly(false)} 
+              <button
+                onClick={() => setIsYearly(false)}
                 className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", !isYearly ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}
               >
                 Monthly
               </button>
-              <button 
-                onClick={() => setIsYearly(true)} 
+              <button
+                onClick={() => setIsYearly(true)}
                 className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", isYearly ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}
               >
                 Yearly (Save 20%)
@@ -481,8 +481,8 @@ const MarketingHome = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             {Object.values(CREATOR_PLAN_DETAILS).map((plan, index) => (
               <div key={plan.name} className={cn("card p-6 rounded-xl flex flex-col", plan.isPopular && 'border-2 border-purple-500 shadow-2xl')} data-aos="fade-up" data-aos-delay={index * 80}>
-                {plan.isPopular && <div className="absolute -top-4 right-6 bg-purple-600 px-3 py-1 rounded-full text-xs font-bold">⭐ MOST POPULAR</div>}
-                <h3 className="text-xl font-bold text-purple-300">{plan.name}</h3>
+                {plan.isPopular && <div className="absolute -top-4 right-6 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold">⭐ MOST POPULAR</div>}
+                <h3 className="text-xl font-bold text-blue-300">{plan.name}</h3>
                 <div className="mt-4">
                   <div className="text-4xl font-extrabold">{getPrice(parseInt(plan.price.replace('₹', '').replace('/mo', '').replace(',', '')))}<span className="text-gray-400 text-base">{getPriceSuffix()}</span></div>
                   <p className="text-gray-400 mt-2 text-base">{plan.tagline}</p>
@@ -565,12 +565,12 @@ const MarketingHome = () => {
               </div>
             </div>
             <div className="relative flex justify-center">
-              <img 
+              <img
                 src="/iPhone-12-PRO-localhost.png" // Placeholder for WhatsApp vault screenshot
-                alt="WhatsApp Legal Vault Preview" 
-                className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-white/10" 
-                loading="lazy" 
-                data-aos="zoom-in" 
+                alt="WhatsApp Legal Vault Preview"
+                className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-white/10"
+                loading="lazy"
+                data-aos="zoom-in"
               />
             </div>
           </div>
@@ -591,7 +591,7 @@ const MarketingHome = () => {
       {/* Footer (Enhanced) */}
       <footer className="border-t border-white/5 mt-20 bg-card">
         <div className="container mx-auto px-6 py-10 text-gray-400 text-sm">
-          
+
           {/* Legal Disclaimer Section */}
           <div className="mb-8 p-4 rounded-lg bg-red-900/10 border border-red-800/30 text-red-300">
             <p className="font-bold mb-2 flex items-center">
@@ -604,7 +604,7 @@ const MarketingHome = () => {
 
           {/* Main Footer Grid */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 border-t border-white/5 pt-8">
-            
+
             {/* Column 1 & 2 (Span 2 on desktop): Company Info & Newsletter */}
             <div className="md:col-span-2 space-y-6">
               <div className="font-bold text-white text-xl">CreatorArmour</div>
@@ -614,29 +614,29 @@ const MarketingHome = () => {
               <NewsletterSignup />
               {/* Social Media Links */}
               <div className="flex items-center gap-4 pt-2">
-                <a 
-                  href="https://x.com/CreatorArmour" 
-                  target="_blank" 
+                <a
+                  href="https://x.com/CreatorArmour"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"
                   aria-label="Follow us on X (Twitter)"
                 >
                   <Twitter className="w-5 h-5" />
                 </a>
-                <a 
-                  href="https://www.linkedin.com/company/creatorarmour" 
-                  target="_blank" 
+                <a
+                  href="https://www.linkedin.com/company/creatorarmour"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"
                   aria-label="Follow us on LinkedIn"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                   </svg>
                 </a>
-                <a 
-                  href="https://www.instagram.com/creatorarmour" 
-                  target="_blank" 
+                <a
+                  href="https://www.instagram.com/creatorarmour"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"
                   aria-label="Follow us on Instagram"
@@ -687,7 +687,7 @@ const MarketingHome = () => {
             <p className="text-gray-500 mb-4 font-semibold">Security & Compliance:</p>
             <div className="flex justify-center items-center gap-8 flex-wrap">
               <span className="flex items-center gap-2 text-gray-300">
-                <Lock className="h-5 w-5 text-purple-400" /> ISO 27001 Certified
+                <Lock className="h-5 w-5 text-blue-500" /> ISO 27001 Certified
               </span>
               <span className="flex items-center gap-2 text-gray-300">
                 <ShieldCheck className="h-5 w-5 text-green-400" /> SSL Secured

@@ -247,13 +247,13 @@ const CreatorBottomNav = () => {
                   <>
                     <div className={cn(
                       "absolute top-0 left-1/2 -translate-x-1/2 w-14 h-1",
-                      "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
+                      "bg-gradient-to-r from-blue-600 to-indigo-600",
                       radius.full,
                       shadows.md
                     )} />
                     <div className={cn(
                       "absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2",
-                      "bg-[#9A3DFF] rounded-full",
+                      "bg-blue-600 rounded-full",
                       shadows.sm, "animate-pulse"
                     )} />
                   </>

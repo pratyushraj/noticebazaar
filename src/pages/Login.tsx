@@ -184,7 +184,7 @@ const Login = () => {
 
   return (
     <div
-      className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4"
+      className="nb-screen-height flex flex-col items-center justify-center bg-[#0B0F14] p-4 font-inter"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
@@ -194,82 +194,96 @@ const Login = () => {
         WebkitOverflowScrolling: 'touch',
       }}
     >
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
+      </div>
+
       <div
-        className="w-full max-w-md p-8 rounded-3xl shadow-2xl border border-purple-400/20"
-        style={{ backdropFilter: 'blur(20px)', backgroundColor: 'rgba(139, 92, 246, 0.15)' }}
+        className="w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl border border-slate-800 bg-slate-900/50 relative z-10"
+        style={{ backdropFilter: 'blur(40px)' }}
       >
         {/* Branding */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-            <Scale className="h-6 w-6 text-white" />
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+            <Scale className="h-5 w-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">CreatorArmour</h1>
+          <h1 className="text-xl font-black tracking-tight text-white uppercase">CreatorArmour</h1>
         </div>
 
         {/* Title and Subtitle */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Sign In</h2>
-          <p className="text-white/80 text-sm">Access your account to manage your deals and earnings.</p>
+        <div className="mb-10">
+          <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Sign In</h2>
+          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Access your creator business OS to manage deals and payouts.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
-          <div className="mb-6 flex flex-col items-center justify-center py-8 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-white/70" aria-hidden />
-            <p className="text-white/70 text-sm">Loading...</p>
+          <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-blue-500" aria-hidden />
+            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Initializing OS...</p>
           </div>
         )}
 
-        {/* Already signed in: always show Go to Dashboard so user is never stuck */}
+        {/* Already signed in */}
         {session && (
           <div className="mb-6 space-y-4">
-            <p className="text-white/80 text-sm text-center">
-              {loading ? 'Checking your account…' : "You're signed in. Taking you to the dashboard…"}
+            <p className="text-slate-400 text-sm text-center font-medium">
+              {loading ? 'Authenticating…' : "Session established. Launching dashboard…"}
             </p>
             <Button
               onClick={() => window.location.replace('/creator-dashboard')}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
             >
               Go to Dashboard
             </Button>
           </div>
         )}
 
-        {/* Timed out: show form so user can sign in */}
+        {/* Timed out */}
         {loading && loadingTimedOut && !session && (
-          <p className="text-white/60 text-xs text-center mb-4">Taking longer than usual? Sign in below.</p>
+          <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest text-center mb-6">Network delay detected. Use credentials below.</p>
         )}
 
-        {/* Primary: Email/Password Login — show when not loading, or when loading timed out */}
+        {/* Primary: Email/Password Login */}
         {(!loading || loadingTimedOut) && !session && (
-          <div className="mb-6">
-            <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
-              <div>
-                <Label htmlFor="email" className="text-white text-sm mb-2 block">
-                  Email
+          <div className="mb-8">
+            <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                  Email Intelligence
                 </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
+                  className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl focus:border-blue-500/50 focus:ring-blue-500/20 px-5 transition-all"
                   required
                   autoComplete="email"
                 />
               </div>
-              <div>
-                <Label htmlFor="password" className="text-white text-sm mb-2 block">
-                  Password
-                </Label>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center px-1">
+                  <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
+                    Secure Access
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-[11px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 transition-colors"
+                  >
+                    Forgot?
+                  </button>
+                </div>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
+                  className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl focus:border-blue-500/50 focus:ring-blue-500/20 px-5 transition-all"
                   required
                   autoComplete="current-password"
                 />
@@ -277,38 +291,29 @@ const Login = () => {
               <Button
                 type="submit"
                 disabled={isLoading || !email.trim() || !password.trim()}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
                   transform: 'translateZ(0)',
-                  minHeight: '44px'
                 }}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                {isLoading ? 'Authenticating...' : 'Sign In To Armour'}
               </Button>
             </form>
-            <div className="text-sm mt-4">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-white hover:text-purple-200 transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
           </div>
         )}
 
         {/* Secondary: Other Sign-in Methods */}
         {(!loading || loadingTimedOut) && !session && (
-          <div className="mb-6">
-            <div className="relative mb-4">
+          <div className="mb-8">
+            <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/20" />
+                <span className="w-full border-t border-slate-800" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-white">OR SIGN IN WITH</span>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
+                <span className="bg-[#0B0F14] px-4 text-slate-600">Secure Vault Access</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -316,11 +321,7 @@ const Login = () => {
                 onClick={async () => {
                   try {
                     const redirectUrl = `${window.location.origin}/creator-dashboard`;
-                    // Store intended route in sessionStorage BEFORE OAuth call
-                    // This ensures we can redirect correctly even if Supabase uses Site URL
                     sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
-                    console.log('[Login] Starting Google OAuth with redirect:', redirectUrl);
-                    console.log('[Login] Stored intended route: creator-dashboard');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {
@@ -332,39 +333,24 @@ const Login = () => {
                       },
                     });
                     if (error) {
-                      console.error('[Login] Google OAuth error:', error);
-                      toast.error('Failed to sign in with Google: ' + error.message);
+                      toast.error('Google sign-in error: ' + error.message);
                     } else if (data?.url) {
-                      // Redirect to Google OAuth
-                      // Use replace instead of href for Safari compatibility
-                      console.log('[Login] Redirecting to Google OAuth:', data.url);
-                      try {
-                        // Try using location.replace first (better for Safari)
-                        window.location.replace(data.url);
-                      } catch (err) {
-                        // Fallback to href if replace fails
-                        console.warn('[Login] location.replace failed, using href:', err);
-                        window.location.href = data.url;
-                      }
-                    } else {
-                      console.error('[Login] No OAuth URL received from Supabase');
-                      toast.error('Failed to start Google sign-in. Please try again.');
+                      window.location.replace(data.url);
                     }
                   } catch (err: any) {
-                    console.error('[Login] Google OAuth exception:', err);
-                    toast.error('Failed to sign in with Google');
+                    toast.error('Failed to start Google sign-in');
                   }
                 }}
                 variant="outline"
-                className="w-full bg-purple-500/20 border-white/20 text-white hover:bg-purple-500/30 rounded-xl h-12"
+                className="w-full bg-white/5 border-slate-800 text-white hover:bg-white/10 rounded-2xl h-14 font-bold text-sm shadow-sm transition-all active:scale-[0.98]"
               >
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                Sign in with Google
+                Continue with Google
               </Button>
             </div>
           </div>
@@ -372,31 +358,28 @@ const Login = () => {
 
         {/* Sign Up Link */}
         {(!loading || loadingTimedOut) && !session && (
-          <div className="mt-6 text-center">
-            <p className="text-white text-sm mb-2">Don't have an account?</p>
-            <Link to="/signup" className="text-white hover:text-purple-200 transition-colors text-sm flex items-center justify-center gap-1">
-              <ArrowLeft className="h-4 w-4" /> Sign up instead
+          <div className="text-center">
+            <Link to="/signup" className="text-slate-400 hover:text-white transition-all text-[13px] font-medium group inline-flex items-center gap-2">
+              Don't have an account? <span className="text-blue-500 font-bold group-hover:underline">Start for free</span>
             </Link>
           </div>
         )}
 
         {/* Back to Homepage */}
-        <div className="mt-6">
-          <Button variant="link" asChild className="w-full text-white hover:text-purple-200">
-            <Link to="/">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Back to Homepage
-            </Link>
-          </Button>
+        <div className="mt-8 pt-6 border-t border-slate-800">
+          <Link to="/" className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-300 transition-all text-[12px] font-black uppercase tracking-widest">
+            <ArrowLeft className="h-4 w-4" /> Exit To Homepage
+          </Link>
         </div>
       </div>
 
       {/* Legal Text */}
-      <div className="mt-6 text-center px-4">
-        <p className="text-white/60 text-xs">
-          By signing up, you agree to our{' '}
-          <a href="/terms" className="text-purple-300 hover:text-purple-200 underline">Terms of Service</a>
-          {' '}and{' '}
-          <a href="/privacy" className="text-purple-300 hover:text-purple-200 underline">Privacy Policy</a>
+      <div className="mt-10 text-center px-4 max-w-sm">
+        <p className="text-slate-600 text-[11px] leading-relaxed font-medium">
+          Protected by CreatorArmour Shield. By signing in, you agree to our{' '}
+          <a href="/terms" className="text-slate-500 hover:text-blue-500 transition-colors">Terms</a>
+          {' '}&{' '}
+          <a href="/privacy" className="text-slate-500 hover:text-blue-500 transition-colors">Privacy</a>
         </p>
       </div>
     </div>

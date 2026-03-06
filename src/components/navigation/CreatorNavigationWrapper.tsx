@@ -122,13 +122,13 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/10 text-white">
+        <AlertDialogContent className="bg-gradient-to-br from-[#1E263A] via-[#182133] to-[#121722] backdrop-blur-xl border border-white/10 text-white shadow-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
               <LogOut className="w-5 h-5 text-red-400" />
               Confirm Logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-purple-200">
+            <AlertDialogDescription className="text-white/60">
               Are you sure you want to log out? You'll need to sign in again to access your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -137,7 +137,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
               }}
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20 focus:ring-2 focus:ring-purple-400/50"
+              className="bg-white/5 text-white border-white/10 hover:bg-white/10 focus:ring-2 focus:ring-blue-400/50"
             >
               Cancel
             </AlertDialogCancel>

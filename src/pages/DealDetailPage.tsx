@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { useDealSignatures } from '@/lib/hooks/useDealSignatures';
+import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useIssues } from '@/lib/hooks/useIssues';
@@ -1559,39 +1560,25 @@ Best regards`;
   // Deal data already computed above in useMemo hooks
 
   return (
-    <div className="nb-screen-height bg-[#0B0F14] text-white">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#0B0F14]/90 backdrop-blur-lg border-b border-white/10">
-        <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => navigate('/creator-contracts')}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-
-          <div className="text-lg font-semibold">Deal Details</div>
-
-          <button
-            onClick={() => {
-              triggerHaptic(HapticPatterns.light);
-              setShowDeleteConfirm(true);
-            }}
-            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors active:scale-95"
-            aria-label="Delete Deal"
-          >
-            <Trash2 className="w-6 h-6 text-red-400" />
-          </button>
-        </div>
-      </div>
-
+    <CreatorNavigationWrapper
+      title="Deal Details"
+      subtitle="Everything about this collaboration, organized and protected in one place."
+      showBackButton
+      rightActions={
+        <button
+          onClick={() => {
+            triggerHaptic(HapticPatterns.light);
+            setShowDeleteConfirm(true);
+          }}
+          className="p-2 hover:bg-red-500/20 rounded-lg transition-colors active:scale-95"
+          aria-label="Delete Deal"
+        >
+          <Trash2 className="w-6 h-6 text-red-400" />
+        </button>
+      }
+    >
       {/* Content */}
-      <div className="space-y-6 p-4 md:p-6 pb-24">
-        {/* Page Subtitle */}
-        <p className="text-sm text-white/70 text-center mb-4 px-2">
-          Everything about this collaboration, organized and protected in one place.
-        </p>
+      <div className="space-y-6 md:p-6 pb-24">
 
         {/* Contract Generated Banner */}
         {(deal as any)?.contract_status === 'DraftGenerated' && deal?.contract_file_url && (
@@ -3989,7 +3976,7 @@ ${link}`;
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </CreatorNavigationWrapper>
   );
 }
 

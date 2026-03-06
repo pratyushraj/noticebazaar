@@ -2,16 +2,16 @@
 
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Briefcase, 
-  Wallet, 
-  Shield, 
-  Link2, 
-  Calendar, 
-  Plus, 
-  Upload, 
-  Settings, 
-  LogOut, 
+import {
+  Briefcase,
+  Wallet,
+  Shield,
+  Link2,
+  Calendar,
+  Plus,
+  Upload,
+  Settings,
+  LogOut,
   Bell,
   HelpCircle,
   BarChart3,
@@ -91,7 +91,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
   const avatarSpring = useSpring(avatarY, { damping: 20, stiffness: 300 });
 
   return (
-    <motion.div 
+    <motion.div
       className={cn("p-3 md:p-4 pb-2 md:pb-4 relative")}
       onScroll={(e) => {
         const target = e.currentTarget;
@@ -104,7 +104,7 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         "bg-gradient-to-b from-white/25 via-white/15 to-transparent",
         "pointer-events-none"
       )} />
-      
+
       {/* Profile Section - tertiary card for brand consistency */}
       <motion.button
         onClick={handleProfileClick}
@@ -122,12 +122,12 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         <motion.div
           style={{ y: avatarSpring, scale: avatarScale }}
         >
-          <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white/10 shadow-[0_0_20px_rgba(160,107,255,0.45)]">
-            <AvatarImage 
-              src={userAvatar || DEFAULT_AVATAR_URL} 
-              alt={`${displayName}'s avatar`} 
+          <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white/10 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+            <AvatarImage
+              src={userAvatar || DEFAULT_AVATAR_URL}
+              alt={`${displayName}'s avatar`}
             />
-            <AvatarFallback className="bg-gradient-to-br from-[#A06BFF] to-[#7E36FF] text-white text-xs md:text-sm font-semibold">
+            <AvatarFallback className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] text-white text-xs md:text-sm font-semibold">
               {userInitials}
             </AvatarFallback>
           </Avatar>
@@ -194,22 +194,22 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
         "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
         isActive
           ? cn(
-              "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
-              "text-white",
-              "shadow-lg shadow-purple-500/20"
-            )
+            "bg-gradient-to-r from-blue-600 to-blue-700",
+            "text-white",
+            "shadow-lg shadow-blue-500/20"
+          )
           : cn(
-              "bg-white/5 border border-white/10",
-              "hover:bg-white/10",
-              "text-white/90"
-            )
+            "bg-white/5 border border-white/10",
+            "hover:bg-white/10",
+            "text-white/90"
+          )
       )}
     >
       {/* Spotlight gradient for active items */}
       {isActive && <div className={cn(spotlight.top, "opacity-30")} />}
       <Icon className={cn(iconSizes.sm, "md:w-5 md:h-5 flex-shrink-0 mr-2 md:mr-3 relative z-10 text-white/80 group-hover:text-white")} />
       <span className={cn("text-sm md:text-base text-white/90 flex-1 text-left relative z-10")}>{item.label}</span>
-      
+
       {item.badge && (
         <motion.span
           animate={{ scale: [1, 1.1, 1] }}
@@ -484,7 +484,7 @@ export default function PremiumDrawer({
             />
 
             {/* Scrollable Content - Hidden scrollbar */}
-            <div 
+            <div
               className={cn(
                 "flex-1 overflow-y-auto overflow-x-hidden min-h-0 space-y-6",
                 // Hide scrollbar

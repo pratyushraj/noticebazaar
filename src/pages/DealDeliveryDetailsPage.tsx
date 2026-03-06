@@ -15,6 +15,8 @@ import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
 import { trackEvent } from "@/lib/utils/analytics";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { CreatorNavigationWrapper } from "@/components/navigation/CreatorNavigationWrapper";
+import { gradients, spacing, typography, animations, buttons } from "@/lib/design-system";
 
 export default function DealDeliveryDetailsPage() {
   const { dealId } = useParams<{ dealId: string }>();
@@ -212,25 +214,11 @@ export default function DealDeliveryDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-safe">
-      <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-xl border-b border-white/10">
-        <div className="flex items-center gap-3 px-4 py-3 max-w-xl mx-auto">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base sm:text-lg font-semibold leading-tight">
-              Delivery Details (For Barter Only)
-            </h1>
-          </div>
-        </div>
-      </div>
-
+    <CreatorNavigationWrapper
+      title="Delivery Details"
+      subtitle="Brands cannot ship your product until this is filled."
+      showBackButton
+    >
       <div className="bg-white/6 border-b border-white/12">
         <div className="max-w-xl mx-auto px-4 py-3 flex items-start gap-2 text-xs font-semibold text-white/80">
           <span className="mt-0.5 text-white/70" aria-hidden>
@@ -402,9 +390,9 @@ export default function DealDeliveryDetailsPage() {
                 {submitError}
               </div>
             )}
-            <Button
+            <button
               type="submit"
-              className="w-full h-14 text-base font-bold shadow-lg shadow-primary/20"
+              className={cn(buttons.primary, "w-full h-14 text-base font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed")}
               disabled={!canSubmit}
             >
               {isSubmitting ? (
@@ -415,7 +403,7 @@ export default function DealDeliveryDetailsPage() {
               ) : (
                 "Confirm Address & Continue"
               )}
-            </Button>
+            </button>
             <p className="text-[11px] text-center text-muted-foreground font-medium uppercase tracking-wider">
               Product ships only after contract signing
             </p>
@@ -430,6 +418,6 @@ export default function DealDeliveryDetailsPage() {
           </div>
         )}
       </main>
-    </div>
+    </CreatorNavigationWrapper>
   );
 }

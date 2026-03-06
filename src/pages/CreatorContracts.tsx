@@ -16,6 +16,7 @@ import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatIndianCurrency } from '@/lib/utils/currency';
+import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -595,19 +596,10 @@ const CreatorContracts = () => {
   return (
     <ErrorBoundary>
       <ContextualTipsProvider currentView="deals">
-        <div className={cn(
-          `min-h-full ${gradients.page} text-white`,
-          "px-4 pt-4 sm:px-5 md:px-6 md:pt-6 lg:px-8",
-          "pb-24 safe-area-fix"
-        )}>
-          {/* Header - Matching Payments Page */}
-          <div className="flex items-center justify-between mb-4 md:mb-6">
-            <div className="space-y-1 md:space-y-2">
-              <h1 className={cn(typography.h1, "mb-0")}>Deals Under Protection</h1>
-              <p className={cn(typography.body, "font-medium")}>Track active collaborations, risks, and next actions.</p>
-            </div>
-          </div>
-
+        <CreatorNavigationWrapper
+          title="Brand Deals"
+          subtitle="Track active collaborations, risks, and next actions."
+        >
           <div className={cn("min-h-[200px]", spacing.section)}>
             {/* Stats Overview - Compact Grid */}
             <section className="mb-4 md:mb-6">
@@ -1035,7 +1027,7 @@ const CreatorContracts = () => {
             </section>
 
           </div>
-        </div>
+        </CreatorNavigationWrapper>
       </ContextualTipsProvider>
     </ErrorBoundary>
   );
