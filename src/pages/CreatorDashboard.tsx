@@ -1087,7 +1087,22 @@ const CreatorDashboard = () => {
   // Force new premium UI as default
   const isDemoMode = true;
   if (isDemoMode) {
-    return <MobileDashboardDemo profile={profile} userEmail={session?.user?.email} collabRequests={collabRequestsPreview} />;
+    return (
+      <MobileDashboardDemo
+        profile={profile}
+        userEmail={session?.user?.email}
+        collabRequests={collabRequestsPreview}
+        brandDeals={brandDeals}
+        stats={stats}
+        onAcceptRequest={acceptCollabRequest}
+        onDeclineRequest={(id: string) => {
+          setDeclineRequestId(id);
+          setShowDeclineRequestDialog(true);
+        }}
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+      />
+    );
   }
 
   return (
