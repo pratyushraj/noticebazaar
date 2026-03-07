@@ -1341,13 +1341,29 @@ const MobileDashboardDemo = ({
                                                         <div className={cn("h-[3px] w-full", req.collab_type === 'barter' ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-gradient-to-r from-blue-500 to-violet-600')} />
 
                                                         <div className="px-3.5 py-3">
-                                                            {/* Row 1: Logo + Brand name + Budget (all on one line) */}
+                                                            {/* Row 1: Logo + Brand name + type tag + Budget */}
                                                             <div className="flex items-center gap-2.5 mb-2">
-                                                                <div className={cn("w-9 h-9 rounded-lg border overflow-hidden flex items-center justify-center shrink-0", isDark ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200")}>
+                                                                {/* Logo with tinted bg based on type */}
+                                                                <div className={cn("w-9 h-9 rounded-lg border overflow-hidden flex items-center justify-center shrink-0",
+                                                                    req.collab_type === 'barter'
+                                                                        ? (isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-100")
+                                                                        : (isDark ? "bg-blue-500/5 border-slate-700" : "bg-slate-50 border-slate-200")
+                                                                )}>
                                                                     {getBrandIcon(req.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)}
                                                                 </div>
+
                                                                 <div className="flex-1 min-w-0">
-                                                                    <p className={cn("text-[14px] font-bold truncate leading-tight", isDark ? "text-white" : "text-slate-900")}>{req.brand_name || 'Brand'}</p>
+                                                                    {/* Brand name + type badge on same line */}
+                                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                                        <p className={cn("text-[14px] font-bold truncate leading-tight max-w-[130px]", isDark ? "text-white" : "text-slate-900")}>
+                                                                            {(req.brand_name || 'Brand').replace(/\s*\(Barter Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
+                                                                        </p>
+                                                                        {req.collab_type === 'barter' ? (
+                                                                            <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide bg-amber-500/15 text-amber-500 border border-amber-500/20">🎁 Barter</span>
+                                                                        ) : (
+                                                                            <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wide bg-blue-500/10 text-blue-500 border border-blue-500/15">💳 Paid</span>
+                                                                        )}
+                                                                    </div>
                                                                     <div className="flex items-center gap-1">
                                                                         <span className={cn("text-[11px]", secondaryTextColor)}>{req.category || 'Lifestyle'}</span>
                                                                         <span className="text-slate-500 text-[9px]">•</span>
@@ -1355,25 +1371,27 @@ const MobileDashboardDemo = ({
                                                                         <span className="text-[11px] font-semibold text-blue-500">Verified</span>
                                                                     </div>
                                                                 </div>
-                                                                {/* Budget — always visible, compact */}
+
+                                                                {/* Budget — label changes based on type */}
                                                                 <div className="shrink-0 text-right">
                                                                     <p className={cn("text-[17px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                                                                        {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75K')}
+                                                                        {req.exact_budget ? formatCurrency(req.exact_budget)
+                                                                            : req.barter_value ? `₹${(req.barter_value / 1000).toFixed(0)}K`
+                                                                                : (req.budget_range || '₹75K')}
                                                                     </p>
-                                                                    <p className={cn("text-[9px] uppercase font-bold tracking-wider", isDark ? "text-slate-500" : "text-slate-400")}>Budget</p>
+                                                                    <p className={cn("text-[9px] uppercase font-bold tracking-wider", req.collab_type === 'barter' ? "text-amber-500" : (isDark ? "text-slate-500" : "text-slate-400"))}>
+                                                                        {req.collab_type === 'barter' ? 'Product Val.' : 'Cash'}
+                                                                    </p>
                                                                 </div>
                                                             </div>
 
-                                                            {/* Row 2: All chips inline — deliverables + barter + date + deadline */}
+                                                            {/* Row 2: All chips inline — deliverables + date + deadline */}
                                                             <div className="flex items-center gap-1.5 flex-wrap mb-2.5">
                                                                 {deliverablesArr.map((d, i) => (
                                                                     <span key={i} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border", isDark ? "bg-slate-800 border-slate-700 text-slate-300" : "bg-slate-100 border-slate-200 text-slate-600")}>
                                                                         {d}
                                                                     </span>
                                                                 ))}
-                                                                {req.collab_type === 'barter' && (
-                                                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-500">🎁 Barter</span>
-                                                                )}
                                                                 <span className={cn("text-[10px] font-semibold", isDark ? "text-slate-500" : "text-slate-400")}>
                                                                     📅 {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
                                                                 </span>
@@ -1384,7 +1402,7 @@ const MobileDashboardDemo = ({
                                                                 )}
                                                             </div>
 
-                                                            {/* Row 3: Compact buttons */}
+                                                            {/* Row 3: Compact buttons — accept color changes by type */}
                                                             <div className="flex gap-2">
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
@@ -1398,9 +1416,14 @@ const MobileDashboardDemo = ({
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); handleAccept(req); }}
                                                                     disabled={processingDeal === req.id}
-                                                                    className="flex-1 h-9 rounded-lg font-bold text-[12px] bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/25 active:scale-95 disabled:opacity-50"
+                                                                    className={cn(
+                                                                        "flex-1 h-9 rounded-lg font-bold text-[12px] text-white transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50",
+                                                                        req.collab_type === 'barter'
+                                                                            ? "bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-500/25"
+                                                                            : "bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/25"
+                                                                    )}
                                                                 >
-                                                                    {processingDeal === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Accept Deal'}
+                                                                    {processingDeal === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (req.collab_type === 'barter' ? 'Accept Barter' : 'Accept Deal')}
                                                                 </button>
                                                             </div>
                                                         </div>
