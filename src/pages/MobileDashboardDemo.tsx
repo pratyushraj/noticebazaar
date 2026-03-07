@@ -2176,57 +2176,64 @@ const MobileDashboardDemo = ({
 
                                 {/* ── COMPACT BRAND HERO ── */}
                                 <div className={cn("rounded-2xl border p-4 mb-5", cardBgColor, borderColor)}>
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0",
+                                    <div className="flex items-start gap-3">
+                                        {/* Logo */}
+                                        <div className={cn("w-12 h-12 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 mt-0.5",
                                             selectedItem.collab_type === 'barter'
                                                 ? (isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-100")
                                                 : (isDark ? "bg-blue-500/5 border-slate-700" : "bg-slate-50 border-slate-200")
                                         )}>
                                             {getBrandIcon(selectedItem.brand_logo_url || selectedItem.logo_url, selectedItem.category, selectedItem.brand_name)}
                                         </div>
+                                        {/* Name + subtitle */}
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[18px] font-black tracking-tight truncate", textColor)}>
+                                            <p className={cn("text-[17px] font-black tracking-tight truncate leading-snug", textColor)}>
                                                 {selectedItem.brand_name || 'Brand Name'}
                                             </p>
-                                            <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                                                <span className={cn("text-[12px]", secondaryTextColor)}>{selectedItem.category || 'Lifestyle'}</span>
-                                                <span className="text-slate-500 text-[10px]">•</span>
-                                                <ShieldCheck className="w-3 h-3 text-blue-500" strokeWidth={2.5} />
-                                                <span className="text-[12px] font-semibold text-blue-500">Verified</span>
+                                            <div className="flex items-center gap-1 mt-0.5">
+                                                <span className={cn("text-[11px]", secondaryTextColor)}>{selectedItem.category || 'Lifestyle'}</span>
+                                                <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
+                                                <ShieldCheck className="w-2.5 h-2.5 text-blue-500" strokeWidth={2.5} />
+                                                <span className="text-[11px] font-semibold text-blue-500">Verified</span>
                                             </div>
                                         </div>
+                                        {/* Budget – primary anchor */}
                                         <div className="shrink-0 text-right">
-                                            <p className={cn("text-[20px] font-black tracking-tight", textColor)}>
+                                            <p className={cn("text-[22px] font-black tracking-tight leading-none", textColor)}>
                                                 ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}
                                             </p>
-                                            <div className="flex items-center justify-end gap-1 mt-0.5">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                <span className="text-[11px] font-bold text-emerald-500">
-                                                    {selectedType === 'deal' ? 'Active' : 'Pending'}
-                                                </span>
-                                            </div>
+                                            <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor)}>
+                                                {selectedItem.collab_type === 'barter' ? 'Product Value' : 'Cash Budget'}
+                                            </p>
                                         </div>
                                     </div>
-                                    {/* deal type row */}
+
+                                    {/* Status + deal type row */}
                                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-500/10">
+                                        {/* Deal type chip */}
                                         {selectedItem.collab_type === 'barter' ? (
-                                            <span className="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500/10 border border-amber-500/20 text-amber-500">🎁 Barter Deal</span>
+                                            <span className="px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-500/10 border border-amber-500/20 text-amber-500">🎁 Barter</span>
                                         ) : (
-                                            <span className="px-2.5 py-1 rounded-lg text-[11px] font-black bg-blue-500/10 border border-blue-500/15 text-blue-500">💳 Paid Deal</span>
+                                            <span className="px-2 py-0.5 rounded-md text-[11px] font-black bg-blue-500/10 border border-blue-500/15 text-blue-500">💰 Paid Campaign</span>
                                         )}
-                                        <span className={cn("text-[11px] font-semibold ml-auto", secondaryTextColor)}>
-                                            {selectedItem.collab_type === 'barter' ? 'Product Value' : 'Cash Payment'}
-                                        </span>
+                                        {/* Status */}
+                                        <div className="flex items-center gap-1 ml-auto">
+                                            <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", selectedType === 'deal' ? 'bg-emerald-500' : 'bg-amber-400')} />
+                                            <span className={cn("text-[11px] font-bold", selectedType === 'deal' ? 'text-emerald-500' : 'text-amber-500')}>
+                                                {selectedType === 'deal' ? 'Active' : 'Pending Review'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* ── DELIVERABLES ── */}
                                 <div className="mb-5">
-                                    <h4 className={cn("text-[13px] font-bold mb-3", textColor)}>Deliverables</h4>
-                                    <div className="flex flex-wrap gap-2">
+                                    <h4 className={cn("text-[12px] font-bold uppercase tracking-wider mb-2.5 opacity-50", textColor)}>Deliverables</h4>
+                                    <div className="flex flex-wrap gap-1.5">
                                         {(() => {
                                             const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                            let items: string[] = ['🎥 Reel ×1', '📱 Story ×2', '📄 Usage Rights 30d'];
+                                            // Compact display labels
+                                            let items: string[] = ['🎥 Reel ×1', '📱 Story ×2', '📄 Rights 30d'];
                                             try {
                                                 const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
                                                 if (Array.isArray(parsed) && parsed.length > 0) {
@@ -2234,13 +2241,20 @@ const MobileDashboardDemo = ({
                                                         if (typeof d === 'string') return d;
                                                         const ct = (d.contentType || d.type || '').toLowerCase();
                                                         const count = d.count || d.quantity || 1;
-                                                        const emoji = ct.includes('reel') ? '🎥' : ct.includes('story') ? '📱' : ct.includes('post') ? '🖼' : ct.includes('usage') ? '📄' : '📋';
-                                                        return `${emoji} ${d.contentType || d.type || 'Content'} ×${count}`;
+                                                        let emoji = '📋', label = 'Content';
+                                                        if (ct.includes('reel')) { emoji = '🎥'; label = 'Reel'; }
+                                                        else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
+                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
+                                                        else if (ct.includes('usage')) { emoji = '📄'; label = 'Rights'; }
+                                                        return `${emoji} ${label} ×${count}`;
                                                     });
                                                 }
                                             } catch (_) { }
                                             return items.map((d, i) => (
-                                                <span key={i} className={cn("px-3 py-1.5 rounded-xl text-[12px] font-bold border", isDark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-100 border-slate-200 text-slate-700")}>
+                                                <span key={i} className={cn(
+                                                    "px-2.5 py-1 rounded-lg text-[12px] font-bold border",
+                                                    isDark ? "bg-slate-800/80 border-slate-700 text-slate-200" : "bg-slate-100 border-slate-200 text-slate-700"
+                                                )}>
                                                     {d}
                                                 </span>
                                             ));
@@ -2250,53 +2264,63 @@ const MobileDashboardDemo = ({
 
                                 {/* ── PAYMENT ── */}
                                 <div className="mb-5">
-                                    <h4 className={cn("text-[13px] font-bold mb-3", textColor)}>Payment</h4>
-                                    <div className={cn("rounded-2xl border divide-y overflow-hidden", cardBgColor, borderColor, isDark ? "divide-white/5" : "divide-slate-100")}>
-                                        <div className="flex items-center gap-3 px-4 py-3">
-                                            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
-                                                <Landmark className="w-4 h-4 text-blue-500" />
+                                    <h4 className={cn("text-[12px] font-bold uppercase tracking-wider mb-2.5 opacity-50", textColor)}>Payment</h4>
+                                    <div className={cn("rounded-xl border divide-y overflow-hidden", cardBgColor, borderColor, isDark ? "divide-white/5" : "divide-slate-100")}>
+                                        <div className="flex items-center gap-2.5 px-3.5 py-2.5">
+                                            <div className={cn("w-6 h-6 rounded-md flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
+                                                <Landmark className="w-3 h-3 text-blue-500" />
                                             </div>
-                                            <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Payment Mode</span>
+                                            <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Payment</span>
                                             <span className={cn("text-[13px] font-bold", textColor)}>Direct Transfer</span>
                                         </div>
-                                        <div className="flex items-center gap-3 px-4 py-3">
-                                            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
-                                                <Clock className="w-4 h-4 text-orange-500" />
-                                            </div>
-                                            <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Deadline</span>
-                                            <span className="text-[13px] font-bold text-orange-500">
-                                                {selectedItem.deadline
+                                        <div className="flex items-center gap-2.5 px-3.5 py-2.5">
+                                            {(() => {
+                                                const d = selectedItem.deadline ? new Date(selectedItem.deadline) : new Date(Date.now() + 4 * 86400000);
+                                                const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
+                                                const deadlineColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : (isDark ? 'text-slate-300' : 'text-slate-700');
+                                                const iconColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : 'text-slate-400';
+                                                const deadlineStr = selectedItem.deadline
                                                     ? new Date(selectedItem.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-                                                    : '21 Mar'} · {(() => {
-                                                        const d = selectedItem.deadline ? new Date(selectedItem.deadline) : new Date(Date.now() + 4 * 86400000);
-                                                        const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
-                                                        return diff > 0 ? `${diff}d left` : 'Overdue';
-                                                    })()}
-                                            </span>
+                                                    : '21 Mar';
+                                                return (
+                                                    <>
+                                                        <div className={cn("w-6 h-6 rounded-md flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
+                                                            <Clock className={cn("w-3 h-3", iconColor)} />
+                                                        </div>
+                                                        <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Deadline</span>
+                                                        <span className={cn("text-[13px] font-bold", deadlineColor)}>
+                                                            {deadlineStr} · {diff > 0 ? `${diff}d left` : 'Overdue'}
+                                                        </span>
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* ── LEGAL PROTECTION ── */}
                                 <div className="mb-5">
-                                    <h4 className={cn("text-[13px] font-bold mb-3", textColor)}>Legal Protection</h4>
+                                    <h4 className={cn("text-[12px] font-bold uppercase tracking-wider mb-2.5 opacity-50", textColor)}>Legal Protection</h4>
                                     <motion.div
-                                        whileTap={{ scale: 0.98 }}
+                                        whileTap={{ scale: 0.97 }}
+                                        whileHover={{ scale: 1.01 }}
                                         className={cn(
-                                            "rounded-2xl border p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden",
+                                            "rounded-xl border p-3.5 flex items-center gap-3.5 cursor-pointer relative overflow-hidden",
                                             isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
                                         )}
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
-                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/10">
-                                            <ShieldCheck className="w-6 h-6 text-emerald-500" strokeWidth={1.5} />
+                                        {/* subtle left glow */}
+                                        <div className="absolute inset-y-0 left-0 w-1 bg-emerald-500 rounded-r-full" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/8 to-transparent pointer-events-none" />
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/10">
+                                            <ShieldCheck className="w-5 h-5 text-emerald-500" strokeWidth={1.5} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <p className={cn("font-black text-[14px]", textColor)}>Armour Protected</p>
-                                                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-500 text-white uppercase tracking-wider">Verified</span>
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <p className={cn("font-black text-[13px]", textColor)}>🛡 Armour Protected</p>
+                                                <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black bg-emerald-500 text-white uppercase tracking-wider">✓ Verified</span>
                                             </div>
-                                            <p className={cn("text-[12px] font-medium", secondaryTextColor)}>Content Rights Agreement included</p>
+                                            <p className={cn("text-[11px] font-medium", secondaryTextColor)}>Verified Content Rights Agreement</p>
                                         </div>
                                         <Download className="w-5 h-5 shrink-0 text-emerald-500 opacity-60" />
                                     </motion.div>
@@ -2370,115 +2394,115 @@ const MobileDashboardDemo = ({
                                     )}
                                 </div>
                             </div>
-                </motion.div>
+                        </motion.div>
                     )}
-            </AnimatePresence>
-        </div>
+                </AnimatePresence>
+            </div>
 
-            {/* Creator Signing Modal */ }
-    <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
-        <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
-            <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
-                    <FileText className="w-5 h-5 text-sky-400" />
-                    Sign Agreement
-                </DialogTitle>
-                <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
-                    {creatorSigningStep === 'send'
-                        ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
-                        : 'Enter the 6-digit code sent to your email to complete the signing process.'}
-                </DialogDescription>
-            </DialogHeader>
+            {/* Creator Signing Modal */}
+            <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
+                <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
+                            <FileText className="w-5 h-5 text-sky-400" />
+                            Sign Agreement
+                        </DialogTitle>
+                        <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
+                            {creatorSigningStep === 'send'
+                                ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
+                                : 'Enter the 6-digit code sent to your email to complete the signing process.'}
+                        </DialogDescription>
+                    </DialogHeader>
 
-            <div className="px-6 py-5">
-                {creatorSigningStep === 'send' ? (
-                    <div className="space-y-4">
-                        <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
-                            <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
-                            <div>
-                                <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
-                                <p className="text-xs text-sky-100/80 mt-1">
-                                    Signing as: <span className="text-white">{profile?.email || 'Your registered email'}</span>
-                                </p>
+                    <div className="px-6 py-5">
+                        {creatorSigningStep === 'send' ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
+                                    <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
+                                        <p className="text-xs text-sky-100/80 mt-1">
+                                            Signing as: <span className="text-white">{profile?.email || 'Your registered email'}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <motion.button
+                                    onClick={handleSendCreatorOTP}
+                                    disabled={isSendingCreatorOTP}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                                >
+                                    {isSendingCreatorOTP ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Sending OTP...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mail className="w-5 h-5" />
+                                            Send OTP to Email
+                                        </>
+                                    )}
+                                </motion.button>
                             </div>
-                        </div>
-                        <motion.button
-                            onClick={handleSendCreatorOTP}
-                            disabled={isSendingCreatorOTP}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
-                        >
-                            {isSendingCreatorOTP ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    Sending OTP...
-                                </>
-                            ) : (
-                                <>
-                                    <Mail className="w-5 h-5" />
-                                    Send OTP to Email
-                                </>
-                            )}
-                        </motion.button>
+                        ) : (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase font-black">Enterprise OTP Code</label>
+                                    <input
+                                        type="text"
+                                        maxLength={6}
+                                        placeholder="123456"
+                                        value={creatorOTP}
+                                        onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
+                                        inputMode="numeric"
+                                        autoComplete="one-time-code"
+                                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                                    />
+                                    <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <motion.button
+                                        onClick={handleVerifyCreatorOTP}
+                                        disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                                    >
+                                        {isVerifyingCreatorOTP || isSigningAsCreator ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle2 className="w-5 h-5" />
+                                                Verify & Sign
+                                            </>
+                                        )}
+                                    </motion.button>
+
+                                    <button
+                                        onClick={() => {
+                                            setCreatorSigningStep('send');
+                                            setCreatorOTP('');
+                                        }}
+                                        disabled={isVerifyingCreatorOTP || isSigningAsCreator}
+                                        className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
+                                    >
+                                        Change method or resend OTP
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                ) : (
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase font-black">Enterprise OTP Code</label>
-                            <input
-                                type="text"
-                                maxLength={6}
-                                placeholder="123456"
-                                value={creatorOTP}
-                                onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
-                                inputMode="numeric"
-                                autoComplete="one-time-code"
-                                className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
-                            />
-                            <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
-                        </div>
 
-                        <div className="flex flex-col gap-2">
-                            <motion.button
-                                onClick={handleVerifyCreatorOTP}
-                                disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
-                                whileTap={{ scale: 0.98 }}
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
-                            >
-                                {isVerifyingCreatorOTP || isSigningAsCreator ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle2 className="w-5 h-5" />
-                                        Verify & Sign
-                                    </>
-                                )}
-                            </motion.button>
-
-                            <button
-                                onClick={() => {
-                                    setCreatorSigningStep('send');
-                                    setCreatorOTP('');
-                                }}
-                                disabled={isVerifyingCreatorOTP || isSigningAsCreator}
-                                className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
-                            >
-                                Change method or resend OTP
-                            </button>
-                        </div>
+                    <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
                     </div>
-                )}
-            </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
-            </div>
-        </DialogContent>
-    </Dialog>
+                </DialogContent>
+            </Dialog>
         </div >
     );
 };
