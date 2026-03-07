@@ -3,12 +3,19 @@ import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
-    Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3
+    Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
+    MessageCircle, Edit3, XCircle, ExternalLink, AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { toast } from 'sonner';
+import { getApiBaseUrl } from '@/lib/utils/api';
+import { useSession } from '@/contexts/SessionContext';
+import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -114,18 +121,51 @@ const MobileDashboardDemo = ({
     brandDeals = [],
     stats,
     onAcceptRequest,
+    onDeclineRequest,
     onOpenMenu,
     isRefreshing: isRefreshingProp,
     onRefresh
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const signOutMutation = useSignOut();
+    const {
+        isSubscribed: isPushSubscribed,
+        isBusy: isPushBusy,
+        enableNotifications,
+        sendTestPush,
+    } = useDealAlertNotifications();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'collabs' | 'payments' | 'profile'>('dashboard');
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
-    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        return 'dark';
+    });
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = (e: MediaQueryListEvent) => {
+            triggerHaptic();
+            setTheme(e.matches ? 'dark' : 'light');
+        };
+
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+    }, []);
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
+    const [selectedItem, setSelectedItem] = useState<any | null>(null);
+    const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
+
+    // Signing states
+    const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
+    const [isSendingCreatorOTP, setIsSendingCreatorOTP] = useState(false);
+    const [isVerifyingCreatorOTP, setIsVerifyingCreatorOTP] = useState(false);
+    const [creatorOTP, setCreatorOTP] = useState('');
+    const [creatorSigningStep, setCreatorSigningStep] = useState<'send' | 'verify'>('send');
+    const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
 
     const username = profile?.instagram_handle?.replace('@', '') || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
     const avatarUrl = profile?.avatar_url || 'https://i.pravatar.cc/150?img=47';
@@ -179,7 +219,122 @@ const MobileDashboardDemo = ({
         return () => { if (meta && orig) meta.setAttribute('content', orig); };
     }, [theme, bgColor]);
 
-    const triggerHaptic = () => { if (navigator.vibrate) navigator.vibrate(10); };
+    const { session, user } = useSession();
+
+    const triggerHaptic = (pattern: any = HapticPatterns.light) => {
+        globalTriggerHaptic(pattern);
+    };
+
+    const handleSendCreatorOTP = async () => {
+        if (!selectedItem?.id || !session?.access_token) {
+            toast.error('Session or deal data missing');
+            return;
+        }
+
+        setIsSendingCreatorOTP(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const resp = await fetch(`${apiBaseUrl}/api/otp/send-creator`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ dealId: selectedItem.id }),
+            });
+
+            if (!resp.ok) {
+                const errorData = await resp.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server error: ${resp.status}`);
+            }
+
+            const data = await resp.json();
+            if (data.success) {
+                toast.success('OTP sent to your email');
+                setCreatorSigningStep('verify');
+            } else {
+                toast.error(data.error || 'Failed to send OTP');
+            }
+        } catch (error: any) {
+            console.error('[MobileDashboard] OTP send error:', error);
+            toast.error(error.message || 'Failed to send OTP');
+        } finally {
+            setIsSendingCreatorOTP(false);
+        }
+    };
+
+    const handleVerifyCreatorOTP = async () => {
+        if (!selectedItem?.id || !session?.access_token || !creatorOTP) return;
+
+        setIsVerifyingCreatorOTP(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const resp = await fetch(`${apiBaseUrl}/api/otp/verify-creator`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ dealId: selectedItem.id, otp: creatorOTP }),
+            });
+
+            const data = await resp.json();
+            if (data.success || (data.error && data.error.includes('already been verified'))) {
+                if (data.success) toast.success('OTP verified!');
+                await handleSignAsCreator();
+            } else {
+                toast.error(data.error || 'Invalid OTP');
+            }
+        } catch (error: any) {
+            console.error('[MobileDashboard] OTP verify error:', error);
+            toast.error(error.message || 'Failed to verify OTP');
+        } finally {
+            setIsVerifyingCreatorOTP(false);
+        }
+    };
+
+    const handleSignAsCreator = async () => {
+        if (!selectedItem?.id || !session?.access_token) return;
+
+        setIsSigningAsCreator(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const resp = await fetch(`${apiBaseUrl}/api/deals/${selectedItem.id}/sign-creator`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                    signerName: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : 'Creator',
+                    signerEmail: user?.email || profile?.email || '',
+                    contractSnapshotHtml: `Contract URL: ${selectedItem.contract_file_url}\nSigned at: ${new Date().toISOString()}`,
+                }),
+            });
+
+            if (!resp.ok) {
+                const errorData = await resp.json().catch(() => ({ error: `Server error: ${resp.status}` }));
+                throw new Error(errorData.error || 'Failed to sign contract');
+            }
+
+            const data = await resp.json();
+            if (data.success) {
+                toast.success('Contract signed successfully!');
+                triggerHaptic(HapticPatterns.success);
+                setShowCreatorSigningModal(false);
+                if (onRefresh) await onRefresh();
+                setSelectedItem((prev: any) => prev ? { ...prev, status: 'signed' } : null);
+            } else {
+                toast.error(data.error || 'Failed to sign contract');
+            }
+        } catch (error: any) {
+            console.error('[MobileDashboard] Signing error:', error);
+            toast.error(error.message || 'Failed to sign contract');
+        } finally {
+            setIsSigningAsCreator(false);
+        }
+    };
+
     const toggleTheme = () => { triggerHaptic(); setTheme(p => p === 'dark' ? 'light' : 'dark'); };
 
     const handleAccept = async (req: any) => {
@@ -217,7 +372,7 @@ const MobileDashboardDemo = ({
                 else if (char >= 'U' && char <= 'Z') color = 'bg-gradient-to-br from-pink-500 to-rose-600';
 
                 return (
-                    <div className={cn("w-full h-full flex items-center justify-center text-white font-bold text-lg shadow-inner transition-colors duration-500", color)}>
+                    <div className={cn("w-full h-full flex items-center justify-center text-white font-bold text-3xl shadow-inner transition-colors duration-500 rounded-inherit", color)}>
                         {firstLetter}
                     </div>
                 );
@@ -282,6 +437,20 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Phone Number</p>
                                         <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} defaultValue="+91 98765 43210" />
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Bio / Headline</p>
+                                        <textarea
+                                            className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px] resize-none h-20", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                            defaultValue={profile?.bio || 'Professional lifestyle and tech enthusiast.'}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Pincode / City</p>
+                                        <div className="flex gap-2">
+                                            <input className={cn("w-24 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Pincode" defaultValue={profile?.pincode || ''} />
+                                            <input className={cn("flex-1 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="City" defaultValue={profile?.city || ''} />
+                                        </div>
+                                    </div>
                                 </div>
                             </SettingsGroup>
                             <SectionHeader title="Account Identity" isDark={isDark} />
@@ -294,11 +463,112 @@ const MobileDashboardDemo = ({
                                             <input className="bg-transparent outline-none font-medium text-[16px] flex-1" defaultValue={profile?.instagram_handle || '@theblooming.miss'} />
                                         </div>
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Media Kit URL</p>
+                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                            <Link2 className="w-4 h-4 text-blue-500" />
+                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" placeholder="https://..." defaultValue={profile?.media_kit_url || ''} />
+                                        </div>
+                                    </div>
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
                                 <button className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px]">
                                     Save Profile
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
+            case 'collab-preferences':
+                return (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+                        <PageHeader title="Collab Preferences" />
+                        <div className="px-4 space-y-6">
+                            <SectionHeader title="Status" isDark={isDark} />
+                            <SettingsGroup isDark={isDark}>
+                                <SettingsRow
+                                    icon={<Handshake />}
+                                    iconBg="bg-blue-600"
+                                    label="Open for Collaborations"
+                                    subtext={profile?.open_to_collabs !== false ? "Brands can send you deals" : "New intake is paused"}
+                                    isDark={isDark}
+                                    textColor={textColor}
+                                    rightElement={<ToggleSwitch active={profile?.open_to_collabs !== false} isDark={isDark} />}
+                                />
+                            </SettingsGroup>
+
+                            <SectionHeader title="Deal Size Expectations" isDark={isDark} />
+                            <div className="grid grid-cols-1 gap-3">
+                                {[
+                                    { key: 'starter', title: 'Starter', range: '₹2K - ₹5K', sub: 'Micro brands' },
+                                    { key: 'standard', title: 'Standard', range: '₹5K - ₹15K', sub: 'Common deals' },
+                                    { key: 'premium', title: 'Premium', range: '₹15K+', sub: 'Large campaigns' },
+                                ].map((tier) => (
+                                    <button
+                                        key={tier.key}
+                                        className={cn(
+                                            "p-4 rounded-2xl border text-left transition-all",
+                                            profile?.typical_deal_size === tier.key
+                                                ? "bg-blue-600 border-blue-600 text-white"
+                                                : (isDark ? "bg-[#1C1C1E] border-white/5 text-white" : "bg-white border-slate-100 text-black")
+                                        )}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <p className="font-bold text-sm">{tier.title}</p>
+                                            <p className={cn("text-xs font-black", profile?.typical_deal_size === tier.key ? "text-white/80" : "text-blue-500")}>{tier.range}</p>
+                                        </div>
+                                        <p className={cn("text-[10px] uppercase tracking-wider mt-1 opacity-60")}>{tier.sub}</p>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <SectionHeader title="Collaboration Type" isDark={isDark} />
+                            <div className="flex gap-2">
+                                {['Paid', 'Barter', 'Hybrid'].map((type) => (
+                                    <button
+                                        key={type}
+                                        className={cn(
+                                            "flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all",
+                                            (profile?.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
+                                                ? "bg-slate-900 border-slate-900 text-white"
+                                                : (isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-500")
+                                        )}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <SectionHeader title="Rates & Niches" isDark={isDark} />
+                            <SettingsGroup isDark={isDark}>
+                                <div className="p-4 space-y-4">
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Avg. Rate per Reel</p>
+                                        <div className="flex items-center gap-2 border-b py-1" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                            <span className={cn("text-[16px] font-bold", textColor)}>₹</span>
+                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" defaultValue={profile?.avg_rate_reel || '5000'} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Content Niches</p>
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            {(profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
+                                                <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-white/5 border-white/10 text-white" : "bg-blue-50 border-blue-100 text-blue-600")}>
+                                                    {niche}
+                                                </div>
+                                            ))}
+                                            <button className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-white/20 text-white/40" : "border-black/10 text-black/40")}>
+                                                + ADD
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+
+                            <div className="px-4 pt-4">
+                                <button className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px]">
+                                    Update Preferences
                                 </button>
                             </div>
                         </div>
@@ -324,6 +594,7 @@ const MobileDashboardDemo = ({
                             <SettingsGroup isDark={isDark}>
                                 <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron />
                                 <SettingsRow icon={<Star />} iconBg="bg-amber-400" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron />
+                                <SettingsRow icon={<Link2 />} iconBg="bg-blue-500" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron />
                             </SettingsGroup>
                         </div>
                     </motion.div>
@@ -427,9 +698,49 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                                 <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
-                                <div className="flex gap-2 mt-4">
-                                    <button className="flex-1 bg-blue-600 text-white font-black py-3 rounded-xl text-[11px] active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20">Copy Link</button>
-                                    <button className={cn("flex-1 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-slate-500 uppercase tracking-widest", isDark ? "border-white/10" : "border-black/5")}>Preview</button>
+                                <div className="grid grid-cols-2 gap-2 mt-4">
+                                    <button
+                                        onClick={() => {
+                                            const link = `${window.location.origin}/collab/${username}`;
+                                            navigator.clipboard.writeText(link);
+                                            toast.success('Link copied');
+                                            triggerHaptic();
+                                        }}
+                                        className="bg-blue-600 text-white font-black py-3 rounded-xl text-[11px] active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20"
+                                    >
+                                        Copy Link
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            window.open(`/collab/${username}`, '_blank');
+                                        }}
+                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-slate-500 uppercase tracking-widest", isDark ? "border-white/10" : "border-black/5")}
+                                    >
+                                        <ExternalLink className="w-3.5 h-3.5" /> Preview
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const link = `${window.location.origin}/collab/${username}`;
+                                            const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
+                                            window.open(`https://wa.me/?text=${message}`, '_blank');
+                                            triggerHaptic();
+                                        }}
+                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-600")}
+                                    >
+                                        <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const link = `${window.location.origin}/collab/${username}`;
+                                            navigator.clipboard.writeText(link);
+                                            toast.success('Copied! Paste in your Bio.');
+                                            triggerHaptic();
+                                        }}
+                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-pink-500/10 border-pink-500/20 text-pink-400" : "bg-pink-50 border-pink-100 text-pink-600")}
+                                    >
+                                        <Instagram className="w-3.5 h-3.5" /> Instagram
+                                    </button>
                                 </div>
                             </div>
 
@@ -605,6 +916,59 @@ const MobileDashboardDemo = ({
                         </div>
                     </motion.div>
                 );
+            case 'notifications':
+                return (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-20">
+                        <PageHeader title="Notifications" />
+                        <div className="px-4 space-y-6">
+                            <SectionHeader title="Deal Alerts" isDark={isDark} />
+                            <SettingsGroup isDark={isDark}>
+                                <SettingsRow
+                                    icon={<Bell />} iconBg="bg-blue-500"
+                                    label="Push Notifications"
+                                    subtext={isPushSubscribed ? "Active on this device" : "Receive instant deal alerts"}
+                                    isDark={isDark} textColor={textColor}
+                                    rightElement={
+                                        <ToggleSwitch
+                                            active={isPushSubscribed}
+                                            onToggle={async () => {
+                                                triggerHaptic();
+                                                if (isPushSubscribed) {
+                                                    toast.info("To disable, please use your browser settings.");
+                                                } else {
+                                                    const res = await enableNotifications();
+                                                    if (res.success) toast.success("Push notifications enabled!");
+                                                    else toast.error("Failed to enable push alerts.");
+                                                }
+                                            }}
+                                            isDark={isDark}
+                                        />
+                                    }
+                                />
+                                {isPushSubscribed && (
+                                    <button
+                                        onClick={async () => {
+                                            triggerHaptic();
+                                            const res = await sendTestPush();
+                                            if (res.success) toast.success("Test notification sent!");
+                                            else toast.error("Test push failed.");
+                                        }}
+                                        className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-blue-500 text-center", isPushBusy && "opacity-50")}
+                                        disabled={isPushBusy}
+                                    >
+                                        {isPushBusy ? "Sending..." : "Send Test Notification"}
+                                    </button>
+                                )}
+                            </SettingsGroup>
+                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-amber-500/5 text-amber-500/80" : "bg-amber-50 text-amber-600")}>
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                <p className="text-[11px] leading-relaxed font-medium">
+                                    We use push notifications to alert you about new contracts and emergency payment updates.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
             case 'logout':
                 triggerHaptic();
                 signOutMutation.mutate?.();
@@ -767,7 +1131,12 @@ const MobileDashboardDemo = ({
                                 <div className="grid grid-cols-2 gap-4">
                                     <motion.div
                                         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                        className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all', cardBgColor, borderColor)}
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            setActiveTab('collabs');
+                                            setCollabSubTab('active');
+                                        }}
+                                        className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
                                     >
                                         <div className="flex items-center gap-2 mb-2.5">
                                             <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
@@ -778,7 +1147,12 @@ const MobileDashboardDemo = ({
 
                                     <motion.div
                                         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                                        className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all', cardBgColor, borderColor)}
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            setActiveTab('collabs');
+                                            setCollabSubTab('pending');
+                                        }}
+                                        className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
                                     >
                                         <div className="flex items-center gap-2 mb-2.5">
                                             <Handshake className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
@@ -807,8 +1181,6 @@ const MobileDashboardDemo = ({
                                     ) : (
                                         <div className="space-y-10">
                                             {collabRequests.map((req, idx) => {
-                                                const reqStatus = req.status || (idx === 0 ? 'new' : idx === 1 ? 'pending' : 'negotiating');
-
                                                 // Format deliverables accurately
                                                 let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
                                                 const rawDeliv = req.raw?.deliverables || req.deliverables;
@@ -837,28 +1209,17 @@ const MobileDashboardDemo = ({
                                                 }
 
                                                 // Mock/Get ID and time
-                                                const fakeId = req.id ? req.id.slice(0, 4).toUpperCase() : 'DEAL';
-                                                const timeAgo = (date: string) => {
-                                                    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
-                                                    let interval = seconds / 31536000;
-                                                    if (interval > 1) return Math.floor(interval) + " years ago";
-                                                    interval = seconds / 2592000;
-                                                    if (interval > 1) return Math.floor(interval) + " months ago";
-                                                    interval = seconds / 86400;
-                                                    if (interval > 1) return Math.floor(interval) + " days ago";
-                                                    interval = seconds / 3600;
-                                                    if (interval > 1) return Math.floor(interval) + " hours ago";
-                                                    interval = seconds / 60;
-                                                    if (interval > 1) return Math.floor(interval) + " minutes ago";
-                                                    return Math.floor(seconds) + " seconds ago";
-                                                };
-                                                const createdTime = req.created_at ? timeAgo(req.created_at) : 'recently';
 
                                                 return (
                                                     <motion.div
                                                         key={req.id || idx}
                                                         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
                                                         whileTap={{ scale: 0.98 }}
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            setSelectedItem(req);
+                                                            setSelectedType('offer');
+                                                        }}
                                                         className={cn('rounded-[16px] border p-5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_50px_-10px_rgba(0,0,0,0.4)] transition-all duration-200 hover:-translate-y-[1px] relative', cardBgColor, borderColor)}
                                                     >
                                                         {/* Row 1: Brand Header */}
@@ -914,7 +1275,12 @@ const MobileDashboardDemo = ({
 
                                                         <div className="flex gap-2 pt-3 border-t border-slate-500/10">
                                                             <button
-                                                                onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${req.id}/brief`); }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    triggerHaptic();
+                                                                    setSelectedItem(req);
+                                                                    setSelectedType('offer');
+                                                                }}
                                                                 className={cn(
                                                                     "flex-1 h-10 rounded-[12px] font-semibold text-[13px] border transition-all",
                                                                     isDark ? "border-[#334155] text-slate-300 hover:bg-white/5" : "border-slate-300 text-slate-700 hover:bg-gray-50 bg-white"
@@ -999,6 +1365,11 @@ const MobileDashboardDemo = ({
                                                             dragConstraints={{ left: -100, right: 0 }}
                                                             dragElastic={0.1}
                                                             whileTap={{ scale: 0.98 }}
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                setSelectedItem(deal);
+                                                                setSelectedType('deal');
+                                                            }}
                                                             className={cn(
                                                                 "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative",
                                                                 borderColor,
@@ -1029,9 +1400,11 @@ const MobileDashboardDemo = ({
                                                             <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-500/10">
                                                                 <div className={cn(
                                                                     "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
-                                                                    isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600"
+                                                                    ((deal.status || '').toLowerCase() === 'signed_pending_creator' || (deal.status || '').toLowerCase() === 'sent' || (deal.status || '').toLowerCase() === 'signed_by_brand')
+                                                                        ? (isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")
+                                                                        : (isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600")
                                                                 )}>
-                                                                    In Progress
+                                                                    {((deal.status || '').toLowerCase() === 'signed_pending_creator' || (deal.status || '').toLowerCase() === 'sent' || (deal.status || '').toLowerCase() === 'signed_by_brand') ? 'Needs Signature' : 'In Progress'}
                                                                 </div>
 
                                                                 <div className="flex gap-1">
@@ -1085,6 +1458,11 @@ const MobileDashboardDemo = ({
                                                         <motion.div
                                                             key={idx}
                                                             whileTap={{ scale: 0.983 }}
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                setSelectedItem(req);
+                                                                setSelectedType('offer');
+                                                            }}
                                                             className={cn(
                                                                 "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative",
                                                                 borderColor,
@@ -1216,11 +1594,11 @@ const MobileDashboardDemo = ({
                                                     onClick={() => setActiveSettingsPage('portfolio')}
                                                 />
                                                 <SettingsRow
-                                                    icon={<Star />} iconBg="bg-amber-400"
-                                                    label="Starred Deals"
-                                                    subtext="Bookmarked collaboration offers"
+                                                    icon={<Target />} iconBg="bg-amber-400"
+                                                    label="Collab Preferences"
+                                                    subtext="Deal sizes, niches & rates"
                                                     isDark={isDark} textColor={textColor}
-                                                    onClick={() => setActiveSettingsPage('starred')}
+                                                    onClick={() => setActiveSettingsPage('collab-preferences')}
                                                 />
                                                 <SettingsRow
                                                     icon={<Link2 />} iconBg="bg-violet-500"
@@ -1583,7 +1961,322 @@ const MobileDashboardDemo = ({
                         </>
                     )}
                 </AnimatePresence>
+
+                {/* ─── ITEM DETAIL VIEW ─── */}
+                <AnimatePresence>
+                    {selectedItem && (
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
+                            className={cn(
+                                "fixed inset-0 z-[200] flex flex-col overflow-hidden",
+                                isDark ? "bg-[#0B0F14]" : "bg-[#F9FAFB]"
+                            )}
+                        >
+                            {/* Fixed Header */}
+                            <div className={cn(
+                                "px-6 py-4 flex items-center justify-between border-b sticky top-0 z-20",
+                                isDark ? "bg-[#0B0F14]/95 backdrop-blur-md border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
+                            )}>
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={() => { triggerHaptic(); setSelectedItem(null); setSelectedType(null); }}
+                                        className={cn("w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                    >
+                                        <ChevronRight className="w-5 h-5 rotate-180" />
+                                    </button>
+                                    <div>
+                                        <h2 className={cn("text-lg font-bold tracking-tight", textColor)}>
+                                            {selectedType === 'deal' ? 'Deal Detail' : 'Offer Brief'}
+                                        </h2>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>
+                                            {selectedItem.brand_name || 'Brand Partner'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => { triggerHaptic(); }}
+                                    className={cn("w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
+                                >
+                                    <MoreHorizontal className="w-5 h-5 opacity-40" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto px-6 pt-8 pb-32">
+                                {/* Brand Identity */}
+                                <div className="flex flex-col items-center text-center mb-10">
+                                    <motion.div
+                                        initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                                        className={cn("w-24 h-24 rounded-3xl border flex items-center justify-center shadow-xl mb-6 overflow-hidden", isDark ? "bg-[#1A253C] border-white/10 shadow-black/40" : "bg-white border-slate-100 shadow-slate-200/50")}
+                                    >
+                                        {getBrandIcon(selectedItem.brand_logo_url || selectedItem.logo_url, selectedItem.category, selectedItem.brand_name)}
+                                    </motion.div>
+                                    <h3 className={cn("text-2xl font-black mb-2 tracking-tight", textColor)}>
+                                        {selectedItem.brand_name || 'Brand Name'}
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <div className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-1.5 shadow-sm">
+                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                            Verified Brand
+                                        </div>
+                                        <div className={cn("px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border", isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-500")}>
+                                            {selectedItem.category || 'Lifestyle'}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-2 gap-3 mb-10">
+                                    <div className={cn("p-4 rounded-2xl border", cardBgColor, borderColor)}>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mb-1", textColor)}>Budget</p>
+                                        <p className={cn("text-xl font-black", textColor)}>
+                                            ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className={cn("p-4 rounded-2xl border", cardBgColor, borderColor)}>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mb-1", textColor)}>Status</p>
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                            <p className={cn("text-[12px] font-bold uppercase tracking-wide", isDark ? "text-emerald-400" : "text-emerald-600")}>
+                                                {selectedType === 'deal' ? 'Active' : 'Pending'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Logistics Section */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className={cn("text-sm font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Deliverables</h4>
+                                        <Clapperboard className="w-4 h-4 opacity-20" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        {['1 Instagram Reel', '2 Instagram Stories (With Link)', 'Usage Rights (30 Days)'].map((d, i) => (
+                                            <div key={i} className={cn("p-4 rounded-xl border flex items-center justify-between group transition-all", isDark ? "bg-white/5 border-white/10 hover:bg-white/20" : "bg-slate-50 border-slate-100")}>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                                                    </div>
+                                                    <span className={cn("text-sm font-bold", textColor)}>{d}</span>
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-40 transition-opacity" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4">
+                                        <h4 className={cn("text-sm font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Payment & Timeline</h4>
+                                        <CreditCard className="w-4 h-4 opacity-20" />
+                                    </div>
+                                    <div className={cn("p-5 rounded-2xl border space-y-4", cardBgColor, borderColor)}>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className={cn("font-medium opacity-60", textColor)}>Payment Mode</span>
+                                            <span className={cn("font-bold flex items-center gap-1.5", textColor)}>
+                                                <Landmark className="w-3.5 h-3.5 text-slate-400" /> Direct Transfer
+                                            </span>
+                                        </div>
+                                        <div className="h-px w-full bg-slate-500/10" />
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className={cn("font-medium opacity-60", textColor)}>Deadline</span>
+                                            <span className={cn("font-bold text-orange-500 flex items-center gap-1.5", textColor)}>
+                                                <Clock className="w-3.5 h-3.5" /> 21 Mar • 4d left
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4">
+                                        <h4 className={cn("text-sm font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Legal & Protection</h4>
+                                        <FileText className="w-4 h-4 opacity-20" />
+                                    </div>
+                                    <motion.div
+                                        whileTap={{ scale: 0.98 }}
+                                        className={cn("p-5 rounded-2xl border flex items-center justify-between group cursor-pointer transition-all", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-500/10")}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                                <FileText className="w-5 h-5 text-emerald-500" />
+                                            </div>
+                                            <div>
+                                                <p className={cn("font-bold text-[14px]", textColor)}>Content Rights Agreement</p>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mt-0.5", textColor)}>Verified by Armour</p>
+                                            </div>
+                                        </div>
+                                        <Download className="w-5 h-5 text-slate-400 opacity-40 group-hover:opacity-100 transition-opacity" />
+                                    </motion.div>
+                                </div>
+                            </div>
+
+                            {/* Floating Action Button */}
+                            <div className={cn("sticky bottom-0 left-0 right-0 p-6 pt-10 bg-gradient-to-t via-60% border-t", isDark ? "from-[#0B0F14] via-[#0B0F14]/95 to-transparent border-white/5" : "from-white via-white/95 to-transparent border-slate-100")}>
+                                <div className="space-y-3">
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            if (selectedType === 'offer') {
+                                                handleAccept(selectedItem);
+                                            } else {
+                                                const status = (selectedItem.status || '').toLowerCase();
+                                                if (status === 'signed_pending_creator' || status === 'sent' || status.includes('pending_creator') || status === 'signed_by_brand') {
+                                                    triggerHaptic();
+                                                    setShowCreatorSigningModal(true);
+                                                } else {
+                                                    triggerHaptic();
+                                                }
+                                            }
+                                        }}
+                                        disabled={processingDeal === selectedItem.id}
+                                        className={cn("w-full h-14 rounded-2xl font-black uppercase tracking-[0.15em] shadow-xl transition-all flex items-center justify-center gap-2",
+                                            selectedType === 'offer' ? "bg-blue-600 text-white shadow-blue-500/30" :
+                                                ((selectedType === 'deal' && ((selectedItem.status || '').toLowerCase() === 'signed_pending_creator' || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')) ?
+                                                    "bg-emerald-600 text-white shadow-emerald-500/30" :
+                                                    (isDark ? "bg-white text-[#0B0F14]" : "bg-slate-900 text-white")))}
+                                    >
+                                        {processingDeal === selectedItem.id ? <Loader2 className="w-5 h-5 animate-spin" /> :
+                                            (selectedType === 'offer' ? 'Accept Deal Flow' :
+                                                ((selectedType === 'deal' && ((selectedItem.status || '').toLowerCase() === 'signed_pending_creator' || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')) ?
+                                                    'Sign Contract' : 'Contract Settings'))}
+                                    </motion.button>
+
+                                    {selectedType === 'offer' && (
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    navigate(`/collab-requests/${selectedItem.id}/counter`, { state: { request: selectedItem.raw || selectedItem } });
+                                                }}
+                                                className={cn("flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[12px] uppercase tracking-wider border transition-all active:scale-95",
+                                                    isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-800")}
+                                            >
+                                                <Edit3 className="w-4 h-4" />
+                                                Counter
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    if (onDeclineRequest) onDeclineRequest(selectedItem.id);
+                                                    setSelectedItem(null);
+                                                }}
+                                                className={cn("flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[12px] uppercase tracking-wider border transition-all active:scale-95",
+                                                    "bg-red-500/10 border-red-500/20 text-red-500")}
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                                Decline
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
+
+            {/* Creator Signing Modal */}
+            <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
+                <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
+                            <FileText className="w-5 h-5 text-sky-400" />
+                            Sign Agreement
+                        </DialogTitle>
+                        <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
+                            {creatorSigningStep === 'send'
+                                ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
+                                : 'Enter the 6-digit code sent to your email to complete the signing process.'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="px-6 py-5">
+                        {creatorSigningStep === 'send' ? (
+                            <div className="space-y-4">
+                                <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
+                                    <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
+                                        <p className="text-xs text-sky-100/80 mt-1">
+                                            Signing as: <span className="text-white">{profile?.email || 'Your registered email'}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <motion.button
+                                    onClick={handleSendCreatorOTP}
+                                    disabled={isSendingCreatorOTP}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                                >
+                                    {isSendingCreatorOTP ? (
+                                        <>
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Sending OTP...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Mail className="w-5 h-5" />
+                                            Send OTP to Email
+                                        </>
+                                    )}
+                                </motion.button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase font-black">Enterprise OTP Code</label>
+                                    <input
+                                        type="text"
+                                        maxLength={6}
+                                        placeholder="123456"
+                                        value={creatorOTP}
+                                        onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
+                                        inputMode="numeric"
+                                        autoComplete="one-time-code"
+                                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                                    />
+                                    <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <motion.button
+                                        onClick={handleVerifyCreatorOTP}
+                                        disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                                    >
+                                        {isVerifyingCreatorOTP || isSigningAsCreator ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle2 className="w-5 h-5" />
+                                                Verify & Sign
+                                            </>
+                                        )}
+                                    </motion.button>
+
+                                    <button
+                                        onClick={() => {
+                                            setCreatorSigningStep('send');
+                                            setCreatorOTP('');
+                                        }}
+                                        disabled={isVerifyingCreatorOTP || isSigningAsCreator}
+                                        className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
+                                    >
+                                        Change method or resend OTP
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

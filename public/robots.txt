@@ -1,25 +1,13 @@
-# robots.txt for creatorarmour.com
-
 User-agent: *
 Allow: /
+Allow: /sitemap.xml
 Disallow: /api/
+Disallow: /admin/
 Disallow: /dashboard/
-Disallow: /creator-dashboard/
-Disallow: /admin-dashboard/
-Disallow: /lawyer-dashboard/
-Disallow: /ca-dashboard/
-Disallow: /messages
-Disallow: /upgrade
-Disallow: /*?*
+Disallow: /login/
+Disallow: /signup/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /dist/
 
-# Allow important pages
-Allow: /
-Allow: /login
-Allow: /signup
-Allow: /about
-Allow: /blog
-Allow: /privacy-policy
-Allow: /terms-of-service
-
-# Sitemap
 Sitemap: https://creatorarmour.com/sitemap.xml
