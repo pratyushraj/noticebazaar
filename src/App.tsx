@@ -79,6 +79,7 @@ import BrandDetails from "./pages/BrandDetails";
 import BrandOpportunities from "./pages/BrandOpportunities";
 import ContractAnalyzer from "./pages/ContractAnalyzer";
 import RateCalculator from "./pages/RateCalculator";
+import DynamicRateCalculator from "./pages/DynamicRateCalculator";
 import PartnerProgram from "./pages/PartnerProgram";
 import AIPitchGenerator from "./pages/AIPitchGenerator";
 import ReferralLanding from "./pages/ReferralLanding";
@@ -417,6 +418,7 @@ const App = () => {
                         {/* Public Feedback Page - No auth required (read-only view) */}
                         <Route path="/feedback/:reportId" element={<FeedbackPage />} />
                         {/* Public Brand eSign Status Page - No auth required */}
+                        <Route path="/rate-calculator/:platform/:niche" element={<DynamicRateCalculator />} />
                         <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
                         <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 

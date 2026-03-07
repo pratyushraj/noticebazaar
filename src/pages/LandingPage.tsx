@@ -21,15 +21,17 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'Creator Armour | Secure Collaboration Link for Creators';
-  const seoDescription = 'Replace brand DMs with one secure collaboration link. Receive structured offers, auto-generate contracts, and track payments in one creator workflow.';
+  const seoTitle = 'CreatorArmour: The Operating System for Creator Collaborations | Protect & Grow';
+  const seoDescription = 'CreatorArmour helps content creators replace chaotic DMs with structured brand deals. Get auto-generated contracts, track payments, and protect your collaborations.';
   const seoKeywords = [
-    'creator collaboration link',
-    'influencer contract generator',
-    'brand deal protection',
-    'creator payment tracking',
-    'influencer legal tools India',
-    'creator armour',
+    'creator operating system',
+    'brand deal management',
+    'influencer contract automation',
+    'creator payment protection',
+    'legal tech for creators India',
+    'creator armour platform',
+    'secure brand deals',
+    'creator business growth',
   ];
   const faqItems = [
     {
@@ -281,6 +283,36 @@ const LandingPage = () => {
       />
       <FAQSchema faqs={faqItems} />
       <BreadcrumbSchema items={[{ name: 'Creator Armour', url: canonicalUrl }]} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: "CreatorArmour",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Patna",
+              addressRegion: "Bihar",
+              addressCountry: "IN",
+            },
+            url: "https://creatorarmour.com",
+            telephone: "+91-9999999999",
+            priceRange: "₹0 - ₹5,000",
+            openingHoursSpecification: [
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                opens: "09:00",
+                closes: "18:00",
+              },
+            ],
+            image: "https://creatorarmour.com/logo.png",
+            description: "AI-powered legal and tax platform for content creators and influencers in India.",
+            hasMap: "https://www.google.com/maps/place/Patna,+Bihar",
+          })
+        }}
+      />
       {/* Navigation */}
       <nav
         className="sticky top-0 z-50 bg-[#0B0F14]/80 backdrop-blur-xl border-b border-white/5"
