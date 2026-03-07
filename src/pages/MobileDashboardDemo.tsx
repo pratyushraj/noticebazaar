@@ -433,6 +433,7 @@ const MobileDashboardDemo = ({
     };
 
     const [showMenu, setShowMenu] = useState(false);
+    const [showBrandDetails, setShowBrandDetails] = useState(false);
 
     const handleAction = (action: string) => {
         triggerHaptic();
@@ -2225,6 +2226,105 @@ const MobileDashboardDemo = ({
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* ── BRAND DETAILS (Progressive Disclosure) ── */}
+                                <motion.div
+                                    className={cn("rounded-xl border mb-5 overflow-hidden", cardBgColor, borderColor)}
+                                    layout
+                                >
+                                    {/* Collapsed trigger */}
+                                    <button
+                                        onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity"
+                                    >
+                                        <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-blue-500/10" : "bg-blue-50")}>
+                                            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2} />
+                                        </div>
+                                        <div className="flex-1 text-left min-w-0">
+                                            <p className={cn("text-[13px] font-bold leading-tight", textColor)}>Brand Information</p>
+                                            <p className={cn("text-[11px] mt-0.5", secondaryTextColor)}>Verified Business · View Company Details</p>
+                                        </div>
+                                        <motion.div
+                                            animate={{ rotate: showBrandDetails ? 90 : 0 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <ChevronRight className={cn("w-4 h-4", secondaryTextColor)} />
+                                        </motion.div>
+                                    </button>
+
+                                    {/* Expanded content */}
+                                    <AnimatePresence initial={false}>
+                                        {showBrandDetails && (
+                                            <motion.div
+                                                key="brand-details"
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className={cn("border-t mx-0", isDark ? "border-white/8" : "border-slate-100")} />
+
+                                                {/* Trust badges */}
+                                                <div className="px-4 pt-3 pb-2">
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40", textColor)}>Verified Identity</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {[
+                                                            { icon: '✓', label: 'GST Verified', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+                                                            { icon: '✓', label: 'Email Verified', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+                                                            { icon: '✓', label: 'Domain Verified', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+                                                        ].map((badge) => (
+                                                            <span key={badge.label} className={cn("px-2 py-0.5 rounded-md text-[10px] font-black border", badge.color)}>
+                                                                {badge.icon} {badge.label}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Company info rows */}
+                                                <div className="px-4 pb-3 space-y-0">
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40 pt-2", textColor)}>Company Details</p>
+                                                    {[
+                                                        { label: 'Company', value: selectedItem.company_name || selectedItem.brand_name || 'Pronto Pvt Ltd' },
+                                                        { label: 'GST', value: selectedItem.gst_number || '27ABCDE1234F1Z5' },
+                                                        { label: 'Address', value: selectedItem.address || 'Mumbai, India' },
+                                                        { label: 'Contact', value: selectedItem.contact_person || selectedItem.contact_name || 'Brand Manager' },
+                                                        { label: 'Email', value: selectedItem.contact_email || selectedItem.email || '—' },
+                                                        { label: 'Phone', value: selectedItem.contact_phone || selectedItem.phone || '—' },
+                                                    ].map((row, i) => (
+                                                        <div key={i} className={cn("flex items-start justify-between py-2", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
+                                                            <span className={cn("text-[12px] shrink-0 w-16", secondaryTextColor)}>{row.label}</span>
+                                                            <span className={cn("text-[12px] font-semibold text-right flex-1 ml-3", textColor)}>{row.value}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Creator activity */}
+                                                <div className={cn("mx-4 mb-3 rounded-lg p-3 border", isDark ? "bg-white/3 border-white/8" : "bg-slate-50 border-slate-200")}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Creator Activity</p>
+                                                    <div className="flex items-center gap-4">
+                                                        <div>
+                                                            <p className={cn("text-[18px] font-black leading-none", textColor)}>
+                                                                {selectedItem.total_collabs || 3}
+                                                            </p>
+                                                            <p className={cn("text-[10px] mt-0.5", secondaryTextColor)}>Collaborations</p>
+                                                        </div>
+                                                        <div className={cn("w-px h-8 self-center", isDark ? "bg-white/10" : "bg-slate-200")} />
+                                                        <div>
+                                                            <p className={cn("text-[18px] font-black leading-none", textColor)}>
+                                                                ₹{selectedItem.total_paid_to_creators || '1.2L'}
+                                                            </p>
+                                                            <p className={cn("text-[10px] mt-0.5", secondaryTextColor)}>Paid to Creators</p>
+                                                        </div>
+                                                        <div className="ml-auto">
+                                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-blue-500/10 border border-blue-500/15 text-blue-500">🛡 Armour Brand</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </motion.div>
 
                                 {/* ── DELIVERABLES ── */}
                                 <div className="mb-5">
