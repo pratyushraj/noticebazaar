@@ -2145,142 +2145,172 @@ const MobileDashboardDemo = ({
                         >
                             {/* Fixed Header */}
                             <div className={cn(
-                                "px-6 py-4 flex items-center justify-between border-b sticky top-0 z-20",
+                                "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
                                 isDark ? "bg-[#0B0F14]/95 backdrop-blur-md border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
                             )}>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => { triggerHaptic(); setSelectedItem(null); setSelectedType(null); }}
-                                        className={cn("w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                     >
-                                        <ChevronRight className="w-5 h-5 rotate-180" />
+                                        <ChevronRight className="w-4 h-4 rotate-180" />
                                     </button>
                                     <div>
-                                        <h2 className={cn("text-lg font-bold tracking-tight", textColor)}>
+                                        <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>
                                             {selectedType === 'deal' ? 'Deal Detail' : 'Offer Brief'}
                                         </h2>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>
+                                        <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>
                                             {selectedItem.brand_name || 'Brand Partner'}
                                         </p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => { triggerHaptic(); }}
-                                    className={cn("w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
+                                    className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
                                 >
-                                    <MoreHorizontal className="w-5 h-5 opacity-40" />
+                                    <MoreHorizontal className="w-4 h-4 opacity-40" />
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto px-6 pt-8 pb-32">
-                                {/* Brand Identity */}
-                                <div className="flex flex-col items-center text-center mb-10">
-                                    <motion.div
-                                        initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                                        className={cn("w-24 h-24 rounded-3xl border flex items-center justify-center shadow-xl mb-6 overflow-hidden", isDark ? "bg-[#1A253C] border-white/10 shadow-black/40" : "bg-white border-slate-100 shadow-slate-200/50")}
-                                    >
-                                        {getBrandIcon(selectedItem.brand_logo_url || selectedItem.logo_url, selectedItem.category, selectedItem.brand_name)}
-                                    </motion.div>
-                                    <h3 className={cn("text-2xl font-black mb-2 tracking-tight", textColor)}>
-                                        {selectedItem.brand_name || 'Brand Name'}
-                                    </h3>
-                                    <div className="flex items-center gap-2">
-                                        <div className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-1.5 shadow-sm">
-                                            <ShieldCheck className="w-3.5 h-3.5" />
-                                            Verified Brand
-                                        </div>
-                                        <div className={cn("px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border", isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-500")}>
-                                            {selectedItem.category || 'Lifestyle'}
-                                        </div>
-                                    </div>
-                                </div>
+                            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40">
 
-                                {/* Stats Grid */}
-                                <div className="grid grid-cols-2 gap-3 mb-10">
-                                    <div className={cn("p-4 rounded-2xl border", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mb-1", textColor)}>Budget</p>
-                                        <p className={cn("text-xl font-black", textColor)}>
-                                            ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}
-                                        </p>
-                                    </div>
-                                    <div className={cn("p-4 rounded-2xl border", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mb-1", textColor)}>Status</p>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                            <p className={cn("text-[12px] font-bold uppercase tracking-wide", isDark ? "text-emerald-400" : "text-emerald-600")}>
-                                                {selectedType === 'deal' ? 'Active' : 'Pending'}
+                                {/* ── COMPACT BRAND HERO ── */}
+                                <div className={cn("rounded-2xl border p-4 mb-5", cardBgColor, borderColor)}>
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0",
+                                            selectedItem.collab_type === 'barter'
+                                                ? (isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-100")
+                                                : (isDark ? "bg-blue-500/5 border-slate-700" : "bg-slate-50 border-slate-200")
+                                        )}>
+                                            {getBrandIcon(selectedItem.brand_logo_url || selectedItem.logo_url, selectedItem.category, selectedItem.brand_name)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-[18px] font-black tracking-tight truncate", textColor)}>
+                                                {selectedItem.brand_name || 'Brand Name'}
                                             </p>
+                                            <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                                <span className={cn("text-[12px]", secondaryTextColor)}>{selectedItem.category || 'Lifestyle'}</span>
+                                                <span className="text-slate-500 text-[10px]">•</span>
+                                                <ShieldCheck className="w-3 h-3 text-blue-500" strokeWidth={2.5} />
+                                                <span className="text-[12px] font-semibold text-blue-500">Verified</span>
+                                            </div>
+                                        </div>
+                                        <div className="shrink-0 text-right">
+                                            <p className={cn("text-[20px] font-black tracking-tight", textColor)}>
+                                                ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}
+                                            </p>
+                                            <div className="flex items-center justify-end gap-1 mt-0.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                <span className="text-[11px] font-bold text-emerald-500">
+                                                    {selectedType === 'deal' ? 'Active' : 'Pending'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* deal type row */}
+                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-500/10">
+                                        {selectedItem.collab_type === 'barter' ? (
+                                            <span className="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500/10 border border-amber-500/20 text-amber-500">🎁 Barter Deal</span>
+                                        ) : (
+                                            <span className="px-2.5 py-1 rounded-lg text-[11px] font-black bg-blue-500/10 border border-blue-500/15 text-blue-500">💳 Paid Deal</span>
+                                        )}
+                                        <span className={cn("text-[11px] font-semibold ml-auto", secondaryTextColor)}>
+                                            {selectedItem.collab_type === 'barter' ? 'Product Value' : 'Cash Payment'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* ── DELIVERABLES ── */}
+                                <div className="mb-5">
+                                    <h4 className={cn("text-[13px] font-bold mb-3", textColor)}>Deliverables</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {(() => {
+                                            const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                            let items: string[] = ['🎥 Reel ×1', '📱 Story ×2', '📄 Usage Rights 30d'];
+                                            try {
+                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                if (Array.isArray(parsed) && parsed.length > 0) {
+                                                    items = parsed.map((d: any) => {
+                                                        if (typeof d === 'string') return d;
+                                                        const ct = (d.contentType || d.type || '').toLowerCase();
+                                                        const count = d.count || d.quantity || 1;
+                                                        const emoji = ct.includes('reel') ? '🎥' : ct.includes('story') ? '📱' : ct.includes('post') ? '🖼' : ct.includes('usage') ? '📄' : '📋';
+                                                        return `${emoji} ${d.contentType || d.type || 'Content'} ×${count}`;
+                                                    });
+                                                }
+                                            } catch (_) { }
+                                            return items.map((d, i) => (
+                                                <span key={i} className={cn("px-3 py-1.5 rounded-xl text-[12px] font-bold border", isDark ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-100 border-slate-200 text-slate-700")}>
+                                                    {d}
+                                                </span>
+                                            ));
+                                        })()}
+                                    </div>
+                                </div>
+
+                                {/* ── PAYMENT ── */}
+                                <div className="mb-5">
+                                    <h4 className={cn("text-[13px] font-bold mb-3", textColor)}>Payment</h4>
+                                    <div className={cn("rounded-2xl border divide-y overflow-hidden", cardBgColor, borderColor, isDark ? "divide-white/5" : "divide-slate-100")}>
+                                        <div className="flex items-center gap-3 px-4 py-3">
+                                            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
+                                                <Landmark className="w-4 h-4 text-blue-500" />
+                                            </div>
+                                            <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Payment Mode</span>
+                                            <span className={cn("text-[13px] font-bold", textColor)}>Direct Transfer</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 px-4 py-3">
+                                            <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
+                                                <Clock className="w-4 h-4 text-orange-500" />
+                                            </div>
+                                            <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Deadline</span>
+                                            <span className="text-[13px] font-bold text-orange-500">
+                                                {selectedItem.deadline
+                                                    ? new Date(selectedItem.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                                                    : '21 Mar'} · {(() => {
+                                                        const d = selectedItem.deadline ? new Date(selectedItem.deadline) : new Date(Date.now() + 4 * 86400000);
+                                                        const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
+                                                        return diff > 0 ? `${diff}d left` : 'Overdue';
+                                                    })()}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Logistics Section */}
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className={cn("text-sm font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Deliverables</h4>
-                                        <Clapperboard className="w-4 h-4 opacity-20" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        {['1 Instagram Reel', '2 Instagram Stories (With Link)', 'Usage Rights (30 Days)'].map((d, i) => (
-                                            <div key={i} className={cn("p-4 rounded-xl border flex items-center justify-between group transition-all", isDark ? "bg-white/5 border-white/10 hover:bg-white/20" : "bg-slate-50 border-slate-100")}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                                                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
-                                                    </div>
-                                                    <span className={cn("text-sm font-bold", textColor)}>{d}</span>
-                                                </div>
-                                                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-40 transition-opacity" />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-4">
-                                        <h4 className={cn("text-sm font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Payment & Timeline</h4>
-                                        <CreditCard className="w-4 h-4 opacity-20" />
-                                    </div>
-                                    <div className={cn("p-5 rounded-2xl border space-y-4", cardBgColor, borderColor)}>
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className={cn("font-medium opacity-60", textColor)}>Payment Mode</span>
-                                            <span className={cn("font-bold flex items-center gap-1.5", textColor)}>
-                                                <Landmark className="w-3.5 h-3.5 text-slate-400" /> Direct Transfer
-                                            </span>
-                                        </div>
-                                        <div className="h-px w-full bg-slate-500/10" />
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className={cn("font-medium opacity-60", textColor)}>Deadline</span>
-                                            <span className={cn("font-bold text-orange-500 flex items-center gap-1.5", textColor)}>
-                                                <Clock className="w-3.5 h-3.5" /> 21 Mar • 4d left
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-4">
-                                        <h4 className={cn("text-sm font-black uppercase tracking-widest", isDark ? "text-slate-500" : "text-slate-400")}>Legal & Protection</h4>
-                                        <FileText className="w-4 h-4 opacity-20" />
-                                    </div>
+                                {/* ── LEGAL PROTECTION ── */}
+                                <div className="mb-5">
+                                    <h4 className={cn("text-[13px] font-bold mb-3", textColor)}>Legal Protection</h4>
                                     <motion.div
                                         whileTap={{ scale: 0.98 }}
-                                        className={cn("p-5 rounded-2xl border flex items-center justify-between group cursor-pointer transition-all", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-500/10")}
+                                        className={cn(
+                                            "rounded-2xl border p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden",
+                                            isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+                                        )}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                                                <FileText className="w-5 h-5 text-emerald-500" />
-                                            </div>
-                                            <div>
-                                                <p className={cn("font-bold text-[14px]", textColor)}>Content Rights Agreement</p>
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40 mt-0.5", textColor)}>Verified by Armour</p>
-                                            </div>
+                                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
+                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/10">
+                                            <ShieldCheck className="w-6 h-6 text-emerald-500" strokeWidth={1.5} />
                                         </div>
-                                        <Download className="w-5 h-5 text-slate-400 opacity-40 group-hover:opacity-100 transition-opacity" />
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <p className={cn("font-black text-[14px]", textColor)}>Armour Protected</p>
+                                                <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-500 text-white uppercase tracking-wider">Verified</span>
+                                            </div>
+                                            <p className={cn("text-[12px] font-medium", secondaryTextColor)}>Content Rights Agreement included</p>
+                                        </div>
+                                        <Download className="w-5 h-5 shrink-0 text-emerald-500 opacity-60" />
                                     </motion.div>
                                 </div>
                             </div>
 
-                            {/* Floating Action Button */}
-                            <div className={cn("sticky bottom-0 left-0 right-0 p-6 pt-10 bg-gradient-to-t via-60% border-t", isDark ? "from-[#0B0F14] via-[#0B0F14]/95 to-transparent border-white/5" : "from-white via-white/95 to-transparent border-slate-100")}>
-                                <div className="space-y-3">
+                            {/* ── STICKY CTA BAR ── */}
+                            <div className={cn(
+                                "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t",
+                                isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-white/10" : "bg-white/98 backdrop-blur-xl border-slate-100"
+                            )}>
+                                <div className="space-y-2.5">
                                     <motion.button
-                                        whileTap={{ scale: 0.95 }}
+                                        whileTap={{ scale: 0.97 }}
                                         onClick={() => {
                                             if (selectedType === 'offer') {
                                                 handleAccept(selectedItem);
@@ -2295,30 +2325,36 @@ const MobileDashboardDemo = ({
                                             }
                                         }}
                                         disabled={processingDeal === selectedItem.id}
-                                        className={cn("w-full h-14 rounded-2xl font-black uppercase tracking-[0.15em] shadow-xl transition-all flex items-center justify-center gap-2",
-                                            selectedType === 'offer' ? "bg-blue-600 text-white shadow-blue-500/30" :
-                                                ((selectedType === 'deal' && ((selectedItem.status || '').toLowerCase() === 'signed_pending_creator' || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')) ?
-                                                    "bg-emerald-600 text-white shadow-emerald-500/30" :
-                                                    (isDark ? "bg-white text-[#0B0F14]" : "bg-slate-900 text-white")))}
+                                        className={cn(
+                                            "w-full h-14 rounded-2xl font-black text-[15px] shadow-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50",
+                                            selectedType === 'offer'
+                                                ? (selectedItem.collab_type === 'barter' ? "bg-amber-500 text-white shadow-amber-500/30" : "bg-blue-600 text-white shadow-blue-500/30")
+                                                : ((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
+                                                    ? "bg-emerald-600 text-white shadow-emerald-500/30"
+                                                    : (isDark ? "bg-white text-[#0B0F14]" : "bg-slate-900 text-white")
+                                        )}
                                     >
-                                        {processingDeal === selectedItem.id ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                                            (selectedType === 'offer' ? 'Accept Deal Flow' :
-                                                ((selectedType === 'deal' && ((selectedItem.status || '').toLowerCase() === 'signed_pending_creator' || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')) ?
-                                                    'Sign Contract' : 'Contract Settings'))}
+                                        {processingDeal === selectedItem.id
+                                            ? <Loader2 className="w-5 h-5 animate-spin" />
+                                            : selectedType === 'offer'
+                                                ? (selectedItem.collab_type === 'barter' ? '🎁 Accept Barter' : 'Accept Deal')
+                                                : ((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
+                                                    ? '✍️ Sign Contract'
+                                                    : 'Review Contract'
+                                        }
                                     </motion.button>
 
                                     {selectedType === 'offer' && (
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-2.5">
                                             <button
                                                 onClick={() => {
                                                     triggerHaptic();
                                                     navigate(`/collab-requests/${selectedItem.id}/counter`, { state: { request: selectedItem.raw || selectedItem } });
                                                 }}
-                                                className={cn("flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[12px] uppercase tracking-wider border transition-all active:scale-95",
+                                                className={cn("flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-bold text-[13px] border transition-all active:scale-95",
                                                     isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-800")}
                                             >
-                                                <Edit3 className="w-4 h-4" />
-                                                Counter
+                                                <Edit3 className="w-4 h-4" /> Counter
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -2326,126 +2362,124 @@ const MobileDashboardDemo = ({
                                                     if (onDeclineRequest) onDeclineRequest(selectedItem.id);
                                                     setSelectedItem(null);
                                                 }}
-                                                className={cn("flex-1 h-12 rounded-xl flex items-center justify-center gap-2 font-bold text-[12px] uppercase tracking-wider border transition-all active:scale-95",
-                                                    "bg-red-500/10 border-red-500/20 text-red-500")}
+                                                className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-bold text-[13px] border transition-all active:scale-95 bg-red-500/10 border-red-500/20 text-red-500"
                                             >
-                                                <XCircle className="w-4 h-4" />
-                                                Decline
+                                                <XCircle className="w-4 h-4" /> Decline
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                        </motion.div>
+                </motion.div>
                     )}
-                </AnimatePresence>
+            </AnimatePresence>
+        </div>
+
+            {/* Creator Signing Modal */ }
+    <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
+        <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
+                    <FileText className="w-5 h-5 text-sky-400" />
+                    Sign Agreement
+                </DialogTitle>
+                <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
+                    {creatorSigningStep === 'send'
+                        ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
+                        : 'Enter the 6-digit code sent to your email to complete the signing process.'}
+                </DialogDescription>
+            </DialogHeader>
+
+            <div className="px-6 py-5">
+                {creatorSigningStep === 'send' ? (
+                    <div className="space-y-4">
+                        <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
+                            <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
+                            <div>
+                                <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
+                                <p className="text-xs text-sky-100/80 mt-1">
+                                    Signing as: <span className="text-white">{profile?.email || 'Your registered email'}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <motion.button
+                            onClick={handleSendCreatorOTP}
+                            disabled={isSendingCreatorOTP}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                        >
+                            {isSendingCreatorOTP ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    Sending OTP...
+                                </>
+                            ) : (
+                                <>
+                                    <Mail className="w-5 h-5" />
+                                    Send OTP to Email
+                                </>
+                            )}
+                        </motion.button>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase font-black">Enterprise OTP Code</label>
+                            <input
+                                type="text"
+                                maxLength={6}
+                                placeholder="123456"
+                                value={creatorOTP}
+                                onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
+                                className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                            />
+                            <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <motion.button
+                                onClick={handleVerifyCreatorOTP}
+                                disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                            >
+                                {isVerifyingCreatorOTP || isSigningAsCreator ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        Verify & Sign
+                                    </>
+                                )}
+                            </motion.button>
+
+                            <button
+                                onClick={() => {
+                                    setCreatorSigningStep('send');
+                                    setCreatorOTP('');
+                                }}
+                                disabled={isVerifyingCreatorOTP || isSigningAsCreator}
+                                className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
+                            >
+                                Change method or resend OTP
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Creator Signing Modal */}
-            <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
-                <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
-                            <FileText className="w-5 h-5 text-sky-400" />
-                            Sign Agreement
-                        </DialogTitle>
-                        <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
-                            {creatorSigningStep === 'send'
-                                ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
-                                : 'Enter the 6-digit code sent to your email to complete the signing process.'}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="px-6 py-5">
-                        {creatorSigningStep === 'send' ? (
-                            <div className="space-y-4">
-                                <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
-                                    <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
-                                        <p className="text-xs text-sky-100/80 mt-1">
-                                            Signing as: <span className="text-white">{profile?.email || 'Your registered email'}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <motion.button
-                                    onClick={handleSendCreatorOTP}
-                                    disabled={isSendingCreatorOTP}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
-                                >
-                                    {isSendingCreatorOTP ? (
-                                        <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            Sending OTP...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Mail className="w-5 h-5" />
-                                            Send OTP to Email
-                                        </>
-                                    )}
-                                </motion.button>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase font-black">Enterprise OTP Code</label>
-                                    <input
-                                        type="text"
-                                        maxLength={6}
-                                        placeholder="123456"
-                                        value={creatorOTP}
-                                        onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
-                                        inputMode="numeric"
-                                        autoComplete="one-time-code"
-                                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
-                                    />
-                                    <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
-                                </div>
-
-                                <div className="flex flex-col gap-2">
-                                    <motion.button
-                                        onClick={handleVerifyCreatorOTP}
-                                        disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
-                                    >
-                                        {isVerifyingCreatorOTP || isSigningAsCreator ? (
-                                            <>
-                                                <Loader2 className="w-5 h-5 animate-spin" />
-                                                {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckCircle2 className="w-5 h-5" />
-                                                Verify & Sign
-                                            </>
-                                        )}
-                                    </motion.button>
-
-                                    <button
-                                        onClick={() => {
-                                            setCreatorSigningStep('send');
-                                            setCreatorOTP('');
-                                        }}
-                                        disabled={isVerifyingCreatorOTP || isSigningAsCreator}
-                                        className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
-                                    >
-                                        Change method or resend OTP
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </div>
+            <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
+            </div>
+        </DialogContent>
+    </Dialog>
+        </div >
     );
 };
 
