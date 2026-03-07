@@ -1162,15 +1162,43 @@ const MobileDashboardDemo = ({
                                     </div>
 
                                     {/* Right: Actions & Avatar */}
-                                    <div className="flex items-center gap-3">
-                                        <button className={secondaryTextColor}><Search className="w-5 h-5" /></button>
+                                    <div className="flex items-center gap-2">
+                                        {/* Dark / Light toggle */}
+                                        <motion.button
+                                            onClick={() => { triggerHaptic(); setIsDark(d => !d); }}
+                                            whileTap={{ scale: 0.92 }}
+                                            className={cn(
+                                                "flex items-center gap-1 px-2.5 py-1.5 rounded-full border transition-all duration-300",
+                                                isDark
+                                                    ? "bg-slate-800 border-slate-700 text-amber-400"
+                                                    : "bg-slate-100 border-slate-200 text-slate-600"
+                                            )}
+                                        >
+                                            <AnimatePresence mode="wait" initial={false}>
+                                                {isDark ? (
+                                                    <motion.span key="moon" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                                        <Moon className="w-3.5 h-3.5" />
+                                                    </motion.span>
+                                                ) : (
+                                                    <motion.span key="sun" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                                                        <Sun className="w-3.5 h-3.5" />
+                                                    </motion.span>
+                                                )}
+                                            </AnimatePresence>
+                                            <span className="text-[10px] font-bold tracking-wide">{isDark ? 'Dark' : 'Light'}</span>
+                                        </motion.button>
+
+                                        {/* Bell */}
                                         <button onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
+                                            <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
                                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white" style={{ borderColor: bgColor }}>
                                                     {collabRequests.length}
                                                 </span>
                                             )}
                                         </button>
+
+                                        {/* Avatar */}
                                         <button onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
                                             <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
                                         </button>
