@@ -1096,9 +1096,9 @@ const MobileDashboardDemo = ({
                             {/* Command Header */}
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">
-                                    {/* Left: Avatar */}
-                                    <button onClick={() => handleAction('menu')} className={cn("w-9 h-9 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
-                                        <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                                    {/* Left: Sidebar Menu */}
+                                    <button onClick={() => handleAction('menu')} className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
+                                        <Menu className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
 
                                     {/* Center: Wordmark */}
@@ -1107,7 +1107,7 @@ const MobileDashboardDemo = ({
                                         <span className={textColor}>CreatorArmour</span>
                                     </div>
 
-                                    {/* Right: Actions */}
+                                    {/* Right: Actions & Avatar */}
                                     <div className="flex items-center gap-3">
                                         <button className={secondaryTextColor}><Search className="w-5 h-5" /></button>
                                         <button onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
@@ -1117,8 +1117,8 @@ const MobileDashboardDemo = ({
                                                 </span>
                                             )}
                                         </button>
-                                        <button onClick={toggleTheme} className={secondaryTextColor}>
-                                            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                        <button onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
                                         </button>
                                     </div>
                                 </div>
