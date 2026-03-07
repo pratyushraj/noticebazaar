@@ -172,6 +172,41 @@ const MobileDashboardDemo = ({
     const activeDealsCount = (brandDeals || []).length;
     const pendingOffersCount = (collabRequests || []).length;
 
+    // Compute Monthly Revenue based on active deals this month
+    const monthlyRevenue = React.useMemo(() => {
+        if (stats?.earnings > 0 && stats?.timeframe === 'month') return stats.earnings;
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        return (brandDeals || []).reduce((sum, deal) => {
+            const dateStr = deal.payment_received_date || deal.payment_expected_date || deal.due_date || deal.created_at;
+            let isCurrentMonth = true;
+            if (dateStr) {
+                const date = new Date(dateStr);
+                isCurrentMonth = date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            }
+            return sum + (isCurrentMonth ? (deal.deal_amount || 0) : 0);
+        }, 0);
+    }, [stats?.earnings, brandDeals]);
+
+    const yearlyRevenue = React.useMemo(() => {
+        if (stats?.earnings > 0 && stats?.timeframe === 'year') return stats.earnings;
+        const currentYear = new Date().getFullYear();
+        return (brandDeals || []).reduce((sum, deal) => {
+            const dateStr = deal.payment_received_date || deal.payment_expected_date || deal.due_date || deal.created_at;
+            let isCurrentYear = true;
+            if (dateStr) {
+                const date = new Date(dateStr);
+                isCurrentYear = date.getFullYear() === currentYear;
+            }
+            return sum + (isCurrentYear ? (deal.deal_amount || 0) : 0);
+        }, 0);
+    }, [stats?.earnings, brandDeals]);
+
+    const allTimeRevenue = React.useMemo(() => {
+        if (stats?.earnings > 0 && stats?.timeframe === 'allTime') return stats.earnings;
+        return (brandDeals || []).reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
+    }, [stats?.earnings, brandDeals]);
+
     useEffect(() => {
         const titles: Record<string, string> = {
             dashboard: 'Dashboard | CreatorArmour',
@@ -672,15 +707,15 @@ const MobileDashboardDemo = ({
                         <div className="px-4 space-y-6">
                             <div className={cn("p-6 rounded-[2.5rem] bg-slate-900 border border-white/10 text-white")}>
                                 <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-50 mb-4">Total Revenue Generated</p>
-                                <div className="text-4xl font-black font-outfit mb-6">₹{(stats?.allTime?.earnings || 842000).toLocaleString()}</div>
+                                <div className="text-4xl font-black font-outfit mb-6">₹{allTimeRevenue.toLocaleString()}</div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                                         <p className="text-[10px] font-bold opacity-40 mb-1">THIS YEAR</p>
-                                        <p className="text-lg font-bold">₹{(stats?.year?.earnings || 320000).toLocaleString()}</p>
+                                        <p className="text-lg font-bold">₹{yearlyRevenue.toLocaleString()}</p>
                                     </div>
                                     <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                                         <p className="text-[10px] font-bold opacity-40 mb-1">LAST MONTH</p>
-                                        <p className="text-lg font-bold text-emerald-400">₹{(stats?.month?.earnings || 125000).toLocaleString()}</p>
+                                        <p className="text-lg font-bold text-emerald-400">₹{monthlyRevenue.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1130,7 +1165,7 @@ const MobileDashboardDemo = ({
                                         </div>
                                         <div className="text-4xl font-black text-white mb-6 flex items-baseline gap-1 font-outfit">
                                             <span className="text-2xl font-bold opacity-70">₹</span>
-                                            <AnimatedCounter value={stats?.earnings || 0} />
+                                            <AnimatedCounter value={monthlyRevenue} />
                                         </div>
                                         <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/10 w-fit">
                                             <div className="w-5 h-5 rounded-full bg-emerald-400/20 flex items-center justify-center border border-emerald-400/30">
@@ -1755,11 +1790,11 @@ const MobileDashboardDemo = ({
                             <div className="grid grid-cols-2 gap-3 mb-6">
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
-                                    <div className={cn("text-lg font-bold font-outfit", isDark ? "text-emerald-400" : "text-emerald-600")}>₹{(stats?.month?.earnings || 0).toLocaleString()}</div>
+                                    <div className={cn("text-lg font-bold font-outfit", isDark ? "text-emerald-400" : "text-emerald-600")}>₹{monthlyRevenue.toLocaleString()}</div>
                                 </div>
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
-                                    <div className={cn("text-lg font-bold font-outfit", textColor)}>₹{(stats?.allTime?.earnings || 0).toLocaleString()}</div>
+                                    <div className={cn("text-lg font-bold font-outfit", textColor)}>₹{allTimeRevenue.toLocaleString()}</div>
                                 </div>
                             </div>
 
