@@ -16,6 +16,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -431,10 +432,12 @@ const MobileDashboardDemo = ({
         try { await onAcceptRequest(req); } finally { setProcessingDeal(null); }
     };
 
+    const [showMenu, setShowMenu] = useState(false);
+
     const handleAction = (action: string) => {
         triggerHaptic();
         if (action === 'notifications') navigate('/notifications');
-        else if (action === 'menu') { if (onOpenMenu) onOpenMenu(); }
+        else if (action === 'menu') { setShowMenu(true); if (onOpenMenu) onOpenMenu(); }
         else if (action === 'view_all') setActiveTab('collabs');
     };
 
@@ -1120,6 +1123,17 @@ const MobileDashboardDemo = ({
                 )}
                 style={{ backgroundColor: bgColor }}
             >
+                {/* Sidebar Drawer */}
+                <PremiumDrawer
+                    open={showMenu}
+                    onClose={() => setShowMenu(false)}
+                    onNavigate={(path) => { navigate(path); setShowMenu(false); }}
+                    onSetActiveTab={(tab) => { setShowMenu(false); }}
+                    onLogout={() => { setShowMenu(false); }}
+                    activeItem={activeTab}
+                    counts={{ messages: collabRequests.length }}
+                />
+
                 {/* Pull to Refresh */}
                 <div
                     className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-[110]"
@@ -1165,7 +1179,7 @@ const MobileDashboardDemo = ({
                                     <div className="flex items-center gap-2">
                                         {/* Dark / Light toggle */}
                                         <motion.button
-                                            onClick={() => { triggerHaptic(); setIsDark(d => !d); }}
+                                            onClick={() => { triggerHaptic(); setTheme(t => t === 'dark' ? 'light' : 'dark'); }}
                                             whileTap={{ scale: 0.92 }}
                                             className={cn(
                                                 "flex items-center gap-1 px-2.5 py-1.5 rounded-full border transition-all duration-300",
