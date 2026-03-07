@@ -1335,84 +1335,74 @@ const MobileDashboardDemo = ({
                                                             setSelectedItem(req);
                                                             setSelectedType('offer');
                                                         }}
-                                                        className={cn('rounded-[16px] border p-5 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_50px_-10px_rgba(0,0,0,0.4)] transition-all duration-200 hover:-translate-y-[1px] relative', cardBgColor, borderColor)}
+                                                        className={cn('rounded-xl border overflow-hidden transition-all duration-150 active:scale-[0.99] relative', isDark ? 'bg-[#0F172A] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}
                                                     >
-                                                        {/* Row 1: Brand Header */}
-                                                        <div className="flex justify-between items-start mb-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={cn("w-11 h-11 rounded-full border overflow-hidden flex items-center justify-center shrink-0 shadow-sm", isDark ? "bg-[#1A253C] border-white/10" : "bg-white border-slate-200")}>
+                                                        {/* Collab type accent strip */}
+                                                        <div className={cn("h-[3px] w-full", req.collab_type === 'barter' ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-gradient-to-r from-blue-500 to-violet-600')} />
+
+                                                        <div className="px-3.5 py-3">
+                                                            {/* Row 1: Logo + Brand name + Budget (all on one line) */}
+                                                            <div className="flex items-center gap-2.5 mb-2">
+                                                                <div className={cn("w-9 h-9 rounded-lg border overflow-hidden flex items-center justify-center shrink-0", isDark ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200")}>
                                                                     {getBrandIcon(req.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)}
                                                                 </div>
-                                                                <div className="min-w-0">
-                                                                    <h3 className={cn("text-[16px] font-semibold truncate", isDark ? "text-white" : "text-slate-900")}>{req.brand_name || 'Brand'}</h3>
-                                                                    <div className="flex items-center gap-1.5 whitespace-nowrap overflow-hidden text-ellipsis">
-                                                                        <p className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</p>
-                                                                        <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
-                                                                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={1.5} />
-                                                                        <span className={cn("text-[12px] font-medium", isDark ? "text-slate-400" : "text-slate-500")}>Verified</span>
-                                                                        {req.status === 'active' && (
-                                                                            <>
-                                                                                <span className={cn("text-[10px]", secondaryTextColor)}> • </span>
-                                                                                <span className="text-[10px] font-bold uppercase tracking-wide text-emerald-500">ACTIVE DEAL</span>
-                                                                            </>
-                                                                        )}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className={cn("text-[14px] font-bold truncate leading-tight", isDark ? "text-white" : "text-slate-900")}>{req.brand_name || 'Brand'}</p>
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className={cn("text-[11px]", secondaryTextColor)}>{req.category || 'Lifestyle'}</span>
+                                                                        <span className="text-slate-500 text-[9px]">•</span>
+                                                                        <ShieldCheck className="w-2.5 h-2.5 text-blue-500" strokeWidth={2.5} />
+                                                                        <span className="text-[11px] font-semibold text-blue-500">Verified</span>
                                                                     </div>
                                                                 </div>
+                                                                {/* Budget — always visible, compact */}
+                                                                <div className="shrink-0 text-right">
+                                                                    <p className={cn("text-[17px] font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                        {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75K')}
+                                                                    </p>
+                                                                    <p className={cn("text-[9px] uppercase font-bold tracking-wider", isDark ? "text-slate-500" : "text-slate-400")}>Budget</p>
+                                                                </div>
                                                             </div>
-                                                            <div className="text-right shrink-0">
-                                                                <p className={cn("text-[10px] uppercase font-bold tracking-[0.06em] mb-0.5", isDark ? "text-slate-500" : "text-slate-400")}>Budget</p>
-                                                                <p className={cn("text-[18px] font-bold tracking-tight", textColor)}>
-                                                                    {req.exact_budget ? formatCurrency(req.exact_budget) : (req.budget_range || '₹75,000')}
-                                                                </p>
-                                                            </div>
-                                                        </div>
 
-                                                        {/* Row 2: Metadata (Pills) */}
-                                                        <div className="flex flex-col gap-2.5 mb-5 mt-1">
-                                                            <div className="flex flex-wrap gap-1.5">
+                                                            {/* Row 2: All chips inline — deliverables + barter + date + deadline */}
+                                                            <div className="flex items-center gap-1.5 flex-wrap mb-2.5">
                                                                 {deliverablesArr.map((d, i) => (
-                                                                    <span key={i} className={cn("px-2 py-1 rounded-[8px] text-[11px] font-black border tracking-tight", isDark ? "bg-slate-800 border-slate-700 text-slate-300" : "bg-slate-100 border-slate-200 text-slate-600")}>
+                                                                    <span key={i} className={cn("px-2 py-0.5 rounded-md text-[10px] font-bold border", isDark ? "bg-slate-800 border-slate-700 text-slate-300" : "bg-slate-100 border-slate-200 text-slate-600")}>
                                                                         {d}
                                                                     </span>
                                                                 ))}
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                                                                <div className={cn("flex items-center gap-1 py-1 rounded-[8px] text-[10px] font-bold tracking-tight", isDark ? "text-slate-300" : "text-slate-700")}>
+                                                                {req.collab_type === 'barter' && (
+                                                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/10 border border-amber-500/20 text-amber-500">🎁 Barter</span>
+                                                                )}
+                                                                <span className={cn("text-[10px] font-semibold", isDark ? "text-slate-500" : "text-slate-400")}>
                                                                     📅 {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
-                                                                </div>
+                                                                </span>
                                                                 {deadlineText && (
-                                                                    <div className={cn("flex items-center gap-1 py-1 rounded-[8px] text-[10px] font-bold tracking-tight px-2", isDark ? "bg-amber-500/10 text-amber-500" : "bg-amber-50 text-amber-600")}>
-                                                                        ⚡ {deadlineText.replace('(', '').replace(')', '')}
-                                                                    </div>
+                                                                    <span className={cn("px-1.5 py-0.5 rounded-md text-[10px] font-black", isDark ? "bg-amber-500/10 text-amber-400" : "bg-amber-50 text-amber-600")}>
+                                                                        ⚡{deadlineText}
+                                                                    </span>
                                                                 )}
                                                             </div>
-                                                        </div>
 
-                                                        <div className="flex gap-2 pt-3 border-t border-slate-500/10">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    triggerHaptic();
-                                                                    setSelectedItem(req);
-                                                                    setSelectedType('offer');
-                                                                }}
-                                                                className={cn(
-                                                                    "flex-1 h-10 rounded-[12px] font-semibold text-[13px] border transition-all",
-                                                                    isDark ? "border-[#334155] text-slate-300 hover:bg-white/5" : "border-slate-300 text-slate-700 hover:bg-gray-50 bg-white"
-                                                                )}
-                                                            >
-                                                                Review Details
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleAccept(req); }}
-                                                                disabled={processingDeal === req.id}
-                                                                className={cn(
-                                                                    "flex-1 h-10 rounded-[12px] font-semibold text-[13px] transition-all flex items-center justify-center gap-2",
-                                                                    "bg-blue-600 border border-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
-                                                                )}
-                                                            >
-                                                                {processingDeal === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept Deal'}
-                                                            </button>
+                                                            {/* Row 3: Compact buttons */}
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
+                                                                    className={cn(
+                                                                        "flex-1 h-9 rounded-lg font-semibold text-[12px] border transition-all active:scale-95",
+                                                                        isDark ? "border-slate-700 text-slate-300 hover:bg-white/5" : "border-slate-200 text-slate-700 hover:bg-slate-50 bg-white"
+                                                                    )}
+                                                                >
+                                                                    Details
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleAccept(req); }}
+                                                                    disabled={processingDeal === req.id}
+                                                                    className="flex-1 h-9 rounded-lg font-bold text-[12px] bg-blue-600 text-white hover:bg-blue-700 transition-all flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/25 active:scale-95 disabled:opacity-50"
+                                                                >
+                                                                    {processingDeal === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Accept Deal'}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </motion.div>
                                                 );
