@@ -61,6 +61,9 @@ export const useDealAlertNotifications = () => {
 
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
+      // Force an update check to clear PWA cache for the new UI
+      await registration.update();
+
       const browserSub = await registration.pushManager.getSubscription();
       if (browserSub) {
         setIsSubscribed(true);

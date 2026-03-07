@@ -1,3 +1,4 @@
+// v1.1.0 - Improved dashboard UI cache sync
 self.addEventListener('push', (event) => {
   let payload = {
     title: 'New Brand Offer',
