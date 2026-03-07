@@ -260,6 +260,58 @@ const MobileDashboardDemo = ({
         globalTriggerHaptic(pattern);
     };
 
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [profileFormData, setProfileFormData] = useState<any>({
+        full_name: profile?.full_name || '',
+        email: profile?.email || '',
+        phone: profile?.phone || '',
+        bio: profile?.bio || '',
+        pincode: profile?.pincode || '',
+        city: profile?.city || '',
+        instagram_handle: profile?.instagram_handle || '',
+        media_kit_url: profile?.media_kit_url || '',
+        open_to_collabs: profile?.open_to_collabs ?? true,
+        typical_deal_size: profile?.typical_deal_size || 'standard',
+        collaboration_preference: profile?.collaboration_preference || 'Hybrid',
+        avg_rate_reel: profile?.avg_rate_reel || '5000',
+        content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle']
+    });
+
+    useEffect(() => {
+        if (profile) {
+            setProfileFormData((prev: any) => ({ ...prev, ...profile }));
+        }
+    }, [profile]);
+
+    const handleSaveProfile = async () => {
+        if (!session?.user?.id) return;
+        setIsSavingProfile(true);
+        triggerHaptic(HapticPatterns.light);
+        try {
+            const { error } = await supabase.from('profiles').update(profileFormData).eq('id', session.user.id);
+            if (error) throw error;
+            toast.success('Successfully updated profile!');
+            triggerHaptic(HapticPatterns.success);
+            if (onRefresh) onRefresh();
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to save profile');
+            triggerHaptic(HapticPatterns.error);
+        } finally {
+            setIsSavingProfile(false);
+        }
+    };
+
+    const handleCopyStorefront = async () => {
+        try {
+            await navigator.clipboard.writeText(`creatorarmour.com/${username}`);
+            toast.success("Link copied to clipboard!");
+            triggerHaptic(HapticPatterns.success);
+        } catch (e) {
+            toast.error("Failed to copy link");
+        }
+    };
+
     const handleSendCreatorOTP = async () => {
         if (!selectedItem?.id || !session?.access_token) {
             toast.error('Session or deal data missing');
@@ -476,28 +528,28 @@ const MobileDashboardDemo = ({
                                 <div className="p-4 space-y-4">
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Full Name</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} defaultValue={profile?.full_name || 'Pratyush Raj'} />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} value={profileFormData.full_name || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Email Address</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} defaultValue={profile?.email || 'pratyush@example.com'} />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} value={profileFormData.email || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, email: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Phone Number</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} defaultValue="+91 98765 43210" />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} value={profileFormData.phone || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Bio / Headline</p>
                                         <textarea
                                             className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px] resize-none h-20", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
-                                            defaultValue={profile?.bio || 'Professional lifestyle and tech enthusiast.'}
+                                            value={profileFormData.bio || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Pincode / City</p>
                                         <div className="flex gap-2">
-                                            <input className={cn("w-24 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Pincode" defaultValue={profile?.pincode || ''} />
-                                            <input className={cn("flex-1 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="City" defaultValue={profile?.city || ''} />
+                                            <input className={cn("w-24 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Pincode" value={profileFormData.pincode || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, pincode: e.target.value }))} />
+                                            <input className={cn("flex-1 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="City" value={profileFormData.city || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, city: e.target.value }))} />
                                         </div>
                                     </div>
                                 </div>
@@ -509,21 +561,21 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Instagram Handle</p>
                                         <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
                                             <Instagram className="w-4 h-4 text-pink-500" />
-                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" defaultValue={profile?.instagram_handle || '@theblooming.miss'} />
+                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" value={profileFormData.instagram_handle || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, instagram_handle: e.target.value }))} />
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Media Kit URL</p>
                                         <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
                                             <Link2 className="w-4 h-4 text-blue-500" />
-                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" placeholder="https://..." defaultValue={profile?.media_kit_url || ''} />
+                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" placeholder="https://..." value={profileFormData.media_kit_url || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, media_kit_url: e.target.value }))} />
                                         </div>
                                     </div>
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px]">
-                                    Save Profile
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Save Profile'}
                                 </button>
                             </div>
                         </div>
@@ -540,10 +592,10 @@ const MobileDashboardDemo = ({
                                     icon={<Handshake />}
                                     iconBg="bg-blue-600"
                                     label="Open for Collaborations"
-                                    subtext={profile?.open_to_collabs !== false ? "Brands can send you deals" : "New intake is paused"}
+                                    subtext={profileFormData.open_to_collabs !== false ? "Brands can send you deals" : "New intake is paused"}
                                     isDark={isDark}
                                     textColor={textColor}
-                                    rightElement={<ToggleSwitch active={profile?.open_to_collabs !== false} isDark={isDark} />}
+                                    rightElement={<ToggleSwitch active={profileFormData.open_to_collabs !== false} onToggle={() => setProfileFormData((p: any) => ({ ...p, open_to_collabs: !p.open_to_collabs }))} isDark={isDark} />}
                                 />
                             </SettingsGroup>
 
@@ -556,16 +608,17 @@ const MobileDashboardDemo = ({
                                 ].map((tier) => (
                                     <button
                                         key={tier.key}
+                                        onClick={() => setProfileFormData((p: any) => ({ ...p, typical_deal_size: tier.key }))}
                                         className={cn(
                                             "p-4 rounded-2xl border text-left transition-all",
-                                            profile?.typical_deal_size === tier.key
+                                            profileFormData.typical_deal_size === tier.key
                                                 ? "bg-blue-600 border-blue-600 text-white"
                                                 : (isDark ? "bg-[#1C1C1E] border-white/5 text-white" : "bg-white border-slate-100 text-black")
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
                                             <p className="font-bold text-sm">{tier.title}</p>
-                                            <p className={cn("text-xs font-black", profile?.typical_deal_size === tier.key ? "text-white/80" : "text-blue-500")}>{tier.range}</p>
+                                            <p className={cn("text-xs font-black", profileFormData.typical_deal_size === tier.key ? "text-white/80" : "text-blue-500")}>{tier.range}</p>
                                         </div>
                                         <p className={cn("text-[10px] uppercase tracking-wider mt-1 opacity-60")}>{tier.sub}</p>
                                     </button>
@@ -577,9 +630,10 @@ const MobileDashboardDemo = ({
                                 {['Paid', 'Barter', 'Hybrid'].map((type) => (
                                     <button
                                         key={type}
+                                        onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
                                         className={cn(
                                             "flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all",
-                                            (profile?.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
+                                            (profileFormData.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
                                                 ? "bg-slate-900 border-slate-900 text-white"
                                                 : (isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-500")
                                         )}
@@ -596,13 +650,13 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Avg. Rate per Reel</p>
                                         <div className="flex items-center gap-2 border-b py-1" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
                                             <span className={cn("text-[16px] font-bold", textColor)}>₹</span>
-                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" defaultValue={profile?.avg_rate_reel || '5000'} />
+                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" value={profileFormData.avg_rate_reel || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, avg_rate_reel: e.target.value }))} />
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Content Niches</p>
                                         <div className="flex flex-wrap gap-2 pt-2">
-                                            {(profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
+                                            {(profileFormData.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
                                                 <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-white/5 border-white/10 text-white" : "bg-blue-50 border-blue-100 text-blue-600")}>
                                                     {niche}
                                                 </div>
@@ -616,8 +670,8 @@ const MobileDashboardDemo = ({
                             </SettingsGroup>
 
                             <div className="px-4 pt-4">
-                                <button className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px]">
-                                    Update Preferences
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Update Preferences'}
                                 </button>
                             </div>
                         </div>
@@ -635,15 +689,15 @@ const MobileDashboardDemo = ({
                                 <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
                                 <p className={cn("text-[13px] opacity-40 mb-6", textColor)}>Your public intake storefront</p>
                                 <div className="flex gap-3">
-                                    <button className="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
-                                    <button className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>Preview</button>
+                                    <button onClick={handleCopyStorefront} className="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
+                                    <button onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>Preview</button>
                                 </div>
                             </div>
                             <SectionHeader title="Storefront Controls" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
-                                <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron />
-                                <SettingsRow icon={<Star />} iconBg="bg-amber-400" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron />
-                                <SettingsRow icon={<Link2 />} iconBg="bg-blue-500" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron />
+                                <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
+                                <SettingsRow icon={<Star />} iconBg="bg-amber-400" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron onClick={() => toast("Integration coming soon!")} />
+                                <SettingsRow icon={<Link2 />} iconBg="bg-blue-500" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
                             </SettingsGroup>
                         </div>
                     </motion.div>
