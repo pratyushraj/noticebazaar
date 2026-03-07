@@ -1287,13 +1287,25 @@ const MobileDashboardDemo = ({
                                                 // Format deliverables accurately
                                                 let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
                                                 const rawDeliv = req.raw?.deliverables || req.deliverables;
+
+                                                const processDeliverableItems = (items: any[]) => {
+                                                    return items.map((d: any) => {
+                                                        if (typeof d === 'string') return d;
+                                                        if (d && typeof d === 'object') {
+                                                            if (d.contentType && d.count) return `${d.count} ${d.contentType}`;
+                                                            return JSON.stringify(d); // fallback
+                                                        }
+                                                        return String(d);
+                                                    });
+                                                };
+
                                                 if (rawDeliv) {
                                                     if (Array.isArray(rawDeliv)) {
-                                                        deliverablesArr = rawDeliv;
+                                                        deliverablesArr = processDeliverableItems(rawDeliv);
                                                     } else if (typeof rawDeliv === 'string') {
                                                         try {
                                                             const parsed = JSON.parse(rawDeliv);
-                                                            deliverablesArr = Array.isArray(parsed) ? parsed : [parsed.toString()];
+                                                            deliverablesArr = Array.isArray(parsed) ? processDeliverableItems(parsed) : [parsed.toString()];
                                                         } catch (e) {
                                                             deliverablesArr = [rawDeliv];
                                                         }
@@ -1301,7 +1313,7 @@ const MobileDashboardDemo = ({
                                                 }
 
                                                 // Clean up deliverables (remove any stray brackets/quotes if they slipped through)
-                                                deliverablesArr = deliverablesArr.map(d => d.toString().replace(/[\[\]"']/g, ''));
+                                                deliverablesArr = deliverablesArr.map(d => d.replace(/[\[\]"'{}]/g, ''));
 
                                                 // Determine Deadline text
                                                 let deadlineText = '';
