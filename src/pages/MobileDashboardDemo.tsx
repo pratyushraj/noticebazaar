@@ -2019,10 +2019,8 @@ const MobileDashboardDemo = ({
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                            className={cn(
-                                "fixed inset-0 z-[200] flex flex-col overflow-hidden",
-                                isDark ? "bg-[#0B0F14]" : "bg-[#F9FAFB]"
-                            )}
+                            className="fixed inset-0 z-[200] flex flex-col overflow-hidden"
+                            style={{ backgroundColor: bgColor }}
                         >
                             {/* Fixed Header */}
                             <div className={cn(
