@@ -1092,7 +1092,7 @@ const CollabLinkLanding = () => {
   );
   const isContactReady = Boolean(isValidBrandEmail && brandAddress.trim().length >= 15);
   const ctaStepStatus = !hasStartedOffer ? 'create' : (currentStep === 3 ? 'send' : 'next');
-  const ctaLabel = ctaStepStatus === 'create' ? 'Create Proposal' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collaboration Offer';
+  const ctaLabel = ctaStepStatus === 'create' ? 'Send Collaboration Offer' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collaboration Offer';
   const ctaHelper = ctaStepStatus === 'create'
     ? 'Takes 20 seconds'
     : ctaStepStatus === 'next'
@@ -1557,22 +1557,22 @@ const CollabLinkLanding = () => {
             )}
           </div>
 
-          {/* Social Proof Banner - Microcopy Refinement */}
+          {/* Trust Strip */}
           <div className="md:hidden mt-6 mb-4 mx-0 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-            <div className="flex flex-col items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-4 shadow-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <p className="text-[11px] font-black text-emerald-800 uppercase tracking-[0.05em]">Trusted by 50+ brands to send protected creator offers</p>
-              </div>
-              <div className="flex items-center gap-3 text-[10px] text-slate-500 font-semibold border-t border-emerald-200/50 pt-2 w-full justify-center">
-                <div className="flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3 text-teal-600" />
-                  <span>Secure Payments</span>
+            <div className="flex flex-col justify-center gap-2.5 rounded-2xl bg-[#004D40] text-emerald-50 px-5 py-4 shadow-md overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl -translate-y-10 translate-x-10" />
+              <div className="flex flex-col gap-2 z-10 w-full relative">
+                <div className="flex items-center gap-2.5 w-full">
+                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                  <span className="text-[12px] font-bold tracking-wide">50+ Brands Use Creator Armour</span>
                 </div>
-                <div className="w-1 h-1 bg-slate-300 rounded-full" />
-                <div className="flex items-center gap-1">
-                  <FileCheck className="h-3 w-3 text-blue-600" />
-                  <span>Legal Contract</span>
+                <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
+                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                  <span className="text-[12px] font-bold tracking-wide">Legal Contracts</span>
+                </div>
+                <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
+                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                  <span className="text-[12px] font-bold tracking-wide">Verified Deliverables</span>
                 </div>
               </div>
             </div>
@@ -1694,35 +1694,22 @@ const CollabLinkLanding = () => {
                 )}
               </AccordionTrigger>
               <AccordionContent className="p-0">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-100">
-                  <div className="bg-white px-5 py-4 text-center md:text-left">
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center justify-center md:justify-start gap-1"><Zap className="w-3 h-3 text-teal-600" /> Reach</p>
-                    <p className="text-[15px] font-black text-slate-900 leading-tight">{formatFollowers(primaryFollowers)} followers</p>
-                    <p className="text-[9px] text-slate-500 font-semibold mt-0.5">Consistent viewer engagement</p>
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-px bg-slate-100">
+                  <div className="bg-white px-4 py-3 text-left">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Followers</p>
+                    <p className="text-[18px] font-black text-slate-900 leading-tight">{formatFollowers(primaryFollowers)}</p>
                   </div>
-                  <div className="bg-white px-5 py-4 text-center md:text-left">
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center justify-center md:justify-start gap-1"><Activity className="w-3 h-3 text-emerald-600" /> Engagement Rate</p>
-                    <p className="text-[15px] font-black text-slate-900 leading-tight">{(Number(avgLikes) && primaryFollowers) ? ((Number(avgLikes) / primaryFollowers) * 100).toFixed(1) + '%' : '7.2%'}</p>
-                    <p className="text-[9px] text-slate-500 font-semibold mt-0.5">Above industry average</p>
+                  <div className="bg-white px-4 py-3 text-left">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Avg Reel Views</p>
+                    <p className="text-[18px] font-black text-slate-900 leading-tight">{avgReelViews ? `${Math.round(Number(avgReelViews) / 1000)}K` : '120K'}</p>
                   </div>
-                  <div className="bg-white px-5 py-4 text-center md:text-left">
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center justify-center md:justify-start gap-1"><BadgeCheck className="w-3 h-3 text-blue-600" /> Deals</p>
-                    {creator.past_brands && creator.past_brands.length > 0 ? (
-                      <>
-                        <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{creator.past_brands.slice(0, 3).join(' • ')}</p>
-                        <p className="text-[9px] text-slate-500 font-semibold mt-0.5 text-blue-600">{pastBrandCount} Success</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-[15px] font-black text-slate-900 leading-tight border-b-2 border-emerald-400 inline-block">{pastBrandCount} Success</p>
-                        <p className="text-[9px] text-slate-500 font-semibold mt-0.5">Recent Collaborations</p>
-                      </>
-                    )}
+                  <div className="bg-white px-4 py-3 text-left">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Engagement</p>
+                    <p className="text-[18px] font-black text-slate-900 leading-tight">{(Number(avgLikes) && primaryFollowers) ? ((Number(avgLikes) / primaryFollowers) * 100).toFixed(1) + '%' : '7.2%'}</p>
                   </div>
-                  <div className="bg-white px-5 py-4 text-center md:text-left">
-                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center justify-center md:justify-start gap-1"><Clapperboard className="w-3 h-3 text-teal-600" /> Avg Reel Views</p>
-                    <p className="text-[15px] font-black text-slate-900 leading-tight">{avgReelViews ? `${Math.round(Number(avgReelViews) / 1000)}K` : '120K'}</p>
-                    <p className="text-[9px] text-slate-500 font-semibold mt-0.5">Per reel views</p>
+                  <div className="bg-white px-4 py-3 text-left">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Deals Completed</p>
+                    <p className="text-[18px] font-black text-slate-900 leading-tight">{pastBrandCount || 17}</p>
                   </div>
                 </div>
 
@@ -1739,7 +1726,7 @@ const CollabLinkLanding = () => {
                           ].map(p => (
                             <div key={p.label} className="bg-white border border-slate-200 px-3 py-2 rounded-xl flex items-center justify-between shadow-sm">
                               <span className="text-[12px] font-semibold text-slate-600">{p.label}</span>
-                              <span className="text-[12px] font-bold text-teal-700">Typical range {p.rate}</span>
+                              <span className="text-[14px] font-black text-teal-800">{p.rate}</span>
                             </div>
                           ))}
                         </div>
@@ -1876,7 +1863,7 @@ const CollabLinkLanding = () => {
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
                     <label className={`block text-slate-700 mb-3 ${typeLabel} inline-flex items-center gap-2`}><Target className="h-4 w-4 text-teal-600" />Project Category</label>
                     <div className="flex flex-wrap gap-2">
-                      {['General', 'Lifestyle', 'Fashion', 'Tech', 'Food', 'Beauty', 'Gaming'].map((cat) => (
+                      {['Lifestyle', 'Fashion', 'Beauty', 'Tech', 'Food', 'Gaming', 'Finance', 'Travel', 'Education'].map((cat) => (
                         <button
                           key={cat}
                           type="button"
@@ -1900,7 +1887,7 @@ const CollabLinkLanding = () => {
                         setCampaignDescription(e.target.value);
                         if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
                       }}
-                      placeholder={`e.g. Promote our new organic skincare launch to Gen-Z in North India. Looking for authentic product review and 1 reel.`}
+                      placeholder={`Example:\nLaunch new sneaker collection.\nLooking for 1 reel + 2 stories.\nTarget audience: Gen-Z India.`}
                       className={`bg-slate-50 border-slate-200 rounded-2xl min-h-[140px] text-slate-900 placeholder:text-slate-400 focus:ring-teal-500/30 focus:border-teal-400 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400' : ''}`}
                     />
                     <div className="flex items-center justify-between">
@@ -2070,9 +2057,10 @@ const CollabLinkLanding = () => {
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
                 {/* Campaign Go-Live Date */}
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-widest"><Calendar className="h-3.5 w-3.5 text-teal-600" />Campaign Go-Live Date</span>
                   </div>
+                  <p className="text-[10px] text-amber-600 font-semibold mb-2.5 flex items-center gap-1">⚡ Creator usually needs 3–5 days production time</p>
                   <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3.5 py-2.5">
                     <span className="text-[13px] text-slate-400 font-semibold flex items-center gap-2">📅 Select date</span>
                     <input
@@ -2082,7 +2070,6 @@ const CollabLinkLanding = () => {
                       className="bg-transparent border-0 text-right focus:ring-0 text-slate-900 font-bold p-0 text-sm w-auto"
                     />
                   </div>
-                  <p className="text-[10px] text-amber-600 font-semibold mt-1.5 flex items-center gap-1">⚡ Creator usually needs 3–5 days production time</p>
                 </div>
 
                 {/* Offer Validity – Preset Chips */}
@@ -2247,16 +2234,16 @@ const CollabLinkLanding = () => {
               {/* Protected Deal Workflow */}
               <div className="mt-8 mb-6 p-4 rounded-xl bg-slate-50/50 border border-slate-200">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-5">Protected Deal Workflow</p>
-                <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 px-1 md:px-8">
-                  <div className="flex flex-col items-center gap-1.5"><Send className="w-4 h-4 text-emerald-500" /><span>Offer</span></div>
+                <div className="flex justify-between items-center text-[9px] text-center font-bold text-slate-600 px-0 md:px-4">
+                  <div className="flex flex-col items-center gap-1.5 w-14"><Send className="w-4 h-4 text-emerald-500" /><span>Send Offer</span></div>
                   <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span>Accepts</span></div>
+                  <div className="flex flex-col items-center gap-1.5 w-14"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span>Creator Accepts</span></div>
                   <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5"><FileCheck className="w-4 h-4 text-emerald-500" /><span>Contract</span></div>
+                  <div className="flex flex-col items-center gap-1.5 w-14"><FileCheck className="w-4 h-4 text-emerald-500" /><span>Contract Generated</span></div>
                   <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5"><Lock className="w-4 h-4 text-emerald-500" /><span>Secure</span></div>
+                  <div className="flex flex-col items-center gap-1.5 w-14"><Lock className="w-4 h-4 text-emerald-500" /><span>Funds Secured</span></div>
                   <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5"><Clapperboard className="w-4 h-4 text-emerald-500" /><span>Content</span></div>
+                  <div className="flex flex-col items-center gap-1.5 w-14"><Clapperboard className="w-4 h-4 text-emerald-500" /><span>Content Delivered</span></div>
                 </div>
               </div>
 
@@ -2344,13 +2331,13 @@ const CollabLinkLanding = () => {
                       <div className="flex flex-col">
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Offer Summary</p>
                         <p className="text-[11px] font-black text-white">
-                          {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid Deal'}
+                          {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
                           <span className="mx-1.5 text-slate-600">·</span>
-                          {deliverables.length} {deliverables[0]?.type || 'Asset'}{deliverables.length > 1 ? 's' : ''}
-                          {deadline && (
+                          {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>No deliverables selected</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
+                          {deliverables.length > 0 && deadline && (
                             <>
                               <span className="mx-1.5 text-slate-600">·</span>
-                              {new Date(deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                              Campaign {new Date(deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                             </>
                           )}
                         </p>
@@ -2406,14 +2393,14 @@ const CollabLinkLanding = () => {
                       </div>
                       <div className="flex flex-col">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Assets</p>
-                        <p className="text-[18px] font-black text-white">
-                          {deliverables.length} {deliverables[0]?.type || 'Deliverable'}{deliverables.length > 1 ? 's' : ''}
+                        <p className="text-[18px] font-black text-white whitespace-nowrap">
+                          {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>None</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Deliverable'}${deliverables.length > 1 ? 's' : ''}`}
                         </p>
                       </div>
-                      {deadline && (
+                      {deliverables.length > 0 && deadline && (
                         <div className="flex flex-col">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Campaign Go-Live</p>
-                          <p className="text-[18px] font-black text-teal-400">
+                          <p className="text-[18px] font-black text-teal-400 whitespace-nowrap">
                             {new Date(deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </p>
                         </div>
