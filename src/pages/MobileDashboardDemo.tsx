@@ -17,6 +17,7 @@ import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -291,7 +292,7 @@ const MobileDashboardDemo = ({
         setIsSavingProfile(true);
         triggerHaptic(HapticPatterns.light);
         try {
-            const { error } = await supabase.from('profiles').update(profileFormData).eq('id', session.user.id);
+            const { error } = await supabase.from('profiles' as any).update(profileFormData).eq('id', session.user.id);
             if (error) throw error;
             toast.success('Successfully updated profile!');
             triggerHaptic(HapticPatterns.success);
@@ -312,6 +313,24 @@ const MobileDashboardDemo = ({
             triggerHaptic(HapticPatterns.success);
         } catch (e) {
             toast.error("Failed to copy link");
+        }
+    };
+
+    const handleShareStorefront = async () => {
+        try {
+            const shareData = {
+                title: 'Creator Armour Link',
+                text: 'Check out my official creator link!',
+                url: `https://creatorarmour.com/${username}`
+            };
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                await navigator.share(shareData);
+                triggerHaptic(HapticPatterns.success);
+            } else {
+                await handleCopyStorefront();
+            }
+        } catch (e) {
+            console.error("Share failed", e);
         }
     };
 
@@ -2092,14 +2111,14 @@ const MobileDashboardDemo = ({
                                             <div className="flex items-center gap-3 w-full">
                                                 <motion.button
                                                     whileTap={{ scale: 0.95 }}
-                                                    onClick={() => { triggerHaptic(); }}
+                                                    onClick={handleCopyStorefront}
                                                     className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white h-12 rounded-2xl font-bold border-0 shadow-lg shadow-blue-500/20 active:shadow-blue-500/10 transition-all"
                                                 >
                                                     <Copy className="w-4 h-4" /> Copy
                                                 </motion.button>
                                                 <motion.button
                                                     whileTap={{ scale: 0.95 }}
-                                                    onClick={() => { triggerHaptic(); }}
+                                                    onClick={handleShareStorefront}
                                                     className={cn("flex-1 flex items-center justify-center gap-2 h-12 rounded-2xl font-bold border transition-all",
                                                         isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700")}
                                                 >
