@@ -1947,15 +1947,14 @@ const CollabLinkLanding = () => {
                   )}
                 </div>
 
-                {/* Budget – Hero Card (Teal gradient like dashboard revenue) */}
+                {/* Value – Hero Card (Teal gradient like dashboard revenue) */}
                 <div
-                  aria-hidden={collabType !== 'paid'}
-                  className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-[360px] translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
+                  className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-100 max-h-[500px] translate-y-0`}
                 >
                   <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 40%, #2dd4bf 70%, #34d399 100%)' }}>
                     {/* Label row */}
                     <div className="flex items-center justify-between mb-1">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/90 uppercase tracking-widest"><IndianRupee className="h-3.5 w-3.5" />Proposed Budget</span>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/90 uppercase tracking-widest"><IndianRupee className="h-3.5 w-3.5" />{collabType === 'paid' ? 'Proposed Budget' : collabType === 'barter' ? 'Est. Product Value' : 'Total Value (Cash + Product)'}</span>
                       {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
                         <span className="text-[10px] font-bold text-white/70 bg-white/15 border border-white/20 rounded-lg px-2 py-0.5">
                           Typical: ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate).toLocaleString()} – ₹{(((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) * 1.6).toLocaleString()}
@@ -1967,8 +1966,8 @@ const CollabLinkLanding = () => {
                       <span className="text-[22px] font-black text-white/80">₹</span>
                       <input
                         type="number"
-                        value={exactBudget}
-                        onChange={(e) => setExactBudget(e.target.value)}
+                        value={collabType === 'barter' ? barterValue : exactBudget}
+                        onChange={(e) => collabType === 'barter' ? setBarterValue(e.target.value) : setExactBudget(e.target.value)}
                         placeholder="3,000"
                         className="bg-transparent border-0 focus:ring-0 text-white font-black p-0 text-[32px] tracking-tight placeholder:text-white/30 w-full"
                         style={{ lineHeight: 1 }}
@@ -2003,37 +2002,16 @@ const CollabLinkLanding = () => {
                       })}
                     </div>
                     <p className="text-[11px] text-slate-500 font-medium italic">
-                      {Number(exactBudget) >= ((creator as any).avg_rate_reel || 5000)
+                      {Number(collabType === 'barter' ? barterValue : exactBudget) >= ((creator as any).avg_rate_reel || 5000)
                         ? 'Your offer matches this creator\'s typical deal flow. Response expected within 24h.'
                         : 'Based on creator response rate and deal history'}
                     </p>
                   </div>
                 </div>
 
-                <div
-                  aria-hidden={collabType !== 'barter'}
-                  className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'barter' ? 'opacity-100 max-h-60 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
-                >
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700"><Package className="h-4 w-4 text-amber-500" />Estimated Product / Service Value</span>
-                      <div className="relative flex items-center">
-                        <span className="text-slate-500 font-bold mr-1">₹</span>
-                        <input
-                          type="number"
-                          value={barterValue}
-                          onChange={(e) => setBarterValue(e.target.value)}
-                          placeholder="3000"
-                          className="bg-transparent border-0 text-right w-24 focus:ring-0 text-slate-900 font-bold p-0 text-base placeholder:text-slate-300"
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-2">Helps creator evaluate collaboration value.</p>
-                    <p className="text-xs text-slate-400 mt-1">Used only for collaboration fairness.</p>
-                  </div>
-                </div>
-
               </div>
+
+
 
               {/* Deliverables – Premium Selectable Cards */}
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
