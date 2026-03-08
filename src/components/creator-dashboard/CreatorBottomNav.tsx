@@ -143,9 +143,9 @@ const CreatorBottomNav = () => {
       data-bottom-nav="true"
       className={cn(
         "fixed bottom-0 left-0 right-0",
-        // Translucent background based on theme
-        "bg-background/80 backdrop-blur-2xl",
-        "border-t border-border/50",
+        // Translucent background so purple gradient shows through
+        "bg-white/5 backdrop-blur-2xl",
+        "border-t border-white/15",
         shadows.depth,
         radius.xl,
         "progressive-blur transition-transform duration-300 ease-in-out",
@@ -226,13 +226,13 @@ const CreatorBottomNav = () => {
                 replace={false}
                 className={cn(
                   "flex flex-col items-center justify-center h-full transition-all duration-150 relative",
-                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/70 focus-visible:outline-offset-2 focus-visible:rounded-lg",
+                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-400/70 focus-visible:outline-offset-2 focus-visible:rounded-lg",
                   "min-h-[44px] min-w-[44px] touch-manipulation",
                   "pointer-events-auto",
                   "cursor-pointer",
                   active
-                    ? "text-foreground"
-                    : "text-muted-foreground"
+                    ? "text-white"
+                    : "text-white/70"
                 )}
                 style={{
                   pointerEvents: 'auto',
@@ -276,7 +276,7 @@ const CreatorBottomNav = () => {
 
                 <span className={cn(
                   "text-[11px] md:text-[10px] font-semibold transition-all duration-200",
-                  active && "text-foreground font-bold"
+                  active && "text-white font-bold"
                 )}>
                   {item.label}
                 </span>

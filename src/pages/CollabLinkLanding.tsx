@@ -311,7 +311,6 @@ const CollabLinkLanding = () => {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
   const [submitChecklistStep, setSubmitChecklistStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -343,7 +342,6 @@ const CollabLinkLanding = () => {
   const [brandLogoUploading, setBrandLogoUploading] = useState(false);
   const [campaignDescription, setCampaignDescription] = useState('');
   const [deliverables, setDeliverables] = useState<string[]>([]);
-  const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({});
   const [usageRights, setUsageRights] = useState(false);
   const [deadline, setDeadline] = useState('');
   const [offerExpiry, setOfferExpiry] = useState('');
@@ -356,7 +354,6 @@ const CollabLinkLanding = () => {
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [showCommercialTerms, setShowCommercialTerms] = useState(false);
   const [showDetailedForm, setShowDetailedForm] = useState(false);
-  const [showOptionalBrandDetails, setShowOptionalBrandDetails] = useState(false);
   const [hasStartedOffer, setHasStartedOffer] = useState(false);
   const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
   // const [showAdvancedMobileOptions, setShowAdvancedMobileOptions] = useState(false);
@@ -833,26 +830,11 @@ const CollabLinkLanding = () => {
   };
 
   const handleDeliverableToggle = (deliverable: string) => {
-    setDeliverables(prev => {
-      const isSelected = prev.includes(deliverable);
-      if (isSelected) {
-        const next = prev.filter(d => d !== deliverable);
-        const nextQuantities = { ...deliverableQuantities };
-        delete nextQuantities[deliverable];
-        setDeliverableQuantities(nextQuantities);
-        return next;
-      } else {
-        setDeliverableQuantities(prev => ({ ...prev, [deliverable]: 1 }));
-        return [...prev, deliverable];
-      }
-    });
-  };
-
-  const updateDeliverableQuantity = (deliverable: string, quantity: number) => {
-    setDeliverableQuantities(prev => ({
-      ...prev,
-      [deliverable]: Math.max(1, quantity)
-    }));
+    setDeliverables(prev =>
+      prev.includes(deliverable)
+        ? prev.filter(d => d !== deliverable)
+        : [...prev, deliverable]
+    );
   };
 
   const handleCreateOfferClick = () => {
@@ -869,41 +851,31 @@ const CollabLinkLanding = () => {
       return;
     }
 
-    if (currentStep === 1) {
-      if (!isStep1Ready) {
-        setErrors(prev => ({
-          ...prev,
-          campaignDescription: !campaignDescription.trim()
-            ? 'Campaign Goal is required'
-            : campaignDescription.trim().length < 20
-              ? 'Please provide more details'
-              : ''
-        }));
-        toast.error('Please complete Step 1 (Campaign Goal) first');
-        return;
-      }
-      setCurrentStep(2);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Validate campaign goal first — required before proceeding
+    if (!campaignDescription.trim() || campaignDescription.trim().length < 20) {
+      setErrors((prev) => ({
+        ...prev,
+        campaignDescription: !campaignDescription.trim()
+          ? 'Campaign Goal is required before sending'
+          : 'Please provide more details (at least 20 characters)',
+      }));
+      toast.error('Please fill in the Campaign Goal before sending.');
+      // Scroll to the campaign goal field
+      window.setTimeout(() => {
+        document.getElementById('campaign-goal-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
       return;
     }
 
-    if (currentStep === 2) {
-      if (!isStep2Ready) {
-        toast.error('Please select deliverables and set a budget');
-        return;
-      }
-      setCurrentStep(3);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!showDetailedForm) {
+      setShowDetailedForm(true);
+      toast.info('Add final details before sending.');
+      window.setTimeout(() => {
+        document.getElementById('detailed-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
-
-    if (currentStep === 3) {
-      if (!isStep3Ready) {
-        toast.error('Please complete required Brand & Contact details');
-        return;
-      }
-      formRef.current?.requestSubmit();
-    }
+    formRef.current?.requestSubmit();
   };
 
   const validateForm = (): boolean => {
@@ -1011,7 +983,7 @@ const CollabLinkLanding = () => {
           barter_value: barterValue ? parseFloat(barterValue) : undefined,
           barter_product_image_url: barterProductImageUrl || undefined,
           campaign_description: campaignDescription,
-          deliverables: deliverables.map(d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`),
+          deliverables,
           usage_rights: usageRights,
           deadline: deadline || undefined,
           offer_expires_at: offerExpiry || undefined,
@@ -1090,17 +1062,17 @@ const CollabLinkLanding = () => {
     isBudgetProvided
   );
   const isContactReady = Boolean(isValidBrandEmail && brandAddress.trim().length >= 15);
-  const ctaStepStatus = !hasStartedOffer ? 'create' : (currentStep === 3 ? 'send' : 'next');
-  const ctaLabel = ctaStepStatus === 'create' ? 'Create Proposal' : ctaStepStatus === 'next' ? `Next: Step ${currentStep + 1}` : 'Send Collaboration Offer';
-  const ctaHelper = ctaStepStatus === 'create'
+  const ctaStep = !hasStartedOffer ? 'create' : (showDetailedForm ? 'send' : 'review');
+  const ctaLabel = ctaStep === 'create' ? 'Create Proposal' : ctaStep === 'review' ? 'Review Proposal' : 'Sign & Send Offer';
+  const ctaHelper = ctaStep === 'create'
     ? 'Takes 20 seconds'
-    : ctaStepStatus === 'next'
-      ? 'Step-based progressive flow'
-      : 'Review & sign contract';
-  const ctaIcon = ctaStepStatus === 'send'
+    : ctaStep === 'review'
+      ? 'Add final details before sending'
+      : 'Contract & payment protected';
+  const ctaIcon = ctaStep === 'send'
     ? <Send className="h-4 w-4 text-slate-400" />
     : <Rocket className="h-4 w-4 text-slate-400" />;
-  const isFinalSubmissionStep = ctaStepStatus === 'send';
+  const isFinalSubmissionStep = ctaStep === 'send';
   const showSubmittingTrust = submitting && isFinalSubmissionStep;
   const submittingChecklist = [
     'Validating terms...',
@@ -1111,18 +1083,22 @@ const CollabLinkLanding = () => {
     transitionDelay: showDetailedForm ? `${delayMs}ms` : '0ms',
   });
 
-  const isStep1Ready = Boolean(campaignCategory && campaignDescription.trim().length >= 20);
-  const isStep2Ready = Boolean(collabType && deliverables.length > 0 && isBudgetProvided);
-  const isStep3Ready = Boolean(brandName.trim() && isValidBrandEmail && brandAddress.trim().length >= 15);
-
   const completionChecks = useMemo(() => ([
-    { label: 'Campaign Goal', complete: isStep1Ready },
-    { label: 'Deliverables & Budget', complete: isStep2Ready },
-    { label: 'Brand Details', complete: isStep3Ready },
+    { label: 'Collaboration type', complete: Boolean(collabType) },
+    { label: 'Budget or offer', complete: isBudgetProvided },
+    { label: 'Brand name', complete: Boolean(brandName.trim()) },
+    { label: 'Campaign description', complete: isCampaignDescriptionValid },
+    { label: 'At least 1 deliverable', complete: deliverables.length > 0 },
+    { label: 'Brand email', complete: isValidBrandEmail },
+    { label: 'Brand address', complete: brandAddress.trim().length >= 15 },
   ]), [
-    isStep1Ready,
-    isStep2Ready,
-    isStep3Ready,
+    collabType,
+    isBudgetProvided,
+    brandName,
+    isCampaignDescriptionValid,
+    deliverables.length,
+    isValidBrandEmail,
+    brandAddress,
   ]);
 
   useEffect(() => {
@@ -1460,7 +1436,7 @@ const CollabLinkLanding = () => {
 
             <div className="max-w-xl">
               <h1 className={`text-3xl md:text-4xl font-bold tracking-tight text-white mb-2 ${typePageTitle}`}>
-                Send Offer to {creator.name.split(' ')[0]}
+                Submit Collaboration Proposal
               </h1>
               <p className="text-[15px] text-white/60 leading-relaxed max-w-md">
                 Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
@@ -1478,405 +1454,538 @@ const CollabLinkLanding = () => {
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Performance Truth</p>
                 <div className="space-y-5">
-                  {primaryFollowers > 0 && (
-                    <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Reach</p>
-                      <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />Followers: {formatFollowers(primaryFollowers)}</p>
-                    </div>
-                  )}
+                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                    <p className="text-xs text-white/60">Reach</p>
+                    <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />Followers: {primaryFollowers ? `${formatFollowers(primaryFollowers)}` : '—'}</p>
+                  </div>
 
-                  {(avgReelViews > 0 || avgLikes > 0) && (
-                    <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Content Impact</p>
-                      {avgReelViews > 0 && (
-                        <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>
-                          Avg Reel Views: {Number(avgReelViews).toLocaleString('en-IN')}
-                          {' (Based on recent posts)'}
-                        </p>
-                      )}
-                      {avgLikes > 0 && (
-                        <p className={`text-sm text-white ${typeBodyPrimary}`}>
-                          Avg Likes: {Number(avgLikes).toLocaleString('en-IN')}
-                          {' (Based on recent posts)'}
-                        </p>
-                      )}
-                    </div>
-                  )}
+                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                    <p className="text-xs text-white/60">Content Impact</p>
+                    <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>
+                      Avg Reel Views: {avgReelViews ? `${Number(avgReelViews).toLocaleString('en-IN')}` : '—'}
+                      {avgReelViews ? ' (Based on recent posts)' : ''}
+                    </p>
+                    <p className={`text-sm text-white ${typeBodyPrimary}`}>
+                      Avg Likes: {avgLikes ? `${Number(avgLikes).toLocaleString('en-IN')}` : '—'}
+                      {avgLikes ? ' (Based on recent posts)' : ''}
+                    </p>
+                  </div>
 
-                  {pastBrandCount > 0 && (
-                    <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Brand Experience</p>
-                      <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>Past Collaborations: {pastBrandCount}</p>
-                    </div>
-                  )}
+                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                    <p className="text-xs text-white/60">Brand Experience</p>
+                    <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>Past Collaborations: {pastBrandCount ?? 0}</p>
+                  </div>
 
-                  {avgResponseHours > 0 && (
-                    <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Response Time</p>
-                      <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><Clock className="h-4 w-4 text-sky-400" />~{Math.round(avgResponseHours)} hr{Math.round(avgResponseHours) > 1 ? 's' : ''}</p>
-                    </div>
-                  )}
+                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                    <p className="text-xs text-white/60">Response Time</p>
+                    <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><Clock className="h-4 w-4 text-sky-400" />{avgResponseHours || 1} hr</p>
+                  </div>
                 </div>
               </div>
 
-              <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                <p className="text-xs text-white/60">Engagement Quality</p>
-                <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />{engagementRange}</p>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">System Trust Layer</p>
+                <div className="space-y-5">
+                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                    <p className="text-xs text-white/60">Engagement Quality</p>
+                    <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />{engagementRange}</p>
+                    {showEngagementConfidence && (
+                      <p className={`${typeHelper} text-emerald-200/85 mt-1 inline-flex items-center gap-2`}><TrendingUp className="h-4 w-4 text-sky-400" />{engagementConfidenceNote}</p>
+                    )}
+                  </div>
+
+                  {audienceRegionLabel && (
+                    <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                      <p className="text-xs text-white/60">Audience Region</p>
+                      <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><MapPin className="h-4 w-4 text-sky-400" />Primary Audience: {audienceRegionLabel}</p>
+                    </div>
+                  )}
+
+                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
+                    <p className="text-xs text-white/60">Reliability Indicators</p>
+                    <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>{deliveryReliabilityNote}</p>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Platform Experience</p>
-              <div className="space-y-5">
-                <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                  <p className="text-xs text-white/60">Past Collaborations</p>
-                  <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>
-                    {pastBrandCount ? `${pastBrandCount} deals completed` : 'Establishing Brand Track Record'}
-                  </p>
-                </div>
-
-                <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                  <p className="text-xs text-white/60">Response Time</p>
-                  <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}>
-                    <Clock className="h-4 w-4 text-sky-400" />
-                    Avg Creator Response: {avgResponseHours ? `~${Math.round(avgResponseHours)} hrs` : '~24 hours'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Creator Context Layer</p>
-              <div className={`rounded-lg p-3 space-y-3 ${elevationLevel1}`}>
-                <div>
-                  <p className="text-xs text-white/60">Audience Fit</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{audienceFitLine}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">Recent Activity</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{recentActivityNote}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">Campaign Slots</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{campaignSlotNoteText}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/60">CTA Behavior</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{responseBehaviorNote}</p>
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Creator Context Layer</p>
+                <div className={`rounded-lg p-3 space-y-3 ${elevationLevel1}`}>
+                  <div>
+                    <p className="text-xs text-white/60">Audience Fit</p>
+                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{audienceFitLine}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/60">Recent Activity</p>
+                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{recentActivityNote}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/60">Campaign Slots</p>
+                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{campaignSlotNoteText}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/60">CTA Behavior</p>
+                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{responseBehaviorNote}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {(creator.audience_gender_split || audienceCities.length > 0 || creator.audience_age_range || audienceLanguage || creator.posting_frequency) && (
-          <div className="hidden md:block mb-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-            <h4 className="text-base font-semibold text-white mb-2">Audience Profile</h4>
+          {(creator.audience_gender_split || audienceCities.length > 0 || creator.audience_age_range || audienceLanguage || creator.posting_frequency) && (
+            <div className="hidden md:block mb-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
+              <h4 className="text-base font-semibold text-white mb-2">Audience Profile</h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-              {genderRows && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Gender</p>
-                  <ul className="text-sm text-slate-100/90 space-y-0.5">
-                    {genderRows.map((row, idx) => (
-                      <li key={`${row}-${idx}`}>• {row}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {audienceCities.length > 0 && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Top Cities</p>
-                  {audienceCities.length === 1 ? (
-                    <p className="text-sm text-slate-100/90">{audienceCities[0]}</p>
-                  ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                {genderRows && (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <p className="text-xs text-white/60 mb-1">Gender</p>
                     <ul className="text-sm text-slate-100/90 space-y-0.5">
-                      {audienceCities.map((city, idx) => (
-                        <li key={`${city}-${idx}`}>• {city}</li>
+                      {genderRows.map((row, idx) => (
+                        <li key={`${row}-${idx}`}>• {row}</li>
                       ))}
                     </ul>
+                  </div>
+                )}
+
+                {audienceCities.length > 0 && (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <p className="text-xs text-white/60 mb-1">Top Cities</p>
+                    {audienceCities.length === 1 ? (
+                      <p className="text-sm text-slate-100/90">{audienceCities[0]}</p>
+                    ) : (
+                      <ul className="text-sm text-slate-100/90 space-y-0.5">
+                        {audienceCities.map((city, idx) => (
+                          <li key={`${city}-${idx}`}>• {city}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <p className="text-xs text-slate-100/70 mt-1">{audienceRelevanceNote}</p>
+                  </div>
+                )}
+
+                {creator.audience_age_range && (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <p className="text-xs text-white/60 mb-1">Age</p>
+                    <p className="text-sm text-slate-100/90">{creator.audience_age_range}</p>
+                  </div>
+                )}
+
+                {creator.posting_frequency && (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <p className="text-xs text-white/60 mb-1">Posting Frequency</p>
+                    <p className="text-sm text-slate-100/90">{creator.posting_frequency}</p>
+                  </div>
+                )}
+
+                {audienceLanguage && (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 md:col-span-2">
+                    <p className="text-xs text-white/60 mb-1">Language</p>
+                    <p className="text-sm text-slate-100/90">{audienceLanguage}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {recentCampaignTypes.length > 0 && (
+            <div className="hidden md:block mb-12 rounded-xl bg-white/[0.05] backdrop-blur-xl border border-white/15 p-6" role="region" aria-label="Recent campaign types">
+              <h3 className="text-lg font-semibold text-white mb-3">Recent Campaign Types</h3>
+              <div className="flex flex-wrap gap-3">
+                {recentCampaignTypes.map((campaignType, idx) => (
+                  <span
+                    key={`${campaignType}-${idx}`}
+                    className="inline-flex items-center rounded-full border border-white/30 bg-white/[0.04] px-3.5 py-2 text-sm text-slate-100"
+                  >
+                    {campaignType}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+
+          {/* SEO-Friendly Content Section - Indexable */}
+          <div className="hidden md:block mb-12 space-y-8">
+            {/* Creator Bio & Platforms - Indexable Content */}
+            <div className="bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
+              {creatorBio && (
+                <p className="text-slate-100/85 leading-relaxed mb-4">
+                  {creatorBio}
+                </p>
+              )}
+
+              {creator.platforms.length > 0 && (
+                <div className="space-y-3">
+                  <h2 className="text-xl font-semibold text-white mb-3">
+                    Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                    {creator.platforms.map((platform, idx) => {
+                      const isInstagram = platform.name.toLowerCase() === 'instagram';
+                      return (
+                        <div key={idx} className="flex items-center gap-3 text-slate-100/85">
+                          {getPlatformIcon(platform.name)}
+                          <div className="flex-1">
+                            <p className="font-medium text-white">{platform.name}</p>
+                            {isInstagram && platform.handle ? (
+                              <a
+                                href={`https://instagram.com/${platform.handle.replace('@', '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-slate-200 hover:text-white transition-colors flex items-center gap-1"
+                              >
+                                @{platform.handle.replace('@', '')}
+                                <ExternalLink className="h-3 w-3 opacity-60" />
+                              </a>
+                            ) : (
+                              <p className="text-sm text-slate-200/90">
+                                {platform.handle}
+                              </p>
+                            )}
+                            {platform.followers && (
+                              <p className="text-xs text-slate-200/65 mt-1">
+                                {platform.followers >= 1000
+                                  ? `${(platform.followers / 1000).toFixed(1)}K followers`
+                                  : `${platform.followers} followers`}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Open to collabs + niches + media kit (creator readiness for brands) */}
+              {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
+                <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
+                  {creator.open_to_collabs !== false && (
+                    <p className="text-sm text-green-300 font-medium flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      Actively open to collaborations
+                    </p>
                   )}
-                  <p className="text-xs text-slate-100/70 mt-1">{audienceRelevanceNote}</p>
+                  {creator.content_niches && creator.content_niches.length > 0 && (
+                    <div>
+                      <p className="text-xs text-slate-400 mb-1">Content niches</p>
+                      <div className="flex flex-wrap gap-2">
+                        {creator.content_niches.map((niche, i) => (
+                          <Badge key={i} variant="secondary" className="bg-white/10 text-slate-400 border-white/20">
+                            {niche}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {creator.media_kit_url && (
+                    <div>
+                      <a
+                        href={creator.media_kit_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-slate-400 hover:text-white inline-flex items-center gap-1"
+                      >
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        Media kit
+                      </a>
+                      <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {creator.audience_age_range && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Age</p>
-                  <p className="text-sm text-slate-100/90">{creator.audience_age_range}</p>
-                </div>
-              )}
-
-              {creator.posting_frequency && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Posting Frequency</p>
-                  <p className="text-sm text-slate-100/90">{creator.posting_frequency}</p>
-                </div>
-              )}
-
-              {audienceLanguage && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 md:col-span-2">
-                  <p className="text-xs text-white/60 mb-1">Language</p>
-                  <p className="text-sm text-slate-100/90">{audienceLanguage}</p>
-                </div>
-              )}
             </div>
           </div>
-        )}
 
-        {recentCampaignTypes.length > 0 && (
-          <div className="hidden md:block mb-12 rounded-xl bg-white/[0.05] backdrop-blur-xl border border-white/15 p-6" role="region" aria-label="Recent campaign types">
-            <h3 className="text-lg font-semibold text-white mb-3">Recent Campaign Types</h3>
-            <div className="flex flex-wrap gap-3">
-              {recentCampaignTypes.map((campaignType, idx) => (
-                <span
-                  key={`${campaignType}-${idx}`}
-                  className="inline-flex items-center rounded-full border border-white/30 bg-white/[0.04] px-3.5 py-2 text-sm text-slate-100"
-                >
-                  {campaignType}
-                </span>
+          {/* Trust & Safety Block */}
+          <div className="mt-6 mb-2 md:mt-12 md:mb-12 space-y-4">
+            <div className="grid grid-cols-1 gap-3 px-2 md:px-0">
+              {[
+                { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 text-emerald-400" /> },
+                { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 text-emerald-400" /> },
+                { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 text-emerald-400" /> }
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-sm font-medium text-white/70">
+                  <div className="shrink-0 bg-emerald-500/10 p-1 rounded-full">{item.icon}</div>
+                  {item.label}
+                </div>
               ))}
             </div>
           </div>
-        )}
 
+          {/* Mobile-first collapsed audience snapshot */}
+          <div className="md:hidden mt-6 mb-6 rounded-xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-md">
+            <h3 className="text-base font-semibold text-white">Audience Fit Snapshot</h3>
+            <div className="mt-3 space-y-4">
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                <p className="text-xs text-white/60 inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-sky-400" />Engagement Quality</p>
+                <p className="text-sm text-white mt-1">{mobileEngagementLabel}</p>
+              </div>
+              {audienceRegionLabel && (
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
+                    <MapPin className="h-4 w-4 text-sky-400" />
+                    {audienceRegionLabel} Audience
+                  </p>
+                </div>
+              )}
+            </div>
 
-        {/* SEO-Friendly Content Section - Indexable */}
-        <div className="hidden md:block mb-12 space-y-8">
-          {/* Creator Bio & Platforms - Indexable Content */}
-          <div className="bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
-            {creatorBio && (
-              <p className="text-slate-100/85 leading-relaxed mb-4">
-                {creatorBio}
-              </p>
+            <button
+              type="button"
+              onClick={() => setShowMobileAudienceDetails((prev) => !prev)}
+              className="mt-3 w-full rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100"
+            >
+              {showMobileAudienceDetails ? 'Hide Audience Details' : 'View Audience Details'}
+            </button>
+
+            {showMobileAudienceDetails && (
+              <div className="mt-4 space-y-4">
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-xs text-white/60">Followers</p>
+                  <p className="text-sm text-white mt-1">{primaryFollowers ? `${formatFollowers(primaryFollowers)}` : '—'}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-xs text-white/60">Content Impact</p>
+                  <p className="text-sm text-white mt-1">Avg Reel Views: {avgReelViews ? `${Number(avgReelViews).toLocaleString('en-IN')}` : '—'}</p>
+                  <p className="text-sm text-white">Avg Likes: {avgLikes ? `${Number(avgLikes).toLocaleString('en-IN')}` : '—'}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-xs text-white/60">Brand Experience</p>
+                  <p className="text-sm text-white mt-1">Past Collaborations: {pastBrandCount ?? 0}</p>
+                  <p className="text-sm text-white mt-1">Response Time: {avgResponseHours || 1} hr</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
+                  <p className="text-xs text-white/60">Creator Context</p>
+                  <p className="text-sm text-white">• {audienceFitLine}</p>
+                  <p className="text-sm text-white">• {recentActivityNote}</p>
+                  <p className="text-sm text-white">• {campaignSlotNoteText}</p>
+                  <p className="text-sm text-white inline-flex items-center gap-2"><Clock className="h-4 w-4 text-sky-400" />{sameDayResponseLine}</p>
+                </div>
+                {(genderRows || audienceCities.length > 0 || creator.audience_age_range || creator.posting_frequency || audienceLanguage) && (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
+                    <p className="text-xs text-white/60">Audience Profile</p>
+                    {genderRows && <p className="text-sm text-white">Gender: {genderRows.join(' / ')}</p>}
+                    {audienceCities.length > 0 && <p className="text-sm text-white">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
+                    {creator.audience_age_range && <p className="text-sm text-white">Age: {creator.audience_age_range}</p>}
+                    {creator.posting_frequency && <p className="text-sm text-white">Posting: {creator.posting_frequency}</p>}
+                    {audienceLanguage && <p className="text-sm text-white">Language: {audienceLanguage}</p>}
+                  </div>
+                )}
+                {hasEngagementAndRegion && (
+                  <p className="text-xs text-slate-100/75 px-1">
+                    Brands in similar categories have collaborated successfully.
+                  </p>
+                )}
+              </div>
             )}
+          </div>
 
-            {creator.platforms.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-white mb-3">
-                  Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                  {creator.platforms.map((platform, idx) => {
-                    const isInstagram = platform.name.toLowerCase() === 'instagram';
+          {/* Quick Deal Builder */}
+          <div className="md:hidden mt-6 mb-1 flex items-center gap-3 px-2">
+            <div className="h-[1px] flex-1 bg-white/10" />
+            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Propose Collaboration</span>
+            <div className="h-[1px] flex-1 bg-white/10" />
+          </div>
+
+          <p className="md:hidden text-center text-[10px] font-bold text-emerald-400 uppercase tracking-[0.1em] mb-1">
+            Used by 50+ brands to close deals safely
+          </p>
+          <p className="md:hidden text-center text-xs text-slate-100/65 mb-1">
+            Takes less than 20 seconds
+          </p>
+          <div className="md:hidden flex items-center justify-center gap-1.5 mb-3 text-[10px] text-slate-100/70">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Protected by contract & payment tracking</span>
+          </div>
+
+          <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-6 mb-6 md:mb-16 text-white border border-white/15 bg-gradient-to-b from-white/[0.10] to-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/30 relative transition-all duration-200 ease-out ${showDetailedForm ? 'opacity-[0.85] scale-[0.995]' : 'opacity-100 scale-100'}`}>
+            <h2 className={`text-xl font-bold mb-5 tracking-tight ${typeSectionTitle}`}>
+              <span className="md:hidden">Propose Collaboration</span>
+              <span className="hidden md:inline">Propose Collaboration</span>
+            </h2>
+
+            <div className="space-y-6 md:space-y-8">
+              {/* Deal Type */}
+              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
+                <div className="flex items-center justify-between gap-3">
+                  <span className={`inline-flex items-center gap-2 text-sm text-slate-100/90 ${typeLabel}`}><Target className="h-4 w-4 text-slate-400" />Deal Type</span>
+                  <Select
+                    value={collabType}
+                    onValueChange={(value: CollabType) => {
+                      setCollabType(value);
+                      if (value === 'paid') {
+                        setBarterValue('');
+                      } else if (value === 'barter') {
+                        setBudgetRange('');
+                        setExactBudget('');
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-[190px] bg-transparent border-0 p-0 text-right text-white font-bold">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-400" />Paid Deal</span></SelectItem>
+                      <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-400" />Product Exchange</span></SelectItem>
+                      <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-400" />Cash + Product</span></SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {collabType === 'barter' && (
+                  <p className="text-xs text-slate-100/75 mt-2">
+                    Creator may request partial cash + product
+                  </p>
+                )}
+              </div>
+
+              {/* Budget */}
+              <div
+                aria-hidden={collabType !== 'paid'}
+                className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-44 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
+              >
+                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
+                    <div className="relative flex items-center">
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
+                      <input
+                        type="number"
+                        value={exactBudget}
+                        onChange={(e) => setExactBudget(e.target.value)}
+                        placeholder="3000"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
+                      />
+                    </div>
+                  </div>
+                  {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
+                    <p className="text-[11px] text-white/50 mt-3 pt-3 border-t border-white/10">
+                      Based on active campaigns, {creator.name.split(' ')[0]}'s typical engagement starts at ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate)}.
+                    </p>
+                  )}
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <Lock className="w-3 h-3 text-emerald-400/70" />
+                    <p className="text-[10px] text-emerald-100/60 font-medium">
+                      Funds securely held in escrow until deliverables are approved.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                aria-hidden={collabType !== 'barter'}
+                className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'barter' ? 'opacity-100 max-h-60 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
+              >
+                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
+                    <div className="relative flex items-center">
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
+                      <input
+                        type="number"
+                        value={barterValue}
+                        onChange={(e) => setBarterValue(e.target.value)}
+                        placeholder="3000"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-100/65 mt-2">Helps creator evaluate collaboration value.</p>
+                  <p className="text-xs text-slate-100/60 mt-1">Used only for collaboration fairness.</p>
+                </div>
+              </div>
+
+              <div
+                aria-hidden={!isHybridCollab(collabType)}
+                className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${isHybridCollab(collabType) ? 'opacity-100 max-h-80 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
+              >
+                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 space-y-3 transition-all focus-within:ring-2 focus-within:ring-white/20">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
+                    <div className="relative flex items-center">
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
+                      <input
+                        type="number"
+                        value={exactBudget}
+                        onChange={(e) => setExactBudget(e.target.value)}
+                        placeholder="3000"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
+                    <div className="relative flex items-center">
+                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
+                      <input
+                        type="number"
+                        value={barterValue}
+                        onChange={(e) => setBarterValue(e.target.value)}
+                        placeholder="3000"
+                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-100/65">Helps creator evaluate collaboration value.</p>
+                  <p className="text-xs text-slate-100/60">Used only for collaboration fairness.</p>
+                </div>
+              </div>
+
+              {/* Deliverables */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clapperboard className="h-4 w-4 text-slate-400" />Content Requested</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 py-0.5">
+                  {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
+                    const active = deliverables.includes(item.value);
                     return (
-                      <div key={idx} className="flex items-center gap-3 text-slate-100/85">
-                        {getPlatformIcon(platform.name)}
-                        <div className="flex-1">
-                          <p className="font-medium text-white">{platform.name}</p>
-                          {isInstagram && platform.handle ? (
-                            <a
-                              href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-slate-200 hover:text-white transition-colors flex items-center gap-1"
-                            >
-                              @{platform.handle.replace('@', '')}
-                              <ExternalLink className="h-3 w-3 opacity-60" />
-                            </a>
-                          ) : (
-                            <p className="text-sm text-slate-200/90">
-                              {platform.handle}
-                            </p>
-                          )}
-                          {platform.followers && (
-                            <p className="text-xs text-slate-200/65 mt-1">
-                              {platform.followers >= 1000
-                                ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                : `${platform.followers} followers`}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => handleDeliverableToggle(item.value)}
+                        className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${active ? 'bg-gradient-to-r from-fuchsia-500/80 to-violet-500/80 text-white border-fuchsia-300/70 shadow-lg shadow-fuchsia-900/50 ring-2 ring-fuchsia-400/40' : 'bg-white/[0.06] text-slate-100/80 border-white/25 hover:bg-white/[0.12]'}`}
+                      >
+                        <span className="mr-1">{item.icon}</span>{item.label}
+                      </button>
                     );
                   })}
                 </div>
+                <p className="text-xs text-slate-100/65 mt-2">Custom deliverables can be discussed</p>
               </div>
-            )}
 
-            {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-            {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-              <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
-                {creator.open_to_collabs !== false && (
-                  <p className="text-sm text-green-300 font-medium flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 shrink-0" />
-                    Actively open to collaborations
-                  </p>
-                )}
-                {creator.content_niches && creator.content_niches.length > 0 && (
-                  <div>
-                    <p className="text-xs text-slate-400 mb-1">Content niches</p>
-                    <div className="flex flex-wrap gap-2">
-                      {creator.content_niches.map((niche, i) => (
-                        <Badge key={i} variant="secondary" className="bg-white/10 text-slate-400 border-white/20">
-                          {niche}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {creator.media_kit_url && (
-                  <div>
-                    <a
-                      href={creator.media_kit_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-slate-400 hover:text-white inline-flex items-center gap-1"
-                    >
-                      <ExternalLink className="h-4 w-4 shrink-0" />
-                      Media kit
-                    </a>
-                    <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-          </div>
-        </div>
-
-        {/* Trust & Safety Block */}
-        <div className="mt-6 mb-2 md:mt-12 md:mb-12 space-y-4">
-          <div className="grid grid-cols-1 gap-3 px-2 md:px-0">
-            {[
-              { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 text-emerald-400" /> },
-              { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 text-emerald-400" /> },
-              { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 text-emerald-400" /> }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-sm font-medium text-white/70">
-                <div className="shrink-0 bg-emerald-500/10 p-1 rounded-full">{item.icon}</div>
-                {item.label}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile-first collapsed audience snapshot */}
-        <div className="md:hidden mt-6 mb-6 rounded-xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-md">
-          <h3 className="text-base font-semibold text-white">Audience Fit Snapshot</h3>
-          <div className="mt-3 space-y-4">
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-              <p className="text-xs text-white/60 inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-sky-400" />Engagement Quality</p>
-              <p className="text-sm text-white mt-1">{mobileEngagementLabel}</p>
-            </div>
-            {audienceRegionLabel && (
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
-                  <MapPin className="h-4 w-4 text-sky-400" />
-                  {audienceRegionLabel} Audience
-                </p>
-              </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowMobileAudienceDetails((prev) => !prev)}
-            className="mt-3 w-full rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100"
-          >
-            {showMobileAudienceDetails ? 'Hide Audience Details' : 'View Audience Details'}
-          </button>
-
-          {showMobileAudienceDetails && (
-            <div className="mt-4 space-y-4">
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60">Followers</p>
-                <p className="text-sm text-white mt-1">{primaryFollowers ? `${formatFollowers(primaryFollowers)}` : '—'}</p>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60">Content Impact</p>
-                <p className="text-sm text-white mt-1">Avg Reel Views: {avgReelViews ? `${Number(avgReelViews).toLocaleString('en-IN')}` : '—'}</p>
-                <p className="text-sm text-white">Avg Likes: {avgLikes ? `${Number(avgLikes).toLocaleString('en-IN')}` : '—'}</p>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60">Brand Experience</p>
-                <p className="text-sm text-white mt-1">Past Collaborations: {pastBrandCount ?? 0}</p>
-                <p className="text-sm text-white mt-1">Response Time: {avgResponseHours || 1} hr</p>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                <p className="text-xs text-white/60">Creator Context</p>
-                <p className="text-sm text-white">• {audienceFitLine}</p>
-                <p className="text-sm text-white">• {recentActivityNote}</p>
-                <p className="text-sm text-white">• {campaignSlotNoteText}</p>
-                <p className="text-sm text-white inline-flex items-center gap-2"><Clock className="h-4 w-4 text-sky-400" />{sameDayResponseLine}</p>
-              </div>
-              {(genderRows || audienceCities.length > 0 || creator.audience_age_range || creator.posting_frequency || audienceLanguage) && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                  <p className="text-xs text-white/60">Audience Profile</p>
-                  {genderRows && <p className="text-sm text-white">Gender: {genderRows.join(' / ')}</p>}
-                  {audienceCities.length > 0 && <p className="text-sm text-white">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
-                  {creator.audience_age_range && <p className="text-sm text-white">Age: {creator.audience_age_range}</p>}
-                  {creator.posting_frequency && <p className="text-sm text-white">Posting: {creator.posting_frequency}</p>}
-                  {audienceLanguage && <p className="text-sm text-white">Language: {audienceLanguage}</p>}
-                </div>
-              )}
-              {hasEngagementAndRegion && (
-                <p className="text-xs text-slate-100/75 px-1">
-                  Brands in similar categories have collaborated successfully.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Quick Deal Builder */}
-        <div className="md:hidden mt-6 mb-1 flex items-center gap-3 px-2">
-          <div className="h-[1px] flex-1 bg-white/10" />
-          <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Propose Collaboration</span>
-          <div className="h-[1px] flex-1 bg-white/10" />
-        </div>
-
-        <p className="md:hidden text-center text-[10px] font-bold text-emerald-400 uppercase tracking-[0.1em] mb-1">
-          Used by 50+ brands to close deals safely
-        </p>
-        <p className="md:hidden text-center text-xs text-slate-100/65 mb-1">
-          Takes less than 20 seconds
-        </p>
-        <div className="md:hidden flex items-center justify-center gap-1.5 mb-3 text-[10px] text-slate-100/70">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Protected by contract & payment tracking</span>
-        </div>
-
-        <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-6 mb-6 md:mb-16 text-white border border-white/15 bg-gradient-to-b from-white/[0.10] to-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/30 relative transition-all duration-200 ease-out`}>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className={`text-xl font-bold tracking-tight ${typeSectionTitle}`}>
-              {currentStep === 1 ? 'Campaign Details' : currentStep === 2 ? 'Deliverables & Budget' : 'Brand & Contact Info'}
-            </h2>
-            <div className="flex items-center gap-1.5">
-              {[1, 2, 3].map((step) => (
-                <div
-                  key={step}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-blue-500' : step < currentStep ? 'w-1.5 bg-emerald-500' : 'w-1.5 bg-white/20'}`}
-                />
-              ))}
-              <span className="ml-2 text-[10px] font-bold text-slate-100/40 uppercase tracking-wider">Step {currentStep} of 3</span>
-            </div>
-          </div>
-
-          {currentStep === 1 && (
-            <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* Campaign Category - Added for Step 1 refinement */}
+              {/* Timeline */}
               <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <label className={`block text-slate-100/90 mb-3 ${typeLabel} inline-flex items-center gap-2`}><Target className="h-4 w-4 text-slate-400" />Project Category</label>
-                <div className="flex flex-wrap gap-2">
-                  {['General', 'Lifestyle', 'Fashion', 'Tech', 'Food', 'Beauty', 'Gaming'].map((cat) => (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setCampaignCategory(cat)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${campaignCategory === cat ? 'bg-white text-black border-white' : 'bg-white/[0.05] text-slate-300 border-white/10 hover:bg-white/[0.10]'}`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
+                    <input
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
+                    <input
+                      type="date"
+                      value={offerExpiry}
+                      onChange={(e) => setOfferExpiry(e.target.value)}
+                      className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div id="campaign-goal-field" className="space-y-3">
-                <label className={`flex items-center gap-2 text-[10px] font-bold text-slate-200/65 uppercase tracking-wider ${typeLabel}`}>
-                  <FileText className="h-3.5 w-3.5 text-slate-400" />
-                  What is your campaign goal? <span className="text-red-400 ml-0.5">*</span>
+              {/* Message -> Campaign Goal */}
+              <div id="campaign-goal-field">
+                <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-slate-200/65 uppercase tracking-wider">
+                  <Target className="h-3.5 w-3.5 text-slate-400" />
+                  Campaign Goal <span className="text-red-400 ml-0.5">*</span>
                 </label>
                 <Textarea
                   value={campaignDescription}
@@ -1884,477 +1993,793 @@ const CollabLinkLanding = () => {
                     setCampaignDescription(e.target.value);
                     if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
                   }}
-                  placeholder={`e.g. Promote our new organic skincare launch to Gen-Z in North India. Looking for authentic product review and 1 reel.`}
-                  className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[140px] text-white placeholder:text-slate-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
+                  placeholder={`Briefly outline the campaign goal... (min 20 characters)`}
+                  className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[100px] text-white placeholder:text-slate-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
                 />
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-slate-100/50">Minimum 20 characters for a quality proposal</p>
-                  {campaignDescription.length > 0 && campaignDescription.length < 20 && (
-                    <p className="text-[10px] text-amber-400 font-bold">{20 - campaignDescription.length} more chars</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className={`space-y-6 md:space-y-8 ${currentStep === 1 ? 'hidden' : ''}`}>
-            {/* Deal Type */}
-            <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-              <div className="flex items-center justify-between gap-3">
-                <span className={`inline-flex items-center gap-2 text-sm text-slate-100/90 ${typeLabel}`}><Target className="h-4 w-4 text-slate-400" />Deal Type</span>
-                <Select
-                  value={collabType}
-                  onValueChange={(value: CollabType) => {
-                    setCollabType(value);
-                    if (value === 'paid') {
-                      setBarterValue('');
-                    } else if (value === 'barter') {
-                      setBudgetRange('');
-                      setExactBudget('');
-                    }
-                  }}
-                >
-                  <SelectTrigger className="h-9 w-[190px] bg-transparent border-0 p-0 text-right text-white font-bold">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-400" />Paid Deal</span></SelectItem>
-                    <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-400" />Product Exchange</span></SelectItem>
-                    <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-400" />Cash + Product</span></SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {collabType === 'barter' && (
-                <p className="text-xs text-slate-100/75 mt-2">
-                  Creator may request partial cash + product
-                </p>
-              )}
-            </div>
-
-            {/* Budget */}
-            <div
-              aria-hidden={collabType !== 'paid'}
-              className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-44 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
-            >
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
-                  <div className="relative flex items-center">
-                    <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                    <input
-                      type="number"
-                      value={exactBudget}
-                      onChange={(e) => setExactBudget(e.target.value)}
-                      placeholder="3000"
-                      className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                    />
-                  </div>
-                </div>
-                {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
-                  <p className="text-[11px] text-white/50 mt-3 pt-3 border-t border-white/10">
-                    Based on active campaigns, {creator.name.split(' ')[0]}'s typical engagement starts at ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate)}.
-                  </p>
+                {errors.campaignDescription && (
+                  <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
                 )}
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Lock className="w-3 h-3 text-emerald-400/70" />
-                  <p className="text-[10px] text-emerald-100/60 font-medium">
-                    Funds securely held in escrow until deliverables are approved.
-                  </p>
-                </div>
+                {!errors.campaignDescription && campaignDescription.length > 0 && campaignDescription.length < 20 && (
+                  <p className="text-xs text-amber-400 mt-1">{20 - campaignDescription.length} more characters needed</p>
+                )}
               </div>
+
             </div>
 
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+              <button
+                type="button"
+                onClick={() => setShowSaveDraftModal(true)}
+                className="text-sm text-slate-100 hover:text-white border border-white/30 hover:border-white/50 rounded-xl px-4 py-2 transition-colors bg-white/[0.05] hover:bg-white/[0.10]"
+              >
+                Save and continue later
+              </button>
+              <span className="text-xs text-slate-100/60">We’ll email you a link (valid 7 days)</span>
+            </div>
+
+            {/* Demo Fill Button - Only in development or with ?demo=true */}
+            {import.meta.env.DEV && (
+              <div className="mb-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={fillDemoData}
+                  className="text-xs text-slate-200/70 hover:text-slate-100 underline underline-offset-4"
+                >
+                  Fill demo data
+                </button>
+              </div>
+            )}
+
+            {/* Expandable Detailed Form */}
             <div
-              aria-hidden={collabType !== 'barter'}
-              className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'barter' ? 'opacity-100 max-h-60 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
+              id="detailed-form"
+              className={`overflow-hidden transition-all duration-[260ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'max-h-[4600px] opacity-100 translate-y-0 mt-8 md:mt-16 pt-4 md:pt-8 border-t border-white/10' : 'max-h-0 opacity-0 translate-y-4 pointer-events-none'}`}
             >
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
-                  <div className="relative flex items-center">
-                    <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                    <input
-                      type="number"
-                      value={barterValue}
-                      onChange={(e) => setBarterValue(e.target.value)}
-                      placeholder="3000"
-                      className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                    />
-                  </div>
+              <div className="mb-3">
+                <div
+                  style={revealDelayStyle(40)}
+                  className={`mb-3 rounded-xl border border-emerald-300/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+                >
+                  Creator Armour handles contracts automatically — so both sides stay protected.
                 </div>
-                <p className="text-xs text-slate-100/65 mt-2">Helps creator evaluate collaboration value.</p>
-                <p className="text-xs text-slate-100/60 mt-1">Used only for collaboration fairness.</p>
+                <div className="mb-3 flex items-center gap-3">
+                  <div style={revealDelayStyle(120)} className={`h-px flex-1 bg-white/20 origin-left transition-transform duration-300 ease-out ${showDetailedForm ? 'scale-x-100' : 'scale-x-0'}`} />
+                  <span style={revealDelayStyle(0)} className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-100/80 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}><ShieldCheck className="h-4 w-4 text-emerald-400" /><Lock className="h-4 w-4 text-emerald-400" />Secure Details (after creator accepts)</span>
+                  <div style={revealDelayStyle(120)} className={`h-px flex-1 bg-white/20 origin-left transition-transform duration-300 ease-out ${showDetailedForm ? 'scale-x-100' : 'scale-x-0'}`} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDetailedForm((prev) => !prev)}
+                  style={revealDelayStyle(120)}
+                  className={`w-full rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+                >
+                  {showDetailedForm ? 'Hide secure details' : 'Add Secure Details'}
+                </button>
               </div>
             </div>
-
-          </div>
-
-          {/* Deliverables */}
-          <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clapperboard className="h-4 w-4 text-slate-400" />Content Requested</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
-                const active = deliverables.includes(item.value);
-                return (
-                  <div key={item.label} className={`flex items-center rounded-xl border transition-all ${active ? 'bg-gradient-to-r from-fuchsia-500/10 to-violet-500/10 border-fuchsia-400/40 ring-1 ring-fuchsia-400/20' : 'bg-white/[0.06] border-white/15'}`}>
-                    <button
-                      type="button"
-                      onClick={() => handleDeliverableToggle(item.value)}
-                      className={`px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5 ${active ? 'text-white' : 'text-slate-100/70 hover:text-white'}`}
+            <Card className={`${surfaceClass} max-w-[840px] mx-auto ${showDetailedForm ? '' : 'hidden'}`}>
+              <CardContent className="p-6 md:p-6">
+                <form id="collab-request-form" ref={formRef} onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+                  {collabType !== 'paid' && (
+                    <div
+                      style={revealDelayStyle(120)}
+                      className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
                     >
-                      <span className="text-slate-400">{item.icon}</span>{item.label}
-                    </button>
-                    {active && (
-                      <div className="flex items-center border-l border-white/10 px-2 py-1">
-                        <button
-                          type="button"
-                          onClick={() => updateDeliverableQuantity(item.value, (deliverableQuantities[item.value] || 1) - 1)}
-                          className="w-5 h-5 flex items-center justify-center rounded bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-                        >-</button>
-                        <span className="w-6 text-center text-xs font-bold text-white">{deliverableQuantities[item.value] || 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateDeliverableQuantity(item.value, (deliverableQuantities[item.value] || 1) + 1)}
-                          className="w-5 h-5 flex items-center justify-center rounded bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-                        >+</button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Timeline */}
-          <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
-                />
-              </div>
-
-              <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
-                <input
-                  type="date"
-                  value={offerExpiry}
-                  onChange={(e) => setOfferExpiry(e.target.value)}
-                  className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* --- STEP 3: Brand Details --- */}
-          <div className={`space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 ${currentStep === 3 ? '' : 'hidden'}`}>
-            <div className="bg-white/[0.06] rounded-[24px] p-5 border border-white/15">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-1">
-                <Building2 className="h-5 w-5 text-amber-400" />
-                Brand & Contact
-              </h3>
-              <p className="text-xs text-slate-100/60 mb-6">Required for the collaboration contract</p>
-
-              <form id="collab-request-form" ref={formRef} onSubmit={handleSubmit} className="space-y-5">
-
-                <div>
-                  <label className={`block text-white mb-2 ${typeLabel}`}>
-                    <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-300" />Brand Name <span className="text-red-400">*</span></span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={brandName}
-                    onChange={(e) => {
-                      setBrandName(e.target.value);
-                      if (errors.brandName) setErrors({ ...errors, brandName: '' });
-                    }}
-                    required
-                    placeholder="Official Company / Brand Name"
-                    className={`${inputClass} border-white/20 bg-black/20 focus:bg-black/40 ${errors.brandName ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandName && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4 text-amber-400" />
+                        Product / Service Image
+                      </h3>
+                      <p className="text-xs text-slate-100/75">
+                        Upload an image representing what you&apos;re offering.
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleBarterImageChange}
+                        disabled={barterImageUploading}
+                        className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-500/30 file:text-slate-500 file:text-sm file:font-medium"
+                      />
+                      {barterProductImageUrl && (
+                        <div className="mt-2 flex items-start gap-3 rounded-lg border border-blue-500/20 bg-white/5 p-2">
+                          <img
+                            src={barterProductImageUrl}
+                            alt="Product"
+                            className="h-20 w-20 shrink-0 rounded-md object-cover"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-green-400/90">Image uploaded</p>
+                            <button
+                              type="button"
+                              onClick={() => setBarterProductImageUrl(null)}
+                              className="mt-1 text-xs text-slate-300 hover:text-white underline"
+                            >
+                              Remove image
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      <p className="text-xs text-slate-100/70">
+                        Product collaborations are treated as commercial partnerships.
+                      </p>
+                    </div>
                   )}
-                </div>
 
-                <div>
-                  <label className={`block text-white mb-2 ${typeLabel}`}>
-                    <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4 text-slate-300" />Work Email <span className="text-red-400">*</span></span>
-                  </label>
-                  <Input
-                    type="email"
-                    value={brandEmail}
-                    onChange={(e) => {
-                      setBrandEmail(e.target.value);
-                      if (errors.brandEmail) setErrors({ ...errors, brandEmail: '' });
-                    }}
-                    required
-                    placeholder="you@company.com"
-                    className={`${inputClass} border-white/20 bg-black/20 focus:bg-black/40 ${errors.brandEmail ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandEmail && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className={`block text-white mb-2 ${typeLabel}`}>
-                    <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-300" />Company Address <span className="text-red-400">*</span></span>
-                  </label>
-                  <Textarea
-                    value={brandAddress}
-                    onChange={(e) => {
-                      setBrandAddress(e.target.value);
-                      if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
-                    }}
-                    required
-                    placeholder="Full registered address for invoicing..."
-                    rows={2}
-                    className={`${inputClass} min-h-[70px] border-white/20 bg-black/20 focus:bg-black/40 ${errors.brandAddress ? 'border-red-400/50' : ''}`}
-                  />
-                  {errors.brandAddress && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
-                  )}
-                </div>
-
-                <div className="pt-2 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setShowOptionalBrandDetails(prev => !prev)}
-                    className="flex items-center gap-2 text-sm font-bold text-slate-100/80 hover:text-white transition-colors"
+                  {/* Campaign Details */}
+                  <div
+                    style={revealDelayStyle(80)}
+                    className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
                   >
-                    <span className={showOptionalBrandDetails ? 'rotate-180 transition-transform' : 'transition-transform'}><ChevronDown className="h-4 w-4" /></span>
-                    Optional Brand Details
-                  </button>
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      <Clapperboard className="h-5 w-5 text-slate-400" />
+                      Content Requested
+                    </h3>
+                    <p className="md:hidden text-xs text-slate-200/70">
+                      Core campaign details were captured above. Add brand and legal details here.
+                    </p>
 
-                  {showOptionalBrandDetails && (
-                    <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className={`block text-xs text-slate-100/70 mb-1.5 ${typeLabel}`}>
-                            Website
-                          </label>
-                          <Input
-                            type="text"
-                            value={brandWebsite}
-                            onChange={(e) => setBrandWebsite(e.target.value)}
-                            placeholder="example.com"
-                            className={`${inputClass} h-9 border-white/10`}
-                          />
-                        </div>
-                        <div>
-                          <label className={`block text-xs text-slate-100/70 mb-1.5 ${typeLabel}`}>
-                            Instagram
-                          </label>
-                          <Input
-                            type="text"
-                            value={brandInstagram}
-                            onChange={(e) => setBrandInstagram(e.target.value)}
-                            placeholder="@brand"
-                            className={`${inputClass} h-9 border-white/10`}
-                          />
-                        </div>
+                    <div>
+                      <label className={`block text-white mb-2 ${typeLabel}`}>
+                        <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-300" />Brand Name <span className="text-red-400">*</span></span>
+                      </label>
+                      <Input
+                        type="text"
+                        value={brandName}
+                        onChange={(e) => {
+                          setBrandName(e.target.value);
+                          if (errors.brandName) setErrors({ ...errors, brandName: '' });
+                        }}
+                        required
+                        className={`${inputClass} ${errors.brandName ? 'border-red-400/50' : ''}`}
+                      />
+                      {errors.brandName && (
+                        <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <label className={`block text-white ${typeLabel}`}>
+                          <span className="inline-flex items-center gap-2"><ImageIcon className="h-4 w-4 text-slate-300" />Brand Identity (Logo)</span>
+                        </label>
+                        {brandLogoUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setBrandLogoUrl(null)}
+                            className="text-[10px] text-red-400 hover:text-red-300 uppercase font-bold tracking-wider"
+                          >
+                            Remove
+                          </button>
+                        )}
                       </div>
-                      {collabType !== 'paid' && (
-                        <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                          <h4 className="text-xs font-bold text-white mb-2">Product Image</h4>
+
+                      {!brandLogoUrl ? (
+                        <div className="relative">
                           <input
                             type="file"
-                            accept="image/jpeg,image/png,image/webp,image/gif"
-                            onChange={handleBarterImageChange}
-                            disabled={barterImageUploading}
-                            className="block w-full text-xs text-white/80 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-500/30 file:text-slate-200 file:text-xs file:font-medium"
+                            id="logo-upload"
+                            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                            onChange={handleLogoChange}
+                            disabled={brandLogoUploading}
+                            className="hidden"
                           />
+                          <label
+                            htmlFor="logo-upload"
+                            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-6 transition-all hover:bg-white/10 cursor-pointer ${brandLogoUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                          >
+                            {brandLogoUploading ? (
+                              <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
+                            ) : (
+                              <ImageIcon className="h-6 w-6 text-slate-400" />
+                            )}
+                            <div className="text-center">
+                              <p className="text-sm font-medium text-white">Upload Brand Logo</p>
+                              <p className="text-[10px] text-slate-100/60 mt-1">PNG, JPG, WebP or SVG up to 2MB</p>
+                            </div>
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 p-2 rounded-xl bg-white/5 border border-emerald-500/20">
+                          <div className="h-16 w-16 rounded-lg bg-white/10 flex items-center justify-center p-2 overflow-hidden border border-white/10 shadow-inner">
+                            <img
+                              src={brandLogoUrl}
+                              alt="Brand Logo"
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Identity Secured
+                            </p>
+                            <p className="text-[10px] text-slate-100/60 mt-0.5">Will be displayed in the deal console</p>
+                          </div>
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </form>
-            </div>
 
-            {/* Secure Trust Indicators inline in Step 3 */}
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-sm text-emerald-100">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                <span className="font-semibold">Secured by Creator Armour</span>
-              </div>
-              <p className="text-xs text-emerald-100/70 pl-6">Your details are only shared once the creator accepts the collaboration proposal.</p>
-            </div>
-          </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                      <div>
+                        <label className={`block text-white mb-2 ${typeLabel}`}>
+                          <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-slate-300" />Website</span>
+                        </label>
+                        <Input
+                          type="text"
+                          value={brandWebsite}
+                          onChange={(e) => {
+                            setBrandWebsite(e.target.value);
+                            if (errors.brandWebsite) setErrors({ ...errors, brandWebsite: '' });
+                          }}
+                          placeholder="example.com or www.example.com"
+                          className={`${inputClass} ${errors.brandWebsite ? 'border-red-400/50' : ''}`}
+                        />
+                        {errors.brandWebsite && (
+                          <p className="text-xs text-red-400 mt-1">{errors.brandWebsite}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className={`block text-white mb-2 ${typeLabel}`}>
+                          <span className="inline-flex items-center gap-2"><AtSign className="h-4 w-4 text-slate-300" />Instagram Handle</span>
+                        </label>
+                        <Input
+                          type="text"
+                          value={brandInstagram}
+                          onChange={(e) => setBrandInstagram(e.target.value)}
+                          placeholder="@brandname"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
 
-          {/* Global Footer Elements */}
-          <div className="mt-8 flex flex-col items-center">
-            <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-100/60 mb-3">
-              <Lock className="h-3 w-3 text-emerald-400" />
-              <span>End-to-End Encrypted Data</span>
-            </div>
+                    <div className="hidden md:block">
+                      <label className={`block text-white mb-2 ${typeLabel}`}>
+                        <span className="inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Campaign Description <span className="text-red-400">*</span></span>
+                      </label>
+                      <Textarea
+                        value={campaignDescription}
+                        onChange={(e) => {
+                          setCampaignDescription(e.target.value);
+                          if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
+                        }}
+                        required
+                        placeholder="Tell us about your campaign..."
+                        className={`${inputClass} min-h-[120px] ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
+                      />
+                      {errors.campaignDescription && (
+                        <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
+                      )}
+                      {campaignDescription && !errors.campaignDescription && (
+                        <p className="text-xs text-slate-100/65 mt-1">
+                          {campaignDescription.length} characters
+                        </p>
+                      )}
+                    </div>
 
-            <button
-              type="button"
-              onClick={() => setShowSaveDraftModal(true)}
-              className="text-xs text-slate-100/80 hover:text-white border border-white/20 hover:border-white/40 rounded-xl px-4 py-2 transition-colors bg-white/[0.03] hover:bg-white/[0.08]"
-            >
-              Save and continue later
-            </button>
-          </div>
+                    <div className="hidden md:block">
+                      <label className={`block text-white mb-2 ${typeLabel}`}>
+                        <span className="inline-flex items-center gap-2"><Clapperboard className="h-4 w-4 text-slate-400" />Deliverables Requested <span className="text-red-400">*</span></span>
+                      </label>
+                      <p className={`${helperTextClass} mb-3`}>Multiple selections allowed</p>
+                      <div className="flex flex-wrap gap-2.5 mt-2">
+                        {DELIVERABLE_OPTIONS.map((item) => {
+                          const active = deliverables.includes(item.value);
+                          return (
+                            <button
+                              key={item.value}
+                              type="button"
+                              onClick={() => handleDeliverableToggle(item.value)}
+                              className={`rounded-full border px-3.5 py-1.5 text-sm transition-all ${active
+                                ? 'border-fuchsia-300/70 bg-fuchsia-500/25 text-white ring-2 ring-fuchsia-400/40 shadow-lg shadow-fuchsia-500/20'
+                                : 'border-white/25 bg-white/[0.04] text-slate-100/85 hover:bg-white/[0.08]'
+                                }`}
+                            >
+                              <span className="mr-1">{item.icon}</span>{item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {errors.deliverables && (
+                        <p className="text-xs text-red-400 mt-1">{errors.deliverables}</p>
+                      )}
+                    </div>
 
-          {/* Demo Fill Button - Only in development or with ?demo=true */}
-          {import.meta.env.DEV && (
-            <div className="mt-4 flex justify-center">
-              <button
-                type="button"
-                onClick={fillDemoData}
-                className="text-xs text-slate-200/50 hover:text-slate-100 underline underline-offset-4"
-              >
-                Fill demo data
-              </button>
-            </div>
-          )}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="usage-rights"
+                        checked={usageRights}
+                        onCheckedChange={(checked) => setUsageRights(checked === true)}
+                        className="border-white/30 data-[state=checked]:bg-blue-600"
+                      />
+                      <label htmlFor="usage-rights" className="text-sm text-slate-100/85 cursor-pointer">
+                        Usage rights needed?
+                      </label>
+                    </div>
 
-          <div className="md:hidden h-20" />
+                    <div className="hidden md:block rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                      <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-slate-300" />
+                        Timeline
+                      </h4>
 
-          <div className="px-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className={`block text-white mb-2 ${typeLabel}`}>
+                            <span className="inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
+                          </label>
+                          <Input
+                            type="date"
+                            value={deadline}
+                            onChange={(e) => setDeadline(e.target.value)}
+                            className={inputClass}
+                          />
+                          <p className={`${helperTextClass} mt-1.5`}>
+                            When content needs to go live.
+                          </p>
+                        </div>
 
-            {/* Save and continue later modal */}
-            <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-              <DialogContent className="bg-slate-900/95 border-white/20 text-white">
-                <DialogHeader>
-                  <DialogTitle>Save and continue later</DialogTitle>
-                </DialogHeader>
-                <p className="text-sm text-slate-100/85">
-                  Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
-                </p>
-                <Input
-                  type="email"
-                  placeholder="you@company.com"
-                  value={draftEmail}
-                  onChange={(e) => setDraftEmail(e.target.value)}
-                  className={inputClass}
-                />
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowSaveDraftModal(false)}
-                    className="border-white/20 text-white hover:bg-white/10"
+                        <div>
+                          <label className={`block text-white mb-2 ${typeLabel}`}>
+                            <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
+                          </label>
+                          <Input
+                            type="date"
+                            value={offerExpiry}
+                            onChange={(e) => setOfferExpiry(e.target.value)}
+                            className={inputClass}
+                          />
+                          <p className={`${helperTextClass} mt-1.5`}>
+                            Creator must respond by this date.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/15">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowCommercialTerms((prev) => !prev)}
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-slate-100"
+                        >
+                          <FileText className="h-4 w-4 text-slate-300" />
+                          Commercial Terms (Optional)
+                          {showCommercialTerms ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </button>
+                        {showCommercialTerms && (
+                          <button
+                            type="button"
+                            onClick={applyStandardTerms}
+                            className="text-xs text-slate-100 hover:text-white border border-white/25 rounded-md px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1]"
+                          >
+                            Use standard terms
+                          </button>
+                        )}
+                      </div>
+                      {showCommercialTerms && (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><PenLine className="h-4 w-4 text-slate-300" />Authorized Signer Name</label>
+                              <Input
+                                type="text"
+                                value={authorizedSignerName}
+                                onChange={(e) => setAuthorizedSignerName(e.target.value)}
+                                placeholder="Full legal name"
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><PenLine className="h-4 w-4 text-slate-300" />Signer Designation</label>
+                              <Input
+                                type="text"
+                                value={authorizedSignerRole}
+                                onChange={(e) => setAuthorizedSignerRole(e.target.value)}
+                                placeholder="e.g. Marketing Manager"
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Usage Rights Duration</label>
+                              <Input
+                                type="text"
+                                value={usageDuration}
+                                onChange={(e) => setUsageDuration(e.target.value)}
+                                placeholder="e.g. 90 days"
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><Clock className="h-4 w-4 text-slate-300" />Approval SLA (hours)</label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={approvalSlaHours}
+                                onChange={(e) => setApprovalSlaHours(e.target.value)}
+                                placeholder="e.g. 48"
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-slate-300" />Shipping Timeline (days)</label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={shippingTimelineDays}
+                                onChange={(e) => setShippingTimelineDays(e.target.value)}
+                                placeholder="e.g. 3"
+                                className={inputClass}
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Payment Terms</label>
+                            <Textarea
+                              value={paymentTerms}
+                              onChange={(e) => setPaymentTerms(e.target.value)}
+                              placeholder="e.g. 50% advance, balance within 7 days of posting"
+                              className={`${inputClass} min-h-[84px]`}
+                            />
+                          </div>
+                          <div className="mt-4">
+                            <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Cancellation / Reschedule Policy</label>
+                            <Textarea
+                              value={cancellationPolicy}
+                              onChange={(e) => setCancellationPolicy(e.target.value)}
+                              placeholder="e.g. If canceled after signing, approved production costs are payable."
+                              className={`${inputClass} min-h-[84px]`}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contact Info */}
+                  <div
+                    style={revealDelayStyle(100)}
+                    className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
                   >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSaveDraftSubmit}
-                    disabled={saveDraftSubmitting}
-                    className="bg-white text-black hover:bg-slate-200 text-white"
+                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                      <ShieldCheck className="h-5 w-5 text-fuchsia-300" />
+                      Secure Deal Details
+                    </h3>
+                    <p className="text-xs text-slate-100/70 mt-[-6px]">
+                      Used to auto-generate contract once creator accepts.
+                    </p>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4 text-slate-300" />Brand Email <span className="text-red-400">*</span></span>
+                      </label>
+                      <Input
+                        type="email"
+                        value={brandEmail}
+                        onChange={(e) => {
+                          setBrandEmail(e.target.value);
+                          if (errors.brandEmail) setErrors({ ...errors, brandEmail: '' });
+                        }}
+                        required
+                        className={`${inputClass} ${errors.brandEmail ? 'border-red-400/50' : ''}`}
+                      />
+                      {errors.brandEmail && (
+                        <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
+                      )}
+                      <p className="text-xs text-slate-100/70 mt-1.5 font-medium">Used for official contract generation. Corporate domain preferred.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-amber-400" />GSTIN (Optional)</span>
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Input
+                          type="text"
+                          value={brandGstin}
+                          onChange={(e) => {
+                            setBrandGstin(e.target.value.toUpperCase().slice(0, 15));
+                            if (errors.brandGstin) setErrors({ ...errors, brandGstin: '' });
+                            setGstLookupError(null);
+                          }}
+                          placeholder="15-digit GSTIN for invoicing"
+                          maxLength={15}
+                          className={`flex-1 ${inputClass} font-mono ${errors.brandGstin ? 'border-red-400/50' : ''}`}
+                          disabled={isGstLookupLoading}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleGstLookup}
+                          disabled={isGstLookupLoading || !brandGstin.trim() || brandGstin.trim().length !== 15}
+                          className="shrink-0 bg-white/[0.07] border-white/25 text-slate-100 hover:bg-white/[0.12] font-mono"
+                          aria-label="Fetch company name and address from GST"
+                        >
+                          {isGstLookupLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />
+                              Fetching...
+                            </>
+                          ) : (
+                            'Fetch from GST'
+                          )}
+                        </Button>
+                      </div>
+                      {(errors.brandGstin || gstLookupError) && (
+                        <p className="text-xs text-red-400 mt-1">{errors.brandGstin || gstLookupError}</p>
+                      )}
+                      <p className={`${helperTextClass} mt-1.5`}>
+                        Optional. Use &quot;Fetch from GST&quot; to auto-fill company name and address.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-300" />Company / Brand Address <span className="text-red-400">*</span></span>
+                      </label>
+                      <Textarea
+                        value={brandAddress}
+                        onChange={(e) => {
+                          setBrandAddress(e.target.value);
+                          if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
+                        }}
+                        required
+                        placeholder="Full registered address (required for contract)"
+                        rows={3}
+                        className={`${inputClass} min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
+                      />
+                      {errors.brandAddress && (
+                        <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
+                      )}
+                      <p className={`${helperTextClass} mt-1.5`}>
+                        Used for the collaboration agreement when the creator accepts
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-white mb-2">
+                        <span className="inline-flex items-center gap-2"><Phone className="h-4 w-4 text-slate-300" />Phone (Optional)</span>
+                      </label>
+                      <Input
+                        type="tel"
+                        value={brandPhone}
+                        onChange={(e) => setBrandPhone(e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Trust Indicators */}
+                  <div
+                    style={revealDelayStyle(120)}
+                    className={`rounded-xl border border-white/20 bg-white/[0.05] p-6 space-y-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
                   >
-                    {saveDraftSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Sending…
-                      </>
-                    ) : (
-                      'Send link'
+                    <h3 className={`text-base font-semibold text-white ${typeCardTitle}`}>Review before submit</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div className="text-slate-100/80">Brand: <span className="text-white">{brandName.trim() || 'Not set'}</span></div>
+                      <div className="text-slate-100/80">Type: <span className="text-white">{collabType === 'paid' ? 'Paid Deal' : collabType === 'barter' ? 'Product Exchange' : 'Cash + Product'}</span></div>
+                      <div className="text-slate-100/80">Budget/Offer: <span className="text-white">{displayBudget}</span></div>
+                      <div className="text-slate-100/80">Deadline: <span className="text-white">{displayDeadline}</span></div>
+                      <div className="text-slate-100/80">Deliverables: <span className="text-white">{deliverables.length > 0 ? deliverables.join(', ') : 'Not set'}</span></div>
+                      <div className="text-slate-100/80">Payment terms: <span className="text-white">{paymentTerms.trim() || 'Default after negotiation'}</span></div>
+                    </div>
+                    {missingRequired.length > 0 && (
+                      <p className="text-xs text-amber-200/90">Before submit, complete: {missingRequired.join(', ')}</p>
                     )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            {/* Sticky Bottom CTA (mobile compact) */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
-              <div className="relative">
-                {showSubmittingTrust && (
-                  <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-violet-300/30 animate-ping" />
-                )}
+                  </div>
+
+                  <div
+                    style={revealDelayStyle(120)}
+                    className={`bg-violet-500/10 border border-violet-300/25 rounded-lg p-6 space-y-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
+                  >
+                    <div className={typeTrust}>
+                      <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                      <span>Secured by Creator Armour</span>
+                    </div>
+                    <div className={typeTrust}>
+                      <BadgeCheck className="h-4 w-4 text-emerald-400" />
+                      <span>Details visible only to creator</span>
+                    </div>
+                  </div>
+
+                  <button type="submit" className="hidden" aria-hidden="true" />
+                </form>
+              </CardContent>
+            </Card>
+
+
+            {/* Additional SEO Content - Brand-Focused */}
+            <details className="hidden md:block mt-10 max-w-3xl mx-auto bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
+              <summary className="cursor-pointer list-none text-xl font-bold text-white flex items-center justify-between">
+                <span>Professional Collaboration Workflow</span>
+                <ChevronDown className="h-4 w-4 text-slate-200" />
+              </summary>
+              <div className="space-y-4 text-slate-100/85 leading-relaxed mt-4">
+                <p>
+                  When you submit a collaboration request through this page, you're choosing a professional workflow designed for brands and agencies.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      Clear Contracts
+                    </h3>
+                    <p className="text-sm">
+                      Every collaboration gets a legally binding contract automatically generated with your terms, deliverables, and payment details.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      Faster Approvals
+                    </h3>
+                    <p className="text-sm">
+                      Structured requests mean quicker responses. Creators can accept, counter, or decline with clear terms from day one.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      Payment Safety
+                    </h3>
+                    <p className="text-sm">
+                      All payments are tracked and protected. No chasing invoices or payment delays—everything is logged and monitored.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      Professional Workflow
+                    </h3>
+                    <p className="text-sm">
+                      Skip the back-and-forth DMs. Submit once, get a response, and move forward with confidence.
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm mt-4 pt-4 border-t border-white/10">
+                  This collaboration page is optimized for brands and agencies looking to partner with {creator.name} for influencer marketing campaigns. All requests are processed securely through Creator Armour's platform.
+                </p>
+                <p className="text-sm mt-3">
+                  <a href="mailto:support@creatorarmour.com" className="text-slate-200 hover:text-white underline">
+                    Help / Contact us
+                  </a>
+                  <span className="text-slate-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
+                </p>
+              </div>
+            </details>
+            <div className="md:hidden h-20" />
+          </div>
+
+          {/* Save and continue later modal */}
+          <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
+            <DialogContent className="bg-slate-900/95 border-white/20 text-white">
+              <DialogHeader>
+                <DialogTitle>Save and continue later</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-slate-100/85">
+                Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
+              </p>
+              <Input
+                type="email"
+                placeholder="you@company.com"
+                value={draftEmail}
+                onChange={(e) => setDraftEmail(e.target.value)}
+                className={inputClass}
+              />
+              <DialogFooter>
                 <Button
-                  onClick={handleStickySubmit}
-                  disabled={submitting}
-                  className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white font-bold text-base shadow-[0_12px_35px_rgba(74,0,224,0.4)] border-t border-white/20 active:scale-[0.99]"
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowSaveDraftModal(false)}
+                  className="border-white/20 text-white hover:bg-white/10"
                 >
-                  {submitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Lock className="h-5 w-5 text-slate-100" />
-                      Processing Offer...
-                    </span>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveDraftSubmit}
+                  disabled={saveDraftSubmitting}
+                  className="bg-white text-black hover:bg-slate-200 text-white"
+                >
+                  {saveDraftSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Sending…
+                    </>
                   ) : (
-                    <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
+                    'Send link'
                   )}
                 </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          {/* Sticky Bottom CTA (mobile compact) */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
+            <div className="relative">
+              {showSubmittingTrust && (
+                <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-violet-300/30 animate-ping" />
+              )}
+              <Button
+                onClick={handleStickySubmit}
+                disabled={submitting}
+                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white font-bold text-base shadow-[0_12px_35px_rgba(74,0,224,0.4)] border-t border-white/20 active:scale-[0.99]"
+              >
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Lock className="h-5 w-5 text-slate-100" />
+                    Processing Offer...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
+                )}
+              </Button>
+            </div>
+            <p className="text-center text-[11px] text-slate-100/70 mt-2">
+              {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
+            </p>
+            {showSubmittingTrust && (
+              <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2">
+                {submittingChecklist.map((step, idx) => {
+                  const complete = idx <= submitChecklistStep;
+                  return (
+                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
+                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
+                      <span>{step}</span>
+                    </div>
+                  );
+                })}
               </div>
-              <p className="text-center text-[11px] text-slate-100/70 mt-2">
+            )}
+          </div>
+
+          {/* Sticky Bottom CTA (desktop full) */}
+          <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
+            <div className="relative max-w-4xl mx-auto">
+              <div className="absolute inset-0 bg-blue-600/30 blur-[40px] rounded-full animate-pulse -z-10" />
+              {showSubmittingTrust && (
+                <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-violet-300/30 animate-ping" />
+              )}
+              {ctaStep === 'create' && (
+                <p className="text-center text-xs text-slate-100/85 mb-2 inline-flex w-full items-center justify-center gap-2">
+                  <Clock className="h-4 w-4 text-sky-400" />
+                  Most brands receive a response the same day
+                </p>
+              )}
+              <Button
+                onClick={handleStickySubmit}
+                disabled={submitting}
+                className={`w-full h-16 rounded-[24px] bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white text-[16px] font-semibold shadow-[0_15px_45px_rgba(74,0,224,0.45)] hover:shadow-[0_20px_60px_rgba(74,0,224,0.6)] border-t border-white/20 transition-all active:scale-95 ${elevationLevel3}`}
+              >
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-3">
+                    <Lock className="h-6 w-6 text-slate-100" />
+                    Processing Offer...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-3">
+                    {ctaIcon}
+                    {ctaLabel}
+                  </span>
+                )}
+              </Button>
+              <p className="text-center text-xs text-slate-100/75 mt-2">
                 {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
               </p>
               {showSubmittingTrust && (
-                <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2">
-                  {submittingChecklist.map((step, idx) => {
-                    const complete = idx <= submitChecklistStep;
-                    return (
-                      <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
-                        <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
-                        <span>{step}</span>
-                      </div>
-                    );
-                  })}
+                <div className="mx-auto mt-3 max-w-xl rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                  <div className="grid grid-cols-1 gap-2">
+                    {submittingChecklist.map((step, idx) => {
+                      const complete = idx <= submitChecklistStep;
+                      return (
+                        <div key={step} className={`flex items-center gap-2 text-sm transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
+                          <CheckCircle2 className={`h-4 w-4 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
+                          <span>{step}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
-
-            {/* Sticky Bottom CTA (desktop full) */}
-            <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
-              <div className="relative max-w-4xl mx-auto">
-                <div className="absolute inset-0 bg-blue-600/30 blur-[40px] rounded-full animate-pulse -z-10" />
-                {showSubmittingTrust && (
-                  <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-violet-300/30 animate-ping" />
-                )}
-                {ctaStepStatus === 'create' && (
-                  <p className="text-center text-xs text-slate-100/85 mb-2 inline-flex w-full items-center justify-center gap-2">
-                    <Clock className="h-4 w-4 text-sky-400" />
-                    Most brands receive a response the same day
-                  </p>
-                )}
-                <Button
-                  onClick={handleStickySubmit}
-                  disabled={submitting}
-                  className={`w-full h-16 rounded-[24px] bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white text-[16px] font-semibold shadow-xl border-t border-white/20 transition-all active:scale-95 ${elevationLevel3}`}
-                >
-                  {submitting ? (
-                    <span className="flex items-center justify-center gap-3">
-                      <Lock className="h-6 w-6 text-slate-100" />
-                      Processing Offer...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-3">
-                      {ctaIcon}
-                      {ctaLabel}
-                    </span>
-                  )}
-                </Button>
-                <p className="text-center text-xs text-slate-100/75 mt-2">
-                  {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
-                </p>
-                {showSubmittingTrust && (
-                  <div className="mx-auto mt-3 max-w-xl rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
-                    <div className="grid grid-cols-1 gap-2">
-                      {submittingChecklist.map((step, idx) => {
-                        const complete = idx <= submitChecklistStep;
-                        return (
-                          <div key={step} className={`flex items-center gap-2 text-sm transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
-                            <CheckCircle2 className={`h-4 w-4 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
-                            <span>{step}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
+
         </div>
       </div>
     </>
