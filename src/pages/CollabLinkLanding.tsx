@@ -6,10 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ChevronLeft, ChevronRight, ShieldCheck, Target, Mail, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, FileCheck, BadgeCheck, Clock, Package, Plus, Minus, Settings, Check, CircleDollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from "@/lib/utils";
 import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
@@ -311,7 +312,6 @@ const CollabLinkLanding = () => {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [submitChecklistStep, setSubmitChecklistStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   // Check if username is reserved (redirect to 404 if so)
@@ -353,14 +353,64 @@ const CollabLinkLanding = () => {
   const [shippingTimelineDays, setShippingTimelineDays] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [showCommercialTerms, setShowCommercialTerms] = useState(false);
-  const [showDetailedForm, setShowDetailedForm] = useState(false);
-  const [hasStartedOffer, setHasStartedOffer] = useState(false);
-  const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
-  // const [showAdvancedMobileOptions, setShowAdvancedMobileOptions] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const formRef = useRef<HTMLFormElement | null>(null);
   const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
-  const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
+
+  // Progressive Flow State
+  const [currentStep, setCurrentStep] = useState(1);
+  const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({});
+  const [showOptionalBrandDetails, setShowOptionalBrandDetails] = useState(false);
+  const [legalPreset, setLegalPreset] = useState<'standard' | 'custom'>('standard');
+
+  // Handle deliverable quantity
+  const handleDeliverableQuantityChange = (deliverable: string, delta: number) => {
+    setDeliverableQuantities(prev => ({
+      ...prev,
+      [deliverable]: Math.max(1, (prev[deliverable] || 1) + delta)
+    }));
+  };
+
+  const nextStep = () => {
+    // Basic validation before moving next
+    if (currentStep === 1) {
+      if (!campaignDescription.trim() || campaignDescription.trim().length < 10) {
+        setErrors(prev => ({ ...prev, campaignDescription: 'Please provide more campaign details' }));
+        toast.error('Please describe your campaign goal');
+        return;
+      }
+      setErrors(prev => ({ ...prev, campaignDescription: '' }));
+    }
+    if (currentStep === 2) {
+      if (deliverables.length === 0) {
+        toast.error('Please select at least one deliverable');
+        return;
+      }
+      if (collabType !== 'barter' && !exactBudget && !budgetRange) {
+        toast.error('Please specify a budget');
+        return;
+      }
+    }
+    setCurrentStep(prev => Math.min(prev + 1, 3));
+    // Scroll to form top with offset for header
+    const formElement = document.getElementById('core-offer-form');
+    if (formElement) {
+      const offset = 100;
+      const elementPosition = formElement.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+    const formElement = document.getElementById('core-offer-form');
+    if (formElement) {
+      const offset = 100;
+      const elementPosition = formElement.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
 
   // Save and continue later
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
@@ -837,46 +887,7 @@ const CollabLinkLanding = () => {
     );
   };
 
-  const handleCreateOfferClick = () => {
-    setHasStartedOffer(true);
-    setShowDetailedForm(true);
-    window.setTimeout(() => {
-      document.getElementById('detailed-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
 
-  const handleStickySubmit = () => {
-    if (!hasStartedOffer) {
-      handleCreateOfferClick();
-      return;
-    }
-
-    // Validate campaign goal first — required before proceeding
-    if (!campaignDescription.trim() || campaignDescription.trim().length < 20) {
-      setErrors((prev) => ({
-        ...prev,
-        campaignDescription: !campaignDescription.trim()
-          ? 'Campaign Goal is required before sending'
-          : 'Please provide more details (at least 20 characters)',
-      }));
-      toast.error('Please fill in the Campaign Goal before sending.');
-      // Scroll to the campaign goal field
-      window.setTimeout(() => {
-        document.getElementById('campaign-goal-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-      return;
-    }
-
-    if (!showDetailedForm) {
-      setShowDetailedForm(true);
-      toast.info('Add final details before sending.');
-      window.setTimeout(() => {
-        document.getElementById('detailed-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      return;
-    }
-    formRef.current?.requestSubmit();
-  };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -1039,7 +1050,6 @@ const CollabLinkLanding = () => {
 
   const elevationLevel1 = 'bg-white/[0.05] border border-white/10 shadow-none';
   const elevationLevel2 = 'bg-white/[0.08] border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
-  const elevationLevel3 = 'bg-white/[0.12] border border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
   const typePageTitle = 'md:text-[28px] md:leading-[36px] md:font-semibold';
   const typeSectionTitle = 'md:text-[20px] md:leading-[28px] md:font-semibold';
   const typeCardTitle = 'md:text-[16px] md:leading-[24px] md:font-semibold';
@@ -1054,34 +1064,6 @@ const CollabLinkLanding = () => {
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail.trim());
   const isCampaignDescriptionValid = campaignDescription.trim().length >= 20;
   const isBudgetProvided = collabType === 'barter' || Boolean(budgetRange || exactBudget);
-  const isCoreReady = Boolean(
-    collabType &&
-    brandName.trim() &&
-    deliverables.length > 0 &&
-    isCampaignDescriptionValid &&
-    isBudgetProvided
-  );
-  const isContactReady = Boolean(isValidBrandEmail && brandAddress.trim().length >= 15);
-  const ctaStep = !hasStartedOffer ? 'create' : (showDetailedForm ? 'send' : 'review');
-  const ctaLabel = ctaStep === 'create' ? 'Create Proposal' : ctaStep === 'review' ? 'Review Proposal' : 'Sign & Send Offer';
-  const ctaHelper = ctaStep === 'create'
-    ? 'Takes 20 seconds'
-    : ctaStep === 'review'
-      ? 'Add final details before sending'
-      : 'Contract & payment protected';
-  const ctaIcon = ctaStep === 'send'
-    ? <Send className="h-4 w-4 text-slate-400" />
-    : <Rocket className="h-4 w-4 text-slate-400" />;
-  const isFinalSubmissionStep = ctaStep === 'send';
-  const showSubmittingTrust = submitting && isFinalSubmissionStep;
-  const submittingChecklist = [
-    'Validating terms...',
-    'Generating secure contract...',
-    'Securing payload for transmission...',
-  ];
-  const revealDelayStyle = (delayMs: number) => ({
-    transitionDelay: showDetailedForm ? `${delayMs}ms` : '0ms',
-  });
 
   const completionChecks = useMemo(() => ([
     { label: 'Collaboration type', complete: Boolean(collabType) },
@@ -1101,17 +1083,6 @@ const CollabLinkLanding = () => {
     brandAddress,
   ]);
 
-  useEffect(() => {
-    if (!showSubmittingTrust) {
-      setSubmitChecklistStep(0);
-      return;
-    }
-    setSubmitChecklistStep(0);
-    const interval = window.setInterval(() => {
-      setSubmitChecklistStep((prev) => (prev < submittingChecklist.length - 1 ? prev + 1 : prev));
-    }, 220);
-    return () => window.clearInterval(interval);
-  }, [showSubmittingTrust]);
 
   // Readiness badge animation (must run before any conditional returns to preserve hook order)
   useEffect(() => {
@@ -1157,8 +1128,6 @@ const CollabLinkLanding = () => {
     if (!shouldAnimate) return;
 
     if (storedRank >= 3 && currentRank === 4) {
-      setReadinessBadgeSparkle(true);
-      window.setTimeout(() => setReadinessBadgeSparkle(false), 800);
       badgeEl.animate(
         [
           { opacity: 0.4, transform: 'translateY(8px) scale(0.97)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
@@ -1237,31 +1206,28 @@ const CollabLinkLanding = () => {
     return null;
   }
 
-  // Generate SEO meta tags
+  // Data derivations
   const creatorName = creator.name || 'Creator';
+  const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
+  const primaryFollowers = creator.followers ?? followerCount;
+  const avgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
+  const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
+  const trustStats = creator.trust_stats;
+
+  const engagementRange = getEngagementRange(primaryFollowers, avgReelViews);
+  const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(formatAudienceCities(creator.top_cities));
+  const completionPercent = Math.round((completionChecks.filter(c => c.complete).length / completionChecks.length) * 100);
+  const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
+
+  // SEO & Meta data
   const normalizedHandle = (creator.username || username || '').replace(/^@/, '').trim();
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : '';
   const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | CreatorArmour`;
-  // const platformNames = platforms.map(p => p.name).join(', ');
-  const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
-  const trustStats = creator.trust_stats;
-  const pastBrands = Array.isArray(creator.past_brands)
-    ? creator.past_brands.map((b) => (typeof b === 'string' ? b.trim() : '')).filter(Boolean)
-    : [];
-  const trustedBrands = trustStats?.brands_count ?? 0;
-  const avgResponseHours = trustStats?.avg_response_hours ?? null;
-  const completionRate = trustStats?.completion_rate ?? null;
-  const recentCampaignTypes = Array.isArray(creator.recent_campaign_types)
-    ? creator.recent_campaign_types.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)
-    : [];
-  // const completedDeals = creator.past_brand_count || 0;(trustedBrands > 0 ? trustedBrands : pastBrands.length);
-  const pastBrandCount = creator.past_brand_count ?? (trustedBrands > 0 ? trustedBrands : pastBrands.length);
   const followerText = followerCount > 0
     ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
     : '';
   const metaDescription = `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via CreatorArmour.`.substring(0, 158);
 
-  // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/collab/${encodeURIComponent(normalizedHandle || creator.username)}`;
   const pageImage = creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
     ? creator.profile_photo
@@ -1275,68 +1241,9 @@ const CollabLinkLanding = () => {
     `${creatorName} collab link`,
     'influencer marketing India',
     'creator collaboration',
-    'paid barter hybrid collaboration',
-    ...pastBrands.slice(0, 4),
+    'paid barter hybrid collaboration'
   ].filter(Boolean)));
 
-  const completedCount = completionChecks.filter((item) => item.complete).length;
-  // const completionPercent = Math.round((completionChecks.filter(c => c.complete).length / completionChecks.length) * 100);
-  const missingRequired = completionChecks.filter((item) => !item.complete).map((item) => item.label);
-  const formSteps = [
-    { label: 'Campaign', complete: isCoreReady },
-    { label: 'Terms', complete: !showCommercialTerms || Boolean(paymentTerms || approvalSlaHours || shippingTimelineDays || usageDuration) },
-    { label: 'Contact', complete: isContactReady },
-    { label: 'Review', complete: isCoreReady && isContactReady },
-  ];
-  const displayBudget = exactBudget
-    ? `₹${Number(exactBudget || 0).toLocaleString('en-IN')}`
-    : budgetRange
-      ? budgetRange.replace('-', ' – ').replace('under', 'Under ₹').replace('+', '+')
-      : collabType === 'barter'
-        ? (barterValue ? `Barter • ₹${Number(barterValue).toLocaleString('en-IN')} value` : 'Barter')
-        : isHybridCollab(collabType)
-          ? `Hybrid${barterValue ? ` • ₹${Number(barterValue).toLocaleString('en-IN')} barter value` : ''}${exactBudget ? ` • ₹${Number(exactBudget).toLocaleString('en-IN')} paid` : ''}`
-          : 'Not set';
-  const displayDeadline = deadline
-    ? new Date(deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    : 'Not set';
-  const formatFollowers = (n?: number | null) => {
-    if (n === null || n === undefined || Number.isNaN(n)) return '';
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-    return `${n}`;
-  };
-  const primaryFollowers = creator.followers ?? followerCount;
-  const avgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
-  const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
-  const engagementRange = getEngagementRange(primaryFollowers, avgReelViews);
-  const genderRows = formatAudienceGender(creator.audience_gender_split);
-  const audienceCities = formatAudienceCities(creator.top_cities);
-  const audienceLanguage = formatAudienceLanguage(creator.primary_audience_language);
-  const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities);
-  const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
-  const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
-  const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
-  const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
-    ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
-    : '~24 hrs';
-  const showEngagementConfidence = engagementRange !== 'Growing Audience';
-  const engagementConfidenceNote = 'Above-average engagement for creator size';
-  const recentActivityNoteRaw = creator.collab_recent_activity_note?.trim() || 'Posting consistently';
-  const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ');
-  const campaignSlotNoteRaw = creator.campaign_slot_note?.trim() || 'Selective partnerships';
-  const campaignSlotNoteText = withNeutralPrefix(campaignSlotNoteRaw, 'Works with ');
-  const deliveryReliabilityNote = creator.collab_delivery_reliability_note?.trim() || 'Reliable delivery across past collaborations.'; // const responseCtaLine = collabResponseBehaviorPreset
-  //   ? `Usually responds ${collabResponseBehaviorPreset.toLowerCase()}`
-  //   : `Ready to review offers`;
-  const responseBehaviorNoteRaw = creator.collab_response_behavior_note?.trim() || 'Most brands receive response within same day';
-  const responseBehaviorNote = withNeutralPrefix(responseBehaviorNoteRaw, 'Typically ');
-  const ctaTrustNote = creator.collab_cta_trust_note?.trim() || 'Creator notified instantly — no DM required.';
-  // const ctaTrustNote = creator.collab_cta_trust_note;
-  const ctaDmNote = creator.collab_cta_dm_note?.trim() || 'No DMs required — creator replies here.';
-  const ctaPlatformNote = creator.collab_cta_platform_note?.trim() || 'Direct collaboration — no agency middle layer';
-  const mobileEngagementLabel = engagementRange === 'Growing Audience' ? 'Consistent viewer engagement' : engagementRange;
-  const hasEngagementAndRegion = Boolean((avgReelViews || avgLikes) && audienceRegionLabel);
   const collabReadiness = getCollabReadiness({
     instagramHandle: creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username,
     instagramLinked: Boolean(creator.last_instagram_sync),
@@ -1357,12 +1264,9 @@ const CollabLinkLanding = () => {
     mediaKitUrl: creator.media_kit_url,
     firstDealCount: creator.past_brand_count || creator.collab_brands_count_override || trustStats?.completed_deals || 0,
   });
-  const profileReadinessState = collabReadiness.label;
-  const profileReadinessTone = collabReadiness.toneClass;
 
   return (
     <>
-      {/* SEO Meta Tags */}
       <SEOHead
         title={metaTitle}
         description={metaDescription}
@@ -1372,1416 +1276,636 @@ const CollabLinkLanding = () => {
         type="website"
         canonicalUrl={canonicalUrl}
       />
-
       <BreadcrumbSchema
         items={[
-          { name: 'CreatorArmour', url: 'https://creatorarmour.com' },
-          { name: 'Collab', url: 'https://creatorarmour.com/collab' },
-          { name: creatorHandle || creatorName, url: canonicalUrl },
+          { name: 'Home', url: '/' },
+          { name: creator.name, url: `/${creator.username}` },
         ]}
       />
+      <PersonSchema
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": creator.name,
+          "alternateName": creator.username,
+          "description": creatorBio || creator.bio,
+          "image": creator.profile_photo,
+          "url": window.location.href,
+          "jobTitle": creator.profile_label || "Creator"
+        }}
+      />
 
-      {/* Person Schema for SEO */}
-      <PersonSchema schema={{
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: creatorName,
-        description: metaDescription,
-        url: canonicalUrl,
-        image: pageImage,
-        jobTitle: creator.category ? `${creator.category} Creator` : 'Content Creator',
-        knowsAbout: creator.category || 'Content Creation',
-        sameAs: creator.platforms.map(p => {
-          switch (p.name.toLowerCase()) {
-            case 'instagram':
-              return `https://instagram.com/${p.handle.replace('@', '')}`;
-            case 'youtube':
-              return `https://youtube.com/${p.handle}`;
-            case 'twitter':
-              return `https://twitter.com/${p.handle.replace('@', '')}`;
-            case 'facebook':
-              return p.handle;
-            default:
-              return null;
-          }
-        }).filter(Boolean),
-      }} />
+      <div className="min-h-screen bg-[#0E061E] text-white selection:bg-blue-500/30">
+        {/* Ambient background glows */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-fuchsia-600/10 blur-[120px]" />
+        </div>
 
-      <div className="min-h-screen bg-[#0B0F14] selection:bg-blue-500/30">
-        <div className="container mx-auto px-4 pt-4 pb-0 md:py-6 md:pb-28 max-w-lg md:max-w-[960px] relative">
-          {/* Header - Deal Desk Intake Portal */}
-          <div className="mb-4 pt-2 md:mb-8 md:pt-4">
-            <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
-                {creator.profile_photo ? (
-                  <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-white/5 text-white font-bold text-lg">
-                    {creator.name.slice(0, 1).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-base font-medium text-white/90">{creator.name}</h2>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-blue-400" />
-                </div>
-                {primaryFollowers ? (
-                  <span className="text-[13px] text-white/50">{formatFollowers(primaryFollowers)} Verified Reach</span>
-                ) : (
-                  <span className="text-[13px] text-white/50">Verified Profile</span>
-                )}
-              </div>
-            </div>
-
-            <div className="max-w-xl">
-              <h1 className={`text-3xl md:text-4xl font-bold tracking-tight text-white mb-2 ${typePageTitle}`}>
-                Submit Collaboration Proposal
-              </h1>
-              <p className="text-[15px] text-white/60 leading-relaxed max-w-md">
-                Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
-              </p>
-            </div>
-          </div>
-
-          {/* Creator Performance Snapshot */}
-          <div className={`hidden md:block mb-12 backdrop-blur-md rounded-xl p-6 ${elevationLevel2}`}>
-            <h3 className={`text-base font-semibold text-white ${typeSectionTitle}`}>Audience Fit Snapshot</h3>
-            <p className={`${typeHelper} text-slate-100/70 mt-1 mb-4`}>
-              Helps brands align campaigns with audience size & content style.
+        <div className="container mx-auto px-4 pt-6 pb-24 md:pt-12 md:pb-32 max-w-4xl relative">
+          {/* Header Section */}
+          <div className="mb-8 md:mb-12 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-6"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" /> Official Collaboration Link
+            </motion.div>
+            <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight text-white">
+              Create Collaboration with <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">{creator.name}</span>
+            </h1>
+            <p className="text-white/50 text-sm md:text-lg max-w-xl mx-auto font-medium">
+              A professional, secure, and legally-binding workflow for brands to partner with India's top creators.
             </p>
-            <div className="space-y-8">
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Performance Truth</p>
-                <div className="space-y-5">
-                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                    <p className="text-xs text-white/60">Reach</p>
-                    <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />Followers: {primaryFollowers ? `${formatFollowers(primaryFollowers)}` : '—'}</p>
-                  </div>
-
-                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                    <p className="text-xs text-white/60">Content Impact</p>
-                    <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>
-                      Avg Reel Views: {avgReelViews ? `${Number(avgReelViews).toLocaleString('en-IN')}` : '—'}
-                      {avgReelViews ? ' (Based on recent posts)' : ''}
-                    </p>
-                    <p className={`text-sm text-white ${typeBodyPrimary}`}>
-                      Avg Likes: {avgLikes ? `${Number(avgLikes).toLocaleString('en-IN')}` : '—'}
-                      {avgLikes ? ' (Based on recent posts)' : ''}
-                    </p>
-                  </div>
-
-                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                    <p className="text-xs text-white/60">Brand Experience</p>
-                    <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>Past Collaborations: {pastBrandCount ?? 0}</p>
-                  </div>
-
-                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                    <p className="text-xs text-white/60">Response Time</p>
-                    <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><Clock className="h-4 w-4 text-sky-400" />{avgResponseHours || 1} hr</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">System Trust Layer</p>
-                <div className="space-y-5">
-                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                    <p className="text-xs text-white/60">Engagement Quality</p>
-                    <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />{engagementRange}</p>
-                    {showEngagementConfidence && (
-                      <p className={`${typeHelper} text-emerald-200/85 mt-1 inline-flex items-center gap-2`}><TrendingUp className="h-4 w-4 text-sky-400" />{engagementConfidenceNote}</p>
-                    )}
-                  </div>
-
-                  {audienceRegionLabel && (
-                    <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Audience Region</p>
-                      <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><MapPin className="h-4 w-4 text-sky-400" />Primary Audience: {audienceRegionLabel}</p>
-                    </div>
-                  )}
-
-                  <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                    <p className="text-xs text-white/60">Reliability Indicators</p>
-                    <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>{deliveryReliabilityNote}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Creator Context Layer</p>
-                <div className={`rounded-lg p-3 space-y-3 ${elevationLevel1}`}>
-                  <div>
-                    <p className="text-xs text-white/60">Audience Fit</p>
-                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{audienceFitLine}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/60">Recent Activity</p>
-                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{recentActivityNote}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/60">Campaign Slots</p>
-                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{campaignSlotNoteText}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/60">CTA Behavior</p>
-                    <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{responseBehaviorNote}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {(creator.audience_gender_split || audienceCities.length > 0 || creator.audience_age_range || audienceLanguage || creator.posting_frequency) && (
-            <div className="hidden md:block mb-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-              <h4 className="text-base font-semibold text-white mb-2">Audience Profile</h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                {genderRows && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-xs text-white/60 mb-1">Gender</p>
-                    <ul className="text-sm text-slate-100/90 space-y-0.5">
-                      {genderRows.map((row, idx) => (
-                        <li key={`${row}-${idx}`}>• {row}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {audienceCities.length > 0 && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-xs text-white/60 mb-1">Top Cities</p>
-                    {audienceCities.length === 1 ? (
-                      <p className="text-sm text-slate-100/90">{audienceCities[0]}</p>
-                    ) : (
-                      <ul className="text-sm text-slate-100/90 space-y-0.5">
-                        {audienceCities.map((city, idx) => (
-                          <li key={`${city}-${idx}`}>• {city}</li>
-                        ))}
-                      </ul>
-                    )}
-                    <p className="text-xs text-slate-100/70 mt-1">{audienceRelevanceNote}</p>
-                  </div>
-                )}
-
-                {creator.audience_age_range && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-xs text-white/60 mb-1">Age</p>
-                    <p className="text-sm text-slate-100/90">{creator.audience_age_range}</p>
-                  </div>
-                )}
-
-                {creator.posting_frequency && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                    <p className="text-xs text-white/60 mb-1">Posting Frequency</p>
-                    <p className="text-sm text-slate-100/90">{creator.posting_frequency}</p>
-                  </div>
-                )}
-
-                {audienceLanguage && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 md:col-span-2">
-                    <p className="text-xs text-white/60 mb-1">Language</p>
-                    <p className="text-sm text-slate-100/90">{audienceLanguage}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {recentCampaignTypes.length > 0 && (
-            <div className="hidden md:block mb-12 rounded-xl bg-white/[0.05] backdrop-blur-xl border border-white/15 p-6" role="region" aria-label="Recent campaign types">
-              <h3 className="text-lg font-semibold text-white mb-3">Recent Campaign Types</h3>
-              <div className="flex flex-wrap gap-3">
-                {recentCampaignTypes.map((campaignType, idx) => (
-                  <span
-                    key={`${campaignType}-${idx}`}
-                    className="inline-flex items-center rounded-full border border-white/30 bg-white/[0.04] px-3.5 py-2 text-sm text-slate-100"
-                  >
-                    {campaignType}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-
-          {/* SEO-Friendly Content Section - Indexable */}
-          <div className="hidden md:block mb-12 space-y-8">
-            {/* Creator Bio & Platforms - Indexable Content */}
-            <div className="bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
-              {creatorBio && (
-                <p className="text-slate-100/85 leading-relaxed mb-4">
-                  {creatorBio}
-                </p>
-              )}
-
-              {creator.platforms.length > 0 && (
-                <div className="space-y-3">
-                  <h2 className="text-xl font-semibold text-white mb-3">
-                    Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                    {creator.platforms.map((platform, idx) => {
-                      const isInstagram = platform.name.toLowerCase() === 'instagram';
-                      return (
-                        <div key={idx} className="flex items-center gap-3 text-slate-100/85">
-                          {getPlatformIcon(platform.name)}
-                          <div className="flex-1">
-                            <p className="font-medium text-white">{platform.name}</p>
-                            {isInstagram && platform.handle ? (
-                              <a
-                                href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-slate-200 hover:text-white transition-colors flex items-center gap-1"
-                              >
-                                @{platform.handle.replace('@', '')}
-                                <ExternalLink className="h-3 w-3 opacity-60" />
-                              </a>
-                            ) : (
-                              <p className="text-sm text-slate-200/90">
-                                {platform.handle}
-                              </p>
-                            )}
-                            {platform.followers && (
-                              <p className="text-xs text-slate-200/65 mt-1">
-                                {platform.followers >= 1000
-                                  ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                  : `${platform.followers} followers`}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-              {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-                <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
-                  {creator.open_to_collabs !== false && (
-                    <p className="text-sm text-green-300 font-medium flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                      Actively open to collaborations
-                    </p>
-                  )}
-                  {creator.content_niches && creator.content_niches.length > 0 && (
-                    <div>
-                      <p className="text-xs text-slate-400 mb-1">Content niches</p>
-                      <div className="flex flex-wrap gap-2">
-                        {creator.content_niches.map((niche, i) => (
-                          <Badge key={i} variant="secondary" className="bg-white/10 text-slate-400 border-white/20">
-                            {niche}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {creator.media_kit_url && (
-                    <div>
-                      <a
-                        href={creator.media_kit_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-slate-400 hover:text-white inline-flex items-center gap-1"
-                      >
-                        <ExternalLink className="h-4 w-4 shrink-0" />
-                        Media kit
-                      </a>
-                      <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-            </div>
-          </div>
-
-          {/* Trust & Safety Block */}
-          <div className="mt-6 mb-2 md:mt-12 md:mb-12 space-y-4">
-            <div className="grid grid-cols-1 gap-3 px-2 md:px-0">
-              {[
-                { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 text-emerald-400" /> },
-                { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 text-emerald-400" /> },
-                { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 text-emerald-400" /> }
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm font-medium text-white/70">
-                  <div className="shrink-0 bg-emerald-500/10 p-1 rounded-full">{item.icon}</div>
-                  {item.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile-first collapsed audience snapshot */}
-          <div className="md:hidden mt-6 mb-6 rounded-xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-md">
-            <h3 className="text-base font-semibold text-white">Audience Fit Snapshot</h3>
-            <div className="mt-3 space-y-4">
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60 inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-sky-400" />Engagement Quality</p>
-                <p className="text-sm text-white mt-1">{mobileEngagementLabel}</p>
-              </div>
-              {audienceRegionLabel && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
-                    <MapPin className="h-4 w-4 text-sky-400" />
-                    {audienceRegionLabel} Audience
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowMobileAudienceDetails((prev) => !prev)}
-              className="mt-3 w-full rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100"
-            >
-              {showMobileAudienceDetails ? 'Hide Audience Details' : 'View Audience Details'}
-            </button>
-
-            {showMobileAudienceDetails && (
-              <div className="mt-4 space-y-4">
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60">Followers</p>
-                  <p className="text-sm text-white mt-1">{primaryFollowers ? `${formatFollowers(primaryFollowers)}` : '—'}</p>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60">Content Impact</p>
-                  <p className="text-sm text-white mt-1">Avg Reel Views: {avgReelViews ? `${Number(avgReelViews).toLocaleString('en-IN')}` : '—'}</p>
-                  <p className="text-sm text-white">Avg Likes: {avgLikes ? `${Number(avgLikes).toLocaleString('en-IN')}` : '—'}</p>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60">Brand Experience</p>
-                  <p className="text-sm text-white mt-1">Past Collaborations: {pastBrandCount ?? 0}</p>
-                  <p className="text-sm text-white mt-1">Response Time: {avgResponseHours || 1} hr</p>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                  <p className="text-xs text-white/60">Creator Context</p>
-                  <p className="text-sm text-white">• {audienceFitLine}</p>
-                  <p className="text-sm text-white">• {recentActivityNote}</p>
-                  <p className="text-sm text-white">• {campaignSlotNoteText}</p>
-                  <p className="text-sm text-white inline-flex items-center gap-2"><Clock className="h-4 w-4 text-sky-400" />{sameDayResponseLine}</p>
-                </div>
-                {(genderRows || audienceCities.length > 0 || creator.audience_age_range || creator.posting_frequency || audienceLanguage) && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                    <p className="text-xs text-white/60">Audience Profile</p>
-                    {genderRows && <p className="text-sm text-white">Gender: {genderRows.join(' / ')}</p>}
-                    {audienceCities.length > 0 && <p className="text-sm text-white">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
-                    {creator.audience_age_range && <p className="text-sm text-white">Age: {creator.audience_age_range}</p>}
-                    {creator.posting_frequency && <p className="text-sm text-white">Posting: {creator.posting_frequency}</p>}
-                    {audienceLanguage && <p className="text-sm text-white">Language: {audienceLanguage}</p>}
-                  </div>
-                )}
-                {hasEngagementAndRegion && (
-                  <p className="text-xs text-slate-100/75 px-1">
-                    Brands in similar categories have collaborated successfully.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Quick Deal Builder */}
-          <div className="md:hidden mt-6 mb-1 flex items-center gap-3 px-2">
-            <div className="h-[1px] flex-1 bg-white/10" />
-            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Propose Collaboration</span>
-            <div className="h-[1px] flex-1 bg-white/10" />
-          </div>
-
-          <p className="md:hidden text-center text-[10px] font-bold text-emerald-400 uppercase tracking-[0.1em] mb-1">
-            Used by 50+ brands to close deals safely
-          </p>
-          <p className="md:hidden text-center text-xs text-slate-100/65 mb-1">
-            Takes less than 20 seconds
-          </p>
-          <div className="md:hidden flex items-center justify-center gap-1.5 mb-3 text-[10px] text-slate-100/70">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-            <span>Protected by contract & payment tracking</span>
-          </div>
-
-          <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-6 mb-6 md:mb-16 text-white border border-white/15 bg-gradient-to-b from-white/[0.10] to-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/30 relative transition-all duration-200 ease-out ${showDetailedForm ? 'opacity-[0.85] scale-[0.995]' : 'opacity-100 scale-100'}`}>
-            <h2 className={`text-xl font-bold mb-5 tracking-tight ${typeSectionTitle}`}>
-              <span className="md:hidden">Propose Collaboration</span>
-              <span className="hidden md:inline">Propose Collaboration</span>
-            </h2>
-
-            <div className="space-y-6 md:space-y-8">
-              {/* Deal Type */}
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <div className="flex items-center justify-between gap-3">
-                  <span className={`inline-flex items-center gap-2 text-sm text-slate-100/90 ${typeLabel}`}><Target className="h-4 w-4 text-slate-400" />Deal Type</span>
-                  <Select
-                    value={collabType}
-                    onValueChange={(value: CollabType) => {
-                      setCollabType(value);
-                      if (value === 'paid') {
-                        setBarterValue('');
-                      } else if (value === 'barter') {
-                        setBudgetRange('');
-                        setExactBudget('');
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="h-9 w-[190px] bg-transparent border-0 p-0 text-right text-white font-bold">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-400" />Paid Deal</span></SelectItem>
-                      <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-400" />Product Exchange</span></SelectItem>
-                      <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-400" />Cash + Product</span></SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {collabType === 'barter' && (
-                  <p className="text-xs text-slate-100/75 mt-2">
-                    Creator may request partial cash + product
-                  </p>
-                )}
-              </div>
-
-              {/* Budget */}
-              <div
-                aria-hidden={collabType !== 'paid'}
-                className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-44 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
-              >
-                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
-                    <div className="relative flex items-center">
-                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                      <input
-                        type="number"
-                        value={exactBudget}
-                        onChange={(e) => setExactBudget(e.target.value)}
-                        placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                      />
-                    </div>
-                  </div>
-                  {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
-                    <p className="text-[11px] text-white/50 mt-3 pt-3 border-t border-white/10">
-                      Based on active campaigns, {creator.name.split(' ')[0]}'s typical engagement starts at ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate)}.
-                    </p>
-                  )}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <Lock className="w-3 h-3 text-emerald-400/70" />
-                    <p className="text-[10px] text-emerald-100/60 font-medium">
-                      Funds securely held in escrow until deliverables are approved.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                aria-hidden={collabType !== 'barter'}
-                className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'barter' ? 'opacity-100 max-h-60 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
-              >
-                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
-                    <div className="relative flex items-center">
-                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                      <input
-                        type="number"
-                        value={barterValue}
-                        onChange={(e) => setBarterValue(e.target.value)}
-                        placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-100/65 mt-2">Helps creator evaluate collaboration value.</p>
-                  <p className="text-xs text-slate-100/60 mt-1">Used only for collaboration fairness.</p>
-                </div>
-              </div>
-
-              <div
-                aria-hidden={!isHybridCollab(collabType)}
-                className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${isHybridCollab(collabType) ? 'opacity-100 max-h-80 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
-              >
-                <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 space-y-3 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
-                    <div className="relative flex items-center">
-                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                      <input
-                        type="number"
-                        value={exactBudget}
-                        onChange={(e) => setExactBudget(e.target.value)}
-                        placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
-                    <div className="relative flex items-center">
-                      <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                      <input
-                        type="number"
-                        value={barterValue}
-                        onChange={(e) => setBarterValue(e.target.value)}
-                        placeholder="3000"
-                        className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-100/65">Helps creator evaluate collaboration value.</p>
-                  <p className="text-xs text-slate-100/60">Used only for collaboration fairness.</p>
-                </div>
-              </div>
-
-              {/* Deliverables */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clapperboard className="h-4 w-4 text-slate-400" />Content Requested</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 py-0.5">
-                  {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
-                    const active = deliverables.includes(item.value);
-                    return (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => handleDeliverableToggle(item.value)}
-                        className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${active ? 'bg-gradient-to-r from-fuchsia-500/80 to-violet-500/80 text-white border-fuchsia-300/70 shadow-lg shadow-fuchsia-900/50 ring-2 ring-fuchsia-400/40' : 'bg-white/[0.06] text-slate-100/80 border-white/25 hover:bg-white/[0.12]'}`}
-                      >
-                        <span className="mr-1">{item.icon}</span>{item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-slate-100/65 mt-2">Custom deliverables can be discussed</p>
-              </div>
-
-              {/* Timeline */}
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
-                    <input
-                      type="date"
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                      className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
-                    <input
-                      type="date"
-                      value={offerExpiry}
-                      onChange={(e) => setOfferExpiry(e.target.value)}
-                      className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Message -> Campaign Goal */}
-              <div id="campaign-goal-field">
-                <label className="mb-2 inline-flex items-center gap-2 text-[10px] font-bold text-slate-200/65 uppercase tracking-wider">
-                  <Target className="h-3.5 w-3.5 text-slate-400" />
-                  Campaign Goal <span className="text-red-400 ml-0.5">*</span>
-                </label>
-                <Textarea
-                  value={campaignDescription}
-                  onChange={(e) => {
-                    setCampaignDescription(e.target.value);
-                    if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
-                  }}
-                  placeholder={`Briefly outline the campaign goal... (min 20 characters)`}
-                  className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[100px] text-white placeholder:text-slate-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
-                />
-                {errors.campaignDescription && (
-                  <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
-                )}
-                {!errors.campaignDescription && campaignDescription.length > 0 && campaignDescription.length < 20 && (
-                  <p className="text-xs text-amber-400 mt-1">{20 - campaignDescription.length} more characters needed</p>
-                )}
-              </div>
-
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-              <button
-                type="button"
-                onClick={() => setShowSaveDraftModal(true)}
-                className="text-sm text-slate-100 hover:text-white border border-white/30 hover:border-white/50 rounded-xl px-4 py-2 transition-colors bg-white/[0.05] hover:bg-white/[0.10]"
-              >
-                Save and continue later
-              </button>
-              <span className="text-xs text-slate-100/60">We’ll email you a link (valid 7 days)</span>
-            </div>
-
-            {/* Demo Fill Button - Only in development or with ?demo=true */}
-            {import.meta.env.DEV && (
-              <div className="mb-4 flex justify-center">
-                <button
-                  type="button"
-                  onClick={fillDemoData}
-                  className="text-xs text-slate-200/70 hover:text-slate-100 underline underline-offset-4"
-                >
-                  Fill demo data
-                </button>
-              </div>
-            )}
-
-            {/* Expandable Detailed Form */}
-            <div
-              id="detailed-form"
-              className={`overflow-hidden transition-all duration-[260ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'max-h-[4600px] opacity-100 translate-y-0 mt-8 md:mt-16 pt-4 md:pt-8 border-t border-white/10' : 'max-h-0 opacity-0 translate-y-4 pointer-events-none'}`}
-            >
-              <div className="mb-3">
-                <div
-                  style={revealDelayStyle(40)}
-                  className={`mb-3 rounded-xl border border-emerald-300/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
-                >
-                  Creator Armour handles contracts automatically — so both sides stay protected.
-                </div>
-                <div className="mb-3 flex items-center gap-3">
-                  <div style={revealDelayStyle(120)} className={`h-px flex-1 bg-white/20 origin-left transition-transform duration-300 ease-out ${showDetailedForm ? 'scale-x-100' : 'scale-x-0'}`} />
-                  <span style={revealDelayStyle(0)} className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-100/80 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}><ShieldCheck className="h-4 w-4 text-emerald-400" /><Lock className="h-4 w-4 text-emerald-400" />Secure Details (after creator accepts)</span>
-                  <div style={revealDelayStyle(120)} className={`h-px flex-1 bg-white/20 origin-left transition-transform duration-300 ease-out ${showDetailedForm ? 'scale-x-100' : 'scale-x-0'}`} />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowDetailedForm((prev) => !prev)}
-                  style={revealDelayStyle(120)}
-                  className={`w-full rounded-lg border border-white/25 bg-white/[0.06] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
-                >
-                  {showDetailedForm ? 'Hide secure details' : 'Add Secure Details'}
-                </button>
-              </div>
-            </div>
-            <Card className={`${surfaceClass} max-w-[840px] mx-auto ${showDetailedForm ? '' : 'hidden'}`}>
-              <CardContent className="p-6 md:p-6">
-                <form id="collab-request-form" ref={formRef} onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
-                  {collabType !== 'paid' && (
-                    <div
-                      style={revealDelayStyle(120)}
-                      className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-                    >
-                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <ImageIcon className="h-4 w-4 text-amber-400" />
-                        Product / Service Image
-                      </h3>
-                      <p className="text-xs text-slate-100/75">
-                        Upload an image representing what you&apos;re offering.
-                      </p>
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        onChange={handleBarterImageChange}
-                        disabled={barterImageUploading}
-                        className="block w-full text-sm text-white/80 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-500/30 file:text-slate-500 file:text-sm file:font-medium"
-                      />
-                      {barterProductImageUrl && (
-                        <div className="mt-2 flex items-start gap-3 rounded-lg border border-blue-500/20 bg-white/5 p-2">
-                          <img
-                            src={barterProductImageUrl}
-                            alt="Product"
-                            className="h-20 w-20 shrink-0 rounded-md object-cover"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs text-green-400/90">Image uploaded</p>
-                            <button
-                              type="button"
-                              onClick={() => setBarterProductImageUrl(null)}
-                              className="mt-1 text-xs text-slate-300 hover:text-white underline"
-                            >
-                              Remove image
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      <p className="text-xs text-slate-100/70">
-                        Product collaborations are treated as commercial partnerships.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Campaign Details */}
-                  <div
-                    style={revealDelayStyle(80)}
-                    className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-                  >
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Clapperboard className="h-5 w-5 text-slate-400" />
-                      Content Requested
-                    </h3>
-                    <p className="md:hidden text-xs text-slate-200/70">
-                      Core campaign details were captured above. Add brand and legal details here.
-                    </p>
-
-                    <div>
-                      <label className={`block text-white mb-2 ${typeLabel}`}>
-                        <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-300" />Brand Name <span className="text-red-400">*</span></span>
-                      </label>
-                      <Input
-                        type="text"
-                        value={brandName}
-                        onChange={(e) => {
-                          setBrandName(e.target.value);
-                          if (errors.brandName) setErrors({ ...errors, brandName: '' });
-                        }}
-                        required
-                        className={`${inputClass} ${errors.brandName ? 'border-red-400/50' : ''}`}
-                      />
-                      {errors.brandName && (
-                        <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4">
-                      <div className="flex items-center justify-between">
-                        <label className={`block text-white ${typeLabel}`}>
-                          <span className="inline-flex items-center gap-2"><ImageIcon className="h-4 w-4 text-slate-300" />Brand Identity (Logo)</span>
-                        </label>
-                        {brandLogoUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setBrandLogoUrl(null)}
-                            className="text-[10px] text-red-400 hover:text-red-300 uppercase font-bold tracking-wider"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-
-                      {!brandLogoUrl ? (
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id="logo-upload"
-                            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
-                            onChange={handleLogoChange}
-                            disabled={brandLogoUploading}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="logo-upload"
-                            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-6 transition-all hover:bg-white/10 cursor-pointer ${brandLogoUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                          >
-                            {brandLogoUploading ? (
-                              <Loader2 className="h-6 w-6 text-slate-400 animate-spin" />
-                            ) : (
-                              <ImageIcon className="h-6 w-6 text-slate-400" />
-                            )}
-                            <div className="text-center">
-                              <p className="text-sm font-medium text-white">Upload Brand Logo</p>
-                              <p className="text-[10px] text-slate-100/60 mt-1">PNG, JPG, WebP or SVG up to 2MB</p>
-                            </div>
-                          </label>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-4 p-2 rounded-xl bg-white/5 border border-emerald-500/20">
-                          <div className="h-16 w-16 rounded-lg bg-white/10 flex items-center justify-center p-2 overflow-hidden border border-white/10 shadow-inner">
-                            <img
-                              src={brandLogoUrl}
-                              alt="Brand Logo"
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Identity Secured
-                            </p>
-                            <p className="text-[10px] text-slate-100/60 mt-0.5">Will be displayed in the deal console</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                      <div>
-                        <label className={`block text-white mb-2 ${typeLabel}`}>
-                          <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-slate-300" />Website</span>
-                        </label>
-                        <Input
-                          type="text"
-                          value={brandWebsite}
-                          onChange={(e) => {
-                            setBrandWebsite(e.target.value);
-                            if (errors.brandWebsite) setErrors({ ...errors, brandWebsite: '' });
-                          }}
-                          placeholder="example.com or www.example.com"
-                          className={`${inputClass} ${errors.brandWebsite ? 'border-red-400/50' : ''}`}
-                        />
-                        {errors.brandWebsite && (
-                          <p className="text-xs text-red-400 mt-1">{errors.brandWebsite}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className={`block text-white mb-2 ${typeLabel}`}>
-                          <span className="inline-flex items-center gap-2"><AtSign className="h-4 w-4 text-slate-300" />Instagram Handle</span>
-                        </label>
-                        <Input
-                          type="text"
-                          value={brandInstagram}
-                          onChange={(e) => setBrandInstagram(e.target.value)}
-                          placeholder="@brandname"
-                          className={inputClass}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="hidden md:block">
-                      <label className={`block text-white mb-2 ${typeLabel}`}>
-                        <span className="inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Campaign Description <span className="text-red-400">*</span></span>
-                      </label>
-                      <Textarea
-                        value={campaignDescription}
-                        onChange={(e) => {
-                          setCampaignDescription(e.target.value);
-                          if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
-                        }}
-                        required
-                        placeholder="Tell us about your campaign..."
-                        className={`${inputClass} min-h-[120px] ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
-                      />
-                      {errors.campaignDescription && (
-                        <p className="text-xs text-red-400 mt-1">{errors.campaignDescription}</p>
-                      )}
-                      {campaignDescription && !errors.campaignDescription && (
-                        <p className="text-xs text-slate-100/65 mt-1">
-                          {campaignDescription.length} characters
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="hidden md:block">
-                      <label className={`block text-white mb-2 ${typeLabel}`}>
-                        <span className="inline-flex items-center gap-2"><Clapperboard className="h-4 w-4 text-slate-400" />Deliverables Requested <span className="text-red-400">*</span></span>
-                      </label>
-                      <p className={`${helperTextClass} mb-3`}>Multiple selections allowed</p>
-                      <div className="flex flex-wrap gap-2.5 mt-2">
-                        {DELIVERABLE_OPTIONS.map((item) => {
-                          const active = deliverables.includes(item.value);
-                          return (
-                            <button
-                              key={item.value}
-                              type="button"
-                              onClick={() => handleDeliverableToggle(item.value)}
-                              className={`rounded-full border px-3.5 py-1.5 text-sm transition-all ${active
-                                ? 'border-fuchsia-300/70 bg-fuchsia-500/25 text-white ring-2 ring-fuchsia-400/40 shadow-lg shadow-fuchsia-500/20'
-                                : 'border-white/25 bg-white/[0.04] text-slate-100/85 hover:bg-white/[0.08]'
-                                }`}
-                            >
-                              <span className="mr-1">{item.icon}</span>{item.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {errors.deliverables && (
-                        <p className="text-xs text-red-400 mt-1">{errors.deliverables}</p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="usage-rights"
-                        checked={usageRights}
-                        onCheckedChange={(checked) => setUsageRights(checked === true)}
-                        className="border-white/30 data-[state=checked]:bg-blue-600"
-                      />
-                      <label htmlFor="usage-rights" className="text-sm text-slate-100/85 cursor-pointer">
-                        Usage rights needed?
-                      </label>
-                    </div>
-
-                    <div className="hidden md:block rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                      <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-slate-300" />
-                        Timeline
-                      </h4>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className={`block text-white mb-2 ${typeLabel}`}>
-                            <span className="inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
-                          </label>
-                          <Input
-                            type="date"
-                            value={deadline}
-                            onChange={(e) => setDeadline(e.target.value)}
-                            className={inputClass}
-                          />
-                          <p className={`${helperTextClass} mt-1.5`}>
-                            When content needs to go live.
-                          </p>
-                        </div>
-
-                        <div>
-                          <label className={`block text-white mb-2 ${typeLabel}`}>
-                            <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
-                          </label>
-                          <Input
-                            type="date"
-                            value={offerExpiry}
-                            onChange={(e) => setOfferExpiry(e.target.value)}
-                            className={inputClass}
-                          />
-                          <p className={`${helperTextClass} mt-1.5`}>
-                            Creator must respond by this date.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-white/15">
-                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowCommercialTerms((prev) => !prev)}
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-slate-100"
-                        >
-                          <FileText className="h-4 w-4 text-slate-300" />
-                          Commercial Terms (Optional)
-                          {showCommercialTerms ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </button>
-                        {showCommercialTerms && (
-                          <button
-                            type="button"
-                            onClick={applyStandardTerms}
-                            className="text-xs text-slate-100 hover:text-white border border-white/25 rounded-md px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1]"
-                          >
-                            Use standard terms
-                          </button>
-                        )}
-                      </div>
-                      {showCommercialTerms && (
-                        <>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                            <div>
-                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><PenLine className="h-4 w-4 text-slate-300" />Authorized Signer Name</label>
-                              <Input
-                                type="text"
-                                value={authorizedSignerName}
-                                onChange={(e) => setAuthorizedSignerName(e.target.value)}
-                                placeholder="Full legal name"
-                                className={inputClass}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><PenLine className="h-4 w-4 text-slate-300" />Signer Designation</label>
-                              <Input
-                                type="text"
-                                value={authorizedSignerRole}
-                                onChange={(e) => setAuthorizedSignerRole(e.target.value)}
-                                placeholder="e.g. Marketing Manager"
-                                className={inputClass}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Usage Rights Duration</label>
-                              <Input
-                                type="text"
-                                value={usageDuration}
-                                onChange={(e) => setUsageDuration(e.target.value)}
-                                placeholder="e.g. 90 days"
-                                className={inputClass}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><Clock className="h-4 w-4 text-slate-300" />Approval SLA (hours)</label>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={approvalSlaHours}
-                                onChange={(e) => setApprovalSlaHours(e.target.value)}
-                                placeholder="e.g. 48"
-                                className={inputClass}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-slate-300" />Shipping Timeline (days)</label>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={shippingTimelineDays}
-                                onChange={(e) => setShippingTimelineDays(e.target.value)}
-                                placeholder="e.g. 3"
-                                className={inputClass}
-                              />
-                            </div>
-                          </div>
-                          <div className="mt-4">
-                            <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Payment Terms</label>
-                            <Textarea
-                              value={paymentTerms}
-                              onChange={(e) => setPaymentTerms(e.target.value)}
-                              placeholder="e.g. 50% advance, balance within 7 days of posting"
-                              className={`${inputClass} min-h-[84px]`}
-                            />
-                          </div>
-                          <div className="mt-4">
-                            <label className="block text-sm font-semibold text-white mb-2 inline-flex items-center gap-2"><FileText className="h-4 w-4 text-slate-300" />Cancellation / Reschedule Policy</label>
-                            <Textarea
-                              value={cancellationPolicy}
-                              onChange={(e) => setCancellationPolicy(e.target.value)}
-                              placeholder="e.g. If canceled after signing, approved production costs are payable."
-                              className={`${inputClass} min-h-[84px]`}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Contact Info */}
-                  <div
-                    style={revealDelayStyle(100)}
-                    className={`space-y-4 md:space-y-5 rounded-xl border border-white/15 bg-white/[0.04] p-4 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-                  >
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      <ShieldCheck className="h-5 w-5 text-fuchsia-300" />
-                      Secure Deal Details
-                    </h3>
-                    <p className="text-xs text-slate-100/70 mt-[-6px]">
-                      Used to auto-generate contract once creator accepts.
-                    </p>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4 text-slate-300" />Brand Email <span className="text-red-400">*</span></span>
-                      </label>
-                      <Input
-                        type="email"
-                        value={brandEmail}
-                        onChange={(e) => {
-                          setBrandEmail(e.target.value);
-                          if (errors.brandEmail) setErrors({ ...errors, brandEmail: '' });
-                        }}
-                        required
-                        className={`${inputClass} ${errors.brandEmail ? 'border-red-400/50' : ''}`}
-                      />
-                      {errors.brandEmail && (
-                        <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
-                      )}
-                      <p className="text-xs text-slate-100/70 mt-1.5 font-medium">Used for official contract generation. Corporate domain preferred.</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-amber-400" />GSTIN (Optional)</span>
-                      </label>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Input
-                          type="text"
-                          value={brandGstin}
-                          onChange={(e) => {
-                            setBrandGstin(e.target.value.toUpperCase().slice(0, 15));
-                            if (errors.brandGstin) setErrors({ ...errors, brandGstin: '' });
-                            setGstLookupError(null);
-                          }}
-                          placeholder="15-digit GSTIN for invoicing"
-                          maxLength={15}
-                          className={`flex-1 ${inputClass} font-mono ${errors.brandGstin ? 'border-red-400/50' : ''}`}
-                          disabled={isGstLookupLoading}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleGstLookup}
-                          disabled={isGstLookupLoading || !brandGstin.trim() || brandGstin.trim().length !== 15}
-                          className="shrink-0 bg-white/[0.07] border-white/25 text-slate-100 hover:bg-white/[0.12] font-mono"
-                          aria-label="Fetch company name and address from GST"
-                        >
-                          {isGstLookupLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden />
-                              Fetching...
-                            </>
-                          ) : (
-                            'Fetch from GST'
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+            {/* Left Column: Form (Step-based) */}
+            <div className="md:col-span-8">
+              <div id="core-offer-form" className="rounded-[32px] border border-white/15 bg-gradient-to-b from-white/[0.08] to-white/[0.02] backdrop-blur-2xl shadow-2xl overflow-hidden">
+                {/* Step Indicator */}
+                <div className="px-6 pt-8 md:px-10">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map((step) => (
+                        <div
+                          key={step}
+                          className={cn(
+                            "h-1.5 rounded-full transition-all duration-500",
+                            currentStep === step ? "w-10 bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.5)]" : (currentStep > step ? "w-6 bg-emerald-500" : "w-6 bg-white/10")
                           )}
-                        </Button>
-                      </div>
-                      {(errors.brandGstin || gstLookupError) && (
-                        <p className="text-xs text-red-400 mt-1">{errors.brandGstin || gstLookupError}</p>
-                      )}
-                      <p className={`${helperTextClass} mt-1.5`}>
-                        Optional. Use &quot;Fetch from GST&quot; to auto-fill company name and address.
-                      </p>
+                        />
+                      ))}
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-300" />Company / Brand Address <span className="text-red-400">*</span></span>
-                      </label>
-                      <Textarea
-                        value={brandAddress}
-                        onChange={(e) => {
-                          setBrandAddress(e.target.value);
-                          if (errors.brandAddress) setErrors({ ...errors, brandAddress: '' });
-                        }}
-                        required
-                        placeholder="Full registered address (required for contract)"
-                        rows={3}
-                        className={`${inputClass} min-h-[80px] ${errors.brandAddress ? 'border-red-400/50' : ''}`}
-                      />
-                      {errors.brandAddress && (
-                        <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
-                      )}
-                      <p className={`${helperTextClass} mt-1.5`}>
-                        Used for the collaboration agreement when the creator accepts
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        <span className="inline-flex items-center gap-2"><Phone className="h-4 w-4 text-slate-300" />Phone (Optional)</span>
-                      </label>
-                      <Input
-                        type="tel"
-                        value={brandPhone}
-                        onChange={(e) => setBrandPhone(e.target.value)}
-                        className={inputClass}
-                      />
-                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Step {currentStep} of 3</span>
                   </div>
 
-                  {/* Trust Indicators */}
-                  <div
-                    style={revealDelayStyle(120)}
-                    className={`rounded-xl border border-white/20 bg-white/[0.05] p-6 space-y-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-                  >
-                    <h3 className={`text-base font-semibold text-white ${typeCardTitle}`}>Review before submit</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      <div className="text-slate-100/80">Brand: <span className="text-white">{brandName.trim() || 'Not set'}</span></div>
-                      <div className="text-slate-100/80">Type: <span className="text-white">{collabType === 'paid' ? 'Paid Deal' : collabType === 'barter' ? 'Product Exchange' : 'Cash + Product'}</span></div>
-                      <div className="text-slate-100/80">Budget/Offer: <span className="text-white">{displayBudget}</span></div>
-                      <div className="text-slate-100/80">Deadline: <span className="text-white">{displayDeadline}</span></div>
-                      <div className="text-slate-100/80">Deliverables: <span className="text-white">{deliverables.length > 0 ? deliverables.join(', ') : 'Not set'}</span></div>
-                      <div className="text-slate-100/80">Payment terms: <span className="text-white">{paymentTerms.trim() || 'Default after negotiation'}</span></div>
-                    </div>
-                    {missingRequired.length > 0 && (
-                      <p className="text-xs text-amber-200/90">Before submit, complete: {missingRequired.join(', ')}</p>
-                    )}
-                  </div>
-
-                  <div
-                    style={revealDelayStyle(120)}
-                    className={`bg-violet-500/10 border border-violet-300/25 rounded-lg p-6 space-y-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showDetailedForm ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'}`}
-                  >
-                    <div className={typeTrust}>
-                      <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                      <span>Secured by Creator Armour</span>
-                    </div>
-                    <div className={typeTrust}>
-                      <BadgeCheck className="h-4 w-4 text-emerald-400" />
-                      <span>Details visible only to creator</span>
-                    </div>
-                  </div>
-
-                  <button type="submit" className="hidden" aria-hidden="true" />
-                </form>
-              </CardContent>
-            </Card>
-
-
-            {/* Additional SEO Content - Brand-Focused */}
-            <details className="hidden md:block mt-10 max-w-3xl mx-auto bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
-              <summary className="cursor-pointer list-none text-xl font-bold text-white flex items-center justify-between">
-                <span>Professional Collaboration Workflow</span>
-                <ChevronDown className="h-4 w-4 text-slate-200" />
-              </summary>
-              <div className="space-y-4 text-slate-100/85 leading-relaxed mt-4">
-                <p>
-                  When you submit a collaboration request through this page, you're choosing a professional workflow designed for brands and agencies.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-white flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                      Clear Contracts
-                    </h3>
-                    <p className="text-sm">
-                      Every collaboration gets a legally binding contract automatically generated with your terms, deliverables, and payment details.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-white flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                      Faster Approvals
-                    </h3>
-                    <p className="text-sm">
-                      Structured requests mean quicker responses. Creators can accept, counter, or decline with clear terms from day one.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-white flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                      Payment Safety
-                    </h3>
-                    <p className="text-sm">
-                      All payments are tracked and protected. No chasing invoices or payment delays—everything is logged and monitored.
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-white flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-400" />
-                      Professional Workflow
-                    </h3>
-                    <p className="text-sm">
-                      Skip the back-and-forth DMs. Submit once, get a response, and move forward with confidence.
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm mt-4 pt-4 border-t border-white/10">
-                  This collaboration page is optimized for brands and agencies looking to partner with {creator.name} for influencer marketing campaigns. All requests are processed securely through Creator Armour's platform.
-                </p>
-                <p className="text-sm mt-3">
-                  <a href="mailto:support@creatorarmour.com" className="text-slate-200 hover:text-white underline">
-                    Help / Contact us
-                  </a>
-                  <span className="text-slate-400/80 ml-1">— we’re here before any issue becomes a dispute.</span>
-                </p>
-              </div>
-            </details>
-            <div className="md:hidden h-20" />
-          </div>
-
-          {/* Save and continue later modal */}
-          <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-            <DialogContent className="bg-slate-900/95 border-white/20 text-white">
-              <DialogHeader>
-                <DialogTitle>Save and continue later</DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-slate-100/85">
-                Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
-              </p>
-              <Input
-                type="email"
-                placeholder="you@company.com"
-                value={draftEmail}
-                onChange={(e) => setDraftEmail(e.target.value)}
-                className={inputClass}
-              />
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowSaveDraftModal(false)}
-                  className="border-white/20 text-white hover:bg-white/10"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleSaveDraftSubmit}
-                  disabled={saveDraftSubmitting}
-                  className="bg-white text-black hover:bg-slate-200 text-white"
-                >
-                  {saveDraftSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Sending…
-                    </>
-                  ) : (
-                    'Send link'
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          {/* Sticky Bottom CTA (mobile compact) */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
-            <div className="relative">
-              {showSubmittingTrust && (
-                <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-violet-300/30 animate-ping" />
-              )}
-              <Button
-                onClick={handleStickySubmit}
-                disabled={submitting}
-                className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white font-bold text-base shadow-[0_12px_35px_rgba(74,0,224,0.4)] border-t border-white/20 active:scale-[0.99]"
-              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Lock className="h-5 w-5 text-slate-100" />
-                    Processing Offer...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
-                )}
-              </Button>
-            </div>
-            <p className="text-center text-[11px] text-slate-100/70 mt-2">
-              {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
-            </p>
-            {showSubmittingTrust && (
-              <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2">
-                {submittingChecklist.map((step, idx) => {
-                  const complete = idx <= submitChecklistStep;
-                  return (
-                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
-                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
-                      <span>{step}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Sticky Bottom CTA (desktop full) */}
-          <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
-            <div className="relative max-w-4xl mx-auto">
-              <div className="absolute inset-0 bg-blue-600/30 blur-[40px] rounded-full animate-pulse -z-10" />
-              {showSubmittingTrust && (
-                <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-violet-300/30 animate-ping" />
-              )}
-              {ctaStep === 'create' && (
-                <p className="text-center text-xs text-slate-100/85 mb-2 inline-flex w-full items-center justify-center gap-2">
-                  <Clock className="h-4 w-4 text-sky-400" />
-                  Most brands receive a response the same day
-                </p>
-              )}
-              <Button
-                onClick={handleStickySubmit}
-                disabled={submitting}
-                className={`w-full h-16 rounded-[24px] bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white text-[16px] font-semibold shadow-[0_15px_45px_rgba(74,0,224,0.45)] hover:shadow-[0_20px_60px_rgba(74,0,224,0.6)] border-t border-white/20 transition-all active:scale-95 ${elevationLevel3}`}
-              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-3">
-                    <Lock className="h-6 w-6 text-slate-100" />
-                    Processing Offer...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-3">
-                    {ctaIcon}
-                    {ctaLabel}
-                  </span>
-                )}
-              </Button>
-              <p className="text-center text-xs text-slate-100/75 mt-2">
-                {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
-              </p>
-              {showSubmittingTrust && (
-                <div className="mx-auto mt-3 max-w-xl rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
-                  <div className="grid grid-cols-1 gap-2">
-                    {submittingChecklist.map((step, idx) => {
-                      const complete = idx <= submitChecklistStep;
-                      return (
-                        <div key={step} className={`flex items-center gap-2 text-sm transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
-                          <CheckCircle2 className={`h-4 w-4 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
-                          <span>{step}</span>
+                  <AnimatePresence mode="wait">
+                    {currentStep === 1 && (
+                      <motion.div
+                        key="step1"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-8 pb-10"
+                      >
+                        <div className="space-y-2">
+                          <h2 className="text-2xl font-black text-white">Campaign Details</h2>
+                          <p className="text-white/40 text-sm">Define what you're building together.</p>
                         </div>
-                      );
-                    })}
+
+                        {/* Deal Type Selection */}
+                        <div className="space-y-4">
+                          <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Choose Deal Type</label>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {[
+                              { id: 'paid', label: 'Paid Deal', sub: 'Cash compensation', icon: Wallet, color: 'text-blue-400' },
+                              { id: 'barter', label: 'Barter', sub: 'Product exchange', icon: Package, color: 'text-amber-400' },
+                              { id: 'hybrid', label: 'Hybrid', sub: 'Cash + Product', icon: RefreshCcw, color: 'text-fuchsia-400' }
+                            ].map((item) => (
+                              <button
+                                key={item.id}
+                                onClick={() => setCollabType(item.id as CollabType)}
+                                className={cn(
+                                  "p-4 rounded-2xl border text-left transition-all relative overflow-hidden group",
+                                  collabType === item.id ? "bg-white/10 border-white/20 ring-1 ring-white/10" : "bg-white/5 border-white/5 hover:bg-white/[0.07]"
+                                )}
+                              >
+                                {collabType === item.id && <div className="absolute top-2 right-2"><CheckCircle2 className="w-4 h-4 text-white" /></div>}
+                                <item.icon className={cn("w-5 h-5 mb-3", item.color)} />
+                                <p className="text-sm font-black leading-tight mb-1 text-white">{item.label}</p>
+                                <p className="text-[10px] text-white/40 font-medium">{item.sub}</p>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Campaign Goal */}
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-end">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Campaign Goal & Message</label>
+                            <span className={cn("text-[10px] font-bold", campaignDescription.length < 20 ? "text-amber-400" : "text-emerald-400")}>
+                              {campaignDescription.length}/20+ characters
+                            </span>
+                          </div>
+                          <Textarea
+                            placeholder="Briefly describe your campaign goal, who the brand is, and why you want to work with this creator..."
+                            value={campaignDescription}
+                            onChange={(e) => setCampaignDescription(e.target.value)}
+                            className="bg-white/5 border-white/10 rounded-2xl min-h-[160px] p-5 text-[15px] leading-relaxed focus:ring-2 focus:ring-blue-500/30 focus:bg-white/[0.08] text-white"
+                          />
+                        </div>
+
+                        {/* Category & Timeline (Dates) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Category</label>
+                            <Select value={campaignCategory} onValueChange={setCampaignCategory}>
+                              <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl px-5 text-white">
+                                <SelectValue placeholder="Select Industry" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-900 border-white/15 text-white">
+                                {['Lifestyle', 'Tech', 'Fashion', 'Beauty', 'Food', 'Travel', 'Fitness', 'Finance', 'Education', 'Gaming', 'Entertainment'].map((cat) => (
+                                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Deliverable Deadline</label>
+                            <div className="relative">
+                              <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                              <input
+                                type="date"
+                                value={deadline}
+                                onChange={(e) => setDeadline(e.target.value)}
+                                className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-5 text-sm font-medium focus:ring-2 focus:ring-blue-500/30 text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <motion.div
+                        key="step2"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-8 pb-10"
+                      >
+                        <div className="space-y-2">
+                          <h2 className="text-2xl font-black text-white">Deliverables & Budget</h2>
+                          <p className="text-white/40 text-sm">Define what is expected and the commercial offer.</p>
+                        </div>
+
+                        {/* Deliverables Selection */}
+                        <div className="space-y-4">
+                          <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Select Deliverables (Tap to Select + Adjust Quantity)</label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {DELIVERABLE_OPTIONS.map((item) => {
+                              const active = deliverables.includes(item.value);
+                              const qty = deliverableQuantities[item.value] || 1;
+                              return (
+                                <div
+                                  key={item.value}
+                                  className={cn(
+                                    "p-4 rounded-2xl border transition-all flex items-center justify-between",
+                                    active ? "bg-blue-500/10 border-blue-500/40" : "bg-white/5 border-white/5"
+                                  )}
+                                >
+                                  <button
+                                    onClick={() => handleDeliverableToggle(item.value)}
+                                    className="flex items-center gap-3 flex-1 text-left"
+                                  >
+                                    <div className={cn("p-2 rounded-xl", active ? "bg-blue-500 text-white" : "bg-white/5 text-white/40")}>
+                                      {item.icon}
+                                    </div>
+                                    <span className={cn("text-sm font-black", active ? "text-white" : "text-white/40")}>{item.label}</span>
+                                  </button>
+
+                                  {active && (
+                                    <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2 py-1">
+                                      <button onClick={() => handleDeliverableQuantityChange(item.value, -1)} className="p-1 text-white hover:text-blue-400"><Minus className="w-3.5 h-3.5" /></button>
+                                      <span className="text-xs font-black min-w-[20px] text-center text-white">{qty}</span>
+                                      <button onClick={() => handleDeliverableQuantityChange(item.value, 1)} className="p-1 text-white hover:text-blue-400"><Plus className="w-3.5 h-3.5" /></button>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Budget Section */}
+                        <div className="p-6 rounded-3xl bg-blue-600/5 border border-blue-500/10 space-y-6">
+                          <div className="flex items-center gap-2 mb-4">
+                            <CircleDollarSign className="w-5 h-5 text-blue-400" />
+                            <h3 className="text-sm font-black uppercase tracking-wider text-white">Commercial Offer</h3>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {(collabType === 'paid' || collabType === 'hybrid') && (
+                              <div className="space-y-3">
+                                <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Cash Component (INR)</label>
+                                <div className="relative">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-white/40">₹</span>
+                                  <Input
+                                    type="number"
+                                    placeholder="e.g. 15000"
+                                    value={exactBudget}
+                                    onChange={(e) => setExactBudget(e.target.value)}
+                                    className="h-14 bg-white/5 border-white/10 rounded-2xl pl-8 pr-5 text-[16px] font-black text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {(collabType === 'barter' || collabType === 'hybrid') && (
+                              <div className="space-y-3">
+                                <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Product/Service Value (INR)</label>
+                                <div className="relative">
+                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-white/40">₹</span>
+                                  <Input
+                                    type="number"
+                                    placeholder="e.g. 5000"
+                                    value={barterValue}
+                                    onChange={(e) => setBarterValue(e.target.value)}
+                                    className="h-14 bg-white/5 border-white/10 rounded-2xl pl-8 pr-5 text-[16px] font-black text-white"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Barter Product Image Upload */}
+                          {(isHybridCollab(collabType) || collabType === 'barter') && (
+                            <div className="space-y-3 pt-4 border-t border-white/5">
+                              <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Product Image (Recommended)</label>
+                              <div className="flex items-center gap-4">
+                                {!barterProductImageUrl ? (
+                                  <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-white/10 rounded-2xl bg-white/5 hover:bg-white/[0.08] cursor-pointer transition-all">
+                                    <input type="file" accept="image/*" onChange={handleBarterImageChange} className="hidden" disabled={barterImageUploading} />
+                                    {barterImageUploading ? <Loader2 className="w-6 h-6 animate-spin text-blue-400" /> : <ImageIcon className="w-6 h-6 text-white/30 mb-2" />}
+                                    <p className="text-xs font-bold text-white/50">Upload Product Pic</p>
+                                  </label>
+                                ) : (
+                                  <div className="flex-1 flex items-center gap-4 p-3 rounded-2xl border border-blue-500/20 bg-blue-500/5">
+                                    <img src={barterProductImageUrl} className="w-16 h-16 rounded-lg object-cover" alt="Product" />
+                                    <div className="flex-1">
+                                      <p className="text-xs font-black text-white">Product Displayed</p>
+                                      <button onClick={() => setBarterProductImageUrl(null)} className="text-[10px] text-red-400 font-bold uppercase tracking-wider mt-1 hover:text-red-300">Remove</button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                            <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0" />
+                            <p className="text-[11px] font-medium text-blue-200/70 leading-relaxed">
+                              Payments are strictly held in Creator Armour Escrow until content is verified. Safe for both parties.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Proposal Expiry */}
+                        <div className="space-y-3">
+                          <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Proposal Validity (When this offer expires)</label>
+                          <div className="relative">
+                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                            <input
+                              type="date"
+                              value={offerExpiry}
+                              onChange={(e) => setOfferExpiry(e.target.value)}
+                              className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl pl-12 pr-5 text-sm font-medium focus:ring-2 focus:ring-blue-500/30 text-white"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 3 && (
+                      <motion.div
+                        key="step3"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-8 pb-10"
+                      >
+                        <div className="space-y-2">
+                          <h2 className="text-2xl font-black text-white">Brand + Contract Info</h2>
+                          <p className="text-white/40 text-sm">Final details to generate the legal agreement.</p>
+                        </div>
+
+                        {/* Brand Logo Upload */}
+                        <div className="flex items-center gap-6 p-6 rounded-3xl bg-white/5 border border-white/10">
+                          <div className="relative">
+                            {!brandLogoUrl ? (
+                              <label className="w-20 h-20 rounded-2xl border-2 border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:bg-white/[0.08] transition-all">
+                                <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" disabled={brandLogoUploading} />
+                                {brandLogoUploading ? <Loader2 className="w-6 h-6 animate-spin text-blue-400" /> : <ImageIcon className="w-6 h-6 text-white/20" />}
+                              </label>
+                            ) : (
+                              <div className="relative">
+                                <img src={brandLogoUrl} className="w-20 h-20 rounded-2xl object-contain bg-white p-2" alt="Logo" />
+                                <button onClick={() => setBrandLogoUrl(null)} className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white"><Minus className="w-3 h-3" /></button>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <h3 className="text-sm font-black text-white">Brand Identity</h3>
+                            <p className="text-xs text-white/40 leading-relaxed">Upload your logo to appear on the contract and the deal console.</p>
+                          </div>
+                        </div>
+
+                        {/* Basic Brand Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Brand / Agency Name</label>
+                            <Input placeholder="e.g. Acme Marketing" value={brandName} onChange={e => setBrandName(e.target.value)} className="h-14 bg-white/5 border-white/10 rounded-2xl px-5 text-white" />
+                          </div>
+                          <div className="space-y-3">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Authorized Work Email</label>
+                            <Input placeholder="e.g. deals@acme.com" value={brandEmail} onChange={e => setBrandEmail(e.target.value)} className="h-14 bg-white/5 border-white/10 rounded-2xl px-5 text-white" />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Registered Business Address</label>
+                          <textarea
+                            placeholder="Required for legal contract generation..."
+                            value={brandAddress}
+                            onChange={(e) => setBrandAddress(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500/30 text-white"
+                          />
+                        </div>
+
+                        <div className="space-y-4">
+                          <button
+                            onClick={() => setShowOptionalBrandDetails(!showOptionalBrandDetails)}
+                            className="flex items-center gap-2 text-xs font-black text-blue-400 py-2 hover:text-blue-300 transition-colors"
+                          >
+                            {showOptionalBrandDetails ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                            {showOptionalBrandDetails ? 'HIDE' : 'ADD'} OPTIONAL DETAILS (GST, IG, WEBSITE)
+                          </button>
+
+                          <AnimatePresence>
+                            {showOptionalBrandDetails && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden space-y-4"
+                              >
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <Input placeholder="GST Number (Optional)" value={brandGstin} onChange={e => setBrandGstin(e.target.value.toUpperCase())} className="h-12 bg-white/5 text-white" />
+                                  <Input placeholder="Website (e.g. acme.com)" value={brandWebsite} onChange={e => setBrandWebsite(e.target.value)} className="h-12 bg-white/5 text-white" />
+                                  <Input placeholder="Instagram @handle" value={brandInstagram} onChange={e => setBrandInstagram(e.target.value)} className="h-12 bg-white/5 text-white" />
+                                  <Input placeholder="Contact Phone" value={brandPhone} onChange={e => setBrandPhone(e.target.value)} className="h-12 bg-white/5 text-white" />
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        {/* Usage Rights */}
+                        <div className="flex items-center space-x-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+                          <Checkbox
+                            id="usage-rights"
+                            checked={usageRights}
+                            onCheckedChange={(checked) => setUsageRights(checked === true)}
+                            className="w-5 h-5 rounded-md border-white/20 data-[state=checked]:bg-blue-600"
+                          />
+                          <div className="space-y-0.5">
+                            <label htmlFor="usage-rights" className="text-sm font-black cursor-pointer leading-none text-white">Usage Rights Needed?</label>
+                            <p className="text-[10px] text-white/30">Check this if you plan to use this content in paid ads.</p>
+                          </div>
+                        </div>
+
+                        {/* Contract Terms */}
+                        <div className="space-y-6 pt-6 border-t border-white/5">
+                          <div className="space-y-4">
+                            <label className="text-[11px] font-black uppercase tracking-widest text-white/40">Deal Terms & Legal</label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <button
+                                onClick={() => { setLegalPreset('standard'); setShowCommercialTerms(false); }}
+                                className={cn(
+                                  "p-4 rounded-2xl border text-left transition-all",
+                                  legalPreset === 'standard' ? "bg-emerald-500/10 border-emerald-500/40" : "bg-white/5 border-white/5"
+                                )}
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-3">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                </div>
+                                <p className="text-xs font-black mb-1 text-white">Standard</p>
+                                <p className="text-[10px] text-white/40">Creator Armour Template</p>
+                              </button>
+                              <button
+                                onClick={() => { setLegalPreset('custom'); setShowCommercialTerms(true); }}
+                                className={cn(
+                                  "p-4 rounded-2xl border text-left transition-all",
+                                  legalPreset === 'custom' ? "bg-blue-500/10 border-blue-500/40" : "bg-white/5 border-white/5"
+                                )}
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3">
+                                  <Settings className="w-4 h-4 text-blue-500" />
+                                </div>
+                                <p className="text-xs font-black mb-1 text-white">Custom</p>
+                                <p className="text-[10px] text-white/40">Define specific clauses</p>
+                              </button>
+                            </div>
+                          </div>
+
+                          {showCommercialTerms && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4"
+                            >
+                              <Input placeholder="Usage Duration (e.g. 90 days)" value={usageDuration} onChange={e => setUsageDuration(e.target.value)} className="h-12 bg-white/5 text-white" />
+                              <Input placeholder="Approval SLA (e.g. 48 hours)" value={approvalSlaHours} onChange={e => setApprovalSlaHours(e.target.value)} className="h-12 bg-white/5 text-white" />
+                              <Input placeholder="Payment Terms (e.g. 15 days)" value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} className="h-12 bg-white/5 col-span-2 text-white" />
+                            </motion.div>
+                          )}
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black uppercase text-white/40">Authorized Signer Name</label>
+                              <Input placeholder="Full legal name" value={authorizedSignerName} onChange={e => setAuthorizedSignerName(e.target.value)} className="h-12 bg-white/5 text-white" />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[11px] font-black uppercase text-white/40">Signer Designation</label>
+                              <Input placeholder="e.g. Marketing Lead" value={authorizedSignerRole} onChange={e => setAuthorizedSignerRole(e.target.value)} className="h-12 bg-white/5 text-white" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Review Summary / Checklist */}
+                        <div className="mt-8 p-6 rounded-[24px] bg-blue-500/5 border border-blue-500/10">
+                          <div className="flex items-center gap-2 mb-4">
+                            <ShieldCheck className="w-4 h-4 text-blue-400" />
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-white/60">Deal Completeness Check</h4>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
+                            {[
+                              { label: 'Campaign Goal Defined', complete: campaignDescription.length >= 20 },
+                              { label: 'Commercial Terms Set', complete: Boolean(exactBudget || barterValue || budgetRange) },
+                              { label: 'Deliverables Selected', complete: deliverables.length > 0 },
+                              { label: 'Authorized Signer Added', complete: !!authorizedSignerName },
+                              { label: 'Legal Address Provided', complete: brandAddress.length > 15 },
+                              { label: 'Payment Escrow Enabled', complete: true }
+                            ].map((check, idx) => (
+                              <div key={idx} className="flex items-center gap-2.5">
+                                <div className={cn("w-4 h-4 rounded-full flex items-center justify-center transition-colors", check.complete ? "bg-emerald-500" : "bg-white/10")}>
+                                  {check.complete && <Check className="w-2.5 h-2.5 text-black" />}
+                                </div>
+                                <span className={cn("text-[11px] font-bold", check.complete ? "text-white/80" : "text-white/30")}>{check.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Footer Navigation */}
+                <div className="p-6 md:p-10 bg-white/5 border-t border-white/10 flex items-center gap-4">
+                  {currentStep > 1 && (
+                    <Button
+                      variant="outline"
+                      onClick={prevStep}
+                      className="h-14 w-16 rounded-2xl bg-white/5 border-white/10 text-white hover:bg-white/10 shrink-0"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                  )}
+
+                  {currentStep < 3 ? (
+                    <Button
+                      onClick={nextStep}
+                      className="h-14 flex-1 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black text-[16px] shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all"
+                    >
+                      Continue to {currentStep === 1 ? 'Deliverables' : 'Final Step'} <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={submitting}
+                      className="h-14 flex-1 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-black text-[16px] shadow-[0_8px_30px_rgba(59,130,246,0.3)] active:scale-[0.98] transition-all relative overflow-hidden"
+                    >
+                      {submitting ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Sending Offer...
+                        </span>
+                      ) : 'Send Collaboration Offer'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Draft Helper */}
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <button
+                  onClick={() => setShowSaveDraftModal(true)}
+                  className="text-xs font-bold text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest"
+                >
+                  Save draft and continue later
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Context/Snapshots */}
+            <div className="md:col-span-4 space-y-6">
+              {/* Creator Card */}
+              <div className="p-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/20">
+                    <img src={creator.profile_photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${creator.name}`} className="w-full h-full object-cover" alt={creator.name} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-white">{creator.name}</h3>
+                    <p className="text-sm font-medium text-white/40">@{creator.username}</p>
                   </div>
                 </div>
-              )}
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white/30 uppercase tracking-widest">Followers</span>
+                    <span className="text-sm font-black text-blue-400">{(creator.followers || 0).toLocaleString()}</span>
+                  </div>
+                  {creator.trust_stats && (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white/30 uppercase tracking-widest">Completed Deals</span>
+                        <span className="text-sm font-black text-emerald-400">{creator.trust_stats.completed_deals}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white/30 uppercase tracking-widest">Avg Response</span>
+                        <span className="text-sm font-black text-blue-400">{creator.trust_stats.avg_response_hours}h</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Trust Section */}
+              <div className="p-6 rounded-3xl border border-blue-500/10 bg-blue-500/5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <ShieldCheck className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-white">Enterprise Safe</h3>
+                </div>
+                <p className="text-[11px] text-white/40 leading-relaxed font-medium">
+                  We generate legally-binding agreements, handle payments via secure escrow, and provide automated GST invoicing for agencies.
+                </p>
+              </div>
+
+              {/* Process Details */}
+              <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30">Standard Workflow</h3>
+                <div className="space-y-4 pt-2">
+                  {[
+                    { title: '1. Offer Sent', sub: 'Creator notified via app & SMS' },
+                    { title: '2. Review & Accept', sub: 'Terms discussed via deal console' },
+                    { title: '3. Legal Signing', sub: 'OTP-based digital signature' },
+                    { title: '4. Content Post', sub: 'Verification & Escrow release' }
+                  ].map((step, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="w-4 h-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[8px] font-black shrink-0 mt-1 text-white">{i + 1}</div>
+                      <div>
+                        <p className="text-xs font-black mb-0.5 text-white">{step.title}</p>
+                        <p className="text-[10px] text-white/30 font-medium">{step.sub}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-
         </div>
       </div>
+
+      {/* Save Draft Modal */}
+      <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
+        <DialogContent className="bg-slate-950 border-white/10 text-white max-w-sm rounded-[32px]">
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-2xl font-black">Save Progress</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <p className="text-sm text-white/50 leading-relaxed">
+              Enter your work email. We'll send you a magic link to return and complete this request anytime in the next 7 days.
+            </p>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Work Email</label>
+              <Input
+                type="email"
+                placeholder="marketing@acme.com"
+                value={draftEmail}
+                onChange={(e) => setDraftEmail(e.target.value)}
+                className="h-14 bg-white/5 border-white/10 rounded-2xl px-5 text-white"
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button
+              onClick={handleSaveDraftSubmit}
+              disabled={saveDraftSubmitting}
+              className="w-full h-14 rounded-2xl bg-white text-black hover:bg-slate-200 font-black text-[16px]"
+            >
+              {saveDraftSubmitting ? (
+                <span className="flex items-center gap-2 text-black"><Loader2 className="w-4 h-4 animate-spin" /> Sending...</span>
+              ) : 'Send Magic Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
