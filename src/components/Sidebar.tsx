@@ -49,7 +49,7 @@ const SearchBar: React.FC<{
   setSearchQuery: (query: string) => void;
 }> = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="sticky top-0 bg-white/[0.02] backdrop-blur-xl border-b border-white/5 z-10 px-4 pt-4 pb-3">
+    <div className="sticky top-0 bg-[hsl(var(--sidebar-background)/0.02)] backdrop-blur-xl border-b border-[hsl(var(--sidebar-border)/0.5)] z-10 px-4 pt-4 pb-3">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B7F8A]" />
         <input
@@ -57,7 +57,7 @@ const SearchBar: React.FC<{
           placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#7B7F8A] focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all duration-200 ease-in-out"
+          className="w-full pl-9 pr-3 py-2.5 bg-[hsl(var(--sidebar-background)/0.05)] border border-[hsl(var(--sidebar-border)/0.1)] rounded-xl text-sm text-[hsl(var(--sidebar-foreground))] placeholder:text-[#7B7F8A] focus:outline-none focus:border-[hsl(var(--sidebar-border)/0.2)] focus:bg-[hsl(var(--sidebar-background)/0.1)] transition-all duration-200 ease-in-out"
         />
       </div>
     </div>
@@ -71,9 +71,9 @@ const UserCard: React.FC<{
   avatarUrl?: string | null;
 }> = ({ name, email, avatarUrl }) => {
   return (
-    <div className="px-4 py-4 border-b border-white/5">
+    <div className="px-4 py-4 border-b border-[hsl(var(--sidebar-border)/0.5)]">
       <div className="flex items-center gap-3">
-        <Avatar className="h-12 w-12 ring-2 ring-white/10">
+        <Avatar className="h-12 w-12 ring-2 ring-[hsl(var(--sidebar-border)/0.1)]">
           <AvatarImage
             src={avatarUrl || DEFAULT_AVATAR_URL}
             alt={name}
@@ -83,7 +83,7 @@ const UserCard: React.FC<{
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-white truncate">
+          <div className="text-sm font-semibold text-[hsl(var(--sidebar-foreground))] truncate">
             {name}
           </div>
           {email && (
@@ -114,8 +114,8 @@ const SidebarItem: React.FC<{
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 px-[14px] h-[50px] rounded-[12px] transition-all duration-200 ease-in-out relative group",
-        "hover:bg-white/5",
-        isActive && "bg-white/10 shadow-lg shadow-black/20"
+        "hover:bg-[hsl(var(--sidebar-accent)/0.05)]",
+        isActive && "bg-[hsl(var(--sidebar-accent)/0.1)] shadow-lg shadow-black/20"
       )}
     >
       <div
@@ -130,7 +130,7 @@ const SidebarItem: React.FC<{
 
       <span className={cn(
         "text-[15px] flex-1 text-left font-medium",
-        isActive ? "text-white" : "text-white/90"
+        isActive ? "text-[hsl(var(--sidebar-foreground))]" : "text-[hsl(var(--sidebar-foreground)/0.9)]"
       )}>
         {item.name}
       </span>
@@ -143,7 +143,7 @@ const SidebarItem: React.FC<{
 
       <ChevronRight className={cn(
         "w-4 h-4 flex-shrink-0 transition-colors",
-        isActive ? "text-white/60" : "text-white/30"
+        isActive ? "text-[hsl(var(--sidebar-foreground)/0.6)]" : "text-[hsl(var(--sidebar-foreground)/0.3)]"
       )} />
     </button>
   );
@@ -279,7 +279,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           />
         ))}
       </div>
-      <div className="mt-auto border-t border-white/5 p-4">
+      <div className="mt-auto border-t border-[hsl(var(--sidebar-border)/0.5)] p-4">
         <SidebarItem
           item={{ name: "Settings", icon: Settings, path: "/creator-profile", iconColor: "#8E8E93" }}
           isActive={location.pathname === "/creator-profile"}
@@ -304,7 +304,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
       </AnimatePresence>
 
       {isPreview ? (
-        <div className={cn("flex flex-shrink-0 flex-col h-screen w-[280px] bg-[#0B0F14]/60 backdrop-blur-2xl border-r border-white/5 relative z-10", className)}>
+        <div className={cn("flex flex-shrink-0 flex-col h-screen w-[280px] bg-[hsl(var(--sidebar-background)/0.6)] backdrop-blur-2xl border-r border-[hsl(var(--sidebar-border)/0.5)] relative z-10", className)}>
           {renderSidebarContent()}
         </div>
       ) : (
@@ -317,7 +317,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -280, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className={cn("hidden lg:flex flex-shrink-0 flex-col h-screen sticky top-0 w-[280px] bg-[#0B0F14]/80 backdrop-blur-2xl border-r border-white/5 z-[100]", className)}
+                className={cn("hidden lg:flex flex-shrink-0 flex-col h-screen sticky top-0 w-[280px] bg-[hsl(var(--sidebar-background)/0.8)] backdrop-blur-2xl border-r border-[hsl(var(--sidebar-border)/0.5)] z-[100]", className)}
               >
                 {renderSidebarContent()}
               </motion.div>
@@ -332,7 +332,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className={cn("lg:hidden fixed top-0 left-0 flex flex-col h-screen w-[280px] max-w-[85vw] bg-[#0B0F14]/95 backdrop-blur-2xl border-r border-white/10 z-[155] rounded-r-2xl", className)}
+                className={cn("lg:hidden fixed top-0 left-0 flex flex-col h-screen w-[280px] max-w-[85vw] bg-[hsl(var(--sidebar-background)/0.95)] backdrop-blur-2xl border-r border-[hsl(var(--sidebar-border)/0.1)] z-[155] rounded-r-2xl", className)}
               >
                 {renderSidebarContent()}
               </motion.div>
