@@ -2191,7 +2191,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => { triggerHaptic(); }}
+                                    onClick={() => { triggerHaptic(); setShowActionSheet(true); }}
                                     className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
                                 >
                                     <MoreHorizontal className="w-4 h-4 opacity-40" />
@@ -2324,28 +2324,7 @@ const MobileDashboardDemo = ({
                                                     ))}
                                                 </div>
 
-                                                {/* Creator activity */}
-                                                <div className={cn("mx-4 mb-3 rounded-lg p-3 border", isDark ? "bg-white/3 border-white/8" : "bg-slate-50 border-slate-200")}>
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Creator Activity</p>
-                                                    <div className="flex items-center gap-4">
-                                                        <div>
-                                                            <p className={cn("text-[18px] font-black leading-none", textColor)}>
-                                                                {selectedItem.total_collabs || 3}
-                                                            </p>
-                                                            <p className={cn("text-[10px] mt-0.5", secondaryTextColor)}>Collaborations</p>
-                                                        </div>
-                                                        <div className={cn("w-px h-8 self-center", isDark ? "bg-white/10" : "bg-slate-200")} />
-                                                        <div>
-                                                            <p className={cn("text-[18px] font-black leading-none", textColor)}>
-                                                                ₹{selectedItem.total_paid_to_creators || '1.2L'}
-                                                            </p>
-                                                            <p className={cn("text-[10px] mt-0.5", secondaryTextColor)}>Paid to Creators</p>
-                                                        </div>
-                                                        <div className="ml-auto">
-                                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-blue-500/10 border border-blue-500/15 text-blue-500">🛡 Armour Brand</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
