@@ -2210,51 +2210,63 @@ const MobileDashboardDemo = ({
 
                                 {/* ── COMPACT BRAND HERO ── */}
                                 <div className={cn("rounded-2xl border p-4 mb-5", cardBgColor, borderColor)}>
-                                    <div className="flex items-start gap-3">
+                                    <div className="flex items-start gap-4">
                                         {/* Logo */}
-                                        <div className={cn("w-12 h-12 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 mt-0.5",
+                                        <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
                                             selectedItem.collab_type === 'barter'
                                                 ? (isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-100")
-                                                : (isDark ? "bg-blue-500/5 border-slate-700" : "bg-slate-50 border-slate-200")
+                                                : (isDark ? "bg-blue-500/10 border-blue-500/20" : "bg-blue-50 border-blue-200")
                                         )}>
                                             {getBrandIcon(selectedItem.brand_logo_url || selectedItem.logo_url, selectedItem.category, selectedItem.brand_name)}
                                         </div>
                                         {/* Name + subtitle */}
                                         <div className="flex-1 min-w-0">
-                                            <p className={cn("text-[17px] font-black tracking-tight truncate leading-snug", textColor)}>
+                                            <p className={cn("text-[20px] font-black tracking-tight truncate leading-tight", textColor)}>
                                                 {selectedItem.brand_name || 'Brand Name'}
                                             </p>
-                                            <div className="flex items-center gap-1 mt-0.5">
-                                                <span className={cn("text-[11px]", secondaryTextColor)}>{selectedItem.category || 'Lifestyle'}</span>
-                                                <span className={cn("text-[10px]", secondaryTextColor)}>•</span>
-                                                <ShieldCheck className="w-2.5 h-2.5 text-blue-500" strokeWidth={2.5} />
-                                                <span className="text-[11px] font-semibold text-blue-500">Verified</span>
+                                            <div className="flex items-center gap-1.5 mt-1 mb-2">
+                                                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2.5} />
+                                                <span className="text-[12px] font-bold text-blue-500">Verified Brand</span>
                                             </div>
-                                        </div>
-                                        {/* Budget – primary anchor */}
-                                        <div className="shrink-0 text-right">
-                                            <p className={cn("text-[22px] font-black tracking-tight leading-none", textColor)}>
-                                                ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}
-                                            </p>
-                                            <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor)}>
-                                                {selectedItem.collab_type === 'barter' ? 'Product Value' : 'Cash Budget'}
+                                            <p className={cn("text-[11px] font-semibold leading-tight", secondaryTextColor)}>
+                                                Responds in ~3 hours · Campaigns completed: {selectedItem.total_collabs || 21}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* Status + deal type row */}
-                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-500/10">
-                                        {/* Deal type chip */}
-                                        {selectedItem.collab_type === 'barter' ? (
-                                            <span className="px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-500/10 border border-amber-500/20 text-amber-500">🎁 Barter</span>
-                                        ) : (
-                                            <span className="px-2 py-0.5 rounded-md text-[11px] font-black bg-blue-500/10 border border-blue-500/15 text-blue-500">💰 Paid Campaign</span>
-                                        )}
-                                        {/* Status */}
-                                        <div className="flex items-center gap-1 ml-auto">
-                                            <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", selectedType === 'deal' ? 'bg-emerald-500' : 'bg-amber-400')} />
-                                            <span className={cn("text-[11px] font-bold", selectedType === 'deal' ? 'text-emerald-500' : 'text-amber-500')}>
-                                                {selectedType === 'deal' ? 'Active' : 'Pending Review'}
+                                    {/* Deal type and Budget */}
+                                    <div className={cn("mt-5 p-3.5 rounded-xl border flex items-center justify-between", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <div className="flex items-center gap-3 w-full">
+                                            {selectedItem.collab_type === 'barter' ? (
+                                                <>
+                                                    <span className="text-amber-500 text-2xl drop-shadow-sm">🎁</span>
+                                                    <div className="flex-1">
+                                                        <p className={cn("text-[15px] font-black leading-tight", textColor)}>Barter Collaboration</p>
+                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</p>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="text-emerald-500 text-2xl drop-shadow-sm">💰</span>
+                                                    <div className="flex-1">
+                                                        <p className={cn("text-[15px] font-black leading-tight", textColor)}>Paid Campaign</p>
+                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Cash Budget ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</p>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Status Row */}
+                                    <div className="mt-4 flex items-center justify-center">
+                                        <div className={cn("flex items-center gap-2 px-4 py-2 rounded-full border",
+                                            selectedType === 'deal'
+                                                ? (isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")
+                                                : (isDark ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-200")
+                                        )}>
+                                            <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", selectedType === 'deal' ? 'bg-emerald-500' : 'bg-amber-500')} />
+                                            <span className={cn("text-[11px] font-black uppercase tracking-widest", selectedType === 'deal' ? 'text-emerald-500' : 'text-amber-600')}>
+                                                Status: {selectedType === 'deal' ? 'Active Collaboration' : 'Pending Creator Review'}
                                             </span>
                                         </div>
                                     </div>
@@ -2339,13 +2351,12 @@ const MobileDashboardDemo = ({
                                 </motion.div>
 
                                 {/* ── DELIVERABLES ── */}
-                                <div className="mb-5">
-                                    <h4 className={cn("text-[12px] font-bold uppercase tracking-wider mb-2.5 opacity-50", textColor)}>Deliverables</h4>
-                                    <div className="flex flex-wrap gap-1.5">
+                                <div className="mb-6">
+                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Deliverables</h4>
+                                    <div className="flex flex-col gap-2.5">
                                         {(() => {
                                             const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                            // Compact display labels
-                                            let items: string[] = ['🎥 Reel ×1', '📱 Story ×2', '📄 Rights 30d'];
+                                            let items: string[] = ['🎬 1 Instagram Reel', '📱 2 Stories', '📄 30d Usage Rights'];
                                             try {
                                                 const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
                                                 if (Array.isArray(parsed) && parsed.length > 0) {
@@ -2354,89 +2365,166 @@ const MobileDashboardDemo = ({
                                                         const ct = (d.contentType || d.type || '').toLowerCase();
                                                         const count = d.count || d.quantity || 1;
                                                         let emoji = '📋', label = 'Content';
-                                                        if (ct.includes('reel')) { emoji = '🎥'; label = 'Reel'; }
+                                                        if (ct.includes('reel')) { emoji = '🎬'; label = 'Instagram Reel'; }
                                                         else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
-                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
-                                                        else if (ct.includes('usage')) { emoji = '📄'; label = 'Rights'; }
-                                                        return `${emoji} ${label} ×${count}`;
+                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Static Post'; }
+                                                        else if (ct.includes('usage')) { emoji = '📄'; label = 'Usage Rights'; }
+                                                        return `${emoji} ${count} ${label}`;
                                                     });
                                                 }
                                             } catch (_) { }
                                             return items.map((d, i) => (
-                                                <span key={i} className={cn(
-                                                    "px-2.5 py-1 rounded-lg text-[12px] font-bold border",
-                                                    isDark ? "bg-slate-800/80 border-slate-700 text-slate-200" : "bg-slate-100 border-slate-200 text-slate-700"
+                                                <div key={i} className={cn(
+                                                    "px-4 py-3.5 rounded-xl text-[15px] font-black border flex items-center shadow-sm",
+                                                    isDark ? "bg-slate-800/60 border-slate-700 text-slate-100" : "bg-white border-slate-200 text-slate-800"
                                                 )}>
                                                     {d}
-                                                </span>
+                                                </div>
                                             ));
                                         })()}
                                     </div>
                                 </div>
 
-                                {/* ── PAYMENT ── */}
-                                <div className="mb-5">
-                                    <h4 className={cn("text-[12px] font-bold uppercase tracking-wider mb-2.5 opacity-50", textColor)}>Payment</h4>
-                                    <div className={cn("rounded-xl border divide-y overflow-hidden", cardBgColor, borderColor, isDark ? "divide-white/5" : "divide-slate-100")}>
-                                        <div className="flex items-center gap-2.5 px-3.5 py-2.5">
-                                            <div className={cn("w-6 h-6 rounded-md flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
-                                                <Landmark className="w-3 h-3 text-blue-500" />
+                                {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
+                                {selectedItem.collab_type === 'barter' && (
+                                    <div className="mb-6">
+                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
+                                        <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                            <div className="w-16 h-16 rounded-xl bg-orange-100 shrink-0 overflow-hidden border border-black/5">
+                                                <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
                                             </div>
-                                            <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Payment</span>
-                                            <span className={cn("text-[13px] font-bold", textColor)}>Direct Transfer</span>
+                                            <div>
+                                                <p className={cn("text-[15px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
+                                                <p className={cn("text-[13px] mt-1 font-bold text-amber-500")}>₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()} value</p>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2.5 px-3.5 py-2.5">
-                                            {(() => {
-                                                const d = selectedItem.deadline ? new Date(selectedItem.deadline) : new Date(Date.now() + 4 * 86400000);
-                                                const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
-                                                const deadlineColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : (isDark ? 'text-slate-300' : 'text-slate-700');
-                                                const iconColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : 'text-slate-400';
-                                                const deadlineStr = selectedItem.deadline
-                                                    ? new Date(selectedItem.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-                                                    : '21 Mar';
-                                                return (
-                                                    <>
-                                                        <div className={cn("w-6 h-6 rounded-md flex items-center justify-center shrink-0", isDark ? "bg-slate-800" : "bg-slate-100")}>
-                                                            <Clock className={cn("w-3 h-3", iconColor)} />
-                                                        </div>
-                                                        <span className={cn("text-[13px] font-medium flex-1", secondaryTextColor)}>Deadline</span>
-                                                        <span className={cn("text-[13px] font-bold", deadlineColor)}>
-                                                            {deadlineStr} · {diff > 0 ? `${diff}d left` : 'Overdue'}
-                                                        </span>
-                                                    </>
-                                                );
-                                            })()}
+                                    </div>
+                                )}
+
+                                {/* ── PAYMENT ── */}
+                                <div className="mb-6 grid grid-cols-2 gap-3">
+                                    <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Payment Method</p>
+                                        <div className="flex items-center gap-2.5 mb-1">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                                <Landmark className="w-4 h-4 text-blue-500" />
+                                            </div>
+                                            <span className={cn("text-[14px] font-black leading-tight", textColor)}>Direct Bank<br />Transfer</span>
                                         </div>
+                                    </div>
+                                    <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
+                                        {(() => {
+                                            const d = selectedItem.deadline ? new Date(selectedItem.deadline) : new Date(Date.now() + 13 * 86400000);
+                                            const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
+                                            const deadlineColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : 'text-blue-500';
+                                            const deadlineStr = selectedItem.deadline
+                                                ? new Date(selectedItem.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                : '21 Mar 2026';
+                                            return (
+                                                <>
+                                                    <span className={cn("text-[15px] font-black leading-tight mb-1.5", textColor)}>
+                                                        {deadlineStr}
+                                                    </span>
+                                                    <span className={cn("text-[11px] font-bold flex items-center gap-1", deadlineColor)}>
+                                                        ⚡ {diff > 0 ? `${diff} days remaining` : 'Overdue'}
+                                                    </span>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
 
                                 {/* ── LEGAL PROTECTION ── */}
-                                <div className="mb-5">
-                                    <h4 className={cn("text-[12px] font-bold uppercase tracking-wider mb-2.5 opacity-50", textColor)}>Legal Protection</h4>
+                                <div className="mb-6">
+                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
                                     <motion.div
-                                        whileTap={{ scale: 0.97 }}
+                                        whileTap={{ scale: 0.98 }}
                                         whileHover={{ scale: 1.01 }}
                                         className={cn(
-                                            "rounded-xl border p-3.5 flex items-center gap-3.5 cursor-pointer relative overflow-hidden",
+                                            "rounded-2xl border p-5 cursor-pointer relative overflow-hidden flex flex-col",
                                             isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
                                         )}
                                     >
-                                        {/* subtle left glow */}
-                                        <div className="absolute inset-y-0 left-0 w-1 bg-emerald-500 rounded-r-full" />
-                                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/8 to-transparent pointer-events-none" />
-                                        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/10">
-                                            <ShieldCheck className="w-5 h-5 text-emerald-500" strokeWidth={1.5} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1.5 mb-0.5">
-                                                <p className={cn("font-black text-[13px]", textColor)}>🛡 Armour Protected</p>
-                                                <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black bg-emerald-500 text-white uppercase tracking-wider">✓ Verified</span>
+                                        <div className="absolute inset-y-0 left-0 w-1.5 bg-emerald-500 rounded-r-full" />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
+
+                                        <div className="flex items-center gap-3 mb-4 relative">
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
+                                                <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                             </div>
-                                            <p className={cn("text-[11px] font-medium", secondaryTextColor)}>Verified Content Rights Agreement</p>
+                                            <div className="flex-1 min-w-0">
+                                                <p className={cn("font-black text-[16px]", isDark ? "text-emerald-400" : "text-emerald-700")}>Armour Protection Enabled</p>
+                                            </div>
+                                            <Download className={cn("w-5 h-5 shrink-0 transition-opacity", isDark ? "text-emerald-400" : "text-emerald-600")} />
                                         </div>
-                                        <Download className="w-5 h-5 shrink-0 text-emerald-500 opacity-60" />
+
+                                        <div className="space-y-2.5 pl-13 relative z-10">
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                <span className={cn("text-[13px] font-bold", isDark ? "text-emerald-100/80" : "text-emerald-800/90")}>Contract auto-generated</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                <span className={cn("text-[13px] font-bold", isDark ? "text-emerald-100/80" : "text-emerald-800/90")}>Content rights secured</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                                <span className={cn("text-[13px] font-bold", isDark ? "text-emerald-100/80" : "text-emerald-800/90")}>Dispute protection included</span>
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 </div>
+
+                                {/* ── CREATOR DECISION SUMMARY ── */}
+                                {selectedType === 'offer' && (
+                                    <div className={cn("mb-6 px-5 py-5 rounded-2xl border", isDark ? "bg-blue-500/5 border-blue-500/20" : "bg-blue-50 border-blue-200")}>
+                                        <h4 className="text-[14px] font-black text-blue-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <CheckCircle2 className="w-4 h-4" /> Deal Summary
+                                        </h4>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>Brand Identity</span>
+                                                <span className={cn("text-[14px] font-black", textColor)}>{selectedItem.brand_name || 'UrbanStyle Co.'}</span>
+                                            </div>
+                                            <div className="flex justify-between items-start">
+                                                <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>Deliverables</span>
+                                                <div className="text-right">
+                                                    {(() => {
+                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                        let labels: string[] = ['1 Reel', '2 Stories'];
+                                                        try {
+                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                labels = parsed.map((d: any) => {
+                                                                    if (typeof d === 'string') return d;
+                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                    const count = d.count || d.quantity || 1;
+                                                                    let label = 'Content';
+                                                                    if (ct.includes('reel')) label = 'Reel';
+                                                                    else if (ct.includes('story')) label = 'Story';
+                                                                    else if (ct.includes('post')) label = 'Post';
+                                                                    return `${count} ${label}`;
+                                                                });
+                                                            }
+                                                        } catch (_) { }
+                                                        return labels.map((l, i) => <p key={i} className={cn("text-[14px] font-bold leading-snug", textColor)}>{l}</p>);
+                                                    })()}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>{selectedItem.collab_type === 'barter' ? 'Product Value' : 'Cash Budget'}</span>
+                                                <span className={cn("text-[15px] font-black", selectedItem.collab_type === 'barter' ? "text-amber-500" : "text-emerald-500")}>₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>Delivery Deadline</span>
+                                                <span className={cn("text-[14px] font-black", textColor)}>
+                                                    {selectedItem.deadline ? new Date(selectedItem.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '21 Mar 2026'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* ── STICKY CTA BAR ── */}
@@ -2462,35 +2550,46 @@ const MobileDashboardDemo = ({
                                         }}
                                         disabled={processingDeal === selectedItem.id}
                                         className={cn(
-                                            "w-full h-14 rounded-2xl font-black text-[15px] shadow-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50",
+                                            "w-full py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all flex flex-col items-center justify-center active:scale-[0.98] border disabled:opacity-50",
                                             selectedType === 'offer'
-                                                ? (selectedItem.collab_type === 'barter' ? "bg-amber-500 text-white shadow-amber-500/30" : "bg-blue-600 text-white shadow-blue-500/30")
+                                                ? (selectedItem.collab_type === 'barter' ? "bg-amber-500 text-white border-amber-400 shadow-amber-500/30" : "bg-blue-600 text-white border-blue-500 shadow-blue-500/30")
                                                 : ((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
-                                                    ? "bg-emerald-600 text-white shadow-emerald-500/30"
-                                                    : (isDark ? "bg-white text-[#0B0F14]" : "bg-slate-900 text-white")
+                                                    ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/30"
+                                                    : (isDark ? "bg-white text-[#0B0F14] border-white" : "bg-slate-900 text-white border-slate-900")
                                         )}
                                     >
-                                        {processingDeal === selectedItem.id
-                                            ? <Loader2 className="w-5 h-5 animate-spin" />
-                                            : selectedType === 'offer'
-                                                ? (selectedItem.collab_type === 'barter' ? '🎁 Accept Barter' : 'Accept Deal')
-                                                : ((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
+                                        {processingDeal === selectedItem.id ? (
+                                            <Loader2 className="w-6 h-6 animate-spin" />
+                                        ) : selectedType === 'offer' ? (
+                                            <>
+                                                <span className="text-[17px] font-black leading-tight">Accept Collaboration</span>
+                                                <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
+                                                    You will receive the {selectedItem.collab_type === 'barter' ? 'product' : 'payment'} and complete deliverables
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span className="text-[16px] font-black">
+                                                {((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
                                                     ? '✍️ Sign Contract'
-                                                    : 'Review Contract'
-                                        }
+                                                    : 'Review Contract'}
+                                            </span>
+                                        )}
                                     </motion.button>
 
                                     {selectedType === 'offer' && (
-                                        <div className="flex gap-2.5">
+                                        <div className="flex gap-2.5 mt-3 pt-3">
                                             <button
                                                 onClick={() => {
                                                     triggerHaptic();
                                                     navigate(`/collab-requests/${selectedItem.id}/counter`, { state: { request: selectedItem.raw || selectedItem } });
                                                 }}
-                                                className={cn("flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-bold text-[13px] border transition-all active:scale-95",
-                                                    isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-800")}
+                                                className={cn("flex-1 py-3 rounded-2xl flex flex-col items-center justify-center gap-1 border transition-all active:scale-95",
+                                                    isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100")}
                                             >
-                                                <Edit3 className="w-4 h-4" /> Counter
+                                                <div className={cn("flex items-center gap-1.5 font-black text-[14px]", textColor)}>
+                                                    <Edit3 className="w-4 h-4" /> Counter Offer
+                                                </div>
+                                                <span className={cn("text-[10px] font-bold opacity-50", textColor)}>Propose new terms</span>
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -2498,9 +2597,13 @@ const MobileDashboardDemo = ({
                                                     if (onDeclineRequest) onDeclineRequest(selectedItem.id);
                                                     setSelectedItem(null);
                                                 }}
-                                                className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-bold text-[13px] border transition-all active:scale-95 bg-red-500/10 border-red-500/20 text-red-500"
+                                                className={cn("flex-1 py-3 rounded-2xl flex flex-col items-center justify-center gap-1 border transition-all active:scale-95",
+                                                    isDark ? "bg-red-500/10 border-red-500/20 hover:bg-red-500/20" : "bg-red-50 border-red-200 hover:bg-red-100")}
                                             >
-                                                <XCircle className="w-4 h-4" /> Decline
+                                                <div className="flex items-center gap-1.5 font-black text-[14px] text-red-500">
+                                                    <XCircle className="w-4 h-4" /> Decline
+                                                </div>
+                                                <span className="text-[10px] font-bold opacity-70 text-red-500/80">This offer will be rejected</span>
                                             </button>
                                         </div>
                                     )}
