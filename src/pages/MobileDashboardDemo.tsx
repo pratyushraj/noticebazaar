@@ -2248,7 +2248,7 @@ const MobileDashboardDemo = ({
                                                 <span className="text-[12px] font-bold text-blue-500">Verified Brand</span>
                                             </div>
                                             <p className={cn("text-[11px] font-semibold leading-tight", secondaryTextColor)}>
-                                                Responds in ~3 hours · Campaigns completed: {selectedItem.total_collabs || 21}
+                                                Responds in ~3 hours · {selectedItem.total_collabs || 21} successful campaigns
                                             </p>
                                         </div>
                                     </div>
@@ -2278,14 +2278,13 @@ const MobileDashboardDemo = ({
 
                                     {/* Status Row */}
                                     <div className="mt-4 flex items-center justify-center">
-                                        <div className={cn("flex items-center gap-2 px-4 py-2 rounded-full border",
+                                        <div className={cn("flex items-center px-3.5 py-1.5 rounded-full border shadow-sm",
                                             selectedType === 'deal'
                                                 ? (isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")
                                                 : (isDark ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-200")
                                         )}>
-                                            <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse", selectedType === 'deal' ? 'bg-emerald-500' : 'bg-amber-500')} />
-                                            <span className={cn("text-[11px] font-black uppercase tracking-widest", selectedType === 'deal' ? 'text-emerald-500' : 'text-amber-600')}>
-                                                Status: {selectedType === 'deal' ? 'Active Collaboration' : 'Pending Creator Review'}
+                                            <span className={cn("text-[13px] font-bold tracking-tight", selectedType === 'deal' ? (isDark ? 'text-emerald-400' : 'text-emerald-700') : (isDark ? 'text-amber-400' : 'text-amber-700'))}>
+                                                {selectedType === 'deal' ? '🟢 Active Collaboration' : '🟡 Pending Review'}
                                             </span>
                                         </div>
                                     </div>
@@ -2372,10 +2371,10 @@ const MobileDashboardDemo = ({
                                 {/* ── DELIVERABLES ── */}
                                 <div className="mb-6">
                                     <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Deliverables</h4>
-                                    <div className="flex flex-col gap-2.5">
+                                    <div className="flex flex-wrap gap-2.5">
                                         {(() => {
                                             const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                            let items: string[] = ['🎬 1 Instagram Reel', '📱 2 Stories', '📄 30d Usage Rights'];
+                                            let items: string[] = ['🎬 1 Instagram Reel', '📱 2 Stories'];
                                             try {
                                                 const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
                                                 if (Array.isArray(parsed) && parsed.length > 0) {
@@ -2387,15 +2386,14 @@ const MobileDashboardDemo = ({
                                                         if (ct.includes('reel')) { emoji = '🎬'; label = 'Instagram Reel'; }
                                                         else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
                                                         else if (ct.includes('post')) { emoji = '🖼'; label = 'Static Post'; }
-                                                        else if (ct.includes('usage')) { emoji = '📄'; label = 'Usage Rights'; }
                                                         return `${emoji} ${count} ${label}`;
                                                     });
                                                 }
                                             } catch (_) { }
                                             return items.map((d, i) => (
                                                 <div key={i} className={cn(
-                                                    "px-4 py-3.5 rounded-xl text-[15px] font-black border flex items-center shadow-sm",
-                                                    isDark ? "bg-slate-800/60 border-slate-700 text-slate-100" : "bg-white border-slate-200 text-slate-800"
+                                                    "px-3.5 py-2.5 rounded-xl text-[14px] font-black border flex items-center gap-2 shadow-sm",
+                                                    isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"
                                                 )}>
                                                     {d}
                                                 </div>
@@ -2413,12 +2411,22 @@ const MobileDashboardDemo = ({
                                                 <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
                                             </div>
                                             <div>
-                                                <p className={cn("text-[15px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
-                                                <p className={cn("text-[13px] mt-1 font-bold text-amber-500")}>₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()} value</p>
+                                                <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
+                                                <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</p>
+                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
                                             </div>
                                         </div>
                                     </div>
                                 )}
+
+                                {/* ── USAGE RIGHTS ── */}
+                                <div className="mb-6">
+                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Usage Rights</h4>
+                                    <div className={cn("rounded-2xl border p-4 flex flex-col gap-1", cardBgColor, borderColor)}>
+                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>Organic social media only</p>
+                                        <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>90 days limit</p>
+                                    </div>
+                                </div>
 
                                 {/* ── PAYMENT ── */}
                                 <div className="mb-6 grid grid-cols-2 gap-3">
@@ -2442,10 +2450,10 @@ const MobileDashboardDemo = ({
                                                 : '21 Mar 2026';
                                             return (
                                                 <>
-                                                    <span className={cn("text-[15px] font-black leading-tight mb-1.5", textColor)}>
+                                                    <span className={cn("text-[14px] font-black leading-tight mb-2", textColor)}>
                                                         {deadlineStr}
                                                     </span>
-                                                    <span className={cn("text-[11px] font-bold flex items-center gap-1", deadlineColor)}>
+                                                    <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1", deadlineColor)}>
                                                         ⚡ {diff > 0 ? `${diff} days remaining` : 'Overdue'}
                                                     </span>
                                                 </>
@@ -2473,7 +2481,7 @@ const MobileDashboardDemo = ({
                                                 <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className={cn("font-black text-[16px]", isDark ? "text-emerald-400" : "text-emerald-700")}>Armour Protection Enabled</p>
+                                                <p className={cn("font-black text-[16px] leading-tight", isDark ? "text-emerald-400" : "text-emerald-700")}>Protected by<br />Creator Armour</p>
                                             </div>
                                             <Download className={cn("w-5 h-5 shrink-0 transition-opacity", isDark ? "text-emerald-400" : "text-emerald-600")} />
                                         </div>
@@ -2506,31 +2514,7 @@ const MobileDashboardDemo = ({
                                                 <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>Brand Identity</span>
                                                 <span className={cn("text-[14px] font-black", textColor)}>{selectedItem.brand_name || 'UrbanStyle Co.'}</span>
                                             </div>
-                                            <div className="flex justify-between items-start">
-                                                <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>Deliverables</span>
-                                                <div className="text-right">
-                                                    {(() => {
-                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                        let labels: string[] = ['1 Reel', '2 Stories'];
-                                                        try {
-                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                labels = parsed.map((d: any) => {
-                                                                    if (typeof d === 'string') return d;
-                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                    const count = d.count || d.quantity || 1;
-                                                                    let label = 'Content';
-                                                                    if (ct.includes('reel')) label = 'Reel';
-                                                                    else if (ct.includes('story')) label = 'Story';
-                                                                    else if (ct.includes('post')) label = 'Post';
-                                                                    return `${count} ${label}`;
-                                                                });
-                                                            }
-                                                        } catch (_) { }
-                                                        return labels.map((l, i) => <p key={i} className={cn("text-[14px] font-bold leading-snug", textColor)}>{l}</p>);
-                                                    })()}
-                                                </div>
-                                            </div>
+
                                             <div className="flex items-center justify-between">
                                                 <span className={cn("text-[13px] font-semibold opacity-70", textColor)}>{selectedItem.collab_type === 'barter' ? 'Product Value' : 'Cash Budget'}</span>
                                                 <span className={cn("text-[15px] font-black", selectedItem.collab_type === 'barter' ? "text-amber-500" : "text-emerald-500")}>₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</span>
@@ -2583,7 +2567,7 @@ const MobileDashboardDemo = ({
                                             <>
                                                 <span className="text-[17px] font-black leading-tight">Accept Collaboration</span>
                                                 <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
-                                                    You will receive the {selectedItem.collab_type === 'barter' ? 'product' : 'payment'} and complete deliverables
+                                                    Contract will be generated automatically
                                                 </span>
                                             </>
                                         ) : (
@@ -2608,7 +2592,7 @@ const MobileDashboardDemo = ({
                                                 <div className={cn("flex items-center gap-1.5 font-black text-[14px]", textColor)}>
                                                     <Edit3 className="w-4 h-4" /> Counter Offer
                                                 </div>
-                                                <span className={cn("text-[10px] font-bold opacity-50", textColor)}>Propose new terms</span>
+                                                <span className={cn("text-[10px] font-bold opacity-50", textColor)}>Edit budget or deliverables</span>
                                             </button>
                                             <button
                                                 onClick={() => {
