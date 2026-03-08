@@ -12,10 +12,9 @@ import { BaseCard } from '@/components/ui/card-variants';
 import CollabRequestsSection from '@/components/collab/CollabRequestsSection';
 import CollabLinkAnalytics from '@/components/collab/CollabLinkAnalytics';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
-import CollabLinkSettings from '@/components/collab/CollabLinkSettings';
 
 const CreatorCollab = () => {
-  const { profile, refetchProfile } = useSession();
+  const { profile } = useSession();
   const [activeTab, setActiveTab] = useState<'link' | 'requests'>('requests');
   const usernameForLink = profile?.instagram_handle || profile?.username;
   const collabLink = usernameForLink ? `${window.location.origin}/collab/${usernameForLink}` : '';
@@ -142,11 +141,6 @@ const CreatorCollab = () => {
             {/* Collab Link Analytics */}
             <div data-section="collab-analytics">
               <CollabLinkAnalytics />
-            </div>
-
-            {/* Collab Link Settings */}
-            <div data-section="collab-settings">
-              <CollabLinkSettings profile={profile} onUpdate={refetchProfile} />
             </div>
           </div>
         ) : (

@@ -75,9 +75,6 @@ export type Profile = Tables<'profiles'> & {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
-  // NEW: Collab Link Array fields
-  past_brands?: string[] | null;
-  recent_campaign_types?: string[] | null;
 };
 
 export type Message = Tables<'messages'> & {

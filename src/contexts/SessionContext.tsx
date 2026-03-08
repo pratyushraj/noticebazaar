@@ -397,13 +397,6 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
         if (error) {
           logger.error("Error getting session", error);
-          // Auto-recovery for stuck refresh tokens:
-          // If the token is completely invalid/revoked, force sign-out to clear local storage and avoid infinite loops.
-          if (error.message.includes("Refresh Token Not Found") || error.message.includes("Invalid Refresh Token")) {
-            console.warn("[SessionContext] Invalid refresh token detected. Clearing local session state...");
-            await supabase.auth.signOut();
-            currentSession = null;
-          }
         } else {
           console.log('[SessionContext] Initial session check:', {
             hasSession: !!currentSession,
