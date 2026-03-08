@@ -1077,7 +1077,7 @@ const CollabLinkLanding = () => {
   const typeLabel = 'text-[13px] leading-[18px] font-medium';
   const typeTrust = 'flex items-center gap-2 text-[14px] leading-[20px] font-medium text-white/60';
   const surfaceClass = `${elevationLevel2} backdrop-blur-2xl rounded-3xl`;
-  const inputClass = 'bg-white/[0.05] border-white/10 text-white placeholder:text-white/40 focus:bg-white/[0.08] focus:border-white/20 transition-all rounded-xl';
+  const inputClass = 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-400 transition-all rounded-xl';
   const helperTextClass = `${typeHelper} text-white/50`;
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail.trim());
   const isCampaignDescriptionValid = campaignDescription.trim().length >= 20;
@@ -1218,7 +1218,7 @@ const CollabLinkLanding = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white" />
+        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
       </div>
     );
   }
@@ -1431,83 +1431,83 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-      <div className="min-h-screen bg-[#0B0F14] selection:bg-blue-500/30">
+      <div className="min-h-screen bg-slate-50 selection:bg-teal-500/30">
         <div className="container mx-auto px-4 pt-4 pb-0 md:py-6 md:pb-28 max-w-lg md:max-w-[960px] relative">
           {/* Header - Deal Desk Intake Portal */}
           <div className="mb-6 pt-2 md:mb-10 md:pt-4 relative">
             {/* Ambient glow behind hero */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
 
             <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
               {/* Avatar with ring */}
               <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/15 shadow-xl">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg">
                   {creator.profile_photo ? (
                     <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-violet-700 text-white font-black text-xl">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 text-white font-black text-xl">
                       {creator.name.slice(0, 1).toUpperCase()}
                     </div>
                   )}
                 </div>
                 {/* Online indicator */}
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0B0F14]" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
               </div>
 
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <h2 className="text-[17px] font-black text-white leading-tight">{creator.name}</h2>
-                  <div className="flex items-center gap-1 bg-blue-500/15 border border-blue-400/20 rounded-full px-2 py-0.5">
-                    <CheckCircle2 className="h-3 w-3 text-blue-400" />
-                    <span className="text-[10px] font-black text-blue-300 uppercase tracking-wider">Verified</span>
+                  <h2 className="text-[17px] font-black text-slate-900 leading-tight">{creator.name}</h2>
+                  <div className="flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
+                    <CheckCircle2 className="h-3 w-3 text-teal-600" />
+                    <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
                   </div>
                 </div>
                 {primaryFollowers ? (
-                  <span className="text-[13px] text-white/50 font-semibold mt-0.5">{formatFollowers(primaryFollowers)} followers · Open to collabs</span>
+                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">{formatFollowers(primaryFollowers)} followers · Open to collabs</span>
                 ) : (
-                  <span className="text-[13px] text-white/50 font-semibold mt-0.5">Verified Creator Profile</span>
+                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">Verified Creator Profile</span>
                 )}
               </div>
             </div>
 
             <div className="max-w-xl relative">
-              <h1 className={`text-[30px] md:text-4xl font-black tracking-tight text-white mb-2.5 leading-tight ${typePageTitle}`}>
+              <h1 className={`text-[30px] md:text-4xl font-black tracking-tight text-slate-900 mb-2.5 leading-tight ${typePageTitle}`}>
                 Send Offer to {creator.name.split(' ')[0]}
               </h1>
-              <p className="text-[15px] text-white/55 leading-relaxed max-w-md">
+              <p className="text-[15px] text-slate-500 leading-relaxed max-w-md">
                 Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
               </p>
             </div>
           </div>
 
           {/* Creator Performance Snapshot */}
-          <div className={`hidden md:block mb-12 backdrop-blur-md rounded-xl p-6 ${elevationLevel2}`}>
-            <h3 className={`text-base font-semibold text-white ${typeSectionTitle}`}>Audience Fit Snapshot</h3>
-            <p className={`${typeHelper} text-slate-100/70 mt-1 mb-4`}>
+          <div className={`hidden md:block mb-12 backdrop-blur-md rounded-xl p-6 bg-white border border-slate-200 shadow-sm`}>
+            <h3 className={`text-base font-semibold text-slate-900 ${typeSectionTitle}`}>Audience Fit Snapshot</h3>
+            <p className={`${typeHelper} text-slate-500 mt-1 mb-4`}>
               Helps brands align campaigns with audience size & content style.
             </p>
             <div className="space-y-8">
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Performance Truth</p>
+                <p className="text-[11px] uppercase tracking-wider text-slate-400 mb-2">Performance Truth</p>
                 <div className="space-y-5">
                   {primaryFollowers > 0 && (
                     <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Reach</p>
-                      <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />Followers: {formatFollowers(primaryFollowers)}</p>
+                      <p className="text-xs text-slate-500">Reach</p>
+                      <p className={`text-sm text-slate-900 mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-teal-600" />Followers: {formatFollowers(primaryFollowers)}</p>
                     </div>
                   )}
 
                   {(avgReelViews > 0 || avgLikes > 0) && (
                     <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Content Impact</p>
+                      <p className="text-xs text-slate-500">Content Impact</p>
                       {avgReelViews > 0 && (
-                        <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>
+                        <p className={`text-sm text-slate-900 mt-1 ${typeBodyPrimary}`}>
                           Avg Reel Views: {Number(avgReelViews).toLocaleString('en-IN')}
                           {' (Based on recent posts)'}
                         </p>
                       )}
                       {avgLikes > 0 && (
-                        <p className={`text-sm text-white ${typeBodyPrimary}`}>
+                        <p className={`text-sm text-slate-900 ${typeBodyPrimary}`}>
                           Avg Likes: {Number(avgLikes).toLocaleString('en-IN')}
                           {' (Based on recent posts)'}
                         </p>
@@ -1517,23 +1517,23 @@ const CollabLinkLanding = () => {
 
                   {pastBrandCount > 0 && (
                     <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Brand Experience</p>
-                      <p className={`text-sm text-white mt-1 ${typeBodyPrimary}`}>Past Collaborations: {pastBrandCount}</p>
+                      <p className="text-xs text-slate-500">Brand Experience</p>
+                      <p className={`text-sm text-slate-900 mt-1 ${typeBodyPrimary}`}>Past Collaborations: {pastBrandCount}</p>
                     </div>
                   )}
 
                   {avgResponseHours > 0 && (
                     <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                      <p className="text-xs text-white/60">Response Time</p>
-                      <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><Clock className="h-4 w-4 text-sky-400" />~{Math.round(avgResponseHours)} hr{Math.round(avgResponseHours) > 1 ? 's' : ''}</p>
+                      <p className="text-xs text-slate-500">Response Time</p>
+                      <p className={`text-sm text-slate-900 mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><Clock className="h-4 w-4 text-teal-600" />~{Math.round(avgResponseHours)} hr{Math.round(avgResponseHours) > 1 ? 's' : ''}</p>
                     </div>
                   )}
                 </div>
               </div>
 
               <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                <p className="text-xs text-white/60">Engagement Quality</p>
-                <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-sky-400" />{engagementRange}</p>
+                <p className="text-xs text-slate-500">Engagement Quality</p>
+                <p className={`text-sm text-slate-900 mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}><TrendingUp className="h-4 w-4 text-teal-600" />{engagementRange}</p>
               </div>
             </div>
 
@@ -1548,9 +1548,9 @@ const CollabLinkLanding = () => {
                 </div>
 
                 <div className={`rounded-lg p-3 ${elevationLevel1}`}>
-                  <p className="text-xs text-white/60">Response Time</p>
-                  <p className={`text-sm text-white mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}>
-                    <Clock className="h-4 w-4 text-sky-400" />
+                  <p className="text-xs text-slate-500">Response Time</p>
+                  <p className={`text-sm text-slate-900 mt-1 inline-flex items-center gap-2 ${typeBodyPrimary}`}>
+                    <Clock className="h-4 w-4 text-teal-600" />
                     Avg Creator Response: {avgResponseHours ? `~${Math.round(avgResponseHours)} hrs` : '~24 hours'}
                   </p>
                 </div>
@@ -1558,23 +1558,23 @@ const CollabLinkLanding = () => {
             </div>
 
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-white/50 mb-2">Creator Context Layer</p>
+              <p className="text-[11px] uppercase tracking-wider text-slate-400 mb-2">Creator Context Layer</p>
               <div className={`rounded-lg p-3 space-y-3 ${elevationLevel1}`}>
                 <div>
-                  <p className="text-xs text-white/60">Audience Fit</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{audienceFitLine}</p>
+                  <p className="text-xs text-slate-500">Audience Fit</p>
+                  <p className={`text-sm text-slate-900 mt-0.5 ${typeBodyPrimary}`}>{audienceFitLine}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/60">Recent Activity</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{recentActivityNote}</p>
+                  <p className="text-xs text-slate-500">Recent Activity</p>
+                  <p className={`text-sm text-slate-900 mt-0.5 ${typeBodyPrimary}`}>{recentActivityNote}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/60">Campaign Slots</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{campaignSlotNoteText}</p>
+                  <p className="text-xs text-slate-500">Campaign Slots</p>
+                  <p className={`text-sm text-slate-900 mt-0.5 ${typeBodyPrimary}`}>{campaignSlotNoteText}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-white/60">CTA Behavior</p>
-                  <p className={`text-sm text-white mt-0.5 ${typeBodyPrimary}`}>{responseBehaviorNote}</p>
+                  <p className="text-xs text-slate-500">CTA Behavior</p>
+                  <p className={`text-sm text-slate-900 mt-0.5 ${typeBodyPrimary}`}>{responseBehaviorNote}</p>
                 </div>
               </div>
             </div>
@@ -1582,14 +1582,14 @@ const CollabLinkLanding = () => {
         </div>
 
         {(creator.audience_gender_split || audienceCities.length > 0 || creator.audience_age_range || audienceLanguage || creator.posting_frequency) && (
-          <div className="hidden md:block mb-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-            <h4 className="text-base font-semibold text-white mb-2">Audience Profile</h4>
+          <div className="hidden md:block mb-12 bg-white border border-slate-200 shadow-sm rounded-xl p-6">
+            <h4 className="text-base font-semibold text-slate-900 mb-2">Audience Profile</h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               {genderRows && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Gender</p>
-                  <ul className="text-sm text-slate-100/90 space-y-0.5">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500 mb-1">Gender</p>
+                  <ul className="text-sm text-slate-700 space-y-0.5">
                     {genderRows.map((row, idx) => (
                       <li key={`${row}-${idx}`}>• {row}</li>
                     ))}
@@ -1598,39 +1598,39 @@ const CollabLinkLanding = () => {
               )}
 
               {audienceCities.length > 0 && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Top Cities</p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500 mb-1">Top Cities</p>
                   {audienceCities.length === 1 ? (
-                    <p className="text-sm text-slate-100/90">{audienceCities[0]}</p>
+                    <p className="text-sm text-slate-700">{audienceCities[0]}</p>
                   ) : (
-                    <ul className="text-sm text-slate-100/90 space-y-0.5">
+                    <ul className="text-sm text-slate-700 space-y-0.5">
                       {audienceCities.map((city, idx) => (
                         <li key={`${city}-${idx}`}>• {city}</li>
                       ))}
                     </ul>
                   )}
-                  <p className="text-xs text-slate-100/70 mt-1">{audienceRelevanceNote}</p>
+                  <p className="text-xs text-slate-500 mt-1">{audienceRelevanceNote}</p>
                 </div>
               )}
 
               {creator.audience_age_range && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Age</p>
-                  <p className="text-sm text-slate-100/90">{creator.audience_age_range}</p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500 mb-1">Age</p>
+                  <p className="text-sm text-slate-700">{creator.audience_age_range}</p>
                 </div>
               )}
 
               {creator.posting_frequency && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs text-white/60 mb-1">Posting Frequency</p>
-                  <p className="text-sm text-slate-100/90">{creator.posting_frequency}</p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500 mb-1">Posting Frequency</p>
+                  <p className="text-sm text-slate-700">{creator.posting_frequency}</p>
                 </div>
               )}
 
               {audienceLanguage && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 md:col-span-2">
-                  <p className="text-xs text-white/60 mb-1">Language</p>
-                  <p className="text-sm text-slate-100/90">{audienceLanguage}</p>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
+                  <p className="text-xs text-slate-500 mb-1">Language</p>
+                  <p className="text-sm text-slate-700">{audienceLanguage}</p>
                 </div>
               )}
             </div>
@@ -1638,13 +1638,13 @@ const CollabLinkLanding = () => {
         )}
 
         {recentCampaignTypes.length > 0 && (
-          <div className="hidden md:block mb-12 rounded-xl bg-white/[0.05] backdrop-blur-xl border border-white/15 p-6" role="region" aria-label="Recent campaign types">
-            <h3 className="text-lg font-semibold text-white mb-3">Recent Campaign Types</h3>
+          <div className="hidden md:block mb-12 rounded-xl bg-white border border-slate-200 shadow-sm p-6" role="region" aria-label="Recent campaign types">
+            <h3 className="text-lg font-semibold text-slate-900 mb-3">Recent Campaign Types</h3>
             <div className="flex flex-wrap gap-3">
               {recentCampaignTypes.map((campaignType, idx) => (
                 <span
                   key={`${campaignType}-${idx}`}
-                  className="inline-flex items-center rounded-full border border-white/30 bg-white/[0.04] px-3.5 py-2 text-sm text-slate-100"
+                  className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm text-slate-700"
                 >
                   {campaignType}
                 </span>
@@ -1657,7 +1657,7 @@ const CollabLinkLanding = () => {
         {/* SEO-Friendly Content Section - Indexable */}
         <div className="hidden md:block mb-12 space-y-8">
           {/* Creator Bio & Platforms - Indexable Content */}
-          <div className="bg-white/[0.07] backdrop-blur-xl rounded-xl p-6 border border-white/15">
+          <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
             {creatorBio && (
               <p className="text-slate-100/85 leading-relaxed mb-4">
                 {creatorBio}
@@ -1666,7 +1666,7 @@ const CollabLinkLanding = () => {
 
             {creator.platforms.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-xl font-semibold text-white mb-3">
+                <h2 className="text-xl font-semibold text-slate-900 mb-3">
                   Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
@@ -1676,13 +1676,13 @@ const CollabLinkLanding = () => {
                       <div key={idx} className="flex items-center gap-3 text-slate-100/85">
                         {getPlatformIcon(platform.name)}
                         <div className="flex-1">
-                          <p className="font-medium text-white">{platform.name}</p>
+                          <p className="font-medium text-slate-900">{platform.name}</p>
                           {isInstagram && platform.handle ? (
                             <a
                               href={`https://instagram.com/${platform.handle.replace('@', '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-slate-200 hover:text-white transition-colors flex items-center gap-1"
+                              className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
                             >
                               @{platform.handle.replace('@', '')}
                               <ExternalLink className="h-3 w-3 opacity-60" />
@@ -1709,9 +1709,9 @@ const CollabLinkLanding = () => {
 
             {/* Open to collabs + niches + media kit (creator readiness for brands) */}
             {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-              <div className="mt-8 pt-6 border-t border-white/10 space-y-3">
+              <div className="mt-8 pt-6 border-t border-slate-200 space-y-3">
                 {creator.open_to_collabs !== false && (
-                  <p className="text-sm text-green-300 font-medium flex items-center gap-2">
+                  <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
                     Actively open to collaborations
                   </p>
@@ -1721,7 +1721,7 @@ const CollabLinkLanding = () => {
                     <p className="text-xs text-slate-400 mb-1">Content niches</p>
                     <div className="flex flex-wrap gap-2">
                       {creator.content_niches.map((niche, i) => (
-                        <Badge key={i} variant="secondary" className="bg-white/10 text-slate-400 border-white/20">
+                        <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
                           {niche}
                         </Badge>
                       ))}
@@ -1734,7 +1734,7 @@ const CollabLinkLanding = () => {
                       href={creator.media_kit_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-slate-400 hover:text-white inline-flex items-center gap-1"
+                      className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
                     >
                       <ExternalLink className="h-4 w-4 shrink-0" />
                       Media kit
@@ -1752,18 +1752,18 @@ const CollabLinkLanding = () => {
         <div className="mt-5 mb-4 md:mt-12 md:mb-10">
           <div className="grid grid-cols-3 gap-2 px-0">
             {[
-              { label: 'Contract auto-generated', icon: <FileCheck className="h-5 w-5 text-emerald-400" />, desc: 'Legal & binding' },
-              { label: 'Payment secured', icon: <ShieldCheck className="h-5 w-5 text-blue-400" />, desc: 'Dispute protected' },
-              { label: 'Deliverables verified', icon: <BadgeCheck className="h-5 w-5 text-violet-400" />, desc: 'Creator accountable' },
+              { label: 'Contract auto-generated', icon: <FileCheck className="h-5 w-5 text-emerald-600" />, desc: 'Legal & binding' },
+              { label: 'Payment secured', icon: <ShieldCheck className="h-5 w-5 text-teal-600" />, desc: 'Dispute protected' },
+              { label: 'Deliverables verified', icon: <BadgeCheck className="h-5 w-5 text-blue-600" />, desc: 'Creator accountable' },
             ].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md px-2 py-4">
-                <div className={`shrink-0 rounded-xl p-2.5 ${idx === 0 ? 'bg-emerald-500/10 border border-emerald-500/20' :
-                  idx === 1 ? 'bg-blue-500/10 border border-blue-500/20' :
-                    'bg-violet-500/10 border border-violet-500/20'
+              <div key={idx} className="flex flex-col items-center text-center gap-2 rounded-2xl border border-slate-200 bg-white shadow-sm px-2 py-4">
+                <div className={`shrink-0 rounded-xl p-2.5 ${idx === 0 ? 'bg-emerald-50 border border-emerald-200' :
+                  idx === 1 ? 'bg-teal-50 border border-teal-200' :
+                    'bg-blue-50 border border-blue-200'
                   }`}>{item.icon}</div>
                 <div>
-                  <p className="text-[11px] font-black text-white/80 leading-tight">{item.label}</p>
-                  <p className="text-[10px] text-white/40 mt-0.5 font-semibold">{item.desc}</p>
+                  <p className="text-[11px] font-black text-slate-700 leading-tight">{item.label}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -1771,61 +1771,61 @@ const CollabLinkLanding = () => {
         </div>
 
         {/* Mobile-first collapsed audience snapshot - premium */}
-        <div className="md:hidden mt-4 mb-5 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md overflow-hidden">
+        <div className="md:hidden mt-4 mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           {/* Header row */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/10">
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center">
-                <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
+              <div className="w-7 h-7 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 text-teal-600" />
               </div>
-              <h3 className="text-[15px] font-black text-white">Audience Fit Snapshot</h3>
+              <h3 className="text-[15px] font-black text-slate-900">Audience Fit Snapshot</h3>
             </div>
             {audienceRegionLabel && (
-              <span className="flex items-center gap-1 text-[10px] font-black text-cyan-300 bg-cyan-500/10 border border-cyan-400/20 rounded-full px-2 py-1 uppercase tracking-wide">
+              <span className="flex items-center gap-1 text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2 py-1 uppercase tracking-wide">
                 <MapPin className="w-3 h-3" />{audienceRegionLabel}
               </span>
             )}
           </div>
 
           {/* Stats grid – 4 metrics */}
-          <div className="grid grid-cols-2 gap-px bg-white/5">
-            <div className="bg-[#0B0F14] px-4 py-3">
-              <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-sky-400" /> Engagement</p>
-              <p className="text-[14px] font-black text-white leading-tight">{mobileEngagementLabel}</p>
-              <p className="text-[10px] text-white/40 font-semibold mt-0.5">Consistent viewer engagement</p>
+          <div className="grid grid-cols-2 gap-px bg-slate-100">
+            <div className="bg-white px-4 py-3">
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-teal-600" /> Engagement</p>
+              <p className="text-[14px] font-black text-slate-900 leading-tight">{mobileEngagementLabel}</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Consistent viewer engagement</p>
             </div>
-            <div className="bg-[#0B0F14] px-4 py-3">
-              <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Response Time</p>
-              <p className="text-[14px] font-black text-white leading-tight">{sameDayResponseLine}</p>
-              <p className="text-[10px] text-white/40 font-semibold mt-0.5">Avg message reply</p>
+            <div className="bg-white px-4 py-3">
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Response Time</p>
+              <p className="text-[14px] font-black text-slate-900 leading-tight">{sameDayResponseLine}</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Avg message reply</p>
             </div>
             {pastBrandCount > 0 ? (
-              <div className="bg-[#0B0F14] px-4 py-3">
-                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Past Brand Deals</p>
-                <p className="text-[14px] font-black text-white leading-tight">{pastBrandCount} completed</p>
-                <p className="text-[10px] text-emerald-400/60 font-semibold mt-0.5">Verified history</p>
+              <div className="bg-white px-4 py-3">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Past Brand Deals</p>
+                <p className="text-[14px] font-black text-slate-900 leading-tight">{pastBrandCount} completed</p>
+                <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">Verified history</p>
               </div>
             ) : (
-              <div className="bg-[#0B0F14] px-4 py-3">
-                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Followers</p>
-                <p className="text-[14px] font-black text-white leading-tight">{formatFollowers(primaryFollowers)}</p>
+              <div className="bg-white px-4 py-3">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Followers</p>
+                <p className="text-[14px] font-black text-slate-900 leading-tight">{formatFollowers(primaryFollowers)}</p>
               </div>
             )}
-            <div className="bg-[#0B0F14] px-4 py-3">
-              <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Creator Reliability</p>
-              <p className="text-[14px] font-black text-emerald-400 leading-tight">98%</p>
-              <p className="text-[10px] text-white/40 font-semibold mt-0.5">Deal completion rate</p>
+            <div className="bg-white px-4 py-3">
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1">Creator Reliability</p>
+              <p className="text-[14px] font-black text-emerald-600 leading-tight">98%</p>
+              <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Deal completion rate</p>
             </div>
           </div>
 
           {/* Estimated Reach card */}
           {(avgReelViews || primaryFollowers > 0) && (
-            <div className="px-4 py-3 border-t border-white/5 bg-sky-500/[0.04]">
-              <p className="text-[10px] text-sky-300/60 font-black uppercase tracking-wider mb-2">Estimated Campaign Reach</p>
+            <div className="px-4 py-3 border-t border-slate-100 bg-teal-50/50">
+              <p className="text-[10px] text-teal-700 font-black uppercase tracking-wider mb-2">Estimated Campaign Reach</p>
               <div className="flex gap-4">
                 <div>
-                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Reel</p>
-                  <p className="text-[13px] font-black text-white">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Reel</p>
+                  <p className="text-[13px] font-black text-slate-900">
                     {avgReelViews
                       ? `${Math.round(Number(avgReelViews) * 0.6 / 1000)}K – ${Math.round(Number(avgReelViews) * 1.4 / 1000)}K views`
                       : `${Math.round(primaryFollowers * 0.15 / 1000)}K – ${Math.round(primaryFollowers * 0.35 / 1000)}K views`
@@ -1833,8 +1833,8 @@ const CollabLinkLanding = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Story</p>
-                  <p className="text-[13px] font-black text-white">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Story</p>
+                  <p className="text-[13px] font-black text-slate-900">
                     {`${Math.round(primaryFollowers * 0.04 / 1000)}K – ${Math.round(primaryFollowers * 0.09 / 1000)}K views`}
                   </p>
                 </div>
@@ -1845,31 +1845,31 @@ const CollabLinkLanding = () => {
           <button
             type="button"
             onClick={() => setShowMobileAudienceDetails((prev) => !prev)}
-            className="w-full px-4 py-3 text-[12px] font-black text-white/60 flex items-center justify-center gap-2 hover:bg-white/5 transition-all border-t border-white/10"
+            className="w-full px-4 py-3 text-[12px] font-black text-slate-500 flex items-center justify-center gap-2 hover:bg-slate-50 transition-all border-t border-slate-100"
           >
             {showMobileAudienceDetails ? 'Hide Audience Details ↑' : 'View Audience Details ↓'}
           </button>
 
           {showMobileAudienceDetails && (
-            <div className="px-4 pb-4 pt-3 space-y-3 border-t border-white/10">
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1.5">Content Impact</p>
-                <p className="text-[13px] text-white font-semibold">Avg Reel Views: {avgReelViews ? Number(avgReelViews).toLocaleString('en-IN') : '—'}</p>
-                <p className="text-[13px] text-white font-semibold">Avg Likes: {avgLikes ? Number(avgLikes).toLocaleString('en-IN') : '—'}</p>
+            <div className="px-4 pb-4 pt-3 space-y-3 border-t border-slate-100">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1.5">Content Impact</p>
+                <p className="text-[13px] text-slate-800 font-semibold">Avg Reel Views: {avgReelViews ? Number(avgReelViews).toLocaleString('en-IN') : '—'}</p>
+                <p className="text-[13px] text-slate-800 font-semibold">Avg Likes: {avgLikes ? Number(avgLikes).toLocaleString('en-IN') : '—'}</p>
               </div>
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1.5">
-                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1.5">Creator Context</p>
-                <p className="text-[13px] text-white/80 font-semibold">• {audienceFitLine}</p>
-                <p className="text-[13px] text-white/80 font-semibold">• {recentActivityNote}</p>
-                <p className="text-[13px] text-white/80 font-semibold">• {campaignSlotNoteText}</p>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1.5">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1.5">Creator Context</p>
+                <p className="text-[13px] text-slate-600 font-semibold">• {audienceFitLine}</p>
+                <p className="text-[13px] text-slate-600 font-semibold">• {recentActivityNote}</p>
+                <p className="text-[13px] text-slate-600 font-semibold">• {campaignSlotNoteText}</p>
               </div>
               {(genderRows || audienceCities.length > 0 || creator.audience_age_range || audienceLanguage) && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                  <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1.5">Audience Profile</p>
-                  {genderRows && <p className="text-[13px] text-white/80 font-semibold">Gender: {genderRows.join(' / ')}</p>}
-                  {audienceCities.length > 0 && <p className="text-[13px] text-white/80 font-semibold">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
-                  {creator.audience_age_range && <p className="text-[13px] text-white/80 font-semibold">Age: {creator.audience_age_range}</p>}
-                  {audienceLanguage && <p className="text-[13px] text-white/80 font-semibold">Language: {audienceLanguage}</p>}
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1.5">Audience Profile</p>
+                  {genderRows && <p className="text-[13px] text-slate-600 font-semibold">Gender: {genderRows.join(' / ')}</p>}
+                  {audienceCities.length > 0 && <p className="text-[13px] text-slate-600 font-semibold">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
+                  {creator.audience_age_range && <p className="text-[13px] text-slate-600 font-semibold">Age: {creator.audience_age_range}</p>}
+                  {audienceLanguage && <p className="text-[13px] text-slate-600 font-semibold">Language: {audienceLanguage}</p>}
                 </div>
               )}
             </div>
