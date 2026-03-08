@@ -979,11 +979,11 @@ router.get('/:username', async (req: Request, res: Response) => {
     let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || null;
     let resolvedBio: string | null = profile.bio || null;
 
-    // If public Instagram data is missing in DB, fetch a cached public fallback for better collab-page UX.
-    if (profile.instagram_handle && (resolvedInstagramFollowers === null || !resolvedProfilePhoto || !resolvedBio)) {
+    // If public Instagram data is missing or followers are 0, fetch a cached public fallback for better collab-page UX.
+    if (profile.instagram_handle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio)) {
       try {
         const instagramData = await getCachedInstagramPublicData(profile.instagram_handle);
-        if (resolvedInstagramFollowers === null && typeof instagramData?.followers === 'number') {
+        if (!resolvedInstagramFollowers && typeof instagramData?.followers === 'number') {
           resolvedInstagramFollowers = instagramData.followers;
         }
         if (!resolvedProfilePhoto && instagramData?.profile_photo) {
