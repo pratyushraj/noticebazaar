@@ -1,4 +1,12 @@
-// v1.1.0 - Improved dashboard UI cache sync
+// v1.2.0 - Forced UI cache sync for installed PWA
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
+
 self.addEventListener('push', (event) => {
   let payload = {
     title: 'New Brand Offer',
