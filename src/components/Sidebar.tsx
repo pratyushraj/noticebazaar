@@ -30,7 +30,7 @@ interface SidebarItem {
   path: string;
   iconColor: string;
   roles?: string[];
-  isPro?: boolean; // New: Indicates Pro-only feature
+  isPro?: boolean;
 }
 
 interface SidebarSection {
@@ -44,12 +44,12 @@ interface SidebarProps {
 }
 
 // SearchBar Component
-const SearchBar: React.FC<{ 
-  searchQuery: string; 
+const SearchBar: React.FC<{
+  searchQuery: string;
   setSearchQuery: (query: string) => void;
 }> = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="sticky top-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-white/10 z-10 px-4 pt-4 pb-3">
+    <div className="sticky top-0 bg-white/[0.02] backdrop-blur-xl border-b border-white/5 z-10 px-4 pt-4 pb-3">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B7F8A]" />
         <input
@@ -65,8 +65,8 @@ const SearchBar: React.FC<{
 };
 
 // UserCard Component
-const UserCard: React.FC<{ 
-  name: string; 
+const UserCard: React.FC<{
+  name: string;
   email?: string;
   avatarUrl?: string | null;
 }> = ({ name, email, avatarUrl }) => {
@@ -74,9 +74,9 @@ const UserCard: React.FC<{
     <div className="px-4 py-4 border-b border-white/5">
       <div className="flex items-center gap-3">
         <Avatar className="h-12 w-12 ring-2 ring-white/10">
-          <AvatarImage 
-            src={avatarUrl || DEFAULT_AVATAR_URL} 
-            alt={name} 
+          <AvatarImage
+            src={avatarUrl || DEFAULT_AVATAR_URL}
+            alt={name}
           />
           <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-medium">
             {getInitials(name.split(' ')[0], name.split(' ')[1])}
@@ -102,49 +102,45 @@ const SidebarItem: React.FC<{
   item: SidebarItem;
   isActive: boolean;
   onClick: () => void;
-  isProUser?: boolean; // New: Pass Pro status
+  isProUser?: boolean;
 }> = ({ item, isActive, onClick, isProUser = false }) => {
   const Icon = item.icon;
   const isProFeature = item.isPro === true;
   const showProBadge = isProFeature && isProUser;
-  
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-3 px-[14px] h-[54px] rounded-[14px] transition-all duration-200 ease-in-out relative group",
-        "hover:bg-[#1C2233]",
-        isActive && "bg-[#1C2233]"
+        "w-full flex items-center gap-3 px-[14px] h-[50px] rounded-[12px] transition-all duration-200 ease-in-out relative group",
+        "hover:bg-white/5",
+        isActive && "bg-white/10 shadow-lg shadow-black/20"
       )}
     >
-      {/* Icon with colored circle background */}
-      <div 
+      <div
         className="w-[22px] h-[22px] flex items-center justify-center rounded-full flex-shrink-0"
-        style={{ backgroundColor: `${item.iconColor}26` }} // 15% opacity
+        style={{ backgroundColor: `${item.iconColor}26` }}
       >
-        <Icon 
-          className="w-[22px] h-[22px]" 
+        <Icon
+          className="w-[22px] h-[22px]"
           style={{ color: item.iconColor }}
         />
       </div>
-      
-      {/* Label */}
+
       <span className={cn(
         "text-[15px] flex-1 text-left font-medium",
         isActive ? "text-white" : "text-white/90"
       )}>
         {item.name}
       </span>
-      
-      {/* PRO Badge */}
+
       {showProBadge && (
         <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-md text-blue-400 flex-shrink-0">
           PRO
         </span>
       )}
-      
-      {/* Chevron */}
+
       <ChevronRight className={cn(
         "w-4 h-4 flex-shrink-0 transition-colors",
         isActive ? "text-white/60" : "text-white/30"
@@ -158,18 +154,16 @@ const SidebarSection: React.FC<{
   section: SidebarSection;
   isActive: (path: string) => boolean;
   onItemClick: (path: string) => void;
-  isProUser?: boolean; // New: Pass Pro status
+  isProUser?: boolean;
 }> = ({ section, isActive, onItemClick, isProUser = false }) => {
   return (
     <div className="mb-6">
-      {/* Section Header */}
       <div className="px-4 mb-1.5 mt-[18px] first:mt-2">
         <h3 className="text-[12px] font-semibold text-[#7B7F8A] uppercase tracking-wider leading-none">
           {section.title}
         </h3>
       </div>
-      
-      {/* Section Items */}
+
       <div className="px-2 space-y-1">
         {section.items.map((item) => (
           <SidebarItem
@@ -185,7 +179,6 @@ const SidebarSection: React.FC<{
   );
 };
 
-// Main Sidebar Component
 const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   const { isOpen, setIsOpen } = useSidebar();
   const { profile, user } = useSession();
@@ -193,404 +186,158 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // For preview mode, always show sidebar on desktop
-  const isPreview = location.pathname === '/dashboard-preview';
 
-  // Check if user is Pro (for showing Pro features)
+  const isPreview = location.pathname === '/dashboard-preview';
   const isProUser = isCreatorProSync(profile);
 
-  // Define menu sections with macOS/iOS Settings structure
   const menuSections: SidebarSection[] = [
     {
       title: "TOOLS",
       items: [
-        { 
-          name: "Calendar Sync", 
-          icon: Calendar, 
-          path: "/creator-dashboard?tab=calendar", 
-          iconColor: "#0A84FF",
-          roles: ['creator'] 
-        },
-        { 
-          name: "Documents Vault", 
-          icon: FolderOpen, 
-          path: "/documents-vault", 
-          iconColor: "#BF5AF2",
-          roles: ['creator'] 
-        },
-        { 
-          name: "Invoice Generator", 
-          icon: FileText, 
-          path: "/creator-dashboard?tab=invoices", 
-          iconColor: "#30D158",
-          roles: ['creator'] 
-        },
-        { 
-          name: "AI Pitch Generator", 
-          icon: MessageSquare, 
-          path: "/ai-pitch-generator", 
-          iconColor: "#FF6B9D",
-          roles: ['creator'] 
-        },
+        { name: "Calendar Sync", icon: Calendar, path: "/creator-dashboard?tab=calendar", iconColor: "#0A84FF", roles: ['creator'] },
+        { name: "Documents Vault", icon: FolderOpen, path: "/documents-vault", iconColor: "#BF5AF2", roles: ['creator'] },
+        { name: "Invoice Generator", icon: FileText, path: "/creator-dashboard?tab=invoices", iconColor: "#30D158", roles: ['creator'] },
+        { name: "AI Pitch Generator", icon: MessageSquare, path: "/ai-pitch-generator", iconColor: "#FF6B9D", roles: ['creator'] },
       ]
     },
     {
       title: "SUPPORT",
       items: [
-        { 
-          name: "Disputes Center", 
-          icon: AlertTriangle, 
-          path: "/creator-dashboard?tab=disputes", 
-          iconColor: "#FF453A",
-          roles: ['creator'] 
-        },
+        { name: "Disputes Center", icon: AlertTriangle, path: "/creator-dashboard?tab=disputes", iconColor: "#FF453A", roles: ['creator'] },
       ]
     },
     {
       title: "🛡 LIFESTYLE SHIELD",
       items: [
-        { 
-          name: "Consumer Complaints", 
-          icon: Shield, 
-          path: "/lifestyle/consumer-complaints", 
-          iconColor: "#34D399", // Soft green
-          roles: ['creator']
-          // Removed isPro: true for testing phase - available to all users
-        },
-        { 
-          name: "My Complaints", 
-          icon: FileText, 
-          path: "/dashboard/consumer-complaints", 
-          iconColor: "#8B5CF6", // Purple
-          roles: ['creator']
-        },
+        { name: "Consumer Complaints", icon: Shield, path: "/lifestyle/consumer-complaints", iconColor: "#34D399", roles: ['creator'] },
+        { name: "My Complaints", icon: FileText, path: "/dashboard/consumer-complaints", iconColor: "#8B5CF6", roles: ['creator'] },
       ]
     },
     {
       title: "BUSINESS",
       items: [
-        { 
-          name: "Tax Summary", 
-          icon: Receipt, 
-          path: "/creator-tax-compliance", 
-          iconColor: "#FFD60A",
-          roles: ['creator'] 
-        },
-        { 
-          name: "Partner Program", 
-          icon: Sparkles, 
-          path: "/partner-program", 
-          iconColor: "#5E5CE6",
-          roles: ['creator'] 
-        },
-      ]
-    },
-    {
-      title: "SETTINGS",
-      items: [
-        { 
-          name: "Settings", 
-          icon: Settings, 
-          path: "/settings", 
-          iconColor: "#8E8E93",
-          roles: ['creator'] 
-        },
-        {
-          name: "Notification Settings",
-          icon: Bell,
-          path: "/creator-profile?section=account",
-          iconColor: "#8E8E93",
-          roles: ['creator']
-        },
+        { name: "Tax Summary", icon: Receipt, path: "/creator-tax-compliance", iconColor: "#FFD60A", roles: ['creator'] },
+        { name: "Partner Program", icon: Sparkles, path: "/partner-program", iconColor: "#5E5CE6", roles: ['creator'] },
       ]
     }
   ];
 
-  // Filter sections and items based on role and Pro status
-  // Use profile.role from session if profileRole prop is not provided
   const userRole = profileRole || profile?.role || 'creator';
   const visibleSections = menuSections.map(section => ({
     ...section,
-    items: section.items.filter(item => {
-      // Filter by role - default to 'creator' if no role specified
-      if (item.roles && !item.roles.includes(userRole)) {
-        return false;
-      }
-      // For Pro-only features, show them to Pro users, or show disabled to non-Pro users
-      // We'll show the section but handle access in the click handler
-      return true;
-    })
+    items: section.items.filter(item => !item.roles || item.roles.includes(userRole))
   })).filter(section => section.items.length > 0);
 
-  // Filter items by search query
   const filteredSections = searchQuery
     ? visibleSections.map(section => ({
-        ...section,
-        items: section.items.filter(item =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      })).filter(section => section.items.length > 0)
+      ...section,
+      items: section.items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    })).filter(section => section.items.length > 0)
     : visibleSections;
 
-  // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        isOpen &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
+      if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && window.innerWidth < 1024) {
         setIsOpen(false);
       }
     };
-
-    // Close on escape key
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, setIsOpen]);
 
-  // Handle item click
   const handleItemClick = (path: string) => {
-    // Pro check removed for testing phase - Consumer Complaints available to all
-    // const item = menuSections
-    //   .flatMap(s => s.items)
-    //   .find(i => i.path === path);
-    // 
-    // if (item?.isPro && !isProUser) {
-    //   navigate(`/upgrade?source=consumer-complaints`, { replace: false });
-    //   if (window.innerWidth < 1024) {
-    //     setIsOpen(false);
-    //   }
-    //   return;
-    // }
-
-    // Close sidebar on mobile/tablet (only keep open on desktop)
-    if (window.innerWidth < 1024) {
-      setIsOpen(false);
-    }
-
-    // Handle query params for tab navigation
-    if (path.includes('?')) {
-      const [basePath, query] = path.split('?');
-      navigate(`${basePath}?${query}`, { replace: false });
-      
-      // For dashboard tabs, scroll to the appropriate section after a small delay
-      if (basePath === '/creator-dashboard') {
-        setTimeout(() => {
-          const tab = query.split('=')[1];
-          if (tab) {
-            const sectionMap: Record<string, string> = {
-              insights: '[data-section="ai-insights"]',
-              calendar: '[data-section="calendar-sync"]',
-              documents: '[data-section="documents-vault"]',
-              disputes: '[data-section="disputes-center"]',
-              invoices: '[data-section="invoice-generator"]',
-            };
-            
-            const selector = sectionMap[tab];
-            if (selector) {
-              const element = document.querySelector(selector);
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }
-          }
-        }, 300);
-      }
-    } else {
-      navigate(path, { replace: false });
-    }
+    if (window.innerWidth < 1024) setIsOpen(false);
+    navigate(path);
   };
 
-  // Check if path is active
   const isActive = (path: string) => {
-    const currentPath = location.pathname;
-    const basePath = path.split('?')[0];
-    
-    if (basePath === '/creator-dashboard') {
-      const currentTab = new URLSearchParams(location.search).get('tab');
-      const pathTab = path.split('tab=')[1];
-      return currentPath === basePath && (currentTab === pathTab || (!currentTab && !pathTab));
-    }
-    return currentPath === basePath || currentPath.startsWith(basePath + '/');
+    const [basePath] = path.split('?');
+    return location.pathname === basePath;
   };
 
-  // Get user display name and email
-  const userName = profile 
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
-    : 'User';
-  const userEmail = user?.email || undefined;
+  const userName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'User';
+  const userEmail = user?.email;
+
+  const renderSidebarContent = () => (
+    <>
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      {(profile || (!profile && !user)) && (
+        <UserCard
+          name={profile ? userName : 'Demo Creator'}
+          email={profile ? userEmail : 'demo@creatorarmour.com'}
+          avatarUrl={profile?.avatar_url || null}
+        />
+      )}
+      <div className="px-2 py-2 flex-1 overflow-y-auto custom-scrollbar">
+        {filteredSections.map((section) => (
+          <SidebarSection
+            key={section.title}
+            section={section}
+            isActive={isActive}
+            onItemClick={handleItemClick}
+            isProUser={isProUser}
+          />
+        ))}
+      </div>
+      <div className="mt-auto border-t border-white/5 p-4">
+        <SidebarItem
+          item={{ name: "Settings", icon: Settings, path: "/creator-profile", iconColor: "#8E8E93" }}
+          isActive={location.pathname === "/creator-profile"}
+          onClick={() => handleItemClick("/creator-profile")}
+        />
+      </div>
+    </>
+  );
 
   return (
     <>
-      {/* Backdrop for mobile */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/40 backdrop-blur-md z-[140] lg:hidden"
             onClick={() => setIsOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       {isPreview ? (
-        // Always visible on desktop for preview - use static positioning
-        <div
-          ref={sidebarRef}
-          className={cn(
-            "flex flex-shrink-0 flex-col",
-            "h-[calc(100dvh-4rem)] w-[320px] overflow-y-auto",
-            "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-            "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
-            "relative z-10",
-            className
-          )}
-        >
-          {/* Search Bar */}
-          <SearchBar 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
-          />
-
-          {/* User Card */}
-          {(profile || (!profile && !user)) && (
-            <UserCard 
-              name={profile ? userName : 'Demo Creator'}
-              email={profile ? userEmail : 'demo@creatorarmour.com'}
-              avatarUrl={profile?.avatar_url || null}
-            />
-          )}
-
-          {/* Menu Sections */}
-          <div className="px-2 py-2">
-            {filteredSections.map((section) => (
-              <SidebarSection
-                key={section.title}
-                section={section}
-                isActive={isActive}
-                onItemClick={handleItemClick}
-                isProUser={isProUser}
-              />
-            ))}
-          </div>
+        <div className={cn("flex flex-shrink-0 flex-col h-screen w-[280px] bg-[#0B0F14]/60 backdrop-blur-2xl border-r border-white/5 relative z-10", className)}>
+          {renderSidebarContent()}
         </div>
       ) : (
-        // Normal behavior: always visible on desktop, slide-in on mobile
         <>
-          {/* Desktop: Always visible */}
-          <div
-            ref={sidebarRef}
-            className={cn(
-              "flex flex-shrink-0 flex-col",
-              "h-[calc(100dvh-4rem)] w-[320px] overflow-y-auto",
-              "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-              "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
-              "relative z-10",
-              className
-            )}
-          >
-            {/* Search Bar */}
-            <SearchBar 
-              searchQuery={searchQuery} 
-              setSearchQuery={setSearchQuery} 
-            />
-
-            {/* User Card */}
-            {(profile || (!profile && !user)) && (
-              <UserCard 
-                name={profile ? userName : 'Demo Creator'}
-                email={profile ? userEmail : 'demo@creatorarmour.com'}
-                avatarUrl={profile?.avatar_url || null}
-              />
-            )}
-
-            {/* Menu Sections */}
-            <div className="px-2 py-2">
-              {filteredSections.map((section) => (
-                <SidebarSection
-                  key={section.title}
-                  section={section}
-                  isActive={isActive}
-                  onItemClick={handleItemClick}
-                  isProUser={isProUser}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile: Slide-in when open (only on small screens) */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {isOpen && (
               <motion.div
-                ref={sidebarRef}
-                initial={{ opacity: 0, x: '-100%' }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: '-100%' }}
-                transition={{
-                  type: "spring",
-                  damping: 25,
-                  stiffness: 200
-                }}
-                className={cn(
-                  "lg:hidden fixed top-16 left-0 flex flex-col",
-                  "h-[calc(100dvh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
-                  "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-                  "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
-                  "z-[150] rounded-r-2xl",
-                  className
-                )}
+                key="desktop-sidebar"
+                initial={{ x: -280, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -280, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className={cn("hidden lg:flex flex-shrink-0 flex-col h-screen sticky top-0 w-[280px] bg-[#0B0F14]/80 backdrop-blur-2xl border-r border-white/5 z-[100]", className)}
               >
-            {/* Search Bar */}
-            <SearchBar 
-              searchQuery={searchQuery} 
-              setSearchQuery={setSearchQuery} 
-            />
-
-            {/* User Card */}
-            {(profile || (!profile && !user)) && (
-              <UserCard 
-                name={profile ? userName : 'Demo Creator'}
-                email={profile ? userEmail : 'demo@creatorarmour.com'}
-                avatarUrl={profile?.avatar_url || null}
-              />
+                {renderSidebarContent()}
+              </motion.div>
             )}
+          </AnimatePresence>
 
-            {/* Menu Sections */}
-            <div className="px-2 py-2">
-              {filteredSections.map((section) => (
-                <SidebarSection
-                  key={section.title}
-                  section={section}
-                  isActive={isActive}
-                  onItemClick={handleItemClick}
-                  isProUser={isProUser}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <AnimatePresence mode="wait">
+            {isOpen && (
+              <motion.div
+                key="mobile-sidebar"
+                initial={{ x: '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className={cn("lg:hidden fixed top-0 left-0 flex flex-col h-screen w-[280px] max-w-[85vw] bg-[#0B0F14]/95 backdrop-blur-2xl border-r border-white/10 z-[155] rounded-r-2xl", className)}
+              >
+                {renderSidebarContent()}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </>
