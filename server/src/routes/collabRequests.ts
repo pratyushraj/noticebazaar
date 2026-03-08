@@ -176,8 +176,9 @@ const startRegisteredCreatorBackgroundSync = (profile: any) => {
       };
       if (typeof instaData.followers === 'number') updatePayload.instagram_followers = instaData.followers;
       if (instaData.profile_photo) updatePayload.instagram_profile_photo = instaData.profile_photo;
-      // Optional enrichment: only backfill bio if creator hasn't set one already.
+      // Optional enrichment: only backfill bio/name if creator hasn't set them already.
       if (!profile.bio && instaData.bio) updatePayload.bio = instaData.bio;
+      if (!profile.business_name && instaData.full_name) updatePayload.business_name = instaData.full_name;
 
       await supabase
         .from('profiles')

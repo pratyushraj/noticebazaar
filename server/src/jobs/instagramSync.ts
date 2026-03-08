@@ -33,6 +33,12 @@ export const syncSingleCreatorInstagram = async (
   if (typeof data.followers === 'number') payload.instagram_followers = data.followers;
   if (data.profile_photo) payload.instagram_profile_photo = data.profile_photo;
 
+  // Optional enrichment: only backfill name if creator hasn't set business_name yet.
+  const { data: currentProfile } = await supabase.from('profiles').select('business_name').eq('id', creatorId).maybeSingle();
+  if (!currentProfile?.business_name && data.full_name) {
+    payload.business_name = data.full_name;
+  }
+
   const { error: updateError } = await supabase
     .from('profiles')
     .update(payload as any)
@@ -74,6 +80,12 @@ export const syncInstagramStats = async (): Promise<{ checked: number; updated: 
     };
     if (data.followers !== null) payload.instagram_followers = data.followers;
     if (data.profile_photo) payload.instagram_profile_photo = data.profile_photo;
+
+    // Enrich name if missing
+    const { data: currentProfile } = await supabase.from('profiles').select('business_name').eq('id', creatorId).maybeSingle();
+    if (!currentProfile?.business_name && data.full_name) {
+      payload.business_name = data.full_name;
+    }
 
     const { error: updateError } = await supabase
       .from('profiles')

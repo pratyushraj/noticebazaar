@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
@@ -136,10 +136,10 @@ const RESERVED_USERNAMES = [
 ];
 
 const DELIVERABLE_OPTIONS = [
-  { label: 'Reel', value: 'Instagram Reel', icon: <Clapperboard className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
-  { label: 'Post', value: 'Post', icon: <ImageIcon className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
-  { label: 'Story', value: 'Story', icon: <FileText className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
-  { label: 'YouTube', value: 'YouTube Video', icon: <Youtube className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+  { label: 'Reel', value: 'Instagram Reel', icon: <span className="mr-1.5">🎬</span> },
+  { label: 'Post', value: 'Post', icon: <span className="mr-1.5">📷</span> },
+  { label: 'Story', value: 'Story', icon: <span className="mr-1.5">📱</span> },
+  { label: 'YouTube', value: 'YouTube Video', icon: <span className="mr-1.5">▶</span> },
   { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
 ];
 
@@ -1092,7 +1092,7 @@ const CollabLinkLanding = () => {
   );
   const isContactReady = Boolean(isValidBrandEmail && brandAddress.trim().length >= 15);
   const ctaStepStatus = !hasStartedOffer ? 'create' : (currentStep === 3 ? 'send' : 'next');
-  const ctaLabel = ctaStepStatus === 'create' ? 'Send Collaboration Offer' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collaboration Offer';
+  const ctaLabel = ctaStepStatus === 'create' ? 'Send Secure Collaboration Offer' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Secure Collaboration Offer';
   const ctaHelper = ctaStepStatus === 'create'
     ? 'Takes 20 seconds'
     : ctaStepStatus === 'next'
@@ -1326,7 +1326,7 @@ const CollabLinkLanding = () => {
     ? new Date(deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Not set';
   const formatFollowers = (n?: number | null) => {
-    if (n === null || n === undefined || Number.isNaN(n)) return '';
+    if (n === null || n === undefined || Number.isNaN(n) || n === 0) return 'Verified Account';
     if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
     if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
     return `${n}`;
@@ -1456,13 +1456,13 @@ const CollabLinkLanding = () => {
                     <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
                   </div>
                 </div>
-                {primaryFollowers ? (
+                {primaryFollowers && primaryFollowers > 0 ? (
                   <span className="text-[13px] text-slate-500 font-semibold mt-0.5">
-                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · {formatFollowers(primaryFollowers)} followers · Open to collabs
+                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · {formatFollowers(primaryFollowers)} Instagram · Open to collabs
                   </span>
                 ) : (
                   <span className="text-[13px] text-slate-500 font-semibold mt-0.5">
-                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · Verified Creator Profile
+                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · Verified Creator Account · Open to collabs
                   </span>
                 )}
               </div>
@@ -1568,11 +1568,15 @@ const CollabLinkLanding = () => {
               <div className="flex flex-col gap-2 z-10 w-full relative">
                 <div className="flex items-center gap-2.5 w-full">
                   <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                  <span className="text-[12px] font-bold tracking-wide">50+ Brands Use Creator Armour</span>
+                  <span className="text-[12px] font-bold tracking-wide">50+ Brands Trust Creator Armour</span>
                 </div>
                 <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
                   <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                  <span className="text-[12px] font-bold tracking-wide">Legal Contracts</span>
+                  <span className="text-[12px] font-bold tracking-wide">Legally Binding Contracts</span>
+                </div>
+                <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
+                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                  <span className="text-[12px] font-bold tracking-wide">Secure Payments (Escrow)</span>
                 </div>
                 <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
                   <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
@@ -1700,12 +1704,12 @@ const CollabLinkLanding = () => {
               <AccordionContent className="p-0">
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-px bg-slate-100">
                   <div className="bg-white px-4 py-3 text-left">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Followers</p>
-                    <p className="text-[18px] font-black text-slate-900 leading-tight">{formatFollowers(primaryFollowers)}</p>
-                  </div>
-                  <div className="bg-white px-4 py-3 text-left">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Avg Reel Views</p>
                     <p className="text-[18px] font-black text-slate-900 leading-tight">{avgReelViews ? `${Math.round(Number(avgReelViews) / 1000)}K` : '120K'}</p>
+                  </div>
+                  <div className="bg-white px-4 py-3 text-left">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Followers</p>
+                    <p className="text-[18px] font-black text-slate-900 leading-tight">{(primaryFollowers && primaryFollowers > 0) ? formatFollowers(primaryFollowers) : 'Verified'}</p>
                   </div>
                   <div className="bg-white px-4 py-3 text-left">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Engagement</p>
@@ -1721,7 +1725,7 @@ const CollabLinkLanding = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
                       <div>
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2">Typical Creator Rate</h4>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2">Typical Reel Rate</h4>
                         <div className="grid grid-cols-1 gap-2">
                           {[
                             { label: 'Instagram Reel', rate: (creator as any).typical_reel_rate || '₹8K – ₹15K' },
@@ -1749,6 +1753,10 @@ const CollabLinkLanding = () => {
                         <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
                           <span className="text-slate-500 font-medium flex items-center gap-2"><FileText className="h-3.5 w-3.5" />GST / Invoice</span>
                           <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 text-[10px]">GST INVOICE READY</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                          <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5 text-blue-500" />Reply Time</span>
+                          <span className="font-bold text-slate-800">~24 hours</span>
                         </div>
                         <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
                           <span className="text-slate-500 font-medium flex items-center gap-2"><Wallet className="h-3.5 w-3.5" />Payment Methods</span>
@@ -1795,6 +1803,13 @@ const CollabLinkLanding = () => {
 
                         <div className="pt-4">
                           <div className="bg-white/50 border border-slate-200 rounded-xl p-3">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-pink-500" /> Best fit for</p>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              {['Lifestyle', 'Tech', 'Fashion', 'Beauty'].map(cat => (
+                                <span key={cat} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{cat}</span>
+                              ))}
+                            </div>
+
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Supports</p>
                             <div className="flex flex-wrap gap-1.5">
                               {['Product Review', 'App Promotion', 'Event Appearance'].map(cat => (
@@ -1891,7 +1906,7 @@ const CollabLinkLanding = () => {
                         setCampaignDescription(e.target.value);
                         if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
                       }}
-                      placeholder={`Example:\nLaunch new sneaker collection.\nLooking for 1 reel + 2 stories.\nTarget audience: Gen-Z India.`}
+                      placeholder={`Example:\nLaunching a new sneaker collection.\nLooking for:\n• 1 Reel\n• 2 Stories\n\nTarget audience: Gen-Z India.`}
                       className={`bg-slate-50 border-slate-200 rounded-2xl min-h-[140px] text-slate-900 placeholder:text-slate-400 focus:ring-teal-500/30 focus:border-teal-400 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400' : ''}`}
                     />
                     <div className="flex items-center justify-between">
@@ -2245,7 +2260,7 @@ const CollabLinkLanding = () => {
                   <ChevronRight className="w-3 h-3 text-slate-300" />
                   <div className="flex flex-col items-center gap-1.5 w-14"><FileCheck className="w-4 h-4 text-emerald-500" /><span>Contract Generated</span></div>
                   <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5 w-14"><Lock className="w-4 h-4 text-emerald-500" /><span>Funds Secured</span></div>
+                  <div className="flex flex-col items-center gap-1.5 w-14"><Lock className="w-4 h-4 text-emerald-500" /><span>Funds Secured (Escrow)</span></div>
                   <ChevronRight className="w-3 h-3 text-slate-300" />
                   <div className="flex flex-col items-center gap-1.5 w-14"><Clapperboard className="w-4 h-4 text-emerald-500" /><span>Content Delivered</span></div>
                 </div>
@@ -2337,7 +2352,7 @@ const CollabLinkLanding = () => {
                         <p className="text-[11px] font-black text-white">
                           {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
                           <span className="mx-1.5 text-slate-600">·</span>
-                          {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>No deliverables selected</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
+                          {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>Add deliverables to create an offer</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
                           {deliverables.length > 0 && deadline && (
                             <>
                               <span className="mx-1.5 text-slate-600">·</span>
