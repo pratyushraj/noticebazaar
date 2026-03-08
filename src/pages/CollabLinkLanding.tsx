@@ -1457,9 +1457,13 @@ const CollabLinkLanding = () => {
                   </div>
                 </div>
                 {primaryFollowers ? (
-                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">{formatFollowers(primaryFollowers)} followers · Open to collabs</span>
+                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">
+                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · {formatFollowers(primaryFollowers)} followers · Open to collabs
+                  </span>
                 ) : (
-                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">Verified Creator Profile</span>
+                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">
+                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · Verified Creator Profile
+                  </span>
                 )}
               </div>
             </div>
