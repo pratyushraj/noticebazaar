@@ -978,9 +978,10 @@ router.get('/:username', async (req: Request, res: Response) => {
       : null;
     let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || null;
     let resolvedBio: string | null = profile.bio || null;
+    let resolvedName: string | null = profile.business_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || null;
 
     // If public Instagram data is missing or followers are 0, fetch a cached public fallback for better collab-page UX.
-    if (profile.instagram_handle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio)) {
+    if (profile.instagram_handle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio || !resolvedName)) {
       try {
         const instagramData = await getCachedInstagramPublicData(profile.instagram_handle);
         if (!resolvedInstagramFollowers && typeof instagramData?.followers === 'number') {
@@ -991,6 +992,9 @@ router.get('/:username', async (req: Request, res: Response) => {
         }
         if (!resolvedBio && instagramData?.bio) {
           resolvedBio = instagramData.bio;
+        }
+        if (!resolvedName && instagramData?.full_name) {
+          resolvedName = instagramData.full_name;
         }
       } catch (fallbackError: any) {
         console.warn('[CollabRequests] Registered creator Instagram fallback skipped:', fallbackError?.message || fallbackError);
@@ -1034,9 +1038,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     // Get creator name
-    const creatorName = profile.business_name ||
-      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
-      'Creator';
+    const creatorName = resolvedName || profile.instagram_handle || 'Creator';
 
     // Public trust metrics for conversion (safe aggregates only)
     let trustStats: {
