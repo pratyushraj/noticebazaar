@@ -1434,35 +1434,47 @@ const CollabLinkLanding = () => {
       <div className="min-h-screen bg-[#0B0F14] selection:bg-blue-500/30">
         <div className="container mx-auto px-4 pt-4 pb-0 md:py-6 md:pb-28 max-w-lg md:max-w-[960px] relative">
           {/* Header - Deal Desk Intake Portal */}
-          <div className="mb-4 pt-2 md:mb-8 md:pt-4">
-            <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10 shrink-0">
-                {creator.profile_photo ? (
-                  <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-white/5 text-white font-bold text-lg">
-                    {creator.name.slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+          <div className="mb-6 pt-2 md:mb-10 md:pt-4 relative">
+            {/* Ambient glow behind hero */}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
+              {/* Avatar with ring */}
+              <div className="relative shrink-0">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-white/15 shadow-xl">
+                  {creator.profile_photo ? (
+                    <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-violet-700 text-white font-black text-xl">
+                      {creator.name.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                {/* Online indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#0B0F14]" />
               </div>
+
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <h2 className="text-base font-medium text-white/90">{creator.name}</h2>
-                  <CheckCircle2 className="h-3.5 w-3.5 text-blue-400" />
+                  <h2 className="text-[17px] font-black text-white leading-tight">{creator.name}</h2>
+                  <div className="flex items-center gap-1 bg-blue-500/15 border border-blue-400/20 rounded-full px-2 py-0.5">
+                    <CheckCircle2 className="h-3 w-3 text-blue-400" />
+                    <span className="text-[10px] font-black text-blue-300 uppercase tracking-wider">Verified</span>
+                  </div>
                 </div>
                 {primaryFollowers ? (
-                  <span className="text-[13px] text-white/50">{formatFollowers(primaryFollowers)} Verified Reach</span>
+                  <span className="text-[13px] text-white/50 font-semibold mt-0.5">{formatFollowers(primaryFollowers)} followers · Open to collabs</span>
                 ) : (
-                  <span className="text-[13px] text-white/50">Verified Profile</span>
+                  <span className="text-[13px] text-white/50 font-semibold mt-0.5">Verified Creator Profile</span>
                 )}
               </div>
             </div>
 
-            <div className="max-w-xl">
-              <h1 className={`text-3xl md:text-4xl font-bold tracking-tight text-white mb-2 ${typePageTitle}`}>
+            <div className="max-w-xl relative">
+              <h1 className={`text-[30px] md:text-4xl font-black tracking-tight text-white mb-2.5 leading-tight ${typePageTitle}`}>
                 Send Offer to {creator.name.split(' ')[0]}
               </h1>
-              <p className="text-[15px] text-white/60 leading-relaxed max-w-md">
+              <p className="text-[15px] text-white/55 leading-relaxed max-w-md">
                 Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
               </p>
             </div>
@@ -1736,36 +1748,65 @@ const CollabLinkLanding = () => {
           </div>
         </div>
 
-        {/* Trust & Safety Block */}
-        <div className="mt-6 mb-2 md:mt-12 md:mb-12 space-y-4">
-          <div className="grid grid-cols-1 gap-3 px-2 md:px-0">
+        {/* Trust & Safety Block - premium redesign */}
+        <div className="mt-5 mb-4 md:mt-12 md:mb-10">
+          <div className="grid grid-cols-3 gap-2 px-0">
             {[
-              { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 text-emerald-400" /> },
-              { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 text-emerald-400" /> },
-              { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 text-emerald-400" /> }
+              { label: 'Contract auto-generated', icon: <FileCheck className="h-5 w-5 text-emerald-400" />, desc: 'Legal & binding' },
+              { label: 'Payment secured', icon: <ShieldCheck className="h-5 w-5 text-blue-400" />, desc: 'Dispute protected' },
+              { label: 'Deliverables verified', icon: <BadgeCheck className="h-5 w-5 text-violet-400" />, desc: 'Creator accountable' },
             ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2 text-sm font-medium text-white/70">
-                <div className="shrink-0 bg-emerald-500/10 p-1 rounded-full">{item.icon}</div>
-                {item.label}
+              <div key={idx} className="flex flex-col items-center text-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md px-2 py-4">
+                <div className={`shrink-0 rounded-xl p-2.5 ${idx === 0 ? 'bg-emerald-500/10 border border-emerald-500/20' :
+                    idx === 1 ? 'bg-blue-500/10 border border-blue-500/20' :
+                      'bg-violet-500/10 border border-violet-500/20'
+                  }`}>{item.icon}</div>
+                <div>
+                  <p className="text-[11px] font-black text-white/80 leading-tight">{item.label}</p>
+                  <p className="text-[10px] text-white/40 mt-0.5 font-semibold">{item.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Mobile-first collapsed audience snapshot */}
-        <div className="md:hidden mt-6 mb-6 rounded-xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur-md">
-          <h3 className="text-base font-semibold text-white">Audience Fit Snapshot</h3>
-          <div className="mt-3 space-y-4">
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-              <p className="text-xs text-white/60 inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-sky-400" />Engagement Quality</p>
-              <p className="text-sm text-white mt-1">{mobileEngagementLabel}</p>
+        {/* Mobile-first collapsed audience snapshot - premium */}
+        <div className="md:hidden mt-4 mb-5 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md overflow-hidden">
+          {/* Header row */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-sky-500/15 border border-sky-500/20 flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 text-sky-400" />
+              </div>
+              <h3 className="text-[15px] font-black text-white">Audience Fit Snapshot</h3>
             </div>
             {audienceRegionLabel && (
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-xs font-semibold text-cyan-100">
-                  <MapPin className="h-4 w-4 text-sky-400" />
-                  {audienceRegionLabel} Audience
-                </p>
+              <span className="flex items-center gap-1 text-[10px] font-black text-cyan-300 bg-cyan-500/10 border border-cyan-400/20 rounded-full px-2 py-1 uppercase tracking-wide">
+                <MapPin className="w-3 h-3" />{audienceRegionLabel}
+              </span>
+            )}
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-px bg-white/5">
+            <div className="bg-[#0B0F14] px-4 py-3">
+              <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-sky-400" /> Engagement</p>
+              <p className="text-[14px] font-black text-white leading-tight">{mobileEngagementLabel}</p>
+            </div>
+            <div className="bg-[#0B0F14] px-4 py-3">
+              <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Response Time</p>
+              <p className="text-[14px] font-black text-white leading-tight">{sameDayResponseLine}</p>
+            </div>
+            {primaryFollowers > 0 && (
+              <div className="bg-[#0B0F14] px-4 py-3">
+                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Followers</p>
+                <p className="text-[14px] font-black text-white leading-tight">{formatFollowers(primaryFollowers)}</p>
+              </div>
+            )}
+            {pastBrandCount > 0 && (
+              <div className="bg-[#0B0F14] px-4 py-3">
+                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Brand Deals</p>
+                <p className="text-[14px] font-black text-white leading-tight">{pastBrandCount} done</p>
               </div>
             )}
           </div>
@@ -1773,84 +1814,77 @@ const CollabLinkLanding = () => {
           <button
             type="button"
             onClick={() => setShowMobileAudienceDetails((prev) => !prev)}
-            className="mt-3 w-full rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm font-semibold text-slate-100"
+            className="w-full px-4 py-3 text-[12px] font-black text-white/60 flex items-center justify-center gap-2 hover:bg-white/5 transition-all border-t border-white/10"
           >
-            {showMobileAudienceDetails ? 'Hide Audience Details' : 'View Audience Details'}
+            {showMobileAudienceDetails ? 'Hide Audience Details ↑' : 'View Audience Details ↓'}
           </button>
 
           {showMobileAudienceDetails && (
-            <div className="mt-4 space-y-4">
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60">Followers</p>
-                <p className="text-sm text-white mt-1">{primaryFollowers ? `${formatFollowers(primaryFollowers)}` : '—'}</p>
+            <div className="px-4 pb-4 pt-3 space-y-3 border-t border-white/10">
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1.5">Content Impact</p>
+                <p className="text-[13px] text-white font-semibold">Avg Reel Views: {avgReelViews ? Number(avgReelViews).toLocaleString('en-IN') : '—'}</p>
+                <p className="text-[13px] text-white font-semibold">Avg Likes: {avgLikes ? Number(avgLikes).toLocaleString('en-IN') : '—'}</p>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60">Content Impact</p>
-                <p className="text-sm text-white mt-1">Avg Reel Views: {avgReelViews ? `${Number(avgReelViews).toLocaleString('en-IN')}` : '—'}</p>
-                <p className="text-sm text-white">Avg Likes: {avgLikes ? `${Number(avgLikes).toLocaleString('en-IN')}` : '—'}</p>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1.5">
+                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1.5">Creator Context</p>
+                <p className="text-[13px] text-white/80 font-semibold">• {audienceFitLine}</p>
+                <p className="text-[13px] text-white/80 font-semibold">• {recentActivityNote}</p>
+                <p className="text-[13px] text-white/80 font-semibold">• {campaignSlotNoteText}</p>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                <p className="text-xs text-white/60">Brand Experience</p>
-                <p className="text-sm text-white mt-1">Past Collaborations: {pastBrandCount ?? 0}</p>
-                <p className="text-sm text-white mt-1">Response Time: {avgResponseHours || 1} hr</p>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                <p className="text-xs text-white/60">Creator Context</p>
-                <p className="text-sm text-white">• {audienceFitLine}</p>
-                <p className="text-sm text-white">• {recentActivityNote}</p>
-                <p className="text-sm text-white">• {campaignSlotNoteText}</p>
-                <p className="text-sm text-white inline-flex items-center gap-2"><Clock className="h-4 w-4 text-sky-400" />{sameDayResponseLine}</p>
-              </div>
-              {(genderRows || audienceCities.length > 0 || creator.audience_age_range || creator.posting_frequency || audienceLanguage) && (
-                <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-1">
-                  <p className="text-xs text-white/60">Audience Profile</p>
-                  {genderRows && <p className="text-sm text-white">Gender: {genderRows.join(' / ')}</p>}
-                  {audienceCities.length > 0 && <p className="text-sm text-white">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
-                  {creator.audience_age_range && <p className="text-sm text-white">Age: {creator.audience_age_range}</p>}
-                  {creator.posting_frequency && <p className="text-sm text-white">Posting: {creator.posting_frequency}</p>}
-                  {audienceLanguage && <p className="text-sm text-white">Language: {audienceLanguage}</p>}
+              {(genderRows || audienceCities.length > 0 || creator.audience_age_range || audienceLanguage) && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-1">
+                  <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1.5">Audience Profile</p>
+                  {genderRows && <p className="text-[13px] text-white/80 font-semibold">Gender: {genderRows.join(' / ')}</p>}
+                  {audienceCities.length > 0 && <p className="text-[13px] text-white/80 font-semibold">Top Cities: {audienceCities.slice(0, 3).join(', ')}</p>}
+                  {creator.audience_age_range && <p className="text-[13px] text-white/80 font-semibold">Age: {creator.audience_age_range}</p>}
+                  {audienceLanguage && <p className="text-[13px] text-white/80 font-semibold">Language: {audienceLanguage}</p>}
                 </div>
-              )}
-              {hasEngagementAndRegion && (
-                <p className="text-xs text-slate-100/75 px-1">
-                  Brands in similar categories have collaborated successfully.
-                </p>
               )}
             </div>
           )}
         </div>
 
-        {/* Quick Deal Builder */}
-        <div className="md:hidden mt-6 mb-1 flex items-center gap-3 px-2">
+        {/* Quick Deal Builder label */}
+        <div className="md:hidden mt-5 mb-2 flex items-center gap-3">
           <div className="h-[1px] flex-1 bg-white/10" />
-          <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Propose Collaboration</span>
+          <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Propose Collaboration</span>
           <div className="h-[1px] flex-1 bg-white/10" />
         </div>
 
-        <p className="md:hidden text-center text-[10px] font-bold text-emerald-400 uppercase tracking-[0.1em] mb-1">
-          Used by 50+ brands to close deals safely
-        </p>
-        <p className="md:hidden text-center text-xs text-slate-100/65 mb-1">
-          Takes less than 20 seconds
-        </p>
-        <div className="md:hidden flex items-center justify-center gap-1.5 mb-3 text-[10px] text-slate-100/70">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Protected by contract & payment tracking</span>
+        {/* Social proof banner */}
+        <div className="md:hidden mb-3 mx-0">
+          <div className="flex flex-col items-center gap-1 rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3">
+            <p className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.12em]">✓ Used by 50+ brands to close deals safely</p>
+            <p className="text-[11px] text-white/50 font-semibold">Takes less than 20 seconds</p>
+            <div className="flex items-center gap-1.5 text-[10px] text-white/60 font-semibold">
+              <ShieldCheck className="h-3 w-3 text-emerald-400" />
+              <span>Protected by contract & payment tracking</span>
+            </div>
+          </div>
         </div>
 
-        <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-6 mb-6 md:mb-16 text-white border border-white/15 bg-gradient-to-b from-white/[0.10] to-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/30 relative transition-all duration-200 ease-out`}>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className={`text-xl font-bold tracking-tight ${typeSectionTitle}`}>
-              {currentStep === 1 ? 'Campaign Details' : currentStep === 2 ? 'Deliverables & Budget' : 'Brand & Contact Info'}
-            </h2>
+        <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-8 mb-6 md:mb-16 text-white border border-white/15 bg-gradient-to-b from-white/[0.10] to-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/40 relative transition-all duration-200 ease-out`}>
+          {/* Subtle gradient top accent */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-t-[28px]" />
+
+          <div className="flex items-center justify-between mb-7">
+            <div>
+              <h2 className={`text-[20px] font-black tracking-tight text-white leading-tight ${typeSectionTitle}`}>
+                {currentStep === 1 ? 'Campaign Details' : currentStep === 2 ? 'Deliverables & Budget' : 'Brand & Contact Info'}
+              </h2>
+              <p className="text-[11px] text-white/40 font-semibold mt-0.5 uppercase tracking-wider">
+                {currentStep === 1 ? 'Tell us about your campaign' : currentStep === 2 ? 'What content & how much?' : 'Your brand contact & billing'}
+              </p>
+            </div>
             <div className="flex items-center gap-1.5">
               {[1, 2, 3].map((step) => (
                 <div
                   key={step}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-blue-500' : step < currentStep ? 'w-1.5 bg-emerald-500' : 'w-1.5 bg-white/20'}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-blue-500' : step < currentStep ? 'w-3 bg-emerald-500' : 'w-1.5 bg-white/20'}`}
                 />
               ))}
-              <span className="ml-2 text-[10px] font-bold text-slate-100/40 uppercase tracking-wider">Step {currentStep} of 3</span>
+              <span className="ml-2 text-[10px] font-black text-slate-100/40 uppercase tracking-wider">Step {currentStep} of 3</span>
             </div>
           </div>
 
