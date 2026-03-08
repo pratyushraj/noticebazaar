@@ -1878,33 +1878,33 @@ const CollabLinkLanding = () => {
 
         {/* Quick Deal Builder label */}
         <div className="md:hidden mt-5 mb-2 flex items-center gap-3">
-          <div className="h-[1px] flex-1 bg-white/10" />
-          <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Propose Collaboration</span>
-          <div className="h-[1px] flex-1 bg-white/10" />
+          <div className="h-[1px] flex-1 bg-slate-200" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Propose Collaboration</span>
+          <div className="h-[1px] flex-1 bg-slate-200" />
         </div>
 
         {/* Social proof banner */}
         <div className="md:hidden mb-3 mx-0">
-          <div className="flex flex-col items-center gap-1 rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3">
-            <p className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.12em]">✓ Used by 50+ brands to close deals safely</p>
-            <p className="text-[11px] text-white/50 font-semibold">Takes less than 20 seconds</p>
-            <div className="flex items-center gap-1.5 text-[10px] text-white/60 font-semibold">
-              <ShieldCheck className="h-3 w-3 text-emerald-400" />
+          <div className="flex flex-col items-center gap-1 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3">
+            <p className="text-[11px] font-black text-emerald-700 uppercase tracking-[0.12em]">✓ Used by 50+ brands to close deals safely</p>
+            <p className="text-[11px] text-slate-500 font-semibold">Takes less than 20 seconds</p>
+            <div className="flex items-center gap-1.5 text-[10px] text-slate-600 font-semibold">
+              <ShieldCheck className="h-3 w-3 text-emerald-600" />
               <span>Protected by contract & payment tracking</span>
             </div>
           </div>
         </div>
 
-        <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-8 mb-6 md:mb-16 text-white border border-white/15 bg-gradient-to-b from-white/[0.10] to-white/[0.04] backdrop-blur-xl shadow-2xl shadow-black/40 relative transition-all duration-200 ease-out`}>
+        <div id="core-offer-form" className={`mt-2 md:mt-16 rounded-[28px] p-5 md:p-8 mb-6 md:mb-16 text-slate-900 border border-slate-200 bg-white shadow-xl shadow-black/5 relative transition-all duration-200 ease-out`}>
           {/* Subtle gradient top accent */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-t-[28px]" />
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-500 rounded-t-[28px]" />
 
           <div className="flex items-center justify-between mb-7">
             <div>
-              <h2 className={`text-[20px] font-black tracking-tight text-white leading-tight ${typeSectionTitle}`}>
+              <h2 className={`text-[20px] font-black tracking-tight text-slate-900 leading-tight ${typeSectionTitle}`}>
                 {currentStep === 1 ? 'Campaign Details' : currentStep === 2 ? 'Deliverables & Budget' : 'Brand & Contact Info'}
               </h2>
-              <p className="text-[11px] text-white/40 font-semibold mt-0.5 uppercase tracking-wider">
+              <p className="text-[11px] text-slate-400 font-semibold mt-0.5 uppercase tracking-wider">
                 {currentStep === 1 ? 'Tell us about your campaign' : currentStep === 2 ? 'What content & how much?' : 'Your brand contact & billing'}
               </p>
             </div>
@@ -1913,13 +1913,13 @@ const CollabLinkLanding = () => {
                 {[1, 2, 3].map((step) => (
                   <div
                     key={step}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-blue-500' : step < currentStep ? 'w-3 bg-emerald-500' : 'w-1.5 bg-white/20'}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-teal-500' : step < currentStep ? 'w-3 bg-emerald-500' : 'w-1.5 bg-slate-200'}`}
                   />
                 ))}
               </div>
               <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-wider">
                 {['Creator', 'Deliverables', 'Legal'].map((label, i) => (
-                  <span key={label} className={i + 1 === currentStep ? 'text-blue-400' : i + 1 < currentStep ? 'text-emerald-400' : 'text-white/20'}>{label}</span>
+                  <span key={label} className={i + 1 === currentStep ? 'text-teal-600' : i + 1 < currentStep ? 'text-emerald-600' : 'text-slate-300'}>{label}</span>
                 ))}
               </div>
             </div>
@@ -1928,15 +1928,15 @@ const CollabLinkLanding = () => {
           {currentStep === 1 && (
             <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               {/* Campaign Category - Added for Step 1 refinement */}
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <label className={`block text-slate-100/90 mb-3 ${typeLabel} inline-flex items-center gap-2`}><Target className="h-4 w-4 text-slate-400" />Project Category</label>
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
+                <label className={`block text-slate-700 mb-3 ${typeLabel} inline-flex items-center gap-2`}><Target className="h-4 w-4 text-teal-600" />Project Category</label>
                 <div className="flex flex-wrap gap-2">
                   {['General', 'Lifestyle', 'Fashion', 'Tech', 'Food', 'Beauty', 'Gaming'].map((cat) => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setCampaignCategory(cat)}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${campaignCategory === cat ? 'bg-white text-black border-white' : 'bg-white/[0.05] text-slate-300 border-white/10 hover:bg-white/[0.10]'}`}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${campaignCategory === cat ? 'bg-teal-600 text-white border-teal-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:bg-teal-50'}`}
                     >
                       {cat}
                     </button>
@@ -1945,9 +1945,9 @@ const CollabLinkLanding = () => {
               </div>
 
               <div id="campaign-goal-field" className="space-y-3">
-                <label className={`flex items-center gap-2 text-[10px] font-bold text-slate-200/65 uppercase tracking-wider ${typeLabel}`}>
+                <label className={`flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${typeLabel}`}>
                   <FileText className="h-3.5 w-3.5 text-slate-400" />
-                  What is your campaign goal? <span className="text-red-400 ml-0.5">*</span>
+                  What is your campaign goal? <span className="text-red-500 ml-0.5">*</span>
                 </label>
                 <Textarea
                   value={campaignDescription}
@@ -1956,12 +1956,12 @@ const CollabLinkLanding = () => {
                     if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
                   }}
                   placeholder={`e.g. Promote our new organic skincare launch to Gen-Z in North India. Looking for authentic product review and 1 reel.`}
-                  className={`bg-white/[0.06] border-white/15 rounded-2xl min-h-[140px] text-white placeholder:text-slate-200/45 focus:ring-purple-500/30 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400/50' : ''}`}
+                  className={`bg-slate-50 border-slate-200 rounded-2xl min-h-[140px] text-slate-900 placeholder:text-slate-400 focus:ring-teal-500/30 focus:border-teal-400 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400' : ''}`}
                 />
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-slate-100/50">Minimum 20 characters for a quality proposal</p>
+                  <p className="text-[10px] text-slate-400">Minimum 20 characters for a quality proposal</p>
                   {campaignDescription.length > 0 && campaignDescription.length < 20 && (
-                    <p className="text-[10px] text-amber-400 font-bold">{20 - campaignDescription.length} more chars</p>
+                    <p className="text-[10px] text-amber-600 font-bold">{20 - campaignDescription.length} more chars</p>
                   )}
                 </div>
               </div>
@@ -1970,9 +1970,9 @@ const CollabLinkLanding = () => {
 
           <div className={`space-y-6 md:space-y-8 ${currentStep === 1 ? 'hidden' : ''}`}>
             {/* Deal Type */}
-            <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
               <div className="flex items-center justify-between gap-3">
-                <span className={`inline-flex items-center gap-2 text-sm text-slate-100/90 ${typeLabel}`}><Target className="h-4 w-4 text-slate-400" />Deal Type</span>
+                <span className={`inline-flex items-center gap-2 text-sm text-slate-700 ${typeLabel}`}><Target className="h-4 w-4 text-teal-600" />Deal Type</span>
                 <Select
                   value={collabType}
                   onValueChange={(value: CollabType) => {
@@ -1985,56 +1985,61 @@ const CollabLinkLanding = () => {
                     }
                   }}
                 >
-                  <SelectTrigger className="h-9 w-[190px] bg-transparent border-0 p-0 text-right text-white font-bold">
+                  <SelectTrigger className="h-9 w-[190px] bg-transparent border-0 p-0 text-right text-slate-900 font-bold">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-400" />Paid Deal</span></SelectItem>
-                    <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-400" />Product Exchange</span></SelectItem>
-                    <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-400" />Cash + Product</span></SelectItem>
+                    <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-500" />Paid Deal</span></SelectItem>
+                    <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-500" />Product Exchange</span></SelectItem>
+                    <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-500" />Cash + Product</span></SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {collabType === 'barter' && (
-                <p className="text-xs text-slate-100/75 mt-2">
+                <p className="text-xs text-slate-500 mt-2">
                   Creator may request partial cash + product
                 </p>
               )}
             </div>
 
-            {/* Budget – Hero Card */}
+            {/* Budget – Hero Card (Teal gradient like dashboard revenue) */}
             <div
               aria-hidden={collabType !== 'paid'}
               className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-[360px] translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
             >
-              <div className="rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-500/5 to-amber-500/[0.02] p-5">
+              <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 40%, #2dd4bf 70%, #34d399 100%)' }}>
                 {/* Label row */}
                 <div className="flex items-center justify-between mb-1">
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-amber-300/80 uppercase tracking-widest"><IndianRupee className="h-3.5 w-3.5" />Proposed Budget</span>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/90 uppercase tracking-widest"><IndianRupee className="h-3.5 w-3.5" />Proposed Budget</span>
                   {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
-                    <span className="text-[10px] font-bold text-white/40 bg-white/5 border border-white/10 rounded-lg px-2 py-0.5">
+                    <span className="text-[10px] font-bold text-white/70 bg-white/15 border border-white/20 rounded-lg px-2 py-0.5">
                       Typical: ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate).toLocaleString()} – ₹{(((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) * 1.6).toLocaleString()}
                     </span>
                   )}
                 </div>
                 {/* Big amount input */}
                 <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-[22px] font-black text-amber-300/70">₹</span>
+                  <span className="text-[22px] font-black text-white/80">₹</span>
                   <input
                     type="number"
                     value={exactBudget}
                     onChange={(e) => setExactBudget(e.target.value)}
                     placeholder="3,000"
-                    className="bg-transparent border-0 focus:ring-0 text-white font-black p-0 text-[32px] tracking-tight placeholder:text-white/20 w-full"
+                    className="bg-transparent border-0 focus:ring-0 text-white font-black p-0 text-[32px] tracking-tight placeholder:text-white/30 w-full"
                     style={{ lineHeight: 1 }}
                   />
                 </div>
                 {/* Escrow note */}
-                <div className="flex items-center gap-1.5 bg-emerald-500/8 border border-emerald-500/15 rounded-xl px-3 py-2">
-                  <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
-                  <p className="text-[11px] text-emerald-100/80 font-semibold">
+                <div className="flex items-center gap-1.5 bg-white/15 border border-white/20 rounded-xl px-3 py-2">
+                  <Lock className="w-3 h-3 text-white/80 shrink-0" />
+                  <p className="text-[11px] text-white/90 font-semibold">
                     Funds secured in escrow until deliverables are approved
                   </p>
+                </div>
+                {/* Secured badge like dashboard */}
+                <div className="mt-3 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-white/70" />
+                  <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Secured by Armour</span>
                 </div>
               </div>
             </div>
@@ -2043,32 +2048,32 @@ const CollabLinkLanding = () => {
               aria-hidden={collabType !== 'barter'}
               className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'barter' ? 'opacity-100 max-h-60 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
             >
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Package className="h-4 w-4 text-amber-400" />Estimated Product / Service Value</span>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700"><Package className="h-4 w-4 text-amber-500" />Estimated Product / Service Value</span>
                   <div className="relative flex items-center">
-                    <span className="text-slate-200/70 font-bold mr-1">₹</span>
+                    <span className="text-slate-500 font-bold mr-1">₹</span>
                     <input
                       type="number"
                       value={barterValue}
                       onChange={(e) => setBarterValue(e.target.value)}
                       placeholder="3000"
-                      className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
+                      className="bg-transparent border-0 text-right w-24 focus:ring-0 text-slate-900 font-bold p-0 text-base placeholder:text-slate-300"
                     />
                   </div>
                 </div>
-                <p className="text-xs text-slate-100/65 mt-2">Helps creator evaluate collaboration value.</p>
-                <p className="text-xs text-slate-100/60 mt-1">Used only for collaboration fairness.</p>
+                <p className="text-xs text-slate-500 mt-2">Helps creator evaluate collaboration value.</p>
+                <p className="text-xs text-slate-400 mt-1">Used only for collaboration fairness.</p>
               </div>
             </div>
 
           </div>
 
           {/* Deliverables – Premium Selectable Cards */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-100/60 uppercase tracking-widest"><Clapperboard className="h-3.5 w-3.5 text-slate-400" />Content Requested</span>
-              {deliverables.length > 0 && <span className="text-[10px] font-black text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-full px-2 py-0.5">{deliverables.length} selected</span>}
+              <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-widest"><Clapperboard className="h-3.5 w-3.5 text-slate-400" />Content Requested</span>
+              {deliverables.length > 0 && <span className="text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">{deliverables.length} selected</span>}
             </div>
             <div className="grid grid-cols-2 gap-2">
               {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
@@ -2078,8 +2083,8 @@ const CollabLinkLanding = () => {
                   <div
                     key={item.label}
                     className={`rounded-2xl border-2 transition-all cursor-pointer ${active
-                        ? 'border-fuchsia-400/50 bg-gradient-to-br from-fuchsia-500/10 to-violet-600/10 shadow-[0_0_20px_rgba(192,86,234,0.10)]'
-                        : 'border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.08]'
+                      ? 'border-teal-400 bg-teal-50 shadow-sm'
+                      : 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50/50'
                       }`}
                   >
                     <button
@@ -2089,24 +2094,24 @@ const CollabLinkLanding = () => {
                     >
                       <span className="text-2xl leading-none">{item.icon}</span>
                       <div className="flex-1">
-                        <p className={`text-[14px] font-black leading-tight ${active ? 'text-white' : 'text-slate-300'}`}>{item.label}</p>
-                        {active && <p className="text-[10px] text-fuchsia-300/70 font-bold mt-0.5">✓ Selected</p>}
+                        <p className={`text-[14px] font-black leading-tight ${active ? 'text-teal-800' : 'text-slate-600'}`}>{item.label}</p>
+                        {active && <p className="text-[10px] text-teal-600 font-bold mt-0.5">✓ Selected</p>}
                       </div>
                     </button>
                     {active && (
-                      <div className="flex items-center justify-between border-t border-white/10 px-3 pb-2.5 pt-2">
-                        <span className="text-[10px] font-semibold text-white/50">Qty</span>
+                      <div className="flex items-center justify-between border-t border-teal-200 px-3 pb-2.5 pt-2">
+                        <span className="text-[10px] font-semibold text-slate-400">Qty</span>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => updateDeliverableQuantity(item.value, qty - 1)}
-                            className="w-6 h-6 rounded-lg bg-white/10 text-white font-black text-sm flex items-center justify-center hover:bg-white/20 active:scale-90 transition-all"
+                            className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-black text-sm flex items-center justify-center hover:bg-slate-200 active:scale-90 transition-all"
                           >−</button>
-                          <span className="text-[15px] font-black text-white w-5 text-center">{qty}</span>
+                          <span className="text-[15px] font-black text-slate-900 w-5 text-center">{qty}</span>
                           <button
                             type="button"
                             onClick={() => updateDeliverableQuantity(item.value, qty + 1)}
-                            className="w-6 h-6 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 font-black text-sm flex items-center justify-center hover:bg-fuchsia-500/30 active:scale-90 transition-all"
+                            className="w-6 h-6 rounded-lg bg-teal-100 text-teal-700 font-black text-sm flex items-center justify-center hover:bg-teal-200 active:scale-90 transition-all"
                           >+</button>
                         </div>
                       </div>
@@ -2118,27 +2123,27 @@ const CollabLinkLanding = () => {
           </div>
 
           {/* Timeline & Validity */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
             {/* Campaign Go-Live Date */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-100/60 uppercase tracking-widest"><Calendar className="h-3.5 w-3.5 text-sky-400" />Campaign Go-Live Date</span>
+                <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-widest"><Calendar className="h-3.5 w-3.5 text-teal-600" />Campaign Go-Live Date</span>
               </div>
-              <div className="flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-xl px-3.5 py-2.5">
-                <span className="text-[13px] text-white/50 font-semibold flex items-center gap-2">📅 Select date</span>
+              <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3.5 py-2.5">
+                <span className="text-[13px] text-slate-400 font-semibold flex items-center gap-2">📅 Select date</span>
                 <input
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm w-auto"
+                  className="bg-transparent border-0 text-right focus:ring-0 text-slate-900 font-bold p-0 text-sm w-auto"
                 />
               </div>
-              <p className="text-[10px] text-amber-300/70 font-semibold mt-1.5 flex items-center gap-1">⚡ Creator usually needs 3–5 days production time</p>
+              <p className="text-[10px] text-amber-600 font-semibold mt-1.5 flex items-center gap-1">⚡ Creator usually needs 3–5 days production time</p>
             </div>
 
             {/* Offer Validity – Preset Chips */}
-            <div className="border-t border-white/10 pt-4">
-              <p className="text-[11px] font-black text-slate-100/60 uppercase tracking-widest mb-2.5 flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-orange-300" />Offer expires in</p>
+            <div className="border-t border-slate-200 pt-4">
+              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2.5 flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-500" />Offer expires in</p>
               <div className="flex gap-2 flex-wrap">
                 {[
                   { label: '3 days', days: 3 },
@@ -2156,8 +2161,8 @@ const CollabLinkLanding = () => {
                       type="button"
                       onClick={() => setOfferExpiry(targetStr)}
                       className={`px-4 py-1.5 rounded-full text-[12px] font-black border transition-all active:scale-95 ${isActive
-                          ? 'bg-orange-400/20 border-orange-400/40 text-orange-300'
-                          : 'bg-white/[0.05] border-white/10 text-white/50 hover:border-white/20 hover:text-white'
+                        ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-700'
                         }`}
                     >
                       {label}
@@ -2166,25 +2171,25 @@ const CollabLinkLanding = () => {
                 })}
               </div>
               {offerExpiry && (
-                <p className="text-[10px] text-white/30 font-semibold mt-2">Expires: {new Date(offerExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                <p className="text-[10px] text-slate-400 font-semibold mt-2">Expires: {new Date(offerExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
               )}
             </div>
           </div>
 
           {/* --- STEP 3: Brand Details --- */}
           <div className={`space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 ${currentStep === 3 ? '' : 'hidden'}`}>
-            <div className="bg-white/[0.06] rounded-[24px] p-5 border border-white/15">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-1">
-                <Building2 className="h-5 w-5 text-amber-400" />
+            <div className="bg-slate-50 rounded-[24px] p-5 border border-slate-200">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1">
+                <Building2 className="h-5 w-5 text-amber-500" />
                 Brand & Contact
               </h3>
-              <p className="text-xs text-slate-100/60 mb-6">Required for the collaboration contract</p>
+              <p className="text-xs text-slate-500 mb-6">Required for the collaboration contract</p>
 
               <form id="collab-request-form" ref={formRef} onSubmit={handleSubmit} className="space-y-5">
 
                 <div>
-                  <label className={`block text-white mb-2 ${typeLabel}`}>
-                    <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-300" />Brand Name <span className="text-red-400">*</span></span>
+                  <label className={`block text-slate-700 mb-2 ${typeLabel}`}>
+                    <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-400" />Brand Name <span className="text-red-500">*</span></span>
                   </label>
                   <Input
                     type="text"
@@ -2195,16 +2200,16 @@ const CollabLinkLanding = () => {
                     }}
                     required
                     placeholder="Official Company / Brand Name"
-                    className={`${inputClass} border-white/20 bg-black/20 focus:bg-black/40 ${errors.brandName ? 'border-red-400/50' : ''}`}
+                    className={`${inputClass} border-slate-200 bg-white focus:bg-white focus:border-teal-400 text-slate-900 placeholder:text-slate-400 ${errors.brandName ? 'border-red-400' : ''}`}
                   />
                   {errors.brandName && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandName}</p>
+                    <p className="text-xs text-red-500 mt-1">{errors.brandName}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className={`block text-white mb-2 ${typeLabel}`}>
-                    <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4 text-slate-300" />Work Email <span className="text-red-400">*</span></span>
+                  <label className={`block text-slate-700 mb-2 ${typeLabel}`}>
+                    <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4 text-slate-400" />Work Email <span className="text-red-500">*</span></span>
                   </label>
                   <Input
                     type="email"
@@ -2215,16 +2220,16 @@ const CollabLinkLanding = () => {
                     }}
                     required
                     placeholder="you@company.com"
-                    className={`${inputClass} border-white/20 bg-black/20 focus:bg-black/40 ${errors.brandEmail ? 'border-red-400/50' : ''}`}
+                    className={`${inputClass} border-slate-200 bg-white focus:bg-white focus:border-teal-400 text-slate-900 placeholder:text-slate-400 ${errors.brandEmail ? 'border-red-400' : ''}`}
                   />
                   {errors.brandEmail && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandEmail}</p>
+                    <p className="text-xs text-red-500 mt-1">{errors.brandEmail}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className={`block text-white mb-2 ${typeLabel}`}>
-                    <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-300" />Company Address <span className="text-red-400">*</span></span>
+                  <label className={`block text-slate-700 mb-2 ${typeLabel}`}>
+                    <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4 text-slate-400" />Company Address <span className="text-red-500">*</span></span>
                   </label>
                   <Textarea
                     value={brandAddress}
@@ -2235,18 +2240,18 @@ const CollabLinkLanding = () => {
                     required
                     placeholder="Full registered address for invoicing..."
                     rows={2}
-                    className={`${inputClass} min-h-[70px] border-white/20 bg-black/20 focus:bg-black/40 ${errors.brandAddress ? 'border-red-400/50' : ''}`}
+                    className={`${inputClass} min-h-[70px] border-slate-200 bg-white focus:bg-white focus:border-teal-400 text-slate-900 placeholder:text-slate-400 ${errors.brandAddress ? 'border-red-400' : ''}`}
                   />
                   {errors.brandAddress && (
-                    <p className="text-xs text-red-400 mt-1">{errors.brandAddress}</p>
+                    <p className="text-xs text-red-500 mt-1">{errors.brandAddress}</p>
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-white/10">
+                <div className="pt-2 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={() => setShowOptionalBrandDetails(prev => !prev)}
-                    className="flex items-center gap-2 text-sm font-bold text-slate-100/80 hover:text-white transition-colors"
+                    className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
                   >
                     <span className={showOptionalBrandDetails ? 'rotate-180 transition-transform' : 'transition-transform'}><ChevronDown className="h-4 w-4" /></span>
                     Optional Brand Details
@@ -2256,7 +2261,7 @@ const CollabLinkLanding = () => {
                     <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className={`block text-xs text-slate-100/70 mb-1.5 ${typeLabel}`}>
+                          <label className={`block text-xs text-slate-500 mb-1.5 ${typeLabel}`}>
                             Website
                           </label>
                           <Input
@@ -2264,11 +2269,11 @@ const CollabLinkLanding = () => {
                             value={brandWebsite}
                             onChange={(e) => setBrandWebsite(e.target.value)}
                             placeholder="example.com"
-                            className={`${inputClass} h-9 border-white/10`}
+                            className={`${inputClass} h-9 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400`}
                           />
                         </div>
                         <div>
-                          <label className={`block text-xs text-slate-100/70 mb-1.5 ${typeLabel}`}>
+                          <label className={`block text-xs text-slate-500 mb-1.5 ${typeLabel}`}>
                             Instagram
                           </label>
                           <Input
@@ -2276,19 +2281,19 @@ const CollabLinkLanding = () => {
                             value={brandInstagram}
                             onChange={(e) => setBrandInstagram(e.target.value)}
                             placeholder="@brand"
-                            className={`${inputClass} h-9 border-white/10`}
+                            className={`${inputClass} h-9 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400`}
                           />
                         </div>
                       </div>
                       {collabType !== 'paid' && (
-                        <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                          <h4 className="text-xs font-bold text-white mb-2">Product Image</h4>
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <h4 className="text-xs font-bold text-slate-700 mb-2">Product Image</h4>
                           <input
                             type="file"
                             accept="image/jpeg,image/png,image/webp,image/gif"
                             onChange={handleBarterImageChange}
                             disabled={barterImageUploading}
-                            className="block w-full text-xs text-white/80 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-500/30 file:text-slate-200 file:text-xs file:font-medium"
+                            className="block w-full text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-teal-50 file:text-teal-700 file:text-xs file:font-medium"
                           />
                         </div>
                       )}
@@ -2299,26 +2304,26 @@ const CollabLinkLanding = () => {
             </div>
 
             {/* Secure Trust Indicators inline in Step 3 */}
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-sm text-emerald-100">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-sm text-emerald-800">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
                 <span className="font-semibold">Secured by Creator Armour</span>
               </div>
-              <p className="text-xs text-emerald-100/70 pl-6">Your details are only shared once the creator accepts the collaboration proposal.</p>
+              <p className="text-xs text-emerald-700/70 pl-6">Your details are only shared once the creator accepts the collaboration proposal.</p>
             </div>
           </div>
 
           {/* Global Footer Elements */}
           <div className="mt-8 flex flex-col items-center">
-            <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-100/60 mb-3">
-              <Lock className="h-3 w-3 text-emerald-400" />
+            <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 mb-3">
+              <Lock className="h-3 w-3 text-emerald-600" />
               <span>End-to-End Encrypted Data</span>
             </div>
 
             <button
               type="button"
               onClick={() => setShowSaveDraftModal(true)}
-              className="text-xs text-slate-100/80 hover:text-white border border-white/20 hover:border-white/40 rounded-xl px-4 py-2 transition-colors bg-white/[0.03] hover:bg-white/[0.08]"
+              className="text-xs text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-400 rounded-xl px-4 py-2 transition-colors bg-slate-50 hover:bg-slate-100"
             >
               Save and continue later
             </button>
@@ -2385,19 +2390,19 @@ const CollabLinkLanding = () => {
               </DialogContent>
             </Dialog>
             {/* Sticky Bottom CTA (mobile compact) */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
               <div className="relative">
                 {showSubmittingTrust && (
-                  <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-violet-300/30 animate-ping" />
+                  <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
                 )}
                 <Button
                   onClick={handleStickySubmit}
                   disabled={submitting}
-                  className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white font-bold text-base shadow-[0_12px_35px_rgba(74,0,224,0.4)] border-t border-white/20 active:scale-[0.99]"
+                  className="w-full h-12 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-base shadow-lg shadow-teal-500/20 border-t border-white/20 active:scale-[0.99]"
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center gap-2">
-                      <Lock className="h-5 w-5 text-slate-100" />
+                      <Lock className="h-5 w-5 text-white" />
                       Processing Offer...
                     </span>
                   ) : (
@@ -2405,16 +2410,16 @@ const CollabLinkLanding = () => {
                   )}
                 </Button>
               </div>
-              <p className="text-center text-[11px] text-slate-100/70 mt-2">
+              <p className="text-center text-[11px] text-slate-500 mt-2">
                 {showSubmittingTrust ? 'Your offer is being processed securely' : ctaHelper}
               </p>
               {showSubmittingTrust && (
-                <div className="mt-2 space-y-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2">
+                <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
                   {submittingChecklist.map((step, idx) => {
                     const complete = idx <= submitChecklistStep;
                     return (
-                      <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-200 opacity-100 translate-y-0' : 'text-slate-100/50 opacity-70 translate-y-0.5'}`}>
-                        <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-400' : 'text-slate-200/50'}`} />
+                      <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-700 opacity-100 translate-y-0' : 'text-slate-400 opacity-70 translate-y-0.5'}`}>
+                        <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-500' : 'text-slate-300'}`} />
                         <span>{step}</span>
                       </div>
                     );
@@ -2424,22 +2429,22 @@ const CollabLinkLanding = () => {
             </div>
 
             {/* Sticky Bottom CTA (desktop full) */}
-            <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-[#0E061E] via-[#0E061E]/95 to-transparent backdrop-blur-md">
+            <div className="hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
               <div className="relative max-w-4xl mx-auto">
-                <div className="absolute inset-0 bg-blue-600/30 blur-[40px] rounded-full animate-pulse -z-10" />
+                <div className="absolute inset-0 bg-teal-500/15 blur-[40px] rounded-full animate-pulse -z-10" />
                 {showSubmittingTrust && (
-                  <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-violet-300/30 animate-ping" />
+                  <div className="pointer-events-none absolute inset-0 -z-10 rounded-[24px] border border-teal-300/30 animate-ping" />
                 )}
                 {ctaStepStatus === 'create' && (
-                  <p className="text-center text-xs text-slate-100/85 mb-2 inline-flex w-full items-center justify-center gap-2">
-                    <Clock className="h-4 w-4 text-sky-400" />
+                  <p className="text-center text-xs text-slate-500 mb-2 inline-flex w-full items-center justify-center gap-2">
+                    <Clock className="h-4 w-4 text-teal-600" />
                     Most brands receive a response the same day
                   </p>
                 )}
                 <Button
                   onClick={handleStickySubmit}
                   disabled={submitting}
-                  className={`w-full h-16 rounded-[24px] bg-gradient-to-r from-[#8E2DE2] to-[#4A00E0] text-white text-[16px] font-semibold shadow-xl border-t border-white/20 transition-all active:scale-95 ${elevationLevel3}`}
+                  className={`w-full h-16 rounded-[24px] bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-[16px] font-semibold shadow-xl shadow-teal-500/20 border-t border-white/20 transition-all active:scale-95 ${elevationLevel3}`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center gap-3">
