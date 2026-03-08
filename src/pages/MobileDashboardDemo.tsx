@@ -2017,307 +2017,6 @@ const MobileDashboardDemo = ({
                     )}
                 </div>
 
-                {/* ─── PAYMENT DETAILS PANEL ─── */}
-                <AnimatePresence>
-                    {selectedPayment && (() => {
-                        const pay = selectedPayment;
-                        const isPaid = (pay.status || '').toLowerCase().includes('paid') || (pay.status || '').toLowerCase().includes('complete');
-                        const isEscrow = (pay.payment_terms || '').toLowerCase().includes('escrow');
-                        const dueDate = pay.due_date || pay.payment_expected_date || pay.deadline;
-                        const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-                        const daysPast = dueDate ? Math.ceil((Date.now() - new Date(dueDate).getTime()) / 86400000) : 0;
-                        const invoiceId = pay.invoice_id || pay.id?.slice(0, 8).toUpperCase() || 'CA-' + Math.random().toString(36).slice(2, 8).toUpperCase();
-                        const signedDate = pay.contract_signed_at || pay.created_at;
-                        const signedDateStr = signedDate ? new Date(signedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
-
-                        const timelineSteps = [
-                            { label: 'Deal accepted', done: true },
-                            { label: 'Contract generated', done: true },
-                            { label: 'Content submitted', done: !!(pay.submission_link || pay.content_url) },
-                            { label: 'Payment pending', done: isPaid, active: !isPaid },
-                            { label: isPaid ? 'Payment received' : (daysPast > 0 ? 'Payment overdue' : 'Payment due soon'), done: isPaid, warn: !isPaid && daysPast > 0 },
-                        ];
-
-                        return (
-                            <motion.div
-                                key="payment-detail"
-                                initial={{ opacity: 0, x: '100%' }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: '100%' }}
-                                transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-                                className={cn(
-                                    "fixed inset-0 z-[200] flex flex-col",
-                                    isDark ? "bg-[#0B0F14]" : "bg-[#F9FAFB]"
-                                )}
-                            >
-                                {/* Header */}
-                                <div className={cn(
-                                    "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
-                                    isDark ? "bg-[#0B0F14]/95 backdrop-blur-md border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
-                                )}>
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
-                                            className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
-                                        >
-                                            <ChevronRight className="w-4 h-4 rotate-180" />
-                                        </button>
-                                        <div>
-                                            <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>Payment Details</h2>
-                                            <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
-                                        </div>
-                                    </div>
-                                    <span className={cn(
-                                        "text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border",
-                                        isPaid
-                                            ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700")
-                                            : (isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600")
-                                    )}>
-                                        {isPaid ? 'Paid' : 'Overdue'}
-                                    </span>
-                                </div>
-
-                                {/* Scrollable body */}
-                                <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 space-y-4">
-
-                                    {/* ── BRAND HEADER ── */}
-                                    <div className={cn("rounded-2xl border p-4 flex items-start gap-4", cardBgColor, borderColor)}>
-                                        <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0",
-                                            isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                                        )}>
-                                            {getBrandIcon(pay.brand_logo_url || pay.logo_url, pay.category, pay.brand_name)}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className={cn("text-[20px] font-black tracking-tight leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
-                                            <div className="flex items-center gap-1.5 mt-1 mb-2">
-                                                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2.5} />
-                                                <span className="text-[12px] font-bold text-blue-500">Verified Brand</span>
-                                            </div>
-                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>
-                                                {pay.campaign_name || pay.title || 'Instagram Reel Campaign'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* ── PAYMENT STATUS CARD ── */}
-                                    <div className={cn(
-                                        "rounded-2xl border p-5 relative overflow-hidden",
-                                        isPaid
-                                            ? (isDark ? "bg-emerald-500/5 border-emerald-500/25" : "bg-emerald-50 border-emerald-200")
-                                            : (isDark ? "bg-red-500/5 border-red-500/25" : "bg-red-50 border-red-200")
-                                    )}>
-                                        <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
-                                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-                                        <div className="relative">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-emerald-400/70" : "text-emerald-700/70") : (isDark ? "text-red-400/70" : "text-red-600/70"))}>
-                                                {isEscrow ? 'Escrow Status' : 'Payment Status'}
-                                            </p>
-                                            <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-600"))}>
-                                                {isPaid ? 'RECEIVED' : isEscrow ? 'IN ESCROW' : 'OVERDUE'}
-                                            </p>
-                                            <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>₹{(pay.deal_amount || 0).toLocaleString()}</p>
-                                            {isEscrow ? (
-                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Funds secured in escrow · Release after approval</p>
-                                            ) : isPaid ? (
-                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
-                                            ) : (
-                                                <div className="space-y-1">
-                                                    <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
-                                                    {daysPast > 0 && <p className="text-[11px] font-black text-red-500">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* ── DEAL BREAKDOWN ── */}
-                                    <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Deal Breakdown</p>
-                                        {[
-                                            { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel' },
-                                            { label: 'Deal Value', value: `₹${(pay.deal_amount || 0).toLocaleString()}` },
-                                            { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Barter' : '💰 Paid Campaign' },
-                                            { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
-                                        ].map((row, i) => (
-                                            <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
-                                                <span className={cn("text-[13px] font-semibold opacity-60", textColor)}>{row.label}</span>
-                                                <span className={cn("text-[13px] font-black", textColor)}>{row.value}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* ── TIMELINE ── */}
-                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-4 opacity-40", textColor)}>Deal Timeline</p>
-                                        <div className="space-y-0">
-                                            {timelineSteps.map((step, i) => (
-                                                <div key={i} className="flex items-start gap-3">
-                                                    <div className="flex flex-col items-center">
-                                                        <div className={cn(
-                                                            "w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[12px] font-black border-2",
-                                                            step.done
-                                                                ? "bg-emerald-500 border-emerald-500 text-white"
-                                                                : step.warn
-                                                                    ? "bg-red-500/10 border-red-500 text-red-500"
-                                                                    : step.active
-                                                                        ? (isDark ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-amber-50 border-amber-400 text-amber-600")
-                                                                        : (isDark ? "bg-white/5 border-white/20 text-white/20" : "bg-slate-100 border-slate-200 text-slate-400")
-                                                        )}>
-                                                            {step.done ? '✓' : step.warn ? '⚠' : step.active ? '⏳' : '·'}
-                                                        </div>
-                                                        {i < timelineSteps.length - 1 && (
-                                                            <div className={cn("w-0.5 h-6 mt-1", step.done ? "bg-emerald-500/40" : (isDark ? "bg-white/10" : "bg-slate-200"))} />
-                                                        )}
-                                                    </div>
-                                                    <p className={cn(
-                                                        "text-[13px] font-semibold pt-0.5 pb-5",
-                                                        step.done
-                                                            ? (isDark ? "text-emerald-400" : "text-emerald-700")
-                                                            : step.warn
-                                                                ? "text-red-500"
-                                                                : step.active
-                                                                    ? (isDark ? "text-amber-400" : "text-amber-600")
-                                                                    : (isDark ? "text-white/30" : "text-slate-400")
-                                                    )}>{step.label}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* ── CONTRACT ── */}
-                                    <div className={cn("rounded-2xl border p-4", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")}>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-                                                    <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
-                                                </div>
-                                                <div>
-                                                    <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-800")}>Creator Armour Protected</p>
-                                                    <p className={cn("text-[11px] font-semibold", isDark ? "text-emerald-400/60" : "text-emerald-700/70")}>Content Rights Agreement</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
-                                            className={cn(
-                                                "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
-                                                isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-500/10 border-emerald-400/30 text-emerald-700"
-                                            )}
-                                        >
-                                            <Download className="w-4 h-4" />
-                                            Download Contract PDF
-                                        </button>
-                                    </div>
-
-                                    {/* ── PAYMENT METADATA ── */}
-                                    <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Payment Details</p>
-                                        {[
-                                            { label: 'Invoice ID', value: invoiceId },
-                                            { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank Transfer' },
-                                            { label: 'Agreement Signed', value: signedDateStr },
-                                            { label: 'Escrow Protection', value: isEscrow ? '✓ Active' : 'Standard' },
-                                        ].map((row, i) => (
-                                            <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
-                                                <span className={cn("text-[12px] font-semibold opacity-60", textColor)}>{row.label}</span>
-                                                <span className={cn("text-[12px] font-black font-mono", textColor)}>{row.value}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* ── SUBMITTED CONTENT ── */}
-                                    {(pay.submission_link || pay.content_url) && (
-                                        <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Submitted Content</p>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xl">🎬</span>
-                                                    <div>
-                                                        <p className={cn("text-[13px] font-black", textColor)}>Instagram Reel</p>
-                                                        <p className={cn("text-[11px] font-semibold", secondaryTextColor)}>Submitted on time</p>
-                                                    </div>
-                                                </div>
-                                                <a
-                                                    href={pay.submission_link || pay.content_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={cn("text-[12px] font-black text-blue-500 border border-blue-500/20 px-3 py-1.5 rounded-xl active:scale-95 transition-all", isDark ? "bg-blue-500/10" : "bg-blue-50")}
-                                                >
-                                                    View Link
-                                                </a>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ── BRAND TRUST ── */}
-                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Brand Trust</p>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className={cn("rounded-xl p-3 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Response Time</p>
-                                                <p className={cn("text-[15px] font-black", textColor)}>~3 hours</p>
-                                            </div>
-                                            <div className={cn("rounded-xl p-3 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-                                                <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Campaigns</p>
-                                                <p className={cn("text-[15px] font-black", textColor)}>{pay.total_collabs || 21} done</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                {/* ── STICKY ACTION BAR ── */}
-                                {!isPaid && (
-                                    <div className={cn(
-                                        "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t space-y-2.5",
-                                        isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-white/10" : "bg-white/98 backdrop-blur-xl border-slate-100"
-                                    )}>
-                                        <motion.button
-                                            whileTap={{ scale: 0.97 }}
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                import('sonner').then(m => m.toast.success('Payment reminder sent to brand!', { description: 'They will be notified via email.' }));
-                                            }}
-                                            className="w-full py-3.5 rounded-2xl bg-amber-500 text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all"
-                                        >
-                                            <Bell className="w-4 h-4" /> Send Payment Reminder
-                                        </motion.button>
-                                        <div className="flex gap-2.5">
-                                            <motion.button
-                                                whileTap={{ scale: 0.97 }}
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    navigate('/creator-dashboard?tab=disputes');
-                                                }}
-                                                className={cn(
-                                                    "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all text-red-500",
-                                                    isDark ? "bg-red-500/10 border-red-500/20" : "bg-red-50 border-red-200"
-                                                )}
-                                            >
-                                                <AlertTriangle className="w-4 h-4" /> Open Dispute
-                                            </motion.button>
-                                            <motion.button
-                                                whileTap={{ scale: 0.97 }}
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    if (pay.contact_email) window.open(`mailto:${pay.contact_email}`);
-                                                    else import('sonner').then(m => m.toast('Brand contact not available'));
-                                                }}
-                                                className={cn(
-                                                    "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all",
-                                                    isDark ? "bg-white/5 border-white/10" : "bg-slate-100 border-slate-200",
-                                                    textColor
-                                                )}
-                                            >
-                                                <MessageSquare className="w-4 h-4" /> Contact Brand
-                                            </motion.button>
-                                        </div>
-                                    </div>
-                                )}
-                            </motion.div>
-                        );
-                    })()}
-                </AnimatePresence>
-
                 {/* ─── NAVIGATION BAR (Redesigned) ─── */}
                 <div
                     className={cn('fixed bottom-0 inset-x-0 border-t z-50 transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-slate-200 bg-white/90')}
@@ -3027,6 +2726,304 @@ const MobileDashboardDemo = ({
                     </div>
                 </DialogContent>
             </Dialog>
+            {/* ─── PAYMENT DETAILS PANEL (root level – no transform parent interference) ─── */}
+            <AnimatePresence>
+                {selectedPayment && (() => {
+                    const pay = selectedPayment;
+                    const isPaid = (pay.status || '').toLowerCase().includes('paid') || (pay.status || '').toLowerCase().includes('complete');
+                    const isEscrow = (pay.payment_terms || '').toLowerCase().includes('escrow');
+                    const dueDate = pay.due_date || pay.payment_expected_date || pay.deadline;
+                    const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+                    const daysPast = dueDate ? Math.ceil((Date.now() - new Date(dueDate).getTime()) / 86400000) : 0;
+                    const invoiceId = pay.invoice_id || pay.id?.slice(0, 8).toUpperCase() || 'CA-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+                    const signedDate = pay.contract_signed_at || pay.created_at;
+                    const signedDateStr = signedDate ? new Date(signedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+
+                    const timelineSteps = [
+                        { label: 'Deal accepted', done: true },
+                        { label: 'Contract generated', done: true },
+                        { label: 'Content submitted', done: !!(pay.submission_link || pay.content_url) },
+                        { label: 'Payment pending', done: isPaid, active: !isPaid },
+                        { label: isPaid ? 'Payment received' : (daysPast > 0 ? 'Payment overdue' : 'Payment due soon'), done: isPaid, warn: !isPaid && daysPast > 0 },
+                    ];
+
+                    return (
+                        <motion.div
+                            key="payment-detail"
+                            initial={{ opacity: 0, x: '100%' }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: '100%' }}
+                            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+                            className={cn(
+                                "fixed inset-0 z-[9999] flex flex-col",
+                                isDark ? "bg-[#0B0F14]" : "bg-[#F9FAFB]"
+                            )}
+                        >
+                            {/* Header */}
+                            <div className={cn(
+                                "px-5 py-3.5 flex items-center justify-between border-b",
+                                isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-100"
+                            )}>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
+                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                    >
+                                        <ChevronRight className="w-4 h-4 rotate-180" />
+                                    </button>
+                                    <div>
+                                        <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>Payment Details</h2>
+                                        <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
+                                    </div>
+                                </div>
+                                <span className={cn(
+                                    "text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border",
+                                    isPaid
+                                        ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700")
+                                        : (isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600")
+                                )}>
+                                    {isPaid ? 'Paid' : 'Overdue'}
+                                </span>
+                            </div>
+
+                            {/* Scrollable body */}
+                            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 space-y-4">
+
+                                {/* ── BRAND HEADER ── */}
+                                <div className={cn("rounded-2xl border p-4 flex items-start gap-4", cardBgColor, borderColor)}>
+                                    <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0",
+                                        isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
+                                    )}>
+                                        {getBrandIcon(pay.brand_logo_url || pay.logo_url, pay.category, pay.brand_name)}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className={cn("text-[20px] font-black tracking-tight leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
+                                        <div className="flex items-center gap-1.5 mt-1 mb-2">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2.5} />
+                                            <span className="text-[12px] font-bold text-blue-500">Verified Brand</span>
+                                        </div>
+                                        <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>
+                                            {pay.campaign_name || pay.title || 'Instagram Reel Campaign'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* ── PAYMENT STATUS CARD ── */}
+                                <div className={cn(
+                                    "rounded-2xl border p-5 relative overflow-hidden",
+                                    isPaid
+                                        ? (isDark ? "bg-emerald-500/5 border-emerald-500/25" : "bg-emerald-50 border-emerald-200")
+                                        : (isDark ? "bg-red-500/5 border-red-500/25" : "bg-red-50 border-red-200")
+                                )}>
+                                    <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                                    <div className="relative">
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-emerald-400/70" : "text-emerald-700/70") : (isDark ? "text-red-400/70" : "text-red-600/70"))}>
+                                            {isEscrow ? 'Escrow Status' : 'Payment Status'}
+                                        </p>
+                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-600"))}>
+                                            {isPaid ? 'RECEIVED' : isEscrow ? 'IN ESCROW' : 'OVERDUE'}
+                                        </p>
+                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>₹{(pay.deal_amount || 0).toLocaleString()}</p>
+                                        {isEscrow ? (
+                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Funds secured in escrow · Release after approval</p>
+                                        ) : isPaid ? (
+                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
+                                                {daysPast > 0 && <p className="text-[11px] font-black text-red-500">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* ── DEAL BREAKDOWN ── */}
+                                <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Deal Breakdown</p>
+                                    {[
+                                        { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel' },
+                                        { label: 'Deal Value', value: `₹${(pay.deal_amount || 0).toLocaleString()}` },
+                                        { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Barter' : '💰 Paid Campaign' },
+                                        { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
+                                    ].map((row, i) => (
+                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
+                                            <span className={cn("text-[13px] font-semibold opacity-60", textColor)}>{row.label}</span>
+                                            <span className={cn("text-[13px] font-black", textColor)}>{row.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* ── TIMELINE ── */}
+                                <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-4 opacity-40", textColor)}>Deal Timeline</p>
+                                    <div className="space-y-0">
+                                        {timelineSteps.map((step, i) => (
+                                            <div key={i} className="flex items-start gap-3">
+                                                <div className="flex flex-col items-center">
+                                                    <div className={cn(
+                                                        "w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[12px] font-black border-2",
+                                                        step.done
+                                                            ? "bg-emerald-500 border-emerald-500 text-white"
+                                                            : step.warn
+                                                                ? "bg-red-500/10 border-red-500 text-red-500"
+                                                                : step.active
+                                                                    ? (isDark ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-amber-50 border-amber-400 text-amber-600")
+                                                                    : (isDark ? "bg-white/5 border-white/20 text-white/20" : "bg-slate-100 border-slate-200 text-slate-400")
+                                                    )}>
+                                                        {step.done ? '✓' : step.warn ? '⚠' : step.active ? '⏳' : '·'}
+                                                    </div>
+                                                    {i < timelineSteps.length - 1 && (
+                                                        <div className={cn("w-0.5 h-6 mt-1", step.done ? "bg-emerald-500/40" : (isDark ? "bg-white/10" : "bg-slate-200"))} />
+                                                    )}
+                                                </div>
+                                                <p className={cn(
+                                                    "text-[13px] font-semibold pt-0.5 pb-5",
+                                                    step.done
+                                                        ? (isDark ? "text-emerald-400" : "text-emerald-700")
+                                                        : step.warn
+                                                            ? "text-red-500"
+                                                            : step.active
+                                                                ? (isDark ? "text-amber-400" : "text-amber-600")
+                                                                : (isDark ? "text-white/30" : "text-slate-400")
+                                                )}>{step.label}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* ── CONTRACT ── */}
+                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
+                                            <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
+                                        </div>
+                                        <div>
+                                            <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-800")}>Creator Armour Protected</p>
+                                            <p className={cn("text-[11px] font-semibold", isDark ? "text-emerald-400/60" : "text-emerald-700/70")}>Content Rights Agreement</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
+                                        className={cn(
+                                            "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
+                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-500/10 border-emerald-400/30 text-emerald-700"
+                                        )}
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Download Contract PDF
+                                    </button>
+                                </div>
+
+                                {/* ── PAYMENT METADATA ── */}
+                                <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Payment Details</p>
+                                    {[
+                                        { label: 'Invoice ID', value: invoiceId },
+                                        { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank Transfer' },
+                                        { label: 'Agreement Signed', value: signedDateStr },
+                                        { label: 'Escrow Protection', value: isEscrow ? '✓ Active' : 'Standard' },
+                                    ].map((row, i) => (
+                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
+                                            <span className={cn("text-[12px] font-semibold opacity-60", textColor)}>{row.label}</span>
+                                            <span className={cn("text-[12px] font-black font-mono", textColor)}>{row.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* ── SUBMITTED CONTENT ── */}
+                                {(pay.submission_link || pay.content_url) && (
+                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Submitted Content</p>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xl">🎬</span>
+                                                <div>
+                                                    <p className={cn("text-[13px] font-black", textColor)}>Instagram Reel</p>
+                                                    <p className={cn("text-[11px] font-semibold", secondaryTextColor)}>Submitted on time</p>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={pay.submission_link || pay.content_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={cn("text-[12px] font-black text-blue-500 border border-blue-500/20 px-3 py-1.5 rounded-xl active:scale-95 transition-all", isDark ? "bg-blue-500/10" : "bg-blue-50")}
+                                            >
+                                                View Link
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── BRAND TRUST ── */}
+                                <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
+                                    <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Brand Trust</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className={cn("rounded-xl p-3 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Response Time</p>
+                                            <p className={cn("text-[15px] font-black", textColor)}>~3 hours</p>
+                                        </div>
+                                        <div className={cn("rounded-xl p-3 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Campaigns</p>
+                                            <p className={cn("text-[15px] font-black", textColor)}>{pay.total_collabs || 21} done</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* ── STICKY ACTION BAR ── */}
+                            {!isPaid && (
+                                <div className={cn(
+                                    "px-5 pb-8 pt-4 border-t space-y-2.5",
+                                    isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-100"
+                                )}>
+                                    <motion.button
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            import('sonner').then(m => m.toast.success('Payment reminder sent to brand!', { description: 'They will be notified via email.' }));
+                                        }}
+                                        className="w-full py-3.5 rounded-2xl bg-amber-500 text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all"
+                                    >
+                                        <Bell className="w-4 h-4" /> Send Payment Reminder
+                                    </motion.button>
+                                    <div className="flex gap-2.5">
+                                        <motion.button
+                                            whileTap={{ scale: 0.97 }}
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                navigate('/creator-dashboard?tab=disputes');
+                                            }}
+                                            className={cn(
+                                                "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all text-red-500",
+                                                isDark ? "bg-red-500/10 border-red-500/20" : "bg-red-50 border-red-200"
+                                            )}
+                                        >
+                                            <AlertTriangle className="w-4 h-4" /> Open Dispute
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.97 }}
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                if (pay.contact_email) window.open(`mailto:${pay.contact_email}`);
+                                                else import('sonner').then(m => m.toast('Brand contact not available'));
+                                            }}
+                                            className={cn(
+                                                "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all",
+                                                isDark ? "bg-white/5 border-white/10" : "bg-slate-100 border-slate-200",
+                                                textColor
+                                            )}
+                                        >
+                                            <MessageSquare className="w-4 h-4" /> Contact Brand
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    );
+                })()}
+            </AnimatePresence>
         </div >
     );
 };
