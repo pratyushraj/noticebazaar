@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
-    LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
+    LayoutDashboard, CreditCard, Briefcase, Menu, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
     Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
     MessageCircle, Edit3, XCircle, ExternalLink, AlertCircle, ArrowRight
@@ -32,21 +32,6 @@ interface MobileDashboardProps {
 }
 
 // Minimal Status Badge for Deal Cards
-const StatusBadge = ({ status }: { status: string }) => {
-    const config: Record<string, { bg: string; text: string; label: string }> = {
-        'new': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'NEW' },
-        'pending': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'AWAITING REVIEW' },
-        'negotiating': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'IN NEGOTIATION' },
-        'active': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'ACTIVE' },
-        'completed': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'COMPLETED' },
-    };
-    const c = config[status?.toLowerCase()] ?? config['new'];
-    return (
-        <span className={cn('px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wider', c.bg, c.text)}>
-            {c.label}
-        </span>
-    );
-};
 
 // Animated Number Counter
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -219,6 +204,13 @@ const MobileDashboardDemo = ({
         };
         document.title = titles[activeTab] || 'CreatorArmour';
     }, [activeTab]);
+
+    // Reset scroll position to top when tab or sub-content changes
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
+        }
+    }, [activeTab, collabSubTab, activeSettingsPage]);
 
     const [pullDistance, setPullDistance] = useState(0);
     const [startY, setStartY] = useState(0);
