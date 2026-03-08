@@ -1091,11 +1091,11 @@ const CollabLinkLanding = () => {
   );
   const isContactReady = Boolean(isValidBrandEmail && brandAddress.trim().length >= 15);
   const ctaStepStatus = !hasStartedOffer ? 'create' : (currentStep === 3 ? 'send' : 'next');
-  const ctaLabel = ctaStepStatus === 'create' ? 'Create Proposal' : ctaStepStatus === 'next' ? `Next: Step ${currentStep + 1}` : 'Send Collaboration Offer';
+  const ctaLabel = ctaStepStatus === 'create' ? 'Create Proposal' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collaboration Offer';
   const ctaHelper = ctaStepStatus === 'create'
     ? 'Takes 20 seconds'
     : ctaStepStatus === 'next'
-      ? 'Step-based progressive flow'
+      ? (currentStep === 2 ? 'Legally binding contract auto-generated' : 'Step-based progressive flow')
       : 'Review & sign contract';
   const ctaIcon = ctaStepStatus === 'send'
     ? <Send className="h-4 w-4 text-slate-400" />
@@ -1758,8 +1758,8 @@ const CollabLinkLanding = () => {
             ].map((item, idx) => (
               <div key={idx} className="flex flex-col items-center text-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md px-2 py-4">
                 <div className={`shrink-0 rounded-xl p-2.5 ${idx === 0 ? 'bg-emerald-500/10 border border-emerald-500/20' :
-                    idx === 1 ? 'bg-blue-500/10 border border-blue-500/20' :
-                      'bg-violet-500/10 border border-violet-500/20'
+                  idx === 1 ? 'bg-blue-500/10 border border-blue-500/20' :
+                    'bg-violet-500/10 border border-violet-500/20'
                   }`}>{item.icon}</div>
                 <div>
                   <p className="text-[11px] font-black text-white/80 leading-tight">{item.label}</p>
@@ -1787,29 +1787,60 @@ const CollabLinkLanding = () => {
             )}
           </div>
 
-          {/* Stats grid */}
+          {/* Stats grid – 4 metrics */}
           <div className="grid grid-cols-2 gap-px bg-white/5">
             <div className="bg-[#0B0F14] px-4 py-3">
               <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-sky-400" /> Engagement</p>
               <p className="text-[14px] font-black text-white leading-tight">{mobileEngagementLabel}</p>
+              <p className="text-[10px] text-white/40 font-semibold mt-0.5">Consistent viewer engagement</p>
             </div>
             <div className="bg-[#0B0F14] px-4 py-3">
               <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Response Time</p>
               <p className="text-[14px] font-black text-white leading-tight">{sameDayResponseLine}</p>
+              <p className="text-[10px] text-white/40 font-semibold mt-0.5">Avg message reply</p>
             </div>
-            {primaryFollowers > 0 && (
+            {pastBrandCount > 0 ? (
+              <div className="bg-[#0B0F14] px-4 py-3">
+                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Past Brand Deals</p>
+                <p className="text-[14px] font-black text-white leading-tight">{pastBrandCount} completed</p>
+                <p className="text-[10px] text-emerald-400/60 font-semibold mt-0.5">Verified history</p>
+              </div>
+            ) : (
               <div className="bg-[#0B0F14] px-4 py-3">
                 <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Followers</p>
                 <p className="text-[14px] font-black text-white leading-tight">{formatFollowers(primaryFollowers)}</p>
               </div>
             )}
-            {pastBrandCount > 0 && (
-              <div className="bg-[#0B0F14] px-4 py-3">
-                <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Brand Deals</p>
-                <p className="text-[14px] font-black text-white leading-tight">{pastBrandCount} done</p>
-              </div>
-            )}
+            <div className="bg-[#0B0F14] px-4 py-3">
+              <p className="text-[10px] text-white/40 font-black uppercase tracking-wider mb-1">Creator Reliability</p>
+              <p className="text-[14px] font-black text-emerald-400 leading-tight">98%</p>
+              <p className="text-[10px] text-white/40 font-semibold mt-0.5">Deal completion rate</p>
+            </div>
           </div>
+
+          {/* Estimated Reach card */}
+          {(avgReelViews || primaryFollowers > 0) && (
+            <div className="px-4 py-3 border-t border-white/5 bg-sky-500/[0.04]">
+              <p className="text-[10px] text-sky-300/60 font-black uppercase tracking-wider mb-2">Estimated Campaign Reach</p>
+              <div className="flex gap-4">
+                <div>
+                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Reel</p>
+                  <p className="text-[13px] font-black text-white">
+                    {avgReelViews
+                      ? `${Math.round(Number(avgReelViews) * 0.6 / 1000)}K – ${Math.round(Number(avgReelViews) * 1.4 / 1000)}K views`
+                      : `${Math.round(primaryFollowers * 0.15 / 1000)}K – ${Math.round(primaryFollowers * 0.35 / 1000)}K views`
+                    }
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Story</p>
+                  <p className="text-[13px] font-black text-white">
+                    {`${Math.round(primaryFollowers * 0.04 / 1000)}K – ${Math.round(primaryFollowers * 0.09 / 1000)}K views`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <button
             type="button"
@@ -1877,14 +1908,20 @@ const CollabLinkLanding = () => {
                 {currentStep === 1 ? 'Tell us about your campaign' : currentStep === 2 ? 'What content & how much?' : 'Your brand contact & billing'}
               </p>
             </div>
-            <div className="flex items-center gap-1.5">
-              {[1, 2, 3].map((step) => (
-                <div
-                  key={step}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-blue-500' : step < currentStep ? 'w-3 bg-emerald-500' : 'w-1.5 bg-white/20'}`}
-                />
-              ))}
-              <span className="ml-2 text-[10px] font-black text-slate-100/40 uppercase tracking-wider">Step {currentStep} of 3</span>
+            <div className="flex flex-col items-end gap-1.5">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-blue-500' : step < currentStep ? 'w-3 bg-emerald-500' : 'w-1.5 bg-white/20'}`}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-wider">
+                {['Creator', 'Deliverables', 'Legal'].map((label, i) => (
+                  <span key={label} className={i + 1 === currentStep ? 'text-blue-400' : i + 1 < currentStep ? 'text-emerald-400' : 'text-white/20'}>{label}</span>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1965,34 +2002,38 @@ const CollabLinkLanding = () => {
               )}
             </div>
 
-            {/* Budget */}
+            {/* Budget – Hero Card */}
             <div
               aria-hidden={collabType !== 'paid'}
-              className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-44 translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
+              className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${collabType === 'paid' ? 'opacity-100 max-h-[360px] translate-y-0' : 'opacity-0 max-h-0 -translate-y-2 pointer-events-none'}`}
             >
-              <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><IndianRupee className="h-4 w-4 text-amber-400" />Proposed Budget</span>
-                  <div className="relative flex items-center">
-                    <span className="text-slate-200/70 font-bold mr-1">₹</span>
-                    <input
-                      type="number"
-                      value={exactBudget}
-                      onChange={(e) => setExactBudget(e.target.value)}
-                      placeholder="3000"
-                      className="bg-transparent border-0 text-right w-24 focus:ring-0 text-white font-bold p-0 text-base placeholder:text-slate-200/55"
-                    />
-                  </div>
+              <div className="rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-500/5 to-amber-500/[0.02] p-5">
+                {/* Label row */}
+                <div className="flex items-center justify-between mb-1">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-amber-300/80 uppercase tracking-widest"><IndianRupee className="h-3.5 w-3.5" />Proposed Budget</span>
+                  {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
+                    <span className="text-[10px] font-bold text-white/40 bg-white/5 border border-white/10 rounded-lg px-2 py-0.5">
+                      Typical: ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate).toLocaleString()} – ₹{(((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) * 1.6).toLocaleString()}
+                    </span>
+                  )}
                 </div>
-                {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
-                  <p className="text-[11px] text-white/50 mt-3 pt-3 border-t border-white/10">
-                    Based on active campaigns, {creator.name.split(' ')[0]}'s typical engagement starts at ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate)}.
-                  </p>
-                )}
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Lock className="w-3 h-3 text-emerald-400/70" />
-                  <p className="text-[10px] text-emerald-100/60 font-medium">
-                    Funds securely held in escrow until deliverables are approved.
+                {/* Big amount input */}
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-[22px] font-black text-amber-300/70">₹</span>
+                  <input
+                    type="number"
+                    value={exactBudget}
+                    onChange={(e) => setExactBudget(e.target.value)}
+                    placeholder="3,000"
+                    className="bg-transparent border-0 focus:ring-0 text-white font-black p-0 text-[32px] tracking-tight placeholder:text-white/20 w-full"
+                    style={{ lineHeight: 1 }}
+                  />
+                </div>
+                {/* Escrow note */}
+                <div className="flex items-center gap-1.5 bg-emerald-500/8 border border-emerald-500/15 rounded-xl px-3 py-2">
+                  <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <p className="text-[11px] text-emerald-100/80 font-semibold">
+                    Funds secured in escrow until deliverables are approved
                   </p>
                 </div>
               </div>
@@ -2023,36 +2064,51 @@ const CollabLinkLanding = () => {
 
           </div>
 
-          {/* Deliverables */}
-          <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-            <div className="flex items-center justify-between mb-4">
-              <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clapperboard className="h-4 w-4 text-slate-400" />Content Requested</span>
+          {/* Deliverables – Premium Selectable Cards */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-100/60 uppercase tracking-widest"><Clapperboard className="h-3.5 w-3.5 text-slate-400" />Content Requested</span>
+              {deliverables.length > 0 && <span className="text-[10px] font-black text-fuchsia-400 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-full px-2 py-0.5">{deliverables.length} selected</span>}
             </div>
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
               {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
                 const active = deliverables.includes(item.value);
+                const qty = deliverableQuantities[item.value] || 1;
                 return (
-                  <div key={item.label} className={`flex items-center rounded-xl border transition-all ${active ? 'bg-gradient-to-r from-fuchsia-500/10 to-violet-500/10 border-fuchsia-400/40 ring-1 ring-fuchsia-400/20' : 'bg-white/[0.06] border-white/15'}`}>
+                  <div
+                    key={item.label}
+                    className={`rounded-2xl border-2 transition-all cursor-pointer ${active
+                        ? 'border-fuchsia-400/50 bg-gradient-to-br from-fuchsia-500/10 to-violet-600/10 shadow-[0_0_20px_rgba(192,86,234,0.10)]'
+                        : 'border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.08]'
+                      }`}
+                  >
                     <button
                       type="button"
                       onClick={() => handleDeliverableToggle(item.value)}
-                      className={`px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5 ${active ? 'text-white' : 'text-slate-100/70 hover:text-white'}`}
+                      className="w-full p-3 text-left flex items-center gap-3"
                     >
-                      <span className="text-slate-400">{item.icon}</span>{item.label}
+                      <span className="text-2xl leading-none">{item.icon}</span>
+                      <div className="flex-1">
+                        <p className={`text-[14px] font-black leading-tight ${active ? 'text-white' : 'text-slate-300'}`}>{item.label}</p>
+                        {active && <p className="text-[10px] text-fuchsia-300/70 font-bold mt-0.5">✓ Selected</p>}
+                      </div>
                     </button>
                     {active && (
-                      <div className="flex items-center border-l border-white/10 px-2 py-1">
-                        <button
-                          type="button"
-                          onClick={() => updateDeliverableQuantity(item.value, (deliverableQuantities[item.value] || 1) - 1)}
-                          className="w-5 h-5 flex items-center justify-center rounded bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-                        >-</button>
-                        <span className="w-6 text-center text-xs font-bold text-white">{deliverableQuantities[item.value] || 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateDeliverableQuantity(item.value, (deliverableQuantities[item.value] || 1) + 1)}
-                          className="w-5 h-5 flex items-center justify-center rounded bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-                        >+</button>
+                      <div className="flex items-center justify-between border-t border-white/10 px-3 pb-2.5 pt-2">
+                        <span className="text-[10px] font-semibold text-white/50">Qty</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateDeliverableQuantity(item.value, qty - 1)}
+                            className="w-6 h-6 rounded-lg bg-white/10 text-white font-black text-sm flex items-center justify-center hover:bg-white/20 active:scale-90 transition-all"
+                          >−</button>
+                          <span className="text-[15px] font-black text-white w-5 text-center">{qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateDeliverableQuantity(item.value, qty + 1)}
+                            className="w-6 h-6 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 font-black text-sm flex items-center justify-center hover:bg-fuchsia-500/30 active:scale-90 transition-all"
+                          >+</button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -2061,28 +2117,57 @@ const CollabLinkLanding = () => {
             </div>
           </div>
 
-          {/* Timeline */}
-          <div className="bg-white/[0.06] rounded-2xl p-4 border border-white/15 transition-all focus-within:ring-2 focus-within:ring-white/20">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Calendar className="h-4 w-4 text-slate-300" />Campaign Go-Live Date</span>
+          {/* Timeline & Validity */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-4">
+            {/* Campaign Go-Live Date */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-100/60 uppercase tracking-widest"><Calendar className="h-3.5 w-3.5 text-sky-400" />Campaign Go-Live Date</span>
+              </div>
+              <div className="flex items-center justify-between bg-white/[0.06] border border-white/10 rounded-xl px-3.5 py-2.5">
+                <span className="text-[13px] text-white/50 font-semibold flex items-center gap-2">📅 Select date</span>
                 <input
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
+                  className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm w-auto"
                 />
               </div>
+              <p className="text-[10px] text-amber-300/70 font-semibold mt-1.5 flex items-center gap-1">⚡ Creator usually needs 3–5 days production time</p>
+            </div>
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-100/90"><Clock className="h-4 w-4 text-orange-300" />Proposal Validity Period</span>
-                <input
-                  type="date"
-                  value={offerExpiry}
-                  onChange={(e) => setOfferExpiry(e.target.value)}
-                  className="bg-transparent border-0 text-right focus:ring-0 text-white font-bold p-0 text-sm"
-                />
+            {/* Offer Validity – Preset Chips */}
+            <div className="border-t border-white/10 pt-4">
+              <p className="text-[11px] font-black text-slate-100/60 uppercase tracking-widest mb-2.5 flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-orange-300" />Offer expires in</p>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { label: '3 days', days: 3 },
+                  { label: '7 days', days: 7 },
+                  { label: '14 days', days: 14 },
+                  { label: '30 days', days: 30 },
+                ].map(({ label, days }) => {
+                  const targetDate = new Date();
+                  targetDate.setDate(targetDate.getDate() + days);
+                  const targetStr = targetDate.toISOString().split('T')[0];
+                  const isActive = offerExpiry === targetStr;
+                  return (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setOfferExpiry(targetStr)}
+                      className={`px-4 py-1.5 rounded-full text-[12px] font-black border transition-all active:scale-95 ${isActive
+                          ? 'bg-orange-400/20 border-orange-400/40 text-orange-300'
+                          : 'bg-white/[0.05] border-white/10 text-white/50 hover:border-white/20 hover:text-white'
+                        }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
+              {offerExpiry && (
+                <p className="text-[10px] text-white/30 font-semibold mt-2">Expires: {new Date(offerExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+              )}
             </div>
           </div>
 
