@@ -44,20 +44,20 @@ interface SidebarProps {
 }
 
 // SearchBar Component
-const SearchBar: React.FC<{ 
-  searchQuery: string; 
+const SearchBar: React.FC<{
+  searchQuery: string;
   setSearchQuery: (query: string) => void;
 }> = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="sticky top-0 bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-white/10 z-10 px-4 pt-4 pb-3">
+    <div className="sticky top-0 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 z-10 px-4 pt-4 pb-3">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7B7F8A]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-[#7B7F8A]" />
         <input
           type="text"
           placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-[#7B7F8A] focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all duration-200 ease-in-out"
+          className="w-full pl-9 pr-3 py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-[#7B7F8A] focus:outline-none focus:border-slate-300 dark:focus:border-white/20 focus:bg-slate-200 dark:focus:bg-white/10 transition-all duration-200 ease-in-out"
         />
       </div>
     </div>
@@ -65,29 +65,29 @@ const SearchBar: React.FC<{
 };
 
 // UserCard Component
-const UserCard: React.FC<{ 
-  name: string; 
+const UserCard: React.FC<{
+  name: string;
   email?: string;
   avatarUrl?: string | null;
 }> = ({ name, email, avatarUrl }) => {
   return (
-    <div className="px-4 py-4 border-b border-white/5">
+    <div className="px-4 py-4 border-b border-slate-200 dark:border-white/5">
       <div className="flex items-center gap-3">
-        <Avatar className="h-12 w-12 ring-2 ring-white/10">
-          <AvatarImage 
-            src={avatarUrl || DEFAULT_AVATAR_URL} 
-            alt={name} 
+        <Avatar className="h-12 w-12 ring-2 ring-slate-200 dark:ring-white/10">
+          <AvatarImage
+            src={avatarUrl || DEFAULT_AVATAR_URL}
+            alt={name}
           />
-          <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-medium">
+          <AvatarFallback className="bg-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-medium">
             {getInitials(name.split(' ')[0], name.split(' ')[1])}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold text-white truncate">
+          <div className="text-sm font-semibold text-slate-900 dark:text-white truncate">
             {name}
           </div>
           {email && (
-            <div className="text-xs text-[#7B7F8A] truncate">
+            <div className="text-xs text-slate-500 dark:text-[#7B7F8A] truncate">
               {email}
             </div>
           )}
@@ -107,47 +107,47 @@ const SidebarItem: React.FC<{
   const Icon = item.icon;
   const isProFeature = item.isPro === true;
   const showProBadge = isProFeature && isProUser;
-  
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 px-[14px] h-[54px] rounded-[14px] transition-all duration-200 ease-in-out relative group",
-        "hover:bg-[#1C2233]",
-        isActive && "bg-[#1C2233]"
+        "hover:bg-slate-100 dark:hover:bg-[#1C2233]",
+        isActive && "bg-slate-100 dark:bg-[#1C2233]"
       )}
     >
       {/* Icon with colored circle background */}
-      <div 
+      <div
         className="w-[22px] h-[22px] flex items-center justify-center rounded-full flex-shrink-0"
         style={{ backgroundColor: `${item.iconColor}26` }} // 15% opacity
       >
-        <Icon 
-          className="w-[22px] h-[22px]" 
+        <Icon
+          className="w-[22px] h-[22px]"
           style={{ color: item.iconColor }}
         />
       </div>
-      
+
       {/* Label */}
       <span className={cn(
         "text-[15px] flex-1 text-left font-medium",
-        isActive ? "text-white" : "text-white/90"
+        isActive ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-white/90"
       )}>
         {item.name}
       </span>
-      
+
       {/* PRO Badge */}
       {showProBadge && (
-        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-md text-blue-400 flex-shrink-0">
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-500/20 dark:border-blue-500/30 rounded-md text-blue-600 dark:text-blue-400 flex-shrink-0">
           PRO
         </span>
       )}
-      
+
       {/* Chevron */}
       <ChevronRight className={cn(
         "w-4 h-4 flex-shrink-0 transition-colors",
-        isActive ? "text-white/60" : "text-white/30"
+        isActive ? "text-slate-400 dark:text-white/60" : "text-slate-300 dark:text-white/30"
       )} />
     </button>
   );
@@ -164,11 +164,11 @@ const SidebarSection: React.FC<{
     <div className="mb-6">
       {/* Section Header */}
       <div className="px-4 mb-1.5 mt-[18px] first:mt-2">
-        <h3 className="text-[12px] font-semibold text-[#7B7F8A] uppercase tracking-wider leading-none">
+        <h3 className="text-[12px] font-semibold text-slate-500 dark:text-[#7B7F8A] uppercase tracking-wider leading-none">
           {section.title}
         </h3>
       </div>
-      
+
       {/* Section Items */}
       <div className="px-2 space-y-1">
         {section.items.map((item) => (
@@ -193,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // For preview mode, always show sidebar on desktop
   const isPreview = location.pathname === '/dashboard-preview';
 
@@ -205,63 +205,63 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
     {
       title: "TOOLS",
       items: [
-        { 
-          name: "Calendar Sync", 
-          icon: Calendar, 
-          path: "/creator-dashboard?tab=calendar", 
+        {
+          name: "Calendar Sync",
+          icon: Calendar,
+          path: "/creator-dashboard?tab=calendar",
           iconColor: "#0A84FF",
-          roles: ['creator'] 
+          roles: ['creator']
         },
-        { 
-          name: "Documents Vault", 
-          icon: FolderOpen, 
-          path: "/documents-vault", 
+        {
+          name: "Documents Vault",
+          icon: FolderOpen,
+          path: "/documents-vault",
           iconColor: "#BF5AF2",
-          roles: ['creator'] 
+          roles: ['creator']
         },
-        { 
-          name: "Invoice Generator", 
-          icon: FileText, 
-          path: "/creator-dashboard?tab=invoices", 
+        {
+          name: "Invoice Generator",
+          icon: FileText,
+          path: "/creator-dashboard?tab=invoices",
           iconColor: "#30D158",
-          roles: ['creator'] 
+          roles: ['creator']
         },
-        { 
-          name: "AI Pitch Generator", 
-          icon: MessageSquare, 
-          path: "/ai-pitch-generator", 
+        {
+          name: "AI Pitch Generator",
+          icon: MessageSquare,
+          path: "/ai-pitch-generator",
           iconColor: "#FF6B9D",
-          roles: ['creator'] 
+          roles: ['creator']
         },
       ]
     },
     {
       title: "SUPPORT",
       items: [
-        { 
-          name: "Disputes Center", 
-          icon: AlertTriangle, 
-          path: "/creator-dashboard?tab=disputes", 
+        {
+          name: "Disputes Center",
+          icon: AlertTriangle,
+          path: "/creator-dashboard?tab=disputes",
           iconColor: "#FF453A",
-          roles: ['creator'] 
+          roles: ['creator']
         },
       ]
     },
     {
       title: "🛡 LIFESTYLE SHIELD",
       items: [
-        { 
-          name: "Consumer Complaints", 
-          icon: Shield, 
-          path: "/lifestyle/consumer-complaints", 
+        {
+          name: "Consumer Complaints",
+          icon: Shield,
+          path: "/lifestyle/consumer-complaints",
           iconColor: "#34D399", // Soft green
           roles: ['creator']
           // Removed isPro: true for testing phase - available to all users
         },
-        { 
-          name: "My Complaints", 
-          icon: FileText, 
-          path: "/dashboard/consumer-complaints", 
+        {
+          name: "My Complaints",
+          icon: FileText,
+          path: "/dashboard/consumer-complaints",
           iconColor: "#8B5CF6", // Purple
           roles: ['creator']
         },
@@ -270,31 +270,31 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
     {
       title: "BUSINESS",
       items: [
-        { 
-          name: "Tax Summary", 
-          icon: Receipt, 
-          path: "/creator-tax-compliance", 
+        {
+          name: "Tax Summary",
+          icon: Receipt,
+          path: "/creator-tax-compliance",
           iconColor: "#FFD60A",
-          roles: ['creator'] 
+          roles: ['creator']
         },
-        { 
-          name: "Partner Program", 
-          icon: Sparkles, 
-          path: "/partner-program", 
+        {
+          name: "Partner Program",
+          icon: Sparkles,
+          path: "/partner-program",
           iconColor: "#5E5CE6",
-          roles: ['creator'] 
+          roles: ['creator']
         },
       ]
     },
     {
       title: "SETTINGS",
       items: [
-        { 
-          name: "Settings", 
-          icon: Settings, 
-          path: "/settings", 
+        {
+          name: "Settings",
+          icon: Settings,
+          path: "/settings",
           iconColor: "#8E8E93",
-          roles: ['creator'] 
+          roles: ['creator']
         },
         {
           name: "Notification Settings",
@@ -326,11 +326,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   // Filter items by search query
   const filteredSections = searchQuery
     ? visibleSections.map(section => ({
-        ...section,
-        items: section.items.filter(item =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      })).filter(section => section.items.length > 0)
+      ...section,
+      items: section.items.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(section => section.items.length > 0)
     : visibleSections;
 
   // Close sidebar when clicking outside
@@ -389,7 +389,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
     if (path.includes('?')) {
       const [basePath, query] = path.split('?');
       navigate(`${basePath}?${query}`, { replace: false });
-      
+
       // For dashboard tabs, scroll to the appropriate section after a small delay
       if (basePath === '/creator-dashboard') {
         setTimeout(() => {
@@ -402,7 +402,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
               disputes: '[data-section="disputes-center"]',
               invoices: '[data-section="invoice-generator"]',
             };
-            
+
             const selector = sectionMap[tab];
             if (selector) {
               const element = document.querySelector(selector);
@@ -422,7 +422,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   const isActive = (path: string) => {
     const currentPath = location.pathname;
     const basePath = path.split('?')[0];
-    
+
     if (basePath === '/creator-dashboard') {
       const currentTab = new URLSearchParams(location.search).get('tab');
       const pathTab = path.split('tab=')[1];
@@ -432,7 +432,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
   };
 
   // Get user display name and email
-  const userName = profile 
+  const userName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
     : 'User';
   const userEmail = user?.email || undefined;
@@ -461,21 +461,21 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           className={cn(
             "flex flex-shrink-0 flex-col",
             "h-[calc(100dvh-4rem)] w-[320px] overflow-y-auto",
-            "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-            "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
+            "bg-white dark:bg-[#1C1C1E] backdrop-blur-xl border-r border-slate-200 dark:border-white/10",
+            "shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(0,0,0,0.35)]",
             "relative z-10",
             className
           )}
         >
           {/* Search Bar */}
-          <SearchBar 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
 
           {/* User Card */}
           {(profile || (!profile && !user)) && (
-            <UserCard 
+            <UserCard
               name={profile ? userName : 'Demo Creator'}
               email={profile ? userEmail : 'demo@creatorarmour.com'}
               avatarUrl={profile?.avatar_url || null}
@@ -504,21 +504,21 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
             className={cn(
               "flex flex-shrink-0 flex-col",
               "h-[calc(100dvh-4rem)] w-[320px] overflow-y-auto",
-              "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-              "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
+              "bg-white dark:bg-[#1C1C1E] backdrop-blur-xl border-r border-slate-200 dark:border-white/10",
+              "shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(0,0,0,0.35)]",
               "relative z-10",
               className
             )}
           >
             {/* Search Bar */}
-            <SearchBar 
-              searchQuery={searchQuery} 
-              setSearchQuery={setSearchQuery} 
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
             />
 
             {/* User Card */}
             {(profile || (!profile && !user)) && (
-              <UserCard 
+              <UserCard
                 name={profile ? userName : 'Demo Creator'}
                 email={profile ? userEmail : 'demo@creatorarmour.com'}
                 avatarUrl={profile?.avatar_url || null}
@@ -555,42 +555,42 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
                 className={cn(
                   "lg:hidden fixed top-16 left-0 flex flex-col",
                   "h-[calc(100dvh-4rem)] w-[320px] max-w-[85vw] overflow-y-auto",
-                  "bg-[#1C1C1E] backdrop-blur-xl border-r border-white/10",
-                  "shadow-[0_0_40px_rgba(0,0,0,0.35)]",
+                  "bg-white dark:bg-[#1C1C1E] backdrop-blur-xl border-r border-slate-200 dark:border-white/10",
+                  "shadow-[0_0_40px_rgba(0,0,0,0.05)] dark:shadow-[0_0_40px_rgba(0,0,0,0.35)]",
                   "z-[150] rounded-r-2xl",
                   className
                 )}
               >
-            {/* Search Bar */}
-            <SearchBar 
-              searchQuery={searchQuery} 
-              setSearchQuery={setSearchQuery} 
-            />
-
-            {/* User Card */}
-            {(profile || (!profile && !user)) && (
-              <UserCard 
-                name={profile ? userName : 'Demo Creator'}
-                email={profile ? userEmail : 'demo@creatorarmour.com'}
-                avatarUrl={profile?.avatar_url || null}
-              />
-            )}
-
-            {/* Menu Sections */}
-            <div className="px-2 py-2">
-              {filteredSections.map((section) => (
-                <SidebarSection
-                  key={section.title}
-                  section={section}
-                  isActive={isActive}
-                  onItemClick={handleItemClick}
-                  isProUser={isProUser}
+                {/* Search Bar */}
+                <SearchBar
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
                 />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+                {/* User Card */}
+                {(profile || (!profile && !user)) && (
+                  <UserCard
+                    name={profile ? userName : 'Demo Creator'}
+                    email={profile ? userEmail : 'demo@creatorarmour.com'}
+                    avatarUrl={profile?.avatar_url || null}
+                  />
+                )}
+
+                {/* Menu Sections */}
+                <div className="px-2 py-2">
+                  {filteredSections.map((section) => (
+                    <SidebarSection
+                      key={section.title}
+                      section={section}
+                      isActive={isActive}
+                      onItemClick={handleItemClick}
+                      isProUser={isProUser}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </>
