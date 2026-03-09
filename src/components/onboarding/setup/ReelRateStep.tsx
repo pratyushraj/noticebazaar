@@ -58,7 +58,8 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
     const isValidRate =
         (dealType === 'paid' && hasValidRate) ||
         (dealType === 'barter' && hasValidBarterMin && hasValidBarterMax) ||
-        (dealType === 'hybrid' && hasValidRate && hasValidBarterMin && hasValidBarterMax);
+        (dealType === 'hybrid' && hasValidRate && hasValidBarterMin && hasValidBarterMax) ||
+        (dealType === 'all' && hasValidRate && hasValidBarterMin && hasValidBarterMax);
 
     return (
         <>
@@ -70,71 +71,42 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
                 <GradientCard padding="lg" className="max-w-2xl mx-auto">
-                    <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <IndianRupee className="w-8 h-8 text-purple-400" />
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <IndianRupee className="w-8 h-8 text-blue-600 dark:text-purple-400" />
                     </div>
 
-                    <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-white">
+                    <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
                         Set your deal preferences
                     </h2>
-                    <p className="text-base text-white/80 text-center mb-8">
+                    <p className="text-base text-slate-500 dark:text-white/80 text-center mb-8">
                         Brands will see this on your collab link.
                     </p>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-                        <button
-                            type="button"
-                            onClick={() => onDealTypeChange('paid')}
-                            className={`h-11 rounded-lg border text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors ${
-                                dealType === 'paid'
-                                    ? 'bg-violet-500/30 border-violet-400 text-white'
-                                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
-                            }`}
-                        >
-                            <Wallet className="w-4 h-4" />
-                            Paid Deal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onDealTypeChange('barter')}
-                            className={`h-11 rounded-lg border text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors ${
-                                dealType === 'barter'
-                                    ? 'bg-violet-500/30 border-violet-400 text-white'
-                                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
-                            }`}
-                        >
-                            <Package className="w-4 h-4" />
-                            Product Exchange
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onDealTypeChange('hybrid')}
-                            className={`h-11 rounded-lg border text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors ${
-                                dealType === 'hybrid'
-                                    ? 'bg-violet-500/30 border-violet-400 text-white'
-                                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
-                            }`}
-                        >
-                            <RefreshCcw className="w-4 h-4" />
-                            Cash + Product
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => onDealTypeChange('all')}
-                            className={`h-11 rounded-lg border text-sm font-medium inline-flex items-center justify-center gap-2 transition-colors ${
-                                dealType === 'all'
-                                    ? 'bg-violet-500/30 border-violet-400 text-white'
-                                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
-                            }`}
-                        >
-                            <Layers className="w-4 h-4" />
-                            All Deal Types
-                        </button>
+                        {[
+                            { id: 'paid', icon: Wallet, label: 'Paid Deal' },
+                            { id: 'barter', icon: Package, label: 'Product Exchange' },
+                            { id: 'hybrid', icon: RefreshCcw, label: 'Cash + Product' },
+                            { id: 'all', icon: Layers, label: 'All Deal Types' },
+                        ].map((type) => (
+                            <button
+                                key={type.id}
+                                type="button"
+                                onClick={() => onDealTypeChange(type.id as DealType)}
+                                className={`h-11 rounded-lg border text-[11px] font-black uppercase tracking-tight inline-flex items-center justify-center gap-1.5 transition-all ${dealType === type.id
+                                    ? 'bg-blue-50 border-blue-500 text-blue-600 shadow-sm dark:bg-violet-500/30 dark:border-violet-400 dark:text-white'
+                                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 dark:bg-white/5 dark:border-white/10 dark:text-white/70 dark:hover:text-white'
+                                    }`}
+                            >
+                                <type.icon className="w-3.5 h-3.5" />
+                                {type.label}
+                            </button>
+                        ))}
                     </div>
 
                     {(dealType === 'paid' || dealType === 'hybrid' || dealType === 'all') && (
                         <div className="relative mb-4">
-                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-white/50 text-xl font-medium">
+                            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/50 text-xl font-medium">
                                 ₹
                             </div>
                             <input
@@ -142,18 +114,18 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                                 value={reelRate}
                                 onChange={(e) => onRateChange(e.target.value)}
                                 placeholder="Reel price (e.g. 5000)"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-6 py-4 text-xl text-white placeholder-white/50 outline-none focus:border-purple-500 focus:bg-white/10 transition-colors"
+                                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-6 py-4 text-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
                                 autoFocus
                                 aria-label="Enter your base reel rate"
                             />
                             {suggestedRate && !reelRate && (
                                 <div className="mt-4 text-center">
-                                    <span className="text-sm text-purple-400 font-medium">
+                                    <span className="text-sm text-blue-600 dark:text-purple-400 font-medium">
                                         Suggested: ₹{suggestedRate.toLocaleString('en-IN')}
                                     </span>
                                     <button
                                         onClick={() => onRateChange(suggestedRate.toString())}
-                                        className="ml-2 text-xs text-white/40 hover:text-white transition-colors underline"
+                                        className="ml-2 text-xs text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white transition-colors underline"
                                     >
                                         Use this
                                     </button>
@@ -165,36 +137,36 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                     {(dealType === 'barter' || dealType === 'hybrid' || dealType === 'all') && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                             <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-lg font-medium">₹</div>
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/50 text-lg font-medium">₹</div>
                                 <input
                                     type="number"
                                     value={barterValueMin}
                                     onChange={(e) => onBarterValueMinChange(e.target.value)}
                                     placeholder="Min product value"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-white placeholder-white/50 outline-none focus:border-purple-500 focus:bg-white/10 transition-colors"
+                                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
                                     aria-label="Enter minimum barter value"
                                 />
                             </div>
                             <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-lg font-medium">₹</div>
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/50 text-lg font-medium">₹</div>
                                 <input
                                     type="number"
                                     value={barterValueMax}
                                     onChange={(e) => onBarterValueMaxChange(e.target.value)}
                                     placeholder="Max product value (optional)"
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-white placeholder-white/50 outline-none focus:border-purple-500 focus:bg-white/10 transition-colors"
+                                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
                                     aria-label="Enter maximum barter value"
                                 />
                             </div>
-                            <p className="md:col-span-2 text-xs text-white/60">
+                            <p className="md:col-span-2 text-xs text-slate-400 dark:text-white/60">
                                 Creator reviews value based on audience fit and deliverables.
                             </p>
                         </div>
                     )}
 
                     {effectiveRate > 0 && (
-                        <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-white/80">
-                            <p className="font-semibold text-white mb-2">How this appears to brands:</p>
+                        <div className="mb-6 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 p-4 text-sm text-slate-600 dark:text-white/80">
+                            <p className="font-semibold text-slate-900 dark:text-white mb-2">How this appears to brands:</p>
                             <p>Paid collaboration: ₹{suggestedMin.toLocaleString('en-IN')} - ₹{suggestedMax.toLocaleString('en-IN')}</p>
                             <p>Recommended barter value: ₹{suggestedBarterMin.toLocaleString('en-IN')}+</p>
                         </div>
@@ -203,7 +175,7 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                         <button
                             onClick={onBack}
-                            className="w-full py-4 text-white/70 font-medium hover:text-white transition-colors"
+                            className="w-full py-4 text-slate-500 dark:text-white/70 font-medium hover:text-slate-700 dark:hover:text-white transition-colors"
                         >
                             Back
                         </button>
@@ -212,7 +184,7 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                         </PrimaryButton>
                     </div>
 
-                    <p className="text-xs text-center text-white/40 mt-6">
+                    <p className="text-xs text-center text-slate-400 dark:text-white/40 mt-6">
                         Don't worry, you can always change this later in your profile settings.
                     </p>
                 </GradientCard>

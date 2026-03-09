@@ -28,6 +28,8 @@ import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
 import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { DealStatusCard } from '@/components/deals/DealStatusCard';
+import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
+import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
 import { animations, iconSizes } from '@/lib/design-system';
 import { motion } from 'framer-motion';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
@@ -110,6 +112,7 @@ function DealDetailPageContent() {
   const [showProgressSheet, setShowProgressSheet] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [reportIssueMessage, setReportIssueMessage] = useState('');
+  const [showInvoiceGenerator, setShowInvoiceGenerator] = useState(false);
 
   // Deal progress update
   const updateDealProgress = useUpdateDealProgress();
@@ -277,7 +280,7 @@ function DealDetailPageContent() {
       }
 
       const baseUrl =
-        typeof window !== 'undefined' ? window.location.origin : 'https://noticebazaar.com';
+        typeof window !== 'undefined' ? window.location.origin : 'https://creatorarmour.com';
       const link = `${baseUrl}/contract-ready/${data.token.id}`;
       setBrandReplyLink(link);
       return link;
@@ -447,10 +450,10 @@ function DealDetailPageContent() {
       // Try to get API base URL with fallback logic
       let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
-        (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+        (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.noticebazaar.com'
           : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
+            ? 'https://api.noticebazaar.com'
             : getApiBaseUrl());
 
       // If localhost, try it first, then fallback to production
@@ -1136,10 +1139,10 @@ function DealDetailPageContent() {
           // Try the download-docx API endpoint as last resort
           let apiBaseUrl =
             import.meta.env.VITE_API_BASE_URL ||
-            (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+            (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
               ? 'https://api.noticebazaar.com'
               : typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                ? 'https://api.creatorarmour.com'
+                ? 'https://api.noticebazaar.com'
                 : getApiBaseUrl());
 
           const downloadUrl = `${apiBaseUrl}/api/protection/contracts/${deal.id}/download-docx`;
@@ -1221,7 +1224,7 @@ function DealDetailPageContent() {
           import.meta.env.VITE_API_BASE_URL ||
           (typeof window !== 'undefined' &&
             window.location.origin.includes('creatorarmour.com')
-            ? 'https://api.creatorarmour.com'
+            ? 'https://api.noticebazaar.com'
             : 'https://noticebazaar-api.onrender.com');
 
         const formData = new FormData();
@@ -1654,6 +1657,7 @@ Best regards`;
                 brandReplyLink={brandReplyLink}
                 generateBrandReplyLink={generateBrandReplyLink}
                 copyToClipboard={copyToClipboard}
+                onGenerateInvoice={() => setShowInvoiceGenerator(true)}
               />
             );
           }
@@ -1697,6 +1701,9 @@ Best regards`;
           }
         })()}
 
+        {/* Deal Progress Timeline & History */}
+        <DealProgressTracker deal={deal} actionLogs={actionLogEntries} />
+
         {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) AND no contract generated yet */}
         {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && !(deal as any)?.contract_file_url && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
@@ -1733,7 +1740,7 @@ Best regards`;
                 try {
                   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                     (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-                      ? 'https://api.creatorarmour.com'
+                      ? 'https://api.noticebazaar.com'
                       : getApiBaseUrl());
 
                   const verifyResponse = await fetch(`${apiBaseUrl}/api/brand-response/${deal.id}`, {
@@ -1827,7 +1834,7 @@ ${link}`;
                   // Log reminder to API
                   try {
                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
-                      (typeof window !== 'undefined' && window.location.origin.includes('noticebazaar.com')
+                      (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                         ? 'https://api.noticebazaar.com'
                         : getApiBaseUrl());
 
@@ -2031,7 +2038,7 @@ ${link}`;
                       <div className="text-sm font-medium text-blue-300 mb-2">Brand's Message:</div>
                       <div className="text-white/90 whitespace-pre-wrap">{responseMessage}</div>
                       <p className="text-xs text-white/50 mt-1 italic">
-                        This response was submitted via your secure NoticeBazaar link and is saved for records.
+                        This response was submitted via your secure Creator Armour link and is saved for records.
                       </p>
                     </div>
                   )}
@@ -3018,10 +3025,10 @@ ${link}`;
             )}
 
           </div>
-        </div>
+        </div >
 
         {/* Confirm Signed Contract Received Modal */}
-        <Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal}>
+        < Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal} >
           <DialogContent className="bg-blue-950/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
@@ -3127,542 +3134,545 @@ ${link}`;
               </div>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog >
 
 
         {/* Invoice Ready */}
-        {(deal as any)?.invoice_url && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-            <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              🧾 Invoice Ready
-            </h2>
-            <div className="space-y-3">
-              <p className="text-sm text-white/80">
-                Download your invoice for this campaign
-              </p>
-              {(deal as any)?.invoice_number && (
-                <p className="text-xs text-white/60">
-                  Invoice #: {(deal as any).invoice_number}
+        {
+          (deal as any)?.invoice_url && (
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                🧾 Invoice Ready
+              </h2>
+              <div className="space-y-3">
+                <p className="text-sm text-white/80">
+                  Download your invoice for this campaign
                 </p>
-              )}
-              <motion.button
-                onClick={() => {
-                  if ((deal as any)?.invoice_url) {
-                    window.open((deal as any).invoice_url, '_blank');
-                    trackEvent('invoice_downloaded', { dealId: deal.id });
-                  }
-                }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
-              >
-                <Download className="w-5 h-5" />
-                Download Invoice
-              </motion.button>
+                {(deal as any)?.invoice_number && (
+                  <p className="text-xs text-white/60">
+                    Invoice #: {(deal as any).invoice_number}
+                  </p>
+                )}
+                <motion.button
+                  onClick={() => {
+                    if ((deal as any)?.invoice_url) {
+                      window.open((deal as any).invoice_url, '_blank');
+                      trackEvent('invoice_downloaded', { dealId: deal.id });
+                    }
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Invoice
+                </motion.button>
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
         {/* Brand Submission Details - Show at the end */}
-        {brandSubmissionDetails && (
-          <div className="space-y-6">
-            {/* Deal Summary Card - Collapsible by default */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-              <Collapsible open={showDealSummaryFull} onOpenChange={setShowDealSummaryFull}>
-                <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between items-center mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">📌</span>
-                      <h3 className="font-semibold text-lg">Deal Summary</h3>
-                    </div>
-                    {showDealSummaryFull ? (
-                      <ChevronUp className="w-5 h-5 text-white/60" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-white/60" />
-                    )}
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Brand</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
-                    </div>
-                    {brandSubmissionDetails.campaignName && (
+        {
+          brandSubmissionDetails && (
+            <div className="space-y-6">
+              {/* Deal Summary Card - Collapsible by default */}
+              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <Collapsible open={showDealSummaryFull} onOpenChange={setShowDealSummaryFull}>
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full flex items-center justify-between items-center mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">📌</span>
+                        <h3 className="font-semibold text-lg">Deal Summary</h3>
+                      </div>
+                      {showDealSummaryFull ? (
+                        <ChevronUp className="w-5 h-5 text-white/60" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-white/60" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Campaign</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
+                        <div className="text-sm text-white/60 mb-1">Brand</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
+                      </div>
+                      {brandSubmissionDetails.campaignName && (
+                        <div>
+                          <div className="text-sm text-white/60 mb-1">Campaign</div>
+                          <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Deal Type</div>
+                        <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Deal Value</div>
+                        <div className="text-white font-semibold text-lg">
+                          {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
+                            ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
+                            : brandSubmissionDetails.dealType === 'barter'
+                              ? 'Barter Deal'
+                              : 'Not specified'}
+                        </div>
+                      </div>
+                      {brandSubmissionDetails.deadline && (
+                        <div className="md:col-span-2">
+                          <div className="text-sm text-white/60 mb-1">Timeline</div>
+                          <div className="text-white font-medium">
+                            {(() => {
+                              try {
+                                const date = new Date(brandSubmissionDetails.deadline);
+                                return date.toLocaleDateString('en-IN', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                });
+                              } catch {
+                                return brandSubmissionDetails.deadline;
+                              }
+                            })()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+
+              {/* Payment Details Card - Moved to position 4 */}
+              {brandSubmissionDetails.dealType === 'paid' && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">💰</span>
+                    <h3 className="font-semibold text-lg">Payment Details</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {brandSubmissionDetails.paymentAmount && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Amount</div>
+                        <div className="text-white font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
                       </div>
                     )}
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Deal Type</div>
-                      <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Deal Value</div>
-                      <div className="text-white font-semibold text-lg">
-                        {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
-                          ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
-                          : brandSubmissionDetails.dealType === 'barter'
-                            ? 'Barter Deal'
-                            : 'Not specified'}
+                    {brandSubmissionDetails.paymentTrigger && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Payment Trigger</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.paymentTrigger.replace(/_/g, ' ')}
+                        </div>
                       </div>
-                    </div>
-                    {brandSubmissionDetails.deadline && (
-                      <div className="md:col-span-2">
-                        <div className="text-sm text-white/60 mb-1">Timeline</div>
-                        <div className="text-white font-medium">
-                          {(() => {
-                            try {
-                              const date = new Date(brandSubmissionDetails.deadline);
-                              return date.toLocaleDateString('en-IN', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                              });
-                            } catch {
-                              return brandSubmissionDetails.deadline;
-                            }
-                          })()}
+                    )}
+                    {brandSubmissionDetails.paymentTimeline && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Payment Timeline</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.paymentTimeline.replace(/_/g, ' ')}
+                        </div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.paymentMethod && brandSubmissionDetails.paymentMethod.length > 0 && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Method</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Rights & Usage Card - Moved to position 5 */}
+              {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">🧾</span>
+                    <h3 className="font-semibold text-lg">Rights & Usage</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {brandSubmissionDetails.usageRightsDuration && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Usage Duration</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.usageRightsDuration.replace(/_/g, ' ')}
+                        </div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.usageRights && !brandSubmissionDetails.usageRightsDuration && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Usage Rights</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.paidAdsAllowed !== undefined && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Paid Ads Allowed?</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.paidAdsAllowed ? 'Yes' : 'No'}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.whitelistingAllowed !== undefined && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Whitelisting Allowed?</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.whitelistingAllowed ? 'Yes' : 'No'}</div>
+                      </div>
+                    )}
+                    {(brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity) && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.exclusivityPeriod === 'none' ? 'None' :
+                            brandSubmissionDetails.exclusivityPeriod ? brandSubmissionDetails.exclusivityPeriod.replace(/_/g, ' ') :
+                              brandSubmissionDetails.exclusivity}
+                        </div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.cancellationTerms && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Cancellation Terms</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.cancellationTerms.replace(/_/g, ' ')}
                         </div>
                       </div>
                     )}
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
+                </div>
+              )}
 
-            {/* Payment Details Card - Moved to position 4 */}
-            {brandSubmissionDetails.dealType === 'paid' && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">💰</span>
-                  <h3 className="font-semibold text-lg">Payment Details</h3>
-                </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.paymentAmount && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Amount</div>
-                      <div className="text-white font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.paymentTrigger && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Payment Trigger</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.paymentTrigger.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.paymentTimeline && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Payment Timeline</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.paymentTimeline.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.paymentMethod && brandSubmissionDetails.paymentMethod.length > 0 && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Method</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Rights & Usage Card - Moved to position 5 */}
-            {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🧾</span>
-                  <h3 className="font-semibold text-lg">Rights & Usage</h3>
-                </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.usageRightsDuration && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Usage Duration</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.usageRightsDuration.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.usageRights && !brandSubmissionDetails.usageRightsDuration && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Usage Rights</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.paidAdsAllowed !== undefined && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Paid Ads Allowed?</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.paidAdsAllowed ? 'Yes' : 'No'}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.whitelistingAllowed !== undefined && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Whitelisting Allowed?</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.whitelistingAllowed ? 'Yes' : 'No'}</div>
-                    </div>
-                  )}
-                  {(brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity) && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.exclusivityPeriod === 'none' ? 'None' :
-                          brandSubmissionDetails.exclusivityPeriod ? brandSubmissionDetails.exclusivityPeriod.replace(/_/g, ' ') :
-                            brandSubmissionDetails.exclusivity}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.cancellationTerms && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Cancellation Terms</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.cancellationTerms.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Approvals & Revisions Card - Moved to position 6 */}
-            {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🛡️</span>
-                  <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
-                </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.approvalProcess && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Approval Rule</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.approvalProcess.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.approvalTurnaroundTime && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Turnaround Time</div>
-                      <div className="text-white font-medium capitalize">
-                        {brandSubmissionDetails.approvalTurnaroundTime.replace(/_/g, ' ')}
-                      </div>
-                    </div>
-                  )}
-                  {(brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions) && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Revisions Count</div>
-                      <div className="text-white font-medium">
-                        {brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions}
-                      </div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.postingWindow && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Posting Window</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.postingWindow}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Barter Details Card */}
-            {brandSubmissionDetails.dealType === 'barter' && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🎁</span>
-                  <h3 className="font-semibold text-lg">Barter Details</h3>
-                </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.productDescription && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Product Description</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.productDescription}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterValue && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Barter Value</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterApproximateValue && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Approximate Value</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterShippingResponsibility && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Shipping Responsibility</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Replacement Allowed</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Barter Product Shipping – Deal Timeline (barter only) */}
-            {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <Package className="w-5 h-5 text-amber-400" />
-                  <h3 className="font-semibold text-lg">Product Shipping</h3>
-                </div>
-                {(() => {
-                  const shippingStatus = (deal as any)?.shipping_status || 'pending';
-                  if (shippingStatus === 'pending') {
-                    const updatedAt = (deal as any)?.updated_at;
-                    const daysPending = updatedAt ? Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)) : 0;
-                    const isDelayed = daysPending >= 7;
-                    return (
-                      <div className="space-y-3">
-                        <div className={`flex items-center gap-3 p-3 rounded-xl border ${isDelayed ? 'bg-red-500/10 border-red-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
-                          <span className="text-2xl">⏳</span>
-                          <div>
-                            <p className="font-medium text-white">
-                              {isDelayed ? 'Shipping delayed' : 'Waiting for brand to ship product'}
-                            </p>
-                            <p className="text-sm text-white/60">
-                              {isDelayed
-                                ? 'The brand has not updated shipping after 7 days. You can report an issue or seek legal support.'
-                                : 'The brand will receive a link to add courier and tracking details.'}
-                            </p>
-                          </div>
+              {/* Approvals & Revisions Card - Moved to position 6 */}
+              {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">🛡️</span>
+                    <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {brandSubmissionDetails.approvalProcess && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Approval Rule</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.approvalProcess.replace(/_/g, ' ')}
                         </div>
-                        {isDelayed && (
+                      </div>
+                    )}
+                    {brandSubmissionDetails.approvalTurnaroundTime && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Turnaround Time</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.approvalTurnaroundTime.replace(/_/g, ' ')}
+                        </div>
+                      </div>
+                    )}
+                    {(brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions) && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Revisions Count</div>
+                        <div className="text-white font-medium">
+                          {brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions}
+                        </div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.postingWindow && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Posting Window</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.postingWindow}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Barter Details Card */}
+              {brandSubmissionDetails.dealType === 'barter' && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">🎁</span>
+                    <h3 className="font-semibold text-lg">Barter Details</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {brandSubmissionDetails.productDescription && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Product Description</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.productDescription}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.barterValue && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Barter Value</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.barterApproximateValue && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Approximate Value</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.barterShippingResponsibility && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Shipping Responsibility</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Replacement Allowed</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Barter Product Shipping – Deal Timeline (barter only) */}
+              {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Package className="w-5 h-5 text-amber-400" />
+                    <h3 className="font-semibold text-lg">Product Shipping</h3>
+                  </div>
+                  {(() => {
+                    const shippingStatus = (deal as any)?.shipping_status || 'pending';
+                    if (shippingStatus === 'pending') {
+                      const updatedAt = (deal as any)?.updated_at;
+                      const daysPending = updatedAt ? Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                      const isDelayed = daysPending >= 7;
+                      return (
+                        <div className="space-y-3">
+                          <div className={`flex items-center gap-3 p-3 rounded-xl border ${isDelayed ? 'bg-red-500/10 border-red-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+                            <span className="text-2xl">⏳</span>
+                            <div>
+                              <p className="font-medium text-white">
+                                {isDelayed ? 'Shipping delayed' : 'Waiting for brand to ship product'}
+                              </p>
+                              <p className="text-sm text-white/60">
+                                {isDelayed
+                                  ? 'The brand has not updated shipping after 7 days. You can report an issue or seek legal support.'
+                                  : 'The brand will receive a link to add courier and tracking details.'}
+                              </p>
+                            </div>
+                          </div>
+                          {isDelayed && (
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                onClick={() => setShowReportIssueModal(true)}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
+                              >
+                                <AlertCircle className="w-4 h-4" />
+                                Report issue (e.g. brand has not shipped)
+                              </button>
+                              <a
+                                href="/#/creator-contracts"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
+                              >
+                                <Flag className="w-4 h-4" />
+                                Legal support
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    if (shippingStatus === 'shipped') {
+                      const courier = (deal as any)?.courier_name;
+                      const tracking = (deal as any)?.tracking_number;
+                      const trackingUrl = (deal as any)?.tracking_url;
+                      return (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <span className="text-2xl">📦</span>
+                            <div>
+                              <p className="font-medium text-white">Product shipped</p>
+                              {courier && <p className="text-sm text-white/70">Courier: {courier}</p>}
+                              {tracking && <p className="text-sm text-white/70">Tracking: {tracking}</p>}
+                            </div>
+                          </div>
                           <div className="flex flex-wrap gap-2">
+                            {trackingUrl && (
+                              <a
+                                href={trackingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                                Track package
+                              </a>
+                            )}
+                            <button
+                              onClick={async () => {
+                                if (!deal?.id) return;
+                                setIsConfirmingReceived(true);
+                                try {
+                                  const apiBaseUrl = getApiBaseUrl();
+                                  const res = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/shipping/confirm-received`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+                                  });
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    trackEvent('shipping_confirmed_delivered', { deal_id: deal.id });
+                                    toast.success('Product received confirmed.');
+                                    refreshAll?.();
+                                  } else {
+                                    toast.error(data.error || 'Failed to confirm');
+                                  }
+                                } catch (e) {
+                                  toast.error('Something went wrong.');
+                                } finally {
+                                  setIsConfirmingReceived(false);
+                                }
+                              }}
+                              disabled={isConfirmingReceived}
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50"
+                            >
+                              {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                              Confirm Product Received
+                            </button>
                             <button
                               onClick={() => setShowReportIssueModal(true)}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
-                            >
-                              <AlertCircle className="w-4 h-4" />
-                              Report issue (e.g. brand has not shipped)
-                            </button>
-                            <a
-                              href="/#/creator-contracts"
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
-                            >
-                              <Flag className="w-4 h-4" />
-                              Legal support
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
-                  if (shippingStatus === 'shipped') {
-                    const courier = (deal as any)?.courier_name;
-                    const tracking = (deal as any)?.tracking_number;
-                    const trackingUrl = (deal as any)?.tracking_url;
-                    return (
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                          <span className="text-2xl">📦</span>
-                          <div>
-                            <p className="font-medium text-white">Product shipped</p>
-                            {courier && <p className="text-sm text-white/70">Courier: {courier}</p>}
-                            {tracking && <p className="text-sm text-white/70">Tracking: {tracking}</p>}
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {trackingUrl && (
-                            <a
-                              href={trackingUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              disabled={isReportingIssue}
                               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
                             >
-                              <ExternalLink className="w-4 h-4" />
-                              Track package
-                            </a>
-                          )}
-                          <button
-                            onClick={async () => {
-                              if (!deal?.id) return;
-                              setIsConfirmingReceived(true);
-                              try {
-                                const apiBaseUrl = getApiBaseUrl();
-                                const res = await fetch(`${apiBaseUrl}/api/deals/${deal.id}/shipping/confirm-received`, {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
-                                });
-                                const data = await res.json();
-                                if (data.success) {
-                                  trackEvent('shipping_confirmed_delivered', { deal_id: deal.id });
-                                  toast.success('Product received confirmed.');
-                                  refreshAll?.();
-                                } else {
-                                  toast.error(data.error || 'Failed to confirm');
-                                }
-                              } catch (e) {
-                                toast.error('Something went wrong.');
-                              } finally {
-                                setIsConfirmingReceived(false);
-                              }
-                            }}
-                            disabled={isConfirmingReceived}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50"
-                          >
-                            {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                            Confirm Product Received
-                          </button>
-                          <button
-                            onClick={() => setShowReportIssueModal(true)}
-                            disabled={isReportingIssue}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
-                          >
-                            <AlertCircle className="w-4 h-4" />
-                            Report Issue
-                          </button>
+                              <AlertCircle className="w-4 h-4" />
+                              Report Issue
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  }
-                  if (shippingStatus === 'delivered') {
-                    return (
-                      <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-                        <CheckCircle className="w-6 h-6 text-green-400" />
-                        <div>
-                          <p className="font-medium text-white">Product delivered</p>
-                          <p className="text-sm text-white/60">You confirmed receipt. Deliverables timeline can proceed.</p>
+                      );
+                    }
+                    if (shippingStatus === 'delivered') {
+                      return (
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                          <CheckCircle className="w-6 h-6 text-green-400" />
+                          <div>
+                            <p className="font-medium text-white">Product delivered</p>
+                            <p className="text-sm text-white/60">You confirmed receipt. Deliverables timeline can proceed.</p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  }
-                  if (shippingStatus === 'issue_reported') {
-                    const reason = (deal as any)?.shipping_issue_reason;
-                    return (
-                      <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                        <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-white">Issue reported</p>
-                          {reason && <p className="text-sm text-white/70 mt-1">{reason}</p>}
-                          <p className="text-sm text-white/50 mt-2">The brand has been notified. You can use legal support if needed.</p>
+                      );
+                    }
+                    if (shippingStatus === 'issue_reported') {
+                      const reason = (deal as any)?.shipping_issue_reason;
+                      return (
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                          <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-white">Issue reported</p>
+                            {reason && <p className="text-sm text-white/70 mt-1">{reason}</p>}
+                            <p className="text-sm text-white/50 mt-2">The brand has been notified. You can use legal support if needed.</p>
+                          </div>
                         </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+              )}
+
+              {/* Legal Card */}
+              {(brandSubmissionDetails.governingLaw || brandSubmissionDetails.companyState) && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">⚖️</span>
+                    <h3 className="font-semibold text-lg">Legal</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {brandSubmissionDetails.governingLaw && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Jurisdiction Country</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.governingLaw}</div>
                       </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-            )}
+                    )}
+                    {brandSubmissionDetails.companyState && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">State</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.companyState}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-            {/* Legal Card */}
-            {(brandSubmissionDetails.governingLaw || brandSubmissionDetails.companyState) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">⚖️</span>
-                  <h3 className="font-semibold text-lg">Legal</h3>
+              {/* Brand Details Card */}
+              {(brandSubmissionDetails.companyLegalName || brandSubmissionDetails.companyGstin || brandSubmissionDetails.companyAddress || brandSubmissionDetails.authorizedSignatoryName || brandSubmissionDetails.companyEmail || brandSubmissionDetails.companyPhone) && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-xl">🏢</span>
+                    <h3 className="font-semibold text-lg">Brand Details</h3>
+                    {brandSubmissionDetails.companyGstin && (
+                      <span className="ml-auto px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                        Verified via GST
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    {brandSubmissionDetails.companyGstin && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">GSTIN</div>
+                        <div className="text-white font-medium font-mono">{brandSubmissionDetails.companyGstin}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.companyLegalName && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Legal Company Name</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.companyLegalName}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.companyAddress && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Registered Address</div>
+                        <div className="text-white font-medium whitespace-pre-line">{brandSubmissionDetails.companyAddress}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.authorizedSignatoryName && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Authorized Signatory Name</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.authorizedSignatoryName}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.companyEmail && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Contact Email</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.companyEmail}</div>
+                      </div>
+                    )}
+                    {brandSubmissionDetails.companyPhone && (
+                      <div>
+                        <div className="text-sm text-white/60 mb-1">Phone Number</div>
+                        <div className="text-white font-medium">{brandSubmissionDetails.companyPhone}</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {brandSubmissionDetails.governingLaw && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Jurisdiction Country</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.governingLaw}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.companyState && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">State</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.companyState}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Brand Details Card */}
-            {(brandSubmissionDetails.companyLegalName || brandSubmissionDetails.companyGstin || brandSubmissionDetails.companyAddress || brandSubmissionDetails.authorizedSignatoryName || brandSubmissionDetails.companyEmail || brandSubmissionDetails.companyPhone) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🏢</span>
-                  <h3 className="font-semibold text-lg">Brand Details</h3>
-                  {brandSubmissionDetails.companyGstin && (
-                    <span className="ml-auto px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                      Verified via GST
-                    </span>
-                  )}
+              {/* Next Steps - For Signed Agreements */}
+              {isCreatorSigned && (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || signedContractUrl || signedAt || (deal?.status?.toLowerCase()?.includes('signed'))) && (
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
+                  <h3 className="font-semibold text-lg mb-4 text-white/90">Next steps:</h3>
+                  <ul className="space-y-2 text-sm text-white/70">
+                    <li className="flex items-start gap-2">
+                      <span className="text-white/50 mt-0.5">•</span>
+                      <span>Creator delivers content as per agreed timeline</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-white/50 mt-0.5">•</span>
+                      <span>Brand completes payment as agreed</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-white/50 mt-0.5">•</span>
+                      <span>Audit trail remains available for disputes or compliance</span>
+                    </li>
+                  </ul>
                 </div>
-                <div className="space-y-4">
-                  {brandSubmissionDetails.companyGstin && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">GSTIN</div>
-                      <div className="text-white font-medium font-mono">{brandSubmissionDetails.companyGstin}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.companyLegalName && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Legal Company Name</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.companyLegalName}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.companyAddress && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Registered Address</div>
-                      <div className="text-white font-medium whitespace-pre-line">{brandSubmissionDetails.companyAddress}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.authorizedSignatoryName && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Authorized Signatory Name</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.authorizedSignatoryName}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.companyEmail && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Contact Email</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.companyEmail}</div>
-                    </div>
-                  )}
-                  {brandSubmissionDetails.companyPhone && (
-                    <div>
-                      <div className="text-sm text-white/60 mb-1">Phone Number</div>
-                      <div className="text-white font-medium">{brandSubmissionDetails.companyPhone}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Next Steps - For Signed Agreements */}
-            {isCreatorSigned && (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || signedContractUrl || signedAt || (deal?.status?.toLowerCase()?.includes('signed'))) && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
-                <h3 className="font-semibold text-lg mb-4 text-white/90">Next steps:</h3>
-                <ul className="space-y-2 text-sm text-white/70">
-                  <li className="flex items-start gap-2">
-                    <span className="text-white/50 mt-0.5">•</span>
-                    <span>Creator delivers content as per agreed timeline</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-white/50 mt-0.5">•</span>
-                    <span>Brand completes payment as agreed</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-white/50 mt-0.5">•</span>
-                    <span>Audit trail remains available for disputes or compliance</span>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        )
+              )}
+            </div>
+          )
         }
-      </div>
+      </div >
 
       {/* Lazy Modals */}
-      <Suspense fallback={null}>
+      < Suspense fallback={null} >
         {showContractPreview && (deal as any).contract_file_url && (
           <ContractPreviewModal
             open={showContractPreview}
@@ -3671,35 +3681,40 @@ ${link}`;
             fileName={contractFileName || undefined}
             dealTitle={dealTitle}
           />
-        )}
+        )
+        }
 
-        {showIssueTypeModal && (
-          <IssueTypeModal
-            open={showIssueTypeModal}
-            onClose={() => setShowIssueTypeModal(false)}
-            onSelect={handleIssueTypeSelect}
-            dealTitle={dealTitle}
-            dealAmount={dealAmount}
-            dueDate={deal.due_date || undefined}
-          />
-        )}
-      </Suspense>
+        {
+          showIssueTypeModal && (
+            <IssueTypeModal
+              open={showIssueTypeModal}
+              onClose={() => setShowIssueTypeModal(false)}
+              onSelect={handleIssueTypeSelect}
+              dealTitle={dealTitle}
+              dealAmount={dealAmount}
+              dueDate={deal.due_date || undefined}
+            />
+          )
+        }
+      </Suspense >
 
       {/* Message Brand Modal */}
-      {showMessageModal && (
-        <MessageBrandModal
-          open={showMessageModal}
-          onClose={() => {
-            setShowMessageModal(false);
-            setReportIssueMessage('');
-          }}
-          brandName={deal.brand_name}
-          brandEmail={deal.brand_email || undefined}
-          dealId={deal.id}
-          dealTitle={dealTitle}
-          initialMessage={reportIssueMessage}
-        />
-      )}
+      {
+        showMessageModal && (
+          <MessageBrandModal
+            open={showMessageModal}
+            onClose={() => {
+              setShowMessageModal(false);
+              setReportIssueMessage('');
+            }}
+            brandName={deal.brand_name}
+            brandEmail={deal.brand_email || undefined}
+            dealId={deal.id}
+            dealTitle={dealTitle}
+            initialMessage={reportIssueMessage}
+          />
+        )
+      }
 
       {/* Barter Shipping: Report Issue Modal */}
       <Dialog open={showReportIssueModal} onOpenChange={setShowReportIssueModal}>
@@ -3777,101 +3792,103 @@ ${link}`;
       />
 
       {/* Delete Confirmation Dialog */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-400" />
+      {
+        showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Delete Deal</h3>
+                  <p className="text-sm text-white/60">This action cannot be undone</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Delete Deal</h3>
-                <p className="text-sm text-white/60">This action cannot be undone</p>
-              </div>
-            </div>
 
-            <p className="text-white/80 mb-6">
-              Are you sure you want to delete <span className="font-semibold">"{deal.brand_name}"</span>?
-              This will permanently remove the deal and all associated data.
-            </p>
+              <p className="text-white/80 mb-6">
+                Are you sure you want to delete <span className="font-semibold">"{deal.brand_name}"</span>?
+                This will permanently remove the deal and all associated data.
+              </p>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  triggerHaptic(HapticPatterns.light);
-                  setShowDeleteConfirm(false);
-                }}
-                disabled={deleteDeal.isPending}
-                className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <motion.button
-                onClick={async () => {
-                  if (!profile?.id) {
-                    toast.error('User not found');
-                    return;
-                  }
-
-                  if (!deal?.id) {
-                    toast.error('Deal not found');
-                    return;
-                  }
-
-                  triggerHaptic(HapticPatterns.medium);
-
-                  try {
-                    // Double-check deal status before deletion
-                    const contractStatus = getContractStatus();
-                    const isSignedOrCompleted = contractStatus === 'Signed' ||
-                      dealExecutionStatus === 'signed' ||
-                      dealExecutionStatus === 'completed';
-
-                    if (isSignedOrCompleted) {
-                      toast.error('Cannot delete a deal that has been signed or completed');
-                      setShowDeleteConfirm(false);
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    triggerHaptic(HapticPatterns.light);
+                    setShowDeleteConfirm(false);
+                  }}
+                  disabled={deleteDeal.isPending}
+                  className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <motion.button
+                  onClick={async () => {
+                    if (!profile?.id) {
+                      toast.error('User not found');
                       return;
                     }
 
-                    await deleteDeal.mutateAsync({
-                      id: deal.id,
-                      creator_id: profile.id,
-                      contract_file_url: deal.contract_file_url || null,
-                      invoice_file_url: deal.invoice_file_url || null,
-                    });
+                    if (!deal?.id) {
+                      toast.error('Deal not found');
+                      return;
+                    }
 
-                    toast.success('Deal deleted successfully');
-                    setShowDeleteConfirm(false);
-                    navigate('/creator-contracts');
-                  } catch (error: any) {
-                    console.error('[DealDetailPage] Delete error:', error);
-                    const errorMessage = error?.message || error?.error || 'Failed to delete deal';
-                    toast.error(errorMessage);
-                    // Keep dialog open on error so user can retry
-                  }
-                }}
-                disabled={deleteDeal.isPending}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {deleteDeal.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  'Delete Deal'
-                )}
-              </motion.button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+                    triggerHaptic(HapticPatterns.medium);
+
+                    try {
+                      // Double-check deal status before deletion
+                      const contractStatus = getContractStatus();
+                      const isSignedOrCompleted = contractStatus === 'Signed' ||
+                        dealExecutionStatus === 'signed' ||
+                        dealExecutionStatus === 'completed';
+
+                      if (isSignedOrCompleted) {
+                        toast.error('Cannot delete a deal that has been signed or completed');
+                        setShowDeleteConfirm(false);
+                        return;
+                      }
+
+                      await deleteDeal.mutateAsync({
+                        id: deal.id,
+                        creator_id: profile.id,
+                        contract_file_url: deal.contract_file_url || null,
+                        invoice_file_url: deal.invoice_file_url || null,
+                      });
+
+                      toast.success('Deal deleted successfully');
+                      setShowDeleteConfirm(false);
+                      navigate('/creator-contracts');
+                    } catch (error: any) {
+                      console.error('[DealDetailPage] Delete error:', error);
+                      const errorMessage = error?.message || error?.error || 'Failed to delete deal';
+                      toast.error(errorMessage);
+                      // Keep dialog open on error so user can retry
+                    }
+                  }}
+                  disabled={deleteDeal.isPending}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {deleteDeal.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Deal'
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
+        )
+      }
       {/* Creator Signing Modal */}
       <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
         <DialogContent className="sm:max-w-[440px] bg-neutral-950/98 border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60">
@@ -3972,11 +3989,17 @@ ${link}`;
 
           <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
             <Lock className="w-3.5 h-3.5" />
-            <span>Secure Enterprise-grade E-signature powered by NoticeBazaar Armor</span>
+            <span>Secure Enterprise-grade E-signature powered by Creator Armour Armor</span>
           </div>
         </DialogContent>
       </Dialog>
-    </CreatorNavigationWrapper>
+
+      <InvoiceGeneratorModal
+        deal={deal}
+        isOpen={showInvoiceGenerator}
+        onClose={() => setShowInvoiceGenerator(false)}
+      />
+    </CreatorNavigationWrapper >
   );
 }
 

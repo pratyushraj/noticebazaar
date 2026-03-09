@@ -13,7 +13,7 @@ Since you have a Railway API token, here are the options:
 2. **Create New Project:**
    - Click "New Project"
    - Select "Deploy from GitHub repo"
-   - Choose your `noticebazaar` repository
+   - Choose your `creatorarmour` repository
    - Set root directory to: `server`
 
 3. **Add Environment Variables:**
@@ -22,7 +22,7 @@ Since you have a Railway API token, here are the options:
      ```
      SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
      SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-     FRONTEND_URL=https://noticebazaar.com
+     FRONTEND_URL=https://creatorarmour.com
      NODE_ENV=production
      ```
 

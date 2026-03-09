@@ -36,8 +36,9 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cn(
-        "bg-gradient-to-r from-purple-600 to-indigo-600",
-        "hover:from-purple-500 hover:to-indigo-500",
+        "bg-blue-600 dark:bg-gradient-to-r dark:from-purple-600 dark:to-indigo-600",
+        "hover:bg-blue-500 dark:hover:from-purple-500 dark:hover:to-indigo-500",
+        "text-white",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "px-6 py-3",
         "rounded-xl",

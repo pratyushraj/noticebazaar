@@ -52,13 +52,13 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
       >
         <GradientCard padding="lg" className="max-w-2xl mx-auto">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Instagram className="w-8 h-8 text-pink-400" aria-hidden />
-            <Link2 className="w-5 h-5 text-white/60" aria-hidden />
+            <Instagram className="w-8 h-8 text-pink-500" aria-hidden />
+            <Link2 className="w-5 h-5 text-slate-400 dark:text-white/60" aria-hidden />
           </div>
-          <h2 className="text-3xl font-bold leading-tight mb-2 text-center">
+          <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
             Your Instagram username
           </h2>
-          <p className="text-base text-white/80 text-center mb-6">
+          <p className="text-base text-slate-500 dark:text-white/80 text-center mb-6">
             This becomes your collaboration link so brands can find you. Same as your Instagram handle.
           </p>
 
@@ -68,14 +68,14 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="e.g. your_handle"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-lg text-white placeholder-white/50 outline-none focus:border-purple-500 focus:bg-white/10 transition-colors"
+              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-6 py-4 text-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
               autoFocus
               aria-label="Instagram username"
               aria-required="false"
             />
             {normalized && (
-              <p className="text-sm text-white/60 mt-2 text-center">
-                Your link: <span className="text-purple-300 font-medium">/collab/{normalized || 'username'}</span>
+              <p className="text-sm text-slate-400 dark:text-white/60 mt-2 text-center">
+                Your link: <span className="text-blue-600 dark:text-purple-300 font-medium tracking-tight">creatorarmour.com/{normalized || 'username'}</span>
               </p>
             )}
           </div>

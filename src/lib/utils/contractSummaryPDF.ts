@@ -82,7 +82,7 @@ export function extractBrandContactInfo(analysisData: any): {
     // Filter out common non-brand emails
     const brandEmails = emails.filter(
       email => 
-        !email.includes('noticebazaar') && 
+        !email.includes('creatorarmour') && 
         !email.includes('example.com') &&
         !email.includes('test.com')
     );

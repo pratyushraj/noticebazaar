@@ -38,11 +38,11 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
         <IconBubble icon={LifeBuoy} size="lg" color="purple" animated />
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">
         Expert Backup When Needed
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-10">
+      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-6 md:mb-10">
         Legal + tax support built for creators.
       </p>
 
@@ -54,8 +54,8 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
               <div className="flex items-center gap-4">
                 <IconBubble icon={Icon} size="md" color={advisor.color} className="flex-shrink-0" />
                 <div className="flex-1">
-                  <div className="text-base font-semibold mb-1">{advisor.name}</div>
-                  <div className="text-sm text-white/60">{advisor.role}</div>
+                  <div className="text-base font-semibold mb-1 text-slate-900 dark:text-white">{advisor.name}</div>
+                  <div className="text-sm text-slate-500 dark:text-white/60">{advisor.role}</div>
                 </div>
               </div>
             </GradientCard>

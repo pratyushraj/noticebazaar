@@ -28,7 +28,7 @@ flyctl launch
 
 This will:
 - Create a new app (or use existing `fly.toml`)
-- Ask for app name (use: `noticebazaar-api`)
+- Ask for app name (use: `creatorarmour-api`)
 - Ask for region (choose: `iad` - Washington, D.C.)
 - Ask to deploy now (say **No** for now)
 
@@ -38,7 +38,7 @@ This will:
 flyctl secrets set \
   SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co \
   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key \
-  FRONTEND_URL=https://noticebazaar.com \
+  FRONTEND_URL=https://creatorarmour.com \
   NODE_ENV=production \
   PORT=8080
 ```
@@ -55,20 +55,20 @@ flyctl deploy
 flyctl status
 ```
 
-Your API will be available at: `https://noticebazaar-api.fly.dev`
+Your API will be available at: `https://creatorarmour-api.fly.dev`
 
 ## Update Frontend
 
 Once deployed, update your frontend environment variable:
 
 ```env
-VITE_API_BASE_URL=https://noticebazaar-api.fly.dev
+VITE_API_BASE_URL=https://creatorarmour-api.fly.dev
 ```
 
 ## Test Your API
 
 ```bash
-curl https://noticebazaar-api.fly.dev/health
+curl https://creatorarmour-api.fly.dev/health
 ```
 
 Should return:
@@ -131,7 +131,7 @@ flyctl open
 **App crashes?**
 - Check logs: `flyctl logs`
 - Verify environment variables: `flyctl secrets list`
-- Check health endpoint: `curl https://noticebazaar-api.fly.dev/health`
+- Check health endpoint: `curl https://creatorarmour-api.fly.dev/health`
 
 **Out of memory?**
 - Scale up: `flyctl scale memory 1024`

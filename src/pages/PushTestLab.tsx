@@ -35,7 +35,7 @@ const PushTestLab = () => {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
       host.endsWith('creatorarmour.com') ||
-      host.endsWith('noticebazaar.com') ||
+      host.endsWith('creatorarmour.com') ||
       host.endsWith('vercel.app');
     // Hard-pin push test traffic to known-good backend to avoid edge rewrite drift.
     return isPublicHost ? 'https://noticebazaar-api.onrender.com' : apiBaseUrl;

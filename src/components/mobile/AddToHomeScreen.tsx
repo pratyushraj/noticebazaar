@@ -92,7 +92,7 @@ const AddToHomeScreen: React.FC = () => {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-white mb-1">
-                Add NoticeBazaar to home screen
+                Add Creator Armour to home screen
               </h3>
               <p className="text-xs text-white/80 mb-3">
                 Get 1-tap access to your dashboard

@@ -33,8 +33,9 @@ interface SessionContextType {
    */
   isAuthInitializing: boolean;
   isAdmin: boolean;
-  isCreator: boolean; // New: Add isCreator
-  organizationId: string | null; // NEW: Add organizationId
+  isCreator: boolean;
+  isBrand: boolean;
+  organizationId: string | null;
   refetchProfile: () => void; // Add refetchProfile to the context type
   trialStatus: TrialStatus; // NEW: Add trial status
 }
@@ -167,8 +168,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
   // Derive computed values from profile
   const isAdmin = profile?.role === 'admin';
-  const isCreator = profile?.role === 'creator'; // New: Define isCreator
-  const organizationId = profile?.organization_id || null; // Derive from profile
+  const isCreator = profile?.role === 'creator';
+  const isBrand = profile?.role === 'brand';
+  const organizationId = profile?.organization_id || null;
   const trialStatus = useMemo(() => getTrialStatus(profile), [profile]); // Calculate trial status
   // Overall loading state: initial session not complete, OR profile loading when we have no profile yet.
   // Once we have profile data, don't gate on refetches — avoids loop where dashboard mounts, refetches profile, loading flips true, loader shows again.
@@ -364,14 +366,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                       const userEmail = sessionData.session.user.email?.toLowerCase();
                       const isPratyush = userEmail === 'pratyushraj@outlook.com';
 
+                      const p = (profileData as any);
                       if (isPratyush) {
                         redirectPath = '/creator-dashboard';
-                      } else if (profileData.role === 'admin') {
+                      } else if (p?.role === 'admin') {
                         redirectPath = '/admin-dashboard';
                         console.log('[SessionContext] Admin user detected in initializeSession');
-                      } else if (profileData.role === 'chartered_accountant') {
+                      } else if (p?.role === 'brand') {
+                        redirectPath = '/brand-dashboard';
+                      } else if (p?.role === 'chartered_accountant') {
                         redirectPath = '/ca-dashboard';
-                      } else if (profileData.role === 'lawyer') {
+                      } else if (p?.role === 'lawyer') {
                         redirectPath = '/lawyer-dashboard';
                       }
                     }
@@ -653,14 +658,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 const userEmail = session.user.email?.toLowerCase();
                 const isPratyush = userEmail === 'pratyushraj@outlook.com';
 
+                const p = (profileData as any);
                 if (isPratyush) {
                   targetPath = '/creator-dashboard';
-                } else if (profileData.role === 'admin') {
+                } else if (p?.role === 'admin') {
                   targetPath = '/admin-dashboard';
                   console.log('[SessionContext] Admin user detected, redirecting to admin dashboard');
-                } else if (profileData.role === 'chartered_accountant') {
+                } else if (p?.role === 'brand') {
+                  targetPath = '/brand-dashboard';
+                } else if (p?.role === 'chartered_accountant') {
                   targetPath = '/ca-dashboard';
-                } else if (profileData.role === 'lawyer') {
+                } else if (p?.role === 'lawyer') {
                   targetPath = '/lawyer-dashboard';
                 } else {
                   targetPath = '/creator-dashboard';
@@ -710,8 +718,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     authStatus,
     isAuthInitializing,
     isAdmin,
-    isCreator, // Include isCreator
-    organizationId, // Include organizationId
+    isCreator,
+    isBrand,
+    organizationId,
     refetchProfile: refetchProfileQuery || (() => { }), // Expose refetch function with fallback
     trialStatus, // Include trial status
   }), [session, user, profile, loading, authStatus, isAuthInitializing, isAdmin, isCreator, organizationId, refetchProfileQuery, trialStatus]);
@@ -729,6 +738,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       isAuthInitializing: false,
       isAdmin: false,
       isCreator: false,
+      isBrand: false,
       organizationId: null,
       refetchProfile: () => { },
       trialStatus: { isTrial: false, isExpired: false, daysRemaining: 0, isLocked: false },
@@ -765,6 +775,7 @@ export const useSession = () => {
       isAuthInitializing: true,
       isAdmin: false,
       isCreator: false,
+      isBrand: false,
       organizationId: null,
       refetchProfile: () => { },
       trialStatus: { isTrial: false, isExpired: false, daysRemaining: 0, isLocked: false },

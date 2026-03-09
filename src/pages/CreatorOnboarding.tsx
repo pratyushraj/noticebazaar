@@ -48,6 +48,33 @@ const CreatorOnboarding = () => {
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
   const [isNavigating, setIsNavigating] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      const newTheme = e.matches ? 'dark' : 'light';
+      setTheme(newTheme);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   const [welcomeStep, setWelcomeStep] = useState<WelcomeStep>(0);
   const [setupStep, setSetupStep] = useState<SetupStep>('name');
@@ -67,8 +94,8 @@ const CreatorOnboarding = () => {
           barterValueMax: '',
           ...parsed
         };
-      } catch {
-        return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '', barterValueMax: '' };
+      } catch (e) {
+        console.error('Error parsing saved onboarding data', e);
       }
     }
     return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '', barterValueMax: '' };
@@ -151,7 +178,7 @@ const CreatorOnboarding = () => {
 
     if (profile.onboarding_complete) {
       setIsNavigating(true);
-      navigate('/creator-profile?section=collab&forceDealSettings=1', { replace: true });
+      navigate('/creator-dashboard', { replace: true });
       return;
     }
   }, [sessionLoading, profile, navigate]);
@@ -159,11 +186,11 @@ const CreatorOnboarding = () => {
   // Show loading state while session is loading or navigation is happening
   if (sessionLoading || isNavigating) {
     return (
-      <OnboardingContainer>
+      <OnboardingContainer theme={theme}>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-400" />
-            <p className="text-white/80">Loading...</p>
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500 dark:text-blue-400" />
+            <p className="text-slate-600 dark:text-white/80">Loading...</p>
           </div>
         </div>
       </OnboardingContainer>
@@ -173,11 +200,11 @@ const CreatorOnboarding = () => {
   // Early return if profile is invalid (navigation will happen in useEffect)
   if (!profile || profile.role !== 'creator') {
     return (
-      <OnboardingContainer>
+      <OnboardingContainer theme={theme}>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-400" />
-            <p className="text-white/80">Redirecting...</p>
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500 dark:text-blue-400" />
+            <p className="text-slate-600 dark:text-white/80">Redirecting...</p>
           </div>
         </div>
       </OnboardingContainer>
@@ -187,11 +214,11 @@ const CreatorOnboarding = () => {
   // Early return if onboarding is complete (navigation will happen in useEffect)
   if (profile.onboarding_complete) {
     return (
-      <OnboardingContainer>
+      <OnboardingContainer theme={theme}>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-400" />
-            <p className="text-white/80">Redirecting to dashboard...</p>
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500 dark:text-blue-400" />
+            <p className="text-slate-600 dark:text-white/80">Redirecting to dashboard...</p>
           </div>
         </div>
       </OnboardingContainer>
@@ -455,7 +482,7 @@ const CreatorOnboarding = () => {
   // Welcome Screens
   if (setupStep === 'name' && welcomeStep < 5 && !onboardingData.name) {
     return (
-      <OnboardingContainer>
+      <OnboardingContainer theme={theme}>
         <div className="w-full relative z-50 h-12 md:h-14 max-w-3xl mx-auto px-4 md:px-6 flex items-center justify-center">
           <OnboardingProgressDots
             totalSteps={5}
@@ -517,7 +544,7 @@ const CreatorOnboarding = () => {
   };
 
   return (
-    <OnboardingContainer>
+    <OnboardingContainer theme={theme}>
       <div className="flex-1 flex flex-col min-h-0 max-w-2xl mx-auto w-full p-4 pb-16 overflow-y-auto overscroll-contain">
         {/* Progress Bar - Add top padding on mobile to account for safe area */}
         {setupStep !== 'success' && (
@@ -619,8 +646,15 @@ const CreatorOnboarding = () => {
                 <SuccessStep
                   key="success"
                   userName={onboardingData.name}
-                  onGoToDashboard={() => navigate('/creator-profile?section=collab&forceDealSettings=1')}
-                  onCompleteCollabProfile={() => navigate('/creator-profile?section=collab&forceDealSettings=1')}
+                  onGoToDashboard={() => navigate('/creator-dashboard')}
+                  onCompleteCollabProfile={() => {
+                    const handle = profile?.instagram_handle || profile?.username;
+                    if (handle) {
+                      navigate(`/collab/${handle}?edit=true`);
+                    } else {
+                      navigate('/creator-dashboard');
+                    }
+                  }}
                   collabProfile={profile as unknown as Record<string, any>}
                   collabLink={profile?.instagram_handle || profile?.username
                     ? `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`

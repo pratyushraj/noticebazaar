@@ -10,12 +10,12 @@ Deploy using Render's Blueprint feature - it auto-detects `server/render.yaml` a
 
 ### 2. Connect Your Repository
 - Select **"Connect GitHub"** (if not already connected)
-- Choose repository: `noticebazaar`
+- Choose repository: `creatorarmour`
 - Render will automatically detect `server/render.yaml`
 
 ### 3. Review Configuration
 Render will show you the service configuration from `render.yaml`:
-- ✅ Service name: `noticebazaar-api`
+- ✅ Service name: `creatorarmour-api`
 - ✅ Root directory: `server`
 - ✅ Build command: `npm install && npm run build`
 - ✅ Start command: `npm start`
@@ -30,7 +30,7 @@ Click **"Add Environment Variable"** and add:
 ```
 SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key-here>
-FRONTEND_URL=https://noticebazaar.com
+FRONTEND_URL=https://creatorarmour.com
 ```
 
 **Note:** `NODE_ENV` and `PORT` are already set from `render.yaml`, but you can verify they're there.
@@ -110,7 +110,7 @@ Your `server/render.yaml` contains:
 ```yaml
 services:
   - type: web
-    name: noticebazaar-api
+    name: creatorarmour-api
     env: node
     rootDir: server          # ← Critical: tells Render where your code is
     buildCommand: npm install && npm run build

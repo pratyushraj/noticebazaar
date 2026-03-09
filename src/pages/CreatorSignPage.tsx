@@ -106,7 +106,7 @@ const CreatorSignPage = () => {
             const apiBaseUrl =
                 import.meta.env.VITE_API_BASE_URL ||
                 (window.location.origin.includes('creatorarmour.com')
-                    ? 'https://api.creatorarmour.com'
+                    ? 'https://api.noticebazaar.com'
                     : getApiBaseUrl());
 
             const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
@@ -147,7 +147,7 @@ const CreatorSignPage = () => {
             const apiBaseUrl =
                 import.meta.env.VITE_API_BASE_URL ||
                 (window.location.origin.includes('creatorarmour.com')
-                    ? 'https://api.creatorarmour.com'
+                    ? 'https://api.noticebazaar.com'
                     : getApiBaseUrl());
 
             const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
@@ -214,7 +214,7 @@ const CreatorSignPage = () => {
             const apiBaseUrl =
                 import.meta.env.VITE_API_BASE_URL ||
                 (window.location.origin.includes('creatorarmour.com')
-                    ? 'https://api.creatorarmour.com'
+                    ? 'https://api.noticebazaar.com'
                     : getApiBaseUrl());
 
             const response = await fetch(`${apiBaseUrl}/api/creator-sign/${token}/sign`, {

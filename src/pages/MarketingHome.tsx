@@ -550,7 +550,7 @@ const MarketingHome = () => {
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold leading-tight">Your WhatsApp is Now a <span className="gradient-text">Legal Evidence Vault</span></h2>
               <p className="text-gray-300 text-lg">
-                Forward any message, image, or document to your dedicated NoticeBazaar WhatsApp number. It's automatically saved, timestamped, and ready as evidence for any dispute.
+                Forward any message, image, or document to your dedicated Creator Armour WhatsApp number. It's automatically saved, timestamped, and ready as evidence for any dispute.
               </p>
               <ul className="space-y-3">
                 <ListItem Icon={Check}>Auto-save all communications.</ListItem>
@@ -559,7 +559,7 @@ const MarketingHome = () => {
                 <ListItem Icon={Check}>Accessible by your legal team.</ListItem>
               </ul>
               <div className="mt-6">
-                <a href="https://wa.me/919205376316?text=Hi%20NoticeBazaar,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
+                <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20want%20to%20know%20more%20about%20the%20WhatsApp%20Legal%20Vault" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-5 py-3 rounded-lg text-lg font-semibold inline-flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" /> Learn More on WhatsApp
                 </a>
               </div>
@@ -598,7 +598,7 @@ const MarketingHome = () => {
               <AlertTriangle className="h-4 w-4 mr-2" /> Legal Disclaimer
             </p>
             <p className="text-xs leading-relaxed">
-              NoticeBazaar is a technology platform providing administrative and legal support services. We are not a law firm and do not provide direct legal representation. Legal advice is provided solely by the independent professionals in our network. Use of this platform does not create an attorney-client relationship.
+              Creator Armour is a technology platform providing administrative and legal support services. We are not a law firm and do not provide direct legal representation. Legal advice is provided solely by the independent professionals in our network. Use of this platform does not create an attorney-client relationship.
             </p>
           </div>
 
@@ -719,7 +719,7 @@ const MarketingHome = () => {
       </div>
 
       {/* Floating WhatsApp CTA (bottom-right) */}
-      <a href="https://wa.me/919205376316?text=Hi%20NoticeBazaar,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 flex items-center gap-2 transition-all duration-300 hover:scale-105">
+      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 flex items-center gap-2 transition-all duration-300 hover:scale-105">
         <MessageSquare className="h-6 w-6 text-white" />
         <span className="text-white font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
       </a>

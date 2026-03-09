@@ -19,9 +19,9 @@ interface NameStepProps {
  * - Standardized card styling
  * - Optional skip button
  */
-export const NameStep: React.FC<NameStepProps> = ({ 
-  name, 
-  onNameChange, 
+export const NameStep: React.FC<NameStepProps> = ({
+  name,
+  onNameChange,
   onNext,
   onSkip,
 }) => {
@@ -35,23 +35,24 @@ export const NameStep: React.FC<NameStepProps> = ({
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
         <GradientCard padding="lg" className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold leading-tight mb-2 text-center">
+          <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
             What's your name?
           </h2>
-          <p className="text-base text-white/80 text-center mb-8">
+          <p className="text-base text-slate-500 dark:text-white/80 text-center mb-8">
             Let's personalize your experience
           </p>
-
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="Enter your name"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-lg text-white placeholder-white/50 outline-none focus:border-purple-500 focus:bg-white/10 transition-colors mb-6"
-            autoFocus
-            aria-label="Enter your name"
-            aria-required="false"
-          />
+          <div className="relative mb-6">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="Enter your name"
+              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-6 py-4 text-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
+              autoFocus
+              aria-label="Enter your name"
+              aria-required="false"
+            />
+          </div>
 
           <PrimaryButton onClick={onNext} disabled={!name.trim()}>
             Continue

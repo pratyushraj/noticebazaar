@@ -7,7 +7,7 @@ export const getInitials = (firstName: string | null, lastName: string | null) =
 export const generateAvatarUrl = (firstName: string | null, lastName: string | null) => {
   const seed = `${firstName || ''} ${lastName || ''}`.trim().replace(/\s+/g, '+');
   if (!seed) return DEFAULT_AVATAR_URL;
-  // Use purple theme for generated avatars (matching NoticeBazaar design)
+  // Use purple theme for generated avatars (matching Creator Armour design)
   return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}&backgroundColor=8a3cff&backgroundType=solid&fontFamily=sans`;
 };
 

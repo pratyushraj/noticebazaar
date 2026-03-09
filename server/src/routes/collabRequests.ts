@@ -23,6 +23,7 @@ import { resolveOrCreateBrandContact } from '../services/brandContactService.js'
 import { estimateBarterValueRange, estimateReelBudgetRange, estimateReelRate, getEffectiveReelRate } from '../services/creatorRateService.js';
 import { fetchInstagramPublicData } from '../services/instagramService.js';
 import { notifyCreatorOnCollabRequestCreated } from '../services/pushNotificationService.js';
+import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brandAuthService.js';
 
 const router = express.Router();
 
@@ -1205,6 +1206,17 @@ router.get('/:username', async (req: Request, res: Response) => {
         past_brand_count: trustStats.brands_count,
         performance_proof: performanceProof,
         trust_stats: trustStats,
+        // Qualification & Deal Rules
+        min_deal_value: (profile as any).pricing_min ?? null,
+        min_lead_time_days: 3, // Hardcoded for demo/baseline
+        typical_story_rate: null,
+        typical_post_rate: null,
+        premium_production_multiplier: null,
+        brand_type_preferences: null,
+        campaign_type_support: null,
+        revision_policy: null,
+        allow_negotiation: true,
+        allow_counter_offer: true,
       },
     });
   } catch (error: any) {
@@ -1329,6 +1341,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       budget_range,
       exact_budget,
       barter_description,
+      barter_product_name,
+      barter_product_category,
       barter_value,
       barter_product_image_url,
       campaign_category,
@@ -1409,6 +1423,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (approval_sla_hours) extraTermsLines.push(`Approval SLA requested: ${String(approval_sla_hours).trim()} hours`);
     if (shipping_timeline_days) extraTermsLines.push(`Shipping timeline requested: ${String(shipping_timeline_days).trim()} days`);
     if (cancellation_policy) extraTermsLines.push(`Cancellation/reschedule policy: ${String(cancellation_policy).trim()}`);
+    if (barter_product_name) extraTermsLines.push(`Product for collab: ${String(barter_product_name).trim()}`);
+    if (barter_product_category) extraTermsLines.push(`Product category: ${String(barter_product_category).trim()}`);
 
     const campaignDescriptionWithTerms = extraTermsLines.length > 0
       ? `${campaign_description.trim()}\n\nAdditional Commercial Terms:\n- ${extraTermsLines.join('\n- ')}`
@@ -1451,7 +1467,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     // Try username first, then instagram_handle as fallback
     let { data: creator, error: creatorError } = await supabase
       .from('profiles')
-      .select('id, username, instagram_handle')
+      .select('id, username, instagram_handle, pricing_min')
       .eq('username', normalizedUsername)
       .eq('role', 'creator')
       .maybeSingle();
@@ -1460,12 +1476,24 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
     if (!creator && !creatorError) {
       const result = await supabase
         .from('profiles')
-        .select('id, username, instagram_handle')
+        .select('id, username, instagram_handle, pricing_min')
         .eq('instagram_handle', normalizedUsername)
         .eq('role', 'creator')
         .maybeSingle();
       creator = result.data;
       creatorError = result.error;
+    }
+
+    // Auto-Decline Logic: Instant filter for lowball spam
+    if (creator && creator.pricing_min && exact_budget) {
+      const budgetValue = parseFloat(exact_budget.toString());
+      if (budgetValue < creator.pricing_min) {
+        return res.status(400).json({
+          success: false,
+          error: `Offer below creator minimum (₹${creator.pricing_min.toLocaleString()}). This creator has an auto-decline policy for low-budget proposals.`,
+          auto_declined: true
+        });
+      }
     }
 
     // Rate limiting: Check for recent submissions from same email/IP
@@ -1617,6 +1645,18 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
     });
 
+    // Resolve or create brand user account (frictionless registration)
+    let brandUserId: string | null = null;
+    let brandMagicLink: string | null = null;
+    try {
+      const brandResult = await findOrCreateBrandUser(brand_email, brand_name);
+      brandUserId = brandResult.userId;
+      brandMagicLink = await generateBrandMagicLink(brand_email);
+      console.log(`[CollabRequests] Brand account ${brandResult.isNew ? 'created' : 'resolved'} for ${brand_email}`);
+    } catch (authError) {
+      console.warn('[CollabRequests] Frictionless brand registration failed (non-fatal):', authError);
+    }
+
     // Create collab request
     const insertData: any = {
       creator_id: creator.id,
@@ -1637,6 +1677,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
+      ...(brandUserId ? { brand_id: brandUserId } : {}),
     };
 
     // Add budget/barter fields based on collab_type
@@ -1745,6 +1786,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         deliverables: deliverablesArray,
         deadline: deadline || undefined,
         requestId: collabRequest.id,
+        magicLink: brandMagicLink || undefined,
       }).catch((emailError) => {
         console.error('[CollabRequests] Submission email sending failed (non-fatal):', emailError);
       });
@@ -1933,7 +1975,10 @@ router.get('/console/:token', async (req: Request, res: Response) => {
           first_name,
           last_name,
           avatar_url,
-          profile_label
+          profile_label,
+          collab_brands_count_override,
+          collab_response_hours_override,
+          collab_cancellations_percent_override
         )
       `)
       .eq('id', token)
@@ -2051,7 +2096,8 @@ router.get('/console/:token', async (req: Request, res: Response) => {
         name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
         username: creator.username,
         avatar_url: creator.avatar_url,
-        profile_label: creator.profile_label
+        profile_label: creator.profile_label,
+        trust_stats: collabRequest?.creator?.trust_stats || null
       } : null,
       activity,
       dealDetailsToken
@@ -2541,7 +2587,29 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       console.error('[CollabRequests] Error updating request:', updateError);
     }
 
+    // Fetch creator profile for contract generation (needed for DEAL_LOCKED log)
+    const { data: creatorProfile, error: creatorProfileError } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, location')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (creatorProfileError) {
+      console.error('[CollabRequests] Error fetching creator profile for audit log:', creatorProfileError);
+    }
+
     // Insert audit log for the acceptance action using deal_action_logs
+    await supabase.from('deal_action_logs').insert({
+      deal_id: deal.id,
+      user_id: userId,
+      event: 'DEAL_LOCKED',
+      metadata: {
+        collab_request_id: id,
+        message: 'Creator has locked the terms. Mutual commitment activated.',
+        creator_name: creatorProfile ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() : 'Creator'
+      },
+    });
+
     await supabase.from('deal_action_logs').insert({
       deal_id: deal.id,
       user_id: userId,

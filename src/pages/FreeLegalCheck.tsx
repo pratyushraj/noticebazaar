@@ -32,11 +32,11 @@ const FreeLegalCheck = () => {
 
   // Dynamic Metadata Update
   useEffect(() => {
-    // 1. Recommended New Title: Get Your Free Legal Health Check | NoticeBazaar
-    // 2. Recommended New Description: Worried about due diligence? Get a free, 60-second Legal Health Check from NoticeBazaar. We'll find your compliance gaps *before* investors do. Get your free report.
+    // 1. Recommended New Title: Get Your Free Legal Health Check | Creator Armour
+    // 2. Recommended New Description: Worried about due diligence? Get a free, 60-second Legal Health Check from Creator Armour. We'll find your compliance gaps *before* investors do. Get your free report.
     updateMetadata(
-      "Get Your Free Legal Health Check | NoticeBazaar",
-      "Worried about due diligence? Get a free, 60-second Legal Health Check from NoticeBazaar. We'll find your compliance gaps *before* investors do. Get your free report."
+      "Get Your Free Legal Health Check | Creator Armour",
+      "Worried about due diligence? Get a free, 60-second Legal Health Check from Creator Armour. We'll find your compliance gaps *before* investors do. Get your free report."
     );
     
     // Meta Pixel Event 1: ViewContent
@@ -47,7 +47,7 @@ const FreeLegalCheck = () => {
     // Cleanup function to reset title/description when component unmounts (or navigates away)
     return () => {
       updateMetadata(
-        "NoticeBazaar: Legal & CA Services for SMEs | Compliance, Debt Recovery & Contracts", // Revert to default
+        "Creator Armour: Legal & CA Services for SMEs | Compliance, Debt Recovery & Contracts", // Revert to default
         "Get dedicated Advocates & CAs for compliance, debt recovery & contracts at ₹2,999/month. Trusted by 500+ SMEs. Free legal health check available."
       );
     };
@@ -103,7 +103,7 @@ const FreeLegalCheck = () => {
       "name": "Is the Legal Health Check free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. The Legal Health Check by NoticeBazaar is completely free for a limited time."
+        "text": "Yes. The Legal Health Check by Creator Armour is completely free for a limited time."
       }
     }]
   };
@@ -120,7 +120,7 @@ const FreeLegalCheck = () => {
       <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold text-primary">
-            NoticeBazaar
+            Creator Armour
           </Link>
           <Button variant="outline" asChild className="text-primary border-border hover:bg-accent hover:text-foreground">
             <Link to="/login">
@@ -231,7 +231,7 @@ const FreeLegalCheck = () => {
       
       {/* Footer (Minimal) */}
       <footer className="border-t border-border mt-12 py-6 text-center text-xs text-gray-500">
-        <p>© 2025 NoticeBazaar. All rights reserved. | <Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link></p>
+        <p>© 2025 Creator Armour. All rights reserved. | <Link to="/privacy-policy" className="hover:text-primary">Privacy Policy</Link></p>
       </footer>
 
       {/* Floating CTA on Scroll */}

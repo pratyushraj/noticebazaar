@@ -44,7 +44,9 @@ export const OnboardingProgressDots: React.FC<OnboardingProgressDotsProps> = ({
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
               "h-2 rounded-full",
-              isActive ? "bg-white" : "bg-white/30"
+              isActive
+                ? "bg-blue-600 dark:bg-white"
+                : "bg-slate-300 dark:bg-white/30"
             )}
           />
         );

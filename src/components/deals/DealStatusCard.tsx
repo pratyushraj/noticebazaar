@@ -32,6 +32,7 @@ interface DealStatusCardProps {
     brandReplyLink?: string;
     generateBrandReplyLink: (dealId: string) => Promise<string | null>;
     copyToClipboard: (text: string) => Promise<boolean>;
+    onGenerateInvoice?: () => void;
 }
 
 export const DealStatusCard = ({
@@ -50,7 +51,8 @@ export const DealStatusCard = ({
     onDownloadContract,
     brandReplyLink,
     generateBrandReplyLink,
-    copyToClipboard
+    copyToClipboard,
+    onGenerateInvoice
 }: DealStatusCardProps) => {
 
     // Calculate current step
@@ -223,10 +225,18 @@ export const DealStatusCard = ({
                                 </p>
                             </div>
                         </div>
-                        <button onClick={onDownloadContract} className="w-full mt-4 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                            <Download className="w-4 h-4" />
-                            Download Final PDF
-                        </button>
+                        <div className="grid grid-cols-2 gap-3 mt-4">
+                            <button onClick={onDownloadContract} className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                                <Download className="w-4 h-4" />
+                                Contract PDF
+                            </button>
+                            {onGenerateInvoice && (
+                                <button onClick={onGenerateInvoice} className="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                                    <FileText className="w-4 h-4" />
+                                    Generate Invoice
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

@@ -7,14 +7,14 @@ import Layout from '@/components/Layout';
 
 interface ProtectedLayoutProps {
   children: ReactNode;
-  allowedRoles?: ('client' | 'admin' | 'creator' | 'chartered_accountant' | 'lawyer')[];
+  allowedRoles?: ('client' | 'admin' | 'creator' | 'chartered_accountant' | 'lawyer' | 'brand')[];
 }
 
 const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
   const location = useLocation();
   const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
   const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
-  
+
   // Standalone dashboards (advisor/lawyer) don't need Layout wrapper
   if (isAdvisorRoute || isLawyerRoute) {
     return (
@@ -23,7 +23,7 @@ const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
       </ProtectedRoute>
     );
   }
-  
+
   return (
     <ProtectedRoute allowedRoles={allowedRoles}>
       <Layout>

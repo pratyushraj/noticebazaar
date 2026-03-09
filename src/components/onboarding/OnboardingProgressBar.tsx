@@ -24,15 +24,15 @@ export const OnboardingProgressBar: React.FC<OnboardingProgressBarProps> = ({
 
   return (
     <div className={cn('mb-8 text-center', className)}>
-      <div className="text-sm text-white/60 mb-2">
+      <div className="text-sm text-slate-400 dark:text-white/60 mb-2">
         Step {currentStep} of {totalSteps}
       </div>
-      <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-2 overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full"
+          className="bg-blue-600 dark:bg-gradient-to-r dark:from-purple-500 dark:to-indigo-500 h-2 rounded-full"
         />
       </div>
     </div>

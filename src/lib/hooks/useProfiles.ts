@@ -40,13 +40,13 @@ export const useProfiles = (options?: UseProfilesOptions) => {
       .order('updated_at', { ascending: false });
 
     if (role) {
-      query = query.eq('role', role);
+      query = query.eq('role' as any, role);
     }
     if (firstName) {
-      query = query.ilike('first_name', `%${firstName}%`);
+      query = query.ilike('first_name' as any, `%${firstName}%`);
     }
     if (lastName) {
-      query = query.eq('last_name', lastName);
+      query = query.eq('last_name' as any, lastName);
     }
 
     if (!disablePagination) {
@@ -81,13 +81,13 @@ export const useProfiles = (options?: UseProfilesOptions) => {
         .order('updated_at', { ascending: false });
 
       if (role) {
-        query = query.eq('role', role);
+        query = query.eq('role' as any, role);
       }
       if (firstName) {
-        query = query.ilike('first_name', `%${firstName}%`);
+        query = query.ilike('first_name' as any, `%${firstName}%`);
       }
       if (lastName) {
-        query = query.eq('last_name', lastName);
+        query = query.eq('last_name' as any, lastName);
       }
 
       if (!disablePagination) {
@@ -158,7 +158,7 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
     let { data, error } = await supabase
       .from('profiles')
       .select(fullSelect)
-      .eq('id', profileId)
+      .eq('id' as any, profileId)
       .single();
 
     // If error is due to missing columns (400, 42703, or column-related messages), retry with basic select
@@ -175,7 +175,7 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
       const retryResult = await supabase
         .from('profiles')
         .select(basicSelect)
-        .eq('id', profileId)
+        .eq('id' as any, profileId)
         .single();
       data = retryResult.data;
       error = retryResult.error;
@@ -246,6 +246,8 @@ interface UpdateProfileVariables {
   media_kit_url?: string | null;
   // NEW: Rate fields
   avg_rate_reel?: number | null;
+  suggested_barter_value_min?: number | null;
+  suggested_barter_value_max?: number | null;
   learned_avg_rate_reel?: number | null;
   learned_deal_count?: number | null;
   avg_reel_views_manual?: number | null;
@@ -270,6 +272,7 @@ interface UpdateProfileVariables {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  auto_pricing_enabled?: boolean | null;
 }
 
 export const useUpdateProfile = () => {
@@ -322,6 +325,8 @@ export const useUpdateProfile = () => {
       media_kit_url,
       // NEW: Rate fields
       avg_rate_reel,
+      suggested_barter_value_min,
+      suggested_barter_value_max,
       learned_avg_rate_reel,
       learned_deal_count,
       avg_reel_views_manual,
@@ -346,6 +351,7 @@ export const useUpdateProfile = () => {
       collab_cta_trust_note,
       collab_cta_dm_note,
       collab_cta_platform_note,
+      auto_pricing_enabled,
     }) => {
       const updateData: {
         first_name: string;
@@ -389,6 +395,8 @@ export const useUpdateProfile = () => {
         content_niches?: string[] | null;
         media_kit_url?: string | null;
         avg_rate_reel?: number | null;
+        suggested_barter_value_min?: number | null;
+        suggested_barter_value_max?: number | null;
         learned_avg_rate_reel?: number | null;
         learned_deal_count?: number | null;
         avg_reel_views_manual?: number | null;
@@ -413,6 +421,7 @@ export const useUpdateProfile = () => {
         collab_cta_trust_note?: string | null;
         collab_cta_dm_note?: string | null;
         collab_cta_platform_note?: string | null;
+        auto_pricing_enabled?: boolean | null;
       } = {
         first_name,
         last_name,
@@ -541,6 +550,12 @@ export const useUpdateProfile = () => {
       if (avg_rate_reel !== undefined) {
         updateData.avg_rate_reel = avg_rate_reel;
       }
+      if (suggested_barter_value_min !== undefined) {
+        updateData.suggested_barter_value_min = suggested_barter_value_min;
+      }
+      if (suggested_barter_value_max !== undefined) {
+        updateData.suggested_barter_value_max = suggested_barter_value_max;
+      }
       if (learned_avg_rate_reel !== undefined) {
         updateData.learned_avg_rate_reel = learned_avg_rate_reel;
       }
@@ -613,11 +628,14 @@ export const useUpdateProfile = () => {
       if (collab_cta_platform_note !== undefined) {
         updateData.collab_cta_platform_note = collab_cta_platform_note;
       }
+      if (auto_pricing_enabled !== undefined) {
+        updateData.auto_pricing_enabled = auto_pricing_enabled;
+      }
 
       const { error } = await supabase
         .from('profiles')
         .update(updateData as any)
-        .eq('id', id);
+        .eq('id' as any, id);
 
       if (error) {
         // Check if error is due to missing columns (migration not run)
@@ -711,10 +729,10 @@ export const useUpdateProfile = () => {
               }
             }
 
-            const result = await supabase
+            const result = await (supabase
               .from('profiles')
-              .update(safeUpdateData)
-              .eq('id', id);
+              .update(safeUpdateData as any)
+              .eq('id' as any, id) as any);
 
             if (!result.error) {
               if (droppedFields.size > 0) {
@@ -751,7 +769,7 @@ export const useUpdateProfile = () => {
         const { count: existingFilingsCount, error: checkError } = await supabase
           .from('tax_filings')
           .select('id', { count: 'exact', head: true })
-          .eq('creator_id', id)
+          .eq('creator_id' as any, id)
           .limit(1);
 
         if (checkError) {
@@ -811,7 +829,17 @@ export const useDeleteProfile = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, string>(
     async (id) => {
-      // First, delete the profile from the public.profiles table
+      // First, delete associated tax filings
+      const { error: deletionError } = await (supabase
+        .from('tax_filings')
+        .delete()
+        .eq('creator_id' as any, id) as any);
+
+      if (deletionError) {
+        throw new Error(`Failed to delete tax filings: ${deletionError.message}`);
+      }
+
+      // Then, delete the profile from the public.profiles table
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()

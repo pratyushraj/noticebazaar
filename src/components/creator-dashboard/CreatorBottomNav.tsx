@@ -31,34 +31,39 @@ const CreatorBottomNav = () => {
         matchPaths: ["/creator-dashboard"]
       },
       {
-        to: "/creator-contracts",
+        to: "/creator-dashboard?tab=collabs",
         icon: Briefcase,
         label: "Deals",
-        matchPaths: ["/creator-contracts", "/contract-upload", "/contract-protection"]
+        matchPaths: ["/creator-contracts", "/contract-upload", "/contract-protection", "tab=collabs"]
       },
       {
-        to: "/creator-payments",
+        to: "/creator-dashboard?tab=payments",
         icon: Wallet,
         label: "Payments",
-        matchPaths: ["/creator-payments", "/insights"]
+        matchPaths: ["/creator-payments", "/insights", "tab=payments"]
       },
       {
-        to: "/creator-collab",
+        to: "/creator-dashboard?tab=collab",
         icon: Link2,
         label: "Collab",
-        matchPaths: ["/creator-collab"]
+        matchPaths: ["/creator-collab", "tab=collab"]
       },
       {
-        to: "/creator-profile",
+        to: "/creator-dashboard?tab=profile",
         icon: User,
         label: "Profile",
-        matchPaths: ["/creator-profile"]
+        matchPaths: ["/creator-profile", "tab=profile"]
       },
     ];
 
   const isActive = (item: typeof navItems[0]) => {
-    return item.matchPaths.some(path => location.pathname.startsWith(path));
+    // Check path or query search params
+    return item.matchPaths.some(path =>
+      location.pathname.startsWith(path) ||
+      location.search.includes(path)
+    );
   };
+
 
   // Detect keyboard open/close using multiple methods
   useEffect(() => {

@@ -9,13 +9,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity, Heart } from 'lucide-react';
+import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity, Heart, AlertCircle, Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { getCollabReadiness } from '@/lib/collab/readiness';
+import { useSession } from '@/contexts/SessionContext';
+import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 
 // Person Schema Component (for structured data)
 const PersonSchema = ({ schema }: { schema: any }) => {
@@ -101,9 +104,37 @@ interface Creator {
     completion_rate: number | null;
     avg_response_hours: number | null;
   };
+  // NEW: Qualification & Deal Rules
+  min_deal_value?: number | null;
+  min_lead_time_days?: number | null;
+  typical_story_rate?: number | null;
+  typical_post_rate?: number | null;
+  premium_production_multiplier?: number | null;
+  brand_type_preferences?: string[] | null;
+  campaign_type_support?: string[] | null;
+  revision_policy?: string | null;
+  allow_negotiation?: boolean | null;
+  allow_counter_offer?: boolean | null;
+  // Deal preference: 'paid_only' | 'barter_only' | 'open_to_both'
+  collab_deal_preference?: 'paid_only' | 'barter_only' | 'open_to_both' | null;
+  deal_templates?: DealTemplate[] | null;
 }
 
-type CollabType = 'paid' | 'barter' | 'hybrid' | 'both';
+interface DealTemplate {
+  id: string;
+  label: string;
+  icon: string;
+  budget: number; // For paid: ₹ amount, for barter: ₹ product value
+  type: 'paid' | 'barter';
+  category: string;
+  description: string;
+  deliverables: string[];
+  quantities: Record<string, number>;
+  deadlineDays: number;
+  notes?: string;
+}
+
+type CollabType = 'paid' | 'barter' | 'hybrid' | 'both' | 'affiliate';
 
 const isHybridCollab = (value: CollabType) => value === 'hybrid' || value === 'both';
 
@@ -137,10 +168,28 @@ const RESERVED_USERNAMES = [
 
 const DELIVERABLE_OPTIONS = [
   { label: 'Reel', value: 'Instagram Reel', icon: <span className="mr-1.5">🎬</span> },
-  { label: 'Post', value: 'Post', icon: <span className="mr-1.5">📷</span> },
   { label: 'Story', value: 'Story', icon: <span className="mr-1.5">📱</span> },
+  { label: 'Post', value: 'Post', icon: <span className="mr-1.5">📷</span> },
+  { label: 'Unboxing', value: 'Unboxing Video', icon: <span className="mr-1.5">📦</span> },
+  { label: 'Review', value: 'Review Post', icon: <span className="mr-1.5">⭐</span> },
+  { label: 'Giveaway', value: 'Giveaway', icon: <span className="mr-1.5">🎁</span> },
   { label: 'YouTube', value: 'YouTube Video', icon: <span className="mr-1.5">▶</span> },
   { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+];
+
+const PRODUCT_CATEGORY_OPTIONS = [
+  { value: 'fashion', label: '👗 Fashion & Clothing' },
+  { value: 'beauty', label: '💄 Beauty & Skincare' },
+  { value: 'food', label: '🍕 Food & Beverage' },
+  { value: 'tech', label: '📱 Tech & Gadgets' },
+  { value: 'app', label: '💻 App / Software' },
+  { value: 'fitness', label: '💪 Fitness & Health' },
+  { value: 'home', label: '🏠 Home & Living' },
+  { value: 'travel', label: '✈️ Travel & Hospitality' },
+  { value: 'finance', label: '💰 Finance & BFSI' },
+  { value: 'gaming', label: '🎮 Gaming' },
+  { value: 'kids', label: '🧸 Kids & Parenting' },
+  { value: 'other', label: '📦 Other' },
 ];
 
 // const CAMPAIGN_CATEGORY_OPTIONS = [
@@ -307,14 +356,42 @@ const withNeutralPrefix = (text: string, prefix: string) => {
 };
 
 const CollabLinkLanding = () => {
+  const { user } = useSession();
+  const updateProfileMutation = useUpdateProfile();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [editMode, setEditMode] = useState(() => searchParams.get('edit') === 'true');
+
+  useEffect(() => {
+    if (editMode && searchParams.get('edit') !== 'true') {
+      setSearchParams(prev => { prev.set('edit', 'true'); return prev; }, { replace: true });
+    } else if (!editMode && searchParams.get('edit') === 'true') {
+      setSearchParams(prev => { prev.delete('edit'); return prev; }, { replace: true });
+    }
+  }, [editMode, setSearchParams, searchParams]);
+
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isWarmingUp, setIsWarmingUp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [submitChecklistStep, setSubmitChecklistStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  // ── Force light mode while this page is mounted ──────────────────────────
+  // The creator dashboard may set `dark` on <html> via class-based dark mode.
+  // CollabLinkLanding is a light-only page. Remove dark class on mount and
+  // restore it (if the system prefers dark) when navigating away.
+  useEffect(() => {
+    const html = document.documentElement;
+    const hadDark = html.classList.contains('dark');
+    html.classList.remove('dark');
+    return () => {
+      // Restore dark if it was set before entering this page
+      if (hadDark) html.classList.add('dark');
+    };
+  }, []);
 
   // Check if username is reserved (redirect to 404 if so)
   useEffect(() => {
@@ -337,6 +414,10 @@ const CollabLinkLanding = () => {
   const [budgetRange, setBudgetRange] = useState('');
   const [exactBudget, setExactBudget] = useState('');
   const [barterValue, setBarterValue] = useState('');
+  const [barterProductName, setBarterProductName] = useState('');
+  const [barterProductCategory, setBarterProductCategory] = useState('');
+  const [hybridCashBudget, setHybridCashBudget] = useState('');
+  const [hybridProductValue, setHybridProductValue] = useState('');
   const [campaignCategory, setCampaignCategory] = useState('General');
   const [barterProductImageUrl, setBarterProductImageUrl] = useState<string | null>(null);
   const [barterImageUploading, setBarterImageUploading] = useState(false);
@@ -370,7 +451,245 @@ const CollabLinkLanding = () => {
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [draftEmail, setDraftEmail] = useState('');
   const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [newNicheInput, setNewNicheInput] = useState('');
+  const [showCustomFlow, setShowCustomFlow] = useState(false);
+
+  // Deal Templates State (Moved up to fix Hook Order violations)
+  const [localDealTemplates, setLocalDealTemplates] = useState<DealTemplate[]>([]);
+  const [isEditingTemplates, setIsEditingTemplates] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<DealTemplate | null>(null);
+
+  useEffect(() => {
+    if (creator) {
+      if (creator.deal_templates && creator.deal_templates.length > 0) {
+        setLocalDealTemplates(creator.deal_templates.slice(0, 3));
+      } else {
+        // Generate Default Templates based on reel rate
+        const suggestedRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
+        const reelRate = suggestedRate;
+
+        const defaultTemplates: DealTemplate[] = [
+          {
+            id: 'reel_deal',
+            label: 'Reel Deal',
+            icon: '🎬',
+            budget: reelRate,
+            type: 'paid',
+            category: creator.category || 'Lifestyle',
+            description: '1 High-quality Instagram Reel with professional hooks and brand tagging.',
+            deliverables: ['Reel'],
+            quantities: { 'Reel': 1 },
+            deadlineDays: creator.min_lead_time_days || 7,
+            notes: 'Includes 1 revision. Collaborative post included.'
+          },
+          {
+            id: 'engagement_package',
+            label: 'Engagement Package',
+            icon: '🔥',
+            budget: Math.round(reelRate * 1.5),
+            type: 'paid',
+            category: creator.category || 'Lifestyle',
+            description: '1 Reel + 2 Engagement Stories to maximize reach and drive action.',
+            deliverables: ['Reel', 'Story'],
+            quantities: { 'Reel': 1, 'Story': 2 },
+            deadlineDays: creator.min_lead_time_days || 10,
+            notes: 'Stories include direct link + Polls for engagement.'
+          },
+          {
+            id: 'product_review',
+            label: 'Product Review',
+            icon: '📦',
+            budget: Math.max(2000, Math.round(reelRate * 0.5)),
+            type: 'barter',
+            category: creator.category || 'Lifestyle',
+            description: 'In-depth product unboxing and review with 1 story mention.',
+            deliverables: ['Unboxing Video', 'Story'],
+            quantities: { 'Unboxing Video': 1, 'Story': 1 },
+            deadlineDays: creator.min_lead_time_days || 14,
+            notes: 'Product must be shipped before shoot. Honest review only.'
+          }
+        ];
+        setLocalDealTemplates(defaultTemplates);
+      }
+    }
+  }, [creator]);
+
+
+  const isOwner = useMemo(() => {
+    return Boolean(user?.id && creator?.id && user.id === creator.id);
+  }, [user?.id, creator?.id]);
+
+  const isDeadlineProvided = Boolean(deadline);
+  const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
+
+  const isStep1Ready = Boolean(collabType);
+  const isStep2Ready = deliverables.length > 0;
+  const isStep3Ready = isBudgetProvided;
+  const isStep4Ready = Boolean(campaignCategory && campaignDescription.trim().length >= 20 && isDeadlineProvided);
+  const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
+  const isStep5Ready = Boolean(brandName.trim() && isValidBrandEmail && brandAddress.trim().length >= 15);
+
+  const completionChecks = useMemo(() => ([
+    { label: 'Deal Type', complete: isStep1Ready },
+    { label: 'Content', complete: isStep2Ready },
+    { label: 'Budget', complete: isStep3Ready },
+    { label: 'Campaign Goal', complete: isStep4Ready },
+    { label: 'Brand Details', complete: isStep5Ready },
+  ]), [
+    isStep1Ready,
+    isStep2Ready,
+    isStep3Ready,
+    isStep4Ready,
+    isStep5Ready,
+  ]);
+
+  const [showSubmittingTrust, setShowSubmittingTrust] = useState(false);
+  const submittingChecklist = [
+    'Verifying brand identity...',
+    'Reviewing deliverables set...',
+    'Generating secure contract...',
+    'Securing payload for transmission...',
+  ];
+
+  const typeSectionTitle = 'bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent';
+  const typeLabel = 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent';
+  const ctaStepStatus = !hasStartedOffer ? 'create' : currentStep < 5 ? 'next' : 'send';
+  const ctaLabel = ctaStepStatus === 'create' ? 'Send Collaboration Proposal' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collaboration Proposal';
+  const ctaIcon = ctaStepStatus === 'send'
+    ? <Send className="h-4 w-4" />
+    : <Rocket className="h-4 w-4" />;
+  const ctaHelper = ctaStepStatus === 'send'
+    ? 'Legally binding contract will be generated'
+    : '50+ brands have collaborated through Creator Armour';
+  const inputClass = 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-400 transition-all rounded-xl';
+
+  const isCampaignDescriptionValid = campaignDescription.trim().length >= 20;
+  const isContactReady = isStep5Ready;
+  const isCoreReady = isStep1Ready && isStep2Ready && isStep3Ready && isStep4Ready;
+
+  const typePageTitle = 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent';
+
+  useEffect(() => {
+    if (!showSubmittingTrust) {
+      setSubmitChecklistStep(0);
+      return;
+    }
+    setSubmitChecklistStep(0);
+    const interval = window.setInterval(() => {
+      setSubmitChecklistStep((prev) => (prev < submittingChecklist.length - 1 ? prev + 1 : prev));
+    }, 220);
+    return () => window.clearInterval(interval);
+  }, [showSubmittingTrust]);
+
+  // Readiness badge animation (must run before any conditional returns to preserve hook order)
+  useEffect(() => {
+    if (!creator || !readinessBadgeRef.current || typeof window === 'undefined') return;
+
+    const badgeEl = readinessBadgeRef.current;
+    const keyId = creator.username || creator.id;
+    if (!keyId) return;
+
+    const previewAvgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
+    const previewAvgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
+    const previewAudienceCities = (creator.top_cities || []);
+    const previewAudienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(formatAudienceCities(previewAudienceCities));
+    const previewTrustStats = creator.trust_stats;
+
+    const readiness = getCollabReadiness({
+      instagramHandle: creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username,
+      instagramLinked: Boolean(creator.last_instagram_sync),
+      category: creator.category,
+      niches: creator.content_niches,
+      topCities: creator.top_cities,
+      audienceGenderSplit: creator.audience_gender_split,
+      primaryAudienceLanguage: creator.primary_audience_language,
+      postingFrequency: creator.posting_frequency,
+      avgReelViews: previewAvgReelViews,
+      avgLikes: previewAvgLikes,
+      openToCollabs: creator.open_to_collabs,
+      avgRateReel: (creator as any).avg_rate_reel || (creator as any).avg_reel_rate,
+      suggestedReelRate: creator.suggested_reel_rate,
+      suggestedBarterValueMin: creator.suggested_barter_value_min,
+      suggestedBarterValueMax: creator.suggested_barter_value_max,
+      regionLabel: creator.collab_region_label || previewAudienceRegionLabel,
+      mediaKitUrl: creator.media_kit_url,
+      firstDealCount: creator.past_brand_count || creator.collab_brands_count_override || previewTrustStats?.completed_deals || 0,
+    });
+
+    const currentRank = readiness.rank;
+    const lastRankKey = `ca:readiness:last:${keyId}`;
+    const seenStateKey = `ca:readiness:seen:${keyId}:${readiness.stageKey}`;
+    const storedRank = Number(window.localStorage.getItem(lastRankKey) || '0');
+    const seenCurrentState = window.localStorage.getItem(seenStateKey) === '1';
+    const shouldAnimate = currentRank > storedRank || !seenCurrentState;
+
+    if (!shouldAnimate) return;
+
+    if (storedRank >= 3 && currentRank === 4) {
+      setReadinessBadgeSparkle(true);
+      window.setTimeout(() => setReadinessBadgeSparkle(false), 800);
+      badgeEl.animate(
+        [
+          { opacity: 0.4, transform: 'translateY(8px) scale(0.97)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
+          { opacity: 1, transform: 'translateY(0) scale(1.02)', boxShadow: '0 0 30px rgba(139,92,246,0.35)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
+        ],
+        { duration: 560, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+      );
+    } else if (storedRank >= 2 && currentRank === 3) {
+      badgeEl.animate(
+        [
+          { opacity: 0.5, transform: 'translateY(6px) scale(0.98)' },
+          { opacity: 1, transform: 'translateY(-1px) scale(1.03)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ],
+        { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+      );
+    } else {
+      badgeEl.animate(
+        [
+          { opacity: 0.3, transform: 'scale(0.97)' },
+          { opacity: 1, transform: 'scale(1.03)' },
+          { opacity: 1, transform: 'scale(1)' },
+        ],
+        { duration: 360, easing: 'ease-out' }
+      );
+    }
+
+    window.localStorage.setItem(lastRankKey, String(Math.max(storedRank, currentRank)));
+    window.localStorage.setItem(seenStateKey, '1');
+  }, [creator]);
+
+  const handleInlineProfileUpdate = async (field: string, value: any) => {
+    if (!creator?.id) return;
+
+    // Update local state for immediate feedback
+    setCreator(prev => prev ? { ...prev, [field]: value } : null);
+
+    try {
+      let updatePayload: any = { id: creator.id };
+
+      if (field === 'name') {
+        const nameStr = String(value || '').trim();
+        const spaceIndex = nameStr.indexOf(' ');
+        if (spaceIndex === -1) {
+          updatePayload.first_name = nameStr;
+          updatePayload.last_name = '';
+        } else {
+          updatePayload.first_name = nameStr.substring(0, spaceIndex);
+          updatePayload.last_name = nameStr.substring(spaceIndex + 1);
+        }
+      } else {
+        updatePayload[field] = value;
+      }
+
+      await updateProfileMutation.mutateAsync(updatePayload);
+      toast.success('Field updated successfully');
+    } catch (error) {
+      console.error(`Failed to update ${field}:`, error);
+      toast.error(`Failed to update ${field}`);
+    }
+  };
 
   // Build form payload for save-draft / resume
   const getDraftFormData = () => ({
@@ -385,6 +704,10 @@ const CollabLinkLanding = () => {
     budgetRange,
     exactBudget,
     barterValue,
+    barterProductName,
+    barterProductCategory,
+    hybridCashBudget,
+    hybridProductValue,
     campaignCategory,
     barterProductImageUrl,
     campaignDescription,
@@ -415,6 +738,10 @@ const CollabLinkLanding = () => {
     if (typeof data.budgetRange === 'string') setBudgetRange(data.budgetRange);
     if (typeof data.exactBudget === 'string') setExactBudget(data.exactBudget);
     if (typeof data.barterValue === 'string') setBarterValue(data.barterValue);
+    if (typeof data.barterProductName === 'string') setBarterProductName(data.barterProductName);
+    if (typeof data.barterProductCategory === 'string') setBarterProductCategory(data.barterProductCategory);
+    if (typeof data.hybridCashBudget === 'string') setHybridCashBudget(data.hybridCashBudget);
+    if (typeof data.hybridProductValue === 'string') setHybridProductValue(data.hybridProductValue);
     if (typeof data.campaignCategory === 'string') setCampaignCategory(data.campaignCategory);
     if (typeof data.barterProductImageUrl === 'string') setBarterProductImageUrl(data.barterProductImageUrl || null);
     if (typeof data.campaignDescription === 'string') setCampaignDescription(data.campaignDescription);
@@ -622,7 +949,7 @@ const CollabLinkLanding = () => {
   };
 
   // Fetch creator profile (with timeout so page doesn't stay stuck on spinner)
-  const CREATOR_FETCH_TIMEOUT_MS = 12000;
+  const CREATOR_FETCH_TIMEOUT_MS = 55000;
 
   useEffect(() => {
     if (!username) return;
@@ -638,6 +965,11 @@ const CollabLinkLanding = () => {
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CREATOR_FETCH_TIMEOUT_MS);
+
+    // Track if it's taking unusually long (typical for Render cold starts)
+    const warmingTimer = setTimeout(() => {
+      setIsWarmingUp(true);
+    }, 10000);
 
     const fetchCreator = async () => {
       const normalizedUsername = decodeURIComponent(username).trim();
@@ -754,6 +1086,7 @@ const CollabLinkLanding = () => {
         }
       } finally {
         clearTimeout(timeoutId);
+        clearTimeout(warmingTimer);
         setLoading(false);
       }
     };
@@ -762,6 +1095,7 @@ const CollabLinkLanding = () => {
     return () => {
       controller.abort();
       clearTimeout(timeoutId);
+      clearTimeout(warmingTimer);
     };
   }, [username, searchParams]);
 
@@ -872,15 +1206,7 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 1) {
       if (!isStep1Ready) {
-        setErrors(prev => ({
-          ...prev,
-          campaignDescription: !campaignDescription.trim()
-            ? 'Campaign Goal is required'
-            : campaignDescription.trim().length < 20
-              ? 'Please provide more details'
-              : ''
-        }));
-        toast.error('Please complete Step 1 (Campaign Goal) first');
+        toast.error('Please select a deal type');
         return;
       }
       setCurrentStep(2);
@@ -890,7 +1216,7 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 2) {
       if (!isStep2Ready) {
-        toast.error('Please select deliverables and set a budget');
+        toast.error('Please select at least one deliverable');
         return;
       }
       setCurrentStep(3);
@@ -900,7 +1226,27 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 3) {
       if (!isStep3Ready) {
-        toast.error('Please complete required Brand & Contact details');
+        toast.error('Please set a budget or product value');
+        return;
+      }
+      setCurrentStep(4);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (currentStep === 4) {
+      if (!isStep4Ready) {
+        toast.error('Please complete the campaign goal and deadline');
+        return;
+      }
+      setCurrentStep(5);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (currentStep === 5) {
+      if (!isStep5Ready) {
+        toast.error('Please provide brand and contact details');
         return;
       }
       formRef.current?.requestSubmit();
@@ -1010,6 +1356,8 @@ const CollabLinkLanding = () => {
           exact_budget: exactBudget ? parseFloat(exactBudget) : undefined,
           campaign_category: campaignCategory || undefined,
           barter_value: barterValue ? parseFloat(barterValue) : undefined,
+          barter_product_name: barterProductName || undefined,
+          barter_product_category: barterProductCategory || undefined,
           barter_product_image_url: barterProductImageUrl || undefined,
           campaign_description: campaignDescription,
           deliverables: deliverables.map(d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`),
@@ -1069,157 +1417,23 @@ const CollabLinkLanding = () => {
   const elevationLevel1 = 'bg-white/[0.05] border border-white/10 shadow-none';
   const elevationLevel2 = 'bg-white/[0.08] border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
   const elevationLevel3 = 'bg-white/[0.12] border border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
-  const typePageTitle = 'md:text-[28px] md:leading-[36px] md:font-semibold';
-  const typeSectionTitle = 'md:text-[20px] md:leading-[28px] md:font-semibold';
-  const typeCardTitle = 'md:text-[16px] md:leading-[24px] md:font-semibold';
-  const typeBodyPrimary = 'md:text-[15px] md:leading-[22px] md:font-normal';
-  // const typeBodySecondary = "text-[15px] sm:text-[16px] leading-[1.6] text-slate-500 font-medium tracking-snug";
-  const typeHelper = 'text-[13px] leading-[18px] font-normal';
-  const typeLabel = 'text-[13px] leading-[18px] font-medium';
-  const typeTrust = 'flex items-center gap-2 text-[14px] leading-[20px] font-medium text-white/60';
-  const surfaceClass = `${elevationLevel2} backdrop-blur-2xl rounded-3xl`;
-  const inputClass = 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-400 transition-all rounded-xl';
-  const helperTextClass = `${typeHelper} text-white/50`;
-  const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail.trim());
-  const isCampaignDescriptionValid = campaignDescription.trim().length >= 20;
-  const isBudgetProvided = collabType === 'barter' || Boolean(budgetRange || exactBudget);
-  const isCoreReady = Boolean(
-    collabType &&
-    brandName.trim() &&
-    deliverables.length > 0 &&
-    isCampaignDescriptionValid &&
-    isBudgetProvided
-  );
-  const isContactReady = Boolean(isValidBrandEmail && brandAddress.trim().length >= 15);
-  const ctaStepStatus = !hasStartedOffer ? 'create' : (currentStep === 3 ? 'send' : 'next');
-  const ctaLabel = ctaStepStatus === 'create' ? 'Send Secure Collaboration Offer' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Secure Collaboration Offer';
-  const ctaHelper = ctaStepStatus === 'create'
-    ? 'Takes 20 seconds'
-    : ctaStepStatus === 'next'
-      ? (currentStep === 2 ? 'Legally binding contract auto-generated' : 'Step-based progressive flow')
-      : 'Review & sign contract';
-  const ctaIcon = ctaStepStatus === 'send'
-    ? <Send className="h-4 w-4 text-slate-400" />
-    : <Rocket className="h-4 w-4 text-slate-400" />;
-  const isFinalSubmissionStep = ctaStepStatus === 'send';
-  const showSubmittingTrust = submitting && isFinalSubmissionStep;
-  const submittingChecklist = [
-    'Validating terms...',
-    'Generating secure contract...',
-    'Securing payload for transmission...',
-  ];
-  const revealDelayStyle = (delayMs: number) => ({
-    transitionDelay: showDetailedForm ? `${delayMs}ms` : '0ms',
-  });
 
-  const isStep1Ready = Boolean(campaignCategory && campaignDescription.trim().length >= 20);
-  const isStep2Ready = Boolean(collabType && deliverables.length > 0 && isBudgetProvided);
-  const isStep3Ready = Boolean(brandName.trim() && isValidBrandEmail && brandAddress.trim().length >= 15);
 
-  const completionChecks = useMemo(() => ([
-    { label: 'Campaign Goal', complete: isStep1Ready },
-    { label: 'Deliverables & Budget', complete: isStep2Ready },
-    { label: 'Brand Details', complete: isStep3Ready },
-  ]), [
-    isStep1Ready,
-    isStep2Ready,
-    isStep3Ready,
-  ]);
-
-  useEffect(() => {
-    if (!showSubmittingTrust) {
-      setSubmitChecklistStep(0);
-      return;
-    }
-    setSubmitChecklistStep(0);
-    const interval = window.setInterval(() => {
-      setSubmitChecklistStep((prev) => (prev < submittingChecklist.length - 1 ? prev + 1 : prev));
-    }, 220);
-    return () => window.clearInterval(interval);
-  }, [showSubmittingTrust]);
 
   // Readiness badge animation (must run before any conditional returns to preserve hook order)
-  useEffect(() => {
-    if (!creator || !readinessBadgeRef.current || typeof window === 'undefined') return;
-
-    const badgeEl = readinessBadgeRef.current;
-    const keyId = creator.username || creator.id;
-    if (!keyId) return;
-
-    const previewAvgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
-    const previewAvgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
-    const previewAudienceCities = formatAudienceCities(creator.top_cities);
-    const previewAudienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(previewAudienceCities);
-    const previewTrustStats = creator.trust_stats;
-    const readiness = getCollabReadiness({
-      instagramHandle: creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username,
-      instagramLinked: Boolean(creator.last_instagram_sync),
-      category: creator.category,
-      niches: creator.content_niches,
-      topCities: creator.top_cities,
-      audienceGenderSplit: creator.audience_gender_split,
-      primaryAudienceLanguage: creator.primary_audience_language,
-      postingFrequency: creator.posting_frequency,
-      avgReelViews: previewAvgReelViews,
-      avgLikes: previewAvgLikes,
-      openToCollabs: creator.open_to_collabs,
-      avgRateReel: (creator as any).avg_rate_reel || creator.suggested_reel_rate, // Fix: property name was avg_reel_rate
-      suggestedReelRate: creator.suggested_reel_rate,
-      suggestedBarterValueMin: creator.suggested_barter_value_min,
-      suggestedBarterValueMax: creator.suggested_barter_value_max,
-      regionLabel: creator.collab_region_label || previewAudienceRegionLabel,
-      mediaKitUrl: creator.media_kit_url,
-      firstDealCount: creator.past_brand_count || creator.collab_brands_count_override || previewTrustStats?.completed_deals || 0,
-    });
-
-    const currentRank = readiness.rank;
-    const lastRankKey = `ca:readiness:last:${keyId}`;
-    const seenStateKey = `ca:readiness:seen:${keyId}:${readiness.stageKey}`;
-    const storedRank = Number(window.localStorage.getItem(lastRankKey) || '0');
-    const seenCurrentState = window.localStorage.getItem(seenStateKey) === '1';
-    const shouldAnimate = currentRank > storedRank || !seenCurrentState;
-
-    if (!shouldAnimate) return;
-
-    if (storedRank >= 3 && currentRank === 4) {
-      setReadinessBadgeSparkle(true);
-      window.setTimeout(() => setReadinessBadgeSparkle(false), 800);
-      badgeEl.animate(
-        [
-          { opacity: 0.4, transform: 'translateY(8px) scale(0.97)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
-          { opacity: 1, transform: 'translateY(0) scale(1.02)', boxShadow: '0 0 30px rgba(139,92,246,0.35)' },
-          { opacity: 1, transform: 'translateY(0) scale(1)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
-        ],
-        { duration: 560, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-      );
-    } else if (storedRank >= 2 && currentRank === 3) {
-      badgeEl.animate(
-        [
-          { opacity: 0.5, transform: 'translateY(6px) scale(0.98)' },
-          { opacity: 1, transform: 'translateY(-1px) scale(1.03)' },
-          { opacity: 1, transform: 'translateY(0) scale(1)' },
-        ],
-        { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-      );
-    } else {
-      badgeEl.animate(
-        [
-          { opacity: 0.3, transform: 'scale(0.97)' },
-          { opacity: 1, transform: 'scale(1.03)' },
-          { opacity: 1, transform: 'scale(1)' },
-        ],
-        { duration: 360, easing: 'ease-out' }
-      );
-    }
-
-    window.localStorage.setItem(lastRankKey, String(Math.max(storedRank, currentRank)));
-    window.localStorage.setItem(seenStateKey, '1');
-  }, [creator]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
+        <Loader2 className="h-10 w-10 animate-spin text-teal-600 mb-6" />
+        {isWarmingUp && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 max-w-xs">
+            <h3 className="text-white font-bold text-lg mb-2">Waking up server...</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Our secure server is spinning up to verify this creator's profile. This usually takes 30-40 seconds on the first load.
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -1232,7 +1446,11 @@ const CollabLinkLanding = () => {
         <div className="text-center max-w-md mx-auto px-4">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-8">
             <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
-            <p className="text-slate-400 mb-6">{error}</p>
+            <p className="text-slate-400 mb-6 leading-relaxed">
+              {error.toLowerCase().includes('timeout')
+                ? "The profile server is taking unusually long to wake up. This is common on the first load—clicking 'Try Again' usually works immediately."
+                : error}
+            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={() => navigate('/')}
@@ -1334,6 +1552,17 @@ const CollabLinkLanding = () => {
   const primaryFollowers = creator.followers ?? followerCount;
   const avgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
   const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
+
+  const isViewsVerified = Boolean(creator.performance_proof?.median_reel_views &&
+    (Number(avgReelViews) === Number(creator.performance_proof.median_reel_views)));
+  const isLikesVerified = Boolean(creator.performance_proof?.avg_likes &&
+    (Number(avgLikes) === Number(creator.performance_proof.avg_likes)));
+
+  // Qualification Warnings
+  const minDeadlineDate = new Date();
+  if (creator.min_lead_time_days) minDeadlineDate.setDate(minDeadlineDate.getDate() + creator.min_lead_time_days);
+  const isDeadlineTooSoon = Boolean(creator.min_lead_time_days && deadline && new Date(deadline) < minDeadlineDate);
+
   const engagementRange = getEngagementRange(primaryFollowers, avgReelViews);
   const genderRows = formatAudienceGender(creator.audience_gender_split);
   const audienceCities = formatAudienceCities(creator.top_cities);
@@ -1347,9 +1576,13 @@ const CollabLinkLanding = () => {
     : '~24 hrs';
   const showEngagementConfidence = engagementRange !== 'Growing Audience';
   const engagementConfidenceNote = 'Above-average engagement for creator size';
-  const recentActivityNoteRaw = creator.collab_recent_activity_note?.trim() || 'Posting consistently';
+  const recentActivityNoteRaw = creator.past_brand_count === 0
+    ? 'New Creator on Creator Armour'
+    : (creator.collab_recent_activity_note?.trim() || 'Posting consistently');
   const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ');
-  const campaignSlotNoteRaw = creator.campaign_slot_note?.trim() || 'Selective partnerships';
+  const campaignSlotNoteRaw = creator.past_brand_count === 0
+    ? 'Actively accepting collaborations'
+    : (creator.campaign_slot_note?.trim() || 'Selective partnerships');
   const campaignSlotNoteText = withNeutralPrefix(campaignSlotNoteRaw, 'Works with ');
   const deliveryReliabilityNote = creator.collab_delivery_reliability_note?.trim() || 'Reliable delivery across past collaborations.'; // const responseCtaLine = collabResponseBehaviorPreset
   //   ? `Usually responds ${collabResponseBehaviorPreset.toLowerCase()}`
@@ -1382,6 +1615,46 @@ const CollabLinkLanding = () => {
     mediaKitUrl: creator.media_kit_url,
     firstDealCount: creator.past_brand_count || creator.collab_brands_count_override || trustStats?.completed_deals || 0,
   });
+
+  const isBudgetTooLow = Boolean(
+    creator.min_deal_value &&
+    ((collabType === 'paid' && Number(exactBudget) > 0 && Number(exactBudget) < creator.min_deal_value) ||
+      (collabType === 'barter' && Number(barterValue) > 0 && Number(barterValue) < creator.min_deal_value))
+  );
+
+  const handleTemplateSelect = (template: DealTemplate) => {
+    setCollabType(template.type || 'paid');
+    if (template.type === 'paid') {
+      setExactBudget(template.budget.toString());
+    } else {
+      setBarterValue(template.budget.toString());
+    }
+
+    if (template.category) setCampaignCategory(template.category);
+    setCampaignDescription(template.description);
+    setDeliverables(template.deliverables);
+    setDeliverableQuantities(template.quantities);
+
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + (template.deadlineDays || 7));
+    setDeadline(targetDate.toISOString().split('T')[0]);
+
+    setShowCustomFlow(true); // Reveal the form
+    setCurrentStep(5); // Jump to Step 5 (Brand & Contact)
+    toast.success(`${template.label} Applied!`);
+    triggerHaptic(HapticPatterns.success);
+  };
+
+
+  const handleUpdateTemplate = (updated: DealTemplate) => {
+    const updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
+    setLocalDealTemplates(updatedList);
+    setEditingTemplate(null);
+    toast.success("Template updated locally! (Persist via profile update)");
+    triggerHaptic(HapticPatterns.success);
+  };
+
+  const dealTemplates = localDealTemplates;
 
   return (
     <>
@@ -1428,1034 +1701,1457 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-      <div className="min-h-screen bg-slate-50 selection:bg-teal-500/30">
-        <div className="container mx-auto px-4 pt-4 pb-0 md:py-6 md:pb-28 max-w-lg md:max-w-[960px] relative">
-          {/* Header - Hero */}
-          <div className="mb-6 pt-2 md:mb-10 md:pt-4 relative">
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
-              <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg">
-                  {creator.profile_photo ? (
-                    <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 text-white font-black text-xl">
-                      {creator.name.slice(0, 1).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
+      <div className="light min-h-screen bg-slate-50 selection:bg-teal-500/30 text-slate-900">
+        {isOwner && (
+          <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex items-center justify-between sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
+            <div className="flex items-center gap-3">
+              <div className="bg-emerald-400/20 p-1.5 rounded-full">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
               </div>
+              <div className="hidden sm:block">
+                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">Owner View</p>
+                <p className="text-[10px] text-emerald-300/80 font-medium">You are viewing your own collab link as brands see it.</p>
+              </div>
+              <div className="sm:hidden">
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Your Collab Link</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setEditMode(!editMode)}
+                size="sm"
+                className={`${editMode ? 'bg-white text-emerald-900 hover:bg-slate-100' : 'bg-emerald-500 text-white hover:bg-emerald-400'} border-none transition-all text-[11px] font-bold h-7 px-4 rounded-full shadow-sm`}
+              >
+                {editMode ? 'Finish Editing' : 'Edit Profile'}
+              </Button>
+            </div>
+          </div>
+        )}
+        <div className="container mx-auto px-4 pt-4 pb-36 lg:pb-10 lg:pt-10 max-w-lg lg:max-w-[1100px] xl:max-w-[1240px] relative">
+          <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12 w-full">
 
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <h2 className="text-[17px] font-black text-slate-900 leading-tight">{creator.name}</h2>
-                  <div className="flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
-                    <CheckCircle2 className="h-3 w-3 text-teal-600" />
-                    <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
+            {/* LEFT COLUMN - Creator Context */}
+            <div className="w-full lg:w-[42%] shrink-0 lg:sticky lg:top-24 space-y-6 lg:space-y-8 z-10">
+
+              {/* Header - Hero */}
+              <div className="mb-6 pt-2 lg:mb-0 lg:pt-0 relative">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
+                  <div className="relative shrink-0">
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg">
+                      {creator.profile_photo ? (
+                        <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 text-white font-black text-xl">
+                          {creator.name.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      {editMode ? (
+                        <Input
+                          className="h-7 text-[17px] font-black text-slate-900 w-auto min-w-[120px] px-2 bg-white/50 border-slate-300 border-dashed focus:border-teal-500 transition-all"
+                          defaultValue={creator.name}
+                          onBlur={(e) => handleInlineProfileUpdate('name', e.target.value)}
+                          placeholder="Your Name"
+                        />
+                      ) : (
+                        <h2 className="text-[17px] font-black text-slate-900 leading-tight">{creator.name}</h2>
+                      )}
+                      <div className="flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
+                        <CheckCircle2 className="h-3 w-3 text-teal-600" />
+                        <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
+                      </div>
+                    </div>
+                    {editMode ? (
+                      <div className="mt-1 flex gap-2 items-center">
+                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Category:</span>
+                        <Input
+                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-white/50 border-slate-300 border-dashed w-32"
+                          defaultValue={creator.category || ''}
+                          onBlur={(e) => handleInlineProfileUpdate('creator_category', e.target.value)}
+                          placeholder="e.g. Lifestyle"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-1.5 mt-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-[13px] text-teal-600 font-bold hover:underline">@{creator.username}</a>
+                          <span className="text-slate-300 text-xs">·</span>
+                          <span className="text-[13px] text-slate-500 font-semibold">{formatFollowers(primaryFollowers)} Instagram {creator.category || ''}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {(creator as any).avg_rate_reel && (
+                            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">
+                              <Wallet className="h-3 w-3 text-slate-500" />
+                              <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">Typical Rate: ₹{Math.round((creator as any).avg_rate_reel / 1000)}K+</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-lg">
+                            <Clock className="h-3 w-3 text-emerald-600" />
+                            <span className="text-[10px] font-black text-emerald-700 uppercase tracking-tight">Replies in {sameDayResponseLine.replace('~', '')}</span>
+                          </div>
+                          {creator.collab_deal_preference && (
+                            <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 px-2 py-1 rounded-lg">
+                              <AlertCircle className="h-3 w-3 text-amber-600" />
+                              <span className="text-[10px] font-black text-amber-700 uppercase tracking-tight">
+                                Prefers: {creator.collab_deal_preference === 'paid_only' ? 'Paid Only' : creator.collab_deal_preference === 'barter_only' ? 'Barter Only' : 'Open to Both'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                {primaryFollowers && primaryFollowers > 0 ? (
-                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">
-                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · {formatFollowers(primaryFollowers)} Instagram · Open to collabs
-                  </span>
-                ) : (
-                  <span className="text-[13px] text-slate-500 font-semibold mt-0.5">
-                    <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-teal-600 font-bold hover:underline">@{creator.username}</a> · Verified Creator Account · Open to collabs
-                  </span>
+
+                <div className="max-w-xl relative">
+                  <h1 className={`text-[30px] md:text-4xl font-black tracking-tight text-slate-900 mb-2.5 leading-tight ${typePageTitle}`}>
+                    Book a Collaboration with {creator.name.split(' ')[0]}
+                  </h1>
+                  <p className="text-[15px] text-slate-500 leading-relaxed max-w-md">
+                    Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
+                  </p>
+                </div>
+              </div>
+
+              {/* 1. Trust Indicators */}
+              <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
+                <div className="grid grid-cols-3 gap-2 px-0">
+                  {[
+                    { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />, desc: 'Legal & binding' },
+                    { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-teal-600" />, desc: 'Dispute protected' },
+                    { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />, desc: 'Creator accountable' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 md:gap-2 rounded-2xl border border-slate-200 bg-white shadow-sm px-1.5 py-3 md:px-2 md:py-4">
+                      <div className={`shrink-0 rounded-xl p-2 md:p-2.5 ${idx === 0 ? 'bg-emerald-50 border border-emerald-100' :
+                        idx === 1 ? 'bg-teal-50 border border-teal-100' :
+                          'bg-blue-50 border border-blue-100'
+                        }`}>{item.icon}</div>
+                      <div>
+                        <p className="text-[10px] md:text-[11px] font-black text-slate-700 leading-tight">{item.label}</p>
+                        <p className="text-[9px] md:text-[10px] text-slate-400 mt-0.5 font-semibold">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Audience Snapshot Toggle */}
+              <div className="mb-6 md:mb-10 relative z-10">
+                <button
+                  onClick={() => setShowMobileAudienceDetails(!showMobileAudienceDetails)}
+                  className={`w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-teal-300 transition-all group ${showMobileAudienceDetails ? 'border-teal-200' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
+                      <TrendingUp className="w-4 h-4 text-teal-600" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-[14px] md:text-[15px] font-black text-slate-900">Audience Snapshot</h3>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Followers, Reach & Reliability</p>
+                    </div>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${showMobileAudienceDetails ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showMobileAudienceDetails && (
+                  <div className="mt-3 space-y-4 animate-in fade-in slide-in-from-top-3 duration-300 overflow-hidden">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                      <div className="bg-white px-4 py-3.5">
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-teal-600" /> Engagement</p>
+                        <p className="text-[14px] font-black text-slate-900 leading-tight">{mobileEngagementLabel}</p>
+                      </div>
+                      <div className="bg-white px-4 py-3.5">
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Response Time</p>
+                        <p className="text-[14px] font-black text-slate-900 leading-tight">{sameDayResponseLine}</p>
+                      </div>
+                      <div className="bg-white px-4 py-3.5">
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Brand Deals</p>
+                        <p className="text-[14px] font-black text-slate-900 leading-tight">{pastBrandCount} deals</p>
+                      </div>
+                      <div className="bg-white px-4 py-3.5">
+                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Reliability</p>
+                        <p className="text-[14px] font-black text-emerald-600 leading-tight">98%</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Audience Profile</h4>
+                        <div className="space-y-2">
+                          {genderRows && <div className="text-[13px] text-slate-700 flex justify-between"><span>Gender Blend</span> <span className="font-bold">{genderRows.join(' / ')}</span></div>}
+                          {audienceCities.length > 0 && <div className="text-[13px] text-slate-700 flex justify-between"><span>Top Cities</span> <span className="font-bold text-right ml-4">{audienceCities.slice(0, 3).join(', ')}</span></div>}
+                          {creator.audience_age_range && <div className="text-[13px] text-slate-700 flex justify-between"><span>Core Age Range</span> <span className="font-bold">{creator.audience_age_range}</span></div>}
+                        </div>
+                      </div>
+                      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Creator Context</h4>
+                        <ul className="text-[12px] text-slate-600 space-y-2 leading-tight">
+                          <li className="flex gap-2"><span>•</span> {audienceFitLine}</li>
+                          <li className="flex gap-2"><span>•</span> {recentActivityNote}</li>
+                          <li className="flex gap-2"><span>•</span> {campaignSlotNoteText}</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-            </div>
 
-            <div className="max-w-xl relative">
-              <h1 className={`text-[30px] md:text-4xl font-black tracking-tight text-slate-900 mb-2.5 leading-tight ${typePageTitle}`}>
-                Send Offer to {creator.name.split(' ')[0]}
-              </h1>
-              <p className="text-[15px] text-slate-500 leading-relaxed max-w-md">
-                Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
-              </p>
-            </div>
-          </div>
-
-          {/* 1. Trust Indicators */}
-          <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
-            <div className="grid grid-cols-3 gap-2 px-0">
-              {[
-                { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />, desc: 'Legal & binding' },
-                { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-teal-600" />, desc: 'Dispute protected' },
-                { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />, desc: 'Creator accountable' },
-              ].map((item, idx) => (
-                <div key={idx} className="flex flex-col items-center text-center gap-1.5 md:gap-2 rounded-2xl border border-slate-200 bg-white shadow-sm px-1.5 py-3 md:px-2 md:py-4">
-                  <div className={`shrink-0 rounded-xl p-2 md:p-2.5 ${idx === 0 ? 'bg-emerald-50 border border-emerald-100' :
-                    idx === 1 ? 'bg-teal-50 border border-teal-100' :
-                      'bg-blue-50 border border-blue-100'
-                    }`}>{item.icon}</div>
-                  <div>
-                    <p className="text-[10px] md:text-[11px] font-black text-slate-700 leading-tight">{item.label}</p>
-                    <p className="text-[9px] md:text-[10px] text-slate-400 mt-0.5 font-semibold">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* 2. Audience Snapshot Toggle */}
-          <div className="mb-6 md:mb-10 relative z-10">
-            <button
-              onClick={() => setShowMobileAudienceDetails(!showMobileAudienceDetails)}
-              className={`w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-teal-300 transition-all group ${showMobileAudienceDetails ? 'border-teal-200' : ''}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
-                  <TrendingUp className="w-4 h-4 text-teal-600" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-[14px] md:text-[15px] font-black text-slate-900">Audience Snapshot</h3>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Followers, Reach & Reliability</p>
-                </div>
-              </div>
-              <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${showMobileAudienceDetails ? 'rotate-180' : ''}`} />
-            </button>
-
-            {showMobileAudienceDetails && (
-              <div className="mt-3 space-y-4 animate-in fade-in slide-in-from-top-3 duration-300 overflow-hidden">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                  <div className="bg-white px-4 py-3.5">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-teal-600" /> Engagement</p>
-                    <p className="text-[14px] font-black text-slate-900 leading-tight">{mobileEngagementLabel}</p>
-                  </div>
-                  <div className="bg-white px-4 py-3.5">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Response Time</p>
-                    <p className="text-[14px] font-black text-slate-900 leading-tight">{sameDayResponseLine}</p>
-                  </div>
-                  <div className="bg-white px-4 py-3.5">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Brand Deals</p>
-                    <p className="text-[14px] font-black text-slate-900 leading-tight">{pastBrandCount} deals</p>
-                  </div>
-                  <div className="bg-white px-4 py-3.5">
-                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Reliability</p>
-                    <p className="text-[14px] font-black text-emerald-600 leading-tight">98%</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Audience Profile</h4>
-                    <div className="space-y-2">
-                      {genderRows && <div className="text-[13px] text-slate-700 flex justify-between"><span>Gender Blend</span> <span className="font-bold">{genderRows.join(' / ')}</span></div>}
-                      {audienceCities.length > 0 && <div className="text-[13px] text-slate-700 flex justify-between"><span>Top Cities</span> <span className="font-bold text-right ml-4">{audienceCities.slice(0, 3).join(', ')}</span></div>}
-                      {creator.audience_age_range && <div className="text-[13px] text-slate-700 flex justify-between"><span>Core Age Range</span> <span className="font-bold">{creator.audience_age_range}</span></div>}
+              {/* Trust Strip */}
+              <div className="md:hidden mt-6 mb-4 mx-0 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
+                <div className="flex flex-col justify-center gap-2.5 rounded-2xl bg-[#004D40] text-emerald-50 px-5 py-4 shadow-md overflow-hidden relative">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl -translate-y-10 translate-x-10" />
+                  <div className="flex flex-col gap-2 z-10 w-full relative">
+                    <div className="flex items-center gap-2.5 w-full">
+                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                      <span className="text-[12px] font-bold tracking-wide">50+ Brands Trust Creator Armour</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
+                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                      <span className="text-[12px] font-bold tracking-wide">Legally Binding Contracts</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
+                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                      <span className="text-[12px] font-bold tracking-wide">Secure Payment Protection</span>
+                    </div>
+                    <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
+                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
+                      <span className="text-[12px] font-bold tracking-wide">Verified Deliverables</span>
                     </div>
                   </div>
-                  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Creator Context</h4>
-                    <ul className="text-[12px] text-slate-600 space-y-2 leading-tight">
-                      <li className="flex gap-2"><span>•</span> {audienceFitLine}</li>
-                      <li className="flex gap-2"><span>•</span> {recentActivityNote}</li>
-                      <li className="flex gap-2"><span>•</span> {campaignSlotNoteText}</li>
-                    </ul>
+                </div>
+              </div>
+
+              {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
+              {!showCustomFlow && (
+                <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1 px-1">Fastest way to collaborate</span>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-amber-500" />
+                        <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
+                      </div>
+                    </div>
+                    {isOwner && (
+                      <button
+                        onClick={() => setIsEditingTemplates(!isEditingTemplates)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
+                      >
+                        <Edit className="h-3 w-3" />
+                        <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
+                      </button>
+                    )}
                   </div>
-                </div>
-              </div>
-            )}
-          </div>
 
-          {/* Trust Strip */}
-          <div className="md:hidden mt-6 mb-4 mx-0 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-            <div className="flex flex-col justify-center gap-2.5 rounded-2xl bg-[#004D40] text-emerald-50 px-5 py-4 shadow-md overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl -translate-y-10 translate-x-10" />
-              <div className="flex flex-col gap-2 z-10 w-full relative">
-                <div className="flex items-center gap-2.5 w-full">
-                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                  <span className="text-[12px] font-bold tracking-wide">50+ Brands Trust Creator Armour</span>
-                </div>
-                <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
-                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                  <span className="text-[12px] font-bold tracking-wide">Legally Binding Contracts</span>
-                </div>
-                <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
-                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                  <span className="text-[12px] font-bold tracking-wide">Secure Payments (Escrow)</span>
-                </div>
-                <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
-                  <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                  <span className="text-[12px] font-bold tracking-wide">Verified Deliverables</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {dealTemplates.map((template, idx) => {
+                      const deliverablesList = template.deliverables.map(d => {
+                        const qty = template.quantities[d] || 1;
+                        if (d === 'Unboxing Video') return `${qty} Unboxing`;
+                        return `${qty} ${d.replace('Instagram ', '')}`;
+                      }).join(' + ');
 
-        {/* SEO-Friendly Content Section - Indexable Content */}
-        <div className="container mx-auto px-4 max-w-lg md:max-w-[1040px]">
-          <div className="hidden md:block mb-12 space-y-8">
-            <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
-              {creatorBio && (
-                <p className="text-slate-700 leading-relaxed mb-6 font-medium">
-                  {creatorBio}
-                </p>
-              )}
-
-              {creator.platforms.length > 0 && (
-                <div className="space-y-3">
-                  <h2 className="text-xl font-semibold text-slate-900 mb-3">
-                    Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                    {creator.platforms.map((platform, idx) => {
-                      const isInstagram = platform.name.toLowerCase() === 'instagram';
                       return (
-                        <div key={idx} className="flex items-center gap-3 text-slate-100/85">
-                          {getPlatformIcon(platform.name)}
-                          <div className="flex-1">
-                            <p className="font-medium text-slate-900">{platform.name}</p>
-                            {isInstagram && platform.handle ? (
-                              <a
-                                href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
+                        <div key={template.id} className="relative group/card h-full">
+                          {idx === 1 && (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
+                              <div className="bg-amber-400 text-amber-950 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-300 shadow-sm uppercase tracking-wider flex items-center gap-1">
+                                <Sparkles className="h-2 w-2" />
+                                Most Booked
+                              </div>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleTemplateSelect(template)}
+                            className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${idx === 1 ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-100/60 shadow-lg shadow-amber-900/5' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50 shadow-sm'}`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
+                                {template.icon}
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-[14px] font-black text-slate-900 mb-0.5">{template.label}</p>
+                              <p className="font-bold text-slate-400 text-[11px] mb-3">{deliverablesList}</p>
+                            </div>
+                            <div className="mt-auto pt-2 border-t border-slate-100/50">
+                              <p className="text-[15px] font-black text-teal-600">
+                                {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
+                              </p>
+                            </div>
+                          </button>
+
+                          {isOwner && isEditingTemplates && (
+                            <div className="absolute top-2 right-2 z-10">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTemplate(template);
+                                }}
+                                className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
                               >
-                                @{platform.handle.replace('@', '')}
-                                <ExternalLink className="h-3 w-3 opacity-60" />
-                              </a>
-                            ) : (
-                              <p className="text-sm text-slate-200/90">
-                                {platform.handle}
-                              </p>
-                            )}
-                            {platform.followers && (
-                              <p className="text-xs text-slate-200/65 mt-1">
-                                {platform.followers >= 1000
-                                  ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                  : `${platform.followers} followers`}
-                              </p>
-                            )}
-                          </div>
+                                <Edit className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
                   </div>
+
+                  <div className="mt-6 text-center">
+                    <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mb-3">Or create custom</p>
+                    <Button
+                      onClick={() => {
+                        setShowCustomFlow(true);
+                        setCurrentStep(1);
+                        triggerHaptic(HapticPatterns.success);
+                      }}
+                      variant="outline"
+                      className="w-full h-12 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]"
+                    >
+                      New Custom Proposal
+                      <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
                 </div>
               )}
 
-              {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-              {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-                <div className="mt-8 pt-6 border-t border-slate-200 space-y-3">
-                  {creator.open_to_collabs !== false && (
-                    <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 shrink-0" />
-                      Actively open to collaborations
+              {/* Desktop-only Bio & Platforms */}
+              <div className="hidden lg:block space-y-8">
+                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
+                  {editMode ? (
+                    <div className="mb-6 relative">
+                      <div className="absolute -top-6 left-0 flex items-center gap-1">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Creator Bio</p>
+                      </div>
+                      <Textarea
+                        className="bg-slate-50 border-slate-300 border-dashed text-slate-700 leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
+                        defaultValue={creator.bio || ''}
+                        onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
+                        placeholder="Brief introduction for brands..."
+                      />
+                      <p className="text-[9px] text-slate-400 mt-1">Updates immediately when you click outside</p>
+                    </div>
+                  ) : creatorBio && (
+                    <p className="text-slate-700 leading-relaxed mb-6 font-medium">
+                      {creatorBio}
                     </p>
                   )}
-                  {creator.content_niches && creator.content_niches.length > 0 && (
-                    <div>
-                      <p className="text-xs text-slate-400 mb-1">Content niches</p>
-                      <div className="flex flex-wrap gap-2">
-                        {creator.content_niches.map((niche, i) => (
-                          <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
-                            {niche}
-                          </Badge>
-                        ))}
+
+                  {creator.platforms.length > 0 && (
+                    <div className="space-y-3">
+                      <h2 className="text-xl font-semibold text-slate-900 mb-3">
+                        Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                        {creator.platforms.map((platform, idx) => {
+                          const isInstagram = platform.name.toLowerCase() === 'instagram';
+                          return (
+                            <div key={idx} className="flex items-center gap-3 text-slate-100/85">
+                              {getPlatformIcon(platform.name)}
+                              <div className="flex-1">
+                                <p className="font-medium text-slate-900">{platform.name}</p>
+                                {isInstagram && platform.handle ? (
+                                  <a
+                                    href={`https://instagram.com/${platform.handle.replace('@', '')}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
+                                  >
+                                    @{platform.handle.replace('@', '')}
+                                    <ExternalLink className="h-3 w-3 opacity-60" />
+                                  </a>
+                                ) : (
+                                  <p className="text-sm text-slate-200/90">
+                                    {platform.handle}
+                                  </p>
+                                )}
+                                {platform.followers && (
+                                  <p className="text-xs text-slate-200/65 mt-1">
+                                    {platform.followers >= 1000
+                                      ? `${(platform.followers / 1000).toFixed(1)}K followers`
+                                      : `${platform.followers} followers`}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
-                  {creator.media_kit_url && (
-                    <div>
-                      <a
-                        href={creator.media_kit_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
-                      >
-                        <ExternalLink className="h-4 w-4 shrink-0" />
-                        Media kit
-                      </a>
-                      <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
+
+                  {/* Open to collabs + niches + media kit (creator readiness for brands) */}
+                  {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
+                    <div className="mt-8 pt-6 border-t border-slate-200 space-y-3">
+                      {creator.open_to_collabs !== false && (
+                        <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 shrink-0" />
+                          Actively open to collaborations
+                        </p>
+                      )}
+                      {editMode ? (
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                            Content Niches
+                            <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Add relevant tags for your profile</span>
+                          </p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {creator.content_niches?.map((niche, i) => (
+                              <Badge
+                                key={i}
+                                variant="secondary"
+                                className="bg-teal-50 text-teal-700 border-teal-100 pl-3 pr-1 py-1 flex items-center gap-1 group"
+                              >
+                                {niche}
+                                <button
+                                  onClick={() => {
+                                    const updated = creator.content_niches?.filter(n => n !== niche);
+                                    handleInlineProfileUpdate('content_niches', updated);
+                                  }}
+                                  className="hover:bg-teal-200/50 rounded-full p-0.5 transition-colors"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="New niche..."
+                              value={newNicheInput}
+                              onChange={(e) => setNewNicheInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const val = newNicheInput.trim();
+                                  if (val) {
+                                    const updated = [...(creator.content_niches || []), val];
+                                    handleInlineProfileUpdate('content_niches', updated);
+                                    setNewNicheInput('');
+                                  }
+                                }
+                              }}
+                              className="h-8 text-xs border-dashed bg-slate-50"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 text-xs border-dashed border-teal-200 text-teal-600 hover:bg-teal-50"
+                              onClick={() => {
+                                const val = newNicheInput.trim();
+                                if (val) {
+                                  const updated = [...(creator.content_niches || []), val];
+                                  handleInlineProfileUpdate('content_niches', updated);
+                                  setNewNicheInput('');
+                                }
+                              }}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      ) : creator.content_niches && creator.content_niches.length > 0 && (
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Content niches</p>
+                          <div className="flex flex-wrap gap-2">
+                            {creator.content_niches.map((niche, i) => (
+                              <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
+                                {niche}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {editMode ? (
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
+                          <Input
+                            className="h-8 text-xs bg-slate-50 border-dashed"
+                            defaultValue={creator.media_kit_url || ''}
+                            onBlur={(e) => handleInlineProfileUpdate('media_kit_url', e.target.value)}
+                            placeholder="e.g. https://canva.com/your-media-kit"
+                          />
+                        </div>
+                      ) : creator.media_kit_url && (
+                        <div>
+                          <a
+                            href={creator.media_kit_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
+                          >
+                            <ExternalLink className="h-4 w-4 shrink-0" />
+                            Media kit
+                          </a>
+                          <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
+                        </div>
+                      )}
                     </div>
                   )}
+
                 </div>
-              )}
-
-            </div>
-          </div>
-
-          {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-          <Accordion type="single" collapsible className="w-full mb-6 relative z-20" defaultValue="item-1">
-            <AccordionItem value="item-1" className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden border-b-0">
-              <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-teal-600" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-[15px] font-black text-slate-900">Creator Snapshot</h3>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Reach, Trust & Practical Logistics</p>
-                  </div>
-                </div>
-                {audienceRegionLabel && (
-                  <span className="flex items-center gap-1 text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-1 uppercase tracking-wide mr-2">
-                    <MapPin className="w-3 h-3" />{audienceRegionLabel}
-                  </span>
-                )}
-              </AccordionTrigger>
-              <AccordionContent className="p-0">
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-px bg-slate-100">
-                  <div className="bg-white px-4 py-3 text-left">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Avg Reel Views</p>
-                    <p className="text-[18px] font-black text-slate-900 leading-tight">{avgReelViews ? `${Math.round(Number(avgReelViews) / 1000)}K` : '120K'}</p>
-                  </div>
-                  <div className="bg-white px-4 py-3 text-left">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Followers</p>
-                    <p className="text-[18px] font-black text-slate-900 leading-tight">{(primaryFollowers && primaryFollowers > 0) ? formatFollowers(primaryFollowers) : 'Verified'}</p>
-                  </div>
-                  <div className="bg-white px-4 py-3 text-left">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Engagement</p>
-                    <p className="text-[18px] font-black text-slate-900 leading-tight">{(Number(avgLikes) && primaryFollowers) ? ((Number(avgLikes) / primaryFollowers) * 100).toFixed(1) + '%' : '7.2%'}</p>
-                  </div>
-                  <div className="bg-white px-4 py-3 text-left">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Deals Completed</p>
-                    <p className="text-[18px] font-black text-slate-900 leading-tight">{pastBrandCount || 17}</p>
-                  </div>
-                </div>
-
-                <div className="p-5 border-t border-slate-100 bg-slate-50/50">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2">Typical Reel Rate</h4>
-                        <div className="grid grid-cols-1 gap-2">
-                          {[
-                            { label: 'Instagram Reel', rate: (creator as any).typical_reel_rate || '₹8K – ₹15K' },
-                            { label: 'Story Set', rate: (creator as any).typical_story_rate || '₹2K – ₹5K' },
-                            { label: 'Static Post', rate: (creator as any).typical_post_rate || '₹6K – ₹12K' },
-                          ].map(p => (
-                            <div key={p.label} className="bg-white border border-slate-200 px-3 py-2 rounded-xl flex items-center justify-between shadow-sm">
-                              <span className="text-[12px] font-semibold text-slate-600">{p.label}</span>
-                              <span className="text-[14px] font-black text-teal-800">{p.rate}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-slate-300 pl-2">Logistics</h4>
-                        <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm border-l-2 border-l-emerald-400">
-                          <span className="text-slate-500 font-medium flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-emerald-600" />Availability</span>
-                          <span className="font-bold text-emerald-700">Open for collaborations this month</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                          <span className="text-slate-500 font-medium flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Base City</span>
-                          <span className="font-bold text-slate-800">{audienceRegionLabel || 'Delhi NCR'}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                          <span className="text-slate-500 font-medium flex items-center gap-2"><FileText className="h-3.5 w-3.5" />GST / Invoice</span>
-                          <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 text-[10px]">GST INVOICE READY</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                          <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5 text-blue-500" />Reply Time</span>
-                          <span className="font-bold text-slate-800">~24 hours</span>
-                        </div>
-                        <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                          <span className="text-slate-500 font-medium flex items-center gap-2"><Wallet className="h-3.5 w-3.5" />Payment Methods</span>
-                          <span className="font-bold text-slate-800">UPI, Bank Transfer</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Expected SLA & Rights</h4>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                            <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Reel Delivery</span>
-                            <span className="font-bold text-slate-800">3–5 days</span>
-                          </div>
-                          <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                            <span className="text-slate-500 font-medium flex items-center gap-2"><ArrowRight className="h-3.5 w-3.5" />Usage Rights</span>
-                            <span className="font-bold text-slate-800">Organic (Ads Optional)</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-emerald-500 pl-2">Audience Context</h4>
-                        <div className="space-y-2.5">
-                          <div className="flex items-center justify-between text-[13px]">
-                            <span className="text-slate-500 font-medium flex items-center gap-2"><Globe className="h-3.5 w-3.5" />Core Geo</span>
-                            <span className="font-bold text-slate-800">India: 82%</span>
-                          </div>
-                          <div className="flex items-center justify-between text-[13px]">
-                            <span className="text-slate-500 font-medium flex items-center gap-2"><Users className="h-3.5 w-3.5" />Audience Age</span>
-                            <span className="font-bold text-slate-800 whitespace-pre-line text-right">{creator.audience_age_range || '18-24: 42%\n25-34: 37%'}</span>
-                          </div>
-                          <div className="mt-2 space-y-1.5">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest"><Languages className="h-3 w-3 inline mr-1" />Languages</span>
-                            <div className="flex flex-wrap gap-1.5 pt-0.5">
-                              {(audienceLanguage || 'Hindi, English, Hinglish').split(',').map(lang => (
-                                <span key={lang.trim()} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md shadow-sm">{lang.trim()}</span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="pt-4">
-                          <div className="bg-white/50 border border-slate-200 rounded-xl p-3">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-pink-500" /> Best fit for</p>
-                            <div className="flex flex-wrap gap-1.5 mb-3">
-                              {['Lifestyle', 'Tech', 'Fashion', 'Beauty'].map(cat => (
-                                <span key={cat} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{cat}</span>
-                              ))}
-                            </div>
-
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Supports</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {['Product Review', 'App Promotion', 'Event Appearance'].map(cat => (
-                                <span key={cat} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">{cat}</span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {(avgReelViews || primaryFollowers > 0) && (
-                  <div className="p-5 border-t border-slate-100 bg-teal-50/20">
-                    <p className="text-[10px] text-teal-700 font-black uppercase tracking-widest mb-4 flex items-center justify-between">
-                      <span>Market Impact (Est. per campaign)</span>
-                      <span className="text-teal-600 bg-white border border-teal-200 px-2 py-0.5 rounded-md font-bold text-[9px]">Live Data Verified</span>
-                    </p>
-                    <div className="grid grid-cols-2 gap-8">
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Typical Reel Engagement</p>
-                        <p className="text-[20px] font-black text-slate-900 leading-tight">
-                          {avgReelViews
-                            ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K – ${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
-                            : `${Math.round(primaryFollowers * 0.1 / 1000)}K – ${Math.round(primaryFollowers * 0.3 / 1000)}K`
-                          }
-                          <span className="text-[12px] text-slate-400 font-bold ml-1.5">Views</span>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Est. Story Reach</p>
-                        <p className="text-[20px] font-black text-slate-900 leading-tight">
-                          {`${Math.round(primaryFollowers * 0.04 / 1000)}K – ${Math.round(primaryFollowers * 0.09 / 1000)}K`}
-                          <span className="text-[12px] text-slate-400 font-bold ml-1.5">Reach</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-
-          {/* 4. The main offer formation form (Unified for desktop/mobile) */}
-          <div id="core-offer-form" className={`mt-2 md:mt-12 container mx-auto px-4 max-w-lg md:max-w-2xl rounded-[28px] p-5 md:p-10 mb-6 md:mb-16 text-slate-900 border border-slate-200 bg-white shadow-xl shadow-black/5 relative transition-all duration-200 ease-out`}>
-            {/* Step indicator */}
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className={`text-[19px] font-black tracking-tight text-slate-900 leading-tight ${typeSectionTitle}`}>
-                  {currentStep === 1 ? 'Step 1: Campaign Context' : currentStep === 2 ? 'Step 2: Deliverables' : 'Step 3: Brand & Contact'}
-                </h2>
               </div>
-              <div className="flex gap-1">
-                {[1, 2, 3].map((step) => (
-                  <div
-                    key={step}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-teal-500' : step < currentStep ? 'w-3 bg-emerald-500/30' : 'w-1.5 bg-slate-200'}`}
-                  />
-                ))}
-              </div>
-            </div>
 
-            {/* Existing form steps would stay here - but let's just make sure the tags are closed! */}
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {/* RE-INSERTING THE REMAINING FORM LOGIC */}
-              {currentStep === 1 && (
-                <div className="space-y-6 md:space-y-8">
-                  {/* Campaign Category - Added for Step 1 refinement */}
-                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
-                    <label className={`block text-slate-700 mb-3 ${typeLabel} inline-flex items-center gap-2`}><Target className="h-4 w-4 text-teal-600" />Project Category</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['Lifestyle', 'Fashion', 'Beauty', 'Tech', 'Food', 'Gaming', 'Finance', 'Travel', 'Education'].map((cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => setCampaignCategory(cat)}
-                          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${campaignCategory === cat ? 'bg-teal-600 text-white border-teal-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:border-teal-300 hover:bg-teal-50'}`}
-                        >
-                          {cat}
-                        </button>
+              {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
+              <Accordion type="single" collapsible className="w-full mb-6 relative z-20" defaultValue="item-1">
+                <AccordionItem value="item-1" className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden border-b-0">
+                  <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center">
+                        <TrendingUp className="w-4 h-4 text-teal-600" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-[15px] font-black text-slate-900">Creator Snapshot</h3>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Reach, Trust & Practical Logistics</p>
+                      </div>
+                    </div>
+                    {audienceRegionLabel && (
+                      <span className="flex items-center gap-1 text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-1 uppercase tracking-wide mr-2">
+                        <MapPin className="w-3 h-3" />{audienceRegionLabel}
+                      </span>
+                    )}
+                  </AccordionTrigger>
+                  <AccordionContent className="p-0">
+                    <div className="grid grid-cols-2 md:grid-cols-2 gap-px bg-slate-100">
+                      {/* Avg Reel Views */}
+                      <div className="bg-white px-4 py-3 text-left">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avg Reel Views</p>
+                          {isViewsVerified && <span title="Verified source"><BadgeCheck className="w-3 h-3 text-emerald-500" /></span>}
+                        </div>
+                        {editMode ? (
+                          <Input
+                            type="number"
+                            className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
+                            defaultValue={creator.avg_reel_views || ''}
+                            onBlur={(e) => handleInlineProfileUpdate('avg_reel_views', Number(e.target.value))}
+                            placeholder="e.g. 10000"
+                          />
+                        ) : avgReelViews ? (
+                          <>
+                            <p className="text-[18px] font-black text-slate-900 leading-tight">
+                              {Number(avgReelViews) >= 1000 ? `${Math.round(Number(avgReelViews) / 1000)}K` : avgReelViews}
+                            </p>
+                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">{isViewsVerified ? '✓ Instagram API' : 'Creator Provided'}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[18px] font-black text-slate-300 leading-tight">—</p>
+                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">Not provided yet</p>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Response Time */}
+                      <div className="bg-white px-4 py-3 text-left">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Response Time</p>
+                          {(avgResponseHours && avgResponseHours > 0) && <span title="Based on past requests"><BadgeCheck className="w-3 h-3 text-emerald-500" /></span>}
+                        </div>
+                        {(avgResponseHours && avgResponseHours > 0) ? (
+                          <>
+                            <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(avgResponseHours)}h`}</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">✓ Based on past requests</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[18px] font-black text-slate-300 leading-tight">—</p>
+                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">No history yet</p>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="bg-white px-4 py-3 text-left">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Brands Worked</p>
+                        {editMode ? (
+                          <Input
+                            type="number"
+                            className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
+                            defaultValue={creator.past_brand_count || ''}
+                            onBlur={(e) => handleInlineProfileUpdate('past_brand_count', Number(e.target.value))}
+                            placeholder="0"
+                          />
+                        ) : (creator.trust_stats?.brands_count != null && creator.trust_stats.brands_count > 0) ? (
+                          <>
+                            <p className="text-[18px] font-black text-emerald-600 leading-tight">{creator.trust_stats.brands_count}</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">✓ Verified Partnerships</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[18px] font-black text-slate-300 leading-tight">New</p>
+                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">Building portfolio</p>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Completion Rate */}
+                      <div className="bg-white px-4 py-3 text-left">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Completion Rate</p>
+                        {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
+                          <>
+                            <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">✓ Deal Fulfillment</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[18px] font-black text-slate-300 leading-tight">—</p>
+                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">No deals completed yet</p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+
+                    <div className="p-5 border-t border-slate-100 bg-slate-50/50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2 flex items-center justify-between">
+                              Typical Reel Rate
+                              {editMode && <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Set your base rate</span>}
+                            </h4>
+                            <div className="grid grid-cols-1 gap-2">
+                              {editMode && (
+                                <div className="mb-2 bg-teal-50/50 p-3 rounded-xl border border-teal-100/50">
+                                  <p className="text-[10px] font-bold text-teal-700 uppercase mb-2">Base Reel Rate (₹)</p>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      type="number"
+                                      className="h-9 bg-white border-teal-200 text-teal-900 font-bold"
+                                      defaultValue={creator.suggested_reel_rate || ''}
+                                      placeholder="e.g. 5000"
+                                      onBlur={(e) => handleInlineProfileUpdate('suggested_reel_rate', Number(e.target.value))}
+                                    />
+                                    <div className="flex-1 bg-white border border-teal-100 rounded-md px-2 flex flex-col justify-center">
+                                      <p className="text-[9px] text-slate-400 font-bold uppercase leading-none mb-1">Preview</p>
+                                      <p className="text-xs font-black text-teal-800 leading-none">₹{Math.round(Number(creator.suggested_reel_rate || 0) / 1000)}K</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              {(() => {
+                                const reelRate = creator.suggested_reel_rate;
+                                const paidMin = creator.suggested_paid_range_min;
+                                const paidMax = creator.suggested_paid_range_max;
+                                const hasRate = reelRate && reelRate > 0;
+                                const rateLabel = hasRate
+                                  ? (paidMin && paidMax
+                                    ? `₹${Math.round(paidMin / 1000)}K – ₹${Math.round(paidMax / 1000)}K`
+                                    : `₹${Math.round(reelRate / 1000)}K`)
+                                  : null;
+                                return [
+                                  { label: 'Instagram Reel', rate: rateLabel },
+                                ].map(p => (
+                                  <div key={p.label}>
+                                    <div className="bg-white border border-slate-200 px-3 py-2.5 rounded-xl flex items-center justify-between shadow-sm">
+                                      <span className="text-[13px] font-bold text-slate-700">{p.label}</span>
+                                      {p.rate
+                                        ? <span className="text-[15px] font-black text-teal-800">{p.rate}</span>
+                                        : <span className="text-[13px] font-semibold text-slate-300">Not set</span>
+                                      }
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-medium mt-1.5 ml-1 italic leading-tight">
+                                      Stories & static posts are usually included in collaboration packages.
+                                    </p>
+                                  </div>
+                                ));
+                              })()}
+                            </div>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-slate-300 pl-2">Logistics</h4>
+                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm border-l-2 border-l-emerald-400">
+                              <span className="text-slate-500 font-medium flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-emerald-600" />Availability</span>
+                              <span className="font-bold text-emerald-700">Open for collaborations this month</span>
+                            </div>
+                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                              <span className="text-slate-500 font-medium flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Base City</span>
+                              <span className="font-bold text-slate-800">{audienceRegionLabel || '—'}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                              <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5 text-blue-500" />Reply Time</span>
+                              <span className="font-bold text-slate-800">
+                                {(avgResponseHours && avgResponseHours > 0)
+                                  ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
+                                  : '—'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                              <span className="text-slate-500 font-medium flex items-center gap-2"><Wallet className="h-3.5 w-3.5" />Payment Methods</span>
+                              <span className="font-bold text-slate-800">UPI, Bank Transfer</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Expected SLA & Rights</h4>
+                            <div className="space-y-2">
+                              {creator.collab_delivery_reliability_note ? (
+                                <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                                  <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Delivery</span>
+                                  <span className="font-bold text-slate-800 text-right max-w-[55%] text-[12px]">{creator.collab_delivery_reliability_note}</span>
+                                </div>
+                              ) : null}
+                              {creator.collab_cta_trust_note ? (
+                                <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+                                  <span className="text-slate-500 font-medium flex items-center gap-2"><ArrowRight className="h-3.5 w-3.5" />Rights</span>
+                                  <span className="font-bold text-slate-800 text-right max-w-[55%] text-[12px]">{creator.collab_cta_trust_note}</span>
+                                </div>
+                              ) : null}
+                              {!creator.collab_delivery_reliability_note && !creator.collab_cta_trust_note && (
+                                <p className="text-[12px] text-slate-300 italic">Not specified yet</p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-emerald-500 pl-2">Audience Context</h4>
+                            <div className="space-y-2.5">
+                              {/* Core Geo — only show if top cities exist */}
+                              {audienceCities.length > 0 && (
+                                <div className="flex items-center justify-between text-[13px]">
+                                  <span className="text-slate-500 font-medium flex items-center gap-2"><Globe className="h-3.5 w-3.5" />Core Geo</span>
+                                  <span className="font-bold text-slate-800">{audienceCities.slice(0, 2).join(', ')}</span>
+                                </div>
+                              )}
+                              {/* Audience Age */}
+                              <div className="flex items-center justify-between text-[13px]">
+                                <span className="text-slate-500 font-medium flex items-center gap-2"><Users className="h-3.5 w-3.5" />Audience Age</span>
+                                {creator.audience_age_range
+                                  ? <span className="font-bold text-slate-800 whitespace-pre-line text-right">{creator.audience_age_range}</span>
+                                  : <span className="font-semibold text-slate-300">—</span>
+                                }
+                              </div>
+                              {/* Languages */}
+                              {audienceLanguage && (
+                                <div className="mt-2 space-y-1.5">
+                                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest"><Languages className="h-3 w-3 inline mr-1" />Languages</span>
+                                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                                    {audienceLanguage.split(',').map(lang => (
+                                      <span key={lang.trim()} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md shadow-sm">{lang.trim()}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Best Fit / Supports — only show if real data is available */}
+                            {((creator.content_niches?.length ?? 0) > 0 || recentCampaignTypes.length > 0) && (
+                              <div className="pt-4">
+                                <div className="bg-white/50 border border-slate-200 rounded-xl p-3">
+                                  {(creator.content_niches?.length ?? 0) > 0 && (
+                                    <>
+                                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-pink-500" /> Best fit for</p>
+                                      <div className="flex flex-wrap gap-1.5 mb-3">
+                                        {(creator.content_niches ?? []).map(cat => (
+                                          <span key={cat} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{cat}</span>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                  {recentCampaignTypes.length > 0 && (
+                                    <>
+                                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Supports</p>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {recentCampaignTypes.map(cat => (
+                                          <span key={cat} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">{cat}</span>
+                                        ))}
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {(avgReelViews || primaryFollowers > 0) && (
+                      <div className="p-5 border-t border-slate-100 bg-teal-50/20">
+                        <p className="text-[10px] text-teal-700 font-black uppercase tracking-widest mb-4 flex items-center justify-between">
+                          <span>Market Impact (Est. per campaign)</span>
+                          <span className="text-teal-600 bg-white border border-teal-200 px-2 py-0.5 rounded-md font-bold text-[9px]">Live Data Verified</span>
+                        </p>
+                        <div className="grid grid-cols-2 gap-8">
+                          <div>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Typical Reel Engagement</p>
+                            <p className="text-[20px] font-black text-slate-900 leading-tight">
+                              {avgReelViews
+                                ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K – ${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
+                                : `${Math.round(primaryFollowers * 0.1 / 1000)}K – ${Math.round(primaryFollowers * 0.3 / 1000)}K`
+                              }
+                              <span className="text-[12px] text-slate-400 font-bold ml-1.5">Views</span>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Est. Story Reach</p>
+                            <p className="text-[20px] font-black text-slate-900 leading-tight">
+                              {`${Math.round(primaryFollowers * 0.04 / 1000)}K – ${Math.round(primaryFollowers * 0.09 / 1000)}K`}
+                              <span className="text-[12px] text-slate-400 font-bold ml-1.5">Reach</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div> {/* END LEFT COLUMN */}
+
+            {/* RIGHT COLUMN - Offer Form */}
+            <div className="w-full lg:w-[58%] lg:pb-32">
+              {/* 4. The main offer formation form (Unified for desktop/mobile) */}
+              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 border border-slate-200 bg-white shadow-2xl shadow-teal-900/5 relative transition-all duration-200 ease-out`}>
+
+                {/* Fallback space when flow is hidden */}
+                {!showCustomFlow && (
+                  <div className="py-20 text-center animate-in fade-in duration-1000">
+                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
+                      <Zap className="h-10 w-10 fill-current" />
+                    </div>
+                    <p className="text-slate-400 font-bold uppercase tracking-[2px] text-xs">Awaiting Proposal</p>
+                    <p className="text-slate-300 text-[13px] mt-2">Pick a package or create custom to start.</p>
+                  </div>
+                )}
+
+                {/* Step indicator (Now shows 5 steps) */}
+                {showCustomFlow && (
+                  <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div>
+                      <h2 className={`text-[17px] font-black tracking-tight text-slate-900 leading-tight ${typeSectionTitle}`}>
+                        {currentStep === 1 ? 'Step 1: Deal Type' :
+                          currentStep === 2 ? 'Step 2: Content' :
+                            currentStep === 3 ? 'Step 3: Budget' :
+                              currentStep === 4 ? 'Step 4: Campaign Goal' :
+                                'Step 5: Contact Info'}
+                      </h2>
+                    </div>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((step) => (
+                        <div
+                          key={step}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-slate-900 shadow-[0_0_10px_rgba(0,0,0,0.1)]' : step < currentStep ? 'w-3 bg-emerald-500/40' : 'w-1.5 bg-slate-100'}`}
+                        />
                       ))}
                     </div>
                   </div>
+                )}
 
-                  <div id="campaign-goal-field" className="space-y-3">
-                    <label className={`flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider ${typeLabel}`}>
-                      <FileText className="h-3.5 w-3.5 text-slate-400" />
-                      What is your campaign goal? <span className="text-red-500 ml-0.5">*</span>
-                    </label>
-                    <Textarea
-                      value={campaignDescription}
-                      onChange={(e) => {
-                        setCampaignDescription(e.target.value);
-                        if (errors.campaignDescription) setErrors({ ...errors, campaignDescription: '' });
-                      }}
-                      placeholder={`Example:\nLaunching a new sneaker collection.\nLooking for:\n• 1 Reel\n• 2 Stories\n\nTarget audience: Gen-Z India.`}
-                      className={`bg-slate-50 border-slate-200 rounded-2xl min-h-[140px] text-slate-900 placeholder:text-slate-400 focus:ring-teal-500/30 focus:border-teal-400 text-sm leading-relaxed ${errors.campaignDescription ? 'border-red-400' : ''}`}
-                    />
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] text-slate-400">Minimum 20 characters for a quality proposal</p>
-                      {campaignDescription.length > 0 && campaignDescription.length < 20 && (
-                        <p className="text-[10px] text-amber-600 font-bold">{20 - campaignDescription.length} more chars</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+                {showCustomFlow && (
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-[300px]">
+                    {/* Step 1: Collaboration Type */}
+                    {currentStep === 1 && (
+                      <div className="space-y-4">
+                        <label className={`block text-[15px] font-black text-slate-800 mb-6 ${typeLabel}`}>What type of collaboration?</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {[
+                            { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Fixed cash budget' },
+                            { id: 'barter', label: 'Barter', icon: <Package className="h-5 w-5" />, sub: 'Product exchange' },
+                            { id: 'hybrid', label: 'Hybrid', icon: <Zap className="h-5 w-5" />, sub: 'Cash + Product' },
+                            { id: 'affiliate', label: 'Affiliate', icon: <TrendingUp className="h-5 w-5" />, sub: 'Sales commission' },
+                          ].map((type) => (
+                            <button
+                              key={type.id}
+                              onClick={() => setCollabType(type.id as CollabType)}
+                              className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all group ${collabType === type.id ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.02]' : 'border-slate-100 bg-white hover:border-slate-200 text-slate-600'}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${collabType === type.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
+                                  {type.icon}
+                                </div>
+                                <div className="text-left">
+                                  <p className="text-[13px] font-black uppercase tracking-tight">{type.label}</p>
+                                  <p className={`text-[10px] font-medium ${collabType === type.id ? 'text-white/60' : 'text-slate-400'}`}>{type.sub}</p>
+                                </div>
+                              </div>
+                              {collabType === type.id && <CheckCircle2 className="h-5 w-5 text-white" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-              <div className={`space-y-6 md:space-y-8 ${currentStep === 1 ? 'hidden' : ''}`}>
-                {/* Deal Type */}
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 transition-all focus-within:ring-2 focus-within:ring-teal-500/20">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className={`inline-flex items-center gap-2 text-sm text-slate-700 ${typeLabel}`}><Target className="h-4 w-4 text-teal-600" />Deal Type</span>
-                    <Select
-                      value={collabType}
-                      onValueChange={(value: CollabType) => {
-                        setCollabType(value);
-                        if (value === 'paid') {
-                          setBarterValue('');
-                        } else if (value === 'barter') {
-                          setBudgetRange('');
-                          setExactBudget('');
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="h-9 w-[190px] bg-transparent border-0 p-0 text-right text-slate-900 font-bold">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="paid"><span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-500" />Paid Deal</span></SelectItem>
-                        <SelectItem value="barter"><span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-amber-500" />Product Exchange</span></SelectItem>
-                        <SelectItem value="hybrid"><span className="inline-flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-slate-500" />Cash + Product</span></SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {collabType === 'barter' && (
-                    <p className="text-xs text-slate-500 mt-2">
-                      Creator may request partial cash + product
-                    </p>
-                  )}
-                </div>
-
-                {/* Value – Hero Card (Teal gradient like dashboard revenue) */}
-                <div
-                  className={`overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-100 max-h-[500px] translate-y-0`}
-                >
-                  <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 40%, #2dd4bf 70%, #34d399 100%)' }}>
-                    {/* Label row */}
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-white/90 uppercase tracking-widest"><IndianRupee className="h-3.5 w-3.5" />{collabType === 'paid' ? 'Proposed Budget' : collabType === 'barter' ? 'Est. Product Value' : 'Total Value (Cash + Product)'}</span>
-                      {((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) && (
-                        <span className="text-[10px] font-bold text-white/70 bg-white/15 border border-white/20 rounded-lg px-2 py-0.5">
-                          Typical: ₹{((creator as any).avg_rate_reel || (creator as any).avg_reel_rate).toLocaleString()} – ₹{(((creator as any).avg_rate_reel || (creator as any).avg_reel_rate) * 1.6).toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                    {/* Big amount input */}
-                    <div className="flex items-baseline gap-2 mb-3">
-                      <span className="text-[22px] font-black text-white/80">₹</span>
-                      <input
-                        type="number"
-                        value={collabType === 'barter' ? barterValue : exactBudget}
-                        onChange={(e) => collabType === 'barter' ? setBarterValue(e.target.value) : setExactBudget(e.target.value)}
-                        placeholder="3,000"
-                        className="bg-transparent border-0 focus:ring-0 text-white font-black p-0 text-[32px] tracking-tight placeholder:text-white/30 w-full"
-                        style={{ lineHeight: 1 }}
-                      />
-                    </div>
-                    {/* Payment note */}
-                    <div className="flex items-center gap-1.5 bg-white/15 border border-white/20 rounded-xl px-3 py-2">
-                      <Lock className="w-3 h-3 text-white/80 shrink-0" />
-                      <p className="text-[11px] text-white/90 font-semibold">
-                        Funds protected until deliverables are approved
-                      </p>
-                    </div>
-                    {/* Secured badge like dashboard */}
-                    <div className="mt-3 flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-white/70" />
-                      <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Secured by Armour</span>
-                    </div>
-                  </div>
-
-                  {/* Creator Acceptance Probability Scorecard */}
-                  <div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 transition-all animate-in zoom-in-95 duration-500">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-black text-emerald-700 uppercase tracking-[2px]">Acceptance Probability</span>
-                      <span className="text-[11px] font-black text-emerald-600 bg-white border border-emerald-200 rounded-full px-2.5 py-0.5 shadow-sm">
-                        {Number(exactBudget) >= ((creator as any).avg_rate_reel || 5000) ? 'HIGH' : Number(exactBudget) > 0 ? 'MODERATE' : 'PENDING'}
-                      </span>
-                    </div>
-                    <div className="flex gap-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((i) => {
-                        const isActive = i <= (Number(exactBudget) >= ((creator as any).avg_rate_reel || 5000) ? 5 : Number(exactBudget) > 0 ? 3 : 1);
-                        return <div key={i} className={`h-1 flex-1 rounded-full ${isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-slate-200'}`} />;
-                      })}
-                    </div>
-                    <p className="text-[11px] text-slate-500 font-medium italic">
-                      {Number(collabType === 'barter' ? barterValue : exactBudget) >= ((creator as any).avg_rate_reel || 5000)
-                        ? 'Your offer matches this creator\'s typical deal flow. Response expected within 24h.'
-                        : 'Based on creator response rate and deal history'}
-                    </p>
-                  </div>
-                </div>
-
-              </div>
-
-
-
-              {/* Deliverables – Premium Selectable Cards */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-widest"><Clapperboard className="h-3.5 w-3.5 text-slate-400" />Content Requested</span>
-                  {deliverables.length > 0 && <span className="text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">{deliverables.length} selected</span>}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {DELIVERABLE_OPTIONS.filter((item) => item.value !== 'Custom').map((item) => {
-                    const active = deliverables.includes(item.value);
-                    const qty = deliverableQuantities[item.value] || 1;
-                    return (
-                      <div
-                        key={item.label}
-                        className={`rounded-2xl border-2 transition-all cursor-pointer ${active
-                          ? 'border-teal-400 bg-teal-50 shadow-sm'
-                          : 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50/50'
-                          }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => handleDeliverableToggle(item.value)}
-                          className="w-full p-3 text-left flex items-center gap-3"
-                        >
-                          <span className="text-2xl leading-none">{item.icon}</span>
-                          <div className="flex-1">
-                            <p className={`text-[14px] font-black leading-tight ${active ? 'text-teal-800' : 'text-slate-600'}`}>{item.label}</p>
-                            {active && <p className="text-[10px] text-teal-600 font-bold mt-0.5">✓ Selected</p>}
+                    {/* Step 2: Content (Deliverables) */}
+                    {currentStep === 2 && (
+                      <div className="space-y-6">
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
+                          <label className={`block text-[15px] font-black text-slate-800 mb-4 ${typeLabel} flex items-center gap-2`}>
+                            <Clapperboard className="h-5 w-5 text-slate-900" />
+                            What content would you like?
+                          </label>
+                          <div className="flex flex-wrap gap-2.5">
+                            {DELIVERABLE_OPTIONS.map((option) => {
+                              const isSelected = deliverables.includes(option.value);
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => handleDeliverableToggle(option.value)}
+                                  className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-black transition-all border-2 ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
+                                >
+                                  {option.icon}
+                                  {option.label}
+                                  {isSelected && <CheckCircle2 className="h-3 w-3 text-white ml-1" />}
+                                </button>
+                              );
+                            })}
                           </div>
-                        </button>
-                        {active && (
-                          <div className="flex items-center justify-between border-t border-teal-200 px-3 pb-2.5 pt-2">
-                            <span className="text-[10px] font-semibold text-slate-400">Qty</span>
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => updateDeliverableQuantity(item.value, qty - 1)}
-                                className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 font-black text-sm flex items-center justify-center hover:bg-slate-200 active:scale-90 transition-all"
-                              >−</button>
-                              <span className="text-[15px] font-black text-slate-900 w-5 text-center">{qty}</span>
-                              <button
-                                type="button"
-                                onClick={() => updateDeliverableQuantity(item.value, qty + 1)}
-                                className="w-6 h-6 rounded-lg bg-teal-100 text-teal-700 font-black text-sm flex items-center justify-center hover:bg-teal-200 active:scale-90 transition-all"
-                              >+</button>
+
+                          {deliverables.length > 0 && (
+                            <div className="mt-8 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Adjust Quantities</label>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {deliverables.map((d) => (
+                                  <div key={d} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:border-slate-300 transition-all">
+                                    <span className="text-[12px] font-black text-slate-700">{d}</span>
+                                    <div className="flex items-center gap-3">
+                                      <button
+                                        onClick={() => updateDeliverableQuantity(d, (deliverableQuantities[d] || 1) - 1)}
+                                        className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-900 active:scale-90 transition-all font-bold"
+                                      >
+                                        −
+                                      </button>
+                                      <span className="w-6 text-center text-[13px] font-black text-slate-900">{deliverableQuantities[d] || 1}</span>
+                                      <button
+                                        onClick={() => updateDeliverableQuantity(d, (deliverableQuantities[d] || 1) + 1)}
+                                        className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-900 active:scale-90 transition-all font-bold"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 3: Budget/Product Value */}
+                    {currentStep === 3 && (
+                      <div className="space-y-6">
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
+                          <label className={`block text-[15px] font-black text-slate-800 mb-6 ${typeLabel} flex items-center gap-2`}>
+                            <IndianRupee className="h-5 w-5 text-slate-900" />
+                            {collabType === 'paid' ? 'Campaign Budget' : collabType === 'barter' ? 'Product Value' : 'Commitment Details'}
+                          </label>
+
+                          {collabType === 'paid' && (
+                            <div className="space-y-4">
+                              <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
+                                <Input
+                                  type="number"
+                                  value={exactBudget}
+                                  onChange={(e) => setExactBudget(e.target.value)}
+                                  placeholder="Enter exact budget in INR"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                                />
+                              </div>
+                              <p className="px-1 text-[11px] text-slate-400 font-medium">Standard rate for this creator is ~₹{(creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000).toLocaleString()}.</p>
+                            </div>
+                          )}
+
+                          {(collabType === 'barter' || collabType === 'hybrid') && (
+                            <div className="space-y-5">
+                              <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 mb-2 block">Product Name / Offer</label>
+                                <Input
+                                  value={barterProductName}
+                                  onChange={(e) => setBarterProductName(e.target.value)}
+                                  placeholder="e.g. Wireless Noise Canceling Headphones"
+                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 mb-2 block">Market Value (₹)</label>
+                                  <Input
+                                    type="number"
+                                    value={barterValue}
+                                    onChange={(e) => setBarterValue(e.target.value)}
+                                    placeholder="Value in INR"
+                                    className="h-12 px-4 rounded-xl border-white bg-white font-black text-[14px] shadow-sm"
+                                  />
+                                </div>
+                                {collabType === 'hybrid' && (
+                                  <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 mb-2 block">Plus Cash (₹)</label>
+                                    <Input
+                                      type="number"
+                                      value={exactBudget}
+                                      onChange={(e) => setExactBudget(e.target.value)}
+                                      placeholder="Extra Cash"
+                                      className="h-12 px-4 rounded-xl border-white bg-white font-black text-[14px] shadow-sm"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          {collabType === 'affiliate' && (
+                            <div className="p-10 text-center space-y-3">
+                              <TrendingUp className="h-10 w-10 text-slate-300 mx-auto" />
+                              <p className="text-[13px] font-black text-slate-500">Commission terms will be negotiated after brief review.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* Step 4: Campaign Goal & Timeline */}
+                    {currentStep === 4 && (
+                      <div className="space-y-6">
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
+                          <div>
+                            <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Target className="h-5 w-5 text-slate-900" />Project Category</label>
+                            <div className="flex flex-wrap gap-2">
+                              {PRODUCT_CATEGORY_OPTIONS.slice(0, 10).map((option) => (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => setCampaignCategory(option.label)}
+                                  className={`px-4 py-2.5 rounded-2xl text-[12px] font-black transition-all border-2 ${campaignCategory === option.label ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
                             </div>
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
 
-              {/* Timeline & Validity */}
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
-                {/* Campaign Go-Live Date */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="inline-flex items-center gap-2 text-[11px] font-black text-slate-500 uppercase tracking-widest"><Calendar className="h-3.5 w-3.5 text-teal-600" />Campaign Go-Live Date</span>
-                  </div>
-                  <p className="text-[10px] text-amber-600 font-semibold mb-2.5 flex items-center gap-1">⚡ Creator usually needs 3–5 days production time</p>
-                  <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-3.5 py-2.5">
-                    <span className="text-[13px] text-slate-400 font-semibold flex items-center gap-2">📅 Select date</span>
-                    <input
-                      type="date"
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                      className="bg-transparent border-0 text-right focus:ring-0 text-slate-900 font-bold p-0 text-sm w-auto"
-                    />
-                  </div>
-                </div>
-
-                {/* Offer Validity – Preset Chips */}
-                <div className="border-t border-slate-200 pt-4">
-                  <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2.5 flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-500" />Offer expires in</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {[
-                      { label: '3 days', days: 3 },
-                      { label: '7 days', days: 7 },
-                      { label: '14 days', days: 14 },
-                      { label: '30 days', days: 30 },
-                    ].map(({ label, days }) => {
-                      const targetDate = new Date();
-                      targetDate.setDate(targetDate.getDate() + days);
-                      const targetStr = targetDate.toISOString().split('T')[0];
-                      const isActive = offerExpiry === targetStr;
-                      return (
-                        <button
-                          key={days}
-                          type="button"
-                          onClick={() => setOfferExpiry(targetStr)}
-                          className={`px-4 py-1.5 rounded-full text-[12px] font-black border transition-all active:scale-95 ${isActive
-                            ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
-                            : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-700'
-                            }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {offerExpiry && (
-                    <p className="text-[10px] text-slate-400 font-semibold mt-2">Expires: {new Date(offerExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* --- STEP 3: Brand Details --- */}
-              <div className={`space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300 ${currentStep === 3 ? '' : 'hidden'}`}>
-                <div className="bg-slate-50 rounded-[24px] p-5 border border-slate-200">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-1">
-                    <Building2 className="h-5 w-5 text-amber-500" />
-                    Brand & Contact
-                  </h3>
-                  <p className="text-xs text-slate-500 mb-6">Required for the collaboration contract</p>
-
-                  <form id="collab-request-form" ref={formRef} onSubmit={handleSubmit} className="space-y-5">
-
-                    <div>
-                      <label className={`block text-slate-700 mb-2 ${typeLabel}`}>
-                        <span className="inline-flex items-center gap-2"><Building2 className="h-4 w-4 text-slate-400" />Brand Name <span className="text-red-500">*</span></span>
-                      </label>
-                      <Input
-                        type="text"
-                        value={brandName}
-                        onChange={(e) => {
-                          setBrandName(e.target.value);
-                          if (errors.brandName) setErrors({ ...errors, brandName: '' });
-                        }}
-                        required
-                        placeholder="Official Company / Brand Name"
-                        className={`${inputClass} border-slate-200 bg-white focus:bg-white focus:border-teal-400 text-slate-900 placeholder:text-slate-400 ${errors.brandName ? 'border-red-400' : ''}`}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label className={`block text-slate-700 mb-2 ${typeLabel}`}>
-                          <span className="inline-flex items-center gap-2"><Mail className="h-4 w-4 text-slate-400" />Work Email <span className="text-red-500">*</span></span>
-                        </label>
-                        <Input
-                          type="email"
-                          value={brandEmail}
-                          onChange={(e) => {
-                            setBrandEmail(e.target.value);
-                            if (errors.brandEmail) setErrors({ ...errors, brandEmail: '' });
-                          }}
-                          required
-                          placeholder="you@company.com"
-                          className={`${inputClass} border-slate-200 bg-white focus:bg-white focus:border-teal-400 text-slate-900 placeholder:text-slate-400 ${errors.brandEmail ? 'border-red-400' : ''}`}
-                        />
-                      </div>
-                      <div>
-                        <label className={`block text-slate-700 mb-2 ${typeLabel}`}>
-                          <span className="inline-flex items-center gap-2"><Globe className="h-4 w-4 text-slate-400" />Company Website <span className="text-red-500">*</span></span>
-                        </label>
-                        <Input
-                          type="text"
-                          value={brandWebsite}
-                          onChange={(e) => setBrandWebsite(e.target.value)}
-                          required
-                          placeholder="example.com"
-                          className={`${inputClass} border-slate-200 bg-white focus:bg-white focus:border-teal-400 text-slate-900 placeholder:text-slate-400`}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-200">
-                      <button
-                        type="button"
-                        onClick={() => setShowOptionalBrandDetails(prev => !prev)}
-                        className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
-                      >
-                        <span className={showOptionalBrandDetails ? 'rotate-180 transition-transform' : 'transition-transform'}><ChevronDown className="h-4 w-4" /></span>
-                        Optional Brand Details
-                      </button>
-
-                      {showOptionalBrandDetails && (
-                        <div className="mt-4 space-y-5 animate-in fade-in slide-in-from-top-2">
                           <div>
-                            <label className={`block text-xs text-slate-500 mb-2 ${typeLabel}`}>
-                              <span className="inline-flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Registered Company Address</span>
-                            </label>
+                            <label className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}><FileText className="h-5 w-5 text-slate-900" />Campaign Goal</label>
+                            <Textarea
+                              value={campaignDescription}
+                              onChange={(e) => setCampaignDescription(e.target.value)}
+                              placeholder="Be specific! Example: Review our summer skin serum focusing on lightweight texture. Mention our launch date June 15th."
+                              className="bg-white border-white rounded-2xl min-h-[120px] text-slate-900 placeholder:text-slate-400 focus:ring-slate-900/10 focus:border-slate-300 text-sm leading-relaxed shadow-sm p-4 font-medium"
+                            />
+                            <p className="text-[10px] text-slate-400 mt-2 px-1">Min. 20 characters • {campaignDescription.length} chars</p>
+                          </div>
+
+                          <div>
+                            <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Calendar className="h-5 w-5 text-slate-900" />Target Completion Date</label>
+                            <Input
+                              type="date"
+                              min={new Date().toISOString().split('T')[0]}
+                              value={deadline}
+                              onChange={(e) => setDeadline(e.target.value)}
+                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 5: Contact Details */}
+                    {currentStep === 5 && (
+                      <div className="space-y-6">
+                        {/* Summary of Offer */}
+                        <div className="bg-slate-900 rounded-[32px] p-6 text-white shadow-2xl relative overflow-hidden group mb-6">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/10 transition-all" />
+                          <p className="text-[10px] font-black uppercase tracking-[2px] text-white/40 mb-4">Brief Summary</p>
+                          <div className="grid grid-cols-2 gap-6">
+                            <div>
+                              <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Type</p>
+                              <p className="text-[14px] font-black capitalize">{collabType}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Value</p>
+                              <p className="text-[14px] font-black">{displayBudget}</p>
+                            </div>
+                            <div className="col-span-2 border-t border-white/5 pt-4">
+                              <p className="text-[10px] uppercase text-white/30 font-bold mb-2">Scope</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {deliverables.length > 0 ? (
+                                  deliverables.map(d => (
+                                    <span key={d} className="px-2.5 py-1 rounded-full bg-white/10 text-[10px] font-black text-white/90 border border-white/5">{deliverableQuantities[d] || 1}x {d}</span>
+                                  ))
+                                ) : (
+                                  <span className="text-[11px] text-white/40 italic">No deliverables selected</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
+                          <div className="flex items-center gap-2 mb-2 p-2 bg-emerald-50 rounded-2xl border border-emerald-100">
+                            <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                            <p className="text-[11px] font-black text-emerald-700 uppercase tracking-tight">Contract Protection Active</p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Brand/Agency Name</label>
+                              <Input
+                                value={brandName}
+                                onChange={(e) => setBrandName(e.target.value)}
+                                placeholder="e.g. Acme Marketing Unit"
+                                className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Contact Email</label>
+                              <Input
+                                type="email"
+                                value={brandEmail}
+                                onChange={(e) => setBrandEmail(e.target.value)}
+                                placeholder="name@company.com"
+                                className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Authorized Person Name</label>
+                            <Input
+                              value={authorizedSignerName}
+                              onChange={(e) => setAuthorizedSignerName(e.target.value)}
+                              placeholder="Full name for contract signing"
+                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Registered Address</label>
                             <Textarea
                               value={brandAddress}
                               onChange={(e) => setBrandAddress(e.target.value)}
-                              placeholder="Required for invoices only..."
-                              rows={2}
-                              className={`${inputClass} min-h-[70px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400`}
+                              placeholder="Enter full office address for the legal agreement..."
+                              className="bg-white border-white rounded-xl min-h-[80px] shadow-sm p-4 font-medium text-sm"
                             />
                           </div>
-                          <div>
-                            <label className={`block text-xs text-slate-500 mb-2 ${typeLabel}`}>
-                              <span className="inline-flex items-center gap-2"><Instagram className="h-3.5 w-3.5" />Brand Instagram</span>
-                            </label>
-                            <Input
-                              type="text"
-                              value={brandInstagram}
-                              onChange={(e) => setBrandInstagram(e.target.value)}
-                              placeholder="@brand"
-                              className={`${inputClass} h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400`}
-                            />
-                          </div>
-                          {collabType !== 'paid' && (
-                            <div className="rounded-lg border border-slate-200 bg-white p-3">
-                              <h4 className="text-xs font-bold text-slate-700 mb-2">Product Image</h4>
-                              <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp,image/gif"
-                                onChange={handleBarterImageChange}
-                                disabled={barterImageUploading}
-                                className="block w-full text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-teal-50 file:text-teal-700 file:text-xs file:font-medium"
-                              />
-                            </div>
-                          )}
                         </div>
-                      )}
-                    </div>
-                  </form>
-                </div>
-
-                {/* Secure Trust Indicators inline in Step 3 */}
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 flex flex-col gap-2">
-                  <div className="flex items-center gap-2 text-sm text-emerald-800">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                    <span className="font-semibold">Secured by Creator Armour</span>
-                  </div>
-                  <p className="text-xs text-emerald-700/70 pl-6">Your details are only shared once the creator accepts the collaboration proposal.</p>
-                </div>
-              </div>
-
-              {/* Protected Deal Workflow */}
-              <div className="mt-8 mb-6 p-4 rounded-xl bg-slate-50/50 border border-slate-200">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-5">Protected Deal Workflow</p>
-                <div className="flex justify-between items-center text-[9px] text-center font-bold text-slate-600 px-0 md:px-4">
-                  <div className="flex flex-col items-center gap-1.5 w-14"><Send className="w-4 h-4 text-emerald-500" /><span>Send Offer</span></div>
-                  <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5 w-14"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span>Creator Accepts</span></div>
-                  <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5 w-14"><FileCheck className="w-4 h-4 text-emerald-500" /><span>Contract Generated</span></div>
-                  <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5 w-14"><Lock className="w-4 h-4 text-emerald-500" /><span>Funds Secured (Escrow)</span></div>
-                  <ChevronRight className="w-3 h-3 text-slate-300" />
-                  <div className="flex flex-col items-center gap-1.5 w-14"><Clapperboard className="w-4 h-4 text-emerald-500" /><span>Content Delivered</span></div>
-                </div>
-              </div>
-
-              {/* Global Footer Elements */}
-              <div className="mt-4 flex flex-col items-center">
-                <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 mb-3">
-                  <Lock className="h-3 w-3 text-emerald-600" />
-                  <span>End-to-End Encrypted Data</span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowSaveDraftModal(true)}
-                  className="text-xs text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-400 rounded-xl px-4 py-2 transition-colors bg-slate-50 hover:bg-slate-100"
-                >
-                  Save and continue later
-                </button>
-              </div>
-
-              {/* Demo Fill Button - Only in development or with ?demo=true */}
-              {import.meta.env.DEV && (
-                <div className="mt-4 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={fillDemoData}
-                    className="text-xs text-slate-200/50 hover:text-slate-100 underline underline-offset-4"
-                  >
-                    Fill demo data
-                  </button>
-                </div>
-              )}
-
-              <div className="md:hidden h-20" />
-
-              <div className="px-4">
-
-                {/* Save and continue later modal */}
-                <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-                  <DialogContent className="bg-slate-900/95 border-white/20 text-white">
-                    <DialogHeader>
-                      <DialogTitle>Save and continue later</DialogTitle>
-                    </DialogHeader>
-                    <p className="text-sm text-slate-100/85">
-                      Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
-                    </p>
-                    <Input
-                      type="email"
-                      placeholder="you@company.com"
-                      value={draftEmail}
-                      onChange={(e) => setDraftEmail(e.target.value)}
-                      className={inputClass}
-                    />
-                    <DialogFooter>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowSaveDraftModal(false)}
-                        className="border-white/20 text-white hover:bg-white/10"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={handleSaveDraftSubmit}
-                        disabled={saveDraftSubmitting}
-                        className="bg-white text-black hover:bg-slate-200 text-white"
-                      >
-                        {saveDraftSubmitting ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            Sending…
-                          </>
-                        ) : (
-                          'Send link'
-                        )}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                {/* Sticky Bottom CTA (mobile compact with offer summary) */}
-                <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
-                  <div className="relative">
-                    {/* Mini Summary Strip - Big UX Win */}
-                    <div className="flex items-center justify-between px-3 py-1.5 mb-2 bg-slate-900 rounded-xl shadow-lg animate-in slide-in-from-bottom-5 duration-500">
-                      <div className="flex flex-col">
-                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Offer Summary</p>
-                        <p className="text-[11px] font-black text-white">
-                          {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
-                          <span className="mx-1.5 text-slate-600">·</span>
-                          {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>Add deliverables to create an offer</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
-                          {deliverables.length > 0 && deadline && (
-                            <>
-                              <span className="mx-1.5 text-slate-600">·</span>
-                              Campaign {new Date(deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                            </>
-                          )}
-                        </p>
                       </div>
-                    </div>
-
-                    {showSubmittingTrust && (
-                      <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
                     )}
-                    <Button
-                      onClick={handleStickySubmit}
-                      disabled={submitting}
-                      className="w-full h-12 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-base shadow-lg shadow-teal-500/20 border-t border-white/20 active:scale-[0.99]"
-                    >
-                      {submitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Lock className="h-5 w-5 text-white" />
-                          Processing Offer...
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-center text-[10.5px] font-semibold text-slate-500 mt-2">
-                    {showSubmittingTrust ? 'Your offer is being processed securely' : 'Creator usually replies within 24 hours'}
-                  </p>
-                  {showSubmittingTrust && (
-                    <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                      {submittingChecklist.map((step, idx) => {
-                        const complete = idx <= submitChecklistStep;
-                        return (
-                          <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-700 opacity-100 translate-y-0' : 'text-slate-400 opacity-70 translate-y-0.5'}`}>
-                            <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-500' : 'text-slate-300'}`} />
-                            <span>{step}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
 
-                {/* Sticky Bottom CTA (desktop full with offer summary) */}
-                <div className={`hidden md:block fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100 transition-all duration-300 ${hasStartedOffer ? 'translate-y-0' : 'translate-y-full opacity-0 pointer-events-none'}`}>
-                  <div className="relative max-w-4xl mx-auto flex items-center gap-6 bg-slate-900 rounded-[28px] p-4 shadow-2xl border border-white/10">
-                    {/* Desktop Summary Info */}
-                    <div className="flex-1 flex items-center gap-8 pl-4">
-                      <div className="flex flex-col">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Proposed Value</p>
-                        <p className="text-[18px] font-black text-white">
-                          {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid Deal'}
-                        </p>
-                      </div>
-                      <div className="flex flex-col">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Assets</p>
-                        <p className="text-[18px] font-black text-white whitespace-nowrap">
-                          {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>None</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Deliverable'}${deliverables.length > 1 ? 's' : ''}`}
-                        </p>
-                      </div>
-                      {deliverables.length > 0 && deadline && (
-                        <div className="flex flex-col">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Campaign Go-Live</p>
-                          <p className="text-[18px] font-black text-teal-400 whitespace-nowrap">
-                            {new Date(deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="relative shrink-0 w-[240px]">
-                      {showSubmittingTrust && (
-                        <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
-                      )}
+                    {/* Step Navigation Bar */}
+                    <div className="mt-8 flex flex-col sm:flex-row gap-3">
                       <Button
-                        onClick={handleStickySubmit}
-                        disabled={submitting}
-                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-base shadow-lg shadow-teal-500/20 active:scale-[0.98] transition-all mb-1.5"
+                        onClick={() => {
+                          if (currentStep === 1) {
+                            setShowCustomFlow(false);
+                          } else {
+                            setCurrentStep(currentStep - 1);
+                          }
+                          triggerHaptic(HapticPatterns.soft);
+                        }}
+                        variant="outline"
+                        className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
                       >
-                        {submitting ? (
-                          <span className="flex items-center justify-center gap-2 animate-pulse">
-                            <Lock className="h-5 w-5" />
-                            Processing Offer...
-                          </span>
-                        ) : (
-                          <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
-                        )}
+                        {currentStep === 1 ? 'Go Back' : 'Previous Step'}
                       </Button>
-                      <p className="text-center text-[10.5px] font-semibold text-slate-400 absolute w-full left-0 mt-0.5">
-                        {showSubmittingTrust ? 'Processing securely' : 'Creator usually replies within 24 hours'}
-                      </p>
+
+                      {currentStep < 5 ? (
+                        <Button
+                          onClick={() => {
+                            let canProceed = false;
+                            if (currentStep === 1 && isStep1Ready) canProceed = true;
+                            if (currentStep === 2 && isStep2Ready) canProceed = true;
+                            if (currentStep === 3 && isStep3Ready) canProceed = true;
+                            if (currentStep === 4 && isStep4Ready) canProceed = true;
+
+                            if (canProceed) {
+                              setCurrentStep(currentStep + 1);
+                              triggerHaptic(HapticPatterns.success);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                              toast.error(`Please complete Step ${currentStep} first`);
+                            }
+                          }}
+                          className="h-14 rounded-full bg-slate-900 border-2 border-slate-900 text-white hover:bg-black font-black text-xs uppercase tracking-widest transition-all shadow-xl flex-1 active:scale-98"
+                        >
+                          Continue
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleSubmit}
+                          disabled={submitting || !isStep5Ready}
+                          className="h-14 rounded-full bg-slate-900 border-2 border-slate-900 text-white hover:bg-black font-black text-xs uppercase tracking-widest transition-all shadow-xl flex-1 active:scale-95 group relative overflow-hidden"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            {submitting ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4" />
+                                Send Collaboration Offer
+                              </>
+                            )}
+                          </span>
+                        </Button>
+                      )}
                     </div>
+
+                    <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-8">
+                      <button
+                        type="button"
+                        onClick={() => setShowSaveDraftModal(true)}
+                        className="text-[11px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-800 transition-colors flex items-center gap-2"
+                      >
+                        <Lock className="h-3 w-3" />
+                        Save draft & Resume later
+                      </button>
+
+                      {currentStep < 5 && (
+                        <Button
+                          onClick={handleStickySubmit}
+                          className="hidden lg:flex w-auto h-12 px-8 rounded-2xl bg-slate-100 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                        >
+                          Next Step: Step {currentStep + 1}
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Demo Fill Button */}
+                    {/* Demo Fill Button */}
+                    {import.meta.env.DEV && (
+                      <div className="mt-6 flex justify-center">
+                        <button
+                          type="button"
+                          onClick={fillDemoData}
+                          className="text-[10px] text-slate-200 hover:text-slate-300 font-bold uppercase tracking-widest"
+                        >
+                          Fill demo data
+                        </button>
+                      </div>
+                    )}
                   </div>
+                )}
+              </div> {/* END core-offer-form */}
+            </div> {/* END RIGHT COLUMN */}
+          </div> {/* END flex-row container */}
+
+          <div className="lg:hidden h-20" />
+
+          <div className="px-4">
+            {/* Save and continue later modal */}
+            <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
+              <DialogContent className="bg-slate-900/95 border-white/20 text-white">
+                <DialogHeader>
+                  <DialogTitle>Save and continue later</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-slate-100/85">
+                  Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
+                </p>
+                <Input
+                  type="email"
+                  placeholder="you@company.com"
+                  value={draftEmail}
+                  onChange={(e) => setDraftEmail(e.target.value)}
+                  className={inputClass}
+                />
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowSaveDraftModal(false)}
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSaveDraftSubmit}
+                    disabled={saveDraftSubmitting}
+                    className="bg-white text-black hover:bg-slate-200 text-white"
+                  >
+                    {saveDraftSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Sending…
+                      </>
+                    ) : (
+                      'Send link'
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Sticky Bottom CTA (mobile compact) */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
+            <div className="relative">
+              {/* Mini Summary Strip */}
+              <div className="flex items-center justify-between px-3 py-1.5 mb-2 bg-slate-900 rounded-xl shadow-lg animate-in slide-in-from-bottom-5 duration-500">
+                <div className="flex flex-col">
+                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Offer Summary</p>
+                  <p className="text-[11px] font-black text-white">
+                    {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
+                    <span className="mx-1.5 text-slate-600">·</span>
+                    {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>Add deliverables</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className={`h-1.5 w-1.5 rounded-full ${isCoreReady ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                  <span className="text-[10px] font-black text-white uppercase tracking-tight">{isCoreReady ? 'Ready' : 'Incomplete'}</span>
                 </div>
               </div>
+
+              {isCoreReady && !hasStartedOffer && (
+                <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
+              )}
+              <Button
+                onClick={handleStickySubmit}
+                disabled={submitting}
+                className="w-full h-12 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-base shadow-lg shadow-teal-500/20 border-t border-white/20 active:scale-[0.99]"
+              >
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Lock className="h-5 w-5 text-white" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
+                )}
+              </Button>
             </div>
+            <p className="text-center text-[10.5px] font-semibold text-slate-500 mt-2">
+              {showSubmittingTrust ? 'Your offer is being processed securely' : '50+ brands have collaborated through Creator Armour'}
+            </p>
+            {showSubmittingTrust && (
+              <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                {submittingChecklist.map((step, idx) => {
+                  const complete = idx <= submitChecklistStep;
+                  return (
+                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-700 opacity-100 translate-y-0' : 'text-slate-400 opacity-70 translate-y-0.5'}`}>
+                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-500' : 'text-slate-300'}`} />
+                      <span>{step}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Edit Deal Template Modal */}
+      {
+        editingTemplate && (
+          <EditDealTemplateModal
+            template={editingTemplate!}
+            onSave={handleUpdateTemplate}
+            onClose={() => setEditingTemplate(null)}
+          />
+        )
+      }
     </>
+  );
+};
+
+// Component helper for editing templates
+const EditDealTemplateModal = ({
+  template,
+  onSave,
+  onClose,
+}: {
+  template: DealTemplate;
+  onSave: (updated: DealTemplate) => void;
+  onClose: () => void;
+}) => {
+  const [edited, setEdited] = useState<DealTemplate>({ ...template });
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-md rounded-[32px] p-6 bg-white border-none shadow-2xl overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-emerald-500" />
+        <DialogHeader className="pt-2">
+          <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <span className="text-2xl">{edited.icon}</span>
+            Edit Deal Template
+          </DialogTitle>
+          <p className="text-xs text-slate-500 font-medium tracking-tight">Set your collaboration package to guide brands.</p>
+        </DialogHeader>
+        <div className="space-y-4 py-6">
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Template Label</label>
+            <Input
+              value={edited.label}
+              onChange={(e) => setEdited({ ...edited, label: e.target.value })}
+              className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all"
+              placeholder="e.g. Pro Reel Package"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Deal Type</label>
+              <Select
+                value={edited.type}
+                onValueChange={(v: any) => setEdited({ ...edited, type: v })}
+              >
+                <SelectTrigger className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl">
+                  <SelectItem value="paid" className="rounded-xl font-bold">💰 Paid Collab</SelectItem>
+                  <SelectItem value="barter" className="rounded-xl font-bold">📦 Barter Deal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">
+                {edited.type === 'paid' ? 'Budget (₹)' : 'Value (₹)'}
+              </label>
+              <Input
+                type="number"
+                value={edited.budget}
+                onChange={(e) => setEdited({ ...edited, budget: Number(e.target.value) })}
+                className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-black text-teal-600 focus:bg-white transition-all"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Package Description</label>
+            <Textarea
+              value={edited.description}
+              onChange={(e) => setEdited({ ...edited, description: e.target.value })}
+              placeholder="e.g. 1 Reel with 2 Revisions & Brand Tag"
+              className="rounded-2xl border-slate-200 bg-slate-50 min-h-[100px] font-medium focus:bg-white transition-all py-3 px-4"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Creator Notes (Optional)</label>
+            <Input
+              value={edited.notes || ''}
+              onChange={(e) => setEdited({ ...edited, notes: e.target.value })}
+              placeholder="e.g. Include shipping costs"
+              className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all"
+            />
+          </div>
+        </div>
+        <DialogFooter className="gap-2 sm:gap-3">
+          <Button variant="ghost" onClick={onClose} className="rounded-full font-black text-slate-400 text-xs uppercase tracking-widest h-11 hover:bg-slate-50">Cancel</Button>
+          <Button
+            onClick={() => onSave(edited)}
+            className="flex-1 rounded-full bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-widest h-11 shadow-xl active:scale-[0.98] transition-all"
+          >
+            Update Template
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

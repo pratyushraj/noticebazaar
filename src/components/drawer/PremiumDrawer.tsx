@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { createContext, useContext, useEffect } from "react";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import {
   Briefcase,
   Wallet,
@@ -16,18 +16,16 @@ import {
   HelpCircle,
   BarChart3,
   ChevronRight,
-  RefreshCw,
-  Search,
   CalendarCheck,
-  FileText
+  FileText,
+  LayoutDashboard,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
 import { cn } from "@/lib/utils";
 import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
-import { spacing, iconSizes, separators, animations, spotlight, radius, gradients, getCardClasses, typography, shadows } from "@/lib/design-system";
-import { useMotionValue, useTransform, useSpring } from "framer-motion";
+import { animations, spotlight, radius, iconSizes, spacing, separators, gradients, shadows, typography, getCardClasses } from "@/lib/design-system";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DEFAULT_AVATAR_URL, generateAvatarUrl } from "@/lib/utils/avatar";
 
@@ -74,75 +72,47 @@ interface DrawerHeaderProps {
   userAvatar?: string | null;
   userInitials: string;
   onProfileClick: () => void;
-  onCalendarClick?: () => void;
 }
 
-function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfileClick, onCalendarClick }: DrawerHeaderProps) {
+function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfileClick }: DrawerHeaderProps) {
   const displayName = userName ? userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase() : '';
+
   const handleProfileClick = () => {
     triggerHaptic(HapticPatterns.light);
     onProfileClick();
   };
 
-  // Parallax motion for avatar
   const y = useMotionValue(0);
   const avatarY = useTransform(y, [0, 100], [0, 20]);
-  const avatarScale = useTransform(y, [0, 100], [1, 0.95]);
   const avatarSpring = useSpring(avatarY, { damping: 20, stiffness: 300 });
 
   return (
-    <motion.div
-      className={cn("p-3 md:p-4 pb-2 md:pb-4 relative")}
-      onScroll={(e) => {
-        const target = e.currentTarget;
-        y.set(target.scrollTop);
-      }}
-    >
-      {/* Enhanced spotlight gradient */}
-      <div className={cn(
-        "absolute inset-x-0 top-0 h-16 md:h-24",
-        "bg-gradient-to-b from-white/25 via-white/15 to-transparent",
-        "pointer-events-none"
-      )} />
-
-      {/* Profile Section - tertiary card for brand consistency */}
+    <div className="px-1 pb-1">
       <motion.button
         onClick={handleProfileClick}
         className={cn(
-          getCardClasses("tertiary"),
-          "rounded-xl md:rounded-2xl",
-          "flex items-center gap-4",
-          "w-full mb-2 md:mb-4 relative",
-          "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
-          animations.cardPress
+          "flex items-center gap-3 w-full p-3 rounded-2xl",
+          "bg-white/5 border border-white/10",
+          "hover:bg-white/[0.08] active:scale-[0.98]",
+          "transition-all duration-150 focus:outline-none"
         )}
-        aria-label={`View profile for ${displayName}`}
-        whileTap={animations.microTap}
+        whileTap={{ scale: 0.97 }}
       >
-        <motion.div
-          style={{ y: avatarSpring, scale: avatarScale }}
-        >
-          <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white/10 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
-            <AvatarImage
-              src={userAvatar || DEFAULT_AVATAR_URL}
-              alt={`${displayName}'s avatar`}
-            />
-            <AvatarFallback className="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] text-white text-xs md:text-sm font-semibold">
+        <motion.div style={{ y: avatarSpring }}>
+          <Avatar className="h-11 w-11 ring-2 ring-white/10 shadow-lg">
+            <AvatarImage src={userAvatar || DEFAULT_AVATAR_URL} alt={displayName} />
+            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-sm font-bold">
               {userInitials}
             </AvatarFallback>
           </Avatar>
         </motion.div>
         <div className="flex-1 text-left min-w-0">
-          <p className="text-white text-[15px] md:text-[17px] font-semibold truncate">
-            {displayName}
-          </p>
-          <p className="text-white/40 text-xs md:text-sm truncate">
-            @{userHandle}
-          </p>
+          <p className="text-white text-[15px] font-bold truncate leading-tight">{displayName}</p>
+          <p className="text-white/40 text-[11px] font-medium truncate mt-0.5">@{userHandle}</p>
         </div>
-        <ChevronRight className={cn(iconSizes.xs, "md:w-4 md:h-4 flex-shrink-0 text-white/70")} />
+        <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
       </motion.button>
-    </motion.div>
+    </div>
   );
 }
 
@@ -154,12 +124,12 @@ interface DrawerSectionProps {
 
 function DrawerSection({ title, children, showSeparator = true }: DrawerSectionProps) {
   return (
-    <div className="mt-3 md:mt-5 first:mt-0">
-      {showSeparator && <div className={cn(separators.section, "my-3 md:my-6")} />}
-      <p className={cn(typography.label, "mb-1.5 md:mb-2 ml-1.5 md:ml-2")}>
+    <div className="mt-1">
+      {showSeparator && <div className="h-[1px] w-full bg-white/5 my-4" />}
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-2 px-1">
         {title}
       </p>
-      <div className="space-y-1.5 md:space-y-2">
+      <div className="space-y-1.5">
         {children}
       </div>
     </div>
@@ -185,39 +155,35 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
       onClick={handleClick}
       aria-label={item.label}
       aria-current={isActive ? 'page' : undefined}
-      whileTap={animations.microTap}
-      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+      whileTap={{ scale: 0.97 }}
       className={cn(
-        "group relative flex items-center w-full overflow-hidden transition-all duration-150",
-        radius.lg,
-        spacing.cardPadding.tertiary,
-        "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2",
+        "group relative flex items-center w-full overflow-hidden",
+        "rounded-2xl px-4 py-3",
+        "transition-all duration-150 focus:outline-none",
         isActive
-          ? cn(
-            "bg-gradient-to-r from-blue-600 to-blue-700",
-            "text-white",
-            "shadow-lg shadow-blue-500/20"
-          )
-          : cn(
-            "bg-white/5 border border-white/10",
-            "hover:bg-white/10",
-            "text-white/90"
-          )
+          ? "bg-blue-600 shadow-lg shadow-blue-600/25 text-white"
+          : "bg-white/5 border border-white/[0.06] hover:bg-white/[0.09] text-white/75 hover:text-white"
       )}
     >
-      {/* Spotlight gradient for active items */}
-      {isActive && <div className={cn(spotlight.top, "opacity-30")} />}
-      <Icon className={cn(iconSizes.sm, "md:w-5 md:h-5 flex-shrink-0 mr-2 md:mr-3 relative z-10 text-white/80 group-hover:text-white")} />
-      <span className={cn("text-sm md:text-base text-white/90 flex-1 text-left relative z-10")}>{item.label}</span>
+      {isActive && (
+        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white/10 to-transparent pointer-events-none rounded-2xl" />
+      )}
+      <Icon className={cn(
+        "w-4 h-4 flex-shrink-0 mr-3 relative z-10 transition-colors",
+        isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
+      )} />
+      <span className={cn(
+        "text-[13px] font-semibold flex-1 text-left relative z-10 tracking-tight",
+        isActive ? "text-white" : "text-white/80"
+      )}>
+        {item.label}
+      </span>
 
       {item.badge && (
         <motion.span
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-          className={cn(
-            "w-6 h-6 flex items-center justify-center text-xs font-semibold rounded-full bg-red-500 text-white ml-2 relative z-10",
-            radius.full
-          )}
+          className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-red-500 text-white ml-2 relative z-10"
         >
           {item.badge}
         </motion.span>
@@ -226,44 +192,7 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
   );
 }
 
-interface QuickActionButtonProps {
-  item: DrawerMenuItem;
-  onClick: () => void;
-}
-
-function QuickActionButton({ item, onClick }: QuickActionButtonProps) {
-  const Icon = item.icon;
-
-  const handleClick = () => {
-    triggerHaptic(HapticPatterns.medium);
-    onClick();
-  };
-
-  return (
-    <motion.button
-      onClick={handleClick}
-      aria-label={item.label}
-      whileTap={animations.microTap}
-      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
-      className={cn(
-        getCardClasses("tertiary"),
-        "rounded-xl md:rounded-2xl",
-        "w-full px-4 py-4 flex items-center justify-between text-white/90",
-        "active:scale-[0.97] transition-all",
-        "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/30 focus-visible:outline-offset-2"
-      )}
-    >
-      <Icon className={cn(iconSizes.sm, "md:w-5 md:h-5 flex-shrink-0 mr-2 md:mr-3 relative z-10 text-white/80")} />
-      <span className={cn("text-sm md:text-base flex-1 text-left relative z-10")}>{item.label}</span>
-    </motion.button>
-  );
-}
-
-interface LogoutButtonProps {
-  onClick: () => void;
-}
-
-function LogoutButton({ onClick }: LogoutButtonProps) {
+function LogoutButton({ onClick }: { onClick: () => void }) {
   const handleClick = () => {
     triggerHaptic(HapticPatterns.medium);
     onClick();
@@ -273,21 +202,16 @@ function LogoutButton({ onClick }: LogoutButtonProps) {
     <motion.button
       onClick={handleClick}
       aria-label="Log out"
-      whileTap={animations.microTap}
-      whileHover={window.innerWidth > 768 ? animations.microHover : undefined}
+      whileTap={{ scale: 0.97 }}
       className={cn(
-        "w-full overflow-hidden transition-all duration-150",
-        "flex items-center gap-2 md:gap-3",
-        radius.lg,
-        "p-2.5 md:p-3",
-        "bg-red-500/10 border border-red-400/20",
-        "hover:bg-red-500/20 hover:border-red-400/30",
-        "text-red-300",
-        "focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-500/30 focus-visible:outline-offset-2"
+        "w-full flex items-center gap-3 rounded-2xl px-4 py-3",
+        "bg-red-500/8 border border-red-400/15",
+        "hover:bg-red-500/15 hover:border-red-400/25",
+        "text-red-400 transition-all duration-150 focus:outline-none"
       )}
     >
-      <LogOut className={cn(iconSizes.sm, "md:w-5 md:h-5 relative z-10")} />
-      <span className={cn("text-sm md:text-base flex-1 text-left relative z-10")}>Log Out</span>
+      <LogOut className="w-4 h-4 relative z-10 flex-shrink-0" />
+      <span className="text-[13px] font-semibold flex-1 text-left relative z-10">Log Out</span>
     </motion.button>
   );
 }
@@ -309,7 +233,6 @@ export default function PremiumDrawer({
   const location = useLocation();
   const { profile, user } = useSession();
 
-  // Get user display info
   const userName = profile
     ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
     : 'User';
@@ -317,12 +240,11 @@ export default function PremiumDrawer({
   const userInitials = getInitials(profile?.first_name || null, profile?.last_name || null) || 'U';
   const userAvatar = profile?.avatar_url || generateAvatarUrl(profile?.first_name || null, profile?.last_name || null);
 
-  // Menu data structure
   const menuData: DrawerMenuData = {
     main: [
-      { id: 'deals', label: 'Brand Deals', icon: Briefcase, tab: 'deals' },
-      { id: 'payments', label: 'Payments', icon: Wallet, tab: 'payments' },
-      { id: 'collab', label: 'Collab', icon: Link2, path: '/creator-collab' },
+      { id: 'deals', label: 'Brand Deals', icon: Briefcase, path: '/creator-dashboard?tab=deals' },
+      { id: 'payments', label: 'Payments', icon: Wallet, path: '/creator-dashboard?tab=payments' },
+      { id: 'collab', label: 'Collab', icon: Link2, path: '/creator-dashboard?tab=collab' },
       { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
     ],
     quickActions: [
@@ -335,46 +257,34 @@ export default function PremiumDrawer({
       { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
     ],
     settings: [
-      { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-profile' },
-      { id: 'notification-settings', label: 'Notification Settings', icon: Bell, path: '/creator-profile?section=account' },
+      { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-dashboard?tab=profile' },
+      { id: 'notification-settings', label: 'Notification Settings', icon: Bell, path: '/creator-dashboard?tab=profile' },
       { id: 'help', label: 'Help & Support', icon: HelpCircle },
       { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
     ],
   };
 
-  // Determine active item
   const getActiveItem = (item: DrawerMenuItem): boolean => {
     if (activeItem) {
       return item.id === activeItem || item.tab === activeItem;
     }
 
-    // Fallback to location-based detection
     if (item.path) {
+      // For dashboard tabs, check query params
+      if (item.path.includes('tab=')) {
+        const targetTab = item.path.split('tab=')[1];
+        const currentTab = new URLSearchParams(location.search).get('tab');
+        return location.pathname === '/creator-dashboard' && currentTab === targetTab;
+      }
+
       const [pathOnly, queryString] = item.path.split('?');
       if (location.pathname !== pathOnly && !location.pathname.startsWith(pathOnly + '/')) {
         return false;
       }
-      if (!queryString) {
-        return true;
-      }
+      if (!queryString) return true;
       const targetQuery = new URLSearchParams(queryString);
       const currentQuery = new URLSearchParams(location.search);
       return Array.from(targetQuery.entries()).every(([key, value]) => currentQuery.get(key) === value);
-    }
-
-    if (item.tab) {
-      // Check if we're on dashboard with matching tab
-      if (location.pathname === '/creator-dashboard') {
-        const tabParam = new URLSearchParams(location.search).get('tab');
-        return tabParam === item.tab;
-      }
-      // Check tab-based routes
-      const tabRoutes: Record<string, string> = {
-        home: '/creator-dashboard',
-        deals: '/creator-contracts',
-        payments: '/creator-payments',
-      };
-      return location.pathname === tabRoutes[item.tab] || location.pathname.startsWith(tabRoutes[item.tab] + '/');
     }
 
     return false;
@@ -387,24 +297,12 @@ export default function PremiumDrawer({
       } else {
         navigate(item.path);
       }
-    } else if (item.tab) {
-      if (onSetActiveTab) {
-        onSetActiveTab(item.tab);
-      } else if (item.tab === 'home') {
-        navigate('/creator-dashboard');
-      } else {
-        const tabRoutes: Record<string, string> = {
-          deals: '/creator-contracts',
-          payments: '/creator-payments',
-        };
-        navigate(tabRoutes[item.tab] || '/creator-dashboard');
-      }
     }
     onClose();
   };
 
   const handleProfileClick = () => {
-    navigate('/creator-profile');
+    navigate('/creator-dashboard?tab=profile');
     onClose();
   };
 
@@ -415,7 +313,6 @@ export default function PremiumDrawer({
     onClose();
   };
 
-  // Prevent body scroll when drawer is open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -431,76 +328,85 @@ export default function PremiumDrawer({
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[9999]">
-          {/* Backdrop - covers bottom nav too */}
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             aria-hidden="true"
           />
 
-          {/* Drawer */}
+          {/* Drawer Panel */}
           <motion.div
             initial={{ x: '-100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '-100%', opacity: 0 }}
-            transition={animations.spring}
+            transition={{ type: "spring", damping: 28, stiffness: 280, mass: 0.8 }}
             className={cn(
               "fixed top-0 left-0 h-full",
-              "w-[75vw] max-w-[320px]",
-              gradients.page,
-              "backdrop-blur-2xl",
-              radius.xl,
-              "rounded-l-none",
-              shadows.drawer,
-              "border-r border-white/10",
+              "w-[82vw] max-w-[300px]",
+              "bg-[#0B0F14] dark:bg-[#0B0F14] light:bg-white",   // Theme-aware dashboard background
+              "border-r border-white/8 dark:border-white/8 light:border-black/5",
+              "shadow-[4px_0_60px_rgba(0,0,0,0.6)]",
               "overflow-y-auto",
-              "px-6 py-6",
-              "premium-drawer drawer-container",
-              "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
+              "px-4 py-6",
+              "flex flex-col gap-0",
+              "[&::-webkit-scrollbar]:w-0",
               "overscroll-contain"
             )}
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             role="navigation"
             aria-label="Navigation menu"
           >
-            {/* Header */}
-            <DrawerHeader
-              userName={userName}
-              userHandle={userHandle}
-              userAvatar={userAvatar}
-              userInitials={userInitials}
-              onProfileClick={handleProfileClick}
-              onCalendarClick={() => {
-                navigate('/calendar');
-                onClose();
-              }}
-            />
 
-            {/* Scrollable Content - Hidden scrollbar */}
-            <div
-              className={cn(
-                "flex-1 overflow-y-auto overflow-x-hidden min-h-0 space-y-6",
-                // Hide scrollbar
-                "[&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0",
-                // Smooth overscroll
-                "overscroll-contain",
-                "overscroll-y-contain"
-              )}
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}
-            >
-              {/* LIFESTYLE SHIELD */}
-              {menuData.lifestyleShield && menuData.lifestyleShield.length > 0 && (
-                <DrawerSection title="🛡 LIFESTYLE SHIELD">
+            {/* Ambient gradient top */}
+            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-600/10 via-indigo-600/5 to-transparent pointer-events-none" />
+
+            {/* Logo + App Label */}
+            <div className="flex items-center gap-3 px-1 mb-6 relative z-10">
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/25">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-[13px] font-black tracking-tight uppercase text-white leading-none">
+                  Creator<span className="text-blue-500">Armour</span>
+                </p>
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mt-0.5">
+                  Console
+                </p>
+              </div>
+            </div>
+
+            {/* Header - User Profile Card */}
+            <div className="relative z-10">
+              <DrawerHeader
+                userName={userName}
+                userHandle={userHandle}
+                userAvatar={userAvatar}
+                userInitials={userInitials}
+                onProfileClick={handleProfileClick}
+              />
+            </div>
+
+            {/* Main Navigation */}
+            <div className="relative z-10 mt-4 space-y-1.5">
+              {menuData.main.map((item) => (
+                <DrawerItem
+                  key={item.id}
+                  item={item}
+                  isActive={getActiveItem(item)}
+                  onClick={() => handleItemClick(item)}
+                />
+              ))}
+            </div>
+
+            {/* Lifestyle Shield */}
+            {menuData.lifestyleShield && menuData.lifestyleShield.length > 0 && (
+              <div className="relative z-10">
+                <DrawerSection title="🛡 Lifestyle Shield">
                   {menuData.lifestyleShield.map((item) => (
                     <DrawerItem
                       key={item.id}
@@ -510,10 +416,12 @@ export default function PremiumDrawer({
                     />
                   ))}
                 </DrawerSection>
-              )}
+              </div>
+            )}
 
-              {/* Settings */}
-              <DrawerSection title="SETTINGS">
+            {/* Settings */}
+            <div className="relative z-10">
+              <DrawerSection title="Settings">
                 {menuData.settings.map((item) => (
                   <DrawerItem
                     key={item.id}
@@ -522,15 +430,14 @@ export default function PremiumDrawer({
                     onClick={() => handleItemClick(item)}
                   />
                 ))}
-                {/* Log Out button */}
-                <div className={cn(
-                  "pt-2 md:pt-4 border-t border-white/10 mt-2",
-                  "pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]"
-                )}>
-                  <LogoutButton onClick={handleLogout} />
-                </div>
               </DrawerSection>
             </div>
+
+            {/* Logout */}
+            <div className="relative z-10 mt-4 pt-4 border-t border-white/5 pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]">
+              <LogoutButton onClick={handleLogout} />
+            </div>
+
           </motion.div>
         </div>
       )}

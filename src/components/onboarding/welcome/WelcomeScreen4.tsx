@@ -39,11 +39,11 @@ export const WelcomeScreen4: React.FC<WelcomeScreen4Props> = ({ onNext, onBack }
         />
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">
         Know What You Earn
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6 md:mb-10">
+      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-6 md:mb-10">
         Every deal tracked automatically.
       </p>
 
@@ -51,8 +51,8 @@ export const WelcomeScreen4: React.FC<WelcomeScreen4Props> = ({ onNext, onBack }
         {benefits.map((benefit, index) => (
           <GradientCard key={index} padding="sm">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-              <span className="text-base text-white/80">{benefit}</span>
+              <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0" />
+              <span className="text-base text-slate-700 dark:text-white/80">{benefit}</span>
             </div>
           </GradientCard>
         ))}

@@ -110,7 +110,7 @@ const BiometricLogin: React.FC<BiometricLoginProps> = ({
         publicKey: {
           challenge,
           rp: {
-            name: 'NoticeBazaar',
+            name: 'Creator Armour',
             id: rpId, // Always use current origin, not server-provided
           },
           user: {

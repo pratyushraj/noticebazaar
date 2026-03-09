@@ -1130,6 +1130,122 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
   }
 });
 
+/**
+ * PATCH /api/deals/:id/submit-content
+ * Creator submits content for brand review
+ */
+router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user!.id;
+    const { contentUrl, notes } = req.body;
+
+    if (!contentUrl) {
+      return res.status(400).json({ success: false, error: 'Content URL is required' });
+    }
+
+    // Verify access
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, brand_email, brand_name')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        content_submission_url: contentUrl,
+        content_submitted_at: now,
+        brand_approval_status: 'awaiting_approval',
+        milestone_status: 'content_submitted',
+        updated_at: now
+      } as any)
+      .eq('id', dealId);
+
+    if (updateError) throw updateError;
+
+    // Log action
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'CONTENT_SUBMITTED',
+      metadata: { content_url: contentUrl, notes }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Content submitted for review',
+      submitted_at: now
+    });
+  } catch (error: any) {
+    console.error('[Deals] submit-content error:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/review-content
+ * Brand reviews submitted content (approve or request changes)
+ * This route might be called via a brand-specific token or auth
+ */
+router.patch('/:id/review-content', async (req, res) => {
+  try {
+    const dealId = req.params.id;
+    const { status, feedback } = req.body; // status: 'approved' | 'changes_requested'
+
+    if (!['approved', 'changes_requested'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+
+    const now = new Date().toISOString();
+    const updateData: any = {
+      brand_approval_status: status,
+      brand_feedback: feedback,
+      updated_at: now
+    };
+
+    if (status === 'approved') {
+      updateData.brand_approved_at = now;
+      updateData.milestone_status = 'approved';
+      updateData.status = 'Completed'; // Or next stage
+    } else {
+      updateData.milestone_status = 'feedback_given';
+    }
+
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update(updateData)
+      .eq('id', dealId);
+
+    if (updateError) throw updateError;
+
+    // Log action
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      event: status === 'approved' ? 'CONTENT_APPROVED' : 'CHANGES_REQUESTED',
+      metadata: { feedback }
+    });
+
+    return res.json({
+      success: true,
+      message: status === 'approved' ? 'Content approved' : 'Changes requested',
+      status: status
+    });
+  } catch (error: any) {
+    console.error('[Deals] review-content error:', error);
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
 // Debug route to test routing
 router.get('/test-routing', (req, res) => {
   console.log('[Deals] Test routing endpoint hit');

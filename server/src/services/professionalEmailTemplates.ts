@@ -613,6 +613,7 @@ export function getBrandConfirmationEmailTemplate(data: {
   budget: string;
   deadline?: string;
   deliverables: string[];
+  magicLink?: string;
 }): string {
   const platformsText = data.platforms && data.platforms.length > 0
     ? data.platforms.join(', ')
@@ -810,7 +811,28 @@ export function getBrandConfirmationEmailTemplate(data: {
           </tr>
         </table>
         
-        <!-- Info Box -->
+        <!-- Brand Console CTA -->
+        ${data.magicLink ? `
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 30px 0;">
+          <tr>
+            <td align="center" style="padding: 30px 24px; background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px; text-align: center;">
+              <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 700; color: #1e293b;">Track your request in your Brand Console</h3>
+              <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b; line-height: 1.6;">We've created a secure account for you. Use the magic link below to view your offer status and manage all your creator collaborations.</p>
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                <tr>
+                  <td style="background-color: #11998e; border-radius: 8px;">
+                    <a href="${data.magicLink}" style="display: inline-block; background-color: #11998e; color: #ffffff !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px;" target="_blank" rel="noopener noreferrer">
+                      <span style="color: #ffffff;">View My Collaboration Offer &gt;</span>
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin: 16px 0 0 0; font-size: 12px; color: #94a3b8; font-style: italic;">No password required. This link is unique to your account.</p>
+            </td>
+          </tr>
+        </table>
+        ` : `
+        <!-- Info Box Fallback -->
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #e0f2f1; border-left: 4px solid #11998e; border-radius: 8px;">
           <tr>
             <td style="padding: 20px;">
@@ -827,6 +849,7 @@ export function getBrandConfirmationEmailTemplate(data: {
             </td>
           </tr>
         </table>
+        `}
       </td>
     </tr>
   `;

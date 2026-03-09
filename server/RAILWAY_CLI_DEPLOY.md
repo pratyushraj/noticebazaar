@@ -32,7 +32,7 @@ railway init
 ```bash
 railway variables --set "SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co"
 railway variables --set "SUPABASE_SERVICE_ROLE_KEY=your-actual-service-role-key"
-railway variables --set "FRONTEND_URL=https://noticebazaar.com"
+railway variables --set "FRONTEND_URL=https://creatorarmour.com"
 railway variables --set "NODE_ENV=production"
 ```
 

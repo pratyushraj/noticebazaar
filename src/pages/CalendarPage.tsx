@@ -83,7 +83,7 @@ export default function CalendarPage() {
 
   const handleExportICal = () => {
     try {
-      downloadICalFile(events, 'noticebazaar-deadlines.ics');
+      downloadICalFile(events, 'creatorarmour-deadlines.ics');
       toast.success('Calendar exported successfully!', {
         description: 'You can import this file into any calendar app.',
       });

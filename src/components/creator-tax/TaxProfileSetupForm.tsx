@@ -9,6 +9,7 @@ import { Loader2, Building2, FileText, IndianRupee, Percent, Scale } from 'lucid
 import { toast } from 'sonner';
 import { DialogFooter } from '@/components/ui/dialog';
 import { useSession } from '@/contexts/SessionContext';
+import { Landmark, CreditCard, Hash, QrCode } from 'lucide-react';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useUpsertTaxSettings } from '@/lib/hooks/useTaxSettings';
 import { Profile, TaxSetting } from '@/types';
@@ -28,12 +29,18 @@ const ITR_SLABS = [
 
 const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfile, initialTaxSettings, onSaveSuccess, onClose }) => {
   const { profile } = useSession();
-  
+
   // Profile States
   const [businessName, setBusinessName] = useState(initialProfile.business_name || '');
   const [businessEntityType, setBusinessEntityType] = useState(initialProfile.business_entity_type || '');
   const [gstin, setGstin] = useState(initialProfile.gstin || '');
   const [pan, setPan] = useState(initialProfile.pan || '');
+
+  // Bank Details States
+  const [bankAccountName, setBankAccountName] = useState(initialProfile.bank_account_name || '');
+  const [bankAccountNumber, setBankAccountNumber] = useState(initialProfile.bank_account_number || '');
+  const [bankIfsc, setBankIfsc] = useState(initialProfile.bank_ifsc || '');
+  const [bankUpi, setBankUpi] = useState(initialProfile.bank_upi || '');
 
   // Tax Setting States
   const [gstRate, setGstRate] = useState(initialTaxSettings?.gst_rate ? (initialTaxSettings.gst_rate * 100).toString() : '18');
@@ -48,6 +55,10 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
     setBusinessEntityType(initialProfile.business_entity_type || '');
     setGstin(initialProfile.gstin || '');
     setPan(initialProfile.pan || '');
+    setBankAccountName(initialProfile.bank_account_name || '');
+    setBankAccountNumber(initialProfile.bank_account_number || '');
+    setBankIfsc(initialProfile.bank_ifsc || '');
+    setBankUpi(initialProfile.bank_upi || '');
   }, [initialProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,6 +93,10 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
         business_entity_type: businessEntityType,
         gstin: gstin.trim() || null,
         pan: pan.trim(),
+        bank_account_name: bankAccountName.trim() || null,
+        bank_account_number: bankAccountNumber.trim() || null,
+        bank_ifsc: bankIfsc.trim() || null,
+        bank_upi: bankUpi.trim() || null,
       });
 
       // 2. Upsert Tax Settings (Rates/Slabs)
@@ -91,7 +106,7 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
         tds_rate: tds,
         itr_slab: itrSlab,
       });
-      
+
       toast.success('Tax Profile Setup complete!');
       onSaveSuccess();
       onClose();
@@ -157,6 +172,66 @@ const TaxProfileSetupForm: React.FC<TaxProfileSetupFormProps> = ({ initialProfil
               onChange={(e) => setGstin(e.target.value)}
               disabled={isSubmitting}
               placeholder="e.e., 27ABCDE1234F1Z5"
+              className="pl-9"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4 border-b border-border pb-4">
+        <h3 className="text-lg font-semibold text-foreground flex items-center"><Landmark className="h-4 w-4 mr-2" /> Bank Details</h3>
+        <div>
+          <Label htmlFor="bankAccountName">Account Name</Label>
+          <div className="relative">
+            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="bankAccountName"
+              value={bankAccountName}
+              onChange={(e) => setBankAccountName(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., Name exactly as per bank"
+              className="pl-9"
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="bankAccountNumber">Account Number</Label>
+          <div className="relative">
+            <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="bankAccountNumber"
+              value={bankAccountNumber}
+              onChange={(e) => setBankAccountNumber(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., 01234567890"
+              className="pl-9"
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="bankIfsc">IFSC Code</Label>
+          <div className="relative">
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="bankIfsc"
+              value={bankIfsc}
+              onChange={(e) => setBankIfsc(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., HDFC0000123"
+              className="pl-9"
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="bankUpi">UPI ID (Optional)</Label>
+          <div className="relative">
+            <QrCode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="bankUpi"
+              value={bankUpi}
+              onChange={(e) => setBankUpi(e.target.value)}
+              disabled={isSubmitting}
+              placeholder="e.g., yourname@bank"
               className="pl-9"
             />
           </div>

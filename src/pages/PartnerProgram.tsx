@@ -209,7 +209,7 @@ const PartnerProgram: React.FC = () => {
 
   const handleSocialShare = (platform: 'instagram' | 'whatsapp' | 'twitter') => {
     const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink || '');
-    const caption = encodeURIComponent("I'm using NoticeBazaar to manage payments, contracts & legal tasks. Use my link to get a 1-month free trial!");
+    const caption = encodeURIComponent("I'm using Creator Armour to manage payments, contracts & legal tasks. Use my link to get a 1-month free trial!");
     
     let shareUrl = '';
     
@@ -356,10 +356,10 @@ const PartnerProgram: React.FC = () => {
             <span className="text-xs md:text-sm font-semibold text-primary">Partner Program</span>
           </div>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight px-4">
-            NoticeBazaar Partner Program
+            Creator Armour Partner Program
           </h1>
           <p className="text-sm md:text-base lg:text-lg text-white/70 max-w-2xl mx-auto px-4">
-            Earn commissions, unlock rewards, and grow with us. Share NoticeBazaar and get rewarded for every subscription.
+            Earn commissions, unlock rewards, and grow with us. Share Creator Armour and get rewarded for every subscription.
           </p>
         </section>
 
@@ -628,7 +628,7 @@ const PartnerProgram: React.FC = () => {
                             <Button
                               onClick={() => {
                                 const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
-                                const text = encodeURIComponent(`Join NoticeBazaar and get legal & CA services for creators! Use my referral link: ${link}`);
+                                const text = encodeURIComponent(`Join Creator Armour and get legal & CA services for creators! Use my referral link: ${link}`);
                                 window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
                                 toast.success('Opening Twitter...');
                               }}
@@ -643,7 +643,7 @@ const PartnerProgram: React.FC = () => {
                             <Button
                               onClick={() => {
                                 const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
-                                const text = encodeURIComponent(`Join NoticeBazaar - Legal & CA services for creators! ${link}`);
+                                const text = encodeURIComponent(`Join Creator Armour - Legal & CA services for creators! ${link}`);
                                 window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${text}`, '_blank');
                                 toast.success('Opening Facebook...');
                               }}
@@ -658,7 +658,7 @@ const PartnerProgram: React.FC = () => {
                             <Button
                               onClick={() => {
                                 const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
-                                const text = encodeURIComponent(`Join NoticeBazaar - Legal & CA services for creators! ${link}`);
+                                const text = encodeURIComponent(`Join Creator Armour - Legal & CA services for creators! ${link}`);
                                 // Instagram doesn't support direct sharing, so copy to clipboard
                                 navigator.clipboard.writeText(`${text}\n${link}`);
                                 toast.success('Link copied! Paste it in your Instagram story or post.');
@@ -1132,7 +1132,7 @@ const PartnerProgram: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-white/60 mb-4">
-              Download ready-made assets to promote NoticeBazaar on your social media.
+              Download ready-made assets to promote Creator Armour on your social media.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
@@ -1168,7 +1168,7 @@ const PartnerProgram: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-white/60 mb-4">
-              Share NoticeBazaar with your network and earn rewards for every subscription!
+              Share Creator Armour with your network and earn rewards for every subscription!
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Button

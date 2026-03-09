@@ -17,22 +17,33 @@ import {
     Lock,
     ExternalLink,
     MoreVertical,
-    Check
+    Check,
+    Send,
+    Edit3,
+    ThumbsUp,
+    ThumbsDown,
+    MessageSquare,
+    Link as LinkIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { useSession } from '@/contexts/SessionContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 
 // Lifecycle Stages
 type Stage = 'PROPOSAL' | 'INTAKE' | 'SIGNING' | 'ESCROW' | 'EXECUTING' | 'VESTED';
 
 const STAGES: { id: Stage; label: string; description: string }[] = [
-    { id: 'PROPOSAL', label: 'Proposal', description: 'Initial offer being reviewed' },
-    { id: 'INTAKE', label: 'Intake', description: 'Gathering technical specifications' },
-    { id: 'SIGNING', label: 'Signing', description: 'Agreement legally binding' },
-    { id: 'ESCROW', label: 'Escrow', description: 'Funds secured in safety' },
+    { id: 'PROPOSAL', label: 'Proposal', description: 'Reviewing initial brief' },
+    { id: 'INTAKE', label: 'Deal Lock', description: 'Mutual commitment layer' },
+    { id: 'SIGNING', label: 'Signing', description: 'Contract legally binding' },
+    { id: 'ESCROW', label: 'Security', description: 'Payment protection active' },
     { id: 'EXECUTING', label: 'Execution', description: 'Content production phase' },
-    { id: 'VESTED', label: 'Vested', description: 'Payment released & closed' }
+    { id: 'VESTED', label: 'Vested', description: 'Campaign closed' }
 ];
 
 const BrandDealConsole = () => {
@@ -42,6 +53,13 @@ const BrandDealConsole = () => {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<any>(null);
     const [currentStage, setCurrentStage] = useState<Stage>('PROPOSAL');
+    const { profile } = useSession();
+    const [isSubmittingContent, setIsSubmittingContent] = useState(false);
+    const [contentUrl, setContentUrl] = useState('');
+    const [creatorNotes, setCreatorNotes] = useState('');
+    const [brandFeedback, setBrandFeedback] = useState('');
+    const [isReviewing, setIsReviewing] = useState(false);
+    const isCreator = profile && data?.creator && profile.id === data.creator.id;
     const isNewSubmission = location.state?.isNewSubmission || false;
 
     useEffect(() => {
@@ -68,6 +86,68 @@ const BrandDealConsole = () => {
 
         fetchData();
     }, [token]);
+
+    const handleContentSubmission = async () => {
+        if (!contentUrl) {
+            toast.error('Please provide a content URL');
+            return;
+        }
+        setIsSubmittingContent(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await fetch(`${apiBaseUrl}/api/deals/${data.brandDeal.id}/submit-content`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                },
+                body: JSON.stringify({ contentUrl, notes: creatorNotes })
+            });
+            const result = await response.json();
+            if (result.success) {
+                toast.success('Content submitted for review');
+                // Refresh data
+                const refreshRes = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const refreshData = await refreshRes.json();
+                if (refreshData.success) setData(refreshData);
+            } else {
+                toast.error(result.error || 'Failed to submit content');
+            }
+        } catch (error) {
+            toast.error('Submission failed');
+        } finally {
+            setIsSubmittingContent(false);
+        }
+    };
+
+    const handleBrandReview = async (status: 'approved' | 'changes_requested') => {
+        setIsReviewing(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const response = await fetch(`${apiBaseUrl}/api/deals/${data.brandDeal.id}/review-content`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, feedback: brandFeedback })
+            });
+            const result = await response.json();
+            if (result.success) {
+                toast.success(status === 'approved' ? 'Content approved!' : 'Feedback sent to creator');
+                // Refresh data
+                const refreshRes = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const refreshData = await refreshRes.json();
+                if (refreshData.success) {
+                    setData(refreshData);
+                    setCurrentStage(refreshData.stage as Stage);
+                }
+            } else {
+                toast.error(result.error || 'Failed to submit review');
+            }
+        } catch (error) {
+            toast.error('Review failed');
+        } finally {
+            setIsReviewing(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -182,54 +262,54 @@ const BrandDealConsole = () => {
                                 )}
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        {/* Linear Progress Tracker */}
-                        <div className="relative pt-4 overflow-x-auto no-scrollbar">
-                            <div className="flex items-center justify-between min-w-[800px] px-2">
-                                {STAGES.map((stage, idx) => {
-                                    const isCompleted = STAGES.findIndex(s => s.id === currentStage) > idx;
-                                    const isActive = stage.id === currentStage;
+                {/* Linear Progress Tracker */}
+                <div className="relative pt-4 overflow-x-auto no-scrollbar">
+                    <div className="flex items-center justify-between min-w-[800px] px-2">
+                        {STAGES.map((stage, idx) => {
+                            const isCompleted = STAGES.findIndex(s => s.id === currentStage) > idx;
+                            const isActive = stage.id === currentStage;
 
-                                    return (
-                                        <div key={stage.id} className="flex flex-col items-center gap-3 relative z-10">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300",
-                                                isCompleted ? "bg-purple-600 border-purple-600" :
-                                                    isActive ? "bg-purple-500/10 border-purple-500 ring-4 ring-purple-500/10" :
-                                                        "bg-slate-900 border-slate-800"
-                                            )}>
-                                                {isCompleted ? (
-                                                    <Check className="w-5 h-5 text-white" />
-                                                ) : (
-                                                    <span className={cn(
-                                                        "text-xs font-bold",
-                                                        isActive ? "text-purple-400" : "text-slate-600"
-                                                    )}>{idx + 1}</span>
-                                                )}
-                                            </div>
-                                            <div className="text-center">
-                                                <p className={cn(
-                                                    "text-[12px] font-semibold uppercase tracking-wider",
-                                                    isActive ? "text-white" : isCompleted ? "text-slate-300" : "text-slate-600"
-                                                )}>{stage.label}</p>
-                                                <p className="text-[10px] text-slate-500 mt-1 max-w-[100px] leading-tight">{stage.description}</p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            return (
+                                <div key={stage.id} className="flex flex-col items-center gap-3 relative z-10">
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-300",
+                                        isCompleted ? "bg-purple-600 border-purple-600" :
+                                            isActive ? "bg-purple-500/10 border-purple-500 ring-4 ring-purple-500/10" :
+                                                "bg-slate-900 border-slate-800"
+                                    )}>
+                                        {isCompleted ? (
+                                            <Check className="w-5 h-5 text-white" />
+                                        ) : (
+                                            <span className={cn(
+                                                "text-xs font-bold",
+                                                isActive ? "text-purple-400" : "text-slate-600"
+                                            )}>{idx + 1}</span>
+                                        )}
+                                    </div>
+                                    <div className="text-center">
+                                        <p className={cn(
+                                            "text-[12px] font-semibold uppercase tracking-wider",
+                                            isActive ? "text-white" : isCompleted ? "text-slate-300" : "text-slate-600"
+                                        )}>{stage.label}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 max-w-[100px] leading-tight">{stage.description}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
 
-                            {/* Progress Line */}
-                            <div className="absolute top-[34px] left-[5%] right-[5%] h-[2px] bg-slate-800 -z-0">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{
-                                        width: `${(STAGES.findIndex(s => s.id === currentStage) / (STAGES.length - 1)) * 100}%`
-                                    }}
-                                    className="h-full bg-purple-600 shadow-[0_0_10px_rgba(147,51,234,0.5)]"
-                                />
-                            </div>
-                        </div>
+                    {/* Progress Line */}
+                    <div className="absolute top-[34px] left-[5%] right-[5%] h-[2px] bg-slate-800 -z-0">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{
+                                width: `${(STAGES.findIndex(s => s.id === currentStage) / (STAGES.length - 1)) * 100}%`
+                            }}
+                            className="h-full bg-purple-600 shadow-[0_0_10px_rgba(147,51,234,0.5)]"
+                        />
                     </div>
                 </div>
             </section>
@@ -302,29 +382,232 @@ const BrandDealConsole = () => {
 
                                 {currentStage === 'INTAKE' && (
                                     <motion.div
-                                        key="intake"
+                                        key="deal_lock"
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                     >
                                         <div className="mb-8">
-                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-500 uppercase tracking-widest border border-amber-500/20">
-                                                ACTION_REQUIRED
+                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
+                                                DEAL_LOCKED
                                             </span>
-                                            <h2 className="text-xl font-semibold text-white mt-3">Technical Specifications</h2>
-                                            <p className="text-slate-400 text-sm mt-1">Please provide the necessary details to generate a legally binding agreement.</p>
+                                            <h2 className="text-xl font-semibold text-white mt-3 flex items-center gap-2">
+                                                <Lock className="w-5 h-5 text-emerald-500" />
+                                                Mutual Commitment Required
+                                            </h2>
+                                            <p className="text-slate-400 text-sm mt-1">Both sides must lock terms before production begins. This makes the partnership official.</p>
                                         </div>
 
-                                        <div className="p-8 rounded-2xl border border-white/5 bg-white/[0.01] flex flex-col items-center text-center">
-                                            <FileText className="w-12 h-12 text-purple-500/50 mb-4" />
-                                            <h3 className="text-lg font-medium text-white mb-2">Finalize Deal Details</h3>
-                                            <p className="text-slate-400 text-sm mb-8 max-w-sm">We need a few more details regarding usage rights, posting schedule, and billing information to proceed with the contract.</p>
-                                            <button
-                                                onClick={() => navigate(`/deal-details/${token}`)}
-                                                className="px-8 py-3 bg-white text-[#0A0A0B] font-bold rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2"
-                                            >
-                                                Complete Intake Form
-                                                <ArrowRight className="w-4 h-4" />
-                                            </button>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                            <div className="p-6 rounded-2xl border border-white/5 bg-emerald-500/[0.02] flex flex-col items-center text-center">
+                                                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+                                                    <CheckCircle className="w-5 h-5 text-emerald-500" />
+                                                </div>
+                                                <h3 className="text-sm font-bold text-white mb-2">Creator Commitment</h3>
+                                                <ul className="text-[11px] text-slate-400 space-y-2 mb-6">
+                                                    <li>✓ Deliverables confirmed</li>
+                                                    <li>✓ Timeline accepted</li>
+                                                    <li>✓ Exclusivity understood</li>
+                                                </ul>
+                                                <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Creator Confirmed</div>
+                                            </div>
+
+                                            <div className="p-6 rounded-2xl border border-purple-500/30 bg-purple-500/[0.02] flex flex-col items-center text-center">
+                                                <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
+                                                    <Activity className="w-5 h-5 text-purple-400" />
+                                                </div>
+                                                <h3 className="text-sm font-bold text-white mb-2">Brand Commitment</h3>
+                                                <ul className="text-[11px] text-slate-400 space-y-2 mb-6">
+                                                    <li>• Payment commitment confirmed</li>
+                                                    <li>• Content brief finalized</li>
+                                                    <li>• Admin rights prepared</li>
+                                                </ul>
+                                                <button
+                                                    onClick={() => navigate(`/deal-details/${token}`)}
+                                                    className="w-full py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    Finalize & Commit
+                                                    <ArrowRight className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {currentStage === 'EXECUTING' && (
+                                    <motion.div
+                                        key="executing"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                    >
+                                        <div className="mb-8">
+                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 text-orange-400 uppercase tracking-widest border border-orange-500/20">
+                                                EXECUTION_PHASE
+                                            </span>
+                                            <h2 className="text-xl font-semibold text-white mt-3">Content Production</h2>
+                                            <p className="text-slate-400 text-sm mt-1">Creator is currently producing agreed deliverables. Track milestones below.</p>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {/* Milestone Status Indicators */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div className={cn(
+                                                    "p-4 rounded-xl border flex flex-col items-center text-center gap-2",
+                                                    brandDeal?.content_submitted_at ? "bg-emerald-500/5 border-emerald-500/20" : "bg-white/5 border-white/10"
+                                                )}>
+                                                    <div className={cn(
+                                                        "w-8 h-8 rounded-full flex items-center justify-center",
+                                                        brandDeal?.content_submitted_at ? "bg-emerald-500 text-white" : "bg-slate-800 text-slate-500"
+                                                    )}>
+                                                        <FileText className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Content Submited</span>
+                                                    {brandDeal?.content_submitted_at && <span className="text-[10px] text-emerald-400">{new Date(brandDeal.content_submitted_at).toLocaleDateString()}</span>}
+                                                </div>
+                                                <div className={cn(
+                                                    "p-4 rounded-xl border flex flex-col items-center text-center gap-2",
+                                                    brandDeal?.brand_approval_status === 'approved' ? "bg-emerald-500/5 border-emerald-500/20" :
+                                                        brandDeal?.brand_approval_status === 'changes_requested' ? "bg-orange-500/5 border-orange-500/20" : "bg-white/5 border-white/10"
+                                                )}>
+                                                    <div className={cn(
+                                                        "w-8 h-8 rounded-full flex items-center justify-center",
+                                                        brandDeal?.brand_approval_status === 'approved' ? "bg-emerald-500 text-white" :
+                                                            brandDeal?.brand_approval_status === 'changes_requested' ? "bg-orange-500 text-white" : "bg-slate-800 text-slate-500"
+                                                    )}>
+                                                        <CheckCircle className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Brand Approval</span>
+                                                    <span className="text-[10px] text-slate-500 capitalize">{brandDeal?.brand_approval_status?.replace('_', ' ') || 'Pending'}</span>
+                                                </div>
+                                                <div className={cn(
+                                                    "p-4 rounded-xl border flex flex-col items-center text-center gap-2",
+                                                    brandDeal?.status === 'Completed' || brandDeal?.status === 'VESTED' ? "bg-emerald-500/5 border-emerald-500/20" : "bg-white/5 border-white/10"
+                                                )}>
+                                                    <div className={cn(
+                                                        "w-8 h-8 rounded-full flex items-center justify-center",
+                                                        brandDeal?.status === 'Completed' || brandDeal?.status === 'VESTED' ? "bg-emerald-500 text-white" : "bg-slate-800 text-slate-500"
+                                                    )}>
+                                                        <Lock className="w-4 h-4" />
+                                                    </div>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Campaign Locked</span>
+                                                    <span className="text-[10px] text-slate-500">Post-Approval</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Role-specific Actions */}
+                                            {isCreator && brandDeal?.brand_approval_status !== 'approved' && (
+                                                <div className="bg-purple-600/5 border border-purple-500/20 rounded-2xl p-6">
+                                                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                                                        <Send className="w-4 h-4 text-purple-400" />
+                                                        Submit Content Draft
+                                                    </h3>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Content URL (Drive, Dropbox, Unlisted Link)</label>
+                                                            <Input
+                                                                value={contentUrl}
+                                                                onChange={(e) => setContentUrl(e.target.value)}
+                                                                placeholder="https://docs.google.com/..."
+                                                                className="bg-white/5 border-white/10 text-white"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Notes for Brand</label>
+                                                            <Textarea
+                                                                value={creatorNotes}
+                                                                onChange={(e) => setCreatorNotes(e.target.value)}
+                                                                placeholder="Explain the creative direction or any specific feedback needed..."
+                                                                className="bg-white/5 border-white/10 text-white resize-none"
+                                                                rows={3}
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            onClick={handleContentSubmission}
+                                                            disabled={isSubmittingContent}
+                                                            className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold"
+                                                        >
+                                                            {isSubmittingContent ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                                                            Submit for Review
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!isCreator && brandDeal?.content_submission_url && brandDeal?.brand_approval_status !== 'approved' && (
+                                                <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-6">
+                                                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                                                        <Edit3 className="w-4 h-4 text-blue-400" />
+                                                        Review Content Draft
+                                                    </h3>
+                                                    <div className="space-y-4">
+                                                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between">
+                                                            <div className="flex items-center gap-3">
+                                                                <LinkIcon className="w-4 h-4 text-slate-400" />
+                                                                <span className="text-sm text-slate-200">View Submitted Content</span>
+                                                            </div>
+                                                            <a
+                                                                href={brandDeal.content_submission_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+                                                            >
+                                                                Open Link <ExternalLink className="w-3 h-3" />
+                                                            </a>
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Approval Feedback</label>
+                                                            <Textarea
+                                                                value={brandFeedback}
+                                                                onChange={(e) => setBrandFeedback(e.target.value)}
+                                                                placeholder="Add feedback if requesting changes..."
+                                                                className="bg-white/5 border-white/10 text-white resize-none"
+                                                                rows={3}
+                                                            />
+                                                        </div>
+
+                                                        <div className="flex gap-3">
+                                                            <Button
+                                                                onClick={() => handleBrandReview('changes_requested')}
+                                                                disabled={isReviewing}
+                                                                variant="outline"
+                                                                className="flex-1 border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+                                                            >
+                                                                <ThumbsDown className="w-4 h-4 mr-2" />
+                                                                Request Changes
+                                                            </Button>
+                                                            <Button
+                                                                onClick={() => handleBrandReview('approved')}
+                                                                disabled={isReviewing}
+                                                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                                                            >
+                                                                <ThumbsUp className="w-4 h-4 mr-2" />
+                                                                Approve Content
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {brandDeal?.brand_approval_status === 'approved' && (
+                                                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-8 text-center">
+                                                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                                                        <CheckCircle className="w-8 h-8 text-emerald-500" />
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-white mb-2">Content Approved</h3>
+                                                    <p className="text-slate-400 text-sm max-w-md mx-auto">
+                                                        The content has been officially approved. The campaign is now moving to the closing phase.
+                                                    </p>
+                                                    {brandDeal.brand_feedback && (
+                                                        <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/5 text-left">
+                                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                                <MessageSquare className="w-3 h-3" />
+                                                                Final Feedback
+                                                            </p>
+                                                            <p className="text-sm text-slate-300 italic">"{brandDeal.brand_feedback}"</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 )}
@@ -476,7 +759,7 @@ const BrandDealConsole = () => {
                         </div>
                     </div>
                 </div>
-            </main>
+            </main >
 
             <footer className="mt-auto border-t border-white/5 py-8">
                 <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500 font-medium">
@@ -492,7 +775,7 @@ const BrandDealConsole = () => {
                     </div>
                 </div>
             </footer>
-        </div>
+        </div >
     );
 };
 

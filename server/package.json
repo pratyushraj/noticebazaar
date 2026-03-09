@@ -1,7 +1,7 @@
 {
-  "name": "noticebazaar-server",
+  "name": "creatorarmour-server",
   "version": "1.0.0",
-  "description": "NoticeBazaar Backend API Server",
+  "description": "Creator Armour Backend API Server",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

@@ -400,7 +400,7 @@ const ContractReadyPage = () => {
       const apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.creatorarmour.com'
+          ? 'https://api.noticebazaar.com'
           : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/otp/send`, {
@@ -459,7 +459,7 @@ const ContractReadyPage = () => {
       const apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.creatorarmour.com'
+          ? 'https://api.noticebazaar.com'
           : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/otp/verify`, {
@@ -575,7 +575,7 @@ const ContractReadyPage = () => {
       let apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.creatorarmour.com'
+          ? 'https://api.noticebazaar.com'
           : typeof window !== 'undefined' && window.location.hostname === 'localhost'
             ? getApiBaseUrl()
             : getApiBaseUrl());
@@ -722,7 +722,7 @@ const ContractReadyPage = () => {
       const apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
-          ? 'https://api.creatorarmour.com'
+          ? 'https://api.noticebazaar.com'
           : getApiBaseUrl());
 
       const response = await fetch(`${apiBaseUrl}/api/contract-ready-tokens/${token}/request-edit`, {

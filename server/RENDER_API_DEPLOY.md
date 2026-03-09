@@ -7,11 +7,11 @@ Your Render API token: `rnd_uuftljqVQPRw4UzkFFBJFtpOXrck`
 ### Step 1: Create Web Service
 1. Go to: https://dashboard.render.com
 2. Click **"New +"** → **"Web Service"**
-3. Connect GitHub repo: `noticebazaar`
+3. Connect GitHub repo: `creatorarmour`
 4. Select the repository
 
 ### Step 2: Configure Service
-- **Name:** `noticebazaar-api`
+- **Name:** `creatorarmour-api`
 - **Root Directory:** `server`
 - **Environment:** `Node`
 - **Build Command:** `npm install && npm run build`
@@ -25,7 +25,7 @@ Click "Add Environment Variable" and add:
 SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key-here>
 RESEND_API_KEY=<your-resend-api-key-here>
-FRONTEND_URL=https://noticebazaar.com
+FRONTEND_URL=https://creatorarmour.com
 NODE_ENV=production
 PORT=10000
 ```
@@ -60,7 +60,7 @@ Should return:
 
 1. Go to Render Dashboard
 2. Click **"New +"** → **"Blueprint"**
-3. Connect GitHub repo: `noticebazaar`
+3. Connect GitHub repo: `creatorarmour`
 4. Render will auto-detect `server/render.yaml`
 5. Add environment variables (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, FRONTEND_URL)
 6. Click **"Apply"**
@@ -80,7 +80,7 @@ curl -X POST https://api.render.com/v1/services \
   -d '{
     "type": "web_service",
     "name": "noticebazaar-api",
-    "repo": "https://github.com/your-username/noticebazaar",
+    "repo": "https://github.com/your-username/creatorarmour",
     "branch": "main",
     "rootDir": "server",
     "buildCommand": "npm install && npm run build",

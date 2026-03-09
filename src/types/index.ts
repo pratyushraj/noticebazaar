@@ -3,7 +3,7 @@ import { Tables } from './supabase';
 import { LucideIcon } from 'lucide-react'; // Import LucideIcon for CreatorKpi
 
 export type Profile = Tables<'profiles'> & {
-  role: 'client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer'; // Override role to be specific string literals, added 'chartered_accountant', 'creator', and 'lawyer'
+  role: 'client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer' | 'brand'; // Override role to be specific string literals
   business_name?: string | null; // New field
   gstin?: string | null; // New field
   business_entity_type?: string | null; // New field
@@ -75,6 +75,17 @@ export type Profile = Tables<'profiles'> & {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  // NEW: Qualification & Deal Rules
+  min_deal_value?: number | null;
+  min_lead_time_days?: number | null;
+  typical_story_rate?: number | null;
+  typical_post_rate?: number | null;
+  premium_production_multiplier?: number | null;
+  brand_type_preferences?: string[] | null;
+  campaign_type_support?: string[] | null;
+  revision_policy?: string | null;
+  allow_negotiation?: boolean | null;
+  allow_counter_offer?: boolean | null;
 };
 
 export type Message = Tables<'messages'> & {

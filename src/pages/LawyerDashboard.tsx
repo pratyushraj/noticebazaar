@@ -1,5 +1,5 @@
 // Lawyer Dashboard - Inbox, conversation view, contract preview, quick replies
-// Matches existing NoticeBazaar design (purple gradient, glass cards)
+// Matches existing Creator Armour design (purple gradient, glass cards)
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSession } from '@/contexts/SessionContext';

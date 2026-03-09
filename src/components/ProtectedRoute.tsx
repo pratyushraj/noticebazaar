@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles?: ('client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer')[]; // Updated allowedRoles type to include lawyer
+  allowedRoles?: ('client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer' | 'brand')[]; // Updated allowedRoles type to include lawyer and brand
 }
 
 const PROTECTED_LOADER_TIMEOUT_MS = 8000;
@@ -68,18 +68,18 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     // If user has session but no profile yet, try to create it or wait for trigger
     if (session && !profile && user) {
       setIsCreatingProfile(true);
-      
+
       // Try multiple times with increasing delays
       const maxAttempts = 5;
       let attempt = profileCreationAttempts;
-      
+
       const tryGetProfile = async () => {
         if (attempt < maxAttempts) {
           // First, try to refetch
           if (refetchProfile) {
             refetchProfile();
           }
-          
+
           // Wait a bit, then check if profile exists
           setTimeout(async () => {
             const { data: profileData } = await supabase
@@ -120,14 +120,14 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     if (session && profile) {
       setIsCreatingProfile(false);
       setProfileCreationAttempts(0);
-      
+
       // Default to Creator Dashboard for ALL users (including clients)
       let targetDashboard = '/creator-dashboard';
-      
+
       // Special case: pratyushraj@outlook.com always gets creator dashboard
       const userEmail = user?.email?.toLowerCase();
       const isPratyush = userEmail === 'pratyushraj@outlook.com';
-      
+
       // Only redirect to specific dashboards for explicit roles (admin, CA, lawyer)
       // But always use creator dashboard for pratyushraj@outlook.com
       if (isPratyush) {
@@ -136,13 +136,18 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         targetDashboard = '/admin-dashboard';
       } else if (profile.role === 'chartered_accountant') {
         targetDashboard = '/ca-dashboard';
+      } else if (profile.role === 'brand') {
+        targetDashboard = '/brand-dashboard';
       } else if (profile.role === 'lawyer') {
         targetDashboard = '/lawyer-dashboard';
       } else {
-        // Default: Creator Dashboard (for 'creator', 'client', null role, or any other role)
-        // Allow access to dashboard even if onboarding isn't complete
-        // Users can complete onboarding later if needed
-        targetDashboard = '/creator-dashboard';
+        // Default: Creator (or client/null role)
+        const isCreatorOrSimilar = !profile.role || profile.role === 'creator' || profile.role === 'client';
+        if (isCreatorOrSimilar && !profile.onboarding_complete) {
+          targetDashboard = '/creator-onboarding';
+        } else {
+          targetDashboard = '/creator-dashboard';
+        }
       }
 
       // Only redirect from login or root - don't redirect if already on a valid route
@@ -154,7 +159,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       // Check if user has required role
       // For new accounts, if role is null/undefined, default to 'creator' role
       const userRole = profile.role || 'creator';
-      
+
       // List of valid creator routes that should be accessible
       const validCreatorRoutes = [
         '/creator-dashboard',
@@ -177,23 +182,23 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         '/brand-directory',
         '/brands',
       ];
-      
+
       // List of lawyer-specific routes
       const validLawyerRoutes = [
         '/lawyer-dashboard',
       ];
-      
+
       // Check if current path is a valid creator route
-      const isOnValidCreatorRoute = validCreatorRoutes.some(route => 
+      const isOnValidCreatorRoute = validCreatorRoutes.some(route =>
         location.pathname === route || location.pathname.startsWith(route + '/')
       );
-      
+
       // Check if current path is a lawyer route
       const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
       const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
       const isAdminRoute = location.pathname.startsWith('/admin-');
       const isCARoute = location.pathname.startsWith('/ca-dashboard');
-      
+
       if (allowedRoles && allowedRoles.length > 0) {
         // If profile role is null/undefined, treat as 'creator' for new accounts
         // For new accounts, if role is null/undefined and allowedRoles includes 'creator', allow access
@@ -203,13 +208,13 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
           navigate(targetDashboard, { replace: true });
           return;
         }
-        
+
         // User has required role - but check if they're trying to access wrong dashboard
         // Lawyers should only access lawyer routes, not creator routes
-        const isOnValidLawyerRoute = validLawyerRoutes.some(route => 
+        const isOnValidLawyerRoute = validLawyerRoutes.some(route =>
           location.pathname === route || location.pathname.startsWith(route + '/')
         );
-        
+
         if (userRole === 'lawyer') {
           // Lawyers should only access lawyer routes
           if (isOnValidCreatorRoute && !isOnValidLawyerRoute) {
@@ -222,7 +227,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
             return; // Allow the route to render
           }
         }
-        
+
         // Creators should only access creator routes, not lawyer routes
         if (userRole === 'creator' && (isLawyerRoute || isAdvisorRoute || isAdminRoute || isCARoute)) {
           // Creator trying to access non-creator route - redirect to creator dashboard
@@ -230,7 +235,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
           return;
         }
       }
-      
+
       // If user is on a valid creator route and has the right role, allow access
       // Don't redirect if already on a valid route
       if (isOnValidCreatorRoute && (allowedRoles?.includes(userRole) || !allowedRoles || allowedRoles.length === 0)) {
@@ -339,7 +344,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       '/brand-directory',
       '/brands',
     ];
-    const isOnValidCreatorRoute = validCreatorRoutesList.some((route: string) => 
+    const isOnValidCreatorRoute = validCreatorRoutesList.some((route: string) =>
       location.pathname === route || location.pathname.startsWith(route + '/')
     );
     if (isOnValidCreatorRoute) {

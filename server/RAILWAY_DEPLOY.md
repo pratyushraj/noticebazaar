@@ -20,14 +20,14 @@ railway init
 
 Choose:
 - **Create a new project** (or select existing)
-- Name it: `noticebazaar-api` (or any name you prefer)
+- Name it: `creatorarmour-api` (or any name you prefer)
 
 ## Step 3: Set Environment Variables
 
 ```bash
 railway variables set SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
 railway variables set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
-railway variables set FRONTEND_URL=https://noticebazaar.com
+railway variables set FRONTEND_URL=https://creatorarmour.com
 railway variables set NODE_ENV=production
 ```
 

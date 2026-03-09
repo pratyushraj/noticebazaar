@@ -41,18 +41,18 @@ export const IconBubble: React.FC<IconBubbleProps> = ({
   };
 
   const colorClasses = {
-    purple: 'bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-400',
-    green: 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 text-green-400',
-    blue: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 text-blue-400',
-    pink: 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400',
-    orange: 'bg-gradient-to-br from-orange-500/20 to-amber-500/20 text-orange-400',
+    purple: 'bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400',
+    green: 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400',
+    blue: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400',
+    pink: 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400',
+    orange: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400',
   };
 
   const defaultAnimation: MotionProps = animated
     ? {
-        animate: { y: [0, -6, 0] }, // Reduced from -10 to -6 to prevent overlap
-        transition: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
-      }
+      animate: { y: [0, -6, 0] }, // Reduced from -10 to -6 to prevent overlap
+      transition: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+    }
     : {};
 
   if (animated) {

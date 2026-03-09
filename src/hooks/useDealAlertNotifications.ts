@@ -44,7 +44,7 @@ export const useDealAlertNotifications = () => {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
       host.endsWith('creatorarmour.com') ||
-      host.endsWith('noticebazaar.com') ||
+      host.endsWith('creatorarmour.com') ||
       host.endsWith('vercel.app');
     // On production Vercel, use RELATIVE paths so requests go through the
     // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari

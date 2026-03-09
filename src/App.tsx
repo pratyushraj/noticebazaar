@@ -8,7 +8,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
 import MarketingHome from "./pages/MarketingHome";
-import HomePage from "./pages/HomePage";
 import LandingPage from "./pages/LandingPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import CADashboard from "./pages/CADashboard";
@@ -66,7 +65,6 @@ import DealDeliveryDetailsPage from "./pages/DealDeliveryDetailsPage";
 import CreateDealPage from "./pages/CreateDealPage";
 import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
 import DashboardWhitePreview from "./pages/DashboardWhitePreview";
-import CreatorContentProtection from "./pages/CreatorContentProtection";
 import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
 import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
 import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
@@ -83,7 +81,6 @@ import DynamicRateCalculator from "./pages/DynamicRateCalculator";
 import PartnerProgram from "./pages/PartnerProgram";
 import AIPitchGenerator from "./pages/AIPitchGenerator";
 import ReferralLanding from "./pages/ReferralLanding";
-import CreatorProfessionalTeamPage from "./pages/CreatorProfessionalTeam";
 import DocumentsVault from "./pages/DocumentsVault";
 import InsightsPage from "./pages/InsightsPage";
 import ContractComparison from "./pages/ContractComparison";
@@ -92,7 +89,6 @@ import SearchResults from "./pages/SearchResults";
 import CalendarPage from "./pages/CalendarPage";
 import ContractProtectionDetails from "./pages/ContractProtectionDetails";
 import PaymentDetailPage from "./pages/PaymentDetailPage";
-import BrandResponsePage from "./pages/BrandResponsePage";
 import BrandDealDetailsPage from "./pages/BrandDealDetailsPage";
 import ContractReadyPage from "./pages/ContractReadyPage";
 import CreatorSignPage from "./pages/CreatorSignPage";
@@ -109,12 +105,15 @@ import UpgradePage from "./pages/UpgradePage";
 import CollabLinkLanding from "./pages/CollabLinkLanding";
 import CollabLinkSuccess from "./pages/CollabLinkSuccess";
 import BrandDealConsole from "./pages/BrandDealConsole";
+import BrandDashboard from "./pages/BrandDashboard";
 import CollabAcceptPage from "./pages/CollabAcceptPage";
 import CollabActionPage from "./pages/CollabActionPage";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
 import CreatorsDirectory from "./pages/CreatorsDirectory";
+import DiscoverCreators from "./pages/DiscoverCreators";
 import CreatorProfilePage from "./pages/CreatorProfilePage";
+import CreatorReputationDashboard from "./pages/CreatorReputationDashboard";
 import PreviewAmanParmar from "./pages/PreviewAmanParmar";
 import PushTestLab from "./pages/PushTestLab";
 import { ErrorBoundary } from "./components/ui/error-boundary";
@@ -324,7 +323,9 @@ const App = () => {
                         {/* Referral Landing */}
                         <Route path="/p/:code" element={<ReferralLanding />} />
 
-                        {/* Creator Directory Routes (Public) - Must come before /:username */}
+                        {/* Creator Discovery & Directory Routes (Public) */}
+                        <Route path="/discover" element={<DiscoverCreators />} />
+                        <Route path="/discover/:category" element={<DiscoverCreators />} />
                         <Route path="/creators" element={<CreatorsDirectory />} />
                         <Route path="/creators/:category" element={<CreatorsDirectory />} />
                         <Route path="/creator/:username" element={<CreatorProfilePage />} />
@@ -377,6 +378,7 @@ const App = () => {
                         <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
                         <Route path="/push-test" element={<ProtectedLayout allowedRoles={['creator']}><PushTestLab /></ProtectedLayout>} />
                         <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
+                        <Route path="/creator-reputation" element={<ProtectedLayout allowedRoles={['creator']}><CreatorReputationDashboard /></ProtectedLayout>} />
                         <Route path="/notifications" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><NotificationCenter /></ProtectedLayout>} />
                         <Route path="/search" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><SearchResults /></ProtectedLayout>} />
                         <Route path="/calendar" element={<ProtectedLayout allowedRoles={['creator']}><CalendarPage /></ProtectedLayout>} />
@@ -439,6 +441,9 @@ const App = () => {
                         {/* Lawyer Dashboard (for lawyer role) */}
                         <Route path="/lawyer-dashboard" element={<ProtectedLayout allowedRoles={['lawyer']}><LawyerDashboard /></ProtectedLayout>} />
                         <Route path="/lawyer/consumer-complaints" element={<ProtectedLayout allowedRoles={['lawyer', 'admin']}><ConsumerComplaints /></ProtectedLayout>} />
+
+                        {/* Brand Console Routes */}
+                        <Route path="/brand-dashboard" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
 
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="/maintenance" element={<MaintenancePage />} />

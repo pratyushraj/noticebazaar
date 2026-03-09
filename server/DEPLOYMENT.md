@@ -1,10 +1,10 @@
 # 🚀 API Server Deployment Guide
 
-Deploy the NoticeBazaar API server to `api.noticebazaar.com` subdomain.
+Deploy the Creator Armour API server to `api.noticebazaar.com` subdomain.
 
 ## 📋 Prerequisites
 
-1. Domain: `noticebazaar.com` (already configured)
+1. Domain: `creatorarmour.com` (already configured)
 2. DNS access to add A/CNAME record for `api.noticebazaar.com`
 3. Environment variables ready (see below)
 
@@ -20,7 +20,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 # Server Configuration
 PORT=3001
 NODE_ENV=production
-FRONTEND_URL=https://noticebazaar.com
+FRONTEND_URL=https://creatorarmour.com
 
 # Optional
 STORAGE_BUCKET=creator-assets
@@ -162,26 +162,26 @@ STORAGE_BUCKET=creator-assets
 1. **Setup Server:**
    ```bash
    # On your VPS
-   git clone https://github.com/your-username/noticebazaar.git
-   cd noticebazaar/server
+   git clone https://github.com/your-username/creatorarmour.git
+   cd creatorarmour/server
    npm install
    npm run build
    ```
 
 2. **Create Systemd Service:**
    ```bash
-   sudo nano /etc/systemd/system/noticebazaar-api.service
+   sudo nano /etc/systemd/system/creatorarmour-api.service
    ```
    
    ```ini
    [Unit]
-   Description=NoticeBazaar API Server
+   Description=Creator Armour API Server
    After=network.target
 
    [Service]
    Type=simple
    User=your-user
-   WorkingDirectory=/path/to/noticebazaar/server
+   WorkingDirectory=/path/to/creatorarmour/server
    Environment="NODE_ENV=production"
    Environment="PORT=3001"
    Environment="SUPABASE_URL=https://your-project.supabase.co"
@@ -196,8 +196,8 @@ STORAGE_BUCKET=creator-assets
 3. **Start Service:**
    ```bash
    sudo systemctl daemon-reload
-   sudo systemctl enable noticebazaar-api
-   sudo systemctl start noticebazaar-api
+   sudo systemctl enable creatorarmour-api
+   sudo systemctl start creatorarmour-api
    ```
 
 4. **Configure Nginx:**
@@ -268,7 +268,7 @@ After deployment, verify:
    ```
 
 3. **CORS Check:**
-   - Open browser console on `noticebazaar.com`
+   - Open browser console on `creatorarmour.com`
    - Try uploading a contract
    - Should connect to `api.noticebazaar.com` without CORS errors
 
@@ -277,7 +277,7 @@ After deployment, verify:
 ## 🐛 Troubleshooting
 
 ### CORS Errors
-- Ensure `FRONTEND_URL=https://noticebazaar.com` is set
+- Ensure `FRONTEND_URL=https://creatorarmour.com` is set
 - Check server CORS config includes production domain
 - Verify DNS is properly configured
 

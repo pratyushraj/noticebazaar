@@ -29,7 +29,7 @@ export function getApiBaseUrl(): string {
       // which is more robust than hardcoding a domain that might change or have CORS issues.
       const isProduction =
         origin.includes('creatorarmour.com') ||
-        origin.includes('noticebazaar.com') ||
+        origin.includes('creatorarmour.com') ||
         origin.includes('vercel.app') ||
         origin.includes('netlify.app') ||
         origin.includes('trycloudflare.com');
@@ -48,11 +48,11 @@ export function getApiBaseUrl(): string {
       } else if (isProduction) {
         // Production: use dedicated API domain to avoid route drift
         // between frontend serverless handlers and backend API routes.
-        apiUrl = 'https://api.creatorarmour.com';
+        apiUrl = 'https://noticebazaar-api.onrender.com';
       } else if (isLocalhost) {
         // Localhost default: use production API to avoid local backend dependency.
         // To force local API, set localStorage.useLocalApi = 'true'.
-        apiUrl = 'https://api.creatorarmour.com';
+        apiUrl = 'https://noticebazaar-api.onrender.com';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API
         apiUrl = origin.replace(/:\d+$/, '') + ':3001';
@@ -74,7 +74,7 @@ export function getApiBaseUrl(): string {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
       host.endsWith('creatorarmour.com') ||
-      host.endsWith('noticebazaar.com') ||
+      host.endsWith('creatorarmour.com') ||
       host.endsWith('vercel.app') ||
       host.endsWith('netlify.app') ||
       host.endsWith('trycloudflare.com');
@@ -82,7 +82,7 @@ export function getApiBaseUrl(): string {
     if (isPublicHost && localhostPattern.test(cleanedUrl)) {
       // Never allow localhost API on public frontend hosts.
       // Route directly to production API domain.
-      cleanedUrl = 'https://api.creatorarmour.com';
+      cleanedUrl = 'https://noticebazaar-api.onrender.com';
     }
   }
 

@@ -4,6 +4,7 @@
 
 import express, { Request, Response } from 'express';
 import { supabase } from '../lib/supabase.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -60,7 +61,7 @@ router.get('/', async (req: Request, res: Response) => {
     // Transform profiles to include platform info
     const creators = (profiles || []).map(profile => {
       const platforms: Array<{ name: string; handle: string; followers?: number }> = [];
-      
+
       if (profile.instagram_handle) {
         platforms.push({
           name: 'Instagram',
@@ -97,8 +98,8 @@ router.get('/', async (req: Request, res: Response) => {
         });
       }
 
-      const creatorName = profile.business_name || 
-        `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 
+      const creatorName = profile.business_name ||
+        `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
         'Creator';
 
       return {
@@ -162,6 +163,97 @@ router.get('/categories', async (req: Request, res: Response) => {
       success: false,
       error: 'Internal server error',
     });
+  }
+});
+
+/**
+ * GET /api/creators/reputation-stats
+ * Get trust and performance stats for a creator
+ */
+router.get('/reputation-stats', authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id; // Current creator
+    const targetCreatorId = req.query.creatorId as string || userId; // Allow admin to check others
+
+    // 1. Fetch creator profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select(`
+        id, first_name, last_name, username, instagram_handle, 
+        collab_brands_count_override, last_instagram_sync
+      `)
+      .eq('id', targetCreatorId)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      return res.status(404).json({ success: false, error: 'Creator not found' });
+    }
+
+    // 2. Fetch trust stats (similar logic to collabRequests.ts)
+    const { data: dealsRows } = await supabase
+      .from('brand_deals')
+      .select('brand_name, status, progress_percentage')
+      .eq('creator_id', targetCreatorId);
+
+    const deals = dealsRows || [];
+    const totalDeals = deals.length;
+    const completedDeals = deals.filter((d: any) => {
+      const status = (d?.status || '').toLowerCase();
+      const progress = d?.progress_percentage ?? 0;
+      return progress >= 100 || status.includes('completed') || status.includes('closed');
+    }).length;
+
+    const uniqueBrands = new Set(
+      deals.map((d: any) => (d?.brand_name || '').trim().toLowerCase()).filter(Boolean)
+    ).size;
+
+    const baseBrandCount = Number(profile.collab_brands_count_override) || 0;
+    const brandsCount = baseBrandCount + uniqueBrands;
+
+    // 3. Response timing
+    const { data: responseRows } = await supabase
+      .from('collab_requests')
+      .select('created_at, updated_at, status')
+      .eq('creator_id', targetCreatorId)
+      .in('status', ['accepted', 'countered', 'declined']);
+
+    const validResponses = (responseRows || []).filter(r => r.created_at && r.updated_at);
+    const avgResponseHours = validResponses.length > 0
+      ? validResponses.reduce((sum, r) => {
+        const diff = new Date(r.updated_at).getTime() - new Date(r.created_at).getTime();
+        return sum + (diff / (1000 * 60 * 60));
+      }, 0) / validResponses.length
+      : null;
+
+    // 4. Performance snapshot
+    const { data: latestSnapshot } = await supabase
+      .from('instagram_performance_snapshots')
+      .select('*')
+      .eq('creator_id', targetCreatorId)
+      .order('captured_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    res.json({
+      success: true,
+      stats: {
+        brands_count: brandsCount,
+        completed_deals: completedDeals,
+        total_deals: totalDeals,
+        completion_rate: totalDeals > 0 ? Math.round((completedDeals / totalDeals) * 100) : 100,
+        avg_response_hours: avgResponseHours !== null ? Math.round(avgResponseHours) : null,
+      },
+      performance: latestSnapshot || null,
+      profile: {
+        id: profile.id,
+        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Creator',
+        username: profile.username,
+        instagram_handle: profile.instagram_handle
+      }
+    });
+  } catch (error: any) {
+    console.error('[Creators] reputation-stats error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

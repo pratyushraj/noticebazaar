@@ -12,11 +12,11 @@ Render's free tier supports web services, making it a perfect alternative to Rai
 
 2. **Create New Web Service:**
    - Click "New +" → "Web Service"
-   - Connect your GitHub repository: `noticebazaar`
+   - Connect your GitHub repository: `creatorarmour`
    - Select the repository
 
 3. **Configure Service:**
-   - **Name:** `noticebazaar-api`
+   - **Name:** `creatorarmour-api`
    - **Root Directory:** `server`
    - **Environment:** `Node`
    - **Build Command:** `npm install && npm run build`
@@ -28,7 +28,7 @@ Render's free tier supports web services, making it a perfect alternative to Rai
    ```
    SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-   FRONTEND_URL=https://noticebazaar.com
+   FRONTEND_URL=https://creatorarmour.com
    NODE_ENV=production
    PORT=10000
    ```
@@ -48,7 +48,7 @@ Render's free tier supports web services, making it a perfect alternative to Rai
 
 1. Go to Render Dashboard
 2. Click "New +" → "Blueprint"
-3. Connect your GitHub repository: `noticebazaar`
+3. Connect your GitHub repository: `creatorarmour`
 4. Render will auto-detect `server/render.yaml`
 5. Review the configuration
 6. Add environment variables (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, FRONTEND_URL)

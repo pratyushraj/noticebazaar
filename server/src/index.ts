@@ -59,6 +59,7 @@ import creatorsRouter from './routes/creators.js';
 import pushNotificationsRouter from './routes/pushNotifications.js';
 import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
+import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
@@ -202,7 +203,7 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'https://www.creatorarmour.com',
       'https://creatorarmour.com',
-      'https://api.creatorarmour.com'
+      'https://api.noticebazaar.com'
     ].map(o => o.toLowerCase());
 
     if (allowedOrigins.includes(normalizedOrigin)) {
@@ -348,6 +349,7 @@ app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tra
 app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
+app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);

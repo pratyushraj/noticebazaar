@@ -31,6 +31,7 @@ interface CollabRequestSubmissionData {
   deliverables: string[];
   deadline?: string | null;
   requestId: string;
+  magicLink?: string;
 }
 
 interface CollabRequestAcceptedData {
@@ -351,6 +352,7 @@ export async function sendCollabRequestSubmissionEmail(
     budget: budgetText,
     deadline: data.deadline || undefined,
     deliverables: data.deliverables,
+    magicLink: data.magicLink,
   });
 
   const subject = `Request sent: Working with ${data.creatorName} is one step away`;

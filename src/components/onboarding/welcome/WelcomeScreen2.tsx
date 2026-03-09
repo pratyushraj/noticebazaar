@@ -25,11 +25,11 @@ export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }
         <IconBubble icon={Link2} size="lg" color="purple" animated />
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">
         Your Professional Collab Link
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-white/80 mb-6">
+      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-6">
         One link for all brand deals.
       </p>
 
@@ -37,14 +37,14 @@ export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }
         {bullets.map((item, index) => (
           <GradientCard key={index} padding="sm">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-              <span className="text-base text-white/80">{item}</span>
+              <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0" />
+              <span className="text-base text-slate-700 dark:text-white/80">{item}</span>
             </div>
           </GradientCard>
         ))}
       </div>
 
-      <p className="text-sm text-white/65 mb-8">Send this instead of your Instagram bio.</p>
+      <p className="text-sm text-slate-400 dark:text-white/65 mb-8">Send this instead of your Instagram bio.</p>
 
       <div className="flex gap-4">
         <SecondaryButton onClick={onBack} showBackIcon>

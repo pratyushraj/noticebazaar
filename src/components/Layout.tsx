@@ -54,7 +54,7 @@ const Layout = ({ children }: LayoutProps) => {
     !isNonCreatorRole; // Don't show if user has a non-creator role
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#0B0F14] text-white overflow-hidden md:overflow-visible flex flex-col">
+    <div className="relative min-h-[100dvh] bg-background text-foreground overflow-hidden md:overflow-visible flex flex-col">
       {/* Skip to main content link */}
       <a
         href="#main"

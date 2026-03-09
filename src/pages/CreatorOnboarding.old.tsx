@@ -266,7 +266,7 @@ const CreatorOnboarding = () => {
                 <Sparkles className="w-12 h-12 text-purple-400" />
               </motion.div>
               
-              <h1 className="text-4xl font-bold mb-4">Welcome to NoticeBazaar</h1>
+              <h1 className="text-4xl font-bold mb-4">Welcome to Creator Armour</h1>
               <p className="text-xl text-purple-200 mb-12">Legal & Tax Services Built for Content Creators</p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full mb-12">
@@ -754,7 +754,7 @@ const CreatorOnboarding = () => {
 
               <h1 className="text-4xl font-bold mb-4">You're All Set! 🎉</h1>
               <p className="text-xl text-purple-200 mb-8">
-                Welcome to NoticeBazaar, {onboardingData.name}!
+                Welcome to Creator Armour, {onboardingData.name}!
               </p>
 
               {/* Profile Summary */}

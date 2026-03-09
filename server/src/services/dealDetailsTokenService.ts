@@ -191,6 +191,36 @@ export async function submitDealDetails(
     throw new Error('Failed to submit deal details');
   }
 
+  // If this submission is linked to a deal, log the "Brand Locked" event
+  const { data: linkedCollab } = await supabase
+    .from('collab_requests')
+    .select('deal_id')
+    .eq('id', tokenId) // Often tokenId is the collab_request_id in this flow
+    .maybeSingle();
+
+  // If not found by tokenId, check if there's a deal_id in the token record itself
+  let dealIdToLog = linkedCollab?.deal_id;
+  if (!dealIdToLog) {
+    const { data: tokenRecord } = await supabase
+      .from('deal_details_tokens')
+      .select('deal_id') // Check if this exists in your schema, or fallback
+      .eq('id', tokenId)
+      .maybeSingle();
+    dealIdToLog = (tokenRecord as any)?.deal_id;
+  }
+
+  if (dealIdToLog) {
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealIdToLog,
+      event: 'DEAL_LOCKED',
+      metadata: {
+        submission_id: submission.id,
+        message: 'Brand has locked specifications and lead time requirements.',
+        brand_name: formData.brandName || 'Brand'
+      },
+    });
+  }
+
   // DO NOT create deal here - deals are only created when signed
   // Just save the submission and generate contract
   let dealId: string | null = null;
@@ -198,17 +228,17 @@ export async function submitDealDetails(
   // Generate contract and store with submission (deals are only created when signed)
   try {
     console.log('[DealDetailsTokenService] Generating contract for submission...');
-    
+
     // Import contract generation service
     const { generateContractFromScratch } = await import('./contractGenerator.js');
-    
+
     // Fetch creator details
     const { data: creator, error: creatorError } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, address, location')
       .eq('id', token.creator_id)
       .single();
-    
+
     // Get email from auth.users
     let creatorEmail: string | null = null;
     if (creator) {
@@ -218,10 +248,10 @@ export async function submitDealDetails(
 
     if (!creatorError && creator) {
       // Parse deliverables
-      const deliverablesList = Array.isArray(formData.deliverables) 
-        ? formData.deliverables.map((d: any) => 
-            `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
-          )
+      const deliverablesList = Array.isArray(formData.deliverables)
+        ? formData.deliverables.map((d: any) =>
+          `${d.quantity || 1}x ${d.contentType || 'Content'} on ${d.platform || 'Platform'}`
+        )
         : ['As per agreement'];
 
       // Build contract generation request
@@ -233,13 +263,13 @@ export async function submitDealDetails(
       let creatorAddress: string | null = null;
       const locationValue = creator.location;
       const addressValue = creator.address;
-      
+
       const rawAddress = (locationValue && typeof locationValue === 'string' && locationValue.trim() !== '' && locationValue.toLowerCase() !== 'n/a')
         ? locationValue.trim()
         : (addressValue && typeof addressValue === 'string' && addressValue.trim() !== '' && addressValue.toLowerCase() !== 'n/a')
           ? addressValue.trim()
           : null;
-      
+
       creatorAddress = rawAddress;
 
       const dealAmount = formData.dealType === 'paid' && formData.paymentAmount
@@ -370,18 +400,18 @@ export async function submitDealDetails(
 
   // Create contract ready token using submission_id (deal will be created when signed)
   let contractReadyToken: string | null = null;
-  
+
   try {
     console.log('[DealDetailsTokenService] Creating contract ready token for submission:', submission.id, 'creator:', token.creator_id);
     const { createContractReadyToken } = await import('./contractReadyTokenService.js');
-    
+
     // Create token with submission_id (deal will be created when signed)
     const readyToken = await createContractReadyToken({
       submissionId: submission.id,
       creatorId: token.creator_id,
       expiresAt: null, // No expiration
     });
-    
+
     contractReadyToken = readyToken.id;
     console.log('[DealDetailsTokenService] ✅ Contract ready token generated successfully:', contractReadyToken);
   } catch (tokenError: any) {

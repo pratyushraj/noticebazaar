@@ -122,7 +122,7 @@ const ReferralLanding: React.FC = () => {
           </div>
           <CardTitle className="text-2xl text-white">You've Been Invited!</CardTitle>
           <p className="text-muted-foreground mt-2">
-            {referrerName} invited you to join NoticeBazaar
+            {referrerName} invited you to join Creator Armour
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
