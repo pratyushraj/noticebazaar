@@ -2238,60 +2238,60 @@ const CollabLinkLanding = () => {
               </Accordion>
             </div> {/* END LEFT COLUMN */}
 
-              {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-              {!showCustomFlow && (
-                <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1 px-1">Fastest way to collaborate</span>
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-amber-500" />
-                        <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
-                      </div>
+            {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
+            {!showCustomFlow && (
+              <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1 px-1">Fastest way to collaborate</span>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-amber-500" />
+                      <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
                     </div>
-                    {isOwner && (
-                      <button
-                        onClick={() => setIsEditingTemplates(!isEditingTemplates)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
-                      >
-                        <Edit className="h-3 w-3" />
-                        <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
-                      </button>
-                    )}
                   </div>
+                  {isOwner && (
+                    <button
+                      onClick={() => setIsEditingTemplates(!isEditingTemplates)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
+                    >
+                      <Edit className="h-3 w-3" />
+                      <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
+                    </button>
+                  )}
+                </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {dealTemplates.map((template, idx) => {
-                      const deliverablesList = template.deliverables.map(d => {
-                        const qty = template.quantities[d] || 1;
-                        if (d === 'Unboxing Video') return `${qty} Unboxing`;
-                        return `${qty} ${d.replace('Instagram ', '')}`;
-                      }).join(' + ');
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {dealTemplates.map((template, idx) => {
+                    const deliverablesList = template.deliverables.map(d => {
+                      const qty = template.quantities[d] || 1;
+                      if (d === 'Unboxing Video') return `${qty} Unboxing`;
+                      return `${qty} ${d.replace('Instagram ', '')}`;
+                    }).join(' + ');
 
-                      return (
-                        <div key={template.id} className="relative group/card h-full">
-                          {idx === 1 && (
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                              <div className="bg-amber-400 text-amber-950 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-300 shadow-sm uppercase tracking-wider flex items-center gap-1">
-                                <Sparkles className="h-2 w-2" />
-                                Most Booked
-                              </div>
+                    return (
+                      <div key={template.id} className="relative group/card h-full">
+                        {idx === 1 && (
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
+                            <div className="bg-amber-400 text-amber-950 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-300 shadow-sm uppercase tracking-wider flex items-center gap-1">
+                              <Sparkles className="h-2 w-2" />
+                              Most Booked
                             </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleTemplateSelect(template)}
-                            className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${idx === 1 ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-100/60 shadow-lg shadow-amber-900/5' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50 shadow-sm'}`}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
-                                {template.icon}
-                              </div>
-                              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleTemplateSelect(template)}
+                          className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${idx === 1 ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-100/60 shadow-lg shadow-amber-900/5' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50 shadow-sm'}`}
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
+                              {template.icon}
                             </div>
-                            <div className="flex-1">
-                              <p className="text-[14px] font-black text-slate-900 mb-0.5">{template.label}</p>
-                              <div className="mb-3">
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[14px] font-black text-slate-900 mb-0.5">{template.label}</p>
+                            <div className="mb-3">
                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Includes</p>
                               <div className="space-y-1">
                                 {template.deliverables.map((d, di) => {
@@ -2306,233 +2306,233 @@ const CollabLinkLanding = () => {
                                 })}
                               </div>
                             </div>
-                            </div>
-                            <div className="mt-auto pt-3 border-t border-slate-100/60 flex items-center justify-between gap-2">
-                              <p className="text-[16px] font-black text-teal-600 leading-tight">
-                                {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
-                              </p>
-                              <div className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider group-hover:bg-teal-600 group-active:scale-95 transition-all">
-                                Select →
-                              </div>
-                            </div>
-                          </button>
-
-                          {isOwner && isEditingTemplates && (
-                            <div className="absolute top-2 right-2 z-10">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingTemplate(template);
-                                }}
-                                className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-6 text-center">
-                    <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mb-3">Or create custom</p>
-                    <Button
-                      onClick={() => {
-                        setShowCustomFlow(true);
-                        setCurrentStep(1);
-                        triggerHaptic(HapticPatterns.success);
-                      }}
-                      variant="outline"
-                      className="w-full h-12 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]"
-                    >
-                      Propose Custom Deal
-                      <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Desktop-only Bio & Platforms */}
-              <div className="hidden lg:block space-y-8">
-                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
-                  {editMode ? (
-                    <div className="mb-6 relative">
-                      <div className="absolute -top-6 left-0 flex items-center gap-1">
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Creator Bio</p>
-                      </div>
-                      <Textarea
-                        className="bg-slate-50 border-slate-300 border-dashed text-slate-700 leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
-                        defaultValue={creator.bio || ''}
-                        onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
-                        placeholder="Brief introduction for brands..."
-                      />
-                      <p className="text-[9px] text-slate-400 mt-1">Updates immediately when you click outside</p>
-                    </div>
-                  ) : creatorBio && (
-                    <p className="text-slate-700 leading-relaxed mb-6 font-medium">
-                      {creatorBio}
-                    </p>
-                  )}
-
-                  {creator.platforms.length > 0 && (
-                    <div className="space-y-3">
-                      <h2 className="text-xl font-semibold text-slate-900 mb-3">
-                        Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                        {creator.platforms.map((platform, idx) => {
-                          const isInstagram = platform.name.toLowerCase() === 'instagram';
-                          return (
-                            <div key={idx} className="flex items-center gap-3 text-slate-100/85">
-                              {getPlatformIcon(platform.name)}
-                              <div className="flex-1">
-                                <p className="font-medium text-slate-900">{platform.name}</p>
-                                {isInstagram && platform.handle ? (
-                                  <a
-                                    href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
-                                  >
-                                    @{platform.handle.replace('@', '')}
-                                    <ExternalLink className="h-3 w-3 opacity-60" />
-                                  </a>
-                                ) : (
-                                  <p className="text-sm text-slate-200/90">
-                                    {platform.handle}
-                                  </p>
-                                )}
-                                {platform.followers && (
-                                  <p className="text-xs text-slate-200/65 mt-1">
-                                    {platform.followers >= 1000
-                                      ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                      : `${platform.followers} followers`}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-                  {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-                    <div className="mt-8 pt-6 border-t border-slate-200 space-y-3">
-                      {creator.open_to_collabs !== false && (
-                        <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 shrink-0" />
-                          Actively open to collaborations
-                        </p>
-                      )}
-                      {editMode ? (
-                        <div className="mt-4 pt-4 border-t border-slate-100">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
-                            Content Niches
-                            <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Add relevant tags for your profile</span>
-                          </p>
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {creator.content_niches?.map((niche, i) => (
-                              <Badge
-                                key={i}
-                                variant="secondary"
-                                className="bg-teal-50 text-teal-700 border-teal-100 pl-3 pr-1 py-1 flex items-center gap-1 group"
-                              >
-                                {niche}
-                                <button
-                                  onClick={() => {
-                                    const updated = creator.content_niches?.filter(n => n !== niche);
-                                    handleInlineProfileUpdate('content_niches', updated);
-                                  }}
-                                  className="hover:bg-teal-200/50 rounded-full p-0.5 transition-colors"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </Badge>
-                            ))}
                           </div>
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="New niche..."
-                              value={newNicheInput}
-                              onChange={(e) => setNewNicheInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  const val = newNicheInput.trim();
-                                  if (val) {
-                                    const updated = [...(creator.content_niches || []), val];
-                                    handleInlineProfileUpdate('content_niches', updated);
-                                    setNewNicheInput('');
-                                  }
-                                }
+                          <div className="mt-auto pt-3 border-t border-slate-100/60 flex items-center justify-between gap-2">
+                            <p className="text-[16px] font-black text-teal-600 leading-tight">
+                              {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
+                            </p>
+                            <div className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider group-hover:bg-teal-600 group-active:scale-95 transition-all">
+                              Select →
+                            </div>
+                          </div>
+                        </button>
+
+                        {isOwner && isEditingTemplates && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingTemplate(template);
                               }}
-                              className="h-8 text-xs border-dashed bg-slate-50"
-                            />
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 text-xs border-dashed border-teal-200 text-teal-600 hover:bg-teal-50"
-                              onClick={() => {
+                              className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-6 text-center">
+                  <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mb-3">Or create custom</p>
+                  <Button
+                    onClick={() => {
+                      setShowCustomFlow(true);
+                      setCurrentStep(1);
+                      triggerHaptic(HapticPatterns.success);
+                    }}
+                    variant="outline"
+                    className="w-full h-12 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]"
+                  >
+                    Propose Custom Deal
+                    <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Desktop-only Bio & Platforms */}
+            <div className="hidden lg:block space-y-8">
+              <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
+                {editMode ? (
+                  <div className="mb-6 relative">
+                    <div className="absolute -top-6 left-0 flex items-center gap-1">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Creator Bio</p>
+                    </div>
+                    <Textarea
+                      className="bg-slate-50 border-slate-300 border-dashed text-slate-700 leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
+                      defaultValue={creator.bio || ''}
+                      onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
+                      placeholder="Brief introduction for brands..."
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1">Updates immediately when you click outside</p>
+                  </div>
+                ) : creatorBio && (
+                  <p className="text-slate-700 leading-relaxed mb-6 font-medium">
+                    {creatorBio}
+                  </p>
+                )}
+
+                {creator.platforms.length > 0 && (
+                  <div className="space-y-3">
+                    <h2 className="text-xl font-semibold text-slate-900 mb-3">
+                      Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                      {creator.platforms.map((platform, idx) => {
+                        const isInstagram = platform.name.toLowerCase() === 'instagram';
+                        return (
+                          <div key={idx} className="flex items-center gap-3 text-slate-100/85">
+                            {getPlatformIcon(platform.name)}
+                            <div className="flex-1">
+                              <p className="font-medium text-slate-900">{platform.name}</p>
+                              {isInstagram && platform.handle ? (
+                                <a
+                                  href={`https://instagram.com/${platform.handle.replace('@', '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
+                                >
+                                  @{platform.handle.replace('@', '')}
+                                  <ExternalLink className="h-3 w-3 opacity-60" />
+                                </a>
+                              ) : (
+                                <p className="text-sm text-slate-200/90">
+                                  {platform.handle}
+                                </p>
+                              )}
+                              {platform.followers && (
+                                <p className="text-xs text-slate-200/65 mt-1">
+                                  {platform.followers >= 1000
+                                    ? `${(platform.followers / 1000).toFixed(1)}K followers`
+                                    : `${platform.followers} followers`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Open to collabs + niches + media kit (creator readiness for brands) */}
+                {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
+                  <div className="mt-8 pt-6 border-t border-slate-200 space-y-3">
+                    {creator.open_to_collabs !== false && (
+                      <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 shrink-0" />
+                        Actively open to collaborations
+                      </p>
+                    )}
+                    {editMode ? (
+                      <div className="mt-4 pt-4 border-t border-slate-100">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                          Content Niches
+                          <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Add relevant tags for your profile</span>
+                        </p>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {creator.content_niches?.map((niche, i) => (
+                            <Badge
+                              key={i}
+                              variant="secondary"
+                              className="bg-teal-50 text-teal-700 border-teal-100 pl-3 pr-1 py-1 flex items-center gap-1 group"
+                            >
+                              {niche}
+                              <button
+                                onClick={() => {
+                                  const updated = creator.content_niches?.filter(n => n !== niche);
+                                  handleInlineProfileUpdate('content_niches', updated);
+                                }}
+                                className="hover:bg-teal-200/50 rounded-full p-0.5 transition-colors"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="New niche..."
+                            value={newNicheInput}
+                            onChange={(e) => setNewNicheInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
                                 const val = newNicheInput.trim();
                                 if (val) {
                                   const updated = [...(creator.content_niches || []), val];
                                   handleInlineProfileUpdate('content_niches', updated);
                                   setNewNicheInput('');
                                 }
-                              }}
-                            >
-                              Add
-                            </Button>
-                          </div>
-                        </div>
-                      ) : creator.content_niches && creator.content_niches.length > 0 && (
-                        <div>
-                          <p className="text-xs text-slate-400 mb-1">Content niches</p>
-                          <div className="flex flex-wrap gap-2">
-                            {creator.content_niches.map((niche, i) => (
-                              <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
-                                {niche}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {editMode ? (
-                        <div className="mt-4 pt-4 border-t border-slate-100">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
-                          <Input
-                            className="h-8 text-xs bg-slate-50 border-dashed"
-                            defaultValue={creator.media_kit_url || ''}
-                            onBlur={(e) => handleInlineProfileUpdate('media_kit_url', e.target.value)}
-                            placeholder="e.g. https://canva.com/your-media-kit"
+                              }
+                            }}
+                            className="h-8 text-xs border-dashed bg-slate-50"
                           />
-                        </div>
-                      ) : creator.media_kit_url && (
-                        <div>
-                          <a
-                            href={creator.media_kit_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs border-dashed border-teal-200 text-teal-600 hover:bg-teal-50"
+                            onClick={() => {
+                              const val = newNicheInput.trim();
+                              if (val) {
+                                const updated = [...(creator.content_niches || []), val];
+                                handleInlineProfileUpdate('content_niches', updated);
+                                setNewNicheInput('');
+                              }
+                            }}
                           >
-                            <ExternalLink className="h-4 w-4 shrink-0" />
-                            Media kit
-                          </a>
-                          <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
+                            Add
+                          </Button>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    ) : creator.content_niches && creator.content_niches.length > 0 && (
+                      <div>
+                        <p className="text-xs text-slate-400 mb-1">Content niches</p>
+                        <div className="flex flex-wrap gap-2">
+                          {creator.content_niches.map((niche, i) => (
+                            <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
+                              {niche}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {editMode ? (
+                      <div className="mt-4 pt-4 border-t border-slate-100">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
+                        <Input
+                          className="h-8 text-xs bg-slate-50 border-dashed"
+                          defaultValue={creator.media_kit_url || ''}
+                          onBlur={(e) => handleInlineProfileUpdate('media_kit_url', e.target.value)}
+                          placeholder="e.g. https://canva.com/your-media-kit"
+                        />
+                      </div>
+                    ) : creator.media_kit_url && (
+                      <div>
+                        <a
+                          href={creator.media_kit_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
+                        >
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          Media kit
+                        </a>
+                        <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                </div>
               </div>
+            </div>
 
 
             {/* RIGHT COLUMN - Offer Form */}
-            <div className="w-full lg:w-[58%] lg:pb-32">
+            <div className="w-full lg:w-[58%] lg:pb-8">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 border border-slate-200 bg-white shadow-2xl shadow-teal-900/5 relative transition-all duration-200 ease-out`}>
 
@@ -2544,7 +2544,7 @@ const CollabLinkLanding = () => {
                     </div>
                     <div className="flex flex-col items-center gap-2">
                       <div className="animate-bounce text-teal-400 mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
                       </div>
                       <p className="text-slate-500 font-black uppercase tracking-[2px] text-[11px]">Pick a package above</p>
                       <p className="text-slate-400 text-[12px] font-medium">Tap a package to start your proposal</p>
@@ -2965,7 +2965,7 @@ const CollabLinkLanding = () => {
             </div> {/* END RIGHT COLUMN */}
           </div> {/* END flex-row container */}
 
-          <div className="lg:hidden h-20" />
+          <div className="lg:hidden h-4" />
 
           <div className="px-4">
             {/* Save and continue later modal */}
@@ -3052,7 +3052,7 @@ const CollabLinkLanding = () => {
                   </span>
                 ) : !showCustomFlow ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
                     Select a package to continue
                   </span>
                 ) : (
