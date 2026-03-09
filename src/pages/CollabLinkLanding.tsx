@@ -1701,7 +1701,7 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-      <div className="light min-h-screen bg-slate-50 selection:bg-teal-500/30 text-slate-900">
+      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900" style={{backgroundColor:"#F7F9FB"}}>
         {isOwner && (
           <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex items-center justify-between sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
             <div className="flex items-center gap-3">
@@ -1829,7 +1829,7 @@ const CollabLinkLanding = () => {
                     { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-teal-600" />, desc: 'Dispute protected' },
                     { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />, desc: 'Creator accountable' },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 md:gap-2 rounded-2xl border border-slate-200 bg-white shadow-sm px-1.5 py-3 md:px-2 md:py-4">
+                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 md:gap-2 rounded-2xl bg-white px-1.5 py-3 md:px-2 md:py-4" style={{border:"1.5px solid #DDE8E6",boxShadow:"0 4px 12px rgba(0,0,0,0.05)"}}>
                       <div className={`shrink-0 rounded-xl p-2 md:p-2.5 ${idx === 0 ? 'bg-emerald-50 border border-emerald-100' :
                         idx === 1 ? 'bg-teal-50 border border-teal-100' :
                           'bg-blue-50 border border-blue-100'
@@ -1931,7 +1931,7 @@ const CollabLinkLanding = () => {
 
               {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
               <Accordion type="single" collapsible className="w-full mb-6 relative z-20" defaultValue="item-1">
-                <AccordionItem value="item-1" className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden border-b-0">
+                <AccordionItem value="item-1" className="rounded-2xl overflow-hidden border-b-0" style={{border:"1.5px solid #DDE8E6",background:"#FDFFFE",boxShadow:"0 4px 12px rgba(0,0,0,0.04)"}}>
                   <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center">
@@ -2240,10 +2240,10 @@ const CollabLinkLanding = () => {
 
             {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
             {!showCustomFlow && (
-              <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
+              <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 -mx-4 px-4 py-6 rounded-3xl" style={{background:"linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)",border:"1px solid #D4EDDF"}}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1 px-1">Fastest way to collaborate</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{color:"#0FA47F"}}>Fastest way to collaborate</span>
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-amber-500" />
                       <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
@@ -2281,7 +2281,7 @@ const CollabLinkLanding = () => {
                         <button
                           type="button"
                           onClick={() => handleTemplateSelect(template)}
-                          className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${idx === 1 ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-100/60 shadow-lg shadow-amber-900/5' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50 shadow-sm'}`}
+                          className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${idx === 1 ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_6px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.1)]'}`}
                         >
                           <div className="flex items-center justify-between mb-3">
                             <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
@@ -2299,7 +2299,7 @@ const CollabLinkLanding = () => {
                                   const label = d === 'Unboxing Video' ? 'Unboxing' : d.replace('Instagram ', '');
                                   return (
                                     <div key={di} className="flex items-center gap-1.5">
-                                      <div className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{backgroundColor:"#0FA47F",opacity:0.7}} />
                                       <span className="text-[11px] font-bold text-slate-600">{qty} {label}</span>
                                     </div>
                                   );
@@ -2344,7 +2344,7 @@ const CollabLinkLanding = () => {
                       triggerHaptic(HapticPatterns.success);
                     }}
                     variant="outline"
-                    className="w-full h-12 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50 font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]"
+                    className="w-full h-12 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]" style={{background:"transparent",border:"1.5px solid #CBD5E1",color:"#475569"}}
                   >
                     Propose Custom Deal
                     <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
@@ -2532,9 +2532,9 @@ const CollabLinkLanding = () => {
 
 
             {/* RIGHT COLUMN - Offer Form */}
-            <div className="w-full lg:w-[58%] lg:pb-8">
+            <div className="w-full lg:w-[58%] lg:pb-32">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
-              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 border border-slate-200 bg-white shadow-2xl shadow-teal-900/5 relative transition-all duration-200 ease-out`}>
+              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{border:"1.5px solid #E2EAE8",boxShadow:"0 8px 32px rgba(0,77,64,0.06),0 2px 8px rgba(0,0,0,0.04)"}}>
 
                 {/* Fallback space when flow is hidden */}
                 {!showCustomFlow && (
@@ -2965,7 +2965,7 @@ const CollabLinkLanding = () => {
             </div> {/* END RIGHT COLUMN */}
           </div> {/* END flex-row container */}
 
-          <div className="lg:hidden h-4" />
+          <div className="lg:hidden h-20" />
 
           <div className="px-4">
             {/* Save and continue later modal */}
