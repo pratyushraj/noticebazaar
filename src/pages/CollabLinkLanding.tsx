@@ -2307,10 +2307,13 @@ const CollabLinkLanding = () => {
                               </div>
                             </div>
                             </div>
-                            <div className="mt-auto pt-2 border-t border-slate-100/50">
-                              <p className="text-[15px] font-black text-teal-600">
+                            <div className="mt-auto pt-3 border-t border-slate-100/60 flex items-center justify-between gap-2">
+                              <p className="text-[16px] font-black text-teal-600 leading-tight">
                                 {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
                               </p>
+                              <div className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider group-hover:bg-teal-600 group-active:scale-95 transition-all">
+                                Select →
+                              </div>
                             </div>
                           </button>
 
@@ -2539,12 +2542,12 @@ const CollabLinkLanding = () => {
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
                       <Zap className="h-10 w-10 fill-current" />
                     </div>
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="animate-bounce text-teal-400 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
                       </div>
-                      <p className="text-slate-400 font-black uppercase tracking-[2px] text-[11px]">Select a package</p>
-                      <p className="text-slate-300 text-[12px] font-medium leading-relaxed">Choose a collaboration package above to start your proposal</p>
+                      <p className="text-slate-500 font-black uppercase tracking-[2px] text-[11px]">Pick a package above</p>
+                      <p className="text-slate-400 text-[12px] font-medium">Tap a package to start your proposal</p>
                     </div>
                   </div>
                 )}
@@ -3033,14 +3036,24 @@ const CollabLinkLanding = () => {
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
               )}
               <Button
-                onClick={handleStickySubmit}
+                onClick={!showCustomFlow ? () => { const el = document.querySelector('.deal-templates-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } : handleStickySubmit}
                 disabled={submitting}
-                className="w-full h-12 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold text-base shadow-lg shadow-teal-500/20 border-t border-white/20 active:scale-[0.99]"
+                className={[
+                  'w-full h-12 rounded-2xl font-bold text-base active:scale-[0.99] transition-all duration-200',
+                  !showCustomFlow
+                    ? 'bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-pointer'
+                    : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg shadow-teal-500/20 border-t border-white/20'
+                ].join(' ')}
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <Lock className="h-5 w-5 text-white" />
                     Processing...
+                  </span>
+                ) : !showCustomFlow ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    Select a package to continue
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
