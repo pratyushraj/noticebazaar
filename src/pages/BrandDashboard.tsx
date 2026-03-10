@@ -12,7 +12,7 @@ import { StatCard, SectionCard } from '@/components/ui/card-variants';
 import { useSession } from '@/contexts/SessionContext';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -335,7 +335,7 @@ const BrandDashboard = () => {
                                                     <td className="px-8 py-6">
                                                         <div className="text-[14px] font-bold text-white uppercase tracking-tight">{request.collab_type}</div>
                                                         <div className="text-[11px] font-black text-white/40 uppercase tracking-widest mt-1">
-                                                            Sent {format(new Date(request.created_at), 'MMM dd, yyyy')}
+                                                            Sent {new Date(request.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-6">
@@ -422,7 +422,7 @@ const BrandDashboard = () => {
                                                 Request to {(r.profiles as any)?.username || 'creator'} marked as <span className="text-blue-400 font-black">{r.status}</span>
                                             </p>
                                             <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/30 mt-1">
-                                                {format(new Date(r.created_at), 'h:mm a')}
+                                                {new Date(r.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                             </p>
                                         </div>
                                     </div>
