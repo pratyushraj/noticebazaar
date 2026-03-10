@@ -391,7 +391,7 @@ const Signup = () => {
 
   return (
     <div
-      className="nb-screen-height bg-[#0B0F14] flex items-center justify-center p-4 font-inter"
+      className="nb-screen-height bg-[#F4F7FB] flex items-center justify-center p-4 font-inter"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
@@ -412,7 +412,7 @@ const Signup = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="hidden md:block text-white space-y-12"
+          className="hidden md:block text-slate-900 space-y-12"
         >
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-10">
@@ -426,7 +426,7 @@ const Signup = () => {
               Scale Your<br />
               Creator Business
             </h2>
-            <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-md">
+            <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
               The professional collaboration operating system. Structured, protected, and powered by you.
             </p>
           </div>
@@ -443,25 +443,25 @@ const Signup = () => {
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   className="flex items-start gap-5"
                 >
-                  <div className={`w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <Icon className={`w-6 h-6 ${colorClass}`} />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg mb-1">{feature.title}</h3>
-                    <p className="text-slate-400 text-sm font-medium">{feature.description}</p>
+                    <p className="text-slate-600 text-sm font-medium">{feature.description}</p>
                   </div>
                 </motion.div>
               );
             })}
           </div>
 
-          <div className="pt-10 border-t border-slate-800 flex gap-10">
+          <div className="pt-10 border-t border-slate-200 flex gap-10">
             <div>
-              <p className="text-white text-xl font-black">10,000+</p>
+              <p className="text-slate-900 text-xl font-black">10,000+</p>
               <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Contracts Analyzed</p>
             </div>
             <div>
-              <p className="text-white text-xl font-black">₹2Cr+</p>
+              <p className="text-slate-900 text-xl font-black">₹2Cr+</p>
               <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Value Protected</p>
             </div>
           </div>
@@ -474,20 +474,20 @@ const Signup = () => {
           transition={{ duration: 0.5 }}
           className="w-full"
         >
-          <div className="bg-slate-900 shadow-2xl rounded-[2.5rem] p-10 border border-slate-800">
+          <div className="bg-white shadow-xl rounded-[2.5rem] p-10 border border-slate-200">
             {/* Mobile Logo */}
             <div className="md:hidden flex items-center gap-3 mb-10">
               <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
                 <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-lg font-black text-white tracking-tight">Creator Armour</h1>
+              <h1 className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</h1>
             </div>
 
             <div className="mb-10">
-              <h2 className="text-4xl font-black text-white mb-3 tracking-tight">
+              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
                 {showLogin ? 'Sign In' : 'Join Armour'}
               </h2>
-              <p className="text-slate-400 font-medium leading-relaxed">
+              <p className="text-slate-600 font-medium leading-relaxed">
                 {showLogin
                   ? 'Access your creator business OS to manage deals.'
                   : 'Start protecting your deals and scale your earnings.'
@@ -509,7 +509,7 @@ const Signup = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="email"
                     />
@@ -533,7 +533,7 @@ const Signup = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="current-password"
                     />
@@ -563,7 +563,7 @@ const Signup = () => {
                       placeholder="e.g. Pratyush Raj"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="name"
                     />
@@ -578,7 +578,7 @@ const Signup = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => handleEmailChange(e.target.value)}
-                      className={`bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
+                      className={`bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
                       required
                       autoComplete="email"
                     />
@@ -597,7 +597,7 @@ const Signup = () => {
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5 pr-12"
+                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12"
                         required
                         autoComplete="new-password"
                         minLength={6}
@@ -605,7 +605,7 @@ const Signup = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
@@ -625,10 +625,10 @@ const Signup = () => {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-800"></div>
+                <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-slate-900 px-4 text-slate-600">Secure Protocol Access</span>
+                <span className="bg-white px-4 text-slate-500">Secure Protocol Access</span>
               </div>
             </div>
 
@@ -649,7 +649,7 @@ const Signup = () => {
                   } catch (err) { toast.error('Failed to start Google sign-up'); }
                 }}
                 variant="outline"
-                className="w-full bg-white/5 border-slate-800 text-white hover:bg-white/10 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
+                className="w-full bg-white border-slate-300 text-slate-900 hover:bg-slate-50 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -661,10 +661,10 @@ const Signup = () => {
               </Button>
             </div>
 
-            <div className="text-center pt-6 border-t border-slate-800">
+            <div className="text-center pt-6 border-t border-slate-200">
               <button
                 onClick={() => setShowLogin(!showLogin)}
-                className="text-slate-400 hover:text-white font-medium text-[13px] transition-all group inline-flex items-center gap-2"
+                className="text-slate-600 hover:text-slate-900 font-medium text-[13px] transition-all group inline-flex items-center gap-2"
               >
                 {showLogin ? "Don't have an account?" : 'Already have an account?'}
                 <span className="text-emerald-500 font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
@@ -672,7 +672,7 @@ const Signup = () => {
             </div>
 
             {/* Back to Homepage */}
-            <div className="mt-8 text-center pt-6 border-t border-slate-800/50">
+            <div className="mt-8 text-center pt-6 border-t border-slate-200">
               <Link to="/" className="text-slate-500 hover:text-emerald-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
                 <ArrowLeft className="w-3 h-3" /> Back to Protocol
               </Link>

@@ -153,8 +153,8 @@ const AddToHomeScreen: React.FC = () => {
         className="fixed top-0 inset-x-0 z-[9999] md:hidden"
       >
         <div
-          className="bg-white/98 backdrop-blur-xl border-b border-slate-200 px-3 py-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08)]"
-          style={{ paddingTop: 'max(6px, env(safe-area-inset-top, 0px))' }}
+          className="bg-white border-b border-slate-200 px-3 py-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08)]"
+          style={{ paddingTop: 'max(6px, env(safe-area-inset-top, 0px))', backgroundColor: '#ffffff' }}
         >
           <div className="max-w-screen-sm mx-auto flex items-center gap-2.5 min-h-[44px]">
             <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
@@ -174,13 +174,13 @@ const AddToHomeScreen: React.FC = () => {
             </div>
             <button
               onClick={handleInstall}
-              className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-full text-[13px] leading-none"
+              className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-full text-[13px] leading-none shadow-sm"
             >
               OPEN
             </button>
             <button
               onClick={handleDismiss}
-              className="shrink-0 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
+              className="shrink-0 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center"
               aria-label="Dismiss app banner"
             >
               <X className="w-3.5 h-3.5 text-slate-500" />
