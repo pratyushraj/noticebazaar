@@ -97,7 +97,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       try {
         const { data: handleData, error: handleError } = await (supabase
           .from('profiles')
-          .select('username, instagram_handle, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
+          .select('username, instagram_handle, instagram_profile_photo, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
           .eq('id', user.id)
           .single();
         if (!handleError) {
@@ -105,6 +105,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           instagramHandleValue = (handleData as any)?.instagram_handle || null;
           optionalFields = {
             creator_category: (handleData as any)?.creator_category ?? null,
+            instagram_profile_photo: (handleData as any)?.instagram_profile_photo ?? null,
             avg_rate_reel: (handleData as any)?.avg_rate_reel ?? null,
             pricing_min: (handleData as any)?.pricing_min ?? null,
             pricing_avg: (handleData as any)?.pricing_avg ?? null,

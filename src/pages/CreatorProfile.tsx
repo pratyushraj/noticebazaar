@@ -1685,9 +1685,9 @@ const ProfileSettings = () => {
                       fileInput.click();
                     }}
                   >
-                    {profile.avatar_url && !profilePhotoError ? (
+                    {(profile.instagram_profile_photo || profile.avatar_url) && !profilePhotoError ? (
                       <img
-                        src={profile.avatar_url}
+                        src={profile.instagram_profile_photo || profile.avatar_url}
                         alt={userData.name}
                         className="w-full h-full object-cover"
                         onError={() => setProfilePhotoError(true)}

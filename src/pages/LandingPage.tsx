@@ -83,27 +83,27 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <main className="relative z-10 pt-32 lg:pt-40 pb-24 space-y-24 lg:space-y-32">
+      <main className="relative z-10 pt-28 lg:pt-40 pb-24 space-y-16 lg:space-y-28">
 
         {/* 1. HERO SECTION */}
-        <section className="px-6 max-w-[1200px] mx-auto relative">
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-emerald-100/40 via-blue-50/40 to-transparent blur-[100px] rounded-full -z-10" />
 
-          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24 w-full">
-            <div className="flex-1 text-center lg:text-left pt-10">
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
+            <div className="flex-1 text-center lg:text-left pt-4 lg:pt-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-8 shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                 <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wide">The Operating System for Creators</span>
               </div>
 
-              <h1 className="text-[52px] md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.05] mb-6 text-slate-900 drop-shadow-sm">
+              <h1 className="text-[42px] md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.05] mb-6 text-slate-900 drop-shadow-sm">
                 Close Brand Deals <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 inline-block mt-2">
                   Without Instagram DMs
                 </span>
               </h1>
 
-              <p className="text-[18px] md:text-[20px] text-slate-600 font-medium mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-[17px] md:text-[20px] text-slate-600 font-medium mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                 Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
               </p>
 
@@ -118,9 +118,9 @@ const LandingPage = () => {
             </div>
 
             {/* Hero Mockup */}
-            <div className="flex-1 w-full max-w-[440px] lg:max-w-none relative">
+            <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
               {/* Floating Creator Profile Badge */}
-              <div className="absolute -left-16 md:-left-24 top-20 bg-white p-4 rounded-3xl shadow-2xl border border-slate-100 z-20 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
+              <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white p-4 rounded-3xl shadow-2xl border border-slate-100 z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-105 transition-transform">
                 <img src={AANYA_IMG} alt="Aanya Kapoor" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
                 <div>
                   <div className="flex items-center gap-1.5 mb-1">
@@ -132,7 +132,7 @@ const LandingPage = () => {
               </div>
 
               {/* Floating Offer Notification */}
-              <div className="absolute -right-8 md:-right-16 top-64 bg-white p-4 rounded-3xl shadow-2xl border border-slate-100 z-30 flex items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-105 transition-transform">
+              <div className="hidden md:flex absolute -right-8 md:-right-16 top-64 bg-white p-4 rounded-3xl shadow-2xl border border-slate-100 z-30 items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-105 transition-transform">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
                   <span className="text-xl">💰</span>
                 </div>
@@ -143,11 +143,11 @@ const LandingPage = () => {
               </div>
 
               {/* Phone Mockup Screen */}
-              <div className="bg-slate-50 rounded-[48px] shadow-2xl border-[14px] border-slate-100 overflow-hidden w-full max-w-[380px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-slate-900/5">
+              <div className="bg-slate-50 rounded-[40px] md:rounded-[48px] shadow-2xl border-[10px] md:border-[14px] border-slate-100 overflow-hidden w-full max-w-[360px] md:max-w-[380px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-slate-900/5">
                 {/* Dynamic Island */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-32 h-7 bg-slate-200 rounded-full z-20" />
 
-                <div className="px-6 pt-16 pb-8 bg-white h-[680px] overflow-y-auto no-scrollbar relative">
+                <div className="px-5 md:px-6 pt-14 md:pt-16 pb-8 bg-white h-auto md:h-[680px] overflow-visible md:overflow-y-auto no-scrollbar relative">
                   {/* Decorative background blur */}
                   <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-blue-50 to-white" />
 
@@ -214,7 +214,7 @@ const LandingPage = () => {
         </section>
 
         {/* Brand Logos Section */}
-        <section className="border-y border-slate-200 bg-white py-12">
+        <section className="border-y border-slate-200 bg-white py-10 md:py-12">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
             <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-8">Example brands creators collaborate with</p>
             <div className="flex justify-center items-center gap-8 sm:gap-12 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden flex-wrap">
@@ -228,19 +228,19 @@ const LandingPage = () => {
         </section>
 
         {/* 2. CREATOR SOCIAL PROOF */}
-        <section id="social-proof" className="px-6 max-w-[1200px] mx-auto">
-          <div className="text-center mb-16">
+        <section id="social-proof" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
+          <div className="text-center mb-10 md:mb-16">
             <h2 className="text-3xl md:text-[40px] font-black tracking-tight text-slate-900 lg:max-w-2xl mx-auto leading-tight">
               Top creators running their business on Armour
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {[
               { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', img: PRIYA_IMG },
               { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', img: ARJUN_IMG },
               { name: 'Neha Verma', category: 'Beauty Creator', loc: 'Bangalore', followers: '28K', price: '₹2K', img: NEHA_IMG },
             ].map((c, i) => (
-              <div key={i} className="bg-white border border-slate-200 p-6 rounded-[28px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <div key={i} className="bg-white border border-slate-200 p-5 md:p-6 rounded-[24px] md:rounded-[28px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="flex items-start gap-4 mb-4">
                   <img src={c.img} alt={c.name} className="w-16 h-16 rounded-2xl object-cover shadow-sm" />
                   <div>
@@ -259,17 +259,17 @@ const LandingPage = () => {
         </section>
 
         {/* 3. YOUR COLLAB LINK */}
-        <section id="how-it-works" className="px-6 max-w-[1200px] mx-auto">
-          <div className="bg-slate-900 rounded-[48px] p-8 md:p-16 lg:p-20 relative overflow-hidden shadow-2xl">
+        <section id="how-it-works" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
+          <div className="bg-slate-900 rounded-[36px] md:rounded-[48px] p-6 md:p-16 lg:p-20 relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px]" />
 
-            <div className="flex flex-col lg:flex-row items-center gap-16 relative z-10">
+            <div className="flex flex-col lg:flex-row items-center gap-10 md:gap-16 relative z-10">
               <div className="flex-1 space-y-8 text-center lg:text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md">
                   <LinkIcon className="w-4 h-4 text-emerald-400" />
                   <span className="text-[13px] font-bold text-white tracking-wide">Your Collab Link</span>
                 </div>
-                <h2 className="text-4xl md:text-[52px] font-black tracking-tight text-white leading-tight">
+                <h2 className="text-3xl md:text-[52px] font-black tracking-tight text-white leading-tight">
                   Add your link to your Instagram bio.
                 </h2>
                 <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
@@ -316,14 +316,14 @@ const LandingPage = () => {
         </section>
 
         {/* 4. MARKETPLACE PACKAGE PREVIEW */}
-        <section id="marketplace" className="px-6 max-w-[1200px] mx-auto">
-          <div className="bg-white rounded-[48px] border border-slate-200 shadow-xl overflow-hidden">
-            <div className="text-center px-8 pt-16 pb-12 bg-slate-50/50 border-b border-slate-100">
+        <section id="marketplace" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
+          <div className="bg-white rounded-[32px] md:rounded-[48px] border border-slate-200 shadow-xl overflow-hidden">
+            <div className="text-center px-6 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12 bg-slate-50/50 border-b border-slate-100">
               <h2 className="text-3xl md:text-[44px] font-black tracking-tight text-slate-900 mb-4">Your custom marketplace</h2>
               <p className="text-lg text-slate-500 font-medium">Let brands shop your services like a high-end catalog.</p>
             </div>
 
-            <div className="p-8 md:p-16 bg-white">
+            <div className="p-5 md:p-16 bg-white">
               <div className="max-w-[1000px] mx-auto">
                 <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-slate-100">
                   <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-slate-100" />
@@ -336,9 +336,9 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="flex md:grid md:grid-cols-3 gap-5 md:gap-8 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
                   {/* Card 1 */}
-                  <div className="bg-white border border-slate-200 rounded-[24px] p-8 hover:shadow-xl transition-shadow flex flex-col group">
+                  <div className="bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 hover:shadow-xl transition-shadow flex flex-col group min-w-[260px] sm:min-w-[280px] md:min-w-0 snap-start">
                     <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🎬</div>
                     <h4 className="font-black text-slate-900 text-xl mb-4">Reel Deal</h4>
                     <ul className="space-y-4 mb-8 flex-1">
@@ -358,7 +358,7 @@ const LandingPage = () => {
                   </div>
 
                   {/* Card 2 - Most Popular */}
-                  <div className="bg-emerald-50/30 border-2 border-emerald-500 rounded-[24px] p-8 relative shadow-2xl shadow-emerald-500/10 scale-105 z-10 flex flex-col">
+                  <div className="bg-emerald-50/30 border-2 border-emerald-500 rounded-[24px] p-6 md:p-8 relative shadow-2xl shadow-emerald-500/10 md:scale-105 z-10 flex flex-col min-w-[260px] sm:min-w-[280px] md:min-w-0 snap-start">
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[12px] font-black uppercase tracking-wider px-4 py-1.5 rounded-full whitespace-nowrap shadow-md">
                       Most Popular
                     </div>
@@ -384,7 +384,7 @@ const LandingPage = () => {
                   </div>
 
                   {/* Card 3 */}
-                  <div className="bg-white border border-slate-200 rounded-[24px] p-8 hover:shadow-xl transition-shadow flex flex-col group">
+                  <div className="bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 hover:shadow-xl transition-shadow flex flex-col group min-w-[260px] sm:min-w-[280px] md:min-w-0 snap-start">
                     <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📦</div>
                     <h4 className="font-black text-slate-900 text-xl mb-4">Product Review</h4>
                     <ul className="space-y-4 mb-8 flex-1">
@@ -409,18 +409,18 @@ const LandingPage = () => {
         </section>
 
         {/* 5. DEAL PROOF SECTION */}
-        <section className="px-6 max-w-[1200px] mx-auto">
-          <div className="text-center mb-16">
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto">
+          <div className="text-center mb-10 md:mb-16">
             <h2 className="text-3xl md:text-[40px] font-black text-slate-900 mb-4">Real deals closed recently</h2>
             <p className="text-lg text-slate-600 font-medium">Creators are consistently booking deals using their Armour profiles.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
             {[
               { name: 'Priya Sharma', img: PRIYA_IMG, brand: 'Myntra', package: '1 Reel + 2 Stories', val: '₹4,500' },
               { name: 'Arjun Patel', img: ARJUN_IMG, brand: 'Boat', package: 'Product Review', val: '₹3,000 + product' },
               { name: 'Neha Verma', img: NEHA_IMG, brand: 'Mamaearth', package: '1 Reel', val: '₹2,000' },
             ].map((d, i) => (
-              <div key={i} className="bg-white border border-slate-200 p-8 rounded-[32px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all">
+              <div key={i} className="bg-white border border-slate-200 p-6 md:p-8 rounded-[28px] md:rounded-[32px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-start">
                 <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
                   <div className="flex items-center gap-3">
                     <img src={d.img} alt={d.name} className="w-12 h-12 rounded-full border border-slate-200 object-cover" />
@@ -448,13 +448,13 @@ const LandingPage = () => {
         </section>
 
         {/* 6. BIG CALL TO ACTION (Dark Premium Section) */}
-        <section className="px-6 pb-24">
-          <div className="max-w-[1200px] mx-auto bg-[#0A0A0A] rounded-[48px] p-12 md:p-24 text-center relative overflow-hidden shadow-2xl border border-slate-800">
+        <section className="px-4 sm:px-6 pb-24">
+          <div className="max-w-[1200px] mx-auto bg-[#0A0A0A] rounded-[36px] md:rounded-[48px] p-8 md:p-24 text-center relative overflow-hidden shadow-2xl border border-slate-800">
             <div className="absolute inset-0 bg-emerald-500/5 mix-blend-overlay"></div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="relative z-10 w-full max-w-3xl mx-auto">
-              <h2 className="text-[44px] md:text-[64px] font-black tracking-tight leading-[1.05] mb-8 text-white">
+              <h2 className="text-[34px] md:text-[64px] font-black tracking-tight leading-[1.05] mb-8 text-white">
                 Turn Your Instagram Into a Deal Pipeline
               </h2>
 

@@ -92,14 +92,14 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         onClick={handleProfileClick}
         className={cn(
           "flex items-center gap-3 w-full p-3 rounded-2xl",
-          "bg-white/5 border border-white/10",
-          "hover:bg-white/[0.08] active:scale-[0.98]",
+          "bg-slate-100 border border-slate-200 dark:bg-white/5 dark:border-white/10",
+          "hover:bg-slate-200 dark:hover:bg-white/[0.08] active:scale-[0.98]",
           "transition-all duration-150 focus:outline-none"
         )}
         whileTap={{ scale: 0.97 }}
       >
         <motion.div style={{ y: avatarSpring }}>
-          <Avatar className="h-11 w-11 ring-2 ring-white/10 shadow-lg">
+          <Avatar className="h-11 w-11 ring-2 ring-slate-200 dark:ring-white/10 shadow-lg">
             <AvatarImage src={userAvatar || DEFAULT_AVATAR_URL} alt={displayName} />
             <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-sm font-bold">
               {userInitials}
@@ -107,10 +107,10 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
           </Avatar>
         </motion.div>
         <div className="flex-1 text-left min-w-0">
-          <p className="text-white text-[15px] font-bold truncate leading-tight">{displayName}</p>
-          <p className="text-white/40 text-[11px] font-medium truncate mt-0.5">@{userHandle}</p>
+          <p className="text-slate-900 dark:text-white text-[15px] font-bold truncate leading-tight">{displayName}</p>
+          <p className="text-slate-500 dark:text-white/40 text-[11px] font-medium truncate mt-0.5">@{userHandle}</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-white/30 flex-shrink-0" />
+        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-white/30 flex-shrink-0" />
       </motion.button>
     </div>
   );
@@ -125,8 +125,8 @@ interface DrawerSectionProps {
 function DrawerSection({ title, children, showSeparator = true }: DrawerSectionProps) {
   return (
     <div className="mt-1">
-      {showSeparator && <div className="h-[1px] w-full bg-white/5 my-4" />}
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-2 px-1">
+      {showSeparator && <div className="h-[1px] w-full bg-slate-200 dark:bg-white/5 my-4" />}
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/30 mb-2 px-1">
         {title}
       </p>
       <div className="space-y-1.5">
@@ -162,7 +162,7 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
         "transition-all duration-150 focus:outline-none",
         isActive
           ? "bg-blue-600 shadow-lg shadow-blue-600/25 text-white"
-          : "bg-white/5 border border-white/[0.06] hover:bg-white/[0.09] text-white/75 hover:text-white"
+          : "bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 hover:text-slate-900 dark:bg-white/5 dark:border-white/[0.06] dark:hover:bg-white/[0.09] dark:text-white/75 dark:hover:text-white"
       )}
     >
       {isActive && (
@@ -170,11 +170,11 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
       )}
       <Icon className={cn(
         "w-4 h-4 flex-shrink-0 mr-3 relative z-10 transition-colors",
-        isActive ? "text-white" : "text-white/50 group-hover:text-white/80"
+        isActive ? "text-white" : "text-slate-500 group-hover:text-slate-700 dark:text-white/50 dark:group-hover:text-white/80"
       )} />
       <span className={cn(
         "text-[13px] font-semibold flex-1 text-left relative z-10 tracking-tight",
-        isActive ? "text-white" : "text-white/80"
+        isActive ? "text-white" : "text-slate-800 dark:text-white/80"
       )}>
         {item.label}
       </span>
@@ -205,9 +205,9 @@ function LogoutButton({ onClick }: { onClick: () => void }) {
       whileTap={{ scale: 0.97 }}
       className={cn(
         "w-full flex items-center gap-3 rounded-2xl px-4 py-3",
-        "bg-red-500/8 border border-red-400/15",
-        "hover:bg-red-500/15 hover:border-red-400/25",
-        "text-red-400 transition-all duration-150 focus:outline-none"
+        "bg-red-50 border border-red-200 dark:bg-red-500/8 dark:border-red-400/15",
+        "hover:bg-red-100 dark:hover:bg-red-500/15 hover:border-red-300 dark:hover:border-red-400/25",
+        "text-red-600 dark:text-red-400 transition-all duration-150 focus:outline-none"
       )}
     >
       <LogOut className="w-4 h-4 relative z-10 flex-shrink-0" />
@@ -348,9 +348,9 @@ export default function PremiumDrawer({
             className={cn(
               "fixed top-0 left-0 h-full",
               "w-[82vw] max-w-[300px]",
-              "bg-[#0B0F14] dark:bg-[#0B0F14] light:bg-white",   // Theme-aware dashboard background
-              "border-r border-white/8 dark:border-white/8 light:border-black/5",
-              "shadow-[4px_0_60px_rgba(0,0,0,0.6)]",
+              "bg-white dark:bg-[#0B0F14]",
+              "border-r border-slate-200 dark:border-white/8",
+              "shadow-[4px_0_40px_rgba(15,23,42,0.18)] dark:shadow-[4px_0_60px_rgba(0,0,0,0.6)]",
               "overflow-y-auto",
               "px-4 py-6",
               "flex flex-col gap-0",
@@ -363,7 +363,7 @@ export default function PremiumDrawer({
           >
 
             {/* Ambient gradient top */}
-            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-600/10 via-indigo-600/5 to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-100 via-indigo-50 to-transparent dark:from-blue-600/10 dark:via-indigo-600/5 pointer-events-none" />
 
             {/* Logo + App Label */}
             <div className="flex items-center gap-3 px-1 mb-6 relative z-10">
@@ -371,10 +371,10 @@ export default function PremiumDrawer({
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-[13px] font-black tracking-tight uppercase text-white leading-none">
+                <p className="text-[13px] font-black tracking-tight uppercase text-slate-900 dark:text-white leading-none">
                   Creator<span className="text-blue-500">Armour</span>
                 </p>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mt-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/30 mt-0.5">
                   Console
                 </p>
               </div>
@@ -434,7 +434,7 @@ export default function PremiumDrawer({
             </div>
 
             {/* Logout */}
-            <div className="relative z-10 mt-4 pt-4 border-t border-white/5 pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]">
+            <div className="relative z-10 mt-4 pt-4 border-t border-slate-200 dark:border-white/5 pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]">
               <LogoutButton onClick={handleLogout} />
             </div>
 

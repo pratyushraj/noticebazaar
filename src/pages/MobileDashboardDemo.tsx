@@ -197,9 +197,13 @@ const MobileDashboardDemo = ({
     const [creatorOTP, setCreatorOTP] = useState('');
     const [creatorSigningStep, setCreatorSigningStep] = useState<'send' | 'verify'>('send');
     const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
+    const [liveCollabProfile, setLiveCollabProfile] = useState<{ name?: string | null; profile_photo?: string | null } | null>(null);
+    const [isCollabLinkCopied, setIsCollabLinkCopied] = useState(false);
 
-    const username = profile?.instagram_handle?.replace('@', '') || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
-    const avatarUrl = profile?.avatar_url || 'https://i.pravatar.cc/150?img=47';
+    const instagramHandle = profile?.instagram_handle?.replace('@', '') || profile?.username || '';
+    const username = instagramHandle || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
+    const avatarUrl = liveCollabProfile?.profile_photo || profile?.instagram_profile_photo || profile?.avatar_url || 'https://i.pravatar.cc/150?img=47';
+    const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
     const activeDealsCount = (brandDeals || []).length;
     const pendingOffersCount = (collabRequests || []).length;
 
@@ -218,6 +222,36 @@ const MobileDashboardDemo = ({
             return sum + (isCurrentMonth ? (deal.deal_amount || 0) : 0);
         }, 0);
     }, [stats?.earnings, brandDeals]);
+
+    useEffect(() => {
+        const handle = (instagramHandle || '').trim();
+        if (!handle) {
+            setLiveCollabProfile(null);
+            return;
+        }
+
+        const controller = new AbortController();
+        const loadLiveCollabProfile = async () => {
+            try {
+                const response = await fetch(`${getApiBaseUrl()}/api/collab/${encodeURIComponent(handle)}`, {
+                    signal: controller.signal,
+                });
+                if (!response.ok) return;
+                const data = await response.json().catch(() => null);
+                const creator = data?.creator;
+                if (!creator) return;
+                setLiveCollabProfile({
+                    name: creator.name || null,
+                    profile_photo: creator.profile_photo || null,
+                });
+            } catch {
+                // Ignore transient failures; fallback profile data remains visible.
+            }
+        };
+
+        loadLiveCollabProfile();
+        return () => controller.abort();
+    }, [instagramHandle]);
 
     const yearlyRevenue = React.useMemo(() => {
         if (stats?.earnings > 0 && stats?.timeframe === 'year') return stats.earnings;
@@ -391,6 +425,8 @@ const MobileDashboardDemo = ({
             await navigator.clipboard.writeText(`creatorarmour.com/${username}`);
             toast.success("Link copied to clipboard!");
             triggerHaptic(HapticPatterns.success);
+            setIsCollabLinkCopied(true);
+            window.setTimeout(() => setIsCollabLinkCopied(false), 1800);
         } catch (e) {
             toast.error("Failed to copy link");
         }
@@ -1343,7 +1379,7 @@ const MobileDashboardDemo = ({
                                             <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-emerald-600 dark:text-emerald-400">Active</span>
                                         </div>
                                     </div>
-                                    <p className={cn('text-[14px] font-medium mt-0.5', secondaryTextColor)}>
+                                    <p className={cn('text-[15px] font-semibold mt-0', isDark ? "text-white/70" : "text-slate-600")}>
                                         @{username}
                                     </p>
                                 </motion.div>
@@ -1358,22 +1394,22 @@ const MobileDashboardDemo = ({
                                             initial={{ opacity: 0, y: 15 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             className={cn(
-                                                "p-6 rounded-[2.5rem] border relative overflow-hidden",
+                                                "p-5 md:p-6 rounded-[2.5rem] border relative overflow-hidden",
                                                 isDark ? "bg-gradient-to-br from-blue-900/30 via-[#1C1C1E] to-[#1C1C1E] border-[#2C2C2E]" : "bg-gradient-to-br from-blue-50/80 via-white to-white border-blue-100 shadow-xl shadow-blue-500/5"
                                             )}
                                         >
                                             <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
                                                 <Zap className="w-20 h-20 text-blue-500" />
                                             </div>
-                                            <h2 className={cn("text-[22px] font-black mb-1.5 tracking-tight font-outfit", textColor)}>Your Collaboration Page Is Live</h2>
-                                            <p className={cn("text-[13px] font-medium mb-6 leading-relaxed opacity-70", textColor)}>
+                                            <h2 className={cn("text-[22px] font-black mb-1 tracking-tight font-outfit", textColor)}>Your Collaboration Page Is Live</h2>
+                                            <p className={cn("text-[13px] font-medium mb-5 leading-relaxed opacity-70", textColor)}>
                                                 Brands can now send you structured collaboration offers.<br />
                                                 Share your Collab Link to start receiving deals.
                                             </p>
 
                                             {/* Beautiful Collab Link Card */}
-                                            <div className={cn("p-4 rounded-3xl border mb-6", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
-                                                <div className="flex items-center justify-between mb-3">
+                                            <div className={cn("p-3.5 rounded-3xl border mb-4", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                                <div className="flex items-center justify-between mb-2.5">
                                                     <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Your Collab Link</p>
                                                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
@@ -1381,22 +1417,23 @@ const MobileDashboardDemo = ({
                                                     </div>
                                                 </div>
 
-                                                <div className={cn("px-4 py-3.5 rounded-2xl font-mono text-[13px] border mb-3 overflow-x-auto whitespace-nowrap", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-800")}>
+                                                <div className={cn("px-4 py-3.5 rounded-2xl font-mono text-[13px] border mb-2.5 overflow-x-auto whitespace-nowrap", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-800")}>
                                                     creatorarmour.com/{profile?.handle || username || 'creator'}
                                                 </div>
 
-                                                <div className="flex gap-2.5">
+                                                <div className="flex gap-2">
                                                     <button
                                                         onClick={() => {
-                                                            triggerHaptic();
-                                                            toast.success('Collab Link copied', {
-                                                                description: 'Add it to your Instagram bio to start receiving offers.'
-                                                            });
                                                             handleCopyStorefront();
                                                         }}
-                                                        className={cn("flex-1 h-12 rounded-2xl flex items-center justify-center border font-black text-white text-[12px] shadow-lg active:scale-95 transition-all shadow-blue-500/20 whitespace-nowrap", isDark ? "bg-blue-600 border-blue-500" : "bg-blue-600 border-blue-500")}
+                                                        className={cn(
+                                                            "flex-1 h-12 rounded-2xl flex items-center justify-center border font-black text-white text-[12px] shadow-lg active:scale-95 transition-all whitespace-nowrap",
+                                                            isCollabLinkCopied
+                                                                ? "bg-emerald-600 border-emerald-500 shadow-emerald-500/20"
+                                                                : "bg-blue-600 border-blue-500 shadow-blue-500/20"
+                                                        )}
                                                     >
-                                                        Copy Link
+                                                        {isCollabLinkCopied ? 'Copied' : 'Copy Link'}
                                                     </button>
                                                     <button
                                                         onClick={() => window.open(`/${profile?.handle || username || 'creator'}`, '_blank')}
@@ -1408,7 +1445,7 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             {/* Where to Share Guide */}
-                                            <div className={cn("p-4 rounded-3xl border mb-2", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                            <div className={cn("p-3.5 rounded-3xl border mb-1", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
                                                 <p className={cn("text-[11px] font-bold mb-3", textColor)}>Where to share your Collab Link</p>
                                                 <div className="grid grid-cols-2 gap-2.5 mb-4">
                                                     <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Instagram Bio</span></div>
@@ -2121,7 +2158,7 @@ const MobileDashboardDemo = ({
                                                         </button>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>{profile?.full_name || 'Pratyush'}</h2>
+                                                        <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>{displayName}</h2>
                                                         <p className={cn("text-[14px] opacity-40 font-medium mb-1.5", textColor)}> @{username || 'theblooming.miss'}</p>
                                                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
                                                             <ShieldCheck className="w-3 h-3 text-blue-500" />
