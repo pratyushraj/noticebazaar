@@ -2208,11 +2208,11 @@ const CollabLinkLanding = () => {
                               Most brands choose this package for higher engagement
                             </p>
                           )}
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[18px] lg:text-[34px] font-black text-[#0FA47F] leading-tight tracking-tight">
+                          <div className="flex flex-col gap-2.5">
+                            <p className="text-[18px] xl:text-[34px] font-black text-[#0FA47F] leading-tight tracking-tight">
                               {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
                             </p>
-                            <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
+                            <div className="w-full px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center justify-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
                               {selectedTemplateId === template.id ? (
                                 <>
                                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
