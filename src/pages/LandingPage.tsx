@@ -34,7 +34,15 @@ const LandingPage = () => {
   const canonicalUrl = 'https://creatorarmour.com/';
   const seoTitle = 'Creator Armour - Close Brand Deals Without Instagram DMs';
   const seoDescription = 'Creator Armour gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
-  const seoKeywords = ['creator collab link', 'brand deal management'];
+  const seoKeywords = [
+    'creator collab link',
+    'brand deal management',
+    'influencer collaboration platform',
+    'creator marketplace india',
+    'instagram creator brand deals',
+    'creator portfolio for brands',
+    'structured brand offers for creators',
+  ];
 
   useEffect(() => {
     if (loading) return;

@@ -1,11 +1,11 @@
 {
-  "name": "CreatorArmour - Legal & Tax Services for Creators",
-  "short_name": "CreatorArmour",
-  "description": "Get dedicated legal & CA services for content creators. Contract review, payment recovery, tax filing & content protection.",
+  "name": "Creator Armour - Creator Collaboration Platform",
+  "short_name": "Creator Armour",
+  "description": "Close brand deals without Instagram DMs. Share a creator collab link, list packages, and receive structured brand offers.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0B0F1A",
-  "theme_color": "#6b46c1",
+  "background_color": "#FFFFFF",
+  "theme_color": "#10B981",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -42,4 +42,3 @@
     }
   ]
 }
-

@@ -28,7 +28,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   type = 'website',
   publishedTime,
   modifiedTime,
-  author = 'CreatorArmour',
+  author = 'Creator Armour',
   canonicalUrl,
   robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   imageAlt,
@@ -93,7 +93,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       updateMetaTag('og:image:alt', imageAlt);
     }
     updateMetaTag('og:url', currentUrl);
-    updateMetaTag('og:site_name', 'CreatorArmour');
+    updateMetaTag('og:site_name', 'Creator Armour');
     updateMetaTag('og:locale', locale);
 
     // Article-specific OG tags
