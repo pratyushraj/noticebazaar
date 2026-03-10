@@ -4,6 +4,8 @@ import React, { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';
+import CreatorAppModeGate from '@/components/pwa/CreatorAppModeGate';
+import { useSession } from '@/contexts/SessionContext';
 
 interface ProtectedLayoutProps {
   children: ReactNode;
@@ -12,8 +14,12 @@ interface ProtectedLayoutProps {
 
 const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
   const location = useLocation();
+  const { profile } = useSession();
   const isAdvisorRoute = location.pathname.startsWith('/advisor-dashboard');
   const isLawyerRoute = location.pathname.startsWith('/lawyer-dashboard');
+  const creatorAllowed = !!allowedRoles?.includes('creator');
+  const isCreatorProfile = profile?.role === 'creator' || (!profile?.role && creatorAllowed);
+  const enforceAppMode = creatorAllowed && isCreatorProfile;
 
   // Standalone dashboards (advisor/lawyer) don't need Layout wrapper
   if (isAdvisorRoute || isLawyerRoute) {
@@ -26,9 +32,11 @@ const ProtectedLayout = ({ children, allowedRoles }: ProtectedLayoutProps) => {
 
   return (
     <ProtectedRoute allowedRoles={allowedRoles}>
-      <Layout>
-        {children}
-      </Layout>
+      <CreatorAppModeGate enabled={enforceAppMode}>
+        <Layout>
+          {children}
+        </Layout>
+      </CreatorAppModeGate>
     </ProtectedRoute>
   );
 };
