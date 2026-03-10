@@ -39,7 +39,6 @@ interface OnboardingData {
   reelRate: string;
   dealType: DealType;
   barterValueMin: string;
-  barterValueMax: string;
 }
 
 const CreatorOnboarding = () => {
@@ -69,14 +68,13 @@ const CreatorOnboarding = () => {
           reelRate: '',
           dealType: 'paid',
           barterValueMin: '',
-          barterValueMax: '',
           ...parsed
         };
       } catch (e) {
         console.error('Error parsing saved onboarding data', e);
       }
     }
-    return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '', barterValueMax: '' };
+    return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '' };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
@@ -241,7 +239,6 @@ const CreatorOnboarding = () => {
   const handleReelRateNext = () => {
     const parsed = Number.parseFloat(onboardingData.reelRate);
     const parsedBarterMin = Number.parseFloat(onboardingData.barterValueMin);
-    const parsedBarterMax = Number.parseFloat(onboardingData.barterValueMax);
     const requiresPaid = onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all';
     const requiresBarter = onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all';
 
@@ -251,10 +248,6 @@ const CreatorOnboarding = () => {
     }
     if (requiresBarter && (!Number.isFinite(parsedBarterMin) || parsedBarterMin <= 0)) {
       toast.error('Please enter minimum barter value');
-      return;
-    }
-    if (onboardingData.barterValueMax.trim().length > 0 && (!Number.isFinite(parsedBarterMax) || parsedBarterMax < parsedBarterMin)) {
-      toast.error('Maximum barter value should be greater than or equal to minimum');
       return;
     }
 
@@ -341,7 +334,7 @@ const CreatorOnboarding = () => {
             ? parseFloat(onboardingData.barterValueMin)
             : null,
           suggested_barter_value_max: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all')
-            ? (onboardingData.barterValueMax ? parseFloat(onboardingData.barterValueMax) : (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null))
+            ? (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null)
             : null,
           ...(collabUsername && {
             instagram_handle: collabUsername,
@@ -372,7 +365,7 @@ const CreatorOnboarding = () => {
               ? parseFloat(onboardingData.barterValueMin)
               : null,
             suggested_barter_value_max: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all')
-              ? (onboardingData.barterValueMax ? parseFloat(onboardingData.barterValueMax) : (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null))
+              ? (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null)
               : null,
             ...(collabUsername && {
               instagram_handle: collabUsername,
@@ -567,7 +560,6 @@ const CreatorOnboarding = () => {
                   reelRate={onboardingData.reelRate}
                   dealType={onboardingData.dealType}
                   barterValueMin={onboardingData.barterValueMin}
-                  barterValueMax={onboardingData.barterValueMax}
                   suggestedRate={suggestedRate}
                   onRateChange={(rate) =>
                     setOnboardingData((prev) => ({ ...prev, reelRate: rate }))
@@ -577,9 +569,6 @@ const CreatorOnboarding = () => {
                   }
                   onBarterValueMinChange={(barterValueMin) =>
                     setOnboardingData((prev) => ({ ...prev, barterValueMin }))
-                  }
-                  onBarterValueMaxChange={(barterValueMax) =>
-                    setOnboardingData((prev) => ({ ...prev, barterValueMax }))
                   }
                   onNext={handleReelRateNext}
                   onBack={() => setSetupStep('niches')}

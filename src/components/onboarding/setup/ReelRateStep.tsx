@@ -13,12 +13,10 @@ interface ReelRateStepProps {
     reelRate: string;
     dealType: DealType;
     barterValueMin: string;
-    barterValueMax: string;
     suggestedRate?: number;
     onRateChange: (rate: string) => void;
     onDealTypeChange: (type: DealType) => void;
     onBarterValueMinChange: (value: string) => void;
-    onBarterValueMaxChange: (value: string) => void;
     onNext: () => void;
     onBack: () => void;
     onSkip?: () => void;
@@ -33,19 +31,16 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
     reelRate,
     dealType,
     barterValueMin,
-    barterValueMax,
     suggestedRate,
     onRateChange,
     onDealTypeChange,
     onBarterValueMinChange,
-    onBarterValueMaxChange,
     onNext,
     onBack,
     onSkip,
 }) => {
     const parsedRate = Number.parseFloat(reelRate);
     const parsedBarterMin = Number.parseFloat(barterValueMin);
-    const parsedBarterMax = Number.parseFloat(barterValueMax);
     const effectiveRate = Number.isFinite(parsedRate) && parsedRate > 0
         ? Math.round(parsedRate)
         : (suggestedRate || 0);
@@ -54,12 +49,11 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
     const suggestedBarterMin = effectiveRate > 0 ? Math.round(effectiveRate * 0.9) : 0;
     const hasValidRate = Number.isFinite(parsedRate) && parsedRate > 0;
     const hasValidBarterMin = Number.isFinite(parsedBarterMin) && parsedBarterMin > 0;
-    const hasValidBarterMax = barterValueMax.trim().length === 0 || (Number.isFinite(parsedBarterMax) && parsedBarterMax >= parsedBarterMin);
     const isValidRate =
         (dealType === 'paid' && hasValidRate) ||
-        (dealType === 'barter' && hasValidBarterMin && hasValidBarterMax) ||
-        (dealType === 'hybrid' && hasValidRate && hasValidBarterMin && hasValidBarterMax) ||
-        (dealType === 'all' && hasValidRate && hasValidBarterMin && hasValidBarterMax);
+        (dealType === 'barter' && hasValidBarterMin) ||
+        (dealType === 'hybrid' && hasValidRate && hasValidBarterMin) ||
+        (dealType === 'all' && hasValidRate && hasValidBarterMin);
 
     return (
         <>
@@ -135,30 +129,19 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                     )}
 
                     {(dealType === 'barter' || dealType === 'hybrid' || dealType === 'all') && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                        <div className="grid grid-cols-1 gap-3 mb-6">
                             <div className="relative">
                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/50 text-lg font-medium">₹</div>
                                 <input
                                     type="number"
                                     value={barterValueMin}
                                     onChange={(e) => onBarterValueMinChange(e.target.value)}
-                                    placeholder="Min product value"
+                                    placeholder="Product value"
                                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
-                                    aria-label="Enter minimum barter value"
+                                    aria-label="Enter barter product value"
                                 />
                             </div>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/50 text-lg font-medium">₹</div>
-                                <input
-                                    type="number"
-                                    value={barterValueMax}
-                                    onChange={(e) => onBarterValueMaxChange(e.target.value)}
-                                    placeholder="Max product value (optional)"
-                                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
-                                    aria-label="Enter maximum barter value"
-                                />
-                            </div>
-                            <p className="md:col-span-2 text-xs text-slate-400 dark:text-white/60">
+                            <p className="text-xs text-slate-400 dark:text-white/60">
                                 Creator reviews value based on audience fit and deliverables.
                             </p>
                         </div>
