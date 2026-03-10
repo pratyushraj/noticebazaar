@@ -46,7 +46,15 @@ type AnalyticsEvent =
   // Payment Funnel (Paid)
   | 'payment_initiated'
   | 'payment_delayed'
-  | 'payment_released';
+  | 'payment_released'
+  // PWA install funnel
+  | 'pwa_install_banner_shown'
+  | 'pwa_install_cta_clicked'
+  | 'pwa_install_prompt_accepted'
+  | 'pwa_install_prompt_dismissed'
+  | 'pwa_app_installed'
+  | 'pwa_notification_nudge_shown'
+  | 'pwa_notification_enabled';
 
 /** Fire events once per deal. Attach deal_id, creator_id, collab_type where applicable. Contract/brand events (contract_generated, contract_viewed_by_brand, contract_signed_by_brand, contract_not_signed_48h, payment_*) are typically fired from the backend. */
 
@@ -166,4 +174,3 @@ export function setUserProperties(properties: Record<string, any>): void {
     }
   }
 }
-

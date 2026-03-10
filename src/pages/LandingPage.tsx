@@ -6,7 +6,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import {
   ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink
+  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter
 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -391,27 +391,29 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* 6. BIG CALL TO ACTION */}
-        <section className="px-4 sm:px-6 pb-24">
-          <div className="max-w-[1200px] mx-auto bg-white rounded-[36px] md:rounded-[48px] p-8 md:p-24 text-center relative overflow-hidden shadow-2xl border border-emerald-100">
-            <div className="absolute inset-0 bg-emerald-500/[0.03]"></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+        {/* 6. PRE-FOOTER CTA */}
+        <section className="px-4 sm:px-6 pb-10">
+          <div
+            className="max-w-[1200px] mx-auto rounded-[24px] px-6 py-12 md:px-10 md:py-14 text-center text-white shadow-[0_28px_70px_rgba(11,59,47,0.36)] border border-emerald-300/25 relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg,#0e3b2f,#1fb97a)' }}
+          >
+            <div className="absolute -top-32 -right-20 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -left-20 w-72 h-72 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 w-full max-w-3xl mx-auto">
-              <h2 className="text-[34px] md:text-[64px] font-black tracking-tight leading-[1.05] mb-8 text-slate-900">
-                Turn Your Instagram Into a Deal Pipeline
+            <div className="relative z-10 max-w-3xl mx-auto">
+              <h2 className="text-[32px] md:text-[52px] font-black tracking-tight leading-[1.05] mb-4">
+                Turn your Instagram into a deal pipeline
               </h2>
-
-              <p className="text-xl font-medium text-slate-600 mb-12 max-w-2xl mx-auto">
-                Join creators already receiving brand collaboration offers through Creator Armour. Setup takes less than 2 minutes.
+              <p className="text-base md:text-xl font-medium text-emerald-50/90 mb-8 md:mb-10 leading-relaxed">
+                Stop negotiating in DMs. Create your collab link and receive structured brand offers.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/signup" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-10 py-5 rounded-full font-black text-[16px] shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
-                  Create Your Collab Link <ArrowRight className="w-5 h-5" />
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
+                <Link to="/signup" className="w-full sm:w-auto bg-white text-emerald-800 hover:bg-emerald-50 px-8 py-4 rounded-full font-black text-[15px] shadow-xl transition-all flex items-center justify-center gap-2">
+                  Create your collab link <ArrowRight className="w-4.5 h-4.5" />
                 </Link>
-                <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-10 py-5 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2">
-                  View Demo Creator Page <ExternalLink className="w-4 h-4" />
+                <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/35 text-white px-8 py-4 rounded-full font-black text-[15px] transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
+                  View demo creator page <ExternalLink className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -421,28 +423,126 @@ const LandingPage = () => {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-slate-200 bg-white pt-16 pb-8 px-6">
-        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-              <ShieldCheck className="w-5 h-5 text-white" />
+      <footer className="border-t border-slate-200 bg-[#f7f9fb] pt-[60px] pb-[40px] px-6">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12">
+            <div className="md:col-span-4">
+              <Link to="/" className="flex items-center gap-2 group">
+                <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-[20px] font-black tracking-tight text-slate-900">CreatorArmour</h3>
+              </Link>
+              <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-slate-600">
+                Close brand deals without Instagram DMs.
+              </p>
+              <div className="mt-5 flex items-center gap-2">
+                <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="CreatorArmour Instagram">
+                  <Instagram className="w-4.5 h-4.5" />
+                </a>
+                <a href="https://x.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="CreatorArmour X">
+                  <Twitter className="w-4.5 h-4.5" />
+                </a>
+                <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="CreatorArmour LinkedIn">
+                  <Linkedin className="w-4.5 h-4.5" />
+                </a>
+              </div>
             </div>
-            <h1 className="text-[18px] font-black tracking-tight text-slate-900">
-              CreatorArmour
-            </h1>
-          </Link>
 
-          <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-            <Link to="/" className="text-sm font-bold text-slate-500 hover:text-slate-900">Product</Link>
-            <Link to="/" className="text-sm font-bold text-slate-500 hover:text-slate-900">Pricing</Link>
-            <Link to="/" className="text-sm font-bold text-slate-500 hover:text-slate-900">Help</Link>
-            <Link to="/terms-of-service" className="text-sm font-bold text-slate-500 hover:text-slate-900">Terms</Link>
-            <Link to="/privacy-policy" className="text-sm font-bold text-slate-500 hover:text-slate-900">Privacy</Link>
+            <div className="hidden md:grid md:col-span-8 grid-cols-4 gap-8">
+              <div className="space-y-3">
+                <p className="text-sm font-black text-slate-900">Product</p>
+                <div className="space-y-2.5 text-sm font-medium text-slate-600">
+                  <Link to="/signup" className="block hover:text-emerald-700">Create Collab Link</Link>
+                  <Link to="/discover" className="block hover:text-emerald-700">Creator Marketplace</Link>
+                  <Link to="/collab-requests" className="block hover:text-emerald-700">Brand Offers</Link>
+                  <Link to="/plan/growth" className="block hover:text-emerald-700">Pricing</Link>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm font-black text-slate-900">Creators</p>
+                <div className="space-y-2.5 text-sm font-medium text-slate-600">
+                  <a href="#how-it-works" className="block hover:text-emerald-700">How it works</a>
+                  <a href="#marketplace" className="block hover:text-emerald-700">Creator packages</a>
+                  <button onClick={() => navigate('/pratyush')} className="block text-left hover:text-emerald-700">Examples</button>
+                  <Link to="/creator-dashboard" className="block hover:text-emerald-700">Creator dashboard</Link>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm font-black text-slate-900">Resources</p>
+                <div className="space-y-2.5 text-sm font-medium text-slate-600">
+                  <Link to="/blog" className="block hover:text-emerald-700">Blog</Link>
+                  <a href="mailto:support@creatorarmour.com" className="block hover:text-emerald-700">Help Center</a>
+                  <Link to="/free-influencer-contract" className="block hover:text-emerald-700">Guides for creators</Link>
+                  <Link to="/rate-calculator" className="block hover:text-emerald-700">Influencer pricing guide</Link>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm font-black text-slate-900">Company</p>
+                <div className="space-y-2.5 text-sm font-medium text-slate-600">
+                  <Link to="/about" className="block hover:text-emerald-700">About</Link>
+                  <a href="mailto:support@creatorarmour.com" className="block hover:text-emerald-700">Contact</a>
+                  <Link to="/privacy-policy" className="block hover:text-emerald-700">Privacy</Link>
+                  <Link to="/terms-of-service" className="block hover:text-emerald-700">Terms</Link>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="max-w-[1200px] mx-auto text-center border-t border-slate-100 pt-8">
-          <p className="text-xs font-bold text-slate-400">© Creator Armour. All rights reserved.</p>
+          <div className="md:hidden mt-7 space-y-2">
+            <details className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-slate-900 flex items-center justify-between">Product <span className="text-slate-400">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
+                <Link to="/signup" className="block">Create Collab Link</Link>
+                <Link to="/discover" className="block">Creator Marketplace</Link>
+                <Link to="/collab-requests" className="block">Brand Offers</Link>
+                <Link to="/plan/growth" className="block">Pricing</Link>
+              </div>
+            </details>
+            <details className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-slate-900 flex items-center justify-between">Creators <span className="text-slate-400">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
+                <a href="#how-it-works" className="block">How it works</a>
+                <a href="#marketplace" className="block">Creator packages</a>
+                <button onClick={() => navigate('/pratyush')} className="block text-left">Examples</button>
+                <Link to="/creator-dashboard" className="block">Creator dashboard</Link>
+              </div>
+            </details>
+            <details className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-slate-900 flex items-center justify-between">Resources <span className="text-slate-400">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
+                <Link to="/blog" className="block">Blog</Link>
+                <a href="mailto:support@creatorarmour.com" className="block">Help Center</a>
+                <Link to="/free-influencer-contract" className="block">Guides for creators</Link>
+                <Link to="/rate-calculator" className="block">Influencer pricing guide</Link>
+              </div>
+            </details>
+            <details className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
+              <summary className="list-none cursor-pointer text-sm font-black text-slate-900 flex items-center justify-between">Company <span className="text-slate-400">▼</span></summary>
+              <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
+                <Link to="/about" className="block">About</Link>
+                <a href="mailto:support@creatorarmour.com" className="block">Contact</a>
+                <Link to="/privacy-policy" className="block">Privacy</Link>
+                <Link to="/terms-of-service" className="block">Terms</Link>
+              </div>
+            </details>
+          </div>
+
+          <div className="mt-10 border-t border-slate-200 pt-6">
+            <p className="text-sm font-medium text-slate-600 text-center">
+              <span className="font-semibold text-emerald-700">50+ creators</span> already using CreatorArmour to collaborate professionally with brands.
+            </p>
+          </div>
+
+          <div className="mt-6 border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+            <p>© 2026 CreatorArmour</p>
+            <p className="font-medium">Made for creators</p>
+            <div className="flex items-center gap-3">
+              <Link to="/privacy-policy" className="hover:text-slate-700">Privacy</Link>
+              <span className="text-slate-300">•</span>
+              <Link to="/terms-of-service" className="hover:text-slate-700">Terms</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

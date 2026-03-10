@@ -213,7 +213,7 @@ export async function sendProfileCompletionReminderEmail(data: CreatorOnboarding
  * Goal: Encourage creators to share their link.
  */
 export async function sendCollabLinkLiveEmail(data: CreatorOnboardingData) {
-    const linkUrl = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/collab/${data.username}`;
+    const linkUrl = `${process.env.FRONTEND_URL || 'https://creatorarmour.com'}/collab/${data.username}?openApp=1&source=email`;
 
     const emailContent = `
     <tr>

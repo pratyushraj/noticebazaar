@@ -119,6 +119,7 @@ import PushTestLab from "./pages/PushTestLab";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
+import AddToHomeScreen from "./components/mobile/AddToHomeScreen";
 
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const DealDetailPage = lazy(() => import("./pages/DealDetailPage"));
@@ -449,6 +450,7 @@ const App = () => {
                         <Route path="/maintenance" element={<MaintenancePage />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
+                      <AddToHomeScreen />
                     </SidebarProvider>
                   </SessionContextProvider>
                 </NetworkStatusWrapper>

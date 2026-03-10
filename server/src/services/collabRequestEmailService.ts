@@ -658,7 +658,7 @@ export async function sendCollabRequestCreatorNotificationEmail(
   creatorId?: string  // Optional for backward compatibility, but needed for WhatsApp
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-  const dashboardLink = `${frontendUrl}/creator-dashboard`;
+  const dashboardLink = `${frontendUrl}/creator-dashboard?openApp=1&source=email`;
 
   // Format collaboration type
   const collabTypeText = data.collabType === 'paid'
@@ -1105,7 +1105,7 @@ export async function sendCollabLeadCapturedAlertEmail(
     <tr><td style="padding: 6px 0; font-weight: 600;">Lead ID</td><td style="padding: 6px 0; font-family: monospace;">${data.leadId}</td></tr>
   </table>
   <p style="margin: 0 0 18px; font-size: 14px; color: #4b5563;">${(data.campaignDescription || '').slice(0, 220)}</p>
-  <a href="${frontendUrl}/collab/${encodeURIComponent(data.targetHandle)}" style="display:inline-block; background:#4f46e5; color:#fff; text-decoration:none; padding:10px 16px; border-radius:8px; font-weight:600;">Open Public Link</a>
+  <a href="${frontendUrl}/collab/${encodeURIComponent(data.targetHandle)}?openApp=1&source=email" style="display:inline-block; background:#4f46e5; color:#fff; text-decoration:none; padding:10px 16px; border-radius:8px; font-weight:600;">Open in CreatorArmour App</a>
 </body>
 </html>`;
 
