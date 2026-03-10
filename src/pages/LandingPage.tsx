@@ -6,10 +6,11 @@ import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import {
   ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter
+  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Download, Share, PlusSquare
 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=500&fit=crop";
 const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&h=500&fit=crop";
@@ -22,6 +23,10 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [showInstallSection, setShowInstallSection] = useState(false);
+  const [isIOSInstallFlow, setIsIOSInstallFlow] = useState(false);
+  const [showIOSInstallSteps, setShowIOSInstallSteps] = useState(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,6 +51,55 @@ const LandingPage = () => {
       }
     }
   }, [session, profile, loading, navigate]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent) || window.innerWidth < 768;
+    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+    const isSafari = /Safari/i.test(window.navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(window.navigator.userAgent);
+
+    if (!isStandalone && isMobile) {
+      setShowInstallSection(true);
+      setIsIOSInstallFlow(isIOS && isSafari);
+    } else {
+      setShowInstallSection(false);
+      setIsIOSInstallFlow(false);
+    }
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setDeferredInstallPrompt(event);
+      setShowInstallSection(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    };
+  }, []);
+
+  const handleInstallSectionClick = async () => {
+    if (!deferredInstallPrompt) {
+      if (isIOSInstallFlow) {
+        setShowIOSInstallSteps(true);
+      } else {
+        toast.message('Install from browser menu', {
+          description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
+        });
+      }
+      return;
+    }
+
+    try {
+      await deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+    } catch {
+      toast.error('Install prompt not available right now');
+    } finally {
+      setDeferredInstallPrompt(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white sm:bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
@@ -86,6 +140,35 @@ const LandingPage = () => {
       </nav>
 
       <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-16 lg:space-y-28">
+        {showInstallSection && (
+          <section className="px-4 sm:px-6 max-w-[1200px] mx-auto md:hidden">
+            <div className="rounded-3xl border border-emerald-200 bg-white shadow-[0_14px_40px_rgba(16,185,129,0.16)] p-5">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                  <Download className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-base font-black text-slate-900">Install CreatorArmour App</h2>
+                  <p className="text-sm font-medium text-slate-600 mt-1">
+                    Get instant deal alerts and open your dashboard in one tap.
+                  </p>
+                  {showIOSInstallSteps && isIOSInstallFlow && (
+                    <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[12px] text-slate-700 space-y-1">
+                      <p className="flex items-center gap-1.5"><Share className="w-3.5 h-3.5 text-emerald-600" /> Tap <span className="font-semibold">Share</span></p>
+                      <p className="flex items-center gap-1.5"><PlusSquare className="w-3.5 h-3.5 text-emerald-600" /> Choose <span className="font-semibold">Add to Home Screen</span></p>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleInstallSectionClick}
+                    className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors"
+                  >
+                    {isIOSInstallFlow ? 'Add to Home Screen' : 'Install App'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* 1. HERO SECTION */}
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24">
@@ -339,12 +422,13 @@ const LandingPage = () => {
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6 md:p-8 text-center">
-                  <p className="text-sm font-bold text-slate-500 mb-3">Package preview removed.</p>
+                  <p className="text-sm font-bold text-slate-500 mb-1">Interactive package catalog</p>
+                  <p className="text-sm text-slate-600 mb-4">See how brands browse creator packages, compare deliverables, and send structured offers.</p>
                   <button
                     onClick={() => navigate('/pratyush')}
                     className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all"
                   >
-                    View Demo Creator Page
+                    Explore Demo Creator Page
                   </button>
                 </div>
               </div>
