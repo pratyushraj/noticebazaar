@@ -48,13 +48,15 @@ const LandingPage = () => {
   }, [session, profile, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-white sm:bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
       <SEOHead title={seoTitle} description={seoDescription} keywords={seoKeywords} canonicalUrl={canonicalUrl} />
 
       {/* Modern Top Nav */}
       <nav className={cn(
         "fixed top-0 inset-x-0 z-50 transition-all duration-300 border-b pt-[max(env(safe-area-inset-top),0px)]",
-        hasScrolled ? "bg-white/90 backdrop-blur-xl border-slate-200 shadow-sm" : "bg-transparent border-transparent"
+        hasScrolled
+          ? "bg-white/90 backdrop-blur-xl border-slate-200 shadow-sm"
+          : "bg-white border-slate-100 shadow-sm md:bg-transparent md:border-transparent md:shadow-none"
       )}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group" onClick={() => triggerHaptic(HapticPatterns.light)}>
@@ -83,14 +85,14 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <main className="relative z-10 pt-36 sm:pt-32 lg:pt-40 pb-24 space-y-16 lg:space-y-28">
+      <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-16 lg:space-y-28">
 
         {/* 1. HERO SECTION */}
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-emerald-100/40 via-blue-50/40 to-transparent blur-[100px] rounded-full -z-10" />
 
           <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-24 w-full">
-            <div className="flex-1 text-center lg:text-left pt-8 lg:pt-10">
+            <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-8 shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                 <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wide">The Operating System for Creators</span>
