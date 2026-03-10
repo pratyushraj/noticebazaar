@@ -154,6 +154,96 @@ const getCachedInstagramPublicData = async (handle: string) => {
   return fresh;
 };
 
+const resolveCreatorByPublicHandle = async (handle: string, selectColumns: string) => {
+  const normalizedHandle = normalizeHandle(handle);
+  if (!normalizedHandle) {
+    return {
+      creator: null,
+      error: null,
+      normalizedHandle: null,
+      isStaleUsernameLink: false,
+      canonicalHandle: null,
+    };
+  }
+
+  const { data: instagramProfiles, error: instagramError } = await supabase
+    .from('profiles')
+    .select(selectColumns)
+    .eq('instagram_handle', normalizedHandle)
+    .eq('role', 'creator')
+    .limit(1);
+
+  if (instagramError) {
+    return {
+      creator: null,
+      error: instagramError,
+      normalizedHandle,
+      isStaleUsernameLink: false,
+      canonicalHandle: null,
+    };
+  }
+
+  if (Array.isArray(instagramProfiles) && instagramProfiles.length > 0) {
+    return {
+      creator: instagramProfiles[0],
+      error: null,
+      normalizedHandle,
+      isStaleUsernameLink: false,
+      canonicalHandle: normalizedHandle,
+    };
+  }
+
+  const { data: usernameProfiles, error: usernameError } = await supabase
+    .from('profiles')
+    .select(selectColumns)
+    .eq('username', normalizedHandle)
+    .eq('role', 'creator')
+    .limit(1);
+
+  if (usernameError) {
+    return {
+      creator: null,
+      error: usernameError,
+      normalizedHandle,
+      isStaleUsernameLink: false,
+      canonicalHandle: null,
+    };
+  }
+
+  const usernameMatch = Array.isArray(usernameProfiles) && usernameProfiles.length > 0
+    ? usernameProfiles[0]
+    : null;
+
+  if (!usernameMatch) {
+    return {
+      creator: null,
+      error: null,
+      normalizedHandle,
+      isStaleUsernameLink: false,
+      canonicalHandle: null,
+    };
+  }
+
+  const canonicalHandle = normalizeHandle((usernameMatch as any).instagram_handle);
+  if (canonicalHandle && canonicalHandle !== normalizedHandle) {
+    return {
+      creator: null,
+      error: null,
+      normalizedHandle,
+      isStaleUsernameLink: true,
+      canonicalHandle,
+    };
+  }
+
+  return {
+    creator: usernameMatch,
+    error: null,
+    normalizedHandle,
+    isStaleUsernameLink: false,
+    canonicalHandle: canonicalHandle || normalizedHandle,
+  };
+};
+
 const startRegisteredCreatorBackgroundSync = (profile: any) => {
   if (!profile?.id || !profile?.instagram_handle) return;
 
@@ -723,9 +813,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       });
     }
 
-    // Fetch creator profile by username or instagram_handle
-    // Check both fields to support legacy usernames and new Instagram handle-based usernames
-    const normalizedUsername = username.toLowerCase().trim();
+    const normalizedUsername = normalizeHandle(username) || username.toLowerCase().trim();
 
     // Use limit(1) instead of maybeSingle() to avoid 500s on duplicate usernames/handles.
     // Keep the first profile lookup limited to stable columns so one missing optional
@@ -740,27 +828,16 @@ router.get('/:username', async (req: Request, res: Response) => {
       username
     `;
 
-    const { data: usernameProfiles, error: usernameError } = await supabase
-      .from('profiles')
-      .select(baseProfileSelect)
-      .eq('username', normalizedUsername)
-      .eq('role', 'creator')
-      .limit(1);
+    const resolvedCreator = await resolveCreatorByPublicHandle(normalizedUsername, baseProfileSelect);
+    let profile = resolvedCreator.creator;
+    const profileError = resolvedCreator.error;
 
-    let profile = (usernameProfiles && usernameProfiles.length > 0) ? usernameProfiles[0] : null;
-    let profileError = usernameError;
-
-    // If not found by username, try instagram_handle
-    if (!profile && !profileError) {
-      const { data: instagramProfiles, error: instagramError } = await supabase
-        .from('profiles')
-        .select(baseProfileSelect)
-        .eq('instagram_handle', normalizedUsername)
-        .eq('role', 'creator')
-        .limit(1);
-
-      profile = (instagramProfiles && instagramProfiles.length > 0) ? instagramProfiles[0] : null;
-      profileError = instagramError;
+    if (resolvedCreator.isStaleUsernameLink) {
+      return res.status(404).json({
+        success: false,
+        error: 'Creator not found',
+        message: 'This creator link has moved to a new Instagram handle.',
+      });
     }
 
     // If profile found, fetch additional optional columns separately (to handle missing columns gracefully)
@@ -1479,24 +1556,19 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     }
 
-    // Try username first, then instagram_handle as fallback
-    let { data: creator, error: creatorError } = await supabase
-      .from('profiles')
-      .select('id, username, instagram_handle, pricing_min')
-      .eq('username', normalizedUsername)
-      .eq('role', 'creator')
-      .maybeSingle();
+    const resolvedCreator = await resolveCreatorByPublicHandle(
+      normalizedUsername,
+      'id, username, instagram_handle, pricing_min',
+    );
+    const creator = resolvedCreator.creator;
+    const creatorError = resolvedCreator.error;
 
-    // If not found by username, try instagram_handle
-    if (!creator && !creatorError) {
-      const result = await supabase
-        .from('profiles')
-        .select('id, username, instagram_handle, pricing_min')
-        .eq('instagram_handle', normalizedUsername)
-        .eq('role', 'creator')
-        .maybeSingle();
-      creator = result.data;
-      creatorError = result.error;
+    if (resolvedCreator.isStaleUsernameLink) {
+      return res.status(404).json({
+        success: false,
+        error: 'Creator not found',
+        message: 'This creator link is no longer active. Please use the creator’s latest collab link.',
+      });
     }
 
     // Auto-Decline Logic: Instant filter for lowball spam
