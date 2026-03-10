@@ -157,6 +157,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       const isOnCollabBypassRoute = collabBypassRoutes.some((route) =>
         route === '/collab/' ? location.pathname.startsWith(route) : location.pathname.startsWith(route)
       );
+      const isOnOnboardingRoute = location.pathname.startsWith('/creator-onboarding');
 
       // Special case: pratyushraj@outlook.com always gets creator dashboard
       const userEmail = user?.email?.toLowerCase();
@@ -188,6 +189,12 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       // Only redirect from login or root - don't redirect if already on a valid route
       if (location.pathname === '/login' || location.pathname === '/') {
         navigate(targetDashboard, { replace: true });
+        return;
+      }
+
+      // Hard gate: onboarding must be completed before creators can access dashboard/app routes.
+      if (isCreatorOrSimilarRole && !profile.onboarding_complete && !isOnOnboardingRoute) {
+        navigate('/creator-onboarding', { replace: true });
         return;
       }
 
