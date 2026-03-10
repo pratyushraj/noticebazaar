@@ -265,28 +265,32 @@ const LandingPage = () => {
               </div>
 
               <div className="flex-1 w-full max-w-[340px] lg:max-w-none flex justify-center lg:justify-end">
-                {/* Simplified instagram profile mockup */}
+                {/* Creator Collab Page Mockup */}
                 <div className="bg-white w-full max-w-[320px] rounded-[40px] shadow-2xl overflow-hidden border-8 border-slate-800">
-                  <div className="px-4 py-8 bg-slate-50 h-[400px]">
-                    <div className="flex items-center gap-4 mb-6">
-                      <img src={PRIYA_IMG} className="w-20 h-20 rounded-full object-cover border border-slate-200" alt="Profile" />
-                      <div>
-                        <div className="flex gap-4 mb-1">
-                          <div className="text-center"><p className="font-black text-slate-900 text-lg leading-none">342</p><p className="text-[10px] text-slate-500 font-bold">posts</p></div>
-                          <div className="text-center"><p className="font-black text-slate-900 text-lg leading-none">36K</p><p className="text-[10px] text-slate-500 font-bold">followers</p></div>
-                        </div>
+                  <div className="px-5 pt-8 pb-6 bg-slate-50 relative">
+                    <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-blue-50 to-transparent" />
+
+                    <div className="relative z-10 text-center mb-6">
+                      <img src={PRIYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Priya Sharma" />
+                      <h3 className="font-black text-lg text-slate-900 flex items-center justify-center gap-1">Priya Sharma <CheckCircle2 className="w-4 h-4 text-blue-500 fill-blue-50" /></h3>
+                      <p className="text-[12px] font-bold text-slate-500 mb-3">36K Followers</p>
+
+                      <div className="bg-white border border-slate-200 rounded-xl p-3 inline-block shadow-sm">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Typical Collab Rate</p>
+                        <p className="text-lg font-black text-slate-900">₹2K–₹4K</p>
                       </div>
                     </div>
-                    <div>
-                      <p className="font-black text-sm text-slate-900">Priya Sharma</p>
-                      <p className="text-sm text-slate-600 mb-2">Fashion & Lifestyle Creator 👗✨<br />Based in Delhi 🇮🇳</p>
-                      <div className="bg-emerald-50 text-emerald-700 font-bold text-sm px-3 py-2 rounded-lg flex items-center gap-2 border border-emerald-100 w-fit cursor-pointer">
-                        <LinkIcon className="w-4 h-4" /> creatorarmour.com/priyasharma
+
+                    <div className="space-y-3 relative z-10 w-full">
+                      <div className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm flex justify-between items-center">
+                        <span className="font-black text-sm text-slate-900">Reel Deal</span>
+                        <span className="font-black text-sm text-emerald-600">₹1,999</span>
                       </div>
-                    </div>
-                    <div className="flex gap-2 mt-6">
-                      <div className="flex-1 bg-slate-200 h-8 rounded-lg"></div>
-                      <div className="flex-1 bg-slate-200 h-8 rounded-lg"></div>
+                      <div className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm flex justify-between items-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-emerald-50 rounded-bl-full" />
+                        <span className="font-black text-sm text-slate-900 relative z-10">Engagement Package</span>
+                        <span className="font-black text-sm text-emerald-600 relative z-10">₹3,499</span>
+                      </div>
                     </div>
                   </div>
                 </div>
