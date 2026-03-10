@@ -19,6 +19,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
+import { useSignOut } from '@/lib/hooks/useAuth';
 
 // Person Schema Component (for structured data)
 const PersonSchema = ({ schema }: { schema: any }) => {
@@ -360,6 +361,7 @@ const withNeutralPrefix = (text: string, prefix: string) => {
 const CollabLinkLanding = () => {
   const { user, profile } = useSession();
   const updateProfileMutation = useUpdateProfile();
+  const signOutMutation = useSignOut();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [editMode, setEditMode] = useState(() => searchParams.get('edit') === 'true');
@@ -1784,6 +1786,22 @@ const CollabLinkLanding = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                onClick={() => signOutMutation.mutate()}
+                size="sm"
+                disabled={signOutMutation.isPending}
+                variant="outline"
+                className="bg-white/10 text-white hover:bg-white/20 border-white/30 transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
+              >
+                {signOutMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                    Logging out...
+                  </>
+                ) : (
+                  'Log out'
+                )}
+              </Button>
               <Button
                 onClick={() => setEditMode(!editMode)}
                 size="sm"
