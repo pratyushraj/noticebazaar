@@ -65,28 +65,17 @@ const AddToHomeScreen: React.FC = () => {
       return;
     }
 
-    // iOS has no auto prompt event, so show guidance immediately.
-    if (canShowIOSGuide) {
-      setShowBanner(true);
-      trackEvent('pwa_install_banner_shown', {
-        platform: 'ios',
-        route: location.pathname,
-        source: params.get('source') || null,
-      });
-    } else {
-      // Android: wait for beforeinstallprompt so CTA can open native install sheet.
-      setShowBanner(false);
-    }
+    // Show the same install banner UI on both iOS and Android.
+    setShowBanner(true);
+    trackEvent('pwa_install_banner_shown', {
+      platform: canShowIOSGuide ? 'ios' : 'android',
+      route: location.pathname,
+      source: params.get('source') || null,
+    });
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setShowBanner(true);
-      trackEvent('pwa_install_banner_shown', {
-        platform: 'android',
-        route: location.pathname,
-        source: params.get('source') || null,
-      });
     };
 
     const handleAppInstalled = () => {
@@ -150,6 +139,10 @@ const AddToHomeScreen: React.FC = () => {
     if (!deferredPrompt) {
       if (isIOSDevice) {
         setShowSteps(true);
+      } else {
+        toast.message('Install from browser menu', {
+          description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
+        });
       }
       return;
     }
