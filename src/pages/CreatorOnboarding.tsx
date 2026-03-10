@@ -41,6 +41,12 @@ interface OnboardingData {
   barterValueMin: string;
 }
 
+const normalizeDealType = (value: unknown): DealType => {
+  return value === 'paid' || value === 'barter' || value === 'hybrid' || value === 'all'
+    ? value
+    : 'all';
+};
+
 const CreatorOnboarding = () => {
   const { profile, loading: sessionLoading, refetchProfile, user } = useSession();
   const navigate = useNavigate();
@@ -66,15 +72,15 @@ const CreatorOnboarding = () => {
           instagramUsername: '',
           contentNiches: [],
           reelRate: '',
-          dealType: 'paid',
           barterValueMin: '',
-          ...parsed
+          ...parsed,
+          dealType: normalizeDealType(parsed?.dealType),
         };
       } catch (e) {
         console.error('Error parsing saved onboarding data', e);
       }
     }
-    return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'paid', barterValueMin: '' };
+    return { name: '', instagramUsername: '', contentNiches: [], reelRate: '', dealType: 'all', barterValueMin: '' };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
