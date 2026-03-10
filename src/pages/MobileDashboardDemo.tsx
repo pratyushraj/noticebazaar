@@ -319,7 +319,22 @@ const MobileDashboardDemo = ({
         setIsSavingProfile(true);
         triggerHaptic(HapticPatterns.light);
         try {
-            const { error } = await supabase.from('profiles' as any).update(profileFormData).eq('id', session.user.id);
+            const updatePayload = {
+                full_name: profileFormData.full_name,
+                email: profileFormData.email,
+                phone: profileFormData.phone,
+                bio: profileFormData.bio,
+                pincode: profileFormData.pincode,
+                city: profileFormData.city,
+                instagram_handle: profileFormData.instagram_handle,
+                media_kit_url: profileFormData.media_kit_url,
+                open_to_collabs: profileFormData.open_to_collabs,
+                typical_deal_size: profileFormData.typical_deal_size,
+                collaboration_preference: profileFormData.collaboration_preference,
+                content_niches: profileFormData.content_niches,
+                avg_rate_reel: profileFormData.avg_rate_reel ? Number(profileFormData.avg_rate_reel) : null,
+            };
+            const { error } = await supabase.from('profiles' as any).update(updatePayload).eq('id', session.user.id);
             if (error) throw error;
             toast.success('Successfully updated profile!');
             triggerHaptic(HapticPatterns.success);
