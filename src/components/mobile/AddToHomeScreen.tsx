@@ -32,23 +32,18 @@ const AddToHomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const isCreator = profile?.role === 'creator';
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
     const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
     const isAndroid = /Android/i.test(window.navigator.userAgent);
     const isSafari = /Safari/i.test(window.navigator.userAgent)
       && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(window.navigator.userAgent);
-    const isCollabRoute = location.pathname.startsWith('/collab/');
-    const currentHandle = location.pathname.split('/')[2]?.toLowerCase() || '';
-    const creatorHandle = (profile?.instagram_handle || profile?.username || '').toLowerCase();
-    const isOwnerCollabRoute = isCollabRoute && !!currentHandle && !!creatorHandle && currentHandle === creatorHandle;
-    const isCreatorArea = location.pathname.startsWith('/creator') || isOwnerCollabRoute;
+    const isBlockedRoute = ['/maintenance'].includes(location.pathname);
 
     const canShowIOSGuide = isIOS && isSafari;
     const canShowAndroidPrompt = isAndroid;
     setIsIOSDevice(canShowIOSGuide);
 
-    if (!isCreator || !isCreatorArea || isStandalone || (!canShowIOSGuide && !canShowAndroidPrompt)) {
+    if (isBlockedRoute || isStandalone || (!canShowIOSGuide && !canShowAndroidPrompt)) {
       setShowBanner(false);
       return;
     }
@@ -57,10 +52,12 @@ const AddToHomeScreen: React.FC = () => {
     const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
     const wasDismissedRecently = dismissedAt > 0 && Date.now() - dismissedAt < threeDaysMs;
     const params = new URLSearchParams(window.location.search);
+    const forceInstallPreview = ['1', 'true', 'yes'].includes((params.get('showInstall') || '').toLowerCase());
     const forceInstallIntent = ['1', 'true', 'yes'].includes((params.get('openApp') || '').toLowerCase())
       || ['email', 'whatsapp', 'push'].includes((params.get('source') || '').toLowerCase());
+    const shouldForceShow = forceInstallPreview || forceInstallIntent;
 
-    if (wasDismissedRecently && !forceInstallIntent) {
+    if (wasDismissedRecently && !shouldForceShow) {
       setShowBanner(false);
       return;
     }
