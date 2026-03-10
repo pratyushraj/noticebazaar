@@ -650,6 +650,8 @@ export const useUpdateProfile = () => {
           const safeUpdateData: Record<string, any> = { ...updateData };
           const droppedFields = new Set<string>();
           const optionalExtensionFields = new Set([
+            'username',
+            'instagram_handle',
             'platforms',
             'goals',
             'creator_category',
@@ -674,6 +676,8 @@ export const useUpdateProfile = () => {
             'avg_rate_reel',
             'learned_avg_rate_reel',
             'learned_deal_count',
+            'suggested_barter_value_min',
+            'suggested_barter_value_max',
             'avg_reel_views_manual',
             'avg_likes_manual',
             'audience_gender_split',
@@ -696,6 +700,7 @@ export const useUpdateProfile = () => {
             'collab_cta_trust_note',
             'collab_cta_dm_note',
             'collab_cta_platform_note',
+            'auto_pricing_enabled',
             'deal_templates',
           ]);
 
