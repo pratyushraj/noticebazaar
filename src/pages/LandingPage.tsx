@@ -426,18 +426,20 @@ const LandingPage = () => {
                         <div
                           key={pkg.id}
                           data-package-card
-                          className={`snap-start shrink-0 w-[80%] sm:w-[72%] md:w-[56%] lg:w-[48%] rounded-[20px] p-5 md:p-6 border transition-all duration-300 ${isActive ? 'scale-[1.04] border-2 border-[#18A66A] shadow-[0_16px_34px_rgba(24,166,106,0.18)]' : 'border-[rgba(0,0,0,0.06)] shadow-[0_10px_30px_rgba(0,0,0,0.06)]'} bg-white`}
+                          className={`snap-start shrink-0 w-[80%] sm:w-[72%] md:w-[56%] lg:w-[48%] h-[290px] rounded-[20px] p-5 md:p-6 border transition-all duration-300 ${isActive ? 'scale-[1.04] border-2 border-[#18A66A] shadow-[0_16px_34px_rgba(24,166,106,0.18)]' : 'border-[rgba(0,0,0,0.06)] shadow-[0_10px_30px_rgba(0,0,0,0.06)]'} bg-white flex flex-col`}
                         >
-                          {pkg.popular && (
-                            <div className="inline-flex mb-3 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1">
-                              Most Popular
-                            </div>
-                          )}
+                          <div className="h-6 mb-2">
+                            {pkg.popular && (
+                              <div className="inline-flex rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1">
+                                Most Popular
+                              </div>
+                            )}
+                          </div>
                           <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl mb-3">
                             {pkg.icon}
                           </div>
-                          <h4 className="font-black text-slate-900 text-[28px] leading-tight mb-3">{pkg.name}</h4>
-                          <ul className="space-y-2 mb-4">
+                          <h4 className="font-black text-slate-900 text-[28px] leading-tight min-h-[64px] line-clamp-2 mb-2">{pkg.name}</h4>
+                          <ul className="space-y-2 min-h-[64px] mb-3">
                             {pkg.deliverables.map((line) => (
                               <li key={line} className="flex items-center gap-2 text-[15px] font-bold text-slate-600">
                                 <Check className="w-4 h-4 text-emerald-500" />
@@ -445,7 +447,7 @@ const LandingPage = () => {
                               </li>
                             ))}
                           </ul>
-                          <div className="border-t border-slate-100 pt-4">
+                          <div className="border-t border-slate-100 pt-4 mt-auto">
                             <p className="text-[38px] leading-none font-black text-slate-900 mb-3">{pkg.price}</p>
                             <button className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-[linear-gradient(135deg,#19b27b,#0f8f5a)] shadow-[0_8px_18px_rgba(15,143,90,0.28)]">
                               {pkg.cta}
