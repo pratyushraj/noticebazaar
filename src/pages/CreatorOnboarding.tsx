@@ -16,7 +16,6 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 // Import new components
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
 import { OnboardingProgressDots } from '@/components/onboarding/OnboardingProgressDots';
-import { SkipButton } from '@/components/onboarding/SkipButton';
 import { OnboardingProgressBar } from '@/components/onboarding/OnboardingProgressBar';
 import { WelcomeScreen1 } from '@/components/onboarding/welcome/WelcomeScreen1';
 import { WelcomeScreen2 } from '@/components/onboarding/welcome/WelcomeScreen2';
@@ -224,32 +223,6 @@ const CreatorOnboarding = () => {
       </OnboardingContainer>
     );
   }
-
-  const handleSkipWelcome = () => {
-    onboardingAnalytics.track('welcome_skipped', { step: welcomeStep });
-    setSetupStep('name');
-  };
-
-  const handleSkipSetup = () => {
-    // Skip to completion with default values
-    onboardingAnalytics.track('setup_skipped', { step: setupStep });
-
-    // Set defaults if missing
-    const defaultData: OnboardingData = {
-      name: onboardingData.name || 'Creator',
-      instagramUsername: onboardingData.instagramUsername || '',
-      contentNiches: onboardingData.contentNiches.length > 0 ? onboardingData.contentNiches : ['Lifestyle'],
-      reelRate: onboardingData.reelRate || '',
-      dealType: onboardingData.dealType || 'paid',
-      barterValueMin: onboardingData.barterValueMin || '',
-      barterValueMax: onboardingData.barterValueMax || '',
-    };
-
-    setOnboardingData(defaultData);
-
-    // Complete onboarding with defaults
-    handleOnboardingComplete();
-  };
 
   const handleNextWelcome = () => {
     if (welcomeStep < 4) {
@@ -489,10 +462,6 @@ const CreatorOnboarding = () => {
             currentStep={welcomeStep}
             className="!top-1/2 !left-1/2 !-translate-y-1/2"
           />
-          <SkipButton
-            onClick={handleSkipWelcome}
-            className="!top-1/2 !right-0 !-translate-y-1/2 !px-2 md:!px-3"
-          />
         </div>
 
         <AnimatePresence mode="wait">
@@ -578,7 +547,6 @@ const CreatorOnboarding = () => {
                     setOnboardingData((prev) => ({ ...prev, name }))
                   }
                   onNext={handleNameNext}
-                  onSkip={handleSkipSetup}
                 />
               )}
 
@@ -592,7 +560,6 @@ const CreatorOnboarding = () => {
                   }
                   onNext={handleInstagramNext}
                   onBack={() => setSetupStep('name')}
-                  onSkip={handleSkipSetup}
                 />
               )}
 
@@ -611,7 +578,6 @@ const CreatorOnboarding = () => {
                   }}
                   onNext={handleNichesNext}
                   onBack={() => setSetupStep('instagram')}
-                  onSkip={handleSkipSetup}
                 />
               )}
 

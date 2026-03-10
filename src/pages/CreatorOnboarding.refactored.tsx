@@ -14,7 +14,6 @@ import { onboardingAnalytics } from '@/lib/onboarding/analytics';
 // Import new components
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
 import { OnboardingProgressDots } from '@/components/onboarding/OnboardingProgressDots';
-import { SkipButton } from '@/components/onboarding/SkipButton';
 import { OnboardingProgressBar } from '@/components/onboarding/OnboardingProgressBar';
 import { WelcomeScreen1 } from '@/components/onboarding/welcome/WelcomeScreen1';
 import { WelcomeScreen2 } from '@/components/onboarding/welcome/WelcomeScreen2';
@@ -113,11 +112,6 @@ const CreatorOnboarding = () => {
     navigate('/creator-dashboard', { replace: true });
     return null;
   }
-
-  const handleSkipWelcome = () => {
-    onboardingAnalytics.track('welcome_skipped', { step: welcomeStep });
-    setSetupStep('name');
-  };
 
   const handleNextWelcome = () => {
     if (welcomeStep < 3) {
@@ -244,7 +238,6 @@ const CreatorOnboarding = () => {
   if (setupStep === 'name' && welcomeStep < 4) {
     return (
       <OnboardingContainer>
-        <SkipButton onClick={handleSkipWelcome} />
         <OnboardingProgressDots totalSteps={4} currentStep={welcomeStep} />
 
         <AnimatePresence mode="wait">
@@ -380,4 +373,3 @@ const CreatorOnboarding = () => {
 };
 
 export default CreatorOnboarding;
-
