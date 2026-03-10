@@ -172,6 +172,36 @@ const LandingPage = () => {
               </div>
             </div>
 
+            {showInstallSection && (
+              <section className="w-full md:hidden -mt-4">
+                <div className="rounded-3xl border border-emerald-200 bg-white shadow-[0_14px_40px_rgba(16,185,129,0.16)] p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                      <Download className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-base font-black text-slate-900">Install CreatorArmour App</h2>
+                      <p className="text-sm font-medium text-slate-600 mt-1">
+                        Get instant deal alerts and open your dashboard in one tap.
+                      </p>
+                      {showIOSInstallSteps && isIOSInstallFlow && (
+                        <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[12px] text-slate-700 space-y-1">
+                          <p className="flex items-center gap-1.5"><Share className="w-3.5 h-3.5 text-emerald-600" /> Tap <span className="font-semibold">Share</span></p>
+                          <p className="flex items-center gap-1.5"><PlusSquare className="w-3.5 h-3.5 text-emerald-600" /> Choose <span className="font-semibold">Add to Home Screen</span></p>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleInstallSectionClick}
+                        className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors"
+                      >
+                        {isIOSInstallFlow ? 'Add to Home Screen' : 'Install App'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* Hero Mockup */}
             <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
               {/* Floating Creator Profile Badge */}
@@ -267,36 +297,6 @@ const LandingPage = () => {
             </div>
           </div>
         </section>
-
-        {showInstallSection && (
-          <section className="px-4 sm:px-6 max-w-[1200px] mx-auto md:hidden -mt-8">
-            <div className="rounded-3xl border border-emerald-200 bg-white shadow-[0_14px_40px_rgba(16,185,129,0.16)] p-5">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                  <Download className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-base font-black text-slate-900">Install CreatorArmour App</h2>
-                  <p className="text-sm font-medium text-slate-600 mt-1">
-                    Get instant deal alerts and open your dashboard in one tap.
-                  </p>
-                  {showIOSInstallSteps && isIOSInstallFlow && (
-                    <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[12px] text-slate-700 space-y-1">
-                      <p className="flex items-center gap-1.5"><Share className="w-3.5 h-3.5 text-emerald-600" /> Tap <span className="font-semibold">Share</span></p>
-                      <p className="flex items-center gap-1.5"><PlusSquare className="w-3.5 h-3.5 text-emerald-600" /> Choose <span className="font-semibold">Add to Home Screen</span></p>
-                    </div>
-                  )}
-                  <button
-                    onClick={handleInstallSectionClick}
-                    className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors"
-                  >
-                    {isIOSInstallFlow ? 'Add to Home Screen' : 'Install App'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Brand Logos Section */}
         <section className="border-y border-slate-200 bg-white py-10 md:py-12">
