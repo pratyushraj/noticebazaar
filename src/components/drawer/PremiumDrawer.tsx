@@ -363,16 +363,16 @@ export default function PremiumDrawer({
           >
 
             {/* Ambient gradient top */}
-            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-100 via-indigo-50 to-transparent dark:from-blue-600/10 dark:via-indigo-600/5 pointer-events-none" />
+            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-emerald-100 via-teal-50 to-transparent dark:from-emerald-500/10 dark:via-teal-500/5 pointer-events-none" />
 
             {/* Logo + App Label */}
             <div className="flex items-center gap-3 px-1 mb-6 relative z-10">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/25">
+              <div className="w-9 h-9 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-[13px] font-black tracking-tight uppercase text-slate-900 dark:text-white leading-none">
-                  Creator<span className="text-blue-500">Armour</span>
+                  Creator<span className="text-emerald-600 dark:text-emerald-400">Armour</span>
                 </p>
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/30 mt-0.5">
                   Console
