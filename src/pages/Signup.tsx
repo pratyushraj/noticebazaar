@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { Scale, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -27,7 +27,7 @@ const Signup = () => {
     if (pwd.length === 0) return { strength: 0, label: '', color: '' };
     if (pwd.length < 6) return { strength: 1, label: 'Too short', color: 'bg-red-500' };
     if (pwd.length < 8) return { strength: 2, label: 'Weak', color: 'bg-yellow-500' };
-    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Fair', color: 'bg-blue-500' };
+    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Fair', color: 'bg-emerald-500' };
     return { strength: 4, label: 'Strong', color: 'bg-green-500' };
   };
 
@@ -367,7 +367,7 @@ const Signup = () => {
       icon: Link2,
       title: 'Collab Link',
       description: 'Share one link to receive brand deals safely',
-      color: 'text-violet-400'
+      color: 'text-emerald-400'
     },
     {
       icon: Shield,
@@ -385,7 +385,7 @@ const Signup = () => {
       icon: MessageCircle,
       title: 'Expert Backup',
       description: 'Legal help when you actually need it',
-      color: 'text-purple-400'
+      color: 'text-teal-300'
     }
   ];
 
@@ -402,8 +402,8 @@ const Signup = () => {
       }}
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center relative z-10">
@@ -416,10 +416,10 @@ const Signup = () => {
         >
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-10">
-              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
-                <Scale className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
+                <ShieldCheck className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-black tracking-tight uppercase">CreatorArmour</h1>
+              <h1 className="text-xl font-black tracking-tight">Creator Armour</h1>
             </div>
 
             <h2 className="text-5xl font-black leading-tight tracking-tight">
@@ -434,9 +434,7 @@ const Signup = () => {
           <div className="space-y-6 pt-4">
             {features.map((feature, index) => {
               const Icon = feature.icon;
-              const colorClass = feature.title === 'Collab Link' ? 'text-blue-400' :
-                feature.title === 'Auto-Protected Deals' ? 'text-emerald-400' :
-                  feature.title === 'Track Brand Earnings' ? 'text-amber-400' : 'text-indigo-400';
+              const colorClass = feature.color;
               return (
                 <motion.div
                   key={feature.title}
@@ -479,10 +477,10 @@ const Signup = () => {
           <div className="bg-slate-900 shadow-2xl rounded-[2.5rem] p-10 border border-slate-800">
             {/* Mobile Logo */}
             <div className="md:hidden flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
-                <Scale className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
+                <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-lg font-black text-white uppercase tracking-tight">CreatorArmour</h1>
+              <h1 className="text-lg font-black text-white tracking-tight">Creator Armour</h1>
             </div>
 
             <div className="mb-10">
@@ -511,7 +509,7 @@ const Signup = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="email"
                     />
@@ -524,7 +522,7 @@ const Signup = () => {
                       <button
                         type="button"
                         onClick={handleForgotPassword}
-                        className="text-[11px] font-black text-blue-500 uppercase tracking-widest"
+                        className="text-[11px] font-black text-emerald-500 uppercase tracking-widest"
                       >
                         Forgot?
                       </button>
@@ -535,7 +533,7 @@ const Signup = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="current-password"
                     />
@@ -543,7 +541,7 @@ const Signup = () => {
                   <Button
                     type="submit"
                     disabled={isLoading || !email.trim() || !password.trim()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-blue-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
                   </Button>
@@ -565,7 +563,7 @@ const Signup = () => {
                       placeholder="e.g. Pratyush Raj"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="name"
                     />
@@ -580,7 +578,7 @@ const Signup = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => handleEmailChange(e.target.value)}
-                      className={`bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
+                      className={`bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
                       required
                       autoComplete="email"
                     />
@@ -599,7 +597,7 @@ const Signup = () => {
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl px-5 pr-12"
+                        className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl px-5 pr-12"
                         required
                         autoComplete="new-password"
                         minLength={6}
@@ -616,7 +614,7 @@ const Signup = () => {
                   <Button
                     type="submit"
                     disabled={isLoading || !name.trim() || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-blue-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                     {isLoading ? 'Creating Account...' : 'Get My Collab Link'}
@@ -669,13 +667,13 @@ const Signup = () => {
                 className="text-slate-400 hover:text-white font-medium text-[13px] transition-all group inline-flex items-center gap-2"
               >
                 {showLogin ? "Don't have an account?" : 'Already have an account?'}
-                <span className="text-blue-500 font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
+                <span className="text-emerald-500 font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
               </button>
             </div>
 
             {/* Back to Homepage */}
             <div className="mt-8 text-center pt-6 border-t border-slate-800/50">
-              <Link to="/" className="text-slate-500 hover:text-blue-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
+              <Link to="/" className="text-slate-500 hover:text-emerald-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
                 <ArrowLeft className="w-3 h-3" /> Back to Protocol
               </Link>
             </div>
@@ -683,7 +681,7 @@ const Signup = () => {
 
           <div className="mt-8 text-center px-4">
             <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.1em]">
-              By continuing, you agree to our <Link to="/terms-of-service" className="text-slate-400 hover:text-blue-500 underline">Terms</Link> & <Link to="/privacy-policy" className="text-slate-400 hover:text-blue-500 underline">Privacy</Link>
+              By continuing, you agree to our <Link to="/terms-of-service" className="text-slate-400 hover:text-emerald-500 underline">Terms</Link> & <Link to="/privacy-policy" className="text-slate-400 hover:text-emerald-500 underline">Privacy</Link>
             </p>
           </div>
         </motion.div>

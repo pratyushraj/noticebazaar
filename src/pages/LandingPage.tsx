@@ -6,11 +6,10 @@ import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import {
   ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Download, Share, PlusSquare
+  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter
 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=500&fit=crop";
 const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&h=500&fit=crop";
@@ -23,10 +22,6 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const [hasScrolled, setHasScrolled] = useState(false);
-  const [showInstallSection, setShowInstallSection] = useState(false);
-  const [isIOSInstallFlow, setIsIOSInstallFlow] = useState(false);
-  const [showIOSInstallSteps, setShowIOSInstallSteps] = useState(false);
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +32,7 @@ const LandingPage = () => {
   }, []);
 
   const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'CreatorArmour - Close Brand Deals Without Instagram DMs';
+  const seoTitle = 'Creator Armour - Close Brand Deals Without Instagram DMs';
   const seoDescription = 'Creator Armour gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
   const seoKeywords = ['creator collab link', 'brand deal management'];
 
@@ -51,55 +46,6 @@ const LandingPage = () => {
       }
     }
   }, [session, profile, loading, navigate]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent) || window.innerWidth < 768;
-    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
-    const isSafari = /Safari/i.test(window.navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(window.navigator.userAgent);
-
-    if (!isStandalone && isMobile) {
-      setShowInstallSection(true);
-      setIsIOSInstallFlow(isIOS && isSafari);
-    } else {
-      setShowInstallSection(false);
-      setIsIOSInstallFlow(false);
-    }
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setDeferredInstallPrompt(event);
-      setShowInstallSection(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-    };
-  }, []);
-
-  const handleInstallSectionClick = async () => {
-    if (!deferredInstallPrompt) {
-      if (isIOSInstallFlow) {
-        setShowIOSInstallSteps(true);
-      } else {
-        toast.message('Install from browser menu', {
-          description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
-        });
-      }
-      return;
-    }
-
-    try {
-      await deferredInstallPrompt.prompt();
-      await deferredInstallPrompt.userChoice;
-    } catch {
-      toast.error('Install prompt not available right now');
-    } finally {
-      setDeferredInstallPrompt(null);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-white sm:bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
@@ -118,7 +64,7 @@ const LandingPage = () => {
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-[17px] font-black tracking-tight text-slate-900">
-              CreatorArmour
+              Creator Armour
             </h1>
           </Link>
 
@@ -154,7 +100,7 @@ const LandingPage = () => {
               <h1 className="text-[42px] md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.05] mb-6 text-slate-900 drop-shadow-sm">
                 Close Brand Deals <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 inline-block mt-2">
-                  Without Instagram DMs
+                  Without <span className="whitespace-nowrap">Instagram DMs</span>
                 </span>
               </h1>
 
@@ -163,7 +109,7 @@ const LandingPage = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
-                <Link to="/signup" className="w-full sm:w-auto bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-full font-black text-[16px] shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-slate-800">
+                <Link to="/signup" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-full font-black text-[16px] shadow-xl shadow-emerald-600/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-emerald-700">
                   Create Your Collab Link <ArrowRight className="w-5 h-5" />
                 </Link>
                 <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white hover:bg-slate-50 border shadow-sm border-slate-200 text-slate-700 px-8 py-4 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2">
@@ -171,36 +117,6 @@ const LandingPage = () => {
                 </button>
               </div>
             </div>
-
-            {showInstallSection && (
-              <section className="w-full md:hidden -mt-4">
-                <div className="rounded-3xl border border-emerald-200 bg-white shadow-[0_14px_40px_rgba(16,185,129,0.16)] p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                      <Download className="w-5 h-5 text-emerald-600" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-base font-black text-slate-900">Install CreatorArmour App</h2>
-                      <p className="text-sm font-medium text-slate-600 mt-1">
-                        Get instant deal alerts and open your dashboard in one tap.
-                      </p>
-                      {showIOSInstallSteps && isIOSInstallFlow && (
-                        <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2 text-[12px] text-slate-700 space-y-1">
-                          <p className="flex items-center gap-1.5"><Share className="w-3.5 h-3.5 text-emerald-600" /> Tap <span className="font-semibold">Share</span></p>
-                          <p className="flex items-center gap-1.5"><PlusSquare className="w-3.5 h-3.5 text-emerald-600" /> Choose <span className="font-semibold">Add to Home Screen</span></p>
-                        </div>
-                      )}
-                      <button
-                        onClick={handleInstallSectionClick}
-                        className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors"
-                      >
-                        {isIOSInstallFlow ? 'Add to Home Screen' : 'Install App'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
 
             {/* Hero Mockup */}
             <div className="flex-1 w-full max-w-[420px] lg:max-w-none relative">
@@ -515,19 +431,19 @@ const LandingPage = () => {
                 <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
                   <ShieldCheck className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="text-[20px] font-black tracking-tight text-slate-900">CreatorArmour</h3>
+                <h3 className="text-[20px] font-black tracking-tight text-slate-900">Creator Armour</h3>
               </Link>
               <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-slate-600">
                 Close brand deals without Instagram DMs.
               </p>
               <div className="mt-5 flex items-center gap-2">
-                <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="CreatorArmour Instagram">
+                <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="Creator Armour Instagram">
                   <Instagram className="w-4.5 h-4.5" />
                 </a>
-                <a href="https://x.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="CreatorArmour X">
+                <a href="https://x.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="Creator Armour X">
                   <Twitter className="w-4.5 h-4.5" />
                 </a>
-                <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="CreatorArmour LinkedIn">
+                <a href="https://www.linkedin.com/company/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="Creator Armour LinkedIn">
                   <Linkedin className="w-4.5 h-4.5" />
                 </a>
               </div>
@@ -614,12 +530,12 @@ const LandingPage = () => {
 
           <div className="mt-10 border-t border-slate-200 pt-6">
             <p className="text-sm font-medium text-slate-600 text-center">
-              <span className="font-semibold text-emerald-700">50+ creators</span> already using CreatorArmour to collaborate professionally with brands.
+              <span className="font-semibold text-emerald-700">50+ creators</span> already using Creator Armour to collaborate professionally with brands.
             </p>
           </div>
 
           <div className="mt-6 border-t border-slate-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
-            <p>© 2026 CreatorArmour</p>
+            <p>© 2026 Creator Armour</p>
             <p className="font-medium">Made for creators</p>
             <div className="flex items-center gap-3">
               <Link to="/privacy-policy" className="hover:text-slate-700">Privacy</Link>

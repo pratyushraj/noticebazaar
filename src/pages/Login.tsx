@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { Scale, ArrowLeft, Loader2, Download, Share, PlusSquare } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -19,10 +19,6 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
-  const [showInstallCard, setShowInstallCard] = useState(false);
-  const [isIOSInstallFlow, setIsIOSInstallFlow] = useState(false);
-  const [showIOSInstallSteps, setShowIOSInstallSteps] = useState(false);
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
 
   // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
   useEffect(() => {
@@ -129,50 +125,6 @@ const Login = () => {
     }
   }, [session, loading, navigate]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent) || window.innerWidth < 768;
-    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
-    const isSafari = /Safari/i.test(window.navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(window.navigator.userAgent);
-
-    setShowInstallCard(!isStandalone && isMobile);
-    setIsIOSInstallFlow(isIOS && isSafari);
-
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setDeferredInstallPrompt(event);
-      setShowInstallCard(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredInstallPrompt) {
-      if (isIOSInstallFlow) {
-        setShowIOSInstallSteps(true);
-      } else {
-        toast.message('Install from browser menu', {
-          description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
-        });
-      }
-      return;
-    }
-
-    try {
-      await deferredInstallPrompt.prompt();
-      await deferredInstallPrompt.userChoice;
-    } catch {
-      toast.error('Install prompt not available right now');
-    } finally {
-      setDeferredInstallPrompt(null);
-    }
-  };
-
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -243,8 +195,8 @@ const Login = () => {
       }}
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
       </div>
 
       <div
@@ -253,10 +205,10 @@ const Login = () => {
       >
         {/* Branding */}
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-            <Scale className="h-5 w-5 text-white" />
+          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
+            <ShieldCheck className="h-5 w-5 text-white" />
           </div>
-          <h1 className="text-xl font-black tracking-tight text-white uppercase">CreatorArmour</h1>
+          <h1 className="text-xl font-black tracking-tight text-white">Creator Armour</h1>
         </div>
 
         {/* Title and Subtitle */}
@@ -265,38 +217,10 @@ const Login = () => {
           <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Access your creator business OS to manage deals and payouts.</p>
         </div>
 
-        {showInstallCard && (
-          <div className="mb-8 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
-                <Download className="w-5 h-5 text-emerald-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-black text-white">Install CreatorArmour App</h3>
-                <p className="text-xs text-slate-300 mt-1">
-                  Get instant deal alerts and open your dashboard in one tap.
-                </p>
-                {showIOSInstallSteps && isIOSInstallFlow && (
-                  <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-[11px] text-slate-200 space-y-1">
-                    <p className="flex items-center gap-1.5"><Share className="w-3.5 h-3.5 text-emerald-300" /> Tap <span className="font-semibold">Share</span></p>
-                    <p className="flex items-center gap-1.5"><PlusSquare className="w-3.5 h-3.5 text-emerald-300" /> Choose <span className="font-semibold">Add to Home Screen</span></p>
-                  </div>
-                )}
-                <button
-                  onClick={handleInstallClick}
-                  className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors text-sm"
-                >
-                  {isIOSInstallFlow ? 'Add to Home Screen' : 'Install App'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
-            <Loader2 className="h-10 w-10 animate-spin text-blue-500" aria-hidden />
+            <Loader2 className="h-10 w-10 animate-spin text-emerald-500" aria-hidden />
             <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Initializing OS...</p>
           </div>
         )}
@@ -309,7 +233,7 @@ const Login = () => {
             </p>
             <Button
               onClick={() => window.location.replace('/creator-dashboard')}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
             >
               Go to Dashboard
             </Button>
@@ -335,7 +259,7 @@ const Login = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl focus:border-blue-500/50 focus:ring-blue-500/20 px-5 transition-all"
+                  className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl focus:border-emerald-500/50 focus:ring-emerald-500/20 px-5 transition-all"
                   required
                   autoComplete="email"
                 />
@@ -348,7 +272,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[11px] font-black text-blue-500 uppercase tracking-widest hover:text-blue-400 transition-colors"
+                    className="text-[11px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors"
                   >
                     Forgot?
                   </button>
@@ -359,7 +283,7 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-white/5 border-slate-800 text-white placeholder:text-slate-600 text-[16px] h-14 rounded-2xl focus:border-blue-500/50 focus:ring-blue-500/20 px-5 transition-all"
+                  className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl focus:border-emerald-500/50 focus:ring-emerald-500/20 px-5 transition-all"
                   required
                   autoComplete="current-password"
                 />
@@ -367,7 +291,7 @@ const Login = () => {
               <Button
                 type="submit"
                 disabled={isLoading || !email.trim() || !password.trim()}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
@@ -436,7 +360,7 @@ const Login = () => {
         {(!loading || loadingTimedOut) && !session && (
           <div className="text-center">
             <Link to="/signup" className="text-slate-400 hover:text-white transition-all text-[13px] font-medium group inline-flex items-center gap-2">
-              Don't have an account? <span className="text-blue-500 font-bold group-hover:underline">Start for free</span>
+              Don't have an account? <span className="text-emerald-500 font-bold group-hover:underline">Start for free</span>
             </Link>
           </div>
         )}
@@ -452,10 +376,10 @@ const Login = () => {
       {/* Legal Text */}
       <div className="mt-10 text-center px-4 max-w-sm">
         <p className="text-slate-600 text-[11px] leading-relaxed font-medium">
-          Protected by CreatorArmour Shield. By signing in, you agree to our{' '}
-          <a href="/terms" className="text-slate-500 hover:text-blue-500 transition-colors">Terms</a>
+          Protected by Creator Armour Shield. By signing in, you agree to our{' '}
+          <a href="/terms" className="text-slate-500 hover:text-emerald-500 transition-colors">Terms</a>
           {' '}&{' '}
-          <a href="/privacy" className="text-slate-500 hover:text-blue-500 transition-colors">Privacy</a>
+          <a href="/privacy" className="text-slate-500 hover:text-emerald-500 transition-colors">Privacy</a>
         </p>
       </div>
     </div>
