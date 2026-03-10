@@ -285,7 +285,7 @@ const MobileDashboardDemo = ({
         return () => { if (meta && orig) meta.setAttribute('content', orig); };
     }, [theme, bgColor]);
 
-    const { session, user } = useSession();
+    const { session, user, refetchProfile } = useSession();
 
     const triggerHaptic = (pattern: any = HapticPatterns.light) => {
         globalTriggerHaptic(pattern);
@@ -373,6 +373,8 @@ const MobileDashboardDemo = ({
 
             toast.success('Profile saved!');
             triggerHaptic(HapticPatterns.success);
+            // Refetch the global profile so all UI sections update immediately
+            refetchProfile();
             if (onRefresh) onRefresh();
         } catch (error: any) {
             console.error('[handleSaveProfile] Unexpected error:', error);
