@@ -333,9 +333,6 @@ const CreatorOnboarding = () => {
           suggested_barter_value_min: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.barterValueMin
             ? parseFloat(onboardingData.barterValueMin)
             : null,
-          suggested_barter_value_max: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all')
-            ? (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null)
-            : null,
           ...(collabUsername && {
             instagram_handle: collabUsername,
             username: collabUsername,
@@ -363,9 +360,6 @@ const CreatorOnboarding = () => {
               : null,
             suggested_barter_value_min: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.barterValueMin
               ? parseFloat(onboardingData.barterValueMin)
-              : null,
-            suggested_barter_value_max: (onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all')
-              ? (onboardingData.barterValueMin ? parseFloat(onboardingData.barterValueMin) : null)
               : null,
             ...(collabUsername && {
               instagram_handle: collabUsername,
