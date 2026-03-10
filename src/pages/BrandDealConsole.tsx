@@ -192,6 +192,13 @@ const BrandDealConsole = () => {
                                     src={brandDeal?.brand_logo_url || collabRequest?.brand_logo_url}
                                     alt=""
                                     className="max-h-full max-w-full object-contain p-1.5"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        (e.target as HTMLImageElement).parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                                        const icon = document.createElement('div');
+                                        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-slate-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
+                                        (e.target as HTMLImageElement).parentElement?.appendChild(icon.firstChild!);
+                                    }}
                                 />
                             ) : (
                                 <Shield className="w-5 h-5 text-slate-400" />
@@ -203,7 +210,19 @@ const BrandDealConsole = () => {
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-slate-800 overflow-hidden">
                                     {creator?.avatar_url ? (
-                                        <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                                        <img
+                                            src={creator.avatar_url}
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                (e.target as HTMLImageElement).parentElement?.classList.add('bg-purple-500/20', 'flex', 'items-center', 'justify-center');
+                                                const fallback = document.createElement('div');
+                                                fallback.className = 'w-full h-full flex items-center justify-center text-[10px] text-purple-400 font-bold uppercase';
+                                                fallback.innerText = creator?.name?.slice(0, 2) || 'CR';
+                                                (e.target as HTMLImageElement).parentElement?.appendChild(fallback);
+                                            }}
+                                        />
                                     ) : (
                                         <div className="w-full h-full bg-purple-500/20 flex items-center justify-center text-[10px] text-purple-400 font-bold uppercase">
                                             {creator?.name?.slice(0, 2)}

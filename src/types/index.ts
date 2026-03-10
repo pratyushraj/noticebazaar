@@ -86,6 +86,7 @@ export type Profile = Tables<'profiles'> & {
   revision_policy?: string | null;
   allow_negotiation?: boolean | null;
   allow_counter_offer?: boolean | null;
+  deal_templates?: any[] | null; // Customized collaboration packages
 };
 
 export type Message = Tables<'messages'> & {

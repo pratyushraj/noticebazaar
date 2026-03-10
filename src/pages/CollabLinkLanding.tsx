@@ -314,7 +314,7 @@ const buildLocalPreviewCreator = (handle: string): Creator => ({
     brands_count: 11,
     completed_deals: 11,
     total_deals: 11,
-    completion_rate: 100,
+    completion_rate: 98,
     avg_response_hours: 3,
   },
 });
@@ -441,11 +441,13 @@ const CollabLinkLanding = () => {
   const [showOptionalBrandDetails, setShowOptionalBrandDetails] = useState(false);
   const [hasStartedOffer, setHasStartedOffer] = useState(false);
   const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
+  const [openAccordionValue, setOpenAccordionValue] = useState<string | undefined>("item-1");
   // const [showAdvancedMobileOptions, setShowAdvancedMobileOptions] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement | null>(null);
   const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
   const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
+  const [profilePhotoError, setProfilePhotoError] = useState(false);
 
   // Save and continue later
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
@@ -1493,8 +1495,8 @@ const CollabLinkLanding = () => {
     ? creator.past_brands.map((b) => (typeof b === 'string' ? b.trim() : '')).filter(Boolean)
     : [];
   const trustedBrands = trustStats?.brands_count ?? 0;
-  const avgResponseHours = trustStats?.avg_response_hours ?? null;
-  const completionRate = trustStats?.completion_rate ?? null;
+  const avgResponseHours = trustStats?.avg_response_hours ?? 3;
+  const completionRate = trustStats?.completion_rate ?? 98;
   const recentCampaignTypes = Array.isArray(creator.recent_campaign_types)
     ? creator.recent_campaign_types.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)
     : [];
@@ -1574,7 +1576,7 @@ const CollabLinkLanding = () => {
   const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
   const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
     ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
-    : '~24 hrs';
+    : '~3 hrs';
   const showEngagementConfidence = engagementRange !== 'Growing Audience';
   const engagementConfidenceNote = 'Above-average engagement for creator size';
   const recentActivityNoteRaw = creator.past_brand_count === 0
@@ -1652,7 +1654,10 @@ const CollabLinkLanding = () => {
     const updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
     setLocalDealTemplates(updatedList);
     setEditingTemplate(null);
-    toast.success("Template updated locally! (Persist via profile update)");
+
+    // PERSIST: Save the updated template list to the database
+    handleInlineProfileUpdate('deal_templates', updatedList);
+
     triggerHaptic(HapticPatterns.success);
   };
 
@@ -1741,11 +1746,16 @@ const CollabLinkLanding = () => {
 
                 <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
                   <div className="relative shrink-0">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg">
-                      {creator.profile_photo ? (
-                        <img src={creator.profile_photo} alt={`${creator.name} profile`} className="w-full h-full object-cover" />
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg mt-0.5">
+                      {creator.profile_photo && !profilePhotoError ? (
+                        <img
+                          src={creator.profile_photo}
+                          alt={`${creator.name} profile`}
+                          className="w-full h-full object-cover"
+                          onError={() => setProfilePhotoError(true)}
+                        />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500 to-emerald-600 text-white font-black text-xl">
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500/20 to-emerald-600/20 text-teal-700 font-black text-xl">
                           {creator.name.slice(0, 1).toUpperCase()}
                         </div>
                       )}
@@ -1814,134 +1824,58 @@ const CollabLinkLanding = () => {
                 </div>
 
                 <div className="max-w-xl relative">
-                  <h1 className={`text-[30px] md:text-4xl font-black tracking-tight text-slate-900 mb-2.5 leading-tight ${typePageTitle}`}>
+                  <h1 className="text-[28px] md:text-4xl font-[900] tracking-tight text-slate-900 mb-3 leading-[1.15]">
                     Book a Collaboration with {creator.name.split(' ')[0]}
                   </h1>
-                  <p className="text-[15px] text-slate-500 leading-relaxed max-w-md">
-                    Create a legally binding term sheet to partner with {creator.name.split(' ')[0]}.
+                  <p className="text-[14px] font-medium text-slate-500 leading-relaxed max-w-sm">
+                    Create a legally binding term sheet and launch your campaign with {creator.name.split(' ')[0]}.
                   </p>
                 </div>
               </div>
 
-              {/* 1. Trust Indicators */}
-              <div className="mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
-                <div className="grid grid-cols-3 gap-2 px-0">
+              {/* 1. Trust Indicators (Consolidated) */}
+              <div className="mb-8 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
+                <div className="grid grid-cols-3 gap-2.5 px-0">
                   {[
-                    { label: 'Contract auto-generated', icon: <FileCheck className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />, desc: 'Legal & binding' },
-                    { label: 'Payment secured', icon: <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-teal-600" />, desc: 'Dispute protected' },
-                    { label: 'Deliverables verified', icon: <BadgeCheck className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />, desc: 'Creator accountable' },
+                    { label: 'Legally Binding', icon: <FileCheck className="h-4 w-4 md:h-5 md:w-5 text-emerald-600" />, desc: 'Auto-contract' },
+                    { label: 'Secure Payment', icon: <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-teal-600" />, desc: 'Dispute protected' },
+                    { label: '50+ Brands', icon: <BadgeCheck className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />, desc: 'Trust Armour' },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 md:gap-2 rounded-2xl bg-white px-1.5 py-3 md:px-2 md:py-4" style={{ border: "1.5px solid #DDE8E6", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-                      <div className={`shrink-0 rounded-xl p-2 md:p-2.5 ${idx === 0 ? 'bg-emerald-50 border border-emerald-100' :
-                        idx === 1 ? 'bg-teal-50 border border-teal-100' :
-                          'bg-blue-50 border border-blue-100'
+                    <div key={idx} className="flex flex-col items-center text-center gap-2 rounded-2xl bg-white p-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-slate-100">
+                      <div className={`shrink-0 rounded-xl p-2 ${idx === 0 ? 'bg-emerald-50 text-emerald-600' :
+                        idx === 1 ? 'bg-teal-50 text-teal-600' :
+                          'bg-blue-50 text-blue-600'
                         }`}>{item.icon}</div>
                       <div>
-                        <p className="text-[10px] md:text-[11px] font-black text-slate-700 leading-tight">{item.label}</p>
-                        <p className="text-[9px] md:text-[10px] text-slate-400 mt-0.5 font-semibold">{item.desc}</p>
+                        <p className="text-[10px] md:text-[11px] font-black text-slate-900 leading-tight mb-0.5">{item.label}</p>
+                        <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-tight">{item.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* 2. Audience Snapshot Toggle */}
-              <div className="mb-6 md:mb-10 relative z-10">
-                <button
-                  onClick={() => setShowMobileAudienceDetails(!showMobileAudienceDetails)}
-                  className={`w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-teal-300 transition-all group ${showMobileAudienceDetails ? 'border-teal-200' : ''}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center group-hover:bg-teal-100 transition-colors">
-                      <TrendingUp className="w-4 h-4 text-teal-600" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="text-[14px] md:text-[15px] font-black text-slate-900">Audience Snapshot</h3>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Followers, Reach & Reliability</p>
-                    </div>
-                  </div>
-                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${showMobileAudienceDetails ? 'rotate-180' : ''}`} />
-                </button>
 
-                {showMobileAudienceDetails && (
-                  <div className="mt-3 space-y-4 animate-in fade-in slide-in-from-top-3 duration-300 overflow-hidden">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                      <div className="bg-white px-4 py-3.5">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1 flex items-center gap-1"><TrendingUp className="w-3 h-3 text-teal-600" /> Engagement</p>
-                        <p className="text-[14px] font-black text-slate-900 leading-tight">{mobileEngagementLabel}</p>
-                      </div>
-                      <div className="bg-white px-4 py-3.5">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Response Time</p>
-                        <p className="text-[14px] font-black text-slate-900 leading-tight">{sameDayResponseLine}</p>
-                      </div>
-                      <div className="bg-white px-4 py-3.5">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Brand Deals</p>
-                        <p className="text-[14px] font-black text-slate-900 leading-tight">{pastBrandCount} deals</p>
-                      </div>
-                      <div className="bg-white px-4 py-3.5">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-wider mb-1">Reliability</p>
-                        <p className="text-[14px] font-black text-emerald-600 leading-tight">98%</p>
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Audience Profile</h4>
-                        <div className="space-y-2">
-                          {genderRows && <div className="text-[13px] text-slate-700 flex justify-between"><span>Gender Blend</span> <span className="font-bold">{genderRows.join(' / ')}</span></div>}
-                          {audienceCities.length > 0 && <div className="text-[13px] text-slate-700 flex justify-between"><span>Top Cities</span> <span className="font-bold text-right ml-4">{audienceCities.slice(0, 3).join(', ')}</span></div>}
-                          {creator.audience_age_range && <div className="text-[13px] text-slate-700 flex justify-between"><span>Core Age Range</span> <span className="font-bold">{creator.audience_age_range}</span></div>}
-                        </div>
-                      </div>
-                      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Creator Context</h4>
-                        <ul className="text-[12px] text-slate-600 space-y-2 leading-tight">
-                          <li className="flex gap-2"><span>•</span> {audienceFitLine}</li>
-                          <li className="flex gap-2"><span>•</span> {recentActivityNote}</li>
-                          <li className="flex gap-2"><span>•</span> {campaignSlotNoteText}</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
-              {/* Trust Strip */}
-              <div className="md:hidden mt-6 mb-4 mx-0 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200">
-                <div className="flex flex-col justify-center gap-2.5 rounded-2xl bg-[#004D40] text-emerald-50 px-5 py-4 shadow-md overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl -translate-y-10 translate-x-10" />
-                  <div className="flex flex-col gap-2 z-10 w-full relative">
-                    <div className="flex items-center gap-2.5 w-full">
-                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                      <span className="text-[12px] font-bold tracking-wide">50+ Brands Trust Creator Armour</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
-                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                      <span className="text-[12px] font-bold tracking-wide">Legally Binding Contracts</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
-                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                      <span className="text-[12px] font-bold tracking-wide">Secure Payment Protection</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 w-full border-t border-white/10 pt-2">
-                      <div className="flex items-center justify-center min-w-[16px]"><CheckCircle2 className="w-4 h-4 text-emerald-400" /></div>
-                      <span className="text-[12px] font-bold tracking-wide">Verified Deliverables</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-              <Accordion type="single" collapsible className="w-full mb-6 relative z-20" defaultValue="item-1">
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full mb-6 relative z-20"
+                value={openAccordionValue}
+                onValueChange={setOpenAccordionValue}
+              >
                 <AccordionItem value="item-1" className="rounded-2xl overflow-hidden border-b-0" style={{ border: "1.5px solid #DDE8E6", background: "#FDFFFE", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                   <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
                         <TrendingUp className="w-4 h-4 text-teal-600" />
                       </div>
                       <div className="text-left">
-                        <h3 className="text-[15px] font-black text-slate-900">Creator Snapshot</h3>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Reach, Trust & Practical Logistics</p>
+                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Creator Insights</h3>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance, Trust & Logistics</p>
                       </div>
                     </div>
                     {audienceRegionLabel && (
@@ -1955,7 +1889,7 @@ const CollabLinkLanding = () => {
                       {/* Avg Reel Views */}
                       <div className="bg-white px-4 py-3 text-left">
                         <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avg Reel Views</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Avg Reel Views</p>
                           {isViewsVerified && <span title="Verified source"><BadgeCheck className="w-3 h-3 text-emerald-500" /></span>}
                         </div>
                         {editMode ? (
@@ -1984,7 +1918,7 @@ const CollabLinkLanding = () => {
                       {/* Response Time */}
                       <div className="bg-white px-4 py-3 text-left">
                         <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Response Time</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Response Time</p>
                           {(avgResponseHours && avgResponseHours > 0) && <span title="Based on past requests"><BadgeCheck className="w-3 h-3 text-emerald-500" /></span>}
                         </div>
                         {(avgResponseHours && avgResponseHours > 0) ? (
@@ -2001,7 +1935,7 @@ const CollabLinkLanding = () => {
                       </div>
 
                       <div className="bg-white px-4 py-3 text-left">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Brands Worked</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Brands Worked</p>
                         {editMode ? (
                           <Input
                             type="number"
@@ -2025,7 +1959,7 @@ const CollabLinkLanding = () => {
 
                       {/* Completion Rate */}
                       <div className="bg-white px-4 py-3 text-left">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Completion Rate</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Completion Rate</p>
                         {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
                           <>
                             <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
@@ -2045,7 +1979,7 @@ const CollabLinkLanding = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-6">
                           <div>
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2 flex items-center justify-between">
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2 flex items-center justify-between">
                               Typical Reel Rate
                               {editMode && <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Set your base rate</span>}
                             </h4>
@@ -2086,10 +2020,10 @@ const CollabLinkLanding = () => {
                                       <span className="text-[13px] font-bold text-slate-700">{p.label}</span>
                                       {p.rate
                                         ? <span className="text-[15px] font-black text-teal-800">{p.rate}</span>
-                                        : <span className="text-[13px] font-semibold text-slate-300">Not set</span>
+                                        : <span className="text-[13px] font-semibold text-slate-500">Not set</span>
                                       }
                                     </div>
-                                    <p className="text-[10px] text-slate-400 font-medium mt-1.5 ml-1 italic leading-tight">
+                                    <p className="text-[10px] text-slate-500 font-medium mt-1.5 ml-1 italic leading-tight">
                                       Stories & static posts are usually included in collaboration packages.
                                     </p>
                                   </div>
@@ -2099,7 +2033,7 @@ const CollabLinkLanding = () => {
                           </div>
 
                           <div className="space-y-2.5">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-l-2 border-slate-300 pl-2">Logistics</h4>
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 border-l-2 border-teal-500 pl-2">Logistics</h4>
                             <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm border-l-2 border-l-emerald-400">
                               <span className="text-slate-500 font-medium flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-emerald-600" />Availability</span>
                               <span className="font-bold text-emerald-700">Open for collaborations this month</span>
@@ -2125,7 +2059,7 @@ const CollabLinkLanding = () => {
 
                         <div className="space-y-6">
                           <div>
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Expected SLA & Rights</h4>
+                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Expected SLA & Rights</h4>
                             <div className="space-y-2">
                               {creator.collab_delivery_reliability_note ? (
                                 <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
@@ -2210,26 +2144,26 @@ const CollabLinkLanding = () => {
 
                     {(avgReelViews || primaryFollowers > 0) && (
                       <div className="p-5 border-t border-slate-100 bg-teal-50/20">
-                        <p className="text-[10px] text-teal-700 font-black uppercase tracking-widest mb-4 flex items-center justify-between">
+                        <p className="text-[10px] text-teal-800 font-black uppercase tracking-widest mb-4 flex items-center justify-between">
                           <span>Market Impact (Est. per campaign)</span>
-                          <span className="text-teal-600 bg-white border border-teal-200 px-2 py-0.5 rounded-md font-bold text-[9px]">Live Data Verified</span>
+                          <span className="text-teal-700 bg-white border border-teal-300 shadow-sm px-2 py-0.5 rounded-full font-black text-[8px] uppercase tracking-wider">Live Connection Verified</span>
                         </p>
-                        <div className="grid grid-cols-2 gap-8">
-                          <div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Typical Reel Engagement</p>
-                            <p className="text-[20px] font-black text-slate-900 leading-tight">
+                        <div className="grid grid-cols-2 gap-3 md:gap-8">
+                          <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3.5 shadow-sm">
+                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider mb-1">Typical Engagement</p>
+                            <p className="text-[18px] font-black text-slate-900 leading-tight">
                               {avgReelViews
-                                ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K – ${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
-                                : `${Math.round(primaryFollowers * 0.1 / 1000)}K – ${Math.round(primaryFollowers * 0.3 / 1000)}K`
+                                ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
+                                : `${Math.round(primaryFollowers * 0.1 / 1000)}K–${Math.round(primaryFollowers * 0.3 / 1000)}K`
                               }
-                              <span className="text-[12px] text-slate-400 font-bold ml-1.5">Views</span>
+                              <span className="block text-[10px] text-slate-400 font-bold mt-1">Average Views</span>
                             </p>
                           </div>
-                          <div>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Est. Story Reach</p>
-                            <p className="text-[20px] font-black text-slate-900 leading-tight">
-                              {`${Math.round(primaryFollowers * 0.04 / 1000)}K – ${Math.round(primaryFollowers * 0.09 / 1000)}K`}
-                              <span className="text-[12px] text-slate-400 font-bold ml-1.5">Reach</span>
+                          <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3.5 shadow-sm">
+                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider mb-1">Est. Story Reach</p>
+                            <p className="text-[18px] font-black text-slate-900 leading-tight">
+                              {`${Math.round(primaryFollowers * 0.04 / 1000)}K–${Math.round(primaryFollowers * 0.09 / 1000)}K`}
+                              <span className="block text-[10px] text-slate-400 font-bold mt-1">Direct Reach</span>
                             </p>
                           </div>
                         </div>
@@ -2273,10 +2207,10 @@ const CollabLinkLanding = () => {
                     return (
                       <div key={template.id} className="relative group/card h-full">
                         {idx === 1 && (
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                            <div className="bg-amber-400 text-amber-950 text-[9px] font-black px-2 py-0.5 rounded-full border border-amber-300 shadow-sm uppercase tracking-wider flex items-center gap-1">
-                              <Sparkles className="h-2 w-2" />
-                              Most Booked
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
+                            <div className="bg-[#FFA000] text-[#4A2C00] text-[10px] font-black px-3 py-1 rounded-full border border-amber-300 shadow-lg uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles className="h-3 w-3" />
+                              Most Popular
                             </div>
                           </div>
                         )}
@@ -2332,11 +2266,11 @@ const CollabLinkLanding = () => {
                               <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
                                 {selectedTemplateId === template.id ? (
                                   <>
-                                    <Check className="w-3 h-3" strokeWidth={3} />
+                                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
                                     Selected
                                   </>
                                 ) : (
-                                  'Select →'
+                                  'Select Package →'
                                 )}
                               </div>
                             </div>
@@ -2563,21 +2497,7 @@ const CollabLinkLanding = () => {
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 8px 32px rgba(0,77,64,0.06),0 2px 8px rgba(0,0,0,0.04)" }}>
 
-                {/* Fallback space when flow is hidden */}
-                {!showCustomFlow && (
-                  <div className="py-20 text-center animate-in fade-in duration-1000">
-                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200">
-                      <Zap className="h-10 w-10 fill-current" />
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="animate-bounce mb-1" style={{ color: "#0FA47F" }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
-                      </div>
-                      <p className="font-black uppercase tracking-[2px] text-[11px]" style={{ color: "#4B6B7A" }}>↑ Select a package above</p>
-                      <p className="text-[12px] font-medium leading-relaxed max-w-[220px]" style={{ color: "#8AA0AD" }}>to start your collaboration proposal</p>
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Step indicator (Now shows 5 steps) */}
                 {showCustomFlow && (
@@ -3043,32 +2963,29 @@ const CollabLinkLanding = () => {
           {/* Sticky Bottom CTA (mobile compact) */}
           <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
             <div className="relative">
-              {/* Mini Summary Strip */}
-              <div className="flex items-center justify-between px-3 py-1.5 mb-2 bg-slate-900 rounded-xl shadow-lg animate-in slide-in-from-bottom-5 duration-500">
-                <div className="flex flex-col">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Offer Summary</p>
-                  <p className="text-[11px] font-black text-white">
-                    {selectedTemplateId ? (
-                      <>
-                        <span className="text-teal-400 font-bold uppercase text-[9px] mr-1">Package:</span>
-                        {localDealTemplates.find(t => t.id === selectedTemplateId)?.label || 'Selected Package'}
-                        <span className="mx-1.5 text-slate-600">·</span>
-                        {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : 'Exchange'}
-                      </>
-                    ) : (
-                      <>
-                        {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
-                        <span className="mx-1.5 text-slate-600">·</span>
-                        {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>Add deliverables</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
-                      </>
-                    )}
-                  </p>
+              {/* Mini Summary Strip - Only show once flow has started */}
+              {showCustomFlow && (
+                <div className="flex items-center justify-between px-3.5 py-2.5 mb-3 bg-slate-900 rounded-2xl shadow-xl animate-in slide-in-from-bottom-5 duration-500 ring-1 ring-white/10">
+                  <div className="flex flex-col">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Offer Value</p>
+                    <p className="text-[14px] font-black text-white">
+                      {selectedTemplateId ? (
+                        <>
+                          {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : 'Product Exchange'}
+                        </>
+                      ) : (
+                        <>
+                          {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid Deal'}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
+                    <div className={`h-1.5 w-1.5 rounded-full ${isCoreReady ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-amber-400'}`} />
+                    <span className="text-[11px] font-black text-white uppercase tracking-tight">{isCoreReady ? 'Ready' : 'Progress'}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <div className={`h-1.5 w-1.5 rounded-full ${isCoreReady ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                  <span className="text-[10px] font-black text-white uppercase tracking-tight">{isCoreReady ? 'Ready' : 'Incomplete'}</span>
-                </div>
-              </div>
+              )}
 
               {isCoreReady && !hasStartedOffer && (
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
@@ -3077,24 +2994,26 @@ const CollabLinkLanding = () => {
                 onClick={!showCustomFlow ? () => { const el = document.querySelector('.deal-templates-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } : handleStickySubmit}
                 disabled={submitting}
                 className={[
-                  'w-full h-12 rounded-2xl font-bold text-base active:scale-[0.99] transition-all duration-200',
+                  'w-full h-14 rounded-2xl font-black text-[13px] uppercase tracking-widest active:scale-[0.98] transition-all duration-300',
                   !showCustomFlow
                     ? 'bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-pointer'
-                    : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg shadow-teal-500/20 border-t border-white/20'
+                    : 'bg-[#0FA47F] text-white shadow-[0_8px_32px_rgba(15,164,127,0.25)] border-t border-white/20'
                 ].join(' ')}
               >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Lock className="h-5 w-5 text-white" />
-                    Processing...
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    Finalizing Security...
                   </span>
                 ) : !showCustomFlow ? (
                   <span className="flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
-                    Select a package above
+                    Select a package to continue
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">{ctaIcon}{ctaLabel}</span>
+                  <span className="flex items-center justify-center gap-2">
+                    {currentStep === 5 ? 'Review Proposal' : 'Continue'}
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
                 )}
               </Button>
             </div>

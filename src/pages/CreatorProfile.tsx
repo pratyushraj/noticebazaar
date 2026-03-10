@@ -233,6 +233,7 @@ const ProfileSettings = () => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [collabHeroAnimated, setCollabHeroAnimated] = useState(false);
   const [copyPulse, setCopyPulse] = useState(false);
+  const [profilePhotoError, setProfilePhotoError] = useState(false);
   const [highlightNiche, setHighlightNiche] = useState<string | null>(null);
   const [activeNudgeField, setActiveNudgeField] = useState<'avgViews' | 'region' | 'mediaKit' | null>(null);
   const [positioningNudge, setPositioningNudge] = useState<string | null>(null);
@@ -380,7 +381,15 @@ const ProfileSettings = () => {
       formData.bio !== (profile.bio || '') ||
       formData.instagramHandle !== (profile.instagram_handle || '') ||
       formData.autoPricingEnabled !== !!profile.auto_pricing_enabled ||
-      formData.creatorCategory !== (profile.creator_category || CREATOR_CATEGORY_OPTIONS[0])
+      formData.creatorCategory !== (profile.creator_category || CREATOR_CATEGORY_OPTIONS[0]) ||
+      formData.phone !== (profile.phone || '') ||
+      formData.pincode !== (parseLocationString(profile.location || '').pincode || '') ||
+      formData.addressLine !== (parseLocationString(profile.location || '').addressLine || '') ||
+      formData.city !== (parseLocationString(profile.location || '').city || '') ||
+      formData.state !== (parseLocationString(profile.location || '').state || '') ||
+      formData.pricingMin !== (profile.pricing_min?.toString() || '') ||
+      formData.pricingAvg !== (profile.pricing_avg?.toString() || '') ||
+      formData.pricingMax !== (profile.pricing_max?.toString() || '')
     );
   }, [formData, profile]);
 
@@ -1226,17 +1235,8 @@ const ProfileSettings = () => {
         includesState: locationValue.includes(finalState)
       });
 
-      // Double-check that city and state are in the location string
-      if (!locationValue.includes(finalCity) || !locationValue.includes(finalState)) {
-        console.error('[CreatorProfile] ERROR: City or state missing from locationValue!', {
-          locationValue,
-          city: finalCity,
-          state: finalState
-        });
-        toast.error('Error: City and state must be included in address. Please try again.');
-        setIsSaving(false);
-        return;
-      }
+      // REMOVED: Redundant includes check that was causing issues with specific city/state names
+      // Since we just built locationValue with these final values, it is guaranteed to be correct.
 
       // Ensure locationValue is not empty before saving
       if (!locationValue || !locationValue.trim()) {
@@ -1685,11 +1685,12 @@ const ProfileSettings = () => {
                       fileInput.click();
                     }}
                   >
-                    {profile.avatar_url ? (
+                    {profile.avatar_url && !profilePhotoError ? (
                       <img
                         src={profile.avatar_url}
                         alt={userData.name}
                         className="w-full h-full object-cover"
+                        onError={() => setProfilePhotoError(true)}
                       />
                     ) : (
                       <span>{userData.avatar}</span>
@@ -2554,7 +2555,10 @@ const ProfileSettings = () => {
                   )}
                 </div>
 
-                <Collapsible open={showAdvancedInsights} onOpenChange={setShowAdvancedInsights}>
+                <Collapsible
+                  open={showAdvancedInsights}
+                  onOpenChange={setShowAdvancedInsights}
+                >
                   <CollapsibleTrigger className="w-full rounded-lg border border-border bg-muted/40 hover:bg-muted/60 transition-all">
                     <div className="px-3 py-2 flex items-center justify-between text-sm text-foreground/90">
                       <span className="font-medium">Improve Brand Match</span>

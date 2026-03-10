@@ -273,6 +273,7 @@ interface UpdateProfileVariables {
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
   auto_pricing_enabled?: boolean | null;
+  deal_templates?: any[] | null;
 }
 
 export const useUpdateProfile = () => {
@@ -352,6 +353,7 @@ export const useUpdateProfile = () => {
       collab_cta_dm_note,
       collab_cta_platform_note,
       auto_pricing_enabled,
+      deal_templates,
     }) => {
       const updateData: {
         first_name: string;
@@ -422,6 +424,7 @@ export const useUpdateProfile = () => {
         collab_cta_dm_note?: string | null;
         collab_cta_platform_note?: string | null;
         auto_pricing_enabled?: boolean | null;
+        deal_templates?: any[] | null;
       } = {
         first_name,
         last_name,
@@ -517,17 +520,8 @@ export const useUpdateProfile = () => {
         // Only include phone if it's not null or empty (null is valid to clear the field)
         updateData.phone = phone;
       }
-      // Always include location if provided (even if empty string) - required for contracts
       if (location !== undefined) {
-        // Ensure location is a string and trim it
         updateData.location = typeof location === 'string' ? location.trim() : location;
-        console.log('[useUpdateProfile] Including location in update:', {
-          location: updateData.location,
-          locationType: typeof updateData.location,
-          locationLength: updateData.location?.length,
-        });
-      } else {
-        console.warn('[useUpdateProfile] Location is undefined, not including in update');
       }
       if (bio !== undefined) {
         updateData.bio = bio;
@@ -631,6 +625,9 @@ export const useUpdateProfile = () => {
       if (auto_pricing_enabled !== undefined) {
         updateData.auto_pricing_enabled = auto_pricing_enabled;
       }
+      if (deal_templates !== undefined) {
+        updateData.deal_templates = deal_templates;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -699,6 +696,7 @@ export const useUpdateProfile = () => {
             'collab_cta_trust_note',
             'collab_cta_dm_note',
             'collab_cta_platform_note',
+            'deal_templates',
           ]);
 
           const extractMissingColumn = (message: string): string | null => {

@@ -124,7 +124,14 @@ const BrandDesktopDashboard = () => {
                             </div>
                             <button className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-[2px] shadow-lg shadow-blue-500/20">
                                 <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center overflow-hidden">
-                                    <img src="https://i.pravatar.cc/150?img=32" className="w-full h-full object-cover" alt="User" />
+                                    <img
+                                        src="https://i.pravatar.cc/150?img=32"
+                                        className="w-full h-full object-cover"
+                                        alt="User"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=Priya+S&background=random&color=fff`;
+                                        }}
+                                    />
                                 </div>
                             </button>
                         </div>
@@ -220,7 +227,14 @@ const BrandDesktopDashboard = () => {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-[1.2rem] overflow-hidden border border-white/10 bg-white/5 p-[2px]">
-                                                        <img src="https://i.pravatar.cc/150?img=47" className="w-full h-full object-cover rounded-[1.1rem]" alt="Creator" />
+                                                        <img
+                                                            src="https://i.pravatar.cc/150?img=47"
+                                                            className="w-full h-full object-cover rounded-[1.1rem]"
+                                                            alt="Creator"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=Blooming&background=0D8ABC&color=fff`;
+                                                            }}
+                                                        />
                                                     </div>
                                                     <div>
                                                         <div className={cn("text-[16px] font-black font-outfit", textColor)}>@thebloomingmiss</div>
@@ -291,7 +305,14 @@ const BrandDesktopDashboard = () => {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-[1.2rem] overflow-hidden border border-white/10 bg-white/5 p-[2px]">
-                                                        <img src="https://i.pravatar.cc/150?img=12" className="w-full h-full object-cover rounded-[1.1rem]" alt="Creator" />
+                                                        <img
+                                                            src="https://i.pravatar.cc/150?img=12"
+                                                            className="w-full h-full object-cover rounded-[1.1rem]"
+                                                            alt="Creator"
+                                                            onError={(e) => {
+                                                                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=Style&background=6366f1&color=fff`;
+                                                            }}
+                                                        />
                                                     </div>
                                                     <div>
                                                         <div className={cn("text-[16px] font-black font-outfit", textColor)}>@stylewithme</div>
