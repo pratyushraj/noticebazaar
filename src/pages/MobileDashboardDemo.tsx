@@ -319,29 +319,64 @@ const MobileDashboardDemo = ({
         setIsSavingProfile(true);
         triggerHaptic(HapticPatterns.light);
         try {
-            // Only include columns that exist in the `profiles` table.
-            // Fields like content_niches, media_kit_url, open_to_collabs, etc.
-            // live in the collab_profiles / creator handles table, not here.
             const nameParts = (profileFormData.full_name || '').trim().split(/\s+/);
             const first_name = nameParts[0] || null;
             const last_name = nameParts.length > 1 ? nameParts.slice(1).join(' ') : null;
 
-            const updatePayload: Record<string, unknown> = {
+            // Step 1: Update fields that are guaranteed to exist in profiles.
+            // Keep this payload minimal — do NOT include columns that may not exist.
+            const corePayload: Record<string, unknown> = {
                 first_name,
                 last_name,
-                email: profileFormData.email || null,
                 phone: profileFormData.phone || null,
-                instagram_handle: profileFormData.instagram_handle || null,
-                avg_rate_reel: profileFormData.avg_rate_reel ? Number(profileFormData.avg_rate_reel) : null,
             };
-            const { error } = await supabase.from('profiles' as any).update(updatePayload).eq('id', session.user.id);
-            if (error) throw error;
-            toast.success('Successfully updated profile!');
+
+            const { error: coreError } = await (supabase as any)
+                .from('profiles')
+                .update(corePayload)
+                .eq('id', session.user.id);
+
+            if (coreError) {
+                console.error('[handleSaveProfile] Core update failed:', {
+                    message: coreError.message,
+                    code: coreError.code,
+                    details: coreError.details,
+                    hint: coreError.hint,
+                });
+                throw coreError;
+            }
+
+            // Step 2: Try updating instagram_handle separately so we can give a specific error.
+            const newHandle = (profileFormData.instagram_handle || '').trim().replace(/^@/, '');
+            const currentHandle = (profile?.instagram_handle || '').trim().replace(/^@/, '');
+            if (newHandle && newHandle !== currentHandle) {
+                const { error: handleError } = await (supabase as any)
+                    .from('profiles')
+                    .update({ instagram_handle: newHandle })
+                    .eq('id', session.user.id);
+
+                if (handleError) {
+                    console.error('[handleSaveProfile] Instagram handle update failed:', {
+                        message: handleError.message,
+                        code: handleError.code,
+                        details: handleError.details,
+                        hint: handleError.hint,
+                    });
+                    // Show specific error for handle (unique constraint, RLS, etc.)
+                    const msg = handleError.code === '23505'
+                        ? 'That Instagram handle is already taken by another account.'
+                        : `Could not update handle: ${handleError.message}`;
+                    toast.warning(msg);
+                    // Don't rethrow — core save succeeded, only handle failed
+                }
+            }
+
+            toast.success('Profile saved!');
             triggerHaptic(HapticPatterns.success);
             if (onRefresh) onRefresh();
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to save profile');
+        } catch (error: any) {
+            console.error('[handleSaveProfile] Unexpected error:', error);
+            toast.error(error?.message || 'Failed to save profile');
             triggerHaptic(HapticPatterns.error);
         } finally {
             setIsSavingProfile(false);
