@@ -56,15 +56,12 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
     totalScore += activityScore;
     maxScore += 25;
 
-    // For new creators (few deals), keep score encouraging while still tied to profile quality.
+    // For demo mode (empty or few deals), return a good score
     if (brandDeals.length <= 6) {
-      const profileBoost = Math.round((filledFields / 5) * 12); // 0..12
-      return Math.min(96, 84 + profileBoost);
+      return 78; // Demo: Good score
     }
 
-    const rawScore = Math.round((totalScore / maxScore) * 100);
-    const momentumBoost = filledFields >= 3 ? 6 : 3;
-    return Math.min(99, Math.max(72, rawScore + momentumBoost));
+    return Math.round((totalScore / maxScore) * 100);
   }, [brandDeals, profile]);
 
   const getScoreColor = (score: number) => {
@@ -91,7 +88,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-3.5 w-3.5 text-blue-300 opacity-80" />
-              <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">AI Visibility Score</span>
+              <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">Brand Interest Score</span>
             </div>
             <span className={cn("text-[17px] font-bold tracking-tight", scoreConfig.text)}>
               {score}/100
@@ -169,3 +166,4 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
 };
 
 export default BrandInterestScore;
+
