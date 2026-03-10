@@ -2283,7 +2283,7 @@ const CollabLinkLanding = () => {
                         <button
                           type="button"
                           onClick={() => handleTemplateSelect(template)}
-                          className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${selectedTemplateId === template.id ? 'border-teal-500 bg-teal-50 shadow-lg shadow-teal-500/10 scale-[1.02]' : idx === 1 ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_6px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_24px_rgba(0,0,0,0.1)]'}`}
+                          className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_12px_32px_rgba(15,164,127,0.12)] scale-[1.03]' : idx === 1 ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)]'}`}
                         >
                           <div className="flex items-center justify-between mb-3">
                             <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
@@ -2319,19 +2319,26 @@ const CollabLinkLanding = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="mt-auto pt-3 border-t border-slate-100/60 flex items-center justify-between gap-2">
-                            <p className="text-[16px] font-black text-teal-600 leading-tight">
-                              {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
-                            </p>
-                            <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0F172A" }}>
-                              {selectedTemplateId === template.id ? (
-                                <>
-                                  <Check className="w-3 h-3" strokeWidth={3} />
-                                  Selected
-                                </>
-                              ) : (
-                                'Select →'
-                              )}
+                          <div className="mt-auto pt-3 border-t border-slate-100/60 flex flex-col gap-2.5">
+                            {idx === 1 && (
+                              <p className="text-[9px] font-bold text-amber-600/80 italic leading-tight">
+                                Most brands choose this package for higher engagement
+                              </p>
+                            )}
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-[18px] font-black text-[#0FA47F] leading-tight tracking-tight">
+                                {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
+                              </p>
+                              <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
+                                {selectedTemplateId === template.id ? (
+                                  <>
+                                    <Check className="w-3 h-3" strokeWidth={3} />
+                                    Selected
+                                  </>
+                                ) : (
+                                  'Select →'
+                                )}
+                              </div>
                             </div>
                           </div>
                         </button>
@@ -2566,8 +2573,8 @@ const CollabLinkLanding = () => {
                       <div className="animate-bounce mb-1" style={{ color: "#0FA47F" }}>
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
                       </div>
-                      <p className="font-black uppercase tracking-[2px] text-[11px]" style={{ color: "#4B6B7A" }}>↑ Choose a collaboration package above</p>
-                      <p className="text-[12px] font-medium leading-relaxed max-w-[220px]" style={{ color: "#8AA0AD" }}>To start your proposal</p>
+                      <p className="font-black uppercase tracking-[2px] text-[11px]" style={{ color: "#4B6B7A" }}>↑ Select a package above</p>
+                      <p className="text-[12px] font-medium leading-relaxed max-w-[220px]" style={{ color: "#8AA0AD" }}>to start your collaboration proposal</p>
                     </div>
                   </div>
                 )}
@@ -3041,9 +3048,20 @@ const CollabLinkLanding = () => {
                 <div className="flex flex-col">
                   <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Offer Summary</p>
                   <p className="text-[11px] font-black text-white">
-                    {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
-                    <span className="mx-1.5 text-slate-600">·</span>
-                    {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>Add deliverables</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
+                    {selectedTemplateId ? (
+                      <>
+                        <span className="text-teal-400 font-bold uppercase text-[9px] mr-1">Package:</span>
+                        {localDealTemplates.find(t => t.id === selectedTemplateId)?.label || 'Selected Package'}
+                        <span className="mx-1.5 text-slate-600">·</span>
+                        {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : 'Exchange'}
+                      </>
+                    ) : (
+                      <>
+                        {collabType === 'paid' ? `₹${Number(exactBudget).toLocaleString()}` : collabType === 'barter' ? 'Product Exchange' : 'Hybrid'}
+                        <span className="mx-1.5 text-slate-600">·</span>
+                        {deliverables.length === 0 ? <span className={"font-[600] text-slate-400"}>Add deliverables</span> : `${deliverables.length} ${deliverables[0]?.replace('Instagram ', '') || 'Asset'}${deliverables.length > 1 ? 's' : ''}`}
+                      </>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5">
