@@ -83,7 +83,7 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <main className="relative z-10 pt-32 lg:pt-40 pb-24 space-y-32">
+      <main className="relative z-10 pt-32 lg:pt-40 pb-24 space-y-24 lg:space-y-32">
 
         {/* 1. HERO SECTION */}
         <section className="px-6 max-w-[1200px] mx-auto relative">
@@ -131,19 +131,35 @@ const LandingPage = () => {
                 </div>
               </div>
 
+              {/* Floating Offer Notification */}
+              <div className="absolute -right-8 md:-right-16 top-64 bg-white p-4 rounded-3xl shadow-2xl border border-slate-100 z-30 flex items-center gap-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-700 hover:scale-105 transition-transform">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <span className="text-xl">💰</span>
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">New Offer Received</p>
+                  <p className="text-base font-black text-slate-900">₹4,000 from Myntra</p>
+                </div>
+              </div>
+
               {/* Phone Mockup Screen */}
-              <div className="bg-slate-50 rounded-[48px] shadow-2xl border-[12px] border-slate-100 overflow-hidden w-full max-w-[340px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-slate-900/5">
+              <div className="bg-slate-50 rounded-[48px] shadow-2xl border-[14px] border-slate-100 overflow-hidden w-full max-w-[380px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-slate-900/5">
                 {/* Dynamic Island */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-32 h-7 bg-slate-200 rounded-full z-20" />
 
-                <div className="px-5 pt-16 pb-8 bg-white h-[650px] overflow-y-auto no-scrollbar relative">
+                <div className="px-6 pt-16 pb-8 bg-white h-[680px] overflow-y-auto no-scrollbar relative">
                   {/* Decorative background blur */}
-                  <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-emerald-50 to-white" />
+                  <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-blue-50 to-white" />
 
-                  <div className="relative z-10 flex flex-col items-center mb-8">
+                  <div className="relative z-10 flex flex-col items-center mb-6">
                     <img src={AANYA_IMG} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md mb-4" alt="Creator" />
-                    <h2 className="text-xl font-black text-slate-900 flex items-center gap-1">Aanya Kapoor <CheckCircle2 className="w-5 h-5 text-blue-500 fill-blue-50" /></h2>
-                    <p className="text-sm font-bold text-slate-500">@aanyakapoor</p>
+                    <h2 className="text-2xl font-black text-slate-900 flex items-center gap-1">Aanya Kapoor <CheckCircle2 className="w-6 h-6 text-blue-500 fill-blue-50" /></h2>
+                    <p className="text-[13px] font-bold text-slate-500 mb-4">@aanyakapoor</p>
+
+                    <div className="bg-white border border-slate-200 rounded-2xl p-4 w-full shadow-sm text-center">
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Typical Collab Rate</p>
+                      <p className="text-xl font-black text-slate-900">₹2K–₹4K</p>
+                    </div>
                   </div>
 
                   {/* Packages */}
@@ -200,13 +216,13 @@ const LandingPage = () => {
         {/* Brand Logos Section */}
         <section className="border-y border-slate-200 bg-white py-12">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
-            <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-8">Example brand collaborations creators receive</p>
-            <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-              <span className="text-2xl md:text-3xl font-black tracking-tighter">NYKAA</span>
-              <span className="text-2xl md:text-3xl font-black tracking-tight" style={{ fontFamily: "Impact, sans-serif" }}>boAt</span>
-              <span className="text-2xl md:text-3xl font-bold tracking-tight">mamaearth</span>
-              <span className="text-2xl md:text-3xl font-black tracking-tight" style={{ fontFamily: "Georgia, serif" }}>Myntra</span>
-              <span className="text-2xl md:text-3xl font-black tracking-widest text-pink-600">SUGAR</span>
+            <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-8">Example brands creators collaborate with</p>
+            <div className="flex justify-center items-center gap-8 sm:gap-12 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden flex-wrap">
+              <span className="text-2xl md:text-3xl font-black tracking-tighter shrink-0">NYKAA</span>
+              <span className="text-2xl md:text-3xl font-black tracking-tight shrink-0" style={{ fontFamily: "Impact, sans-serif" }}>boAt</span>
+              <span className="text-2xl md:text-3xl font-bold tracking-tight shrink-0">mamaearth</span>
+              <span className="text-2xl md:text-3xl font-black tracking-tight shrink-0" style={{ fontFamily: "Georgia, serif" }}>Myntra</span>
+              <span className="text-2xl md:text-3xl font-black tracking-widest text-pink-600 shrink-0">SUGAR</span>
             </div>
           </div>
         </section>
