@@ -132,6 +132,8 @@ interface DealTemplate {
   quantities: Record<string, number>;
   deadlineDays: number;
   notes?: string;
+  isPopular?: boolean;
+  addons?: { id: string, label: string, price: number }[];
 }
 
 type CollabType = 'paid' | 'barter' | 'hybrid' | 'both' | 'affiliate';
@@ -473,8 +475,8 @@ const CollabLinkLanding = () => {
 
         const defaultTemplates: DealTemplate[] = [
           {
-            id: 'reel_deal',
-            label: 'Reel Deal',
+            id: 'starter_package',
+            label: 'Starter Creator Package',
             icon: '🎬',
             budget: Math.max(reelRate - 1, 999),
             type: 'paid',
@@ -483,7 +485,11 @@ const CollabLinkLanding = () => {
             deliverables: ['Reel'],
             quantities: { 'Reel': 1 },
             deadlineDays: creator.min_lead_time_days || 7,
-            notes: 'Includes 1 revision. Collaborative post included.'
+            notes: 'Includes 1 revision. Collaborative post included.',
+            addons: [
+              { id: 'addon_story', label: '+ Extra Story', price: 200 },
+              { id: 'addon_revision', label: '+ Extra revision', price: 300 }
+            ]
           },
           {
             id: 'engagement_package',
@@ -496,7 +502,8 @@ const CollabLinkLanding = () => {
             deliverables: ['Reel', 'Story'],
             quantities: { 'Reel': 1, 'Story': 2 },
             deadlineDays: creator.min_lead_time_days || 10,
-            notes: 'Stories include direct link + Polls for engagement.'
+            notes: 'Stories include direct link + Polls for engagement.',
+            isPopular: true
           },
           {
             id: 'product_review',
@@ -1651,7 +1658,13 @@ const CollabLinkLanding = () => {
 
 
   const handleUpdateTemplate = (updated: DealTemplate) => {
-    const updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
+    let updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
+
+    // Ensure only one package has the "isPopular" badge
+    if (updated.isPopular) {
+      updatedList = updatedList.map(t => t.id === updated.id ? t : { ...t, isPopular: false });
+    }
+
     setLocalDealTemplates(updatedList);
     setEditingTemplate(null);
 
@@ -1874,8 +1887,8 @@ const CollabLinkLanding = () => {
                         <TrendingUp className="w-4 h-4 text-teal-600" />
                       </div>
                       <div className="text-left">
-                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Creator Insights</h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance, Trust & Logistics</p>
+                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Creator Overview</h3>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
                       </div>
                     </div>
                     {audienceRegionLabel && (
@@ -1884,417 +1897,307 @@ const CollabLinkLanding = () => {
                       </span>
                     )}
                   </AccordionTrigger>
-                  <AccordionContent className="p-0">
-                    <div className="grid grid-cols-2 md:grid-cols-2 gap-px bg-slate-100">
-                      {/* Avg Reel Views */}
-                      <div className="bg-white px-4 py-3 text-left">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Avg Reel Views</p>
-                          {isViewsVerified && <span title="Verified source"><BadgeCheck className="w-3 h-3 text-emerald-500" /></span>}
-                        </div>
-                        {editMode ? (
-                          <Input
-                            type="number"
-                            className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
-                            defaultValue={creator.avg_reel_views || ''}
-                            onBlur={(e) => handleInlineProfileUpdate('avg_reel_views', Number(e.target.value))}
-                            placeholder="e.g. 10000"
-                          />
-                        ) : avgReelViews ? (
-                          <>
+                  <AccordionContent className="p-4 space-y-8 bg-[#F7F9FB]">
+                    {/* 1. Creator Insights Grid */}
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Performance</h4>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {/* Avg Reel Views */}
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Engagement</p>
+                          {editMode ? (
+                            <Input
+                              type="number"
+                              className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
+                              defaultValue={creator.avg_reel_views || ''}
+                              onBlur={(e) => handleInlineProfileUpdate('avg_reel_views', Number(e.target.value))}
+                              placeholder="0"
+                            />
+                          ) : avgReelViews ? (
                             <p className="text-[18px] font-black text-slate-900 leading-tight">
-                              {Number(avgReelViews) >= 1000 ? `${Math.round(Number(avgReelViews) / 1000)}K` : avgReelViews}
+                              {Number(avgReelViews) >= 1000 ? `${Math.round(Number(avgReelViews) / 1000)}K+` : avgReelViews}
                             </p>
-                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">{isViewsVerified ? '✓ Instagram API' : 'Creator Provided'}</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[18px] font-black text-slate-300 leading-tight">—</p>
-                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">Not provided yet</p>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Response Time */}
-                      <div className="bg-white px-4 py-3 text-left">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Response Time</p>
-                          {(avgResponseHours && avgResponseHours > 0) && <span title="Based on past requests"><BadgeCheck className="w-3 h-3 text-emerald-500" /></span>}
+                          ) : (
+                            <p className="text-[18px] font-black text-slate-300">—</p>
+                          )}
                         </div>
-                        {(avgResponseHours && avgResponseHours > 0) ? (
-                          <>
+
+                        {/* Response Time */}
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Response Time</p>
+                          {(avgResponseHours && avgResponseHours > 0) ? (
                             <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(avgResponseHours)}h`}</p>
-                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">✓ Based on past requests</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[18px] font-black text-slate-300 leading-tight">—</p>
-                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">No history yet</p>
-                          </>
-                        )}
-                      </div>
+                          ) : (
+                            <p className="text-[18px] font-black text-slate-300">—</p>
+                          )}
+                        </div>
 
-                      <div className="bg-white px-4 py-3 text-left">
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Brands Worked</p>
-                        {editMode ? (
-                          <Input
-                            type="number"
-                            className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
-                            defaultValue={creator.past_brand_count || ''}
-                            onBlur={(e) => handleInlineProfileUpdate('past_brand_count', Number(e.target.value))}
-                            placeholder="0"
-                          />
-                        ) : (creator.trust_stats?.brands_count != null && creator.trust_stats.brands_count > 0) ? (
-                          <>
+                        {/* Brands Worked */}
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Brands Worked</p>
+                          {editMode ? (
+                            <Input
+                              type="number"
+                              className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
+                              defaultValue={creator.past_brand_count || ''}
+                              onBlur={(e) => handleInlineProfileUpdate('past_brand_count', Number(e.target.value))}
+                              placeholder="0"
+                            />
+                          ) : (creator.trust_stats?.brands_count != null && creator.trust_stats.brands_count > 0) ? (
                             <p className="text-[18px] font-black text-emerald-600 leading-tight">{creator.trust_stats.brands_count}</p>
-                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">✓ Verified Partnerships</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[18px] font-black text-slate-300 leading-tight">New</p>
-                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">Building portfolio</p>
-                          </>
-                        )}
-                      </div>
+                          ) : (
+                            <p className="text-[18px] font-black text-slate-400 leading-tight">New</p>
+                          )}
+                        </div>
 
-                      {/* Completion Rate */}
-                      <div className="bg-white px-4 py-3 text-left">
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-0.5">Completion Rate</p>
-                        {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
-                          <>
+                        {/* Reliability / Completion Rate */}
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Reliability</p>
+                          {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
                             <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
-                            <p className="text-[9px] text-slate-400 mt-0.5 font-bold uppercase tracking-tight">✓ Deal Fulfillment</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[18px] font-black text-slate-300 leading-tight">—</p>
-                            <p className="text-[9px] text-slate-300 mt-0.5 font-bold uppercase tracking-tight">No deals completed yet</p>
-                          </>
-                        )}
+                          ) : (
+                            <p className="text-[18px] font-black text-slate-300">—</p>
+                          )}
+                        </div>
                       </div>
                     </div>
 
+                    {/* 2. Creator Logistics Grid */}
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Logistics</h4>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Availability</p>
+                          <p className="text-[13px] font-black text-emerald-600 leading-tight">Open this month</p>
+                        </div>
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Base City</p>
+                          <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{audienceRegionLabel || 'Global'}</p>
+                        </div>
+                      </div>
+                    </div>
 
-                    <div className="p-5 border-t border-slate-100 bg-slate-50/50">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-6">
-                          <div>
-                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 border-l-2 border-teal-500 pl-2 flex items-center justify-between">
-                              Typical Reel Rate
-                              {editMode && <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Set your base rate</span>}
-                            </h4>
-                            <div className="grid grid-cols-1 gap-2">
-                              {editMode && (
-                                <div className="mb-2 bg-teal-50/50 p-3 rounded-xl border border-teal-100/50">
-                                  <p className="text-[10px] font-bold text-teal-700 uppercase mb-2">Base Reel Rate (₹)</p>
-                                  <div className="flex gap-2">
-                                    <Input
-                                      type="number"
-                                      className="h-9 bg-white border-teal-200 text-teal-900 font-bold"
-                                      defaultValue={creator.suggested_reel_rate || ''}
-                                      placeholder="e.g. 5000"
-                                      onBlur={(e) => handleInlineProfileUpdate('suggested_reel_rate', Number(e.target.value))}
-                                    />
-                                    <div className="flex-1 bg-white border border-teal-100 rounded-md px-2 flex flex-col justify-center">
-                                      <p className="text-[9px] text-slate-400 font-bold uppercase leading-none mb-1">Preview</p>
-                                      <p className="text-xs font-black text-teal-800 leading-none">₹{Math.round(Number(creator.suggested_reel_rate || 0) / 1000)}K</p>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
+                    {/* 3. Typical Collab Rate (Anchor) */}
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Typical Collab Rate</h4>
+                      <div className="bg-white p-4 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3">
+                        <div>
+                          {editMode ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[14px] font-black text-slate-900 leading-tight">₹</span>
+                              <Input
+                                type="number"
+                                className="h-8 text-[16px] font-black text-slate-900 px-2 bg-slate-50 border-slate-200 border-dashed w-32"
+                                defaultValue={creator.suggested_reel_rate || ''}
+                                onBlur={(e) => handleInlineProfileUpdate('suggested_reel_rate', Number(e.target.value))}
+                                placeholder="Base Rate"
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-[20px] font-black text-slate-900 leading-tight">
                               {(() => {
                                 const reelRate = creator.suggested_reel_rate;
                                 const paidMin = creator.suggested_paid_range_min;
                                 const paidMax = creator.suggested_paid_range_max;
-                                const hasRate = reelRate && reelRate > 0;
-                                const rateLabel = hasRate
-                                  ? (paidMin && paidMax
-                                    ? `₹${Math.round(paidMin / 1000)}K – ₹${Math.round(paidMax / 1000)}K`
-                                    : `₹${Math.round(reelRate / 1000)}K`)
-                                  : null;
-                                return [
-                                  { label: 'Instagram Reel', rate: rateLabel },
-                                ].map(p => (
-                                  <div key={p.label}>
-                                    <div className="bg-white border border-slate-200 px-3 py-2.5 rounded-xl flex items-center justify-between shadow-sm">
-                                      <span className="text-[13px] font-bold text-slate-700">{p.label}</span>
-                                      {p.rate
-                                        ? <span className="text-[15px] font-black text-teal-800">{p.rate}</span>
-                                        : <span className="text-[13px] font-semibold text-slate-500">Not set</span>
-                                      }
-                                    </div>
-                                    <p className="text-[10px] text-slate-500 font-medium mt-1.5 ml-1 italic leading-tight">
-                                      Stories & static posts are usually included in collaboration packages.
-                                    </p>
-                                  </div>
-                                ));
-                              })()}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2.5">
-                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 border-l-2 border-teal-500 pl-2">Logistics</h4>
-                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm border-l-2 border-l-emerald-400">
-                              <span className="text-slate-500 font-medium flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-emerald-600" />Availability</span>
-                              <span className="font-bold text-emerald-700">Open for collaborations this month</span>
-                            </div>
-                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                              <span className="text-slate-500 font-medium flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Base City</span>
-                              <span className="font-bold text-slate-800">{audienceRegionLabel || '—'}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                              <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5 text-blue-500" />Reply Time</span>
-                              <span className="font-bold text-slate-800">
-                                {(avgResponseHours && avgResponseHours > 0)
-                                  ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
-                                  : '—'}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                              <span className="text-slate-500 font-medium flex items-center gap-2"><Wallet className="h-3.5 w-3.5" />Payment Methods</span>
-                              <span className="font-bold text-slate-800">UPI, Bank Transfer</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="space-y-6">
-                          <div>
-                            <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Expected SLA & Rights</h4>
-                            <div className="space-y-2">
-                              {creator.collab_delivery_reliability_note ? (
-                                <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                                  <span className="text-slate-500 font-medium flex items-center gap-2"><Clock className="h-3.5 w-3.5" />Delivery</span>
-                                  <span className="font-bold text-slate-800 text-right max-w-[55%] text-[12px]">{creator.collab_delivery_reliability_note}</span>
-                                </div>
-                              ) : null}
-                              {creator.collab_cta_trust_note ? (
-                                <div className="flex items-center justify-between text-[13px] bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
-                                  <span className="text-slate-500 font-medium flex items-center gap-2"><ArrowRight className="h-3.5 w-3.5" />Rights</span>
-                                  <span className="font-bold text-slate-800 text-right max-w-[55%] text-[12px]">{creator.collab_cta_trust_note}</span>
-                                </div>
-                              ) : null}
-                              {!creator.collab_delivery_reliability_note && !creator.collab_cta_trust_note && (
-                                <p className="text-[12px] text-slate-300 italic">Not specified yet</p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-emerald-500 pl-2">Audience Context</h4>
-                            <div className="space-y-2.5">
-                              {/* Core Geo — only show if top cities exist */}
-                              {audienceCities.length > 0 && (
-                                <div className="flex items-center justify-between text-[13px]">
-                                  <span className="text-slate-500 font-medium flex items-center gap-2"><Globe className="h-3.5 w-3.5" />Core Geo</span>
-                                  <span className="font-bold text-slate-800">{audienceCities.slice(0, 2).join(', ')}</span>
-                                </div>
-                              )}
-                              {/* Audience Age */}
-                              <div className="flex items-center justify-between text-[13px]">
-                                <span className="text-slate-500 font-medium flex items-center gap-2"><Users className="h-3.5 w-3.5" />Audience Age</span>
-                                {creator.audience_age_range
-                                  ? <span className="font-bold text-slate-800 whitespace-pre-line text-right">{creator.audience_age_range}</span>
-                                  : <span className="font-semibold text-slate-300">—</span>
+                                if (paidMin && paidMax) {
+                                  return `₹${Math.round(paidMin / 1000)}K – ₹${Math.round(paidMax / 1000)}K`;
                                 }
-                              </div>
-                              {/* Languages */}
-                              {audienceLanguage && (
-                                <div className="mt-2 space-y-1.5">
-                                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest"><Languages className="h-3 w-3 inline mr-1" />Languages</span>
-                                  <div className="flex flex-wrap gap-1.5 pt-0.5">
-                                    {audienceLanguage.split(',').map(lang => (
-                                      <span key={lang.trim()} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md shadow-sm">{lang.trim()}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Best Fit / Supports — only show if real data is available */}
-                            {((creator.content_niches?.length ?? 0) > 0 || recentCampaignTypes.length > 0) && (
-                              <div className="pt-4">
-                                <div className="bg-white/50 border border-slate-200 rounded-xl p-3">
-                                  {(creator.content_niches?.length ?? 0) > 0 && (
-                                    <>
-                                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-pink-500" /> Best fit for</p>
-                                      <div className="flex flex-wrap gap-1.5 mb-3">
-                                        {(creator.content_niches ?? []).map(cat => (
-                                          <span key={cat} className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-md">{cat}</span>
-                                        ))}
-                                      </div>
-                                    </>
-                                  )}
-                                  {recentCampaignTypes.length > 0 && (
-                                    <>
-                                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Supports</p>
-                                      <div className="flex flex-wrap gap-1.5">
-                                        {recentCampaignTypes.map(cat => (
-                                          <span key={cat} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">{cat}</span>
-                                        ))}
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                                if (reelRate) {
+                                  return `₹${Math.round(reelRate / 1000)}K+`;
+                                }
+                                return '—';
+                              })()}
+                            </p>
+                          )}
+                        </div>
+                        <div className="pt-3 border-t border-[#EEF2F5]">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Includes</p>
+                          <ul className="space-y-1.5">
+                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                              1 Reel
+                            </li>
+                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                              Stories usually included
+                            </li>
+                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
+                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                              Delivery: 3–5 days
+                            </li>
+                          </ul>
                         </div>
                       </div>
                     </div>
 
-                    {(avgReelViews || primaryFollowers > 0) && (
-                      <div className="p-5 border-t border-slate-100 bg-teal-50/20">
-                        <p className="text-[10px] text-teal-800 font-black uppercase tracking-widest mb-4 flex items-center justify-between">
-                          <span>Market Impact (Est. per campaign)</span>
-                          <span className="text-teal-700 bg-white border border-teal-300 shadow-sm px-2 py-0.5 rounded-full font-black text-[8px] uppercase tracking-wider">Live Connection Verified</span>
-                        </p>
-                        <div className="grid grid-cols-2 gap-3 md:gap-8">
-                          <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3.5 shadow-sm">
-                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider mb-1">Typical Engagement</p>
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">
-                              {avgReelViews
-                                ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
-                                : `${Math.round(primaryFollowers * 0.1 / 1000)}K–${Math.round(primaryFollowers * 0.3 / 1000)}K`
-                              }
-                              <span className="block text-[10px] text-slate-400 font-bold mt-1">Average Views</span>
-                            </p>
-                          </div>
-                          <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3.5 shadow-sm">
-                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider mb-1">Est. Story Reach</p>
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">
-                              {`${Math.round(primaryFollowers * 0.04 / 1000)}K–${Math.round(primaryFollowers * 0.09 / 1000)}K`}
-                              <span className="block text-[10px] text-slate-400 font-bold mt-1">Direct Reach</span>
-                            </p>
-                          </div>
+                    {/* 4. Audience Insights Grid */}
+                    <div className="space-y-3 pb-4">
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Insights</h4>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Core Geo</p>
+                          <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{audienceCities[0] || 'India'}</p>
+                        </div>
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Age Group</p>
+                          <p className="text-[13px] font-black text-slate-900 leading-tight">{creator.audience_age_range || '18–34'}</p>
+                        </div>
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Reel Views</p>
+                          <p className="text-[15px] font-black text-slate-900 leading-tight">
+                            {avgReelViews
+                              ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
+                              : '3K–10K'
+                            }
+                          </p>
+                        </div>
+                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Story Reach</p>
+                          <p className="text-[15px] font-black text-slate-900 leading-tight">
+                            {`${Math.round(primaryFollowers * 0.04 / 1000)}K–${Math.round(primaryFollowers * 0.09 / 1000)}K`}
+                          </p>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
             </div> {/* END LEFT COLUMN */}
 
             {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-            {!showCustomFlow && (
-              <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 -mx-4 px-4 py-6 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF" }}>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                      <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
-                    </div>
+            <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:flex-1 p-5 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF" }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
                   </div>
-                  {isOwner && (
-                    <button
-                      onClick={() => setIsEditingTemplates(!isEditingTemplates)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
-                    >
-                      <Edit className="h-3 w-3" />
-                      <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
-                    </button>
-                  )}
                 </div>
+                {isOwner && (
+                  <button
+                    onClick={() => setIsEditingTemplates(!isEditingTemplates)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
+                  >
+                    <Edit className="h-3 w-3" />
+                    <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
+                  </button>
+                )}
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {dealTemplates.map((template, idx) => {
-                    const deliverablesList = template.deliverables.map(d => {
-                      const qty = template.quantities[d] || 1;
-                      if (d === 'Unboxing Video') return `${qty} Unboxing`;
-                      return `${qty} ${d.replace('Instagram ', '')}`;
-                    }).join(' + ');
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {dealTemplates.map((template, idx) => {
+                  const deliverablesList = template.deliverables.map(d => {
+                    const qty = template.quantities[d] || 1;
+                    if (d === 'Unboxing Video') return `${qty} Unboxing`;
+                    return `${qty} ${d.replace('Instagram ', '')}`;
+                  }).join(' + ');
 
-                    return (
-                      <div key={template.id} className="relative group/card h-full">
-                        {idx === 1 && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                            <div className="bg-[#FFA000] text-[#4A2C00] text-[10px] font-black px-3 py-1 rounded-full border border-amber-300 shadow-lg uppercase tracking-wider flex items-center gap-1.5">
-                              <Sparkles className="h-3 w-3" />
-                              Most Popular
-                            </div>
+                  return (
+                    <div key={template.id} className="relative group/card h-full">
+                      {template.isPopular && (
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
+                          <div className="bg-[#FFA000] text-[#4A2C00] text-[10px] font-black px-3 py-1 rounded-full border border-amber-300 shadow-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3" />
+                            Most Popular
                           </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleTemplateSelect(template)}
-                          className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_12px_32px_rgba(15,164,127,0.12)] scale-[1.03]' : idx === 1 ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)]'}`}
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
-                              {template.icon}
-                            </div>
-                            {selectedTemplateId === template.id ? (
-                              <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm animate-in zoom-in duration-300">
-                                <CheckCircle2 className="w-5 h-5" />
-                              </div>
-                            ) : (
-                              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
-                            )}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleTemplateSelect(template)}
+                        className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_12px_32px_rgba(15,164,127,0.12)] scale-[1.03]' : template.isPopular ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)]'}`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
+                            {template.icon}
                           </div>
-                          <div className="flex-1">
-                            <p className="text-[14px] font-black text-slate-900 mb-0.5">{template.label}</p>
-                            <div className="mb-3">
-                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Includes</p>
-                              <div className="space-y-1">
-                                {template.deliverables.map((d, di) => {
-                                  const qty = template.quantities[d] || 1;
-                                  const label = d === 'Unboxing Video' ? 'Unboxing' : d.replace('Instagram ', '');
-                                  return (
-                                    <div key={di} className="flex items-center gap-1.5">
-                                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0FA47F", opacity: 0.7 }} />
-                                      <span className="text-[11px] font-bold text-slate-600">{qty} {label}</span>
+                          {selectedTemplateId === template.id ? (
+                            <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm animate-in zoom-in duration-300">
+                              <CheckCircle2 className="w-5 h-5" />
+                            </div>
+                          ) : (
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[14px] font-black text-slate-900 mb-0.5">{template.label}</p>
+                          <div className="mb-3">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Includes</p>
+                            <div className="space-y-1">
+                              {template.deliverables.map((d, di) => {
+                                const qty = template.quantities[d] || 1;
+                                const label = d === 'Unboxing Video' ? 'Unboxing' : d.replace('Instagram ', '');
+                                return (
+                                  <div key={di} className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0FA47F", opacity: 0.7 }} />
+                                    <span className="text-[11px] font-bold text-slate-600">{qty} {label}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {template.addons && template.addons.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Add-ons Available</p>
+                                <div className="space-y-1">
+                                  {template.addons.map((addon, ai) => (
+                                    <div key={addon.id || ai} className="flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-100/60 rounded px-2 py-1">
+                                      <span className="text-[10px] font-bold text-slate-600 truncate">{addon.label}</span>
+                                      <span className="text-[10px] font-black text-teal-600">+₹{addon.price}</span>
                                     </div>
-                                  );
-                                })}
+                                  ))}
+                                </div>
                               </div>
-                              <div className="mt-4 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
-                                <Clock className="w-3 h-3 text-slate-400" />
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Delivery: {template.deadlineDays || 7} days</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-auto pt-3 border-t border-slate-100/60 flex flex-col gap-2.5">
-                            {idx === 1 && (
-                              <p className="text-[9px] font-bold text-amber-600/80 italic leading-tight">
-                                Most brands choose this package for higher engagement
-                              </p>
                             )}
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-[18px] font-black text-[#0FA47F] leading-tight tracking-tight">
-                                {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
-                              </p>
-                              <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
-                                {selectedTemplateId === template.id ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                                    Selected
-                                  </>
-                                ) : (
-                                  'Select Package →'
-                                )}
-                              </div>
+                            <div className="mt-4 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Delivery: {template.deadlineDays || 7} days</span>
                             </div>
                           </div>
-                        </button>
-
-                        {isOwner && isEditingTemplates && (
-                          <div className="absolute top-2 right-2 z-10">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingTemplate(template);
-                              }}
-                              className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </button>
+                        </div>
+                        <div className="mt-auto pt-3 border-t border-slate-100/60 flex flex-col gap-2.5">
+                          {template.isPopular && (
+                            <p className="text-[9px] font-bold text-amber-600/80 italic leading-tight">
+                              Most brands choose this package for higher engagement
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-[18px] font-black text-[#0FA47F] leading-tight tracking-tight">
+                              {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
+                            </p>
+                            <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
+                              {selectedTemplateId === template.id ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                                  Selected
+                                </>
+                              ) : (
+                                'Select Package →'
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        </div>
+                      </button>
 
+                      {isOwner && isEditingTemplates && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingTemplate(template);
+                            }}
+                            className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!showCustomFlow && (
                 <div className="mt-6 text-center">
                   <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mb-3">Or create custom</p>
                   <Button
@@ -2311,8 +2214,8 @@ const CollabLinkLanding = () => {
                     <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Desktop-only Bio & Platforms */}
             <div className="hidden lg:block space-y-8">
@@ -3034,8 +2937,8 @@ const CollabLinkLanding = () => {
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </div >
+      </div >
 
       {/* Edit Deal Template Modal */}
       {
@@ -3063,9 +2966,62 @@ const EditDealTemplateModal = ({
 }) => {
   const [edited, setEdited] = useState<DealTemplate>({ ...template });
 
+  const handleDeliverableToggleModal = (val: string) => {
+    setEdited(prev => {
+      const isSelected = prev.deliverables.includes(val);
+      if (isSelected) {
+        if (prev.deliverables.length <= 1) {
+          toast.error('Packages must have at least 1 deliverable.');
+          return prev;
+        }
+        return {
+          ...prev,
+          deliverables: prev.deliverables.filter(d => d !== val),
+        };
+      } else {
+        return {
+          ...prev,
+          deliverables: [...prev.deliverables, val],
+          quantities: { ...prev.quantities, [val]: 1 }
+        };
+      }
+    });
+  };
+
+  const updateDeliverableQuantityModal = (val: string, qty: number) => {
+    if (qty < 1) return;
+    setEdited(prev => ({
+      ...prev,
+      quantities: { ...prev.quantities, [val]: qty }
+    }));
+  };
+
+  const handleAddAddon = () => {
+    setEdited(prev => ({
+      ...prev,
+      addons: [...(prev.addons || []), { id: `addon_${Date.now()}`, label: '', price: 0 }]
+    }));
+  };
+
+  const handleUpdateAddon = (index: number, update: Partial<{ label: string, price: number }>) => {
+    setEdited(prev => {
+      const addons = [...(prev.addons || [])];
+      addons[index] = { ...addons[index], ...update };
+      return { ...prev, addons };
+    });
+  };
+
+  const handleRemoveAddon = (index: number) => {
+    setEdited(prev => {
+      const addons = [...(prev.addons || [])];
+      addons.splice(index, 1);
+      return { ...prev, addons };
+    });
+  };
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-[32px] p-6 bg-white border-none shadow-2xl overflow-hidden">
+      <DialogContent className="max-w-md rounded-[32px] p-6 bg-white border-none shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-emerald-500" />
         <DialogHeader className="pt-2">
           <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
@@ -3074,9 +3030,9 @@ const EditDealTemplateModal = ({
           </DialogTitle>
           <p className="text-xs text-slate-500 font-medium tracking-tight">Set your collaboration package to guide brands.</p>
         </DialogHeader>
-        <div className="space-y-4 py-6">
+        <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Template Label</label>
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Package Name</label>
             <Input
               value={edited.label}
               onChange={(e) => setEdited({ ...edited, label: e.target.value })}
@@ -3084,6 +3040,39 @@ const EditDealTemplateModal = ({
               placeholder="e.g. Pro Reel Package"
             />
           </div>
+
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1 flex justify-between">
+              Deliverables Included
+              <span className="text-[9px] text-slate-300">Required</span>
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {DELIVERABLE_OPTIONS.filter(o => o.value !== 'Custom').map((opt) => {
+                const isSelected = edited.deliverables.includes(opt.value);
+                return (
+                  <div key={opt.value} className={`border rounded-xl p-2 flex items-center justify-between transition-colors ${isSelected ? 'border-teal-500 bg-teal-50/30' : 'border-slate-100 bg-slate-50'}`}>
+                    <label className="flex items-center gap-2 cursor-pointer text-[12px] font-bold text-slate-700 w-full">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleDeliverableToggleModal(opt.value)}
+                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 bg-white"
+                      />
+                      {opt.label}
+                    </label>
+                    {isSelected && (
+                      <div className="flex items-center gap-1.5 shrink-0 bg-white rounded-lg border border-slate-200 px-1 py-0.5 shadow-sm">
+                        <button onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">−</button>
+                        <span className="text-[12px] font-black w-3 text-center text-slate-800">{edited.quantities[opt.value] || 1}</span>
+                        <button onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">+</button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Deal Type</label>
@@ -3102,7 +3091,7 @@ const EditDealTemplateModal = ({
             </div>
             <div className="space-y-2">
               <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">
-                {edited.type === 'paid' ? 'Budget (₹)' : 'Value (₹)'}
+                {edited.type === 'paid' ? 'Price (₹)' : 'Value (₹)'}
               </label>
               <Input
                 type="number"
@@ -3112,23 +3101,89 @@ const EditDealTemplateModal = ({
               />
             </div>
           </div>
+
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Package Description</label>
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Delivery Time</label>
+            <div className="relative">
+              <Input
+                type="number"
+                value={edited.deadlineDays || ''}
+                onChange={(e) => setEdited({ ...edited, deadlineDays: Number(e.target.value) })}
+                placeholder="e.g. 7"
+                className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all pr-12"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-bold text-slate-400 pointer-events-none">
+                Days
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1 flex justify-between">
+              Package Description
+              <span className="text-[9px] text-slate-300 normal-case">{edited.description?.length || 0}/120</span>
+            </label>
             <Textarea
+              maxLength={120}
               value={edited.description}
               onChange={(e) => setEdited({ ...edited, description: e.target.value })}
-              placeholder="e.g. 1 Reel with 2 Revisions & Brand Tag"
-              className="rounded-2xl border-slate-200 bg-slate-50 min-h-[100px] font-medium focus:bg-white transition-all py-3 px-4"
+              placeholder="e.g. Best for product launches. Includes 1 reel + 2 story mentions."
+              className="rounded-2xl border-slate-200 bg-slate-50 min-h-[80px] font-medium focus:bg-white transition-all py-3 px-4 resize-none"
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Creator Notes (Optional)</label>
-            <Input
-              value={edited.notes || ''}
-              onChange={(e) => setEdited({ ...edited, notes: e.target.value })}
-              placeholder="e.g. Include shipping costs"
-              className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all"
-            />
+
+          <div className="space-y-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Optional Add-ons</label>
+              <button onClick={handleAddAddon} className="flex items-center gap-1 text-[10px] font-black uppercase text-teal-600 bg-teal-50 px-2 py-1 rounded hover:bg-teal-100 transition-colors">
+                <span className="text-xl leading-none -mt-0.5">+</span> Add Item
+              </button>
+            </div>
+            {edited.addons?.map((addon, index) => (
+              <div key={addon.id} className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                <Input
+                  className="flex-1 rounded-lg border-slate-200 bg-white h-10 font-bold focus:bg-white transition-all text-[12px]"
+                  placeholder="e.g. + Extra Story"
+                  value={addon.label}
+                  onChange={(e) => handleUpdateAddon(index, { label: e.target.value })}
+                />
+                <div className="relative w-24 shrink-0">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[11px]">₹</span>
+                  <Input
+                    type="number"
+                    className="w-full rounded-lg border-slate-200 bg-white h-10 font-black text-teal-600 focus:bg-white transition-all pl-6 text-[12px]"
+                    placeholder="200"
+                    value={addon.price || ''}
+                    onChange={(e) => handleUpdateAddon(index, { price: Number(e.target.value) })}
+                  />
+                </div>
+                <button onClick={() => handleRemoveAddon(index)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            {(!edited.addons || edited.addons.length === 0) && (
+              <p className="text-[10px] font-bold text-slate-400 italic text-center py-2">No add-ons created. Offer extras to clear upsell deals.</p>
+            )}
+          </div>
+
+          <div className="py-2 pt-4 border-t border-slate-100">
+            <label className="flex items-center gap-2 cursor-pointer bg-amber-50/50 hover:bg-amber-50 p-3 rounded-xl border border-amber-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={edited.isPopular || false}
+                onChange={(e) => {
+                  // Update current logic for exclusive highlight marking if necessary, or just mark this.
+                  // We'll trust the parent to handle exclusivity if needed, or we just rely on state.
+                  setEdited({ ...edited, isPopular: e.target.checked })
+                }}
+                className="rounded border-amber-300 text-[#FFA000] focus:ring-[#FFA000] h-4 w-4"
+              />
+              <span className="text-[13px] font-bold text-amber-700 flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4" />
+                Mark as most popular
+              </span>
+            </label>
           </div>
         </div>
         <DialogFooter className="gap-2 sm:gap-3">
