@@ -980,16 +980,27 @@ router.get('/:username', async (req: Request, res: Response) => {
       : null;
     let resolvedProfilePhoto: string | null = normalizeImageUrl(p.instagram_profile_photo) || null;
     let resolvedBio: string | null = profile.bio || null;
-    let resolvedName: string | null = profile.business_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || null;
+    const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    let resolvedName: string | null = fullName || null;
+    const primaryPublicHandle = (profile.instagram_handle || '').trim() || (profile.username || '').trim() || null;
+    const instagramSourceHandle = (profile.instagram_handle || '').trim() || primaryPublicHandle;
 
     // If public Instagram data is missing or followers are 0, fetch a cached public fallback for better collab-page UX.
-    if (profile.instagram_handle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio || !resolvedName)) {
+    if (instagramSourceHandle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio || !resolvedName)) {
       try {
-        const instagramData = await getCachedInstagramPublicData(profile.instagram_handle);
-        if (!resolvedInstagramFollowers && typeof instagramData?.followers === 'number') {
+        const shouldForceFreshInstagram =
+          Boolean((profile.instagram_handle || '').trim())
+          && Boolean((profile.username || '').trim())
+          && (profile.instagram_handle || '').trim().toLowerCase() !== (profile.username || '').trim().toLowerCase();
+
+        const instagramData = shouldForceFreshInstagram
+          ? await fetchInstagramPublicData(instagramSourceHandle)
+          : await getCachedInstagramPublicData(instagramSourceHandle);
+
+        if (typeof instagramData?.followers === 'number') {
           resolvedInstagramFollowers = instagramData.followers;
         }
-        if (!resolvedProfilePhoto && instagramData?.profile_photo) {
+        if (instagramData?.profile_photo) {
           resolvedProfilePhoto = normalizeImageUrl(instagramData.profile_photo);
         }
         if (!resolvedBio && instagramData?.bio) {
@@ -1003,10 +1014,14 @@ router.get('/:username', async (req: Request, res: Response) => {
       }
     }
 
-    if (profile.instagram_handle) {
+    if (!resolvedName && profile.business_name) {
+      resolvedName = profile.business_name;
+    }
+
+    if (primaryPublicHandle) {
       platforms.push({
         name: 'Instagram',
-        handle: profile.instagram_handle,
+        handle: primaryPublicHandle,
         followers: resolvedInstagramFollowers ?? undefined,
       });
     }
@@ -1040,7 +1055,7 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     // Get creator name
-    const creatorName = resolvedName || profile.instagram_handle || 'Creator';
+    const creatorName = resolvedName || primaryPublicHandle || 'Creator';
 
     // Public trust metrics for conversion (safe aggregates only)
     let trustStats: {

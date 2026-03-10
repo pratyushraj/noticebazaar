@@ -358,7 +358,7 @@ const withNeutralPrefix = (text: string, prefix: string) => {
 };
 
 const CollabLinkLanding = () => {
-  const { user } = useSession();
+  const { user, profile } = useSession();
   const updateProfileMutation = useUpdateProfile();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -528,6 +528,51 @@ const CollabLinkLanding = () => {
   const isOwner = useMemo(() => {
     return Boolean(user?.id && creator?.id && user.id === creator.id);
   }, [user?.id, creator?.id]);
+
+  // Keep owner preview aligned with latest profile edits even if public API fields lag behind.
+  useEffect(() => {
+    if (!creator || !user?.id || creator.id !== user.id) return;
+
+    const latestHandle = (profile?.instagram_handle || profile?.username || creator.username || '').replace(/^@/, '').trim();
+    const latestName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
+
+    const nextPlatforms = Array.isArray(creator.platforms)
+      ? creator.platforms.map((platform) =>
+        platform.name.toLowerCase() === 'instagram' && latestHandle
+          ? { ...platform, handle: latestHandle }
+          : platform
+      )
+      : [];
+
+    const hasInstagramPlatform = nextPlatforms.some((platform) => platform.name.toLowerCase() === 'instagram');
+    if (!hasInstagramPlatform && latestHandle) {
+      nextPlatforms.unshift({ name: 'Instagram', handle: latestHandle });
+    }
+
+    const nextName = latestName || creator.name;
+    const nextUsername = latestHandle || creator.username;
+
+    const instagramHandle = nextPlatforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '';
+    const isSameName = nextName === creator.name;
+    const isSameUsername = nextUsername === creator.username;
+    const isSameInstagramHandle = instagramHandle === (creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '');
+
+    if (isSameName && isSameUsername && isSameInstagramHandle) return;
+
+    setCreator((prev) => prev ? {
+      ...prev,
+      name: nextName,
+      username: nextUsername,
+      platforms: nextPlatforms,
+    } : prev);
+  }, [
+    creator,
+    user?.id,
+    profile?.first_name,
+    profile?.last_name,
+    profile?.instagram_handle,
+    profile?.username,
+  ]);
 
   const isDeadlineProvided = Boolean(deadline);
   const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
@@ -1492,7 +1537,7 @@ const CollabLinkLanding = () => {
 
   // Generate SEO meta tags
   const creatorName = creator.name || 'Creator';
-  const normalizedHandle = (creator.username || username || '').replace(/^@/, '').trim();
+  const normalizedHandle = (creator.platforms?.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username || username || '').replace(/^@/, '').trim();
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : '';
   const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | CreatorArmour`;
   // const platformNames = platforms.map(p => p.name).join(', ');
@@ -1515,7 +1560,7 @@ const CollabLinkLanding = () => {
   const metaDescription = `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via CreatorArmour.`.substring(0, 158);
 
   // Use clean URL for SEO (no hash)
-  const canonicalUrl = `https://creatorarmour.com/collab/${encodeURIComponent(normalizedHandle || creator.username)}`;
+  const canonicalUrl = `https://creatorarmour.com/collab/${encodeURIComponent(normalizedHandle)}`;
   const pageImage = creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
     ? creator.profile_photo
     : 'https://creatorarmour.com/og-preview.png';
@@ -1806,7 +1851,7 @@ const CollabLinkLanding = () => {
                     ) : (
                       <div className="flex flex-col gap-1.5 mt-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <a href={`https://instagram.com/${creator.username}`} target="_blank" rel="noreferrer" className="text-[13px] text-teal-600 font-bold hover:underline">@{creator.username}</a>
+                          <a href={`https://instagram.com/${normalizedHandle}`} target="_blank" rel="noreferrer" className="text-[13px] text-teal-600 font-bold hover:underline">@{normalizedHandle}</a>
                           <span className="text-slate-300 text-xs">·</span>
                           <span className="text-[13px] text-slate-500 font-semibold">{formatFollowers(primaryFollowers)} Instagram {creator.category || ''}</span>
                         </div>

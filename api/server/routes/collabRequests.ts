@@ -457,10 +457,12 @@ router.get('/:username', async (req: Request, res: Response) => {
     const platforms: Array<{ name: string; handle: string; followers?: number }> = [];
     const p = profile as any; // Use type assertion to access potentially missing columns
 
-    if (profile.instagram_handle) {
+    const primaryPublicHandle = (profile.instagram_handle || '').trim() || (profile.username || '').trim() || null;
+
+    if (primaryPublicHandle) {
       platforms.push({
         name: 'Instagram',
-        handle: profile.instagram_handle,
+        handle: primaryPublicHandle,
         followers: p.instagram_followers || undefined,
       });
     }
@@ -494,8 +496,10 @@ router.get('/:username', async (req: Request, res: Response) => {
     }
 
     // Get creator name
-    const creatorName = profile.business_name ||
-      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
+    const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    const creatorName = fullName ||
+      primaryPublicHandle ||
+      profile.business_name ||
       'Creator';
 
     res.json({
@@ -1849,4 +1853,3 @@ router.patch('/:id/decline', async (req: AuthenticatedRequest, res: Response) =>
 });
 
 export default router;
-
