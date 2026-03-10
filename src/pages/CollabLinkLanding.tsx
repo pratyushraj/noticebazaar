@@ -2130,7 +2130,7 @@ const CollabLinkLanding = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                 {dealTemplates.map((template, idx) => {
                   const deliverablesList = template.deliverables.map(d => {
                     const qty = template.quantities[d] || 1;
@@ -2139,7 +2139,7 @@ const CollabLinkLanding = () => {
                   }).join(' + ');
 
                   return (
-                    <div key={template.id} className="relative group/card h-full">
+                    <div key={template.id} className="relative group/card">
                       {template.isPopular && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
                           <div className="bg-[#FFA000] text-[#4A2C00] text-[10px] font-black px-3 py-1 rounded-full border border-amber-300 shadow-lg uppercase tracking-wider flex items-center gap-1.5">
@@ -2151,7 +2151,7 @@ const CollabLinkLanding = () => {
                       <button
                         type="button"
                         onClick={() => handleTemplateSelect(template)}
-                        className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 h-full flex flex-col relative overflow-hidden ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_12px_32px_rgba(15,164,127,0.12)] scale-[1.03]' : template.isPopular ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)]'}`}
+                        className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 min-h-[430px] flex flex-col relative ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_12px_32px_rgba(15,164,127,0.12)] scale-[1.03]' : template.isPopular ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)]'}`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
