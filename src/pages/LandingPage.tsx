@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import {
   ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink
+  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,82 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [activePackageSlide, setActivePackageSlide] = useState(1);
+  const packageSliderRef = useRef<HTMLDivElement | null>(null);
+
+  const packageSlides = [
+    {
+      id: 'reel',
+      icon: '🎬',
+      name: 'Reel Deal',
+      deliverables: ['1 High-Quality Reel', 'Brand Tagging'],
+      price: '₹2,500',
+      cta: 'Select Package',
+    },
+    {
+      id: 'engagement',
+      icon: '🔥',
+      name: 'Engagement Package',
+      deliverables: ['1 Reel', '2 Stories with Link'],
+      price: '₹4,000',
+      cta: 'Select Package',
+      popular: true,
+    },
+    {
+      id: 'review',
+      icon: '📦',
+      name: 'Product Review',
+      deliverables: ['1 Unboxing Video', '1 Story Mention'],
+      price: 'Barter',
+      cta: 'Select Package',
+    },
+    {
+      id: 'custom',
+      icon: '✨',
+      name: 'Custom Collaboration',
+      deliverables: ['Custom deliverables', 'Flexible timeline'],
+      price: 'Custom Quote',
+      cta: 'Propose Deal',
+    },
+  ] as const;
+
+  const getWrappedSlideIndex = (index: number) => {
+    const total = packageSlides.length;
+    return ((index % total) + total) % total;
+  };
+
+  const scrollToPackageSlide = (nextIndex: number) => {
+    const wrappedIndex = getWrappedSlideIndex(nextIndex);
+    const slider = packageSliderRef.current;
+    if (!slider) return;
+    const firstCard = slider.querySelector('[data-package-card]') as HTMLElement | null;
+    if (!firstCard) return;
+    const step = firstCard.offsetWidth + 12; // card width + gap-3
+    slider.scrollTo({ left: wrappedIndex * step, behavior: 'smooth' });
+    setActivePackageSlide(wrappedIndex);
+  };
+
+  useEffect(() => {
+    const slider = packageSliderRef.current;
+    if (!slider) return;
+    const firstCard = slider.querySelector('[data-package-card]') as HTMLElement | null;
+    if (!firstCard) return;
+    const step = firstCard.offsetWidth + 12;
+    slider.scrollLeft = activePackageSlide * step;
+  }, []);
+
+  const handlePackageSliderScroll = () => {
+    const slider = packageSliderRef.current;
+    if (!slider) return;
+    const firstCard = slider.querySelector('[data-package-card]') as HTMLElement | null;
+    if (!firstCard) return;
+    const step = firstCard.offsetWidth + 12;
+    const index = Math.round(slider.scrollLeft / step);
+    const wrappedIndex = getWrappedSlideIndex(index);
+    if (wrappedIndex !== activePackageSlide) {
+      setActivePackageSlide(wrappedIndex);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -338,72 +414,78 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <div className="flex md:grid md:grid-cols-3 gap-5 md:gap-8 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
-                  {/* Card 1 */}
-                  <div className="bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 hover:shadow-xl transition-shadow flex flex-col group min-w-[260px] sm:min-w-[280px] md:min-w-0 snap-start">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">🎬</div>
-                    <h4 className="font-black text-slate-900 text-xl mb-4">Reel Deal</h4>
-                    <ul className="space-y-4 mb-8 flex-1">
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> 1 High-Quality Reel
-                      </li>
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> Brand Tagging
-                      </li>
-                    </ul>
-                    <div className="border-t border-slate-100 pt-6 mt-auto">
-                      <div className="flex items-end gap-1 mb-4">
-                        <span className="text-3xl font-black text-slate-900">₹2,500</span>
-                      </div>
-                      <button className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 rounded-xl font-black text-sm text-slate-800 transition-colors">Select Package</button>
-                    </div>
+                <div className="relative">
+                  <div
+                    ref={packageSliderRef}
+                    onScroll={handlePackageSliderScroll}
+                    className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 no-scrollbar"
+                  >
+                    {packageSlides.map((pkg, index) => {
+                      const isActive = index === activePackageSlide;
+                      return (
+                        <div
+                          key={pkg.id}
+                          data-package-card
+                          className={`snap-start shrink-0 w-[80%] sm:w-[72%] md:w-[56%] lg:w-[48%] rounded-[20px] p-5 md:p-6 border transition-all duration-300 ${isActive ? 'scale-[1.04] border-2 border-[#18A66A] shadow-[0_16px_34px_rgba(24,166,106,0.18)]' : 'border-[rgba(0,0,0,0.06)] shadow-[0_10px_30px_rgba(0,0,0,0.06)]'} bg-white`}
+                        >
+                          {pkg.popular && (
+                            <div className="inline-flex mb-3 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1">
+                              Most Popular
+                            </div>
+                          )}
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl mb-3">
+                            {pkg.icon}
+                          </div>
+                          <h4 className="font-black text-slate-900 text-[28px] leading-tight mb-3">{pkg.name}</h4>
+                          <ul className="space-y-2 mb-4">
+                            {pkg.deliverables.map((line) => (
+                              <li key={line} className="flex items-center gap-2 text-[15px] font-bold text-slate-600">
+                                <Check className="w-4 h-4 text-emerald-500" />
+                                {line}
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="border-t border-slate-100 pt-4">
+                            <p className="text-[38px] leading-none font-black text-slate-900 mb-3">{pkg.price}</p>
+                            <button className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-[linear-gradient(135deg,#19b27b,#0f8f5a)] shadow-[0_8px_18px_rgba(15,143,90,0.28)]">
+                              {pkg.cta}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
-                  {/* Card 2 - Most Popular */}
-                  <div className="bg-emerald-50/30 border-2 border-emerald-500 rounded-[24px] p-6 md:p-8 relative shadow-2xl shadow-emerald-500/10 md:scale-105 z-10 flex flex-col min-w-[260px] sm:min-w-[280px] md:min-w-0 snap-start">
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[12px] font-black uppercase tracking-wider px-4 py-1.5 rounded-full whitespace-nowrap shadow-md">
-                      Most Popular
-                    </div>
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl mb-6">🔥</div>
-                    <h4 className="font-black text-slate-900 text-xl mb-4">Engagement Package</h4>
-                    <ul className="space-y-4 mb-8 flex-1">
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> 1 Reel
-                      </li>
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> 2 Stories with Link
-                      </li>
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> 1 Revision Included
-                      </li>
-                    </ul>
-                    <div className="border-t border-emerald-100 pt-6 mt-auto">
-                      <div className="flex items-end gap-1 mb-4">
-                        <span className="text-3xl font-black text-emerald-600">₹4,000</span>
-                      </div>
-                      <button className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-black text-sm text-white shadow-md transition-colors">Select Package</button>
-                    </div>
+                  <div className="hidden md:flex items-center justify-between absolute inset-y-0 -left-5 -right-5 pointer-events-none">
+                    <button
+                      type="button"
+                      onClick={() => scrollToPackageSlide(activePackageSlide - 1)}
+                      className="pointer-events-auto w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                      aria-label="Previous package"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-slate-700" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollToPackageSlide(activePackageSlide + 1)}
+                      className="pointer-events-auto w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
+                      aria-label="Next package"
+                    >
+                      <ChevronRight className="w-5 h-5 text-slate-700" />
+                    </button>
                   </div>
+                </div>
 
-                  {/* Card 3 */}
-                  <div className="bg-white border border-slate-200 rounded-[24px] p-6 md:p-8 hover:shadow-xl transition-shadow flex flex-col group min-w-[260px] sm:min-w-[280px] md:min-w-0 snap-start">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">📦</div>
-                    <h4 className="font-black text-slate-900 text-xl mb-4">Product Review</h4>
-                    <ul className="space-y-4 mb-8 flex-1">
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> 1 Unboxing Video
-                      </li>
-                      <li className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                        <Check className="w-5 h-5 text-emerald-500" /> 1 Story Mention
-                      </li>
-                    </ul>
-                    <div className="border-t border-slate-100 pt-6 mt-auto">
-                      <div className="flex items-end gap-1 mb-4">
-                        <span className="text-3xl font-black text-slate-900">Barter</span>
-                      </div>
-                      <button className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 rounded-xl font-black text-sm text-slate-800 transition-colors">Select Package</button>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  {packageSlides.map((pkg, dotIndex) => (
+                    <button
+                      key={`${pkg.id}-dot`}
+                      type="button"
+                      onClick={() => scrollToPackageSlide(dotIndex)}
+                      className={`rounded-full transition-all ${dotIndex === activePackageSlide ? 'w-6 h-2 bg-emerald-600' : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'}`}
+                      aria-label={`Go to ${pkg.name}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
