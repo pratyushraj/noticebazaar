@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import {
   ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, ChevronLeft, ChevronRight
+  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink
 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -22,82 +22,6 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const [hasScrolled, setHasScrolled] = useState(false);
-  const [activePackageSlide, setActivePackageSlide] = useState(1);
-  const packageSliderRef = useRef<HTMLDivElement | null>(null);
-
-  const packageSlides = [
-    {
-      id: 'reel',
-      icon: '🎬',
-      name: 'Reel Deal',
-      deliverables: ['1 High-Quality Reel', 'Brand Tagging'],
-      price: '₹2,500',
-      cta: 'Select Package',
-    },
-    {
-      id: 'engagement',
-      icon: '🔥',
-      name: 'Engagement Package',
-      deliverables: ['1 Reel', '2 Stories with Link'],
-      price: '₹4,000',
-      cta: 'Select Package',
-      popular: true,
-    },
-    {
-      id: 'review',
-      icon: '📦',
-      name: 'Product Review',
-      deliverables: ['1 Unboxing Video', '1 Story Mention'],
-      price: 'Barter',
-      cta: 'Select Package',
-    },
-    {
-      id: 'custom',
-      icon: '✨',
-      name: 'Custom Collaboration',
-      deliverables: ['Custom deliverables', 'Flexible timeline'],
-      price: 'Custom Quote',
-      cta: 'Propose Deal',
-    },
-  ] as const;
-
-  const getWrappedSlideIndex = (index: number) => {
-    const total = packageSlides.length;
-    return ((index % total) + total) % total;
-  };
-
-  const scrollToPackageSlide = (nextIndex: number) => {
-    const wrappedIndex = getWrappedSlideIndex(nextIndex);
-    const slider = packageSliderRef.current;
-    if (!slider) return;
-    const firstCard = slider.querySelector('[data-package-card]') as HTMLElement | null;
-    if (!firstCard) return;
-    const step = firstCard.offsetWidth + 12; // card width + gap-3
-    slider.scrollTo({ left: wrappedIndex * step, behavior: 'smooth' });
-    setActivePackageSlide(wrappedIndex);
-  };
-
-  useEffect(() => {
-    const slider = packageSliderRef.current;
-    if (!slider) return;
-    const firstCard = slider.querySelector('[data-package-card]') as HTMLElement | null;
-    if (!firstCard) return;
-    const step = firstCard.offsetWidth + 12;
-    slider.scrollLeft = activePackageSlide * step;
-  }, []);
-
-  const handlePackageSliderScroll = () => {
-    const slider = packageSliderRef.current;
-    if (!slider) return;
-    const firstCard = slider.querySelector('[data-package-card]') as HTMLElement | null;
-    if (!firstCard) return;
-    const step = firstCard.offsetWidth + 12;
-    const index = Math.round(slider.scrollLeft / step);
-    const wrappedIndex = getWrappedSlideIndex(index);
-    if (wrappedIndex !== activePackageSlide) {
-      setActivePackageSlide(wrappedIndex);
-    }
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -414,80 +338,14 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <div className="relative">
-                  <div
-                    ref={packageSliderRef}
-                    onScroll={handlePackageSliderScroll}
-                    className="flex gap-3 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 no-scrollbar"
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6 md:p-8 text-center">
+                  <p className="text-sm font-bold text-slate-500 mb-3">Package preview removed.</p>
+                  <button
+                    onClick={() => navigate('/pratyush')}
+                    className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all"
                   >
-                    {packageSlides.map((pkg, index) => {
-                      const isActive = index === activePackageSlide;
-                      return (
-                        <div
-                          key={pkg.id}
-                          data-package-card
-                          className={`snap-start shrink-0 w-[80%] sm:w-[72%] md:w-[56%] lg:w-[48%] h-[290px] rounded-[20px] p-5 md:p-6 border transition-all duration-300 ${isActive ? 'scale-[1.04] border-2 border-[#18A66A] shadow-[0_16px_34px_rgba(24,166,106,0.18)]' : 'border-[rgba(0,0,0,0.06)] shadow-[0_10px_30px_rgba(0,0,0,0.06)]'} bg-white flex flex-col`}
-                        >
-                          <div className="h-6 mb-2">
-                            {pkg.popular && (
-                              <div className="inline-flex rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1">
-                                Most Popular
-                              </div>
-                            )}
-                          </div>
-                          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl mb-3">
-                            {pkg.icon}
-                          </div>
-                          <h4 className="font-black text-slate-900 text-[28px] leading-tight min-h-[64px] line-clamp-2 mb-2">{pkg.name}</h4>
-                          <ul className="space-y-2 min-h-[64px] mb-3">
-                            {pkg.deliverables.map((line) => (
-                              <li key={line} className="flex items-center gap-2 text-[15px] font-bold text-slate-600">
-                                <Check className="w-4 h-4 text-emerald-500" />
-                                {line}
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="border-t border-slate-100 pt-4 mt-auto">
-                            <p className="text-[38px] leading-none font-black text-slate-900 mb-3">{pkg.price}</p>
-                            <button className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-[linear-gradient(135deg,#19b27b,#0f8f5a)] shadow-[0_8px_18px_rgba(15,143,90,0.28)]">
-                              {pkg.cta}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="hidden md:flex items-center justify-between absolute inset-y-0 -left-5 -right-5 pointer-events-none">
-                    <button
-                      type="button"
-                      onClick={() => scrollToPackageSlide(activePackageSlide - 1)}
-                      className="pointer-events-auto w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
-                      aria-label="Previous package"
-                    >
-                      <ChevronLeft className="w-5 h-5 text-slate-700" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => scrollToPackageSlide(activePackageSlide + 1)}
-                      className="pointer-events-auto w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors"
-                      aria-label="Next package"
-                    >
-                      <ChevronRight className="w-5 h-5 text-slate-700" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {packageSlides.map((pkg, dotIndex) => (
-                    <button
-                      key={`${pkg.id}-dot`}
-                      type="button"
-                      onClick={() => scrollToPackageSlide(dotIndex)}
-                      className={`rounded-full transition-all ${dotIndex === activePackageSlide ? 'w-6 h-2 bg-emerald-600' : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'}`}
-                      aria-label={`Go to ${pkg.name}`}
-                    />
-                  ))}
+                    View Demo Creator Page
+                  </button>
                 </div>
               </div>
             </div>
