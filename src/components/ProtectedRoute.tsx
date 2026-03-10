@@ -6,6 +6,7 @@ import { useSession } from '@/contexts/SessionContext';
 import FullScreenLoader from '@/components/FullScreenLoader';
 import AuthLoadingScreen from '@/components/AuthLoadingScreen';
 import { supabase } from '@/integrations/supabase/client';
+import { getCollabReadiness } from '@/lib/collab/readiness';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,6 +14,29 @@ interface ProtectedRouteProps {
 }
 
 const PROTECTED_LOADER_TIMEOUT_MS = 8000;
+
+const isCreatorCollabProfileComplete = (profile: any): boolean => {
+  const readiness = getCollabReadiness({
+    instagramHandle: profile?.instagram_handle || profile?.username || null,
+    category: profile?.creator_category || null,
+    niches: profile?.content_niches || null,
+    topCities: profile?.top_cities || null,
+    audienceGenderSplit: profile?.audience_gender_split || null,
+    primaryAudienceLanguage: profile?.primary_audience_language || null,
+    postingFrequency: profile?.posting_frequency || null,
+    avgReelViews: profile?.avg_reel_views_manual || null,
+    avgLikes: profile?.avg_likes_manual || null,
+    openToCollabs: profile?.open_to_collabs,
+    avgRateReel: profile?.avg_rate_reel || null,
+    pricingMin: profile?.pricing_min || null,
+    pricingAvg: profile?.pricing_avg || null,
+    pricingMax: profile?.pricing_max || null,
+    regionLabel: profile?.collab_region_label || null,
+    mediaKitUrl: profile?.media_kit_url || null,
+  });
+
+  return readiness.stageKey === 'collaboration_ready' || readiness.stageKey === 'campaign_ready';
+};
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const navigate = useNavigate();
@@ -123,6 +147,16 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
       // Default to Creator Dashboard for ALL users (including clients)
       let targetDashboard = '/creator-dashboard';
+      const isCreatorOrSimilarRole = !profile.role || profile.role === 'creator' || profile.role === 'client';
+      const creatorHandle = (profile.instagram_handle || profile.username || '').replace(/^@/, '').trim();
+      const collabCompletionRoute = creatorHandle
+        ? `/collab/${creatorHandle}?edit=true&required=1`
+        : '/creator-profile?required=1';
+      const collabProfileComplete = isCreatorOrSimilarRole ? isCreatorCollabProfileComplete(profile) : true;
+      const collabBypassRoutes = ['/creator-onboarding', '/creator-profile', '/collab/'];
+      const isOnCollabBypassRoute = collabBypassRoutes.some((route) =>
+        route === '/collab/' ? location.pathname.startsWith(route) : location.pathname.startsWith(route)
+      );
 
       // Special case: pratyushraj@outlook.com always gets creator dashboard
       const userEmail = user?.email?.toLowerCase();
@@ -142,9 +176,10 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         targetDashboard = '/lawyer-dashboard';
       } else {
         // Default: Creator (or client/null role)
-        const isCreatorOrSimilar = !profile.role || profile.role === 'creator' || profile.role === 'client';
-        if (isCreatorOrSimilar && !profile.onboarding_complete) {
+        if (isCreatorOrSimilarRole && !profile.onboarding_complete) {
           targetDashboard = '/creator-onboarding';
+        } else if (isCreatorOrSimilarRole && !collabProfileComplete) {
+          targetDashboard = collabCompletionRoute;
         } else {
           targetDashboard = '/creator-dashboard';
         }
@@ -153,6 +188,17 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       // Only redirect from login or root - don't redirect if already on a valid route
       if (location.pathname === '/login' || location.pathname === '/') {
         navigate(targetDashboard, { replace: true });
+        return;
+      }
+
+      // Hard gate: creator must complete collab profile before entering dashboard/app routes.
+      if (
+        isCreatorOrSimilarRole &&
+        profile.onboarding_complete &&
+        !collabProfileComplete &&
+        !isOnCollabBypassRoute
+      ) {
+        navigate(collabCompletionRoute, { replace: true });
         return;
       }
 
