@@ -21,27 +21,27 @@ import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
 
-// Person Schema Component (for structured data)
-const PersonSchema = ({ schema }: { schema: any }) => {
+// Generic JSON-LD injector for page-specific schema markup
+const JsonLdSchema = ({ schema, schemaKey }: { schema: any; schemaKey: string }) => {
   useEffect(() => {
-    const existingScript = document.querySelector('script[data-schema="person-collab"]');
+    const existingScript = document.querySelector(`script[data-schema="${schemaKey}"]`);
     if (existingScript) {
       existingScript.remove();
     }
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
-    script.setAttribute('data-schema', 'person-collab');
+    script.setAttribute('data-schema', schemaKey);
     script.textContent = JSON.stringify(schema);
     document.head.appendChild(script);
 
     return () => {
-      const scriptToRemove = document.querySelector('script[data-schema="person-collab"]');
+      const scriptToRemove = document.querySelector(`script[data-schema="${schemaKey}"]`);
       if (scriptToRemove) {
         scriptToRemove.remove();
       }
     };
-  }, [schema]);
+  }, [schema, schemaKey]);
 
   return null;
 };
@@ -1722,6 +1722,133 @@ const CollabLinkLanding = () => {
   };
 
   const dealTemplates = localDealTemplates;
+  const creatorCollabSchema = useMemo(() => {
+    const creatorId = creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-');
+    const profilePageId = `${canonicalUrl}#profile-page`;
+    const personId = `${canonicalUrl}#creator`;
+    const serviceId = `${canonicalUrl}#collab-service`;
+    const orgId = 'https://creatorarmour.com/#organization';
+
+    const sameAs = creator.platforms
+      .map((p) => {
+        const handle = (p.handle || '').replace(/^@/, '');
+        switch (p.name.toLowerCase()) {
+          case 'instagram':
+            return handle ? `https://instagram.com/${handle}` : null;
+          case 'youtube':
+            return handle ? `https://youtube.com/${handle}` : null;
+          case 'twitter':
+          case 'x':
+            return handle ? `https://x.com/${handle}` : null;
+          case 'facebook':
+            return p.handle || null;
+          default:
+            return null;
+        }
+      })
+      .filter(Boolean);
+
+    const offerItems = (dealTemplates || []).slice(0, 8).map((template, index) => {
+      const isPaid = template.type === 'paid';
+      const offerDescriptionParts = [
+        template.description?.trim(),
+        Array.isArray(template.deliverables) && template.deliverables.length > 0
+          ? `Includes: ${template.deliverables.join(', ')}`
+          : null,
+      ].filter(Boolean);
+
+      return {
+        '@type': 'Offer',
+        '@id': `${canonicalUrl}#offer-${template.id || index + 1}`,
+        name: template.label || `Creator package ${index + 1}`,
+        category: template.category || 'Creator Collaboration',
+        description: offerDescriptionParts.join(' • '),
+        priceCurrency: 'INR',
+        price: isPaid ? String(template.budget || 0) : '0',
+        availability: 'https://schema.org/InStock',
+        url: canonicalUrl,
+        eligibleRegion: 'IN',
+      };
+    });
+
+    const audienceDescriptionParts = [
+      creator.category ? `${creator.category} creator` : null,
+      followerText || null,
+      audienceRegionLabel || null,
+      audienceLanguage ? `Language: ${audienceLanguage}` : null,
+    ].filter(Boolean);
+
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': orgId,
+          name: 'Creator Armour',
+          alternateName: 'CreatorArmour',
+          url: 'https://creatorarmour.com',
+          logo: 'https://creatorarmour.com/logo.png',
+        },
+        {
+          '@type': 'ProfilePage',
+          '@id': profilePageId,
+          url: canonicalUrl,
+          name: `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Profile`,
+          isPartOf: { '@id': 'https://creatorarmour.com/#website' },
+          about: { '@id': personId },
+          mainEntity: { '@id': personId },
+        },
+        {
+          '@type': 'Person',
+          '@id': personId,
+          identifier: creatorId,
+          name: creatorName,
+          alternateName: creatorHandle || creator.username || creatorName,
+          description: metaDescription,
+          image: pageImage,
+          url: canonicalUrl,
+          jobTitle: creator.category ? `${creator.category} Creator` : 'Content Creator',
+          knowsAbout: creator.content_niches?.length ? creator.content_niches : [creator.category || 'Content Creation'],
+          sameAs,
+          worksFor: { '@id': orgId },
+          interactionStatistic: primaryFollowers
+            ? {
+                '@type': 'InteractionCounter',
+                interactionType: 'https://schema.org/FollowAction',
+                userInteractionCount: Number(primaryFollowers),
+              }
+            : undefined,
+        },
+        {
+          '@type': 'Service',
+          '@id': serviceId,
+          name: `${creatorName} Collaboration Services`,
+          description: audienceDescriptionParts.join(' • ') || metaDescription,
+          provider: { '@id': personId },
+          serviceType: 'Creator Brand Collaboration',
+          areaServed: audienceRegionLabel || 'India',
+          offers: offerItems,
+          termsOfService: 'https://creatorarmour.com/terms-of-service',
+        },
+      ],
+    };
+  }, [
+    creator.id,
+    creator.platforms,
+    creator.category,
+    creator.content_niches,
+    creator.username,
+    creatorName,
+    creatorHandle,
+    canonicalUrl,
+    metaDescription,
+    pageImage,
+    dealTemplates,
+    followerText,
+    audienceRegionLabel,
+    audienceLanguage,
+    primaryFollowers,
+  ]);
 
   return (
     <>
@@ -1743,30 +1870,7 @@ const CollabLinkLanding = () => {
         ]}
       />
 
-      <PersonSchema schema={{
-        '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: creatorName,
-        description: metaDescription,
-        url: canonicalUrl,
-        image: pageImage,
-        jobTitle: creator.category ? `${creator.category} Creator` : 'Content Creator',
-        knowsAbout: creator.category || 'Content Creation',
-        sameAs: creator.platforms.map(p => {
-          switch (p.name.toLowerCase()) {
-            case 'instagram':
-              return `https://instagram.com/${p.handle.replace('@', '')}`;
-            case 'youtube':
-              return `https://youtube.com/${p.handle}`;
-            case 'twitter':
-              return `https://twitter.com/${p.handle.replace('@', '')}`;
-            case 'facebook':
-              return p.handle;
-            default:
-              return null;
-          }
-        }).filter(Boolean),
-      }} />
+      <JsonLdSchema schemaKey="creator-collab-graph" schema={creatorCollabSchema} />
 
       <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900 relative overflow-x-clip" style={{ backgroundColor: "#F7F9FB" }}>
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
