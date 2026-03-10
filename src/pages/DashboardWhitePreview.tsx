@@ -311,17 +311,17 @@ export default function DashboardWhitePreview() {
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gray-100">
                   <TrendingUp className="h-5 w-5 text-gray-700" />
                 </div>
-                Brand Interest Score
+                AI Visibility Score
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-3xl font-bold text-gray-900">78/100</div>
-                  <div className="text-[13px] text-gray-600 mt-1">Good — Brands trust you</div>
+                  <div className="text-3xl font-bold text-gray-900">88/100</div>
+                  <div className="text-[13px] text-gray-600 mt-1">Strong — Highly discoverable</div>
                 </div>
                 <div className="w-20 h-20 rounded-full bg-gray-100 border-4 border-gray-900 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900">78</span>
+                  <span className="text-2xl font-bold text-gray-900">88</span>
                 </div>
               </div>
             </CardContent>
@@ -339,4 +339,3 @@ export default function DashboardWhitePreview() {
     </div>
   );
 }
-
