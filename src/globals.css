@@ -34,11 +34,11 @@
 
 /* Prevent flicker by ensuring body has background color */
 html {
-  background: #000000;
+  background: #ffffff;
 }
 
 body {
-  background: #000000;
+  background: #ffffff;
 }
 
 /* Touch Feedback - Scale Animation */
@@ -556,7 +556,7 @@ body {
   --ios-indigo: #2563EB;
 
   /* Background Colors */
-  --ios-background: #000000;
+  --ios-background: #ffffff;
   --ios-surface: rgba(255, 255, 255, 0.05);
   --ios-surface-elevated: rgba(255, 255, 255, 0.08);
   --ios-surface-high: rgba(255, 255, 255, 0.12);
