@@ -1792,11 +1792,11 @@ const CollabLinkLanding = () => {
             </div>
           </div>
         )}
-        <div className="container mx-auto px-4 pt-4 pb-36 lg:pb-10 lg:pt-10 max-w-lg lg:max-w-[1100px] xl:max-w-[1240px] relative">
-          <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12 w-full">
+        <div className="container mx-auto px-4 pt-4 pb-36 lg:pb-10 lg:pt-10 max-w-lg lg:max-w-[1180px] xl:max-w-[1320px] relative">
+          <div className="flex flex-col lg:grid lg:grid-cols-12 items-start gap-8 lg:gap-10 w-full">
 
             {/* LEFT COLUMN - Creator Context */}
-            <div className="w-full lg:w-[42%] shrink-0 lg:sticky lg:top-24 space-y-6 lg:space-y-8 z-10">
+            <div className="w-full lg:col-span-5 shrink-0 lg:sticky lg:top-24 space-y-6 lg:space-y-8 z-10">
 
               {/* Header - Hero */}
               <div className="mb-6 pt-2 lg:mb-0 lg:pt-0 relative">
@@ -2110,7 +2110,7 @@ const CollabLinkLanding = () => {
             </div> {/* END LEFT COLUMN */}
 
             {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-            <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:flex-1 p-5 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF" }}>
+            <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:col-span-5 p-5 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
@@ -2263,7 +2263,7 @@ const CollabLinkLanding = () => {
             </div>
 
             {/* Desktop-only Bio & Platforms */}
-            <div className="hidden lg:block space-y-8">
+            <div className="hidden lg:block lg:col-span-5 space-y-8">
               <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
                 {editMode ? (
@@ -2441,10 +2441,72 @@ const CollabLinkLanding = () => {
 
 
             {/* RIGHT COLUMN - Offer Form */}
-            <div className="w-full lg:w-[58%] lg:pb-32">
+            <div className="w-full lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:row-span-3 lg:pb-32 lg:sticky lg:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 8px 32px rgba(0,77,64,0.06),0 2px 8px rgba(0,0,0,0.04)" }}>
+                {!showCustomFlow && (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-6">
+                    <div className="rounded-3xl border border-teal-100 bg-gradient-to-br from-teal-50 via-emerald-50 to-white p-6">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-teal-700 mb-2">Fast Track Collaboration</p>
+                      <h3 className="text-[24px] leading-tight font-black text-slate-900 mb-3">
+                        Build your offer in under 2 minutes
+                      </h3>
+                      <p className="text-[14px] text-slate-600 font-medium leading-relaxed">
+                        Pick a package from the left or start a custom deal. We will auto-fill legal terms and get your offer ready for creator approval.
+                      </p>
+                    </div>
 
+                    <div className="grid gap-3">
+                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">1</div>
+                        <div>
+                          <p className="text-[13px] font-black text-slate-900">Choose a package</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review templates are pre-optimized.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">2</div>
+                        <div>
+                          <p className="text-[13px] font-black text-slate-900">Customize campaign details</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Adjust deliverables, budget, and deadline before sending.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">3</div>
+                        <div>
+                          <p className="text-[13px] font-black text-slate-900">Send secure proposal</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured, contract-ready collaboration request.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          const el = document.querySelector('.deal-templates-section');
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }}
+                        className="h-12 rounded-2xl bg-slate-900 text-white hover:bg-black font-black text-[11px] uppercase tracking-widest"
+                      >
+                        Choose Package
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowCustomFlow(true);
+                          setCurrentStep(1);
+                          setSelectedTemplateId(null);
+                          triggerHaptic(HapticPatterns.success);
+                        }}
+                        className="h-12 rounded-2xl border-slate-300 text-slate-700 hover:bg-slate-100 font-black text-[11px] uppercase tracking-widest"
+                      >
+                        Start Custom Deal
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
 
                 {/* Step indicator (Now shows 5 steps) */}
