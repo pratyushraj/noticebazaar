@@ -1766,7 +1766,9 @@ const CollabLinkLanding = () => {
         }).filter(Boolean),
       }} />
 
-      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900" style={{ backgroundColor: "#F7F9FB" }}>
+      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900 relative overflow-x-clip" style={{ backgroundColor: "#F7F9FB" }}>
+        <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
+        <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
         {isOwner && (
           <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex items-center justify-between sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
             <div className="flex items-center gap-3">
@@ -1792,11 +1794,11 @@ const CollabLinkLanding = () => {
             </div>
           </div>
         )}
-        <div className="container mx-auto px-4 pt-4 pb-36 lg:pb-10 lg:pt-10 max-w-lg lg:max-w-[1180px] xl:max-w-[1320px] relative">
-          <div className="flex flex-col lg:grid lg:grid-cols-12 items-start gap-8 lg:gap-10 w-full">
+        <div className="container mx-auto px-4 lg:px-6 pt-4 pb-36 lg:pb-10 lg:pt-10 max-w-lg lg:max-w-[1320px] xl:max-w-[1480px] relative">
+          <div className="flex flex-col lg:grid lg:grid-cols-12 items-start gap-8 lg:gap-12 w-full">
 
             {/* LEFT COLUMN - Creator Context */}
-            <div className="w-full lg:col-span-5 shrink-0 lg:sticky lg:top-24 space-y-6 lg:space-y-8 z-10">
+            <div className="w-full lg:col-span-6 shrink-0 lg:sticky lg:top-24 space-y-6 lg:space-y-9 z-10">
 
               {/* Header - Hero */}
               <div className="mb-6 pt-2 lg:mb-0 lg:pt-0 relative">
@@ -1882,10 +1884,10 @@ const CollabLinkLanding = () => {
                 </div>
 
                 <div className="max-w-xl relative">
-                  <h1 className="text-[28px] md:text-4xl font-[900] tracking-tight text-slate-900 mb-3 leading-[1.15]">
+                  <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-slate-900 mb-3 leading-[1.06]">
                     Book a Collaboration with {creator.name.split(' ')[0]}
                   </h1>
-                  <p className="text-[14px] font-medium text-slate-500 leading-relaxed max-w-sm">
+                  <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
                     Create a legally binding term sheet and launch your campaign with {creator.name.split(' ')[0]}.
                   </p>
                 </div>
@@ -2110,7 +2112,7 @@ const CollabLinkLanding = () => {
             </div> {/* END LEFT COLUMN */}
 
             {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-            <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:col-span-5 p-5 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF" }}>
+            <div className="deal-templates-section mb-6 md:mb-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:col-span-6 p-5 lg:p-6 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
@@ -2151,7 +2153,7 @@ const CollabLinkLanding = () => {
                       <button
                         type="button"
                         onClick={() => handleTemplateSelect(template)}
-                        className={`w-full text-left p-4 rounded-3xl border transition-all group active:scale-95 min-h-[430px] flex flex-col relative ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_12px_32px_rgba(15,164,127,0.12)] scale-[1.03]' : template.isPopular ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_8px_24px_rgba(251,191,36,0.15)] hover:shadow-[0_12px_32px_rgba(251,191,36,0.2)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)]'}`}
+                        className={`w-full text-left p-4 lg:p-5 rounded-3xl border transition-all group active:scale-95 min-h-[430px] lg:min-h-[470px] flex flex-col relative ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[#F3FBF8] shadow-[0_14px_36px_rgba(15,164,127,0.14)] scale-[1.03]' : template.isPopular ? 'border-amber-300 bg-amber-50/60 hover:bg-amber-100/70 shadow-[0_10px_26px_rgba(251,191,36,0.18)] hover:shadow-[0_14px_34px_rgba(251,191,36,0.24)]' : 'border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_26px_rgba(0,0,0,0.10)] hover:shadow-[0_14px_34px_rgba(0,0,0,0.14)]'}`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
@@ -2166,7 +2168,7 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-[14px] font-black text-slate-900 mb-0.5">{template.label}</p>
+                          <p className="text-[14px] lg:text-[16px] font-black text-slate-900 mb-0.5">{template.label}</p>
                           <div className="mb-3">
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Includes</p>
                             <div className="space-y-1">
@@ -2176,7 +2178,7 @@ const CollabLinkLanding = () => {
                                 return (
                                   <div key={di} className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0FA47F", opacity: 0.7 }} />
-                                    <span className="text-[11px] font-bold text-slate-600">{qty} {label}</span>
+                                    <span className="text-[11px] lg:text-[13px] font-bold text-slate-600">{qty} {label}</span>
                                   </div>
                                 );
                               })}
@@ -2187,8 +2189,8 @@ const CollabLinkLanding = () => {
                                 <div className="space-y-1">
                                   {template.addons.map((addon, ai) => (
                                     <div key={addon.id || ai} className="flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-100/60 rounded px-2 py-1">
-                                      <span className="text-[10px] font-bold text-slate-600 truncate">{addon.label}</span>
-                                      <span className="text-[10px] font-black text-teal-600">+₹{addon.price}</span>
+                                      <span className="text-[10px] lg:text-[11px] font-bold text-slate-600 truncate">{addon.label}</span>
+                                      <span className="text-[10px] lg:text-[11px] font-black text-teal-600">+₹{addon.price}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -2196,7 +2198,7 @@ const CollabLinkLanding = () => {
                             )}
                             <div className="mt-4 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
                               <Clock className="w-3 h-3 text-slate-400" />
-                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Delivery: {template.deadlineDays || 7} days</span>
+                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Delivery: {template.deadlineDays || 7} days</span>
                             </div>
                           </div>
                         </div>
@@ -2207,10 +2209,10 @@ const CollabLinkLanding = () => {
                             </p>
                           )}
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-[18px] font-black text-[#0FA47F] leading-tight tracking-tight">
+                            <p className="text-[18px] lg:text-[34px] font-black text-[#0FA47F] leading-tight tracking-tight">
                               {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
                             </p>
-                            <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
+                            <div className="px-3.5 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0F172A", color: "white", borderColor: "#0FA47F" }}>
                               {selectedTemplateId === template.id ? (
                                 <>
                                   <Check className="w-3.5 h-3.5" strokeWidth={3} />
@@ -2263,7 +2265,7 @@ const CollabLinkLanding = () => {
             </div>
 
             {/* Desktop-only Bio & Platforms */}
-            <div className="hidden lg:block lg:col-span-5 space-y-8">
+            <div className="hidden lg:block lg:col-span-6 space-y-8">
               <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
                 {editMode ? (
@@ -2441,19 +2443,34 @@ const CollabLinkLanding = () => {
 
 
             {/* RIGHT COLUMN - Offer Form */}
-            <div className="w-full lg:col-span-7 lg:col-start-6 lg:row-start-1 lg:row-span-3 lg:pb-32 lg:sticky lg:top-24 self-start">
+            <div className="w-full lg:col-span-6 lg:col-start-7 lg:row-start-1 lg:row-span-3 lg:pb-32 lg:sticky lg:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
-              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 8px 32px rgba(0,77,64,0.06),0 2px 8px rgba(0,0,0,0.04)" }}>
+              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
                 {!showCustomFlow && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-6">
-                    <div className="rounded-3xl border border-teal-100 bg-gradient-to-br from-teal-50 via-emerald-50 to-white p-6">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-teal-700 mb-2">Fast Track Collaboration</p>
-                      <h3 className="text-[24px] leading-tight font-black text-slate-900 mb-3">
+                    <div className="rounded-3xl border border-slate-800/20 bg-gradient-to-br from-[#0E2A3E] via-[#13354B] to-[#0F6A63] p-6 lg:p-7 text-white relative overflow-hidden shadow-[0_18px_36px_rgba(15,23,42,0.26)]">
+                      <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10 blur-2xl rounded-full" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200 mb-2">Fast Track Collaboration</p>
+                      <h3 className="text-[24px] lg:text-[32px] leading-[1.1] font-black text-white mb-3">
                         Build your offer in under 2 minutes
                       </h3>
-                      <p className="text-[14px] text-slate-600 font-medium leading-relaxed">
+                      <p className="text-[14px] lg:text-[16px] text-slate-100/90 font-medium leading-relaxed max-w-xl">
                         Pick a package from the left or start a custom deal. We will auto-fill legal terms and get your offer ready for creator approval.
                       </p>
+                      <div className="mt-5 grid grid-cols-3 gap-2.5">
+                        <div className="rounded-xl bg-white/10 border border-white/15 px-3 py-2">
+                          <p className="text-[9px] uppercase tracking-widest text-emerald-200/80 font-black">Contract</p>
+                          <p className="text-[12px] font-black text-white">Auto-drafted</p>
+                        </div>
+                        <div className="rounded-xl bg-white/10 border border-white/15 px-3 py-2">
+                          <p className="text-[9px] uppercase tracking-widest text-emerald-200/80 font-black">Response</p>
+                          <p className="text-[12px] font-black text-white">Usually same day</p>
+                        </div>
+                        <div className="rounded-xl bg-white/10 border border-white/15 px-3 py-2">
+                          <p className="text-[9px] uppercase tracking-widest text-emerald-200/80 font-black">Flow</p>
+                          <p className="text-[12px] font-black text-white">3 quick steps</p>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="grid gap-3">
