@@ -27,7 +27,7 @@ export const FullScreenLoader = ({
   }, []);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
       {/* Branded Loader - Shield with pulse animation */}
       <div className="relative">
         {/* Outer gradient ring with pulse */}
@@ -43,7 +43,7 @@ export const FullScreenLoader = ({
             ease: "easeInOut",
           }}
           style={{
-            background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(99, 102, 241, 0.4))',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(20, 184, 166, 0.25))',
             filter: 'blur(8px)',
           }}
         />
@@ -60,7 +60,7 @@ export const FullScreenLoader = ({
             ease: "easeInOut",
           }}
         >
-          <Shield className="w-12 h-12 text-purple-400 drop-shadow-lg" strokeWidth={2} />
+          <Shield className="w-12 h-12 text-emerald-600 drop-shadow-lg" strokeWidth={2} />
           
           {/* Inner glow */}
           <motion.div
@@ -75,7 +75,7 @@ export const FullScreenLoader = ({
               ease: "easeInOut",
             }}
             style={{
-              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.3), transparent)',
+              background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent)',
             }}
           />
         </motion.div>
@@ -86,7 +86,7 @@ export const FullScreenLoader = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.3 }}
-        className="mt-6 text-lg text-white/90 text-center font-medium"
+        className="mt-6 text-lg text-slate-900 text-center font-medium"
       >
         {message}
       </motion.p>
@@ -96,7 +96,7 @@ export const FullScreenLoader = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          className="mt-2 text-sm text-white/70 text-center max-w-md"
+          className="mt-2 text-sm text-slate-600 text-center max-w-md"
         >
           {secondaryMessage}
         </motion.p>
@@ -121,5 +121,4 @@ export const FullScreenLoader = ({
 };
 
 export default FullScreenLoader;
-
 

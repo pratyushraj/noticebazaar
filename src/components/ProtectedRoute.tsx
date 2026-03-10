@@ -265,15 +265,15 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (authStatus === 'loading' || isCreatingProfile) {
     if (loaderTimedOut && session) {
       return (
-        <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4">
-          <p className="text-lg text-white/90 text-center font-medium mb-2">Taking longer than usual?</p>
-          <p className="text-sm text-white/70 text-center max-w-md mb-6">
+        <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
+          <p className="text-lg text-slate-900 text-center font-semibold mb-2">Taking longer than usual?</p>
+          <p className="text-sm text-slate-600 text-center max-w-md mb-6">
             You can continue to your dashboard. Your profile will finish loading there.
           </p>
           <button
             type="button"
             onClick={() => window.location.replace('/creator-dashboard')}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
           >
             Continue to dashboard
           </button>
@@ -295,17 +295,17 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   // If we have a session but no profile after all attempts, show error message
   if (session && !profile && user) {
     return (
-      <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-4">
+      <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-4">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-white mb-4">Account Setup Issue</h2>
-          <p className="text-white/80 mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Account Setup Issue</h2>
+          <p className="text-slate-600 mb-6">
             We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.
           </p>
           <button
             onClick={() => {
               window.location.reload();
             }}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors"
           >
             Refresh Page
           </button>
