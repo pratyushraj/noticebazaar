@@ -319,30 +319,30 @@ const LandingPage = () => {
 
         {/* 4. MARKETPLACE PACKAGE PREVIEW */}
         <section id="marketplace" className="px-4 sm:px-6 max-w-[1200px] mx-auto scroll-mt-24">
-          <div className="bg-white rounded-[32px] md:rounded-[48px] border border-slate-200 shadow-xl overflow-hidden">
-            <div className="text-center px-6 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12 bg-slate-50/50 border-b border-slate-100">
-              <h2 className="text-3xl md:text-[44px] font-black tracking-tight text-slate-900 mb-4">Your custom marketplace</h2>
-              <p className="text-lg text-slate-500 font-medium">Let brands shop your services like a high-end catalog.</p>
+          <div className="bg-[linear-gradient(180deg,#040B1A_0%,#051127_100%)] rounded-[32px] md:rounded-[48px] border border-[#1E2A44] shadow-[0_30px_80px_rgba(2,8,23,0.5)] overflow-hidden">
+            <div className="text-center px-6 md:px-8 pt-12 md:pt-16 pb-8 md:pb-12 bg-[linear-gradient(180deg,rgba(91,56,255,0.12)_0%,rgba(8,15,32,0.05)_100%)] border-b border-[#1B2941]">
+              <h2 className="text-3xl md:text-[44px] font-black tracking-tight text-white mb-4">Your custom marketplace</h2>
+              <p className="text-lg text-slate-300 font-medium">Let brands shop your services like a high-end catalog.</p>
             </div>
 
-            <div className="p-5 md:p-16 bg-white">
+            <div className="p-5 md:p-16 bg-[radial-gradient(circle_at_top,rgba(107,70,255,0.12),transparent_45%),#040B1A]">
               <div className="max-w-[1000px] mx-auto">
-                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-slate-100">
-                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-slate-100" />
+                <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-[#1B2941]">
+                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-slate-700" />
                   <div className="text-center md:text-left">
-                    <h3 className="text-3xl font-black text-slate-900 mb-1">Rohan Mehta</h3>
-                    <p className="text-base font-bold text-slate-500 flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> 58K followers</p>
+                    <h3 className="text-3xl font-black text-white mb-1">Rohan Mehta</h3>
+                    <p className="text-base font-bold text-slate-300 flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span> 58K followers</p>
                   </div>
                   <div className="md:ml-auto mt-4 md:mt-0">
-                    <button className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all">Collab With Rohan</button>
+                    <button className="text-white font-black px-6 py-3 rounded-xl shadow-[0_10px_28px_rgba(107,70,255,0.3)] bg-[linear-gradient(135deg,#8B3DFF,#4F46E5)] hover:opacity-95 transition-all">Collab With Rohan</button>
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6 md:p-8 text-center">
-                  <p className="text-sm font-bold text-slate-500 mb-3">Package preview removed.</p>
+                <div className="rounded-2xl border border-[#334155] bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_100%)] p-6 md:p-8 text-center backdrop-blur-sm">
+                  <p className="text-sm font-bold text-slate-300 mb-3">Package preview removed.</p>
                   <button
                     onClick={() => navigate('/pratyush')}
-                    className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all"
+                    className="text-white font-black px-8 py-3.5 rounded-xl shadow-[0_12px_30px_rgba(79,70,229,0.35)] bg-[linear-gradient(135deg,#9D4DFF,#4F46E5)] hover:opacity-95 transition-all"
                   >
                     View Demo Creator Page
                   </button>
