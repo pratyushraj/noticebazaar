@@ -32,6 +32,10 @@ const AddToHomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (location.pathname === '/') {
+      setShowBanner(false);
+      return;
+    }
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
     const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
     const isAndroid = /Android/i.test(window.navigator.userAgent);
@@ -98,6 +102,10 @@ const AddToHomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (location.pathname === '/') {
+      setShowNotificationNudge(false);
+      return;
+    }
     const isCreator = profile?.role === 'creator';
     if (!isCreator) return;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;

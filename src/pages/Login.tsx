@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { Scale, ArrowLeft, Loader2 } from 'lucide-react';
+import { Scale, ArrowLeft, Loader2, Download, Share, PlusSquare } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,10 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [showInstallCard, setShowInstallCard] = useState(false);
+  const [isIOSInstallFlow, setIsIOSInstallFlow] = useState(false);
+  const [showIOSInstallSteps, setShowIOSInstallSteps] = useState(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
 
   // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
   useEffect(() => {
@@ -125,6 +129,50 @@ const Login = () => {
     }
   }, [session, loading, navigate]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent) || window.innerWidth < 768;
+    const isIOS = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+    const isSafari = /Safari/i.test(window.navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(window.navigator.userAgent);
+
+    setShowInstallCard(!isStandalone && isMobile);
+    setIsIOSInstallFlow(isIOS && isSafari);
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setDeferredInstallPrompt(event);
+      setShowInstallCard(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredInstallPrompt) {
+      if (isIOSInstallFlow) {
+        setShowIOSInstallSteps(true);
+      } else {
+        toast.message('Install from browser menu', {
+          description: 'Tap browser menu and choose "Install app" or "Add to Home screen".',
+        });
+      }
+      return;
+    }
+
+    try {
+      await deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+    } catch {
+      toast.error('Install prompt not available right now');
+    } finally {
+      setDeferredInstallPrompt(null);
+    }
+  };
+
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -216,6 +264,34 @@ const Login = () => {
           <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Sign In</h2>
           <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Access your creator business OS to manage deals and payouts.</p>
         </div>
+
+        {showInstallCard && (
+          <div className="mb-8 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
+                <Download className="w-5 h-5 text-emerald-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-black text-white">Install CreatorArmour App</h3>
+                <p className="text-xs text-slate-300 mt-1">
+                  Get instant deal alerts and open your dashboard in one tap.
+                </p>
+                {showIOSInstallSteps && isIOSInstallFlow && (
+                  <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-[11px] text-slate-200 space-y-1">
+                    <p className="flex items-center gap-1.5"><Share className="w-3.5 h-3.5 text-emerald-300" /> Tap <span className="font-semibold">Share</span></p>
+                    <p className="flex items-center gap-1.5"><PlusSquare className="w-3.5 h-3.5 text-emerald-300" /> Choose <span className="font-semibold">Add to Home Screen</span></p>
+                  </div>
+                )}
+                <button
+                  onClick={handleInstallClick}
+                  className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition-colors text-sm"
+                >
+                  {isIOSInstallFlow ? 'Add to Home Screen' : 'Install App'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
