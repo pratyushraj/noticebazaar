@@ -150,40 +150,40 @@ const AddToHomeScreen: React.FC = () => {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -80, opacity: 0 }}
-        className="fixed top-0 inset-x-0 z-[120] md:hidden"
+        className="fixed top-0 inset-x-0 z-[9999] md:hidden"
       >
         <div
-          className="bg-[#0B0F14] border-b border-white/10 px-3 py-2"
-          style={{ paddingTop: 'max(8px, env(safe-area-inset-top, 0px))' }}
+          className="bg-white/98 backdrop-blur-xl border-b border-slate-200 px-3 py-1.5 shadow-[0_4px_14px_rgba(15,23,42,0.08)]"
+          style={{ paddingTop: 'max(6px, env(safe-area-inset-top, 0px))' }}
         >
-          <div className="max-w-screen-sm mx-auto flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-6 h-6 text-white" />
+          <div className="max-w-screen-sm mx-auto flex items-center gap-2.5 min-h-[44px]">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 text-emerald-600" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-white font-bold text-[15px] leading-tight">CreatorArmour</p>
-              <p className="text-white/70 text-sm">
-                {isAndroid ? 'Install the app for faster deal alerts' : 'Open in the CreatorArmour app'}
+              <p className="text-slate-900 font-bold text-[14px] leading-tight">Creator Armour</p>
+              <p className="text-slate-500 text-[12px] leading-tight">
+                {isAndroid ? 'Install app for faster deal alerts' : 'Open in the Creator Armour app'}
               </p>
               {showSteps && isIOSDevice && (
-                <div className="mt-1.5 rounded-lg border border-white/15 bg-white/5 px-2 py-1.5 text-[11px] text-white/85">
-                  <p className="flex items-center gap-1"><Share className="w-3 h-3" /> Tap Share</p>
+                <div className="mt-1.5 rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1.5 text-[11px] text-slate-700">
+                  <p className="flex items-center gap-1"><Share className="w-3 h-3 text-emerald-600" /> Tap Share</p>
                   <p className="flex items-center gap-1 mt-0.5"><PlusSquare className="w-3 h-3" /> Add to Home Screen</p>
                 </div>
               )}
             </div>
             <button
               onClick={handleInstall}
-              className="shrink-0 bg-[#0A84FF] hover:bg-[#2190ff] text-white font-bold px-5 py-2 rounded-full text-[17px] leading-none"
+              className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-full text-[13px] leading-none"
             >
               OPEN
             </button>
             <button
               onClick={handleDismiss}
-              className="shrink-0 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"
+              className="shrink-0 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"
               aria-label="Dismiss app banner"
             >
-              <X className="w-4 h-4 text-white/80" />
+              <X className="w-3.5 h-3.5 text-slate-500" />
             </button>
           </div>
         </div>
