@@ -329,6 +329,7 @@ const MobileDashboardDemo = ({
                 first_name,
                 last_name,
                 phone: profileFormData.phone || null,
+                bio: profileFormData.bio || null,
             };
 
             const { error: coreError } = await (supabase as any)
