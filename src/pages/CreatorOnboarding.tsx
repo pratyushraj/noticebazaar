@@ -47,33 +47,12 @@ const CreatorOnboarding = () => {
   const navigate = useNavigate();
   const updateProfileMutation = useUpdateProfile();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'dark';
-  });
+  const [theme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      const newTheme = e.matches ? 'dark' : 'light';
-      setTheme(newTheme);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    document.documentElement.classList.add('light');
+    document.documentElement.classList.remove('dark');
   }, []);
-
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
 
   const [welcomeStep, setWelcomeStep] = useState<WelcomeStep>(0);
   const [setupStep, setSetupStep] = useState<SetupStep>('name');

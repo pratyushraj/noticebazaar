@@ -22,7 +22,7 @@ export const WelcomeScreen2: React.FC<WelcomeScreen2Props> = ({ onNext, onBack }
   return (
     <OnboardingSlide>
       <div className="mt-12 md:mt-0 mb-8">
-        <IconBubble icon={Link2} size="lg" color="purple" animated />
+        <IconBubble icon={Link2} size="lg" color="green" animated />
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">

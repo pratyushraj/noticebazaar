@@ -32,10 +32,9 @@ export const OnboardingProgressBar: React.FC<OnboardingProgressBarProps> = ({
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-blue-600 dark:bg-gradient-to-r dark:from-purple-500 dark:to-indigo-500 h-2 rounded-full"
+          className="bg-gradient-to-r from-emerald-600 to-green-600 h-2 rounded-full"
         />
       </div>
     </div>
   );
 };
-

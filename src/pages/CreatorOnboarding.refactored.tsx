@@ -95,8 +95,8 @@ const CreatorOnboarding = () => {
       <OnboardingContainer>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-purple-400" />
-            <p className="text-white/80">Loading...</p>
+            <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-emerald-500" />
+            <p className="text-slate-600">Loading...</p>
           </div>
         </div>
       </OnboardingContainer>

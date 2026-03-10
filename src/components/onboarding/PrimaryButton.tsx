@@ -16,7 +16,7 @@ interface PrimaryButtonProps {
 
 /**
  * Primary action button for onboarding
- * - Standardized gradient (purple to indigo)
+ * - Standardized gradient (emerald to green)
  * - Consistent padding (px-6 py-3)
  * - Loading state support
  * - iOS 17 style with proper tap targets
@@ -36,8 +36,8 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cn(
-        "bg-blue-600 dark:bg-gradient-to-r dark:from-purple-600 dark:to-indigo-600",
-        "hover:bg-blue-500 dark:hover:from-purple-500 dark:hover:to-indigo-500",
+        "bg-gradient-to-r from-emerald-600 to-green-600",
+        "hover:from-emerald-500 hover:to-green-500",
         "text-white",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "px-6 py-3",
@@ -66,4 +66,3 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
     </button>
   );
 };
-

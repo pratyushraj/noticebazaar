@@ -28,14 +28,14 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
       icon: Shield,
       name: 'Prateek Sharma',
       role: 'Brand Contracts',
-      color: 'purple' as const,
+      color: 'green' as const,
     },
   ];
 
   return (
     <OnboardingSlide>
       <div className="mt-12 md:mt-0 mb-8">
-        <IconBubble icon={LifeBuoy} size="lg" color="purple" animated />
+        <IconBubble icon={LifeBuoy} size="lg" color="green" animated />
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">

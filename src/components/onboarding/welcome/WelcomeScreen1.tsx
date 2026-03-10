@@ -24,7 +24,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="mt-12 md:mt-0 mb-8"
       >
-        <IconBubble icon={Link2} size="lg" color="purple" animated />
+        <IconBubble icon={Link2} size="lg" color="green" animated />
       </motion.div>
 
       <motion.h1
