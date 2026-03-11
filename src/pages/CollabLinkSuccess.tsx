@@ -192,7 +192,7 @@ const CollabLinkSuccess = () => {
                   className="w-full border-white/20 text-white hover:bg-white/10"
                   aria-label="Send another collaboration request"
                 >
-                  <Link to={`/collab/${username}`}>Send another collaboration request</Link>
+                  <Link to={`/${username}`}>Send another collaboration request</Link>
                 </Button>
 
                 {/* Tertiary text link */}
@@ -202,7 +202,7 @@ const CollabLinkSuccess = () => {
                   className="w-full border-white/10 text-purple-200/90 hover:bg-white/5"
                   aria-label="View this creator's collab link again"
                 >
-                  <Link to={`/collab/${username}`}>View this creator&apos;s collab link again</Link>
+                  <Link to={`/${username}`}>View this creator&apos;s collab link again</Link>
                 </Button>
               </>
             )}

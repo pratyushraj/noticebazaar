@@ -150,13 +150,16 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
       const isCreatorOrSimilarRole = !profile.role || profile.role === 'creator' || profile.role === 'client';
       const creatorHandle = (profile.instagram_handle || profile.username || '').replace(/^@/, '').trim();
       const collabCompletionRoute = creatorHandle
-        ? `/collab/${creatorHandle}?edit=true&required=1`
+        ? `/${creatorHandle}?edit=true&required=1`
         : '/creator-profile?required=1';
-      const collabProfileComplete = isCreatorOrSimilarRole ? isCreatorCollabProfileComplete(profile) : true;
+      const collabProfileComplete = isCreatorOrSimilarRole
+        ? (profile.onboarding_complete ? true : isCreatorCollabProfileComplete(profile))
+        : true;
       const collabBypassRoutes = ['/creator-onboarding', '/creator-profile', '/collab/'];
+      const isOnHandleCollabRoute = Boolean(creatorHandle) && location.pathname === `/${creatorHandle}`;
       const isOnCollabBypassRoute = collabBypassRoutes.some((route) =>
         route === '/collab/' ? location.pathname.startsWith(route) : location.pathname.startsWith(route)
-      );
+      ) || isOnHandleCollabRoute;
       const isOnOnboardingRoute = location.pathname.startsWith('/creator-onboarding');
 
       // Special case: pratyushraj@outlook.com always gets creator dashboard

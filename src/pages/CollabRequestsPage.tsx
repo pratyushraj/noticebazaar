@@ -198,7 +198,7 @@ const CollabRequestsPage = () => {
   const copyCollabLink = () => {
     const usernameForLink = profile?.instagram_handle || profile?.username;
     if (usernameForLink) {
-      const link = `${window.location.origin}/collab/${usernameForLink}`;
+      const link = `${window.location.origin}/${usernameForLink}`;
       navigator.clipboard.writeText(link);
       toast.success('Collab link copied to clipboard!');
     }

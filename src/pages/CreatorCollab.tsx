@@ -17,7 +17,7 @@ const CreatorCollab = () => {
   const { profile } = useSession();
   const [activeTab, setActiveTab] = useState<'link' | 'requests'>('requests');
   const usernameForLink = profile?.instagram_handle || profile?.username;
-  const collabLink = usernameForLink ? `${window.location.origin}/collab/${usernameForLink}` : '';
+  const collabLink = usernameForLink ? `${window.location.origin}/${usernameForLink}` : '';
 
   const copyCollabLink = () => {
     if (usernameForLink) {
@@ -114,7 +114,7 @@ const CreatorCollab = () => {
                     Copy Collab Link
                   </motion.button>
                   <motion.a
-                    href={usernameForLink ? `/collab/${usernameForLink}` : undefined}
+                    href={usernameForLink ? `/${usernameForLink}` : undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e: React.MouseEvent) => {

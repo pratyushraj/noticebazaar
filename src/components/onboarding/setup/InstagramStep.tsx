@@ -50,18 +50,14 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
       setAvailability('checking');
       try {
         const apiBaseUrl = getApiBaseUrl();
-        const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(normalized)}`, {
+        const res = await fetch(`${apiBaseUrl}/api/collab/availability/${encodeURIComponent(normalized)}`, {
           method: 'GET',
           signal: controller.signal,
         });
 
-        if (res.status === 404) {
-          setAvailability('available');
-          return;
-        }
-
         if (res.ok) {
-          setAvailability('taken');
+          const payload = await res.json().catch(() => ({}));
+          setAvailability(payload?.available ? 'available' : 'taken');
           return;
         }
 
@@ -119,7 +115,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
             {normalized && (
               <div className="mt-2 space-y-1 text-center">
                 <p className="text-sm text-slate-400 dark:text-white/60">
-                  Your link: <span className="text-blue-600 dark:text-purple-300 font-medium tracking-tight">creatorarmour.com/collab/{normalized || 'username'}</span>
+                  Your link: <span className="text-blue-600 dark:text-purple-300 font-medium tracking-tight">creatorarmour.com/{normalized || 'username'}</span>
                 </p>
                 {availability === 'checking' && (
                   <p className="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">

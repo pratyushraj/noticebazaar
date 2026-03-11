@@ -278,7 +278,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
   const hasUsername = Boolean(usernameResolved && usernameResolved.trim() !== '');
   const doCopyCollabLink = copyCollabLink ?? (() => {
     if (!usernameResolved) return;
-    navigator.clipboard.writeText(`${window.location.origin}/collab/${usernameResolved}`);
+    navigator.clipboard.writeText(`${window.location.origin}/${usernameResolved}`);
     toast.success('Collab link copied to clipboard!');
   });
 
@@ -323,7 +323,7 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
                   </Button>
                   <Button
                     variant="ghost"
-                    onClick={() => usernameResolved && window.open(`/collab/${usernameResolved}`, '_blank')}
+                    onClick={() => usernameResolved && window.open(`/${usernameResolved}`, '_blank')}
                     className="w-full min-h-[48px] text-purple-300/90 hover:text-purple-200 text-sm"
                   >
                     <ExternalLink className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />

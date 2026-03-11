@@ -336,14 +336,13 @@ const App = () => {
                         <Route path="/collab/accept/:requestToken" element={<CollabAcceptPage />} />
                         <Route path="/collab/push-test" element={<Navigate to="/push-test" replace />} />
                         <Route path="/collab-action" element={<CollabActionPage />} />
-                        {/* Primary route: /collab/:username (clean URL for SEO) */}
-                        <Route path="/collab/:username" element={<CollabLinkLanding />} />
-                        <Route path="/collab/:username/success" element={<CollabLinkSuccess />} />
+                        {/* Primary public creator routes: /:username */}
+                        <Route path="/:username" element={<CollabLinkLanding />} />
+                        <Route path="/:username/success" element={<CollabLinkSuccess />} />
 
-                        {/* Legacy redirect: /:username → /collab/:username (for backward compatibility) */}
-                        {/* Keep this for existing links shared in bios, emails, etc. */}
-                        <Route path="/:username" element={<LegacyCollabRedirect />} />
-                        <Route path="/:username/success" element={<LegacyCollabSuccessRedirect />} />
+                        {/* Legacy redirect: /collab/:username → /:username */}
+                        <Route path="/collab/:username" element={<LegacyCollabRedirect />} />
+                        <Route path="/collab/:username/success" element={<LegacyCollabSuccessRedirect />} />
 
                         {/* Client-specific routes - Redirected to Creator Dashboard */}
                         <Route path="/client-dashboard" element={<Navigate to="/creator-dashboard" replace />} />

@@ -60,6 +60,7 @@ import pushNotificationsRouter from './routes/pushNotifications.js';
 import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
+import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
@@ -606,6 +607,7 @@ app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabReque
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
+app.use('/api/onboarding-emails', authMiddleware, rateLimitMiddleware, onboardingEmailsRouter);
 
 // 404 handler for API routes (must be before error handler)
 app.use('/api/*', (req: express.Request, res: express.Response) => {

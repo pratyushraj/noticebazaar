@@ -46,6 +46,7 @@ interface OnboardingData {
   collabResponseHours: string;
   collabBio: string;
   collabFollowers: string;
+  collabBrandsCompleted: string;
   audienceGenderSplit: string;
   primaryAudienceLanguage: string;
   postingFrequency: string;
@@ -61,6 +62,14 @@ const normalizeDealType = (value: unknown): DealType => {
     ? value
     : 'all';
 };
+
+const toTitleCaseName = (value: string) =>
+  value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
 
 const CreatorOnboarding = () => {
   const { profile, loading: sessionLoading, refetchProfile, user } = useSession();
@@ -93,6 +102,7 @@ const CreatorOnboarding = () => {
           collabResponseHours: '3',
           collabBio: '',
           collabFollowers: '',
+          collabBrandsCompleted: '',
           audienceGenderSplit: '',
           primaryAudienceLanguage: '',
           postingFrequency: '',
@@ -120,6 +130,7 @@ const CreatorOnboarding = () => {
       collabResponseHours: '3',
       collabBio: '',
       collabFollowers: '',
+      collabBrandsCompleted: '',
       audienceGenderSplit: '',
       primaryAudienceLanguage: '',
       postingFrequency: '',
@@ -131,6 +142,7 @@ const CreatorOnboarding = () => {
     };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
 
   // Swipe gesture support for all screens
@@ -296,7 +308,12 @@ const CreatorOnboarding = () => {
 
   const handleNichesNext = () => {
     if (onboardingData.contentNiches.length > 0) {
+      const inferredCategory = onboardingData.contentNiches[0] || '';
       setSetupStep('reelRate');
+      setOnboardingData((prev) => ({
+        ...prev,
+        collabCategory: prev.collabCategory?.trim() || inferredCategory,
+      }));
     }
   };
 
@@ -319,12 +336,8 @@ const CreatorOnboarding = () => {
   };
 
   const handleBasicsNext = () => {
-    if (onboardingData.collabCategory.trim().length < 2) {
-      toast.error('Please enter your creator category');
-      return;
-    }
     if (onboardingData.collabCity.trim().length < 2) {
-      toast.error('Please enter your primary city');
+      toast.error('Please enter top audience city');
       return;
     }
     setSetupStep('collabReady');
@@ -337,6 +350,10 @@ const CreatorOnboarding = () => {
     }
     if (!Number.isFinite(Number(onboardingData.collabFollowers)) || Number(onboardingData.collabFollowers) <= 0) {
       toast.error('Please enter your Instagram followers');
+      return;
+    }
+    if (!Number.isFinite(Number(onboardingData.collabBrandsCompleted)) || Number(onboardingData.collabBrandsCompleted) < 0) {
+      toast.error('Please enter completed brand deals (0 or more)');
       return;
     }
     if (!onboardingData.audienceGenderSplit.trim() && !onboardingData.primaryAudienceLanguage.trim()) {
@@ -364,6 +381,134 @@ const CreatorOnboarding = () => {
       return;
     }
     handleOnboardingComplete();
+  };
+
+  const roundToNearest = (value: number, step: number) => Math.round(value / step) * step;
+
+  const handleAutoSuggestPrices = () => {
+    const followers = Number(onboardingData.collabFollowers) || 0;
+    const avgViews = Number(onboardingData.avgReelViewsManual) || 0;
+    const avgLikes = Number(onboardingData.avgLikesManual) || 0;
+    const reelRate = Number(onboardingData.reelRate) || 0;
+
+    let baseReel = reelRate > 0 ? reelRate : 0;
+    if (baseReel <= 0 && avgViews > 0) {
+      baseReel = avgViews * 0.18;
+    }
+    if (baseReel <= 0 && avgLikes > 0) {
+      baseReel = avgLikes * 8;
+    }
+    if (baseReel <= 0 && followers > 0) {
+      if (followers < 5000) baseReel = 1499;
+      else if (followers < 10000) baseReel = 1999;
+      else if (followers < 50000) baseReel = 2999;
+      else if (followers < 100000) baseReel = 4999;
+      else baseReel = 7999;
+    }
+    if (baseReel <= 0) {
+      baseReel = 1999;
+    }
+
+    const followerBoost = followers > 100000 ? 1.15 : 1;
+    const starter = Math.max(999, roundToNearest(baseReel * followerBoost, 100));
+    const engagement = Math.max(starter + 500, roundToNearest(starter * 1.8, 100));
+    const barterMin = Math.max(2000, roundToNearest(starter * 1.5, 500));
+
+    setOnboardingData((prev) => ({
+      ...prev,
+      packageStarterPrice: String(starter),
+      packageEngagementPrice: String(engagement),
+      packageProductValue: String(barterMin),
+    }));
+    toast.success('Suggested package prices added');
+  };
+
+  const handleGenerateBio = async () => {
+    if (isGeneratingBio) return;
+    setIsGeneratingBio(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) {
+        toast.error('Session expired. Please log in again.');
+        return;
+      }
+
+      const name = onboardingData.name?.trim() || 'Creator';
+      const handle = onboardingData.instagramUsername?.replace(/^@/, '').trim() || 'creator';
+      const nicheLine = onboardingData.contentNiches.length > 0
+        ? onboardingData.contentNiches.slice(0, 3).join(', ')
+        : 'lifestyle content';
+      const city = onboardingData.collabCity?.trim() || 'India';
+      const dealTypeText = onboardingData.dealType === 'all' ? 'paid, barter, and hybrid collaborations' : `${onboardingData.dealType} collaborations`;
+      const reelRateText = Number(onboardingData.reelRate) > 0 ? `Typical reel rate around INR ${Number(onboardingData.reelRate).toLocaleString('en-IN')}.` : '';
+      const followersText = Number(onboardingData.collabFollowers) > 0 ? `Audience size about ${Number(onboardingData.collabFollowers).toLocaleString('en-IN')} followers.` : '';
+
+      const input = [
+        `Write a concise creator bio for brand collaboration profile.`,
+        `Creator: ${name} (@${handle})`,
+        `Niches: ${nicheLine}`,
+        `Audience city focus: ${city}`,
+        `Preferred deal types: ${dealTypeText}`,
+        reelRateText,
+        followersText,
+        `Constraints: 45-70 words, professional, specific, trustworthy, no hashtags, no emojis.`,
+      ].filter(Boolean).join('\n');
+
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/ai/pitch`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'pitch',
+          tone: 55,
+          input,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('AI service unavailable');
+      }
+
+      const payload = await response.json().catch(() => ({}));
+      const generated = payload?.data?.output?.trim();
+      if (!generated) {
+        throw new Error('No AI output');
+      }
+
+      const cleaned = generated
+        .replace(/^subject\s*:\s*.*$/gim, '')
+        .replace(/\n{2,}/g, '\n')
+        .trim();
+
+      const sentences = cleaned
+        .replace(/\s+/g, ' ')
+        .split(/(?<=[.!?])\s+/)
+        .map((line: string) => line.trim())
+        .filter(Boolean);
+      const compactBio = (sentences.length > 0 ? sentences.slice(0, 4) : [cleaned])
+        .join('\n')
+        .split(' ')
+        .slice(0, 70)
+        .join(' ')
+        .trim();
+
+      setOnboardingData((prev) => ({ ...prev, collabBio: compactBio }));
+      toast.success('Bio generated');
+    } catch (error) {
+      const fallback = [
+        `I create ${onboardingData.contentNiches.slice(0, 2).join(' and ') || 'lifestyle'} content for an engaged Indian audience.`,
+        `I partner with brands for structured campaigns with clear deliverables and reliable turnaround.`,
+        `Open to ${onboardingData.dealType === 'all' ? 'paid, barter, and hybrid' : onboardingData.dealType} collaborations that align with my audience.`,
+      ].join('\n');
+      setOnboardingData((prev) => ({ ...prev, collabBio: prev.collabBio.trim() || fallback }));
+      toast.error('AI unavailable. Added a draft you can edit.');
+    } finally {
+      setIsGeneratingBio(false);
+    }
   };
 
   const handleOnboardingComplete = async () => {
@@ -416,7 +561,8 @@ const CreatorOnboarding = () => {
       }
 
       // Update profile with onboarding data
-      const nameParts = onboardingData.name.trim().split(' ');
+      const normalizedFullName = toTitleCaseName(onboardingData.name || '');
+      const nameParts = normalizedFullName.split(' ');
       const firstName = nameParts[0];
       const lastName = nameParts.slice(1).join(' ') || '';
 
@@ -426,6 +572,7 @@ const CreatorOnboarding = () => {
       const collabResponseHours = Number.parseInt(onboardingData.collabResponseHours || '3', 10);
       const avgReelViewsManual = Math.round(Number(onboardingData.avgReelViewsManual) || 0);
       const avgLikesManual = Math.round(Number(onboardingData.avgLikesManual) || 0);
+      const collabBrandsCompleted = Math.max(0, Math.round(Number(onboardingData.collabBrandsCompleted) || 0));
       const packageStarterPrice = Math.round(Number(onboardingData.packageStarterPrice) || 0);
       const packageEngagementPrice = Math.round(Number(onboardingData.packageEngagementPrice) || 0);
       const packageProductValue = Math.round(Number(onboardingData.packageProductValue) || 0);
@@ -502,6 +649,7 @@ const CreatorOnboarding = () => {
           posting_frequency: onboardingData.postingFrequency.trim() || null,
           avg_reel_views_manual: avgReelViewsManual > 0 ? avgReelViewsManual : null,
           avg_likes_manual: avgLikesManual > 0 ? avgLikesManual : null,
+          collab_brands_count_override: collabBrandsCompleted,
           deal_templates: dealTemplates as any,
           onboarding_complete: true,
           avg_rate_reel: (onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.reelRate
@@ -542,6 +690,7 @@ const CreatorOnboarding = () => {
             posting_frequency: onboardingData.postingFrequency.trim() || null,
             avg_reel_views_manual: avgReelViewsManual > 0 ? avgReelViewsManual : null,
             avg_likes_manual: avgLikesManual > 0 ? avgLikesManual : null,
+            collab_brands_count_override: collabBrandsCompleted,
             deal_templates: dealTemplates as any,
             onboarding_complete: true,
             avg_rate_reel: (onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.reelRate
@@ -565,6 +714,39 @@ const CreatorOnboarding = () => {
       localStorage.setItem('onboarding-complete', 'true');
       localStorage.setItem('onboarding-completed-at', Date.now().toString());
       localStorage.removeItem('onboarding-data'); // Clean up
+
+      // Ensure instagram_handle + username are persisted for new creators.
+      // This prevents fallback slugs like creator-xxxxxx after onboarding.
+      if (collabUsername) {
+        try {
+          const { data: verifyProfile } = await (supabase as any)
+            .from('profiles')
+            .select('instagram_handle, username')
+            .eq('id', profile.id)
+            .single();
+
+          const savedInstagram = ((verifyProfile as any)?.instagram_handle || '').toString().trim().toLowerCase();
+          const savedUsername = ((verifyProfile as any)?.username || '').toString().trim().toLowerCase();
+          const targetHandle = collabUsername.toLowerCase();
+
+          if (savedInstagram !== targetHandle || savedUsername !== targetHandle) {
+            const { error: forceHandleError } = await (supabase as any)
+              .from('profiles')
+              .update({
+                instagram_handle: targetHandle,
+                username: targetHandle,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', profile.id);
+
+            if (forceHandleError) {
+              console.warn('[CreatorOnboarding] Handle force-save failed:', forceHandleError?.message || forceHandleError);
+            }
+          }
+        } catch (verifyError) {
+          console.warn('[CreatorOnboarding] Handle verification step failed (non-fatal):', verifyError);
+        }
+      }
 
       // Best effort: attach pre-onboarding collab leads to this account immediately
       try {
@@ -764,12 +946,8 @@ const CreatorOnboarding = () => {
               {setupStep === 'basics' && (
                 <CollabBasicsStep
                   key="collab-basics"
-                  category={onboardingData.collabCategory}
                   city={onboardingData.collabCity}
                   responseHours={onboardingData.collabResponseHours}
-                  onCategoryChange={(collabCategory) =>
-                    setOnboardingData((prev) => ({ ...prev, collabCategory }))
-                  }
                   onCityChange={(collabCity) =>
                     setOnboardingData((prev) => ({ ...prev, collabCity }))
                   }
@@ -786,6 +964,7 @@ const CreatorOnboarding = () => {
                   key="collab-ready"
                   bio={onboardingData.collabBio}
                   followers={onboardingData.collabFollowers}
+                  brandDealsCompleted={onboardingData.collabBrandsCompleted}
                   audienceGenderSplit={onboardingData.audienceGenderSplit}
                   primaryAudienceLanguage={onboardingData.primaryAudienceLanguage}
                   postingFrequency={onboardingData.postingFrequency}
@@ -796,6 +975,7 @@ const CreatorOnboarding = () => {
                   productValue={onboardingData.packageProductValue}
                   onBioChange={(collabBio) => setOnboardingData((prev) => ({ ...prev, collabBio }))}
                   onFollowersChange={(collabFollowers) => setOnboardingData((prev) => ({ ...prev, collabFollowers }))}
+                  onBrandDealsCompletedChange={(collabBrandsCompleted) => setOnboardingData((prev) => ({ ...prev, collabBrandsCompleted }))}
                   onAudienceGenderSplitChange={(audienceGenderSplit) => setOnboardingData((prev) => ({ ...prev, audienceGenderSplit }))}
                   onPrimaryAudienceLanguageChange={(primaryAudienceLanguage) => setOnboardingData((prev) => ({ ...prev, primaryAudienceLanguage }))}
                   onPostingFrequencyChange={(postingFrequency) => setOnboardingData((prev) => ({ ...prev, postingFrequency }))}
@@ -804,6 +984,9 @@ const CreatorOnboarding = () => {
                   onStarterPriceChange={(packageStarterPrice) => setOnboardingData((prev) => ({ ...prev, packageStarterPrice }))}
                   onEngagementPriceChange={(packageEngagementPrice) => setOnboardingData((prev) => ({ ...prev, packageEngagementPrice }))}
                   onProductValueChange={(packageProductValue) => setOnboardingData((prev) => ({ ...prev, packageProductValue }))}
+                  onGenerateBio={handleGenerateBio}
+                  onAutoSuggestPrices={handleAutoSuggestPrices}
+                  isGeneratingBio={isGeneratingBio}
                   onBack={() => setSetupStep('basics')}
                   onNext={handleCollabReadyNext}
                 />
@@ -818,17 +1001,17 @@ const CreatorOnboarding = () => {
                   onCompleteCollabProfile={() => {
                     const handle = profile?.instagram_handle || profile?.username;
                     if (handle) {
-                      navigate(`/collab/${handle}?edit=true`);
+                      navigate(`/${handle}?edit=true`);
                     } else {
                       navigate('/creator-dashboard');
                     }
                   }}
                   collabProfile={profile as unknown as Record<string, any>}
                   collabLink={profile?.instagram_handle || profile?.username
-                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/collab/${profile?.instagram_handle || profile?.username}`
+                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${profile?.instagram_handle || profile?.username}`
                     : undefined}
                   collabShortLabel={profile?.instagram_handle || profile?.username
-                    ? `creatorarmour.com/collab/${profile?.instagram_handle || profile?.username}`
+                    ? `creatorarmour.com/${profile?.instagram_handle || profile?.username}`
                     : undefined}
                 />
               )}

@@ -244,6 +244,11 @@ const resolveCreatorByPublicHandle = async (handle: string, selectColumns: strin
   };
 };
 
+const isGeneratedCreatorHandle = (value?: string | null) => {
+  if (!value) return false;
+  return /^creator-[a-z0-9]{6,}$/i.test(value.trim());
+};
+
 const startRegisteredCreatorBackgroundSync = (profile: any) => {
   if (!profile?.id || !profile?.instagram_handle) return;
 
@@ -623,7 +628,7 @@ router.post('/:username/save-draft', async (req: Request, res: Response) => {
     return res.status(501).json({ success: false, error: 'Drafts are currently disabled' });
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-    const resumeUrl = `${frontendUrl}/collab/${encodeURIComponent(normalizedUsername)}?resume=${encodeURIComponent(resumeToken)}`;
+    const resumeUrl = `${frontendUrl}/${encodeURIComponent(normalizedUsername)}?resume=${encodeURIComponent(resumeToken)}`;
 
     let creatorName = 'the creator';
     const profileRes = await supabase
@@ -799,6 +804,71 @@ router.post('/accept/send-verification', async (req: Request, res: Response) => 
 });
 
 /**
+ * GET /api/collab/availability/:username
+ * Checks whether a collab handle is already claimed by an existing creator profile.
+ * Note: This does not use Instagram/public fallback logic.
+ */
+router.get('/availability/:username', async (req: Request, res: Response) => {
+  try {
+    const raw = req.params.username;
+    const normalized = normalizeHandle(raw);
+    if (!normalized || normalized.length < 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid username',
+        available: false,
+      });
+    }
+
+    const { data: instaProfiles, error: instaError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('role', 'creator')
+      .eq('instagram_handle', normalized)
+      .limit(1);
+
+    if (instaError) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to check username availability',
+        code: instaError.code,
+      });
+    }
+
+    if (Array.isArray(instaProfiles) && instaProfiles.length > 0) {
+      return res.json({ success: true, available: false, reason: 'claimed' });
+    }
+
+    const { data: userProfiles, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('role', 'creator')
+      .eq('username', normalized)
+      .limit(1);
+
+    if (userError) {
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to check username availability',
+        code: userError.code,
+      });
+    }
+
+    if (Array.isArray(userProfiles) && userProfiles.length > 0) {
+      return res.json({ success: true, available: false, reason: 'claimed' });
+    }
+
+    return res.json({ success: true, available: true });
+  } catch (error: any) {
+    console.error('[CollabRequests] Availability check failed:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to check username availability',
+    });
+  }
+});
+
+/**
  * GET /api/collab/:username
  * Get creator profile info for collab link landing page
  */
@@ -825,6 +895,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       business_name,
       instagram_handle,
       bio,
+      onboarding_complete,
       username
     `;
 
@@ -1059,8 +1130,11 @@ router.get('/:username', async (req: Request, res: Response) => {
     let resolvedBio: string | null = profile.bio || null;
     const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
     let resolvedName: string | null = fullName || null;
-    const primaryPublicHandle = (profile.instagram_handle || '').trim() || (profile.username || '').trim() || null;
-    const instagramSourceHandle = (profile.instagram_handle || '').trim() || primaryPublicHandle;
+    const instagramHandleValue = (profile.instagram_handle || '').trim();
+    const usernameHandleValue = (profile.username || '').trim();
+    const primaryPublicHandle = instagramHandleValue
+      || (!isGeneratedCreatorHandle(usernameHandleValue) ? usernameHandleValue : null);
+    const instagramSourceHandle = instagramHandleValue || primaryPublicHandle;
 
     // If public Instagram data is missing or followers are 0, fetch a cached public fallback for better collab-page UX.
     if (instagramSourceHandle && (!resolvedInstagramFollowers || !resolvedProfilePhoto || !resolvedBio || !resolvedName)) {
@@ -1309,6 +1383,7 @@ router.get('/:username', async (req: Request, res: Response) => {
         revision_policy: null,
         allow_negotiation: true,
         allow_counter_offer: true,
+        onboarding_complete: (profile as any).onboarding_complete ?? null,
       },
     });
   } catch (error: any) {

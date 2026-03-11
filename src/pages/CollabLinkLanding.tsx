@@ -116,6 +116,7 @@ interface Creator {
   revision_policy?: string | null;
   allow_negotiation?: boolean | null;
   allow_counter_offer?: boolean | null;
+  onboarding_complete?: boolean | null;
   // Deal preference: 'paid_only' | 'barter_only' | 'open_to_both'
   collab_deal_preference?: 'paid_only' | 'barter_only' | 'open_to_both' | null;
   deal_templates?: DealTemplate[] | null;
@@ -140,6 +141,14 @@ interface DealTemplate {
 type CollabType = 'paid' | 'barter' | 'hybrid' | 'both' | 'affiliate';
 
 const isHybridCollab = (value: CollabType) => value === 'hybrid' || value === 'both';
+
+const toTitleCaseName = (value: string) =>
+  value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
 
 interface FormErrors {
   brandName?: string;
@@ -168,6 +177,19 @@ const RESERVED_USERNAMES = [
   'admin-clients', 'admin-consultations', 'admin-subscriptions', 'admin-activity-log',
   'admin-profile', 'admin-influencers', 'admin-discovery', 'ca-dashboard'
 ];
+
+const isGeneratedCreatorHandle = (value?: string | null) =>
+  Boolean(value && /^creator-[a-z0-9]{6,}$/i.test(value.trim()));
+
+const getPreferredPublicHandle = (...candidates: Array<string | null | undefined>) => {
+  for (const candidate of candidates) {
+    const normalized = (candidate || '').replace(/^@/, '').trim();
+    if (!normalized) continue;
+    if (isGeneratedCreatorHandle(normalized)) continue;
+    return normalized;
+  }
+  return '';
+};
 
 const DELIVERABLE_OPTIONS = [
   { label: 'Reel', value: 'Instagram Reel', icon: <span className="mr-1.5">🎬</span> },
@@ -542,7 +564,7 @@ const CollabLinkLanding = () => {
   useEffect(() => {
     if (!creator || !user?.id || creator.id !== user.id) return;
 
-    const latestHandle = (profile?.instagram_handle || profile?.username || creator.username || '').replace(/^@/, '').trim();
+    const latestHandle = getPreferredPublicHandle(profile?.instagram_handle, profile?.username, creator.username);
     const latestName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
     const latestFollowers = Number((profile as any)?.instagram_followers || 0) || null;
     const latestProfilePhoto = (profile as any)?.instagram_profile_photo || profile?.avatar_url || creator.profile_photo || null;
@@ -679,7 +701,10 @@ const CollabLinkLanding = () => {
     const previewTrustStats = creator.trust_stats;
 
     const readiness = getCollabReadiness({
-      instagramHandle: creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username,
+      instagramHandle: getPreferredPublicHandle(
+        creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
+        creator.username
+      ),
       instagramLinked: Boolean(creator.last_instagram_sync),
       category: creator.category,
       niches: creator.content_niches,
@@ -754,7 +779,8 @@ const CollabLinkLanding = () => {
       let updatePayload: any = { id: creator.id };
 
       if (field === 'name') {
-        const nameStr = String(value || '').trim();
+        const nameStr = toTitleCaseName(String(value || ''));
+        setCreator(prev => prev ? { ...prev, name: nameStr } : null);
         const spaceIndex = nameStr.indexOf(' ');
         if (spaceIndex === -1) {
           updatePayload.first_name = nameStr;
@@ -1605,8 +1631,12 @@ const CollabLinkLanding = () => {
   }
 
   // Generate SEO meta tags
-  const creatorName = creator.name || 'Creator';
-  const normalizedHandle = (creator.platforms?.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username || username || '').replace(/^@/, '').trim();
+  const creatorName = toTitleCaseName(creator.name || 'Creator');
+  const normalizedHandle = getPreferredPublicHandle(
+    creator.platforms?.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
+    creator.username,
+    username
+  );
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : '';
   const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | Creator Armour`;
   // const platformNames = platforms.map(p => p.name).join(', ');
@@ -1629,7 +1659,7 @@ const CollabLinkLanding = () => {
   const metaDescription = `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via Creator Armour.`.substring(0, 158);
 
   // Use clean URL for SEO (no hash)
-  const canonicalUrl = `https://creatorarmour.com/collab/${encodeURIComponent(normalizedHandle)}`;
+  const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`;
   const pageImage = creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
     ? creator.profile_photo
     : 'https://creatorarmour.com/og-preview.png';
@@ -1674,10 +1704,6 @@ const CollabLinkLanding = () => {
     return `${n}`;
   };
   const primaryFollowers = creator.followers ?? followerCount;
-  const lastInstagramSyncDate = creator.last_instagram_sync ? new Date(creator.last_instagram_sync) : null;
-  const lastInstagramSyncLabel = lastInstagramSyncDate && !Number.isNaN(lastInstagramSyncDate.getTime())
-    ? lastInstagramSyncDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-    : null;
   const setupChecklist = [
     {
       key: 'instagram',
@@ -1685,19 +1711,22 @@ const CollabLinkLanding = () => {
       complete: Boolean(normalizedHandle && normalizedHandle.length >= 3),
     },
     {
-      key: 'photo',
-      label: 'Profile photo added',
-      complete: Boolean(creator.profile_photo),
-    },
-    {
       key: 'followers',
-      label: 'Followers synced',
-      complete: Number(primaryFollowers || 0) > 0,
+      label: 'Followers added',
+      complete: Number(primaryFollowers || (creator as any)?.instagram_followers || 0) > 0,
     },
     {
       key: 'niches',
       label: 'Content niches selected',
       complete: Boolean(creator.content_niches && creator.content_niches.length > 0),
+    },
+    {
+      key: 'audience',
+      label: 'Audience signals added',
+      complete: Boolean(
+        (creator.audience_gender_split && String(creator.audience_gender_split).trim().length > 0) ||
+        (creator.primary_audience_language && String(creator.primary_audience_language).trim().length > 0)
+      ),
     },
     {
       key: 'rates',
@@ -1710,9 +1739,15 @@ const CollabLinkLanding = () => {
       complete: (localDealTemplates?.length || 0) >= 3,
     },
   ];
-  const setupCompletedCount = setupChecklist.filter((item) => item.complete).length;
-  const hasIncompleteSetup = setupCompletedCount < setupChecklist.length;
-  const firstIncompleteSetupKey = setupChecklist.find((item) => !item.complete)?.key;
+  const onboardingAlreadyCompleted = Boolean(
+    (isOwner && profile?.onboarding_complete === true) || creator.onboarding_complete === true
+  );
+  const effectiveSetupChecklist = onboardingAlreadyCompleted
+    ? setupChecklist.map((item) => ({ ...item, complete: true }))
+    : setupChecklist;
+  const setupCompletedCount = effectiveSetupChecklist.filter((item) => item.complete).length;
+  const hasIncompleteSetup = setupCompletedCount < effectiveSetupChecklist.length;
+  const firstIncompleteSetupKey = effectiveSetupChecklist.find((item) => !item.complete)?.key;
   const profileSaveStatusLabel = profileSaveStatus === 'saving'
     ? 'Saving...'
     : profileSaveStatus === 'saved'
@@ -1766,7 +1801,10 @@ const CollabLinkLanding = () => {
   const mobileEngagementLabel = engagementRange === 'Growing Audience' ? 'Consistent viewer engagement' : engagementRange;
 
   const collabReadiness = getCollabReadiness({
-    instagramHandle: creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username,
+    instagramHandle: getPreferredPublicHandle(
+      creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
+      creator.username
+    ),
     instagramLinked: Boolean(creator.last_instagram_sync),
     category: creator.category,
     niches: creator.content_niches,
@@ -1962,7 +2000,6 @@ const CollabLinkLanding = () => {
       <BreadcrumbSchema
         items={[
           { name: 'Creator Armour', url: 'https://creatorarmour.com' },
-          { name: 'Collab', url: 'https://creatorarmour.com/collab' },
           { name: creatorHandle || creatorName, url: canonicalUrl },
         ]}
       />
@@ -2141,11 +2178,6 @@ const CollabLinkLanding = () => {
                           <div className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1">
                             <span className="text-[10px] font-black text-slate-700">Replies in {sameDayResponseLine.replace('~', '')}</span>
                           </div>
-                          {lastInstagramSyncLabel && (
-                            <div className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1">
-                              <span className="text-[10px] font-black text-violet-700">Instagram synced: {lastInstagramSyncLabel}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
@@ -2154,7 +2186,7 @@ const CollabLinkLanding = () => {
 
                 <div className="max-w-xl relative">
                   <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-slate-900 mb-2.5 leading-[1.06]">
-                    Book a Collaboration with {creator.name.split(' ')[0]}
+                    Book a Collaboration with {creatorName.split(' ')[0]}
                   </h1>
                   <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
                     Create a legally binding term sheet and launch your campaign with {creator.name.split(' ')[0]}.
@@ -2188,10 +2220,10 @@ const CollabLinkLanding = () => {
                 <div className="mb-6 md:mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Setup Checklist</p>
-                    <span className="text-[11px] font-black text-emerald-700">{setupCompletedCount}/{setupChecklist.length} Complete</span>
+                    <span className="text-[11px] font-black text-emerald-700">{setupCompletedCount}/{effectiveSetupChecklist.length} Complete</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {setupChecklist.map((item) => (
+                    {effectiveSetupChecklist.map((item) => (
                       <div
                         key={item.key}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${item.complete
@@ -3260,7 +3292,7 @@ const CollabLinkLanding = () => {
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="text-[11px] font-black uppercase tracking-wider">
-                  Complete Setup ({setupChecklist.length - setupCompletedCount} left)
+                  Complete Setup ({effectiveSetupChecklist.length - setupCompletedCount} left)
                 </span>
               </button>
             </div>

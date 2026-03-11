@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -21,6 +22,26 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const triggerWelcomeEmail = async (accessToken: string) => {
+    try {
+      const apiBaseUrl = getApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/onboarding-emails/welcome`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        console.warn('[Signup] Welcome email trigger failed:', payload?.error || response.statusText);
+      }
+    } catch (error) {
+      console.warn('[Signup] Welcome email trigger network failure:', error);
+    }
+  };
 
   // Password strength calculator
   const getPasswordStrength = (pwd: string) => {
@@ -232,6 +253,9 @@ const Signup = () => {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
 
             if (currentSession) {
+              // Fire-and-forget: welcome email trigger
+              void triggerWelcomeEmail(currentSession.access_token);
+
               // Session exists - wait for profile and navigate
               let attempts = 0;
               const maxAttempts = 10;
@@ -257,6 +281,9 @@ const Signup = () => {
               });
 
               if (signInData.session) {
+                // Fire-and-forget: welcome email trigger
+                void triggerWelcomeEmail(signInData.session.access_token);
+
                 sessionStorage.removeItem('just_signed_up');
                 // Wait a moment for profile creation
                 setTimeout(() => {

@@ -1,9 +1,7 @@
 import { useParams, Navigate } from 'react-router-dom';
 
 /**
- * Legacy redirect component for /:username/success → /collab/:username/success
- * Provides 301-style redirect for SEO and backward compatibility
- * Redirects old hash-based URLs to clean SEO-friendly URLs
+ * Legacy redirect component for /collab/:username/success → /:username/success
  */
 const LegacyCollabSuccessRedirect = () => {
   const { username } = useParams<{ username: string }>();
@@ -12,9 +10,7 @@ const LegacyCollabSuccessRedirect = () => {
     return <Navigate to="/" replace />;
   }
   
-  // Redirect to clean SEO-friendly route
-  return <Navigate to={`/collab/${username}/success`} replace />;
+  return <Navigate to={`/${username}/success`} replace />;
 };
 
 export default LegacyCollabSuccessRedirect;
-

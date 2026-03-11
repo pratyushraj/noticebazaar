@@ -281,9 +281,15 @@ const CreatorDashboard = () => {
   };
 
   const userData = useMemo(() => {
+    const isGeneratedCreatorHandle = (value?: string | null) => Boolean(value && /^creator-[a-z0-9]{6,}$/i.test(value.trim()));
     const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
+    const cleanInstagramHandle = (profile?.instagram_handle || '').replace('@', '').trim();
+    const cleanUsername = (profile?.username || '').replace('@', '').trim();
+    const preferredHandle = cleanInstagramHandle && !isGeneratedCreatorHandle(cleanInstagramHandle)
+      ? cleanInstagramHandle
+      : (cleanUsername && !isGeneratedCreatorHandle(cleanUsername) ? cleanUsername : '');
     const displayName = fullName ||
-      profile?.instagram_handle?.replace('@', '') ||
+      preferredHandle ||
       user?.email?.split('@')[0] ||
       'Creator';
 

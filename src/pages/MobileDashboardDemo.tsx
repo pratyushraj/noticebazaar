@@ -117,6 +117,40 @@ const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
     </button>
 );
 
+const parseLocationParts = (location?: string | null) => {
+    const raw = (location || '').trim();
+    if (!raw) return { city: '', pincode: '' };
+    const pincodeMatch = raw.match(/\b\d{6}\b/);
+    const pincode = pincodeMatch?.[0] || '';
+    const city = raw
+        .replace(/\b\d{6}\b/, '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .pop() || '';
+    return { city, pincode };
+};
+
+const buildProfileFormData = (profile: any, userEmail?: string | null) => {
+    const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.full_name || '';
+    const parsedLocation = parseLocationParts(profile?.location);
+    return {
+        full_name: fullName,
+        email: profile?.email || userEmail || '',
+        phone: profile?.phone || '',
+        bio: profile?.bio || '',
+        pincode: profile?.pincode || parsedLocation.pincode || '',
+        city: profile?.city || parsedLocation.city || '',
+        instagram_handle: profile?.instagram_handle || '',
+        media_kit_url: profile?.media_kit_url || '',
+        open_to_collabs: profile?.open_to_collabs ?? true,
+        typical_deal_size: profile?.typical_deal_size || 'standard',
+        collaboration_preference: profile?.collaboration_preference || 'Hybrid',
+        avg_rate_reel: profile?.avg_rate_reel || '5000',
+        content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
+    };
+};
+
 // Main Component
 const MobileDashboardDemo = ({
     profile,
@@ -200,8 +234,16 @@ const MobileDashboardDemo = ({
     const [liveCollabProfile, setLiveCollabProfile] = useState<{ name?: string | null; profile_photo?: string | null } | null>(null);
     const [isCollabLinkCopied, setIsCollabLinkCopied] = useState(false);
 
-    const instagramHandle = profile?.instagram_handle?.replace('@', '') || profile?.username || '';
-    const username = instagramHandle || profile?.first_name || profile?.full_name?.split(' ')[0] || 'pratyush';
+    const isGeneratedCreatorHandle = (value?: string | null) => Boolean(value && /^creator-[a-z0-9]{6,}$/i.test(value.trim()));
+    const normalizedInstagramHandle = (profile?.instagram_handle || '').replace('@', '').trim();
+    const normalizedUsername = (profile?.username || '').replace('@', '').trim();
+    const instagramHandle = normalizedInstagramHandle && !isGeneratedCreatorHandle(normalizedInstagramHandle)
+        ? normalizedInstagramHandle
+        : '';
+    const usernameFallback = normalizedUsername && !isGeneratedCreatorHandle(normalizedUsername)
+        ? normalizedUsername
+        : '';
+    const username = instagramHandle || usernameFallback || 'creator';
     const avatarUrl = liveCollabProfile?.profile_photo || profile?.instagram_profile_photo || profile?.avatar_url || 'https://i.pravatar.cc/150?img=47';
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
     const activeDealsCount = (brandDeals || []).length;
@@ -326,27 +368,13 @@ const MobileDashboardDemo = ({
     };
 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
-    const [profileFormData, setProfileFormData] = useState<any>({
-        full_name: profile?.full_name || '',
-        email: profile?.email || '',
-        phone: profile?.phone || '',
-        bio: profile?.bio || '',
-        pincode: profile?.pincode || '',
-        city: profile?.city || '',
-        instagram_handle: profile?.instagram_handle || '',
-        media_kit_url: profile?.media_kit_url || '',
-        open_to_collabs: profile?.open_to_collabs ?? true,
-        typical_deal_size: profile?.typical_deal_size || 'standard',
-        collaboration_preference: profile?.collaboration_preference || 'Hybrid',
-        avg_rate_reel: profile?.avg_rate_reel || '5000',
-        content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle']
-    });
+    const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
 
     useEffect(() => {
         if (profile) {
-            setProfileFormData((prev: any) => ({ ...prev, ...profile }));
+            setProfileFormData((prev: any) => ({ ...prev, ...buildProfileFormData(profile, user?.email || null) }));
         }
-    }, [profile]);
+    }, [profile, user?.email]);
 
     const handleSaveProfile = async () => {
         if (!session?.user?.id) return;
@@ -381,13 +409,25 @@ const MobileDashboardDemo = ({
                 throw coreError;
             }
 
-            // Step 2: Try updating instagram_handle separately so we can give a specific error.
+            // Step 2: Update Instagram handle + collab username together.
             const newHandle = (profileFormData.instagram_handle || '').trim().replace(/^@/, '');
             const currentHandle = (profile?.instagram_handle || '').trim().replace(/^@/, '');
             if (newHandle && newHandle !== currentHandle) {
+                const normalizedHandle = newHandle
+                    .replace(/\s/g, '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9._]/g, '')
+                    .trim();
+
+                if (normalizedHandle.length < 3) {
+                    toast.warning('Instagram handle must be at least 3 characters.');
+                } else {
                 const { error: handleError } = await (supabase as any)
                     .from('profiles')
-                    .update({ instagram_handle: newHandle })
+                    .update({
+                        instagram_handle: normalizedHandle,
+                        username: normalizedHandle,
+                    })
                     .eq('id', session.user.id);
 
                 if (handleError) {
@@ -403,6 +443,7 @@ const MobileDashboardDemo = ({
                         : `Could not update handle: ${handleError.message}`;
                     toast.warning(msg);
                     // Don't rethrow — core save succeeded, only handle failed
+                }
                 }
             }
 
@@ -956,7 +997,7 @@ const MobileDashboardDemo = ({
                                 <div className="grid grid-cols-2 gap-2 mt-4">
                                     <button
                                         onClick={() => {
-                                            const link = `${window.location.origin}/collab/${username}`;
+                                            const link = `${window.location.origin}/${username}`;
                                             navigator.clipboard.writeText(link);
                                             toast.success('Link copied');
                                             triggerHaptic();
@@ -968,7 +1009,7 @@ const MobileDashboardDemo = ({
                                     <button
                                         onClick={() => {
                                             triggerHaptic();
-                                            window.open(`/collab/${username}`, '_blank');
+                                            window.open(`/${username}`, '_blank');
                                         }}
                                         className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-slate-500 uppercase tracking-widest", isDark ? "border-white/10" : "border-black/5")}
                                     >
@@ -976,7 +1017,7 @@ const MobileDashboardDemo = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            const link = `${window.location.origin}/collab/${username}`;
+                                            const link = `${window.location.origin}/${username}`;
                                             const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
                                             window.open(`https://wa.me/?text=${message}`, '_blank');
                                             triggerHaptic();
@@ -987,7 +1028,7 @@ const MobileDashboardDemo = ({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            const link = `${window.location.origin}/collab/${username}`;
+                                            const link = `${window.location.origin}/${username}`;
                                             navigator.clipboard.writeText(link);
                                             toast.success('Copied! Paste in your Bio.');
                                             triggerHaptic();
@@ -2514,7 +2555,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
                                         <motion.button
                                             whileTap={{ scale: 0.96 }}
-                                            onClick={() => { setShowActionSheet(false); window.open(`/collab/${username}`, '_blank'); }}
+                                            onClick={() => { setShowActionSheet(false); window.open(`/${username}`, '_blank'); }}
                                             className={cn("p-4 rounded-3xl text-left transition-all border group", isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-100 hover:border-pink-200")}
                                         >
                                             <div className="w-10 h-10 rounded-2xl bg-pink-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">

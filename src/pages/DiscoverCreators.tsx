@@ -263,7 +263,7 @@ const DiscoverCreators = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.3, delay: Math.min(idx * 0.05, 1) }}
                             >
-                                <Link to={`/collab/${creator.username}`} className="group block h-full">
+                                <Link to={`/${creator.username}`} className="group block h-full">
                                     <Card className="bg-[#0D1219] border-white/10 rounded-[2rem] overflow-hidden hover:border-blue-500/50 hover:bg-[#111821] transition-all duration-500 h-full flex flex-col group">
                                         <CardContent className="p-0 flex flex-col h-full">
                                             {/* Top Cover / Header */}
