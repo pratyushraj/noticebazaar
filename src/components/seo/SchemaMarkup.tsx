@@ -41,9 +41,9 @@ export const ArticleSchema: React.FC<ArticleSchemaProps> = ({
   image = 'https://creatorarmour.com/og-preview.png',
   datePublished,
   dateModified,
-  author = { name: 'CreatorArmour', type: 'Organization' },
+  author = { name: 'Creator Armour', type: 'Organization' },
   publisher = {
-    name: 'CreatorArmour',
+    name: 'Creator Armour',
     logo: 'https://creatorarmour.com/logo.png',
   },
 }) => {
@@ -183,4 +183,3 @@ export const BreadcrumbSchema: React.FC<BreadcrumbSchemaProps> = ({ items }) => 
 
   return null;
 };
-

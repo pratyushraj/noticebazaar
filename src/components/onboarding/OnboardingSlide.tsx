@@ -42,11 +42,10 @@ export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
       {...(animationProps || defaultAnimation)}
       className={cn(
         "flex flex-col items-center",
-        "flex-1 w-full min-h-0", // Fill container, allow shrinking
-        "p-4 md:p-6 pt-16 md:pt-10 pb-20 md:pb-16", // More top padding on mobile to prevent overlap
+        "flex-1 w-full min-h-0 h-full",
+        "p-4 md:p-6 pt-10 md:pt-6 pb-8 md:pb-8",
         "text-center",
-        "overflow-y-auto overscroll-contain", // Allow scrolling, prevent bounce
-        "scrollbar-hide", // Hide scrollbar
+        "overflow-hidden",
         className
       )}
     >
@@ -54,4 +53,3 @@ export const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
     </motion.div>
   );
 };
-

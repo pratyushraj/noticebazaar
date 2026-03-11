@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LifeBuoy, Users, Shield } from 'lucide-react';
+import { LifeBuoy } from 'lucide-react';
 import { OnboardingSlide } from '../OnboardingSlide';
 import { IconBubble } from '../IconBubble';
 import { GradientCard } from '../GradientCard';
@@ -19,22 +19,20 @@ interface WelcomeScreen5Props {
 export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }) => {
   const advisors = [
     {
-      icon: Users,
       name: 'Anjali Sharma',
       role: 'Creator Taxes',
-      color: 'blue' as const,
+      photo: '/avatars/ca_anjali_sharma.png',
     },
     {
-      icon: Shield,
       name: 'Prateek Sharma',
       role: 'Brand Contracts',
-      color: 'green' as const,
+      photo: '/avatars/adv_prateek_sharma.png',
     },
   ];
 
   return (
     <OnboardingSlide>
-      <div className="mt-12 md:mt-0 mb-8">
+      <div className="mt-6 md:mt-0 mb-6">
         <IconBubble icon={LifeBuoy} size="lg" color="green" animated />
       </div>
 
@@ -42,17 +40,23 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
         Expert Backup When Needed
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-6 md:mb-10">
+      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-5 md:mb-8">
         Legal + tax support built for creators.
       </p>
 
-      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-6 md:mb-10">
+      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-5 md:mb-8">
         {advisors.map((advisor, index) => {
-          const Icon = advisor.icon;
           return (
             <GradientCard key={index} padding="md" className="text-left">
               <div className="flex items-center gap-4">
-                <IconBubble icon={Icon} size="md" color={advisor.color} className="flex-shrink-0" />
+                <div className="h-16 w-16 rounded-full overflow-hidden border border-slate-200 shadow-sm flex-shrink-0 bg-white">
+                  <img
+                    src={advisor.photo}
+                    alt={advisor.name}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
                 <div className="flex-1">
                   <div className="text-base font-semibold mb-1 text-slate-900 dark:text-white">{advisor.name}</div>
                   <div className="text-sm text-slate-500 dark:text-white/60">{advisor.role}</div>

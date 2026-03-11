@@ -72,10 +72,10 @@ const HomePage = () => {
     };
 
     // Update page title
-    document.title = 'CreatorArmour — Protect Your Brand Deals | Contracts, Payments & Legal Protection';
+    document.title = 'Creator Armour — Close Brand Deals Without Instagram DMs';
 
     // Update meta description
-    updateMetaTag('description', 'Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations, consumer complaints, and payment recovery for creators. Start free.');
+    updateMetaTag('description', 'Create your collab link, showcase packages, and receive structured brand offers. Creator Armour helps creators close collaborations professionally.');
 
     // Add canonical URL
     updateLinkTag('canonical', 'https://creatorarmour.com/');
@@ -85,17 +85,17 @@ const HomePage = () => {
 
     // Update Open Graph tags
     updateMetaTag('og:type', 'website');
-    updateMetaTag('og:title', 'CreatorArmour — Protect Your Brand Deals | Contracts, Payments & Legal Protection');
-    updateMetaTag('og:description', 'Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations, consumer complaints, and payment recovery for creators.');
+    updateMetaTag('og:title', 'Creator Armour — Close Brand Deals Without Instagram DMs');
+    updateMetaTag('og:description', 'Create your collab link, showcase packages, and receive structured brand offers with Creator Armour.');
     updateMetaTag('og:image', 'https://creatorarmour.com/og-preview.png');
     updateMetaTag('og:url', currentUrl);
-    updateMetaTag('og:site_name', 'CreatorArmour');
+    updateMetaTag('og:site_name', 'Creator Armour');
     updateMetaTag('og:locale', 'en_IN');
 
     // Update Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
-    updateMetaTag('twitter:title', 'CreatorArmour — Protect Your Brand Deals');
-    updateMetaTag('twitter:description', 'Generate professional contracts, track payment risks, and protect your brand deals. Free legal consultations for creators.');
+    updateMetaTag('twitter:title', 'Creator Armour — Close Brand Deals Without Instagram DMs');
+    updateMetaTag('twitter:description', 'Create your collab link, showcase packages, and close brand deals with structured offers.');
     updateMetaTag('twitter:image', 'https://creatorarmour.com/og-preview.png');
     updateMetaTag('twitter:site', '@creatorarmour');
   }, []);
@@ -108,42 +108,42 @@ const HomePage = () => {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "What is CreatorArmour?",
+          "name": "What is Creator Armour?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "CreatorArmour is a legal protection platform for content creators and influencers. We help you generate professional contracts, track payment risks, file consumer complaints, and get free legal consultations."
+            "text": "Creator Armour is a creator collaboration platform where you publish a collab page, list packages, and receive structured brand offers without messy DM negotiations."
           }
         },
         {
           "@type": "Question",
-          "name": "How much does CreatorArmour cost?",
+          "name": "How does Creator Armour pricing work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "We offer a free plan with basic features, Creator Lite at ₹399/month, Creator Pro at ₹1,499/month, and Agency plans starting at ₹5,000/month. All plans include free legal consultations."
+            "text": "Creators can start with a free setup and choose paid plans as they scale. Plans are designed for individual creators and teams who want structured collaboration workflows."
           }
         },
         {
           "@type": "Question",
-          "name": "Do you provide legal advice?",
+          "name": "Can brands send offers directly through Creator Armour?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "CreatorArmour is a software platform that helps you prepare, track, and act on legal matters. We provide contract templates, payment tracking, and connect you with verified lawyers for consultations. We are not a law firm and do not provide legal representation."
+            "text": "Yes. Brands can open your collab page, choose package templates, customize campaign requirements, and submit secure collaboration requests in one flow."
           }
         },
         {
           "@type": "Question",
-          "name": "Can I file consumer complaints?",
+          "name": "What can I show on my collab page?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes! Creator Pro includes Lifestyle Shield, which allows unlimited consumer complaints against brands, e-commerce platforms, and service providers. We draft and send legal notices on your behalf."
+            "text": "You can show your creator profile, niche, platform presence, package rates, deliverables, and trust signals so brands can book faster with clear expectations."
           }
         },
         {
           "@type": "Question",
-          "name": "How do free legal consultations work?",
+          "name": "Is Creator Armour only for Instagram creators?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Creator Lite includes 1 free 15-minute legal consultation per month, while Creator Pro includes unlimited consultations. You can book sessions with verified lawyers through our Calendly integration to discuss contracts, payments, disputes, and other legal matters."
+            "text": "No. Creator Armour supports creators across Instagram and other social platforms, helping them present structured offers and manage collaborations professionally."
           }
         }
       ]
@@ -1333,4 +1333,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-

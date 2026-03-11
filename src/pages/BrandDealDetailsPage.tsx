@@ -161,19 +161,19 @@ const BrandDealDetailsPage = () => {
     };
 
     // Update page title
-    document.title = 'CreatorArmour — Protect Your Brand Deals';
+    document.title = 'Creator Armour — Brand Collaboration Brief';
 
     // Update Open Graph tags
     updateMetaTag('og:type', 'website');
-    updateMetaTag('og:title', 'CreatorArmour — Protect Your Brand Deals');
-    updateMetaTag('og:description', 'Generate contracts, track payments & stay protected — built for creators.');
+    updateMetaTag('og:title', 'Creator Armour — Brand Collaboration Brief');
+    updateMetaTag('og:description', 'Submit a structured campaign brief, define deliverables, and send a secure collaboration request to the creator.');
     updateMetaTag('og:image', 'https://creatorarmour.com/og-preview.png');
     updateMetaTag('og:url', currentUrl);
 
     // Update Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
-    updateMetaTag('twitter:title', 'CreatorArmour — Protect Your Brand Deals');
-    updateMetaTag('twitter:description', 'Generate contracts, track payments & stay protected — built for creators.');
+    updateMetaTag('twitter:title', 'Creator Armour — Brand Collaboration Brief');
+    updateMetaTag('twitter:description', 'Submit a structured campaign brief and send a secure collaboration request.');
     updateMetaTag('twitter:image', 'https://creatorarmour.com/og-preview.png');
 
     // Cleanup function to restore default meta tags when component unmounts
@@ -1880,4 +1880,3 @@ const BrandDealDetailsPage = () => {
 };
 
 export default BrandDealDetailsPage;
-

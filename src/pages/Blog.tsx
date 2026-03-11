@@ -37,8 +37,8 @@ const Blog = () => {
     <>
       {/* SEO Meta Tags */}
       <SEOHead
-        title="CreatorArmour Blog: Legal & Business Guide"
-        description="Expert articles on legal compliance, payment recovery, contract protection, and business growth for content creators and influencers in India."
+        title="Creator Armour Blog: Creator Collaboration & Growth Guide"
+        description="Guides on creator collaboration, pricing, deal workflows, contracts, and brand partnerships for creators in India."
         keywords={['creator blog', 'influencer legal advice', 'content creator guide', 'India', 'legal tips']}
         canonicalUrl={canonicalUrl}
       />
@@ -53,8 +53,8 @@ const Blog = () => {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "CollectionPage",
-            name: "CreatorArmour Blog",
-            description: "A collection of expert articles on legal compliance, payment recovery, contract protection, and business growth for content creators.",
+            name: "Creator Armour Blog",
+            description: "A collection of practical articles on creator collaboration, pricing, contracts, and business growth.",
             url: "https://creatorarmour.com/blog",
             isPartOf: { "@id": "https://creatorarmour.com/#website" },
             mainEntity: {
@@ -99,7 +99,7 @@ const Blog = () => {
               <FileText className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
-              CreatorArmour Insights
+              Creator Armour Insights
             </h1>
             <p className="text-lg text-purple-200 max-w-2xl mx-auto">
               Expert articles on legal compliance, tax strategy, and business growth for creators.

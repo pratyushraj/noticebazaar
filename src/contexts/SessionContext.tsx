@@ -97,7 +97,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       try {
         const { data: handleData, error: handleError } = await (supabase
           .from('profiles')
-          .select('username, instagram_handle, instagram_profile_photo, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
+          .select('username, instagram_handle, instagram_followers, last_instagram_sync, instagram_profile_photo, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
           .eq('id', user.id)
           .single();
         if (!handleError) {
@@ -105,6 +105,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           instagramHandleValue = (handleData as any)?.instagram_handle || null;
           optionalFields = {
             creator_category: (handleData as any)?.creator_category ?? null,
+            instagram_followers: (handleData as any)?.instagram_followers ?? null,
+            last_instagram_sync: (handleData as any)?.last_instagram_sync ?? null,
             instagram_profile_photo: (handleData as any)?.instagram_profile_photo ?? null,
             avg_rate_reel: (handleData as any)?.avg_rate_reel ?? null,
             pricing_min: (handleData as any)?.pricing_min ?? null,
@@ -611,8 +613,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          // Use path-based routes (BrowserRouter), not hash — so /creator-dashboard not #/creator-dashboard
-          let targetPath = '/creator-dashboard';
+          // Use path-based routes (BrowserRouter), not hash.
+          // Default to onboarding-first for creator-like users so dashboard is never reachable before completion.
+          let targetPath = '/creator-onboarding';
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -680,11 +683,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   }
                 }
               } else {
-                console.log('[SessionContext] No profile data / timeout, defaulting to creator dashboard');
+                console.log('[SessionContext] No profile data / timeout, defaulting to onboarding-first route');
               }
             } catch (error) {
-              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-dashboard:', error);
-              targetPath = '/creator-dashboard';
+              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to onboarding-first route:', error);
+              targetPath = '/creator-onboarding';
             }
           }
 

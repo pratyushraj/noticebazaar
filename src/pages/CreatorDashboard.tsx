@@ -185,6 +185,15 @@ const CreatorDashboard = () => {
 
   const isInitialLoading = (sessionLoading && !session) || (isLoadingDeals && !!creatorId && !brandDealsError);
 
+  // Defense-in-depth gate: never allow creator dashboard before onboarding completion.
+  useEffect(() => {
+    if (!profile) return;
+    const isCreatorLikeRole = !profile.role || profile.role === 'creator' || profile.role === 'client';
+    if (isCreatorLikeRole && profile.onboarding_complete === false) {
+      navigate('/creator-onboarding', { replace: true });
+    }
+  }, [profile, navigate]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     triggerHaptic(HapticPatterns.medium);

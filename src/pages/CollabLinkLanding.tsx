@@ -452,6 +452,9 @@ const CollabLinkLanding = () => {
   const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
   const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
   const [profilePhotoError, setProfilePhotoError] = useState(false);
+  const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [lastProfileSaveAt, setLastProfileSaveAt] = useState<Date | null>(null);
+  const [previewAsBrand, setPreviewAsBrand] = useState(false);
 
   // Save and continue later
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
@@ -465,6 +468,10 @@ const CollabLinkLanding = () => {
   const [isEditingTemplates, setIsEditingTemplates] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<DealTemplate | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const headerSectionRef = useRef<HTMLDivElement | null>(null);
+  const overviewSectionRef = useRef<HTMLDivElement | null>(null);
+  const packagesSectionRef = useRef<HTMLDivElement | null>(null);
+  const nichesSectionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (creator) {
@@ -537,35 +544,51 @@ const CollabLinkLanding = () => {
 
     const latestHandle = (profile?.instagram_handle || profile?.username || creator.username || '').replace(/^@/, '').trim();
     const latestName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
+    const latestFollowers = Number((profile as any)?.instagram_followers || 0) || null;
+    const latestProfilePhoto = (profile as any)?.instagram_profile_photo || profile?.avatar_url || creator.profile_photo || null;
 
     const nextPlatforms = Array.isArray(creator.platforms)
       ? creator.platforms.map((platform) =>
-        platform.name.toLowerCase() === 'instagram' && latestHandle
-          ? { ...platform, handle: latestHandle }
+        platform.name.toLowerCase() === 'instagram'
+          ? {
+            ...platform,
+            handle: latestHandle || platform.handle,
+            followers: latestFollowers || platform.followers || undefined,
+          }
           : platform
       )
       : [];
 
     const hasInstagramPlatform = nextPlatforms.some((platform) => platform.name.toLowerCase() === 'instagram');
     if (!hasInstagramPlatform && latestHandle) {
-      nextPlatforms.unshift({ name: 'Instagram', handle: latestHandle });
+      nextPlatforms.unshift({
+        name: 'Instagram',
+        handle: latestHandle,
+        followers: latestFollowers || undefined,
+      });
     }
 
     const nextName = latestName || creator.name;
     const nextUsername = latestHandle || creator.username;
+    const nextFollowers = latestFollowers || creator.followers || null;
+    const nextProfilePhoto = latestProfilePhoto;
 
     const instagramHandle = nextPlatforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '';
     const isSameName = nextName === creator.name;
     const isSameUsername = nextUsername === creator.username;
     const isSameInstagramHandle = instagramHandle === (creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '');
+    const isSameFollowers = nextFollowers === creator.followers;
+    const isSamePhoto = nextProfilePhoto === creator.profile_photo;
 
-    if (isSameName && isSameUsername && isSameInstagramHandle) return;
+    if (isSameName && isSameUsername && isSameInstagramHandle && isSameFollowers && isSamePhoto) return;
 
     setCreator((prev) => prev ? {
       ...prev,
       name: nextName,
       username: nextUsername,
       platforms: nextPlatforms,
+      followers: nextFollowers,
+      profile_photo: nextProfilePhoto,
     } : prev);
   }, [
     creator,
@@ -574,6 +597,9 @@ const CollabLinkLanding = () => {
     profile?.last_name,
     profile?.instagram_handle,
     profile?.username,
+    profile?.avatar_url,
+    (profile as any)?.instagram_profile_photo,
+    (profile as any)?.instagram_followers,
   ]);
 
   const isDeadlineProvided = Boolean(deadline);
@@ -722,6 +748,7 @@ const CollabLinkLanding = () => {
 
     // Update local state for immediate feedback
     setCreator(prev => prev ? { ...prev, [field]: value } : null);
+    setProfileSaveStatus('saving');
 
     try {
       let updatePayload: any = { id: creator.id };
@@ -741,11 +768,51 @@ const CollabLinkLanding = () => {
       }
 
       await updateProfileMutation.mutateAsync(updatePayload);
+      setProfileSaveStatus('saved');
+      setLastProfileSaveAt(new Date());
+      window.setTimeout(() => {
+        setProfileSaveStatus((prev) => (prev === 'saved' ? 'idle' : prev));
+      }, 2200);
       toast.success('Field updated successfully');
     } catch (error) {
       console.error(`Failed to update ${field}:`, error);
+      setProfileSaveStatus('error');
       toast.error(`Failed to update ${field}`);
     }
+  };
+
+  const scrollToSetupSection = (key?: string) => {
+    const lookupKey = key || firstIncompleteSetupKey;
+    const targetRef =
+      lookupKey === 'instagram' || lookupKey === 'photo' || lookupKey === 'followers'
+        ? headerSectionRef
+        : lookupKey === 'niches'
+          ? nichesSectionRef
+          : lookupKey === 'rates'
+            ? overviewSectionRef
+            : packagesSectionRef;
+
+    targetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleEditModeToggle = () => {
+    if (!editMode) {
+      setPreviewAsBrand(false);
+      setEditMode(true);
+      return;
+    }
+
+    if (hasIncompleteSetup) {
+      const proceed = window.confirm(
+        'Your setup is incomplete. Brands may see missing profile details. Finish editing anyway?'
+      );
+      if (!proceed) {
+        scrollToSetupSection();
+        return;
+      }
+    }
+
+    setEditMode(false);
   };
 
   // Build form payload for save-draft / resume
@@ -1541,7 +1608,7 @@ const CollabLinkLanding = () => {
   const creatorName = creator.name || 'Creator';
   const normalizedHandle = (creator.platforms?.find((p) => p.name.toLowerCase() === 'instagram')?.handle || creator.username || username || '').replace(/^@/, '').trim();
   const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : '';
-  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | CreatorArmour`;
+  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | Creator Armour`;
   // const platformNames = platforms.map(p => p.name).join(', ');
   const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
   const trustStats = creator.trust_stats;
@@ -1559,7 +1626,7 @@ const CollabLinkLanding = () => {
   const followerText = followerCount > 0
     ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
     : '';
-  const metaDescription = `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via CreatorArmour.`.substring(0, 158);
+  const metaDescription = `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via Creator Armour.`.substring(0, 158);
 
   // Use clean URL for SEO (no hash)
   const canonicalUrl = `https://creatorarmour.com/collab/${encodeURIComponent(normalizedHandle)}`;
@@ -1607,6 +1674,52 @@ const CollabLinkLanding = () => {
     return `${n}`;
   };
   const primaryFollowers = creator.followers ?? followerCount;
+  const lastInstagramSyncDate = creator.last_instagram_sync ? new Date(creator.last_instagram_sync) : null;
+  const lastInstagramSyncLabel = lastInstagramSyncDate && !Number.isNaN(lastInstagramSyncDate.getTime())
+    ? lastInstagramSyncDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+    : null;
+  const setupChecklist = [
+    {
+      key: 'instagram',
+      label: 'Instagram handle set',
+      complete: Boolean(normalizedHandle && normalizedHandle.length >= 3),
+    },
+    {
+      key: 'photo',
+      label: 'Profile photo added',
+      complete: Boolean(creator.profile_photo),
+    },
+    {
+      key: 'followers',
+      label: 'Followers synced',
+      complete: Number(primaryFollowers || 0) > 0,
+    },
+    {
+      key: 'niches',
+      label: 'Content niches selected',
+      complete: Boolean(creator.content_niches && creator.content_niches.length > 0),
+    },
+    {
+      key: 'rates',
+      label: 'Typical rate added',
+      complete: Boolean((creator as any).avg_rate_reel || creator.suggested_reel_rate),
+    },
+    {
+      key: 'packages',
+      label: '3 packages configured',
+      complete: (localDealTemplates?.length || 0) >= 3,
+    },
+  ];
+  const setupCompletedCount = setupChecklist.filter((item) => item.complete).length;
+  const hasIncompleteSetup = setupCompletedCount < setupChecklist.length;
+  const firstIncompleteSetupKey = setupChecklist.find((item) => !item.complete)?.key;
+  const profileSaveStatusLabel = profileSaveStatus === 'saving'
+    ? 'Saving...'
+    : profileSaveStatus === 'saved'
+      ? `Saved${lastProfileSaveAt ? ` ${lastProfileSaveAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : ''}`
+      : profileSaveStatus === 'error'
+        ? 'Save failed'
+        : '';
   const avgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
   const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
 
@@ -1722,7 +1835,7 @@ const CollabLinkLanding = () => {
   };
 
   const dealTemplates = localDealTemplates;
-  const creatorCollabSchema = useMemo(() => {
+  const creatorCollabSchema = (() => {
     const creatorId = creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-');
     const profilePageId = `${canonicalUrl}#profile-page`;
     const personId = `${canonicalUrl}#creator`;
@@ -1832,23 +1945,7 @@ const CollabLinkLanding = () => {
         },
       ],
     };
-  }, [
-    creator.id,
-    creator.platforms,
-    creator.category,
-    creator.content_niches,
-    creator.username,
-    creatorName,
-    creatorHandle,
-    canonicalUrl,
-    metaDescription,
-    pageImage,
-    dealTemplates,
-    followerText,
-    audienceRegionLabel,
-    audienceLanguage,
-    primaryFollowers,
-  ]);
+  })();
 
   return (
     <>
@@ -1864,7 +1961,7 @@ const CollabLinkLanding = () => {
 
       <BreadcrumbSchema
         items={[
-          { name: 'CreatorArmour', url: 'https://creatorarmour.com' },
+          { name: 'Creator Armour', url: 'https://creatorarmour.com' },
           { name: 'Collab', url: 'https://creatorarmour.com/collab' },
           { name: creatorHandle || creatorName, url: canonicalUrl },
         ]}
@@ -1876,20 +1973,50 @@ const CollabLinkLanding = () => {
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
         <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
         {isOwner && (
-          <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex items-center justify-between sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
-            <div className="flex items-center gap-3">
+          <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex flex-wrap items-center justify-between gap-y-2 sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="bg-emerald-400/20 p-1.5 rounded-full">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
               </div>
               <div className="hidden sm:block">
                 <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">Owner View</p>
-                <p className="text-[10px] text-emerald-300/80 font-medium">You are viewing your own collab link as brands see it.</p>
+                <p className="text-[10px] text-emerald-300/80 font-medium">
+                  {previewAsBrand ? 'Brand preview mode is active.' : 'You are viewing your own collab link as brands see it.'}
+                </p>
               </div>
               <div className="sm:hidden">
                 <p className="text-[10px] font-black uppercase tracking-widest leading-none">Your Collab Link</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              {editMode && profileSaveStatusLabel && (
+                <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${profileSaveStatus === 'error'
+                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                  : profileSaveStatus === 'saving'
+                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                    : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  }`}>
+                  {profileSaveStatus === 'saving' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                  {profileSaveStatusLabel}
+                </div>
+              )}
+              <Button
+                onClick={() => {
+                  setPreviewAsBrand((prev) => {
+                    const next = !prev;
+                    if (next) setEditMode(false);
+                    if (next && hasIncompleteSetup) {
+                      toast.warning('Setup is incomplete. Brands may see missing details.');
+                    }
+                    return next;
+                  });
+                }}
+                size="sm"
+                variant="outline"
+                className={`${previewAsBrand ? 'bg-white text-slate-900' : 'bg-white/10 text-white'} border-white/30 transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
+              >
+                {previewAsBrand ? 'Back to Owner View' : 'Preview as Brand'}
+              </Button>
               <Button
                 onClick={() => signOutMutation.mutate()}
                 size="sm"
@@ -1907,8 +2034,9 @@ const CollabLinkLanding = () => {
                 )}
               </Button>
               <Button
-                onClick={() => setEditMode(!editMode)}
+                onClick={handleEditModeToggle}
                 size="sm"
+                disabled={previewAsBrand}
                 className={`${editMode ? 'bg-white text-emerald-900 hover:bg-slate-100' : 'bg-emerald-500 text-white hover:bg-emerald-400'} border-none transition-all text-[11px] font-bold h-7 px-4 rounded-full shadow-sm`}
               >
                 {editMode ? 'Finish Editing' : 'Edit Profile'}
@@ -1920,10 +2048,10 @@ const CollabLinkLanding = () => {
           <div className="flex flex-col lg:grid lg:grid-cols-12 items-start gap-7 lg:gap-10 w-full">
 
             {/* LEFT COLUMN - Creator Context */}
-            <div className="w-full lg:col-span-8 shrink-0 lg:sticky lg:top-24 space-y-5 lg:space-y-7 z-10">
+            <div className="w-full lg:col-span-8 shrink-0 xl:sticky xl:top-24 space-y-5 lg:space-y-7 z-10">
 
               {/* Header - Hero */}
-              <div className="mb-6 pt-2 lg:mb-0 lg:pt-0 relative">
+              <div ref={headerSectionRef} className="mb-6 pt-2 lg:mb-0 lg:pt-0 relative">
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
@@ -2013,6 +2141,11 @@ const CollabLinkLanding = () => {
                           <div className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1">
                             <span className="text-[10px] font-black text-slate-700">Replies in {sameDayResponseLine.replace('~', '')}</span>
                           </div>
+                          {lastInstagramSyncLabel && (
+                            <div className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1">
+                              <span className="text-[10px] font-black text-violet-700">Instagram synced: {lastInstagramSyncLabel}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -2051,18 +2184,41 @@ const CollabLinkLanding = () => {
                 </div>
               </div>
 
-
-
-
-
+              {isOwner && !previewAsBrand && (
+                <div className="mb-6 md:mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Setup Checklist</p>
+                    <span className="text-[11px] font-black text-emerald-700">{setupCompletedCount}/{setupChecklist.length} Complete</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {setupChecklist.map((item) => (
+                      <div
+                        key={item.key}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${item.complete
+                          ? 'border-emerald-200 bg-white text-emerald-700'
+                          : 'border-slate-200 bg-white text-slate-500'
+                          }`}
+                      >
+                        {item.complete ? (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                        ) : (
+                          <Clock className="h-4 w-4 shrink-0 text-slate-400" />
+                        )}
+                        <span className="text-[12px] font-bold">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full mb-6 relative z-20"
-                value={openAccordionValue}
-                onValueChange={setOpenAccordionValue}
-              >
+              <div ref={overviewSectionRef}>
+                <Accordion
+                  type="single"
+                  collapsible
+                  className="w-full mb-6 relative z-20"
+                  value={openAccordionValue}
+                  onValueChange={setOpenAccordionValue}
+                >
                 <AccordionItem value="item-1" className="rounded-2xl overflow-hidden border-b-0" style={{ border: "1.5px solid #DDE8E6", background: "#FDFFFE", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
                   <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
                     <div className="flex items-center gap-3">
@@ -2244,11 +2400,12 @@ const CollabLinkLanding = () => {
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-              </Accordion>
+                </Accordion>
+              </div>
             </div> {/* END LEFT COLUMN */}
 
             {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-            <div className="deal-templates-section mb-4 md:mb-7 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:col-span-8 p-5 lg:p-6 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
+            <div ref={packagesSectionRef} className="deal-templates-section mb-4 md:mb-7 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full lg:col-span-8 p-5 lg:p-6 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
@@ -2256,6 +2413,11 @@ const CollabLinkLanding = () => {
                     <Sparkles className="h-4 w-4 text-amber-500" />
                     <span className="text-[15px] font-black text-slate-800 tracking-tight">Pick a package below</span>
                   </div>
+                  {isOwner && !previewAsBrand && (
+                    <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit package name, deliverables, price, and mark one as Most Popular.
+                    </p>
+                  )}
                 </div>
                 {isOwner && (
                   <button
@@ -2268,7 +2430,7 @@ const CollabLinkLanding = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
                 {dealTemplates.map((template, idx) => {
                   const deliverablesList = template.deliverables.map(d => {
                     const qty = template.quantities[d] || 1;
@@ -2277,7 +2439,10 @@ const CollabLinkLanding = () => {
                   }).join(' + ');
 
                   return (
-                    <div key={template.id} className="relative group/card">
+                    <div
+                      key={template.id}
+                      className={`relative group/card ${idx === 2 ? 'md:col-span-2 2xl:col-span-1' : ''}`}
+                    >
                       {template.isPopular && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
                           <div className="bg-[#FFA000] text-[#4A2C00] text-[10px] font-black px-3 py-1 rounded-full border border-amber-300 shadow-lg uppercase tracking-wider flex items-center gap-1.5">
@@ -2289,7 +2454,7 @@ const CollabLinkLanding = () => {
                       <button
                         type="button"
                         onClick={() => handleTemplateSelect(template)}
-                        className={`w-full text-left p-4 lg:p-5 rounded-3xl border transition-all duration-300 group active:scale-95 min-h-[430px] lg:min-h-[470px] flex flex-col relative hover:-translate-y-1 ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_16px_36px_rgba(15,164,127,0.16)] scale-[1.02] ring-2 ring-emerald-200/70' : template.isPopular ? 'border-amber-300 bg-[linear-gradient(180deg,#FFF8E8_0%,#FFF3CD_100%)] hover:bg-amber-100/80 shadow-[0_12px_28px_rgba(251,191,36,0.24)] hover:shadow-[0_18px_38px_rgba(251,191,36,0.30)] ring-1 ring-amber-200/80' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/80 shadow-[0_10px_26px_rgba(0,0,0,0.10)] hover:shadow-[0_16px_34px_rgba(0,0,0,0.16)]'}`}
+                        className={`w-full text-left p-4 lg:p-5 rounded-3xl border transition-all duration-300 group active:scale-95 min-h-[360px] md:min-h-[390px] 2xl:min-h-[430px] flex flex-col relative hover:-translate-y-1 ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_16px_36px_rgba(15,164,127,0.16)] scale-[1.02] ring-2 ring-emerald-200/70' : template.isPopular ? 'border-amber-300 bg-[linear-gradient(180deg,#FFF8E8_0%,#FFF3CD_100%)] hover:bg-amber-100/80 shadow-[0_12px_28px_rgba(251,191,36,0.24)] hover:shadow-[0_18px_38px_rgba(251,191,36,0.30)] ring-1 ring-amber-200/80' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/80 shadow-[0_10px_26px_rgba(0,0,0,0.10)] hover:shadow-[0_16px_34px_rgba(0,0,0,0.16)]'}`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm text-xl">
@@ -2468,7 +2633,7 @@ const CollabLinkLanding = () => {
 
                 {/* Open to collabs + niches + media kit (creator readiness for brands) */}
                 {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-                  <div className="mt-8 pt-6 border-t border-slate-200 space-y-3">
+                  <div ref={nichesSectionRef} className="mt-8 pt-6 border-t border-slate-200 space-y-3">
                     {creator.open_to_collabs !== false && (
                       <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -3082,6 +3247,24 @@ const CollabLinkLanding = () => {
           </div> {/* END flex-row container */}
 
           <div className="lg:hidden h-20" />
+
+          {isOwner && !previewAsBrand && hasIncompleteSetup && (
+            <div className="fixed right-4 bottom-24 z-50 md:hidden">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!editMode) setEditMode(true);
+                  scrollToSetupSection();
+                }}
+                className="flex items-center gap-2 rounded-full bg-emerald-600 text-white px-4 py-2.5 shadow-[0_10px_24px_rgba(16,185,129,0.35)] hover:bg-emerald-700 transition-all"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="text-[11px] font-black uppercase tracking-wider">
+                  Complete Setup ({setupChecklist.length - setupCompletedCount} left)
+                </span>
+              </button>
+            </div>
+          )}
 
           <div className="px-4">
             {/* Save and continue later modal */}

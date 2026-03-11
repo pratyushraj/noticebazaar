@@ -75,8 +75,8 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
         "overscroll-none",
         "touch-pan-y",
 
-        // Allow scrolling on container
-        "overflow-y-auto overscroll-contain", // Changed from overflow-hidden to allow scrolling
+        // Keep container fixed; individual screens decide if they need scrolling.
+        "overflow-hidden",
 
         className
       )}
@@ -85,4 +85,3 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
     </div>
   );
 };
-

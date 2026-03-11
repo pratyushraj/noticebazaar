@@ -12,15 +12,13 @@
       "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable",
-      "padding": "10%"
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable",
-      "padding": "10%"
+      "purpose": "any maskable"
     }
   ],
   "categories": ["business", "productivity", "finance"],

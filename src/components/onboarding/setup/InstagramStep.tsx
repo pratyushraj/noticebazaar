@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Link2 } from 'lucide-react';
+import { CheckCircle2, Instagram, Link2, Loader2, XCircle } from 'lucide-react';
 import { PrimaryButton } from '../PrimaryButton';
 import { SecondaryButton } from '../SecondaryButton';
 import { GradientCard } from '../GradientCard';
 import { SkipButton } from '../SkipButton';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface InstagramStepProps {
   instagramUsername: string;
@@ -28,6 +29,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
   onSkip,
 }) => {
   const [value, setValue] = useState(instagramUsername);
+  const [availability, setAvailability] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
 
   const normalized = value
     .replace(/@/g, '')
@@ -35,8 +37,49 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
     .toLowerCase()
     .trim();
   const isValid = normalized.length >= 3;
+  const canContinue = isValid && availability !== 'checking' && availability !== 'taken';
+
+  useEffect(() => {
+    if (!isValid) {
+      setAvailability('idle');
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setAvailability('checking');
+      try {
+        const apiBaseUrl = getApiBaseUrl();
+        const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(normalized)}`, {
+          method: 'GET',
+          signal: controller.signal,
+        });
+
+        if (res.status === 404) {
+          setAvailability('available');
+          return;
+        }
+
+        if (res.ok) {
+          setAvailability('taken');
+          return;
+        }
+
+        setAvailability('error');
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+        setAvailability('error');
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [normalized, isValid]);
 
   const handleNext = () => {
+    if (!canContinue) return;
     onUsernameChange(normalized);
     onNext();
   };
@@ -74,9 +117,32 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
               aria-required="false"
             />
             {normalized && (
-              <p className="text-sm text-slate-400 dark:text-white/60 mt-2 text-center">
-                Your link: <span className="text-blue-600 dark:text-purple-300 font-medium tracking-tight">creatorarmour.com/{normalized || 'username'}</span>
-              </p>
+              <div className="mt-2 space-y-1 text-center">
+                <p className="text-sm text-slate-400 dark:text-white/60">
+                  Your link: <span className="text-blue-600 dark:text-purple-300 font-medium tracking-tight">creatorarmour.com/collab/{normalized || 'username'}</span>
+                </p>
+                {availability === 'checking' && (
+                  <p className="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Checking availability...
+                  </p>
+                )}
+                {availability === 'available' && (
+                  <p className="text-xs font-semibold text-emerald-600 inline-flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    This handle is available
+                  </p>
+                )}
+                {availability === 'taken' && (
+                  <p className="text-xs font-semibold text-rose-600 inline-flex items-center gap-1">
+                    <XCircle className="w-3.5 h-3.5" />
+                    This handle is already taken. Try another.
+                  </p>
+                )}
+                {availability === 'error' && (
+                  <p className="text-xs font-semibold text-amber-600">Could not verify now. You can still try continuing.</p>
+                )}
+              </div>
             )}
           </div>
 
@@ -86,7 +152,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
             </SecondaryButton>
             <PrimaryButton
               onClick={handleNext}
-              disabled={!isValid}
+              disabled={!canContinue}
               className="flex-1 order-1 sm:order-2"
             >
               Continue

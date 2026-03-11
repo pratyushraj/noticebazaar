@@ -11,7 +11,7 @@ const DynamicRateCalculator = () => {
   const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
   const nicheName = niche.charAt(0).toUpperCase() + niche.slice(1);
 
-  const seoTitle = `${nicheName} Creator Rate Calculator for ${platformName} | CreatorArmour`;
+  const seoTitle = `${nicheName} Creator Rate Calculator for ${platformName} | Creator Armour`;
   const seoDescription = `Find out how much ${niche} creators should charge on ${platformName}. Get accurate rate estimates based on followers, engagement, and deliverables.`;
 
   const canonicalUrl = `https://creatorarmour.com/rate-calculator/${platform}/${niche}`;
@@ -70,7 +70,7 @@ const DynamicRateCalculator = () => {
               <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
                 <h3 className="text-xl font-bold mb-3">Next Step: Protected Deal</h3>
                 <p className="text-slate-400 text-sm leading-relaxed mb-4">
-                  Once you've calculated your rate, use CreatorArmour to generate a protected contract and manage your collaboration professionally.
+                  Once you've calculated your rate, use Creator Armour to share a collab link and manage collaborations professionally.
                 </p>
                 <Link to="/signup" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all">
                   Get Protected

@@ -25,7 +25,7 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
 
   return (
     <OnboardingSlide>
-      <div className="mt-12 md:mt-0 mb-8">
+      <div className="mt-6 md:mt-0 mb-6">
         <IconBubble icon={ShieldCheck} size="lg" color="green" animated />
       </div>
 
@@ -33,11 +33,11 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
         Deals That Protect You
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-6 md:mb-10">
+      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-5 md:mb-8">
         No more &quot;bro trust me&quot; partnerships.
       </p>
 
-      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-6 md:mb-10">
+      <div className="space-y-3 md:space-y-4 max-w-md w-full mb-5 md:mb-8">
         {stats.map((stat, index) => (
           <GradientCard key={index} padding="md">
             <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{stat.value}</div>

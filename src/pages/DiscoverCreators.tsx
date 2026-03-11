@@ -104,12 +104,12 @@ const DiscoverCreators = () => {
     };
 
     const pageTitle = category && category !== 'all'
-        ? `Discover ${category} Creators | CreatorArmour`
-        : 'Discover Verified Creators | CreatorArmour Influencer Directory';
+        ? `Discover ${category} Creators | Creator Armour`
+        : 'Discover Verified Creators | Creator Armour Directory';
 
     const metaDescription = category && category !== 'all'
-        ? `Discover verified ${category} creators and influencers. Find the perfect content creator for your brand on the most secure creator operating system.`
-        : 'Discover thousands of verified creators and influencers across all categories. Connect with creators via secure links and auto-generated contracts.';
+        ? `Discover verified ${category} creators and book collaborations through structured offers, package previews, and secure workflows.`
+        : 'Discover verified creators across categories and collaborate through package-based offers on Creator Armour.';
 
     const baseUrl = 'https://creatorarmour.com';
     const canonicalUrl = `${baseUrl}/discover${category && category !== 'all' ? `/${category}` : ''}`;
@@ -348,8 +348,8 @@ const DiscoverCreators = () => {
                         <div className="grid md:grid-cols-3 gap-8">
                             {[
                                 { title: 'Bypass Agencies', desc: 'No middle layers. Connect directly with creators via their Armour collab links.' },
-                                { title: 'Auto-Generated Contracts', desc: 'Every agreement is legally binding and GST-compliant from the second you book.' },
-                                { title: 'Creator Accountability', desc: 'Deliverables are tracked and verified by CreatorArmour systems.' },
+                                { title: 'Structured Offers', desc: 'Send campaign details in a clean flow with package-first collaboration terms.' },
+                                { title: 'Creator Accountability', desc: 'Deliverables are tracked and verified by Creator Armour systems.' },
                             ].map((item, i) => (
                                 <div key={i}>
                                     <p className="text-[12px] font-black uppercase tracking-widest text-white/80 mb-2">{item.title}</p>
@@ -363,7 +363,7 @@ const DiscoverCreators = () => {
 
             <footer className="border-t border-white/5 text-center py-10">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
-                    © {new Date().getFullYear()} CreatorArmour Systems · Secure Discovery Protocol
+                    © {new Date().getFullYear()} Creator Armour Systems · Secure Discovery Protocol
                 </p>
             </footer>
         </div>

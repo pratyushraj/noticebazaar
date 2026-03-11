@@ -156,7 +156,7 @@ const LandingPage = () => {
                 {/* Dynamic Island */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-32 h-7 bg-slate-200 rounded-full z-20" />
 
-                <div className="px-5 md:px-6 pt-14 md:pt-16 pb-8 bg-white h-auto md:h-[680px] overflow-visible md:overflow-y-auto no-scrollbar relative">
+                <div className="px-5 md:px-6 pt-14 md:pt-16 pb-8 bg-white h-auto relative">
                   {/* Decorative background blur */}
                   <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-blue-50 to-white" />
 
