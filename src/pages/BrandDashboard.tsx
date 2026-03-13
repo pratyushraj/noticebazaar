@@ -925,7 +925,7 @@ const BrandDashboard = () => {
                                 {notificationsOpen && (
                                   <div
                                     className={cn(
-                                      "absolute right-0 mt-3 w-[300px] rounded-[24px] border shadow-2xl p-4 z-50 overflow-hidden",
+                                      "absolute -right-[90px] sm:right-0 mt-3 w-[290px] sm:w-[300px] max-w-[calc(100vw-32px)] rounded-[24px] border shadow-2xl p-4 z-50 overflow-hidden",
                                       isDark 
                                         ? "bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white" 
                                         : "bg-white/95 backdrop-blur-xl border-slate-200/60 text-slate-900"
