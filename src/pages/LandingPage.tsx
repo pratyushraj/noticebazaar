@@ -243,7 +243,7 @@ const LandingPage = () => {
               Top creators running their business on Armour
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
               { name: 'Priya Sharma', category: 'Fashion Creator', loc: 'Delhi', followers: '36K', price: '₹3K', img: PRIYA_IMG },
               { name: 'Arjun Patel', category: 'Tech Reviewer', loc: 'Mumbai', followers: '51K', price: '₹4K', img: ARJUN_IMG },
@@ -366,19 +366,19 @@ const LandingPage = () => {
             <h2 className="text-3xl md:text-[40px] font-black text-slate-900 mb-4">Real deals closed recently</h2>
             <p className="text-lg text-slate-600 font-medium">Creators are consistently booking deals using their Armour profiles.</p>
           </div>
-          <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible pb-2 snap-x snap-mandatory">
             {[
               { name: 'Priya Sharma', img: PRIYA_IMG, brand: 'Myntra', package: '1 Reel + 2 Stories', val: '₹4,500' },
               { name: 'Arjun Patel', img: ARJUN_IMG, brand: 'Boat', package: 'Product Review', val: '₹3,000 + product' },
               { name: 'Neha Verma', img: NEHA_IMG, brand: 'Mamaearth', package: '1 Reel', val: '₹2,000' },
             ].map((d, i) => (
               <div key={i} className="bg-white border border-slate-200 p-6 md:p-8 rounded-[28px] md:rounded-[32px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-start">
-                <div className="flex items-center justify-between mb-6 pb-6 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <img src={d.img} alt={d.name} className="w-12 h-12 rounded-full border border-slate-200 object-cover" />
-                    <span className="font-black text-base text-slate-900">{d.name}</span>
+                <div className="flex items-start justify-between gap-3 mb-6 pb-6 border-b border-slate-100">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={d.img} alt={d.name} className="w-12 h-12 rounded-full border border-slate-200 object-cover shrink-0" />
+                    <span className="font-black text-base text-slate-900 leading-tight">{d.name}</span>
                   </div>
-                  <div className="text-[11px] font-black uppercase tracking-wider px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">Closed</div>
+                  <div className="shrink-0 text-[11px] font-black uppercase tracking-wider px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">Closed</div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
