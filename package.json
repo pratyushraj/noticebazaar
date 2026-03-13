@@ -92,6 +92,7 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "twit": "^2.2.11",
     "use-sync-external-store": "^1.6.0",
     "web-push": "^3.6.7"
   },

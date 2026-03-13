@@ -7,14 +7,13 @@ const supabase = createClient(
 );
 
 async function run() {
-  const email = 'notice2@yopmail.com';
-  console.log('Sending test push to:', email);
+  console.log('Fetching most recent push subscription...');
   
-  const { data: user } = await supabase.from('profiles').select('id').eq('email', email).maybeSingle();
-  if (!user) { console.error('User not found'); return; }
-
-  const { data: subs } = await supabase.from('creator_push_subscriptions').select('*').eq('creator_id', user.id);
+  const { data: subs } = await supabase.from('creator_push_subscriptions').select('*').order('created_at', { ascending: false }).limit(1);
   if (!subs || subs.length === 0) { console.error('No subscriptions found.'); return; }
+
+  const sub = subs[0];
+  console.log(`Found subscription for creator_id: ${sub.creator_id}`);
 
   webpush.setVapidDetails(
     'mailto:support@creatorarmour.com',
@@ -22,20 +21,19 @@ async function run() {
     'GyIB6afb7APgX5Tq2UasLjOO1y6MRMvNQPjLxXG1iy0'
   );
 
-  for (const sub of subs) {
-    try {
+  try {
       await webpush.sendNotification({
         endpoint: sub.endpoint,
         keys: { p256dh: sub.p256dh_key, auth: sub.auth_key }
       }, JSON.stringify({
-        title: 'Success! 🚀',
-        body: 'Your iPhone is now connected to CreatorArmour alerts.',
-        url: '/creator-dashboard'
+        title: 'Brand Alert Test 🚀',
+        body: 'Push notifications are enabled for the Brand Dashboard!',
+        url: '/brand/offers'
       }));
       console.log('✅ Sent successfully to ID:', sub.id);
     } catch (err: any) {
+
       console.error('❌ Failed:', err.message);
     }
-  }
 }
 run();

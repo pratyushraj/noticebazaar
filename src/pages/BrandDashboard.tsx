@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
     Search, Bell, Plus, FileText, CheckCircle2,
@@ -96,7 +96,6 @@ const BrandDashboard = () => {
       if (typeof window === 'undefined') return;
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
       const onChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
-      // Safari fallback
       if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onChange);
       else (mq as any).addListener(onChange);
       return () => {
@@ -111,6 +110,21 @@ const BrandDashboard = () => {
       ? <Laptop className="w-4 h-4" />
       : (isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />);
     const cardTheme: 'dark' | 'light' = isDark ? 'dark' : 'light';
+
+    // ── Sync theme class to <html> exactly like MobileDashboardDemo ──
+    useEffect(() => {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+      return () => {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove('light');
+      };
+    }, [isDark]);
 
     const brandName = profile?.first_name || profile?.business_name || 'Brand';
     const brandLogo = profile?.avatar_url || `https://ui-avatars.com/api/?name=${brandName}&background=0D8ABC&color=fff`;
@@ -800,8 +814,22 @@ const BrandDashboard = () => {
     };
 
     const textColor = isDark ? 'text-white' : 'text-slate-900';
-    const bgColor = isDark ? 'bg-black' : 'bg-slate-50';
+    const bgColor = isDark ? 'bg-[#0B0F14]' : 'bg-[#F9FAFB]';
+    const bgColorHex = isDark ? '#0B0F14' : '#F9FAFB';
+    const scrollRef = useRef<HTMLDivElement>(null);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+    // Sync body + meta theme-color (same as MobileDashboardDemo)
+    useEffect(() => {
+      const meta = document.querySelector('meta[name=theme-color]');
+      const orig = meta?.getAttribute('content');
+      meta?.setAttribute('content', bgColorHex);
+      document.body.style.backgroundColor = bgColorHex;
+      return () => {
+        if (meta && orig) meta.setAttribute('content', orig);
+        document.body.style.backgroundColor = '';
+      };
+    }, [isDark, bgColorHex]);
 
     const upcomingDeliverables = useMemo(() => ([
       { id: 'ud-1', date: 'Mar 15', creator: 'Rahul', label: 'Reel' },
@@ -827,25 +855,29 @@ const BrandDashboard = () => {
     };
 
     return (
-        // Full-bleed inside the shared <Layout> which applies padding on <main>.
-        // Negative margins prevent a dark "gutter" from showing around the light dashboard on mobile.
-        <div className={cn(
-          "min-h-screen font-sans selection:bg-blue-500/30 overflow-x-hidden pb-20",
-          "-mx-4 md:-mx-6 lg:-mx-8 -mt-6 -mb-6",
-          bgColor,
-          textColor
-        )}>
-
-            {/* Spotlight Background Effect */}
+        // Full-screen mobile-first shell — same design DNA as CreatorDashboard / MobileDashboardDemo
+        <div
+          className={cn(
+            "fixed inset-0 font-sans selection:bg-blue-500/30 overflow-hidden",
+            bgColor, textColor
+          )}
+        >
+            {/* Ambient spotlight — dark mode only */}
             {isDark && (
-                <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
                     <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
                 </div>
             )}
 
-            <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-8 sm:py-10 relative z-10">
-                <motion.div
+            {/* Scrollable content area — mirrors MobileDashboardDemo */}
+            <div
+              ref={scrollRef}
+              className="h-full overflow-y-auto overflow-x-hidden relative z-10"
+              style={{ paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}
+            >
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-8 py-8 sm:py-10">
+            <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -1383,14 +1415,14 @@ const BrandDashboard = () => {
                                     exit={{ opacity: 0, x: 10, scale: 0.95 }}
                                     transition={{ duration: 0.2, delay: 0.1 * (approvalQueue.indexOf(item) % 10) }}
                                     className={cn(
-                                      "group rounded-2xl border p-4 flex items-start justify-between gap-3 transition-all duration-300",
+                                      "group rounded-2xl border p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-3 transition-all duration-300",
                                       urgencyLabel
                                         ? (isDark ? "bg-amber-500/10 border-amber-400/40 border-l-4" : "bg-amber-50/60 border-amber-200/70 border-l-4")
                                         : (isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"),
                                       "hover:shadow-lg hover:border-white/20"
                                     )}
                                   >
-	                                  <div className="flex items-start gap-3 min-w-0">
+	                                  <div className="flex items-start gap-4 min-w-0 w-full lg:w-auto">
 	                                    <Avatar className={cn("h-10 w-10 border", isDark ? "border-white/10" : "border-slate-200")}>
 	                                      <AvatarImage src={item.creator.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.creator.name)}&background=0D8ABC&color=fff`} />
 	                                      <AvatarFallback className={cn(isDark ? "bg-white/10 text-white/70" : "bg-slate-100 text-slate-700")}>
@@ -1455,7 +1487,7 @@ const BrandDashboard = () => {
                                     </div>
                                   </div>
 	                                  {item.kind === 'countered' ? (
-	                                    <div className="shrink-0 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-end">
+	                                    <div className="shrink-0 flex flex-col sm:flex-row sm:flex-wrap gap-2 lg:justify-end w-full lg:w-auto mt-2 lg:mt-0">
 	                                      <Button
 	                                        type="button"
 	                                        onClick={() => {
@@ -1521,7 +1553,7 @@ const BrandDashboard = () => {
 	                                      </Button>
 	                                    </div>
 	                                  ) : (
-	                                    <div className="shrink-0 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-end">
+	                                    <div className="shrink-0 flex flex-col sm:flex-row sm:flex-wrap gap-2 lg:justify-end w-full lg:w-auto mt-2 lg:mt-0">
                                       <Button
                                         type="button"
                                         onClick={() => {
@@ -2104,7 +2136,8 @@ const BrandDashboard = () => {
 
                         </div>
                         </motion.div>
-                </main>
+            </div>
+            </div>
 
               {/* Bottom navigation (matches creator dashboard style) */}
               <BrandBottomNav activeTab={activeTab as any} onTabChange={handleTabClick} isDark={isDark} />
@@ -2151,8 +2184,8 @@ const BrandDashboard = () => {
                 document.body
               )}
 
-	        </div>
-	    );
-	};
+	    </div>
+	);
+};
 
 export default BrandDashboard;

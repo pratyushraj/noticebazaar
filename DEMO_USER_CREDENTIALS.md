@@ -5,6 +5,11 @@
 **Email:** `demo@noticebazaar.com`  
 **Password:** `Demo123!@#`
 
+## Quick Brand Demo Account (Brand Dashboard)
+
+**Email:** `brand-demo@noticebazaar.com`  
+**Password:** `BrandDemo123!@#`
+
 ## Test Account (from seed script)
 
 **Email:** `test@noticebazaar.com`  
@@ -18,6 +23,14 @@ The seed script creates a fully configured test account with sample data:
 
 ```bash
 npm run seed
+```
+
+### Option 1B: Create Brand Demo User (Brand Dashboard)
+
+This creates a demo account with `role = 'brand'` so you can access `/brand-dashboard`:
+
+```bash
+npx tsx scripts/create-brand-demo-user.ts
 ```
 
 **Requirements:**
@@ -151,4 +164,3 @@ If the user can't log in:
 1. Check that email is confirmed in Supabase Dashboard → Authentication → Users
 2. Verify the profile exists and has `role: 'creator'`
 3. Check that `onboarding_complete: true` if you want to skip onboarding
-
