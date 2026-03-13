@@ -106,6 +106,7 @@ import CollabLinkLanding from "./pages/CollabLinkLanding";
 import CollabLinkSuccess from "./pages/CollabLinkSuccess";
 import BrandDealConsole from "./pages/BrandDealConsole";
 import BrandDashboard from "./pages/BrandDashboard";
+import BrandSettings from "./pages/BrandSettings";
 import CollabAcceptPage from "./pages/CollabAcceptPage";
 import CollabActionPage from "./pages/CollabActionPage";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
@@ -444,6 +445,10 @@ const App = () => {
 
                         {/* Brand Console Routes */}
                         <Route path="/brand-dashboard" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
+                        <Route path="/brand/offers" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
+                        <Route path="/brand/collaborations" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
+                        <Route path="/brand/analytics" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
+                        <Route path="/brand-settings" element={<ProtectedLayout allowedRoles={['brand']}><BrandSettings /></ProtectedLayout>} />
 
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="/maintenance" element={<MaintenancePage />} />

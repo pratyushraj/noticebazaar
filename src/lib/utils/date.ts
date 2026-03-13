@@ -78,6 +78,19 @@ export function formatDateTime(date: Date | string): string {
 }
 
 /**
+ * Sort items by due date (ascending).
+ */
+export function sortByDueDate<T extends { due_date?: string | null; deadline?: string | null; date?: string | null }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    const aRaw = a.due_date || a.deadline || a.date || '';
+    const bRaw = b.due_date || b.deadline || b.date || '';
+    const aTime = aRaw ? new Date(aRaw).getTime() : Number.POSITIVE_INFINITY;
+    const bTime = bRaw ? new Date(bRaw).getTime() : Number.POSITIVE_INFINITY;
+    return aTime - bTime;
+  });
+}
+
+/**
  * Format a date as relative time (e.g., "2 hours ago")
  */
 export function formatRelativeTime(date: Date | string): string {

@@ -86,7 +86,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
 
       <SheetContent
         side="left"
-        className="w-[84%] sm:w-[320px] bg-[#0C111C] backdrop-blur-xl border-r border-white/10 p-4 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col rounded-r-2xl"
+        className="w-[84%] sm:w-[320px] bg-[#0C111C] backdrop-blur-xl border-r border-white/10 p-4 transition-all duration-300 ease-in-out flex flex-col rounded-r-2xl"
       >
         {/* Profile Header at Top */}
         <div className="mb-6 flex-shrink-0">
