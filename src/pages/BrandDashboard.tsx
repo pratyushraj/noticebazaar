@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import {
-    Search, Bell, User, Plus, FileText, CheckCircle2,
+    Search, Bell, Plus, FileText, CheckCircle2,
     Clock, TrendingUp, LayoutDashboard, Shield, CreditCard,
-    ArrowRight, Activity, LogOut, AlertTriangle, Settings,
-    Sun, Moon, Laptop
+    Activity, LogOut, AlertTriangle,
+    Sun, Moon, Laptop, Briefcase, BarChart3
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -13,14 +13,16 @@ import { SectionCard } from '@/components/ui/card-variants';
 import { useSession } from '@/contexts/SessionContext';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
+import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
+import { toast } from 'sonner';
 
 // -----------------------------
 // Types (mock now, API later)
@@ -37,8 +39,6 @@ interface Creator {
   tags?: string[];
 }
 
-type OfferStatus = 'pending' | 'countered' | 'accepted' | 'declined';
-
 interface Campaign {
   id: string;
   name: string;
@@ -52,16 +52,13 @@ type DealKind = 'paid' | 'barter' | 'hybrid';
 
 const BrandDashboard = () => {
     const navigate = useNavigate();
-    const { profile, user, session } = useSession();
+    const { profile, user } = useSession();
     const location = useLocation();
     const activeTab = useMemo<'pipeline' | 'creators' | 'analytics'>(() => {
       if (location.pathname.includes('/brand/collaborations')) return 'creators';
       if (location.pathname.includes('/brand/analytics')) return 'analytics';
       return 'pipeline';
     }, [location.pathname]);
-    const [filter, setFilter] = useState('all');
-    const [globalSearch, setGlobalSearch] = useState('');
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
     const [campaignDraft, setCampaignDraft] = useState({
       name: '',
@@ -70,6 +67,18 @@ const BrandDashboard = () => {
       deliverables: '', // comma-separated items
       notes: '',
     });
+    const {
+      isSupported: isPushSupported,
+      permission: pushPermission,
+      isSubscribed: isPushSubscribed,
+      isBusy: isPushBusy,
+      promptDismissed: isPushPromptDismissed,
+      isIOSNeedsInstall,
+      hasVapidKey,
+      enableNotifications,
+      dismissPrompt: dismissPushPrompt,
+    } = useDealAlertNotifications();
+
     const THEME_KEY = 'brand_console_theme_preference';
     const [themePreference, setThemePreference] = useState<'system' | 'dark' | 'light'>(() => {
       if (typeof window === 'undefined') return 'system';
@@ -186,12 +195,6 @@ const BrandDashboard = () => {
       return `₹${safe.toLocaleString('en-IN')}`;
     };
 
-    const formatINRMaybe = (n: any) => {
-      const num = Number(n);
-      if (!Number.isFinite(num) || num <= 0) return null;
-      return formatCompactINR(num);
-    };
-
     const normalize = (s: any) =>
       String(s || '')
         .toLowerCase()
@@ -222,20 +225,7 @@ const BrandDashboard = () => {
       return Number.isFinite(v) ? v : 0;
     };
 
-    const formatDealValueLabel = (row: any) => {
-      const kind = getDealKind(row);
-      const cash = getCashValue(row);
-      const product = getProductValue(row);
-      if (kind === 'barter') {
-        return product > 0 ? `Product (₹${product.toLocaleString('en-IN')})` : 'Barter';
-      }
-      if (kind === 'hybrid') {
-        const left = cash > 0 ? `₹${cash.toLocaleString('en-IN')}` : '—';
-        const right = product > 0 ? `+ product (₹${product.toLocaleString('en-IN')})` : '+ product';
-        return `${left} ${right}`;
-      }
-      return cash > 0 ? `₹${cash.toLocaleString('en-IN')}` : '—';
-    };
+
 
     const buildProfilesById = (profiles: any[] | null | undefined) => {
       const map = new Map<string, any>();
@@ -261,7 +251,7 @@ const BrandDashboard = () => {
     };
 
     // Fetch collaboration requests sent by this brand
-    const { data: requests, isLoading: isLoadingRequests } = useSupabaseQuery(
+    const { data: requests } = useSupabaseQuery(
         ['brandRequests', user?.id],
         async () => {
             if (!user?.id) return [];
@@ -304,13 +294,13 @@ const BrandDashboard = () => {
               const baseQuery = supabase
                   .from('collab_requests')
                   .select(select)
-                  .order('created_at', { ascending: false });
+                  .order('created_at', { ascending: false }) as any;
 
               if (canUseBrandId) {
                 // Prefer brand_id when set, but fall back to email so older rows still show up.
-                const query = user.email
+                const query = (user.email
                   ? baseQuery.or(`brand_id.eq.${user.id},brand_email.eq.${user.email}`)
-                  : baseQuery.eq('brand_id', user.id);
+                  : baseQuery.eq('brand_id', user.id)) as any;
                 const { data, error } = await query;
                 if (error) throw error;
                 return (data || []) as any[];
@@ -342,7 +332,7 @@ const BrandDashboard = () => {
             const { data: profs, error: profErr } = await supabase
               .from('profiles')
               .select('id, username, first_name, last_name, business_name, avatar_url')
-              .in('id', creatorIds);
+              .in('id' as any, creatorIds as any[]);
 
             if (profErr) {
               console.warn('[BrandDashboard] Failed to fetch creator profiles for requests:', profErr.message);
@@ -355,7 +345,7 @@ const BrandDashboard = () => {
     );
 
     // Fetch active deals for this brand
-    const { data: deals, isLoading: isLoadingDeals } = useSupabaseQuery(
+    const { data: deals } = useSupabaseQuery(
         ['brandDeals', user?.id],
         async () => {
             if (!user?.id) return [];
@@ -384,12 +374,12 @@ const BrandDashboard = () => {
               const baseQuery = supabase
                   .from('brand_deals')
                   .select(select)
-                  .order('created_at', { ascending: false });
+                  .order('created_at', { ascending: false }) as any;
 
               if (canUseBrandId) {
-                const query = user.email
+                const query = (user.email
                   ? baseQuery.or(`brand_id.eq.${user.id},brand_email.eq.${user.email}`)
-                  : baseQuery.eq('brand_id', user.id);
+                  : baseQuery.eq('brand_id', user.id)) as any;
                 const { data, error } = await query;
                 if (error) throw error;
                 return (data || []) as any[];
@@ -420,7 +410,7 @@ const BrandDashboard = () => {
             const { data: profs, error: profErr } = await supabase
               .from('profiles')
               .select('id, username, first_name, last_name, business_name, avatar_url')
-              .in('id', creatorIds);
+              .in('id' as any, creatorIds as any[]);
 
             if (profErr) {
               console.warn('[BrandDashboard] Failed to fetch creator profiles for deals:', profErr.message);
@@ -432,17 +422,7 @@ const BrandDashboard = () => {
         { enabled: !!user?.id }
     );
 
-    const filteredRequests = useMemo(() => {
-        const all = (requests || []) as any[];
-        const shouldUseDemo = isDemoBrand
-          && !isLoadingRequests
-          && !isLoadingDeals
-          && all.length === 0
-          && ((deals || []).length === 0);
-        const base = shouldUseDemo ? demoRequests : all;
-        if (filter === 'all') return base;
-        return base.filter(r => String(r.status || '').toLowerCase() === filter.toLowerCase());
-    }, [requests, filter, isDemoBrand, isLoadingRequests, isLoadingDeals, deals, demoRequests]);
+
 
     const stats = useMemo(() => {
         const totalSent = (requests?.length || 0);
@@ -672,16 +652,7 @@ const BrandDashboard = () => {
 
     const [campaigns, setCampaigns] = useState<Campaign[]>(() => initialCampaigns);
 
-    const campaignDeliverables = useMemo(() => ({
-      'camp-1': [
-        { creator: { id: 'c-rahul', name: 'Rahul', username: 'ddindialive' }, state: 'done' as const, label: 'Reel posted' },
-        { creator: { id: 'c-neha', name: 'Neha', username: 'neha.verma' }, state: 'pending' as const, label: 'Story pending' },
-        { creator: { id: 'c-ajay', name: 'Ajay', username: 'ajay.patel' }, state: 'pending' as const, label: 'Reel approval pending' },
-      ],
-      'camp-2': [
-        { creator: { id: 'c-aditi', name: 'Aditi', username: 'aaditxstyle' }, state: 'done' as const, label: 'UGC draft approved' },
-      ],
-    }), []);
+
 
     const campaignRoi = useMemo(() => {
       const spend = (displayStats.totalInvestment || 0) > 0 ? displayStats.totalInvestment : performanceMetrics.monthlySpend;
@@ -699,101 +670,7 @@ const BrandDashboard = () => {
       return `/deal-details/${request.id}`;
     }
 
-    const searchResults = useMemo(() => {
-      const q = normalize(globalSearch);
-      if (!q || q.length < 2) return [];
 
-      const reqs = (((isDemoBrand && (requests?.length || 0) === 0 && (deals?.length || 0) === 0) ? demoRequests : (requests || [])) as any[]);
-      const ds = (deals || []) as any[];
-
-      const creatorsFromRequests = reqs
-        .map((r) => r.profiles)
-        .filter(Boolean)
-        .map((p: any) => ({
-          type: 'creator' as const,
-          id: String(p.id || p.username || Math.random()),
-          title: p.business_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.username || 'Creator',
-          subtitle: p.username ? `@${p.username}` : 'Creator',
-          meta: 'From offers',
-          href: p.username ? `/creator/${p.username}` : '/creators',
-        }));
-
-      const creatorsFromDeals = ds
-        .map((d) => d.profiles)
-        .filter(Boolean)
-        .map((p: any) => ({
-          type: 'creator' as const,
-          id: String(p.id || p.username || Math.random()),
-          title: p.business_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.username || 'Creator',
-          subtitle: p.username ? `@${p.username}` : 'Creator',
-          meta: 'Past collaboration',
-          href: p.username ? `/creator/${p.username}` : '/creators',
-        }));
-
-      const campaignItems = campaigns.map((c) => ({
-        type: 'campaign' as const,
-        id: c.id,
-        title: c.name,
-        subtitle: `${c.creators.length} creators • ${formatCompactINR(c.budget)}`,
-        meta: `${c.deliverablesCompleted}/${c.deliverablesTotal} deliverables`,
-        href: '/brand-console-demo',
-      }));
-
-      const offerItems = reqs.map((r) => {
-        const p = r.profiles || {};
-        const creatorLabel = p.business_name || p.username || 'Creator';
-        const amount = formatDealValueLabel(r);
-        return {
-          type: 'offer' as const,
-          id: String(r.id),
-          title: `${creatorLabel} • ${r.collab_type}`,
-          subtitle: `${amount} • ${String(r.status || 'pending')}`.toUpperCase(),
-          meta: 'Offer',
-          href: getRequestHref(r),
-        };
-      });
-
-      const dealItems = ds.map((d) => {
-        const p = d.profiles || {};
-        const creatorLabel = p.business_name || p.username || 'Creator';
-        const amount = formatINRMaybe((d as any).deal_amount) || '—';
-        return {
-          type: 'collaboration' as const,
-          id: String(d.id),
-          title: `${creatorLabel} • Deal`,
-          subtitle: `${amount} • ${String(d.status || '')}`.trim(),
-          meta: 'Past collaboration',
-          href: `/deal-details/${d.id}`,
-        };
-      });
-
-      const index = [
-        ...creatorsFromRequests,
-        ...creatorsFromDeals,
-        ...campaignItems,
-        ...offerItems,
-        ...dealItems,
-      ];
-
-      const seen = new Set<string>();
-      const matches = index.filter((it) => {
-        const key = `${it.type}:${it.id}`;
-        if (seen.has(key)) return false;
-        const hay = normalize(`${it.title} ${it.subtitle} ${it.meta}`);
-        const ok = hay.includes(q);
-        if (ok) seen.add(key);
-        return ok;
-      });
-
-      return matches.slice(0, 10);
-    }, [
-      globalSearch,
-      isDemoBrand,
-      requests,
-      deals,
-      demoRequests,
-      campaigns,
-    ]);
 
     const [dismissedApprovalQueueIds, setDismissedApprovalQueueIds] = useState<string[]>([]);
 
@@ -873,16 +750,6 @@ const BrandDashboard = () => {
         .slice(0, 3);
     }, [isDemoBrand, requests, deals, demoRequests, dismissedApprovalQueueIds]);
 
-    const pendingOffers = useMemo(() => {
-      const source = (((isDemoBrand && (requests?.length || 0) === 0 && (deals?.length || 0) === 0) ? demoRequests : (requests || [])) as any[]);
-      return source.filter(r => String(r.status || '').toLowerCase() === 'pending').slice(0, 5);
-    }, [isDemoBrand, requests, deals, demoRequests]);
-
-    const counteredOffers = useMemo(() => {
-      const source = (((isDemoBrand && (requests?.length || 0) === 0 && (deals?.length || 0) === 0) ? demoRequests : (requests || [])) as any[]);
-      return source.filter(r => String(r.status || '').toLowerCase() === 'countered').slice(0, 5);
-    }, [isDemoBrand, requests, deals, demoRequests]);
-
     const draftCampaigns = useMemo(() => ([
       { id: 'draft-1', name: 'Summer Fitness', creators: 3, budget: 45000, updatedAt: 'Mar 12' },
       { id: 'draft-2', name: 'UGC Retargeting', creators: 1, budget: 12000, updatedAt: 'Mar 09' },
@@ -918,7 +785,7 @@ const BrandDashboard = () => {
     const handlePrimaryCta = () => {
       triggerHaptic(HapticPatterns.light);
       navigate('/brand/offers');
-      setFilter('countered');
+      
     };
 
     const handleTabClick = (tabId: 'pipeline' | 'creators' | 'analytics') => {
@@ -976,7 +843,12 @@ const BrandDashboard = () => {
                 </div>
             )}
 
-            <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-8 sm:py-10">
+            <main className="max-w-[1440px] mx-auto px-4 sm:px-8 py-8 sm:py-10 relative z-10">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                >
 
 		                {/* Dashboard Stats Hero */}
 		                <div className="mb-10 sm:mb-12">
@@ -985,13 +857,18 @@ const BrandDashboard = () => {
 		                            <h2 className={cn("text-3xl sm:text-4xl font-black tracking-tight font-outfit mb-2", textColor)}>
 		                                Welcome back, {brandName.split(' ')[0]}
 		                            </h2>
-		                                <p className={cn("font-medium", isDark ? "text-white/50" : "text-slate-600")}>
+		                                <motion.p 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className={cn("font-medium", isDark ? "text-white/50" : "text-slate-600")}
+                                >
                                     {activeTab === 'pipeline' && (
                                       <>You have <span className={cn("font-black", isDark ? "text-white/80" : "text-slate-900")}>{displayStats.needsAction}</span> creator offers requiring your feedback today.</>
                                     )}
                                     {activeTab === 'creators' && <>Track active collaborations, deliverables, and approvals.</>}
                                     {activeTab === 'analytics' && <>Monitor spend, ROI, and creator performance.</>}
-		                                </p>
+		                                </motion.p>
 		                        </div>
                             <div className="flex items-center gap-3">
                               <Button
@@ -1055,6 +932,31 @@ const BrandDashboard = () => {
                                       Notifications
                                     </p>
                                     <div className="space-y-2">
+                                      {!isPushSubscribed && isPushSupported && (
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            enableNotifications();
+                                            triggerHaptic(HapticPatterns.medium);
+                                          }}
+                                          disabled={isPushBusy}
+                                          className={cn(
+                                            "w-full mb-3 rounded-xl p-3 border border-dashed flex flex-col items-center gap-1.5 transition-all text-center",
+                                            isDark ? "border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10" : "border-blue-200 bg-blue-50 hover:bg-blue-100"
+                                          )}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <Bell className="w-3.5 h-3.5 text-blue-500 animate-bounce" />
+                                            <span className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-blue-400" : "text-blue-600")}>
+                                              {isPushBusy ? "Enabling..." : "Enable Push Alerts"}
+                                            </span>
+                                          </div>
+                                          <p className={cn("text-[9px] font-medium opacity-60", isDark ? "text-white" : "text-slate-900")}>
+                                            Get real-time counters & creator updates.
+                                          </p>
+                                        </button>
+                                      )}
                                       {notifications.map((n) => (
                                         <button
                                           key={n.id}
@@ -1073,6 +975,15 @@ const BrandDashboard = () => {
                                         </button>
                                       ))}
                                     </div>
+                                    <div className={cn(
+                                      "mt-3 pt-2 border-t flex items-center justify-between opacity-50",
+                                      isDark ? "border-white/10" : "border-slate-100"
+                                    )}>
+                                      <p className={cn("text-[8px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-500")}>
+                                        Push: {pushPermission.toUpperCase()}
+                                      </p>
+                                      {hasVapidKey && <div className="w-1 h-1 rounded-full bg-emerald-500" title="System Ready" />}
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -1080,8 +991,47 @@ const BrandDashboard = () => {
                                 <AvatarImage src={brandLogo} />
                                 <AvatarFallback className="bg-primary/10 text-primary font-bold">{brandName.charAt(0)}</AvatarFallback>
                               </Avatar>
+                              <Button
+                                type="button"
+                                onClick={handleLogout}
+                                className={cn(
+                                  "h-10 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border flex items-center gap-2",
+                                  isDark ? "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                                )}
+                              >
+                                <LogOut className="w-4 h-4" />
+                                <span className="hidden sm:inline">Log out</span>
+                              </Button>
                             </div>
-		                    </div>
+                        </div>
+
+                        {/* Desktop Tab Switcher */}
+                        <div className="hidden xl:flex items-center gap-1 p-1 bg-white/[0.03] border border-white/10 rounded-2xl w-fit mb-8">
+                          {[
+                            { id: 'pipeline', label: 'Offer Pipeline', icon: LayoutDashboard },
+                            { id: 'creators', label: 'Collaborations', icon: Briefcase },
+                            { id: 'analytics', label: 'Performance Analytics', icon: BarChart3 },
+                          ].map((tab) => {
+                            const Icon = tab.icon;
+                            const active = activeTab === tab.id;
+                            return (
+                              <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => handleTabClick(tab.id as any)}
+                                className={cn(
+                                  "flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-black uppercase tracking-widest text-[10px]",
+                                  active
+                                    ? (isDark ? "bg-white/10 text-white shadow-lg" : "bg-slate-900 text-white shadow-lg")
+                                    : (isDark ? "text-white/40 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100")
+                                )}
+                              >
+                                <Icon className="w-4 h-4" />
+                                {tab.label}
+                              </button>
+                            );
+                          })}
+                        </div>
 
                         {/* Primary Actions Row */}
                         {activeTab === 'pipeline' && (
@@ -1254,32 +1204,71 @@ const BrandDashboard = () => {
 
 		                    {/* Key stats */}
                         {(activeTab === 'pipeline' || activeTab === 'analytics') && (
-                          <div className={cn(
-                            "grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 rounded-3xl border p-3 sm:p-4",
-                            isDark ? "bg-white/[0.02] border-white/10" : "bg-white border-slate-200"
-                          )}>
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                            className={cn(
+                                "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 pb-2 overflow-x-auto no-scrollbar",
+                            )}
+                          >
                             {[
-                              { label: 'Pending Actions', value: displayStats.needsAction },
-                              { label: 'Active Deals', value: displayStats.activeDeals },
-                              { label: 'Offers Sent', value: displayStats.totalSent },
-                              { label: 'Total Spend', value: formatCompactINR(displayStats.totalInvestment) },
-                            ].map((stat) => (
-                              <div
+                              { label: 'Pending Actions', value: displayStats.needsAction, icon: <Activity className="w-5 h-5 text-orange-400" />, trend: displayStats.needsAction > 0 ? { value: 12, isPositive: false } : undefined },
+                              { label: 'Active Deals', value: displayStats.activeDeals, icon: <Briefcase className="w-5 h-5 text-blue-400" />, trend: { value: 8, isPositive: true } },
+                              { label: 'Offers Sent', value: displayStats.totalSent, icon: <FileText className="w-5 h-5 text-purple-400" /> },
+                              { label: 'Total Spend', value: formatCompactINR(displayStats.totalInvestment), icon: <TrendingUp className="w-5 h-5 text-emerald-400" />, trend: { value: 15, isPositive: true } },
+                            ].map((stat, idx) => (
+                              <motion.div
                                 key={stat.label}
-                                className={cn(
-                                  "rounded-2xl border px-3 py-2.5 sm:px-4 sm:py-3",
-                                  isDark ? "bg-white/[0.02] border-white/10" : "bg-slate-50 border-slate-200"
-                                )}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 + (idx * 0.1) }}
                               >
-                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em]", isDark ? "text-white/40" : "text-slate-500")}>
-                                  {stat.label}
-                                </p>
-                                <p className={cn("mt-1 text-[16px] sm:text-[18px] font-black tabular-nums", isDark ? "text-white" : "text-slate-900")}>
-                                  {stat.value}
-                                </p>
-                              </div>
+                                <div className={cn(
+                                  "relative overflow-hidden group rounded-3xl border p-4 sm:p-5 transition-all duration-300",
+                                  "hover:scale-[1.03] hover:shadow-2xl",
+                                  isDark 
+                                    ? "bg-gradient-to-br from-white/[0.05] to-white/[0.01] border-white/10 hover:border-white/20 shadow-black/40" 
+                                    : "bg-white border-slate-200 hover:border-slate-300 shadow-slate-200/50"
+                                )}>
+                                  {/* Glass highlight */}
+                                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  
+                                  <div className="flex items-center gap-3 mb-3">
+                                    <div className={cn(
+                                      "w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:rotate-12",
+                                      isDark ? "bg-white/5" : "bg-slate-100"
+                                    )}>
+                                      {stat.icon}
+                                    </div>
+                                    <span className={cn(
+                                      "text-[10px] font-black uppercase tracking-[0.2em]",
+                                      isDark ? "text-white/40" : "text-slate-500"
+                                    )}>
+                                      {stat.label}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="flex items-baseline justify-between gap-2">
+                                    <p className={cn(
+                                      "text-2xl sm:text-3xl font-black tabular-nums tracking-tight",
+                                      isDark ? "text-white" : "text-slate-900"
+                                    )}>
+                                      {stat.value}
+                                    </p>
+                                    {stat.trend && (
+                                      <div className={cn(
+                                        "flex items-center gap-1 text-[11px] font-black tracking-widest uppercase",
+                                        stat.trend.isPositive ? "text-emerald-400" : "text-orange-400"
+                                      )}>
+                                        {stat.trend.isPositive ? '↑' : '↓'}{stat.trend.value}%
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </motion.div>
                             ))}
-                          </div>
+                          </motion.div>
                         )}
 
                       </div>
@@ -1323,13 +1312,18 @@ const BrandDashboard = () => {
                                 const hoursRemaining = Math.max(0, 24 - hoursElapsed);
 
                                 return (
-                                  <div
+                                  <motion.div
                                     key={item.id}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 10, scale: 0.95 }}
+                                    transition={{ duration: 0.2, delay: 0.1 * (approvalQueue.indexOf(item) % 10) }}
                                     className={cn(
-                                      "rounded-2xl border p-4 flex items-start justify-between gap-3",
+                                      "group rounded-2xl border p-4 flex items-start justify-between gap-3 transition-all duration-300",
                                       urgencyLabel
                                         ? (isDark ? "bg-amber-500/10 border-amber-400/40 border-l-4" : "bg-amber-50/60 border-amber-200/70 border-l-4")
-                                        : (isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200")
+                                        : (isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"),
+                                      "hover:shadow-lg hover:border-white/20"
                                     )}
                                   >
 	                                  <div className="flex items-start gap-3 min-w-0">
@@ -1447,7 +1441,7 @@ const BrandDashboard = () => {
 	                                            if (!item.requestId || String(item.requestId).startsWith('demo-')) return;
 	                                            const { error } = await supabase
 	                                              .from('collab_requests')
-	                                              .update({ status: 'declined' })
+ 	                                              .update({ status: 'declined' } as any)
 	                                              .eq('id', item.requestId);
 	                                            if (error) console.warn('[BrandDashboard] Decline failed:', error.message);
 	                                          } catch (e) {
@@ -1489,7 +1483,7 @@ const BrandDashboard = () => {
                                       </Button>
                                     </div>
 	                                  )}
-	                                </div>
+                                  </motion.div>
                                 );
                               })
 	                            )}
@@ -1505,31 +1499,36 @@ const BrandDashboard = () => {
                           variant="tertiary"
                           className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
                         >
-                          <div className="space-y-2">
-                            {upcomingDeliverables.map((d) => (
-                              <div
+                          <div className="space-y-3">
+                            {upcomingDeliverables.map((d, idx) => (
+                              <motion.div
                                 key={d.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 * idx }}
                                 className={cn(
-                                  "rounded-2xl border p-3 flex items-center justify-between gap-3",
-                                  isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"
+                                  "group rounded-2xl border p-3 flex items-center justify-between gap-3 transition-all duration-300",
+                                  isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200",
+                                  "hover:bg-white/[0.06] hover:border-white/20"
                                 )}
                               >
                                 <div>
                                   <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", isDark ? "text-white/40" : "text-slate-500")}>{d.date}</p>
-                                  <p className={cn("text-[13px] font-black", isDark ? "text-white" : "text-slate-900")}>
+                                  <p className={cn("text-[13px] font-black group-hover:text-primary transition-colors", isDark ? "text-white" : "text-slate-900")}>
                                     {d.creator} • {d.label}
                                   </p>
                                 </div>
                                 <Button
                                   type="button"
                                   className={cn(
-                                    "h-9 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border",
-                                    isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200"
+                                    "h-9 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border transition-all",
+                                    isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200",
+                                    "group-hover:scale-105"
                                   )}
                                 >
                                   View
                                 </Button>
-                              </div>
+                              </motion.div>
                             ))}
                           </div>
                         </SectionCard>
@@ -1580,12 +1579,16 @@ const BrandDashboard = () => {
                                 { id: 'countered', label: 'Countered', value: dealPipeline.countered || 0, tone: 'bg-amber-400', meta: pipelineStages.countered },
                                 { id: 'accepted', label: 'Accepted', value: dealPipeline.accepted, tone: 'bg-emerald-500', meta: pipelineStages.accepted },
                                 { id: 'completed', label: 'Completed', value: dealPipeline.completed, tone: 'bg-blue-600', meta: pipelineStages.completed },
-                              ].map((p) => (
-                                <div
+                              ].map((p, idx) => (
+                                <motion.div
                                   key={p.id}
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.1 * idx }}
                                   className={cn(
-                                    "rounded-2xl border p-3",
-                                    isDark ? "bg-white/[0.03] border-white/10" : "bg-slate-50 border-slate-200"
+                                    "group rounded-2xl border p-3 transition-all duration-300",
+                                    isDark ? "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05]" : "bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-slate-100",
+                                    "hover:shadow-md hover:-translate-y-1"
                                   )}
                                 >
                                   <div className="flex items-center justify-between gap-2">
@@ -1610,7 +1613,7 @@ const BrandDashboard = () => {
                                       </Avatar>
                                     ))}
                                   </div>
-                                </div>
+                                </motion.div>
                               ))}
                             </div>
 
@@ -1668,16 +1671,20 @@ const BrandDashboard = () => {
                                 })),
                               ]
                                 .slice(0, 3)
-                                .map((c) => (
-                                  <div
+                                .map((c, idx) => (
+                                  <motion.div
                                     key={c.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 * idx }}
                                     className={cn(
-                                      "rounded-2xl border p-3 flex items-start justify-between gap-3",
-                                      isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"
+                                      "group rounded-2xl border p-3 flex items-start justify-between gap-3 transition-all duration-300",
+                                      isDark ? "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05]" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50",
+                                      "hover:shadow-lg hover:-translate-y-1"
                                     )}
                                   >
                                     <div className="min-w-0">
-                                      <p className={cn("text-[12px] font-black truncate", isDark ? "text-white" : "text-slate-900")}>{c.name}</p>
+                                      <p className={cn("text-[12px] font-black truncate group-hover:text-primary transition-colors", isDark ? "text-white" : "text-slate-900")}>{c.name}</p>
                                       <p className={cn("text-[11px] font-semibold truncate", isDark ? "text-white/50" : "text-slate-600")}>
                                         {c.creators} creators • {formatCompactINR(c.budget)} • {c.updatedAt}
                                       </p>
@@ -1690,13 +1697,14 @@ const BrandDashboard = () => {
                                     <Button
                                       type="button"
                                       className={cn(
-                                        "h-9 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border",
-                                        isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-slate-900 hover:bg-slate-800 text-white border-slate-900"
+                                        "h-9 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border transition-all",
+                                        isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-slate-900 hover:bg-slate-800 text-white border-slate-900",
+                                        "group-hover:scale-105"
                                       )}
                                     >
                                       {c.cta}
                                     </Button>
-                                  </div>
+                                  </motion.div>
                                 ))}
                             </div>
                             <div className="mt-4">
@@ -1746,35 +1754,39 @@ const BrandDashboard = () => {
                                           `Update from ${creatorLabel}`;
 
                                   return (
-                                    <button
+                                    <motion.button
                                       key={idx}
                                       type="button"
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: 0.1 * idx }}
                                       onClick={() => navigate(getRequestHref(r))}
                                       className={cn(
-                                        "w-full text-left flex gap-4 relative z-10 rounded-2xl p-3 transition-all border",
-                                        isDark ? "border-white/5 hover:bg-white/[0.04]" : "border-slate-200 hover:bg-slate-50"
+                                        "w-full text-left flex gap-4 relative z-10 rounded-2xl p-3 transition-all border group",
+                                        isDark ? "border-white/5 hover:bg-white/[0.04] hover:border-white/20" : "border-slate-200 hover:bg-slate-50 hover:border-slate-300",
+                                        "hover:shadow-md hover:-translate-y-0.5"
                                       )}
                                     >
                                       <div className={cn(
-                                        "w-[28px] h-[28px] rounded-full border flex items-center justify-center shrink-0",
+                                        "w-[28px] h-[28px] rounded-full border flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
                                         isDark ? "border-white/10 bg-black" : "border-slate-200 bg-white"
                                       )}>
                                         {icon}
                                       </div>
                                       <div className="min-w-0 flex-1">
-                                        <p className={cn("text-[13px] font-bold leading-tight truncate", isDark ? "text-white/90" : "text-slate-800")}>
+                                        <p className={cn("text-[13px] font-black leading-tight truncate group-hover:text-primary transition-colors", isDark ? "text-white" : "text-slate-900")}>
                                           {msg}
                                         </p>
                                         <div className="mt-1 flex items-center justify-between gap-3">
                                           <p className={cn("text-[10px] font-black uppercase tracking-[0.1em]", isDark ? "text-white/30" : "text-slate-400")}>
                                             {when}
                                           </p>
-                                          <span className={cn("text-[10px] font-black uppercase tracking-[0.14em]", isDark ? "text-white/50" : "text-slate-500")}>
+                                          <span className={cn("text-[10px] font-black uppercase tracking-[0.14em] text-primary transition-transform group-hover:translate-x-1")}>
                                             Open →
                                           </span>
                                         </div>
                                       </div>
-                                    </button>
+                                    </motion.button>
                                   );
                                 })}
                             </div>
@@ -1921,7 +1933,11 @@ const BrandDashboard = () => {
                         )}
 
                         {activeTab === 'analytics' && (
-                          <>
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-8"
+                          >
                             <SectionCard
                               theme={cardTheme}
                               title="Total Spend"
@@ -1956,9 +1972,12 @@ const BrandDashboard = () => {
                             >
                               <div className="space-y-3">
                                 {spendByCampaign.map((row) => (
-                                  <div key={row.id} className={cn("rounded-2xl border p-3 flex items-center justify-between gap-3", isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200")}>
-                                    <p className={cn("text-[12px] font-black", isDark ? "text-white" : "text-slate-900")}>{row.name}</p>
-                                    <p className={cn("text-[12px] font-black tabular-nums", isDark ? "text-white" : "text-slate-900")}>{formatCompactINR(row.spend)}</p>
+                                  <div key={row.id} className={cn(
+                                    "group rounded-2xl border p-3 flex items-center justify-between gap-3 transition-all duration-300",
+                                    isDark ? "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05]" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                                  )}>
+                                    <p className={cn("text-[12px] font-black group-hover:text-primary transition-colors", isDark ? "text-white" : "text-slate-900")}>{row.name}</p>
+                                    <p className={cn("text-[12px] font-black tabular-nums transition-transform group-hover:scale-110", isDark ? "text-white" : "text-slate-900")}>{formatCompactINR(row.spend)}</p>
                                   </div>
                                 ))}
                               </div>
@@ -1974,9 +1993,12 @@ const BrandDashboard = () => {
                             >
                               <div className="space-y-3">
                                 {creatorSpendPerf.map((c) => (
-                                  <div key={c.id} className={cn("rounded-2xl border p-3 flex items-center justify-between gap-3", isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200")}>
+                                  <div key={c.id} className={cn(
+                                    "group rounded-2xl border p-3 flex items-center justify-between gap-3 transition-all duration-300",
+                                    isDark ? "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05]" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                                  )}>
                                     <div className="min-w-0">
-                                      <p className={cn("text-[12px] font-black truncate", isDark ? "text-white" : "text-slate-900")}>{c.name}</p>
+                                      <p className={cn("text-[12px] font-black truncate group-hover:text-primary transition-colors", isDark ? "text-white" : "text-slate-900")}>{c.name}</p>
                                       <p className={cn("text-[11px] font-semibold truncate", isDark ? "text-white/40" : "text-slate-600")}>
                                         Spend {formatCompactINR(c.spend)} • Views {c.views} • CPM ₹{c.cpm}
                                       </p>
@@ -1984,8 +2006,9 @@ const BrandDashboard = () => {
                                     <Button
                                       type="button"
                                       className={cn(
-                                        "h-9 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border",
-                                        isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-slate-900 hover:bg-slate-800 text-white border-slate-900"
+                                        "h-9 px-3 rounded-xl font-black uppercase tracking-widest text-[10px] border transition-all",
+                                        isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-slate-900 hover:bg-slate-800 text-white border-slate-900",
+                                        "group-hover:scale-105"
                                       )}
                                     >
                                       View
@@ -2012,14 +2035,57 @@ const BrandDashboard = () => {
                                 ))}
                               </div>
                             </SectionCard>
-                          </>
+                          </motion.div>
                         )}
 
-	                    </div>
-	            </main>
+                        </div>
+                        </motion.div>
+                </main>
 
               {/* Bottom navigation (matches creator dashboard style) */}
               <BrandBottomNav activeTab={activeTab as any} onTabChange={handleTabClick} isDark={isDark} />
+
+              {/* iOS Install Guide for PWAs (Push Support) */}
+              {(isIOSNeedsInstall && !isPushPromptDismissed) && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                  <div className={cn(
+                    "w-full max-w-sm rounded-2xl border p-5 shadow-2xl",
+                    isDark ? "border-white/20 bg-[#1b1037]/95" : "border-slate-200 bg-white"
+                  )}>
+                    <h3 className={cn("text-lg font-bold", isDark ? "text-white" : "text-slate-900")}>Add to Home Screen</h3>
+                    <p className={cn("text-sm mt-1", isDark ? "text-white/75" : "text-slate-500")}>Get instant collaboration alerts & counter updates in app mode.</p>
+                    <div className={cn("mt-4 space-y-3 text-sm", isDark ? "text-white/85" : "text-slate-600")}>
+                      <p><span className={cn("font-bold", isDark ? "text-white" : "text-slate-900")}>Step 1</span><br />Tap the Share icon ↓</p>
+                      <p><span className={cn("font-bold", isDark ? "text-white" : "text-slate-900")}>Step 2</span><br />Tap “Add to Home Screen”</p>
+                      <p><span className={cn("font-bold", isDark ? "text-white" : "text-slate-900")}>Step 3</span><br />Open the Console from your Home Screen</p>
+                    </div>
+                    <div className="mt-5 flex gap-2">
+                      <button
+                        onClick={() => {
+                          triggerHaptic();
+                          dismissPushPrompt();
+                        }}
+                        className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-4 py-2 transition-colors uppercase tracking-widest"
+                      >
+                        Got it
+                      </button>
+                      <button
+                        onClick={() => {
+                          triggerHaptic();
+                          dismissPushPrompt();
+                        }}
+                        className={cn(
+                          "rounded-xl border text-sm font-bold px-4 py-2 transition-colors uppercase tracking-widest",
+                          isDark ? "border-white/25 text-white/85 hover:bg-white/10" : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                        )}
+                      >
+                        Later
+                      </button>
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
 
 	        </div>
 	    );

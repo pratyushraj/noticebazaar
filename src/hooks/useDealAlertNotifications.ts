@@ -186,6 +186,57 @@ export const useDealAlertNotifications = () => {
     }
   }, [hasVapidKey, isSupported, pushApiBase]);
 
+  const disableNotifications = useCallback(async (): Promise<{ success: boolean; reason?: string }> => {
+    if (!isSupported) {
+      setIsSubscribed(false);
+      return { success: false, reason: 'unsupported' };
+    }
+
+    setIsBusy(true);
+    try {
+      // Best-effort: remove browser subscription first.
+      let endpoint: string | null = null;
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        const existingSubscription = await registration.pushManager.getSubscription();
+        endpoint = (existingSubscription as any)?.endpoint || null;
+        if (existingSubscription) {
+          await existingSubscription.unsubscribe();
+        }
+      } catch (error: any) {
+        logger.warn('Browser unsubscribe failed; continuing with server cleanup', { error: error?.message });
+      }
+
+      // Best-effort: remove server-side record (if we know the endpoint).
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (token && endpoint) {
+          await fetchWithTimeout(`${pushApiBase}/api/push/unsubscribe`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ endpoint }),
+          }, 15000);
+        }
+      } catch (error: any) {
+        logger.warn('Server unsubscribe failed', { error: error?.message });
+      }
+
+      setIsSubscribed(false);
+      return { success: true };
+    } catch (error: any) {
+      const msg = error?.message || 'unknown_error';
+      return { success: false, reason: msg };
+    } finally {
+      setIsBusy(false);
+      // Refresh from canonical sources.
+      syncSubscriptionStatus();
+    }
+  }, [isSupported, pushApiBase, syncSubscriptionStatus]);
+
   const sendTestPush = useCallback(async (options?: { title?: string; body?: string }): Promise<{ success: boolean; reason?: string }> => {
     setIsBusy(true);
     try {
@@ -246,6 +297,7 @@ export const useDealAlertNotifications = () => {
     isIOSNeedsInstall,
     hasVapidKey,
     enableNotifications,
+    disableNotifications,
     dismissPrompt,
     refreshStatus: syncSubscriptionStatus,
     sendTestPush,

@@ -117,6 +117,7 @@ import CreatorProfilePage from "./pages/CreatorProfilePage";
 import CreatorReputationDashboard from "./pages/CreatorReputationDashboard";
 import PreviewAmanParmar from "./pages/PreviewAmanParmar";
 import PushTestLab from "./pages/PushTestLab";
+import SeoDashboard from "./pages/seo-dashboard";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
@@ -337,8 +338,9 @@ const App = () => {
                         <Route path="/collab/accept/:requestToken" element={<CollabAcceptPage />} />
                         <Route path="/collab/push-test" element={<Navigate to="/push-test" replace />} />
                         <Route path="/collab-action" element={<CollabActionPage />} />
-                        {/* Primary public creator routes: /:username */}
-                        <Route path="/:username" element={<CollabLinkLanding />} />
+                         <Route path="/seo-dashboard" element={<SeoDashboard />} />
+                         {/* Primary public creator routes: /:username */}
+                         <Route path="/:username" element={<CollabLinkLanding />} />
                         <Route path="/:username/success" element={<CollabLinkSuccess />} />
 
                         {/* Legacy redirect: /collab/:username → /:username */}
