@@ -118,8 +118,6 @@ body {
   height: auto;
   min-height: 100dvh;
   overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: none;
   /* Disable weird elastic scroll */
 }
@@ -142,8 +140,6 @@ body {
 }
 
 body {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   -webkit-font-smoothing: antialiased;
   /* Better font rendering on Apple devices */
   text-rendering: optimizeLegibility;
@@ -196,8 +192,6 @@ body {
     height: auto;
     min-height: 100dvh;
     overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: none;
   }
 
