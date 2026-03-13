@@ -77,6 +77,7 @@ const BrandDashboard = () => {
       hasVapidKey,
       enableNotifications,
       dismissPrompt: dismissPushPrompt,
+      sendTestPush,
     } = useDealAlertNotifications();
 
     const THEME_KEY = 'brand_console_theme_preference';
@@ -924,14 +925,20 @@ const BrandDashboard = () => {
                                 {notificationsOpen && (
                                   <div
                                     className={cn(
-                                      "absolute right-0 mt-2 w-[280px] rounded-2xl border shadow-xl p-3 z-50",
-                                      isDark ? "bg-black border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                                      "absolute right-0 mt-3 w-[300px] rounded-[24px] border shadow-2xl p-4 z-50 overflow-hidden",
+                                      isDark 
+                                        ? "bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white" 
+                                        : "bg-white/95 backdrop-blur-xl border-slate-200/60 text-slate-900"
                                     )}
                                   >
-                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] mb-2", isDark ? "text-white/40" : "text-slate-500")}>
-                                      Notifications
-                                    </p>
-                                    <div className="space-y-2">
+                                    <div className="flex items-center justify-between mb-4 px-1">
+                                      <p className={cn("text-[11px] font-black uppercase tracking-[0.2em]", isDark ? "text-white/40" : "text-slate-500")}>
+                                        Notifications
+                                      </p>
+                                      <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", isDark ? "bg-blue-500" : "bg-blue-600")} />
+                                    </div>
+
+                                    <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1 -mr-1 custom-scrollbar">
                                       {!isPushSubscribed && isPushSupported && (
                                         <button
                                           type="button"
@@ -942,47 +949,104 @@ const BrandDashboard = () => {
                                           }}
                                           disabled={isPushBusy}
                                           className={cn(
-                                            "w-full mb-3 rounded-xl p-3 border border-dashed flex flex-col items-center gap-1.5 transition-all text-center",
-                                            isDark ? "border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10" : "border-blue-200 bg-blue-50 hover:bg-blue-100"
+                                            "w-full mb-4 rounded-2xl p-4 border border-dashed flex flex-col items-center gap-2 transition-all duration-300 group relative overflow-hidden",
+                                            isDark 
+                                              ? "border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10" 
+                                              : "border-blue-200 bg-blue-50/50 hover:bg-blue-50"
                                           )}
                                         >
-                                          <div className="flex items-center gap-2">
-                                            <Bell className="w-3.5 h-3.5 text-blue-500 animate-bounce" />
+                                          <div className="flex items-center gap-2.5 relative z-10">
+                                            <div className={cn(
+                                              "p-1.5 rounded-lg",
+                                              isDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-500/10 text-blue-600"
+                                            )}>
+                                              <Bell className="w-3.5 h-3.5 animate-bounce" />
+                                            </div>
                                             <span className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-blue-400" : "text-blue-600")}>
                                               {isPushBusy ? "Enabling..." : "Enable Push Alerts"}
                                             </span>
                                           </div>
-                                          <p className={cn("text-[9px] font-medium opacity-60", isDark ? "text-white" : "text-slate-900")}>
-                                            Get real-time counters & creator updates.
+                                          <p className={cn("text-[10px] font-medium leading-tight relative z-10", isDark ? "text-white/60" : "text-slate-600")}>
+                                            Get real-time deal counters & collaborator updates.
                                           </p>
+                                          
+                                          {/* Subtle glow effect */}
+                                          <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/0 via-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </button>
                                       )}
-                                      {notifications.map((n) => (
-                                        <button
-                                          key={n.id}
-                                          type="button"
-                                          onClick={() => {
-                                            setNotificationsOpen(false);
-                                            navigate(n.href);
-                                          }}
-                                          className={cn(
-                                            "w-full text-left rounded-xl border px-3 py-2 transition-all",
-                                            isDark ? "border-white/10 hover:bg-white/5" : "border-slate-200 hover:bg-slate-50"
-                                          )}
-                                        >
-                                          <p className={cn("text-[12px] font-semibold", isDark ? "text-white" : "text-slate-800")}>{n.title}</p>
-                                          <p className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-500")}>{n.time}</p>
-                                        </button>
-                                      ))}
+
+                                      {notifications.length > 0 ? (
+                                        notifications.map((n) => (
+                                          <button
+                                            key={n.id}
+                                            type="button"
+                                            onClick={() => {
+                                              setNotificationsOpen(false);
+                                              navigate(n.href);
+                                            }}
+                                            className={cn(
+                                              "w-full text-left rounded-xl border p-3.5 transition-all duration-200 group",
+                                              isDark 
+                                                ? "border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10" 
+                                                : "border-slate-100 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200"
+                                            )}
+                                          >
+                                            <p className={cn("text-[12px] font-bold leading-tight mb-1 group-hover:translate-x-0.5 transition-transform", isDark ? "text-white/90" : "text-slate-800")}>
+                                              {n.title}
+                                            </p>
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", isDark ? "text-white/40" : "text-slate-500")}>
+                                              {n.time}
+                                            </p>
+                                          </button>
+                                        ))
+                                      ) : (
+                                        <div className="py-8 text-center">
+                                          <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-30", isDark ? "text-white" : "text-slate-400")}>
+                                            No new alerts
+                                          </p>
+                                        </div>
+                                      )}
                                     </div>
+                                    
                                     <div className={cn(
-                                      "mt-3 pt-2 border-t flex items-center justify-between opacity-50",
+                                      "mt-4 pt-3 border-t flex items-center justify-between",
                                       isDark ? "border-white/10" : "border-slate-100"
                                     )}>
-                                      <p className={cn("text-[8px] font-black uppercase tracking-widest", isDark ? "text-white/40" : "text-slate-500")}>
-                                        Push: {pushPermission.toUpperCase()}
-                                      </p>
-                                      {hasVapidKey && <div className="w-1 h-1 rounded-full bg-emerald-500" title="System Ready" />}
+                                      <div className="flex items-center gap-2">
+                                        <div className={cn(
+                                          "w-1.5 h-1.5 rounded-full",
+                                          pushPermission === 'granted' ? "bg-emerald-500" : (pushPermission === 'denied' ? "bg-red-500" : "bg-amber-500")
+                                        )} />
+                                        <p className={cn("text-[8px] font-black uppercase tracking-[0.15em]", isDark ? "text-white/40" : "text-slate-400")}>
+                                          Push {pushPermission.toUpperCase()}
+                                        </p>
+                                      </div>
+                                      {hasVapidKey && (
+                                        <div className="flex items-center gap-2">
+                                          {isPushSubscribed && (
+                                            <button
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                triggerHaptic(HapticPatterns.light);
+                                                const res = await sendTestPush();
+                                                if (res.success) toast.success("Test push sent!");
+                                                else toast.error(res.reason || "Failed to send test push");
+                                              }}
+                                              disabled={isPushBusy}
+                                              className={cn(
+                                                "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md border transition-all",
+                                                isDark ? "border-white/10 text-white/40 hover:bg-white/5 hover:text-white" : "border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+                                              )}
+                                            >
+                                              Send Test
+                                            </button>
+                                          )}
+                                          <div className="flex items-center gap-1.5 ml-1">
+                                            <span className={cn("text-[8px] font-bold uppercase tracking-widest", isDark ? "text-emerald-500/50" : "text-emerald-600/50")}>Ready</span>
+                                            <div className="w-1 h-1 rounded-full bg-emerald-500/40" />
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 )}

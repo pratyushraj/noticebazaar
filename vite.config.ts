@@ -81,28 +81,16 @@ export default defineConfig(() => ({
       protocol: "ws",
     },
   },
-  // Disable code splitting in dev mode to prevent multiple React instances
   build: {
-    sourcemap: false, // Disable source maps in production to avoid 404 errors
+    sourcemap: false, 
     assetsDir: 'assets',
-    chunkSizeWarningLimit: 1000, // Increase warning limit to 1000 kB
-    rollupOptions: {
-      output: {
-        // CRITICAL: Disable ALL code splitting to prevent multiple React instances
-        // This ensures everything is in one bundle, sharing the same React instance
-        manualChunks: undefined, // Disable manual chunking entirely
-        assetFileNames: 'assets/[name].[ext]',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-      },
-    },
+    chunkSizeWarningLimit: 1000,
     commonjsOptions: {
       include: [/node_modules/],
       transformMixedEsModules: true,
     },
   },
   plugins: [
-    forceSingleReactChunkPlugin(),
     react(),
     dyadComponentTagger(),
     useSyncExternalStoreShimPlugin()
@@ -110,52 +98,27 @@ export default defineConfig(() => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // CRITICAL: Force all React imports to use the same instance
-      // This prevents "Invalid hook call" errors from multiple React instances
-      "react": reactPaths.react,
-      "react-dom": reactPaths.reactDom,
-      "react/jsx-runtime": reactPaths.jsxRuntime,
-      "react/jsx-dev-runtime": reactPaths.jsxDevRuntime,
-      // Force use-sync-external-store/shim to use our ESM shim
+      "react": path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
       "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
     },
-    // Critical: Dedupe React to prevent multiple instances
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "use-sync-external-store", "framer-motion"],
-    conditions: ["import", "module", "browser", "default"],
-    // Don't preserve symlinks - resolve to actual files for consistent React instance
-    preserveSymlinks: false,
-  },
-  // Force single chunk for React in dev mode
-  esbuild: {
-    // This helps ensure consistent module resolution
-    logOverride: { 'this-is-undefined-in-esm': 'silent' as any },
+    dedupe: ["react", "react-dom", "framer-motion", "lucide-react", "react-router-dom"],
   },
   optimizeDeps: {
-    // Include React to ensure proper jsx-runtime resolution
     include: [
       "react",
       "react-dom",
-      "react/jsx-runtime",
-      "react/jsx-dev-runtime",
+      "react-dom/client",
+      "framer-motion",
+      "lucide-react",
+      "@supabase/supabase-js",
+      "@tanstack/react-query",
+      "react-router-dom"
     ],
     exclude: [
       "use-sync-external-store",
       "use-sync-external-store/shim",
     ],
-    // Don't force on every start - only when needed
-    // force: true, 
-    // Ensure all dependencies are discovered before pre-bundling
     holdUntilCrawlEnd: true,
-    esbuildOptions: {
-      plugins: [],
-      format: 'esm' as any,
-    },
-    // Force React to be in a single pre-bundled chunk
-    entries: [
-      'src/main.tsx',
-    ],
-  },
-  ssr: {
-    noExternal: ["react", "react-dom"],
   },
 }));

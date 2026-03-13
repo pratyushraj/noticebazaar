@@ -11,10 +11,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const LOGIN_LOADING_TIMEOUT_MS = 4000;
+const DEMO_BRAND_EMAIL = 'brand-demo@noticebazaar.com';
+const DEMO_BRAND_PASSWORD = 'BrandDemo123!@#';
+
+const getDashboardPathForRole = (role?: string | null) => {
+  if (role === 'admin') return '/admin-dashboard';
+  if (role === 'brand') return '/brand-dashboard';
+  if (role === 'chartered_accountant') return '/ca-dashboard';
+  if (role === 'lawyer') return '/lawyer-dashboard';
+  return '/creator-dashboard';
+};
 
 const Login = () => {
   const navigate = useNavigate();
-  const { session, loading } = useSession();
+  const { session, loading, profile } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -81,20 +91,19 @@ const Login = () => {
 
     // If we have a session and we're not in the middle of OAuth callback, redirect
     // Also wait a bit if we just came from OAuth to let SessionContext process it
-    if (!loading && session && !isOAuthCallback) {
-      // If we have OAuth intent, wait a bit longer for SessionContext to redirect
-      const delay = hasOAuthIntent ? 1000 : 200;
-      console.log('[Login] Session exists, redirecting to dashboard', { hasOAuthIntent, delay });
-      const timer = setTimeout(() => {
-        // Check if SessionContext already redirected (hash changed)
-        const currentHash = window.location.hash;
-        if (currentHash === hash || currentHash === '' || currentHash.startsWith('#/creator-')) {
-          // SessionContext might have already redirected, but if we're still here, redirect manually
-          navigate('/creator-dashboard', { replace: true });
-        }
-      }, delay);
-      return () => clearTimeout(timer);
-    }
+	    if (!loading && session && !isOAuthCallback) {
+	      // If we have OAuth intent, wait a bit longer for SessionContext to redirect
+	      const delay = hasOAuthIntent ? 1000 : 200;
+	      console.log('[Login] Session exists, redirecting to dashboard', { hasOAuthIntent, delay });
+	      const timer = setTimeout(() => {
+	        // If we're still on /login, do a role-based redirect as a fallback.
+	        // (SessionContext should usually handle this, but this prevents brand users landing on creator routes.)
+	        if (window.location.pathname === '/login') {
+	          navigate(getDashboardPathForRole((profile as any)?.role), { replace: true });
+	        }
+	      }, delay);
+	      return () => clearTimeout(timer);
+	    }
 
     // If we're in OAuth callback but session isn't established yet, wait for it
     if (!loading && !session && (isOAuthCallback || hasOAuthIntent)) {
@@ -108,14 +117,14 @@ const Login = () => {
             console.log('[Login] Session established after OAuth, redirecting...');
             clearInterval(checkSession);
             // Let SessionContext handle the redirect, but if it doesn't, redirect here
-            setTimeout(() => {
-              const currentHash = window.location.hash;
-              if (currentHash.includes('access_token') || currentHash === '' || window.location.pathname === '/login') {
-                navigate('/creator-dashboard', { replace: true });
-              }
-            }, 500);
-          } else if (Date.now() - startTime > maxWait) {
-            console.warn('[Login] Session not established after OAuth, timeout');
+	            setTimeout(() => {
+	              const currentHash = window.location.hash;
+	              if (currentHash.includes('access_token') || currentHash === '' || window.location.pathname === '/login') {
+	                navigate(getDashboardPathForRole((profile as any)?.role), { replace: true });
+	              }
+	            }, 500);
+	          } else if (Date.now() - startTime > maxWait) {
+	            console.warn('[Login] Session not established after OAuth, timeout');
             clearInterval(checkSession);
           }
         });
@@ -123,7 +132,7 @@ const Login = () => {
 
       return () => clearInterval(checkSession);
     }
-  }, [session, loading, navigate]);
+	  }, [session, loading, navigate, profile]);
 
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,8 +158,7 @@ const Login = () => {
         }
       } else if (data.session) {
         // Don't show toast - AuthLoadingScreen will handle the transition
-        // SessionContext will handle the redirect
-        navigate('/creator-dashboard', { replace: true });
+        // SessionContext will handle the redirect (role-based).
       }
     } catch (err: any) {
       console.error('[Login] Email/password exception:', err);
@@ -288,22 +296,36 @@ const Login = () => {
                   autoComplete="current-password"
                 />
               </div>
-              <Button
-                type="submit"
-                disabled={isLoading || !email.trim() || !password.trim()}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	              <Button
+	                type="submit"
+	                disabled={isLoading || !email.trim() || !password.trim()}
+	                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
                   transform: 'translateZ(0)',
                 }}
-              >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                {isLoading ? 'Authenticating...' : 'Sign In To Armour'}
-              </Button>
-            </form>
-          </div>
-        )}
+	              >
+	                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+	                {isLoading ? 'Authenticating...' : 'Sign In To Armour'}
+	              </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail(DEMO_BRAND_EMAIL);
+                    setPassword(DEMO_BRAND_PASSWORD);
+                    toast.message('Demo brand credentials filled', {
+                      description: 'Sign in to preview the Brand Console UI.',
+                    });
+                  }}
+                  className="w-full h-12 rounded-2xl border border-slate-800 bg-white/5 hover:bg-white/10 text-white/80 font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.99]"
+                >
+                  Use Demo Brand Login
+                </button>
+	            </form>
+	          </div>
+	        )}
 
         {/* Secondary: Other Sign-in Methods */}
         {(!loading || loadingTimedOut) && !session && (

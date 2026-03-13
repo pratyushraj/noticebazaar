@@ -23,7 +23,7 @@ const BrandBottomNav = ({ activeTab, onTabChange, isDark = true }: BrandBottomNa
     <motion.div
       data-bottom-nav="true"
       className={cn(
-        "fixed bottom-0 left-0 right-0 md:hidden",
+        "fixed bottom-0 left-0 right-0 xl:hidden",
         "backdrop-blur-2xl",
         isDark ? "bg-white/5 border-t border-white/15" : "bg-white/85 border-t border-slate-200",
         shadows.depth,

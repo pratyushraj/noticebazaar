@@ -1,19 +1,22 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, UserPlus, FileText, Link2, Users, TrendingUp, Briefcase, ArrowUpRight, Calendar, LogOut, Download } from 'lucide-react';
+import { 
+  Loader2, UserPlus, FileText, Link2, Users, TrendingUp, Briefcase, 
+  ArrowUpRight, Calendar, LogOut, Download, Search 
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useAdminDashboardData } from '@/lib/hooks/useAdminDashboardData';
 import { useSignOut } from '@/lib/hooks/useAuth';
 
 const AdminDashboard = () => {
-  const { session, loading, profile, isAdmin } = useSession();
+  const { loading, profile, isAdmin } = useSession();
   const signOutMutation = useSignOut();
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -281,6 +284,11 @@ const AdminDashboard = () => {
               <Button asChild className="flex items-center justify-center p-6 h-auto bg-primary hover:bg-primary/90 text-primary-foreground text-lg">
                 <Link to="/admin-documents">
                   <FileText className="mr-2 h-5 w-5" /> Manage Documents
+                </Link>
+              </Button>
+              <Button asChild className="flex items-center justify-center p-6 h-auto bg-emerald-600 hover:bg-emerald-700 text-white text-lg">
+                <Link to="/seo-dashboard">
+                  <Search className="mr-2 h-5 w-5" /> SEO Dashboard
                 </Link>
               </Button>
             </div>

@@ -27,13 +27,23 @@ const AddToHomeScreen: React.FC = () => {
     const isSafari = /Safari/i.test(window.navigator.userAgent)
       && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(window.navigator.userAgent);
     const isBlockedRoute = ['/maintenance'].includes(location.pathname);
+    const params = new URLSearchParams(window.location.search);
+    const forceInstallPreview = ['1', 'true', 'yes'].includes((params.get('showInstall') || '').toLowerCase());
+    const forceInstallIntent = ['1', 'true', 'yes'].includes((params.get('openApp') || '').toLowerCase())
+      || ['email', 'whatsapp', 'push', 'collab_submit'].includes((params.get('source') || '').toLowerCase());
+    const shouldForceShow = forceInstallPreview || forceInstallIntent;
+
+    // Only show the banner where it makes product sense (deal console / dashboards),
+    // or when explicitly forced by the redirect (e.g. after collab submission).
+    const eligiblePrefixes = ['/deal/', '/creator-dashboard', '/brand-dashboard', '/dashboard-preview'];
+    const isEligibleRoute = eligiblePrefixes.some(prefix => location.pathname.startsWith(prefix));
 
     const canShowIOSGuide = isIOS && isSafari;
     const canShowAndroidPrompt = androidDevice;
     setIsIOSDevice(canShowIOSGuide);
     setIsAndroid(androidDevice);
 
-    if (isBlockedRoute || isStandalone || !isMobile || (!canShowIOSGuide && !canShowAndroidPrompt)) {
+    if (isBlockedRoute || isStandalone || !isMobile || (!canShowIOSGuide && !canShowAndroidPrompt) || (!isEligibleRoute && !shouldForceShow)) {
       setShowBanner(false);
       return;
     }
@@ -41,11 +51,6 @@ const AddToHomeScreen: React.FC = () => {
     const dismissedAt = Number(localStorage.getItem(INSTALL_DISMISS_KEY) || '0');
     const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
     const wasDismissedRecently = dismissedAt > 0 && Date.now() - dismissedAt < threeDaysMs;
-    const params = new URLSearchParams(window.location.search);
-    const forceInstallPreview = ['1', 'true', 'yes'].includes((params.get('showInstall') || '').toLowerCase());
-    const forceInstallIntent = ['1', 'true', 'yes'].includes((params.get('openApp') || '').toLowerCase())
-      || ['email', 'whatsapp', 'push'].includes((params.get('source') || '').toLowerCase());
-    const shouldForceShow = forceInstallPreview || forceInstallIntent;
 
     if (wasDismissedRecently && !shouldForceShow) {
       setShowBanner(false);

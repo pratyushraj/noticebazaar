@@ -1,7 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, FileText, ExternalLink, AlertCircle } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, ArrowRight, ExternalLink, AlertCircle, FileText } from 'lucide-react';
 import { getBlogPostBySlug } from '@/data/blogPosts';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ArticleSchema, FAQSchema, BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
@@ -10,6 +9,14 @@ import NotFound from './NotFound';
 const BlogPostDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPostBySlug(slug) : undefined;
+  const resolvePublicAsset = (path?: string) => {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    const base = (import.meta as any)?.env?.BASE_URL || '/';
+    const normalizedBase = String(base).endsWith('/') ? String(base) : `${base}/`;
+    const normalizedPath = String(path).replace(/^\//, '');
+    return `${normalizedBase}${normalizedPath}`.replace(/\/{2,}/g, '/');
+  };
 
   // If post not found, show 404
   if (!post) {
@@ -52,24 +59,31 @@ const BlogPostDetail = () => {
       <FAQSchema faqs={post.faqs} />
       <BreadcrumbSchema items={breadcrumbItems} />
 
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-      <div className="container mx-auto px-6 py-12">
+    <div className="min-h-screen bg-[#0B101A] text-white selection:bg-emerald-500/30">
+        {/* Modern Background Decor */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full animate-pulse-slow"></div>
+          <div className="absolute top-[20%] -right-[10%] w-[35%] h-[35%] bg-blue-600/10 blur-[120px] rounded-full animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
+        </div>
+
+      <div className="container mx-auto px-6 py-12 relative z-10">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-8 text-sm text-purple-300" aria-label="Breadcrumb">
-            <ol className="flex items-center space-x-2">
-              <li>
-                <Link to="/" className="hover:text-white transition-colors">
+          <nav className="mb-10 text-sm" aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-3 text-slate-400">
+              <li className="flex items-center">
+                <Link to="/" className="hover:text-emerald-400 transition-colors duration-200">
                   Home
                 </Link>
               </li>
-              <li>/</li>
+              <li className="text-slate-600">/</li>
               <li>
-                <Link to="/blog" className="hover:text-white transition-colors">
-                  Blog
+                <Link to="/blog" className="hover:text-emerald-400 transition-colors duration-200">
+                  Insights
                 </Link>
               </li>
-              <li>/</li>
-              <li className="text-white font-medium" aria-current="page">
+              <li className="text-slate-600">/</li>
+              <li className="text-emerald-400 font-medium truncate max-w-[200px] md:max-w-none" aria-current="page">
                 {post.title}
               </li>
             </ol>
@@ -77,182 +91,175 @@ const BlogPostDetail = () => {
 
         <Button 
           asChild 
-          className="mb-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg shadow-purple-500/30"
+          variant="outline"
+          className="mb-8 rounded-2xl border-white/10 bg-white/[0.03] hover:bg-white/[0.08] text-white backdrop-blur-md transition-all group"
         >
           <Link to="/blog">
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Blog
+            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Insights
           </Link>
         </Button>
         
-        <article className="max-w-4xl mx-auto bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-lg border border-white/20">
+        <article className="max-w-4xl mx-auto mb-20 animate-fadeIn">
             {/* Article Header */}
-          <header className="mb-6 border-b border-white/20 pb-4">
-            <span className="inline-block text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full mb-2">
-              {post.category}
-            </span>
-            <h1 className="text-4xl font-bold text-white mb-3 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
+          <header className="mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">{post.category}</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight leading-tight">
               {post.title}
             </h1>
-              <div className="flex items-center gap-4 text-sm text-purple-200">
-                <time dateTime={post.date}>
-                  Published on: {new Date(post.date).toLocaleDateString('en-IN', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </time>
-                <span>•</span>
-                <span>{post.readTime}</span>
+            
+            <div className="flex items-center gap-4 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-[10px] font-bold text-black uppercase">
+                  CA
+                </div>
+                <span className="font-medium text-slate-300">Creator Armour Team</span>
               </div>
+              <span>•</span>
+              <time dateTime={post.date}>
+                {new Date(post.date).toLocaleDateString('en-IN', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </time>
+              <span>•</span>
+              <span>{post.readTime}</span>
+            </div>
           </header>
           
           {/* Featured Image */}
-            {post.image && (
-          <div className="w-full h-64 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl overflow-hidden mb-6 relative">
-              <img
-                  src={post.image}
-                alt={post.title}
-                className="w-full h-full object-cover relative z-10"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            <div 
-              className="absolute inset-0 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center transition-opacity duration-300 z-0"
-                  style={{ opacity: 0 }}
-            >
-              <FileText className="w-16 h-16 text-white/50" />
+          {post.image && (
+            <div className="w-full aspect-video md:h-[450px] bg-slate-900 rounded-[2.5rem] overflow-hidden mb-12 relative shadow-2xl border border-white/5">
+                <img
+                    src={resolvePublicAsset(post.image)}
+                  alt={post.title}
+                  className="w-full h-full object-cover relative z-10"
+                  loading="lazy"
+                />
             </div>
-          </div>
-            )}
+          )}
           
-            {/* Article Content */}
-          <div className="prose prose-invert max-w-none space-y-8 text-purple-100">
+          {/* Article Content */}
+          <div className="prose prose-invert max-w-none prose-lg prose-emerald">
               {/* Introduction */}
-              <p className="text-lg text-purple-200 leading-relaxed">
+              <p className="text-xl text-slate-300 leading-relaxed font-light mb-12">
                 {post.content.introduction}
               </p>
 
               {/* Sections */}
-              {post.content.sections.map((section, sectionIndex) => (
-                <section key={sectionIndex}>
-                  <h2 className="text-2xl font-bold text-white mb-4 mt-8">
-                    {section.heading}
-                  </h2>
-                  <p className="text-purple-100 leading-relaxed mb-4">
-                    {section.content}
-                  </p>
-
-                  {/* Subsections (H3) */}
-                  {section.subsections?.map((subsection, subsectionIndex) => (
-                    <div key={subsectionIndex} className="mt-4">
-                      <h3 className="text-xl font-semibold text-white mb-3">
-                        {subsection.heading}
-                      </h3>
-                      {subsection.isCodeBlock ? (
-                        <div className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/30">
-                          <p className="text-sm text-purple-200">
-                            <strong className="text-white">Sample email:</strong> "{subsection.content}"
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-purple-100 leading-relaxed">
-                          {subsection.content}
-                        </p>
-                      )}
+              <div className="space-y-12 text-slate-300">
+                {post.content.sections.map((section, sectionIndex) => (
+                  <section key={sectionIndex} className="scroll-mt-20">
+                    <h2 className="text-3xl font-bold text-white mb-6 tracking-tight flex items-center gap-3">
+                      <span className="text-emerald-500 text-xl font-mono opacity-50">{String(sectionIndex + 1).padStart(2, '0')}</span>
+                      {section.heading}
+                    </h2>
+                    <div className="leading-relaxed mb-6 whitespace-pre-line">
+                      {section.content}
                     </div>
-                  ))}
-                </section>
-              ))}
+
+                    {/* Subsections (H3) */}
+                    {section.subsections?.map((subsection, subsectionIndex) => (
+                      <div key={subsectionIndex} className="mt-8 pl-6 border-l-2 border-emerald-500/20">
+                        <h3 className="text-xl font-semibold text-white mb-4">
+                          {subsection.heading}
+                        </h3>
+                        {subsection.isCodeBlock ? (
+                          <div className="bg-black/40 p-6 rounded-2xl border border-white/10 my-6 font-mono text-sm overflow-x-auto">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
+                              <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                              <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+                              <span className="ml-2 text-[10px] text-slate-500 uppercase tracking-widest">Email Template</span>
+                            </div>
+                            <p className="text-slate-300 leading-relaxed italic">
+                              {subsection.content}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="leading-relaxed">
+                            {subsection.content}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </section>
+                ))}
+              </div>
 
               {/* Conclusion */}
               {post.content.conclusion && (
-                <div className="mt-8 p-6 bg-purple-900/30 rounded-lg border border-purple-500/30">
-                  <p className="text-lg text-purple-200 leading-relaxed">
+                <div className="mt-16 p-8 rounded-[2rem] bg-emerald-500/5 border border-emerald-500/10 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+                  <h2 className="text-2xl font-bold text-emerald-400 mb-4 flex items-center gap-2 uppercase tracking-wider text-sm">
+                    Final Thoughts
+                  </h2>
+                  <p className="text-lg text-slate-300 leading-relaxed italic relative z-10">
                     {post.content.conclusion}
                   </p>
                 </div>
               )}
 
-              {/* Internal Links Section */}
+              {/* Internal Resources Section */}
               {post.internalLinks && (
-                <div className="mt-8 space-y-4">
-                  <h2 className="text-2xl font-bold text-white mb-4">
-                    Related Resources
+                <div className="mt-20 space-y-6">
+                  <h2 className="text-2xl font-bold text-white mb-4 tracking-tight flex items-center gap-3">
+                    <span className="w-8 h-[2px] bg-emerald-500/30"></span>
+                    Related Toolbox
                   </h2>
                   
-                  {post.internalLinks.contractTool && (
-                    <Link to="/contract-analyzer" className="block no-underline">
-                      <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-md p-4 border-l-4 border-purple-400 hover:from-purple-600/40 hover:to-pink-600/40 cursor-pointer transition-all duration-200 hover:scale-[1.02]">
-                        <CardContent className="p-0 flex flex-col space-y-3">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-purple-200 mr-3 flex-shrink-0" />
-                            <p className="text-sm text-white font-semibold">
-                              Free Contract Analyzer
-                            </p>
-                            <ExternalLink className="h-4 w-4 text-purple-200 ml-2" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {post.internalLinks.contractTool && (
+                      <Link to="/contract-analyzer" className="block group">
+                        <div className="bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-white/5 hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 h-full flex flex-col justify-between shadow-xl">
+                          <div>
+                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                              <FileText className="h-5 w-5 text-emerald-400" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">Contract Analyzer</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">Instantly spot risky clauses and payment traps in your brand agreements.</p>
                           </div>
-                          <p className="text-sm text-purple-200">
-                            Upload your contract and get instant feedback on risky clauses, payment terms, and legal protections.
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  )}
+                          <div className="mt-6 flex items-center text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                            Try Tool <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1" />
+                          </div>
+                        </div>
+                      </Link>
+                    )}
 
-                  {post.internalLinks.homepage && (
-                    <Link to="/" className="block no-underline">
-                      <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-md p-4 border-l-4 border-purple-400 hover:from-purple-600/40 hover:to-pink-600/40 cursor-pointer transition-all duration-200 hover:scale-[1.02]">
-                        <CardContent className="p-0 flex flex-col space-y-3">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-purple-200 mr-3 flex-shrink-0" />
-                            <p className="text-sm text-white font-semibold">
-                              Explore CreatorArmour
-                            </p>
-                            <ExternalLink className="h-4 w-4 text-purple-200 ml-2" />
+                    {post.internalLinks.homepage && (
+                      <Link to="/" className="block group">
+                        <div className="bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-white/5 hover:bg-white/[0.06] hover:border-blue-500/30 transition-all duration-300 h-full flex flex-col justify-between shadow-xl">
+                          <div>
+                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-colors">
+                              <ExternalLink className="h-5 w-5 text-blue-400" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">Creator Armour Home</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">The complete OS for high-trust brand collaborations and legal protection.</p>
                           </div>
-                          <p className="text-sm text-purple-200">
-                            Protect your brand deals with contract generation, payment tracking, and legal support. Start free.
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  )}
-
-                  {post.internalLinks.collabLink && (
-                    <Link to="/signup" className="block no-underline">
-                      <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-md p-4 border-l-4 border-purple-400 hover:from-purple-600/40 hover:to-pink-600/40 cursor-pointer transition-all duration-200 hover:scale-[1.02]">
-                        <CardContent className="p-0 flex flex-col space-y-3">
-                          <div className="flex items-center">
-                            <FileText className="h-5 w-5 text-purple-200 mr-3 flex-shrink-0" />
-                            <p className="text-sm text-white font-semibold">
-                              Create Your Collab Link
-                            </p>
-                            <ExternalLink className="h-4 w-4 text-purple-200 ml-2" />
+                          <div className="mt-6 flex items-center text-xs font-bold text-blue-400 uppercase tracking-wider">
+                            Main Site <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1" />
                           </div>
-                          <p className="text-sm text-purple-200">
-                            Share a professional collaboration link in your bio and let brands submit requests directly.
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  )}
+                        </div>
+                      </Link>
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* FAQ Section */}
               {post.faqs.length > 0 && (
-                <div className="mt-12 pt-8 border-t border-white/20">
-                  <h2 className="text-2xl font-bold text-white mb-6">
-                    Frequently Asked Questions
-                  </h2>
-                  <div className="space-y-6">
+                <div className="mt-20 pt-16 border-t border-white/5">
+                  <h2 className="text-3xl font-bold text-white mb-10 tracking-tight">Common <span className="text-emerald-400">Questions</span></h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {post.faqs.map((faq, index) => (
-                      <div key={index} className="bg-purple-900/30 p-5 rounded-lg border border-purple-500/30">
-                        <h3 className="text-lg font-semibold text-white mb-2">
+                      <div key={index} className="bg-white/[0.03] p-6 rounded-[1.5rem] border border-white/5">
+                        <h3 className="text-lg font-bold text-white mb-3">
                           {faq.question}
                         </h3>
-                        <p className="text-purple-200 leading-relaxed">
+                        <p className="text-sm text-slate-400 leading-relaxed">
                           {faq.answer}
                         </p>
                       </div>
@@ -261,50 +268,30 @@ const BlogPostDetail = () => {
                 </div>
               )}
 
-              {/* Collab Link CTA - Funnel */}
-              <div className="mt-12 pt-8 border-t border-white/20">
-                <Card className="bg-gradient-to-r from-purple-600/40 to-pink-600/40 backdrop-blur-md border-purple-400/50">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-white mb-2">
-                          Want brands to approach you professionally?
-                        </h2>
-                        <p className="text-purple-200 text-lg">
-                          Get your free collab link. Share it in your bio and let brands submit collaboration requests directly—no DMs, no confusion.
-                        </p>
-                      </div>
-                      <Button
-                        asChild
-                        className="bg-white text-purple-600 hover:bg-purple-50 font-semibold px-6 py-6 text-lg whitespace-nowrap"
-                      >
-                        <Link to="/signup">
-                          Get Your Collab Link <ArrowRight className="h-5 w-5 ml-2" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* High Impact Funnel CTA */}
+              <div className="mt-24 p-1 relative overflow-hidden rounded-[3rem]">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-blue-500/20 to-emerald-500/20 animate-gradient-shift"></div>
+                <div className="relative bg-[#0F172A] p-10 md:p-14 rounded-[2.9rem] flex flex-col md:flex-row items-center justify-between gap-10 border border-white/5">
+                  <div className="max-w-xl text-center md:text-left">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Ready for <span className="text-emerald-400">Higher Standards?</span></h2>
+                    <p className="text-lg text-slate-400">Join 5,000+ creators closing professional, contract-backed brand deals on Creator Armour.</p>
+                  </div>
+                  <Button asChild className="px-10 py-8 rounded-[1.5rem] bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-lg shadow-xl shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 group shrink-0">
+                    <Link to="/signup">
+                      Claim Your Free Link <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
 
               {/* Disclaimer */}
-              <div className="mt-12 pt-8 border-t border-white/20">
-                <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h3 className="text-lg font-semibold text-yellow-200 mb-2">
-                        Legal Disclaimer
-                      </h3>
-                      <p className="text-sm text-yellow-100 leading-relaxed">
-                        This article is for informational purposes only and does not constitute legal, financial, or professional advice. 
-                        While we strive to provide accurate information, laws and regulations may vary by jurisdiction and change over time. 
-                        Individual circumstances may differ, and results are not guaranteed. Always consult with a qualified legal or financial 
-                        professional for advice specific to your situation. CreatorArmour does not guarantee payment recovery or specific outcomes. 
-                        Past results do not guarantee future performance.
-                      </p>
-                    </div>
-                  </div>
+              <div className="mt-20 pt-10 border-t border-white/5 opacity-50">
+                <div className="flex items-start gap-4">
+                  <AlertCircle className="h-5 w-5 text-slate-500 flex-shrink-0 mt-1" />
+                  <p className="text-[11px] text-slate-500 leading-relaxed uppercase tracking-widest">
+                    Legal Disclaimer: This article is for informational purposes only and does not constitute legal, financial, or professional advice. 
+                    Laws vary by jurisdiction. Always consult with a qualified professional for advice specific to your business situation.
+                  </p>
                 </div>
               </div>
           </div>

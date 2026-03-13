@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Instagram, Youtube, Twitter, Facebook, Loader2, Users } from 'lucide-react';
+import { Search, Instagram, Youtube, Twitter, Facebook, Loader2, Users, ArrowLeft, LayoutDashboard } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { useSession } from '@/contexts/SessionContext';
 
 interface Creator {
   id: string;
@@ -20,10 +21,19 @@ interface Creator {
 
 const CreatorsDirectory = () => {
   const { category } = useParams<{ category: string }>();
+  const navigate = useNavigate();
+  const { session, profile } = useSession();
   const [creators, setCreators] = useState<Creator[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const dashboardPath =
+    profile?.role === 'admin' ? '/admin-dashboard'
+      : profile?.role === 'brand' ? '/brand-dashboard'
+        : profile?.role === 'chartered_accountant' ? '/ca-dashboard'
+          : profile?.role === 'lawyer' ? '/lawyer-dashboard'
+            : '/creator-dashboard';
 
   useEffect(() => {
     fetchCreators();
@@ -126,8 +136,23 @@ const CreatorsDirectory = () => {
       {/* Breadcrumb Schema */}
       <BreadcrumbSchema items={breadcrumbItems} />
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-        <div className="container mx-auto px-4 py-12">
+	      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+	        <div className="container mx-auto px-4 py-12">
+            {/* Signed-in navigation affordance (mobile-first) */}
+            {session && (
+              <div className="sticky top-0 z-40 -mx-4 px-4 pt-[max(0px,env(safe-area-inset-top,0px))] pb-3 mb-4 bg-gradient-to-b from-black/25 via-black/10 to-transparent backdrop-blur-sm">
+                <button
+                  type="button"
+                  onClick={() => navigate(dashboardPath)}
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/10 border border-white/20 hover:bg-white/15 active:scale-[0.99] transition-all text-[12px] font-bold"
+                  aria-label="Back to dashboard"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Dashboard</span>
+                  <LayoutDashboard className="h-4 w-4 opacity-70" />
+                </button>
+              </div>
+            )}
           {/* SEO Content */}
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
@@ -198,11 +223,23 @@ const CreatorsDirectory = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCreators.map((creator) => (
-                <Link key={creator.id} to={`/creator/${creator.username}`}>
-                  <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:border-purple-400/50 transition-all duration-200 hover:scale-[1.02] cursor-pointer h-full">
-                    <CardContent className="p-6">
+	            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+	              {filteredCreators.map((creator) => (
+	                <div
+	                  key={creator.id}
+	                  role="link"
+	                  tabIndex={0}
+	                  onClick={() => navigate(`/creator/${creator.username}`)}
+	                  onKeyDown={(e) => {
+	                    if (e.key === 'Enter' || e.key === ' ') {
+	                      e.preventDefault();
+	                      navigate(`/creator/${creator.username}`);
+	                    }
+	                  }}
+	                  className="outline-none focus-visible:ring-2 focus-visible:ring-purple-300/40 rounded-xl"
+	                >
+	                  <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:border-purple-400/50 transition-all duration-200 hover:scale-[1.02] cursor-pointer h-full">
+	                    <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           <h3 className="text-xl font-bold text-white mb-1">
@@ -264,17 +301,21 @@ const CreatorsDirectory = () => {
                         </div>
                       )}
 
-                      <Button
-                        className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                        onClick={(e) => e.preventDefault()}
-                      >
-                        View Profile
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+	                      <Button
+	                        className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+	                        onClick={(e) => {
+	                          e.preventDefault();
+	                          e.stopPropagation();
+	                          navigate(`/creator/${creator.username}`);
+	                        }}
+	                      >
+	                        View Profile
+	                      </Button>
+	                    </CardContent>
+	                  </Card>
+	                </div>
+	              ))}
+	            </div>
           )}
 
           {/* SEO Footer Content */}
@@ -299,4 +340,3 @@ const CreatorsDirectory = () => {
 };
 
 export default CreatorsDirectory;
-

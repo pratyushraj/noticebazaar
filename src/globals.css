@@ -150,6 +150,16 @@ body {
   /* Improve text rendering */
 }
 
+/* Desktop: allow `position: sticky` (e.g. collab booking right panel) to work.
+   The mobile scrolling fixes set `overflow-*` on `body`, which creates an overflow ancestor that breaks sticky
+   when the document scrolls on `html` (Chromium behavior). */
+@media (min-width: 1024px) {
+  body {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+}
+
 /* iOS Safari Scrolling helpers (per-container, not global) */
 @supports (-webkit-touch-callout: none) {
   .safe-area-fix {
