@@ -1,17 +1,11 @@
 "use client";
 
-import { motion } from 'framer-motion';
 import { Loader2, ShieldCheck } from 'lucide-react';
 
 const AuthLoadingScreen = () => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0F14]">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="flex flex-col items-center justify-center space-y-8 text-center px-4"
-      >
+      <div className="flex flex-col items-center justify-center space-y-8 text-center px-4 animate-in fade-in zoom-in-95 duration-300">
         {/* Brand Icon */}
         <div className="w-14 h-14 rounded-2xl bg-[#1E293B] border border-[#334155] shadow-lg flex items-center justify-center">
           <ShieldCheck className="w-7 h-7 text-white" />
@@ -29,7 +23,7 @@ const AuthLoadingScreen = () => {
             Loading your secure workspace...
           </p>
         </div>
-      </motion.div>
+      </div>
 
       {/* Footer */}
       <div className="absolute bottom-10 left-0 right-0 text-center">
