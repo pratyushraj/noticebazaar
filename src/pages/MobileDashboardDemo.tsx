@@ -383,7 +383,8 @@ const MobileDashboardDemo = ({
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const isDark = theme === 'dark';
-    const bgColor = isDark ? '#0B0F14' : '#F9FAFB'; // Stripe/Linear vibes
+    // Brand-like background base (gradient overlays applied in JSX below)
+    const bgColor = isDark ? '#061318' : '#FFFFFF';
     const cardBgColor = isDark ? 'bg-slate-900' : 'bg-white';
     const borderColor = isDark ? 'border-slate-800' : 'border-slate-200';
     const secondaryTextColor = isDark ? 'text-slate-400' : 'text-slate-500';
@@ -746,7 +747,7 @@ const MobileDashboardDemo = ({
 
     const renderSettingsPage = () => {
         const PageHeader = ({ title }: { title: string }) => (
-            <div className={cn("px-6 pt-16 pb-6 flex items-center gap-4", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
+            <div className={cn("px-6 pt-16 pb-6 flex items-center gap-4 bg-transparent")}>
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setActiveSettingsPage(null)}
@@ -1423,15 +1424,26 @@ const MobileDashboardDemo = ({
 
     return (
         <div
-            className={cn('fixed inset-0 z-[10000] flex justify-center overflow-hidden font-sans')}
+            className={cn('fixed inset-0 z-[10000] flex justify-center overflow-hidden font-sans selection:bg-emerald-500/25')}
             style={{ backgroundColor: bgColor }}
         >
+            {isDark ? (
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
+                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
+                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
+                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
+                </div>
+            ) : (
+                <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
+                </div>
+            )}
             <div
                 className={cn(
-                    'w-full md:max-w-3xl mx-auto relative h-[100dvh] flex flex-col transition-colors duration-300 md:border-x',
+                    'w-full md:max-w-3xl mx-auto relative z-10 h-[100dvh] flex flex-col transition-colors duration-300 md:border-x bg-transparent',
                     isDark ? 'md:border-[#1F2937] text-slate-200' : 'md:border-slate-200 text-slate-900'
                 )}
-                style={{ backgroundColor: bgColor }}
             >
                 {/* Sidebar Drawer */}
                 <PremiumDrawer
@@ -2373,7 +2385,7 @@ const MobileDashboardDemo = ({
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
-                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative overflow-hidden", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
+                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative overflow-hidden bg-transparent")}>
                             <AnimatePresence mode="wait">
                                 {!activeSettingsPage ? (
                                     <motion.div
@@ -2383,7 +2395,7 @@ const MobileDashboardDemo = ({
                                         exit={{ opacity: 0, x: -20 }}
                                         className="w-full"
                                     >
-                                        <div className={cn("px-6 pt-16 pb-6", isDark ? "bg-[#000000]" : "bg-[#F2F2F7]")}>
+                                        <div className={cn("px-6 pt-16 pb-6 bg-transparent")}>
                                             <h1 className={cn("text-3xl font-black tracking-tight", textColor)}>Settings</h1>
                                         </div>
 
