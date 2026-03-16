@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
@@ -303,8 +302,6 @@ const MobileDashboardDemo = ({
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
-    const [isItemDetailOpen, setIsItemDetailOpen] = useState(false);
-    const itemDetailCloseTimeoutRef = useRef<number | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
 
     // Signing states
@@ -1464,35 +1461,11 @@ const MobileDashboardDemo = ({
         }))
         .slice(0, 3);
 
-    useEffect(() => {
-        if (selectedItem) {
-            if (itemDetailCloseTimeoutRef.current) {
-                window.clearTimeout(itemDetailCloseTimeoutRef.current);
-                itemDetailCloseTimeoutRef.current = null;
-            }
-            setIsItemDetailOpen(true);
-        }
-    }, [selectedItem]);
-
-    useEffect(() => {
-        return () => {
-            if (itemDetailCloseTimeoutRef.current) {
-                window.clearTimeout(itemDetailCloseTimeoutRef.current);
-                itemDetailCloseTimeoutRef.current = null;
-            }
-        };
-    }, []);
-
     const closeItemDetail = () => {
         triggerHaptic();
         setShowItemMenu(false);
-        setIsItemDetailOpen(false);
-        if (itemDetailCloseTimeoutRef.current) window.clearTimeout(itemDetailCloseTimeoutRef.current);
-        itemDetailCloseTimeoutRef.current = window.setTimeout(() => {
-            setSelectedItem(null);
-            setSelectedType(null);
-            itemDetailCloseTimeoutRef.current = null;
-        }, 260);
+        setSelectedItem(null);
+        setSelectedType(null);
     };
 
     return (
@@ -2892,14 +2865,16 @@ const MobileDashboardDemo = ({
                 </AnimatePresence>
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
-                {selectedItem && typeof document !== 'undefined' && createPortal(
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: isItemDetailOpen ? 0 : '100%' }}
-                        transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                        className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
-                        style={{ backgroundColor: bgColor }}
-                    >
+                <AnimatePresence>
+                    {selectedItem && (
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
+                            className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
+                            style={{ backgroundColor: bgColor }}
+                        >
                             {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
                             <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
 
@@ -3538,9 +3513,9 @@ const MobileDashboardDemo = ({
                                     </>
                                 )}
                             </AnimatePresence>
-                    </motion.div>,
-                    document.body
-                )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Creator Signing Modal */}
