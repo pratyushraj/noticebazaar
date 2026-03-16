@@ -171,9 +171,11 @@ const MobileDashboardDemo = ({
         permission: pushPermission,
         isSubscribed: isPushSubscribed,
         isBusy: isPushBusy,
+        promptDismissed: isPushPromptDismissed,
         isIOSNeedsInstall,
         hasVapidKey,
         enableNotifications,
+        dismissPrompt: dismissPushPrompt,
         sendTestPush,
         refreshStatus: refreshPushStatus,
     } = useDealAlertNotifications();
@@ -353,6 +355,13 @@ const MobileDashboardDemo = ({
     const borderColor = isDark ? 'border-slate-800' : 'border-slate-200';
     const secondaryTextColor = isDark ? 'text-slate-400' : 'text-slate-500';
     const textColor = isDark ? 'text-white' : 'text-slate-900';
+
+    const shouldShowPushPrompt =
+        isPushSupported &&
+        hasVapidKey &&
+        !isPushSubscribed &&
+        pushPermission !== 'denied' &&
+        !isPushPromptDismissed;
 
     const handleTouchStart = (e: React.TouchEvent) => {
         if (scrollRef.current && scrollRef.current.scrollTop === 0 && !isRefreshingProp) {
@@ -1511,6 +1520,65 @@ const MobileDashboardDemo = ({
                                     </p>
                                 </motion.div>
                             </div>
+
+                            {shouldShowPushPrompt && (
+                                <div className="px-5 mb-6">
+                                    <div className={cn("p-5 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-200 shadow-sm")}>
+                                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                                        <div className="flex items-start gap-3">
+                                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
+                                                <Bell className={cn("w-5 h-5", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>Enable Deal Alerts</p>
+                                                <p className={cn("text-[12px] mt-1 opacity-60 leading-relaxed", textColor)}>
+                                                    Get instant notifications when a brand sends you a collaboration request.
+                                                </p>
+                                                <div className="mt-4 flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={async () => {
+                                                            triggerHaptic();
+                                                            if (isIOSNeedsInstall) {
+                                                                setShowPushInstallGuide(true);
+                                                                return;
+                                                            }
+                                                            if (pushPermission === 'denied') {
+                                                                toast.error("Notifications are blocked. Enable them in browser settings.");
+                                                                return;
+                                                            }
+                                                            const res = await enableNotifications();
+                                                            if (res.success) toast.success("Push notifications enabled!");
+                                                            else toast.error("Couldn’t enable notifications.", { description: res.reason || 'Unknown reason' });
+                                                        }}
+                                                        className="flex-1 h-11 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-all bg-emerald-600 text-white hover:bg-emerald-500"
+                                                    >
+                                                        Enable
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            dismissPushPrompt();
+                                                        }}
+                                                        className={cn(
+                                                            "h-11 px-4 rounded-2xl border text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all",
+                                                            isDark ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                                        )}
+                                                    >
+                                                        Not now
+                                                    </button>
+                                                </div>
+                                                {isIOSNeedsInstall && (
+                                                    <p className={cn("text-[11px] mt-3", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                                        iPhone/iPad: install to Home Screen first (no “Allow” popup will show in a Safari tab).
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Empty State vs Normal Metrics */}
                             {activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
