@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
-import { Lock } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useSession } from '@/contexts/SessionContext';
 
 type CollabRequestStatus = 'pending' | 'accepted' | 'countered' | 'declined';
 type CollabType = 'paid' | 'barter' | 'hybrid' | 'both';
@@ -101,11 +104,107 @@ const CollabRequestBriefPage = () => {
   const { requestId } = useParams<{ requestId: string }>();
   const { state } = useLocation();
   const navigate = useNavigate();
-  const request = state?.request as CollabRequest | undefined;
+  const { profile } = useSession();
+  const requestFromState = state?.request as CollabRequest | undefined;
+  const [request, setRequest] = useState<CollabRequest | null>(
+    requestFromState && requestFromState.id === requestId ? requestFromState : null
+  );
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  if (!request || request.id !== requestId) {
-    navigate('/collab-requests', { replace: true });
+  const effectiveRequestId = useMemo(() => (requestId || '').trim() || null, [requestId]);
+
+  useEffect(() => {
+    if (!effectiveRequestId) return;
+    if (requestFromState?.id === effectiveRequestId) {
+      setRequest(requestFromState);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setLoadError(null);
+
+        const { data, error } = await supabase
+          .from('collab_requests')
+          .select('*')
+          .eq('id', effectiveRequestId)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (error) throw error;
+        if (!data) throw new Error('Offer not found');
+        if (profile?.id && data.creator_id && data.creator_id !== profile.id) {
+          throw new Error('You do not have access to this offer');
+        }
+
+        setRequest(data as any);
+      } catch (err: any) {
+        if (cancelled) return;
+        setLoadError(err?.message || 'Failed to load offer brief');
+        setRequest(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveRequestId, profile?.id, requestFromState]);
+
+  if (!effectiveRequestId) {
+    navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
     return null;
+  }
+
+  if (loading) {
+    return (
+      <CreatorNavigationWrapper
+        title="Full brief"
+        subtitle="Loading offer…"
+        compactHeader
+        showBackButton
+        backTo="/creator-dashboard?tab=collabs&subtab=pending"
+        backIconOnly
+      >
+        <div className={cn(spacing.loose, "pb-24")}>
+          <div className="flex items-center justify-center py-14 text-white/70">
+            <Loader2 className="h-6 w-6 animate-spin mr-3" />
+            Loading…
+          </div>
+        </div>
+      </CreatorNavigationWrapper>
+    );
+  }
+
+  if (loadError || !request) {
+    return (
+      <CreatorNavigationWrapper
+        title="Full brief"
+        subtitle="Offer not available"
+        compactHeader
+        showBackButton
+        backTo="/creator-dashboard?tab=collabs&subtab=pending"
+        backIconOnly
+      >
+        <div className={cn(spacing.loose, "pb-24")}>
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-white/80">
+            <p className="text-sm font-semibold text-white mb-1">Couldn’t open this offer</p>
+            <p className="text-sm text-white/60">{loadError || 'Unknown error'}</p>
+            <button
+              type="button"
+              onClick={() => navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true })}
+              className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 transition-colors"
+            >
+              Back to offers
+            </button>
+          </div>
+        </div>
+      </CreatorNavigationWrapper>
+    );
   }
 
   const deliverablesList = parseDeliverables(request.deliverables);
