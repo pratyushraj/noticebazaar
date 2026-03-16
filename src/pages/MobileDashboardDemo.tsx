@@ -303,6 +303,8 @@ const MobileDashboardDemo = ({
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
+    const [isItemDetailOpen, setIsItemDetailOpen] = useState(false);
+    const itemDetailCloseTimeoutRef = useRef<number | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
 
     // Signing states
@@ -1461,6 +1463,37 @@ const MobileDashboardDemo = ({
             status: d.status
         }))
         .slice(0, 3);
+
+    useEffect(() => {
+        if (selectedItem) {
+            if (itemDetailCloseTimeoutRef.current) {
+                window.clearTimeout(itemDetailCloseTimeoutRef.current);
+                itemDetailCloseTimeoutRef.current = null;
+            }
+            setIsItemDetailOpen(true);
+        }
+    }, [selectedItem]);
+
+    useEffect(() => {
+        return () => {
+            if (itemDetailCloseTimeoutRef.current) {
+                window.clearTimeout(itemDetailCloseTimeoutRef.current);
+                itemDetailCloseTimeoutRef.current = null;
+            }
+        };
+    }, []);
+
+    const closeItemDetail = () => {
+        triggerHaptic();
+        setShowItemMenu(false);
+        setIsItemDetailOpen(false);
+        if (itemDetailCloseTimeoutRef.current) window.clearTimeout(itemDetailCloseTimeoutRef.current);
+        itemDetailCloseTimeoutRef.current = window.setTimeout(() => {
+            setSelectedItem(null);
+            setSelectedType(null);
+            itemDetailCloseTimeoutRef.current = null;
+        }, 260);
+    };
 
     return (
         <div
@@ -2859,18 +2892,14 @@ const MobileDashboardDemo = ({
                 </AnimatePresence>
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
-                {(() => {
-                    const node = (
-                        <AnimatePresence>
-                            {selectedItem && (
-                                <motion.div
-                                    initial={{ x: '100%' }}
-                                    animate={{ x: 0 }}
-                                    exit={{ x: '100%' }}
-                                    transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                                    className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
-                                    style={{ backgroundColor: bgColor }}
-                                >
+                {selectedItem && typeof document !== 'undefined' && createPortal(
+                    <motion.div
+                        initial={{ x: '100%' }}
+                        animate={{ x: isItemDetailOpen ? 0 : '100%' }}
+                        transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
+                        className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
+                        style={{ backgroundColor: bgColor }}
+                    >
                             {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
                             <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
 
@@ -2895,7 +2924,7 @@ const MobileDashboardDemo = ({
                             )}>
                                 <div className="flex items-center gap-3">
                                     <button
-                                        onClick={() => { triggerHaptic(); setSelectedItem(null); setSelectedType(null); }}
+                                        onClick={closeItemDetail}
                                         className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                     >
                                         <ChevronRight className="w-4 h-4 rotate-180" />
@@ -3395,7 +3424,7 @@ const MobileDashboardDemo = ({
                                                         return;
                                                     }
                                                     if (onDeclineRequest) onDeclineRequest(selectedItem.id);
-                                                    setSelectedItem(null);
+                                                    closeItemDetail();
                                                 }}
                                                 className={cn("flex-1 py-3 rounded-2xl flex flex-col items-center justify-center gap-1 border transition-all active:scale-95",
                                                     isDark ? "bg-red-500/10 border-red-500/20 hover:bg-red-500/20" : "bg-red-50 border-red-200 hover:bg-red-100")}
@@ -3509,12 +3538,9 @@ const MobileDashboardDemo = ({
                                     </>
                                 )}
                             </AnimatePresence>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    );
-                    return typeof document !== 'undefined' ? createPortal(node, document.body) : node;
-                })()}
+                    </motion.div>,
+                    document.body
+                )}
             </div>
 
             {/* Creator Signing Modal */}
