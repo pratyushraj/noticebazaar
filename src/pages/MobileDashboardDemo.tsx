@@ -167,8 +167,12 @@ const MobileDashboardDemo = ({
     const navigate = useNavigate();
     const signOutMutation = useSignOut();
     const {
+        isSupported: isPushSupported,
+        permission: pushPermission,
         isSubscribed: isPushSubscribed,
         isBusy: isPushBusy,
+        isIOSNeedsInstall,
+        hasVapidKey,
         enableNotifications,
         sendTestPush,
     } = useDealAlertNotifications();
@@ -219,6 +223,7 @@ const MobileDashboardDemo = ({
 
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
+    const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
@@ -1245,9 +1250,33 @@ const MobileDashboardDemo = ({
                                                 if (isPushSubscribed) {
                                                     toast.info("To disable, please use your browser settings.");
                                                 } else {
+                                                    if (!isPushSupported) {
+                                                        toast.error("Push notifications aren't supported on this browser.");
+                                                        return;
+                                                    }
+                                                    if (!hasVapidKey) {
+                                                        toast.error("Notifications aren't configured yet.");
+                                                        return;
+                                                    }
+                                                    if (pushPermission === 'denied') {
+                                                        toast.error("Notifications are blocked. Enable them in browser settings.");
+                                                        return;
+                                                    }
+                                                    if (isIOSNeedsInstall) {
+                                                        setShowPushInstallGuide(true);
+                                                        return;
+                                                    }
+
                                                     const res = await enableNotifications();
-                                                    if (res.success) toast.success("Push notifications enabled!");
-                                                    else toast.error("Failed to enable push alerts.");
+                                                    if (res.success) {
+                                                        toast.success("Push notifications enabled!");
+                                                    } else {
+                                                        const reason = String(res.reason || '').toLowerCase();
+                                                        if (reason === 'default') toast.error("Permission not granted.");
+                                                        else if (reason === 'denied') toast.error("Permission denied in browser settings.");
+                                                        else if (reason.includes('missing_vapid_key')) toast.error("Notifications aren't configured yet.");
+                                                        else toast.error("Failed to enable push alerts.");
+                                                    }
                                                 }
                                             }}
                                             isDark={isDark}
@@ -3174,6 +3203,49 @@ const MobileDashboardDemo = ({
                     <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>Secure Enterprise-grade E-signature powered by Creator Armour Armor</span>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* iOS install guide for push notifications */}
+            <Dialog open={showPushInstallGuide} onOpenChange={setShowPushInstallGuide}>
+                <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
+                            <Bell className="w-5 h-5 text-emerald-300" />
+                            Enable Deal Alerts
+                        </DialogTitle>
+                        <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
+                            On iPhone and iPad, push notifications work only when CreatorArmour is installed to your Home Screen.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="px-6 py-5 space-y-3">
+                        <div className="p-4 bg-emerald-500/12 border border-emerald-400/30 rounded-xl">
+                            <p className="text-sm font-semibold text-emerald-100">How to install</p>
+                            <ol className="mt-2 space-y-1 text-sm text-white/80 list-decimal pl-5">
+                                <li>Tap the Share button in Safari</li>
+                                <li>Select “Add to Home Screen”</li>
+                                <li>Open CreatorArmour from your Home Screen</li>
+                            </ol>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowPushInstallGuide(false)}
+                                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-3 transition-colors"
+                            >
+                                Got it
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setShowPushInstallGuide(false)}
+                                className="rounded-xl border border-white/20 text-white/85 hover:text-white hover:bg-white/10 text-sm px-4 py-3 transition-colors"
+                            >
+                                Later
+                            </button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
