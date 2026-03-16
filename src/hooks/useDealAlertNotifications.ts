@@ -42,6 +42,7 @@ export const useDealAlertNotifications = () => {
   const pushApiBase = useMemo(() => {
     if (typeof window === 'undefined') return getApiBaseUrl();
     const host = window.location.hostname.toLowerCase();
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
     const isPublicHost =
       host.endsWith('creatorarmour.com') ||
       host.endsWith('creatorarmour.com') ||
@@ -49,7 +50,10 @@ export const useDealAlertNotifications = () => {
     // On production Vercel, use RELATIVE paths so requests go through the
     // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari
     // CSP cross-origin blocking of direct fetches to noticebazaar-api.onrender.com.
-    return isPublicHost ? '' : getApiBaseUrl();
+    if (isPublicHost) return '';
+    // Localhost dev: prefer local API to avoid CORS on Render during development.
+    if (isLocalhost) return 'http://localhost:3001';
+    return getApiBaseUrl();
   }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;
@@ -95,7 +99,7 @@ export const useDealAlertNotifications = () => {
       const data = await response.json();
       setIsSubscribed(!!data?.hasSubscription);
     } catch (error: any) {
-      logger.error('Push status check failed', { error: error?.message });
+      logger.warn('Push status check failed', { error: error?.message });
       setIsSubscribed(false);
     }
   }, [pushApiBase]);
