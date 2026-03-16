@@ -175,6 +175,7 @@ const MobileDashboardDemo = ({
         hasVapidKey,
         enableNotifications,
         sendTestPush,
+        refreshStatus: refreshPushStatus,
     } = useDealAlertNotifications();
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as 'dashboard' | 'collabs' | 'payments' | 'profile') || 'dashboard';
@@ -1271,11 +1272,12 @@ const MobileDashboardDemo = ({
                                                     if (res.success) {
                                                         toast.success("Push notifications enabled!");
                                                     } else {
-                                                        const reason = String(res.reason || '').toLowerCase();
-                                                        if (reason === 'default') toast.error("Permission not granted.");
-                                                        else if (reason === 'denied') toast.error("Permission denied in browser settings.");
-                                                        else if (reason.includes('missing_vapid_key')) toast.error("Notifications aren't configured yet.");
-                                                        else toast.error("Failed to enable push alerts.");
+                                                        const reason = String(res.reason || '');
+                                                        const r = reason.toLowerCase();
+                                                        if (r === 'default') toast.error("Permission not granted.");
+                                                        else if (r === 'denied') toast.error("Permission denied in browser settings.");
+                                                        else if (r.includes('missing_vapid_key')) toast.error("Notifications aren't configured yet.");
+                                                        else toast.error("Failed to enable push alerts.", { description: reason || undefined });
                                                     }
                                                 }
                                             }}
@@ -1289,7 +1291,7 @@ const MobileDashboardDemo = ({
                                             triggerHaptic();
                                             const res = await sendTestPush();
                                             if (res.success) toast.success("Test notification sent!");
-                                            else toast.error("Test push failed.");
+                                            else toast.error("Test push failed.", { description: res.reason || 'Unknown reason' });
                                         }}
                                         className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-blue-500 text-center", isPushBusy && "opacity-50")}
                                         disabled={isPushBusy}
@@ -1298,6 +1300,40 @@ const MobileDashboardDemo = ({
                                     </button>
                                 )}
                             </SettingsGroup>
+                            <div className={cn("p-4 rounded-2xl border flex items-start justify-between gap-3", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                <div className="min-w-0">
+                                    <p className={cn("text-[12px] font-black uppercase tracking-widest opacity-60", textColor)}>Status</p>
+                                    <p className={cn("text-[12px] mt-1 opacity-70", textColor)}>
+                                        Supported: <span className={cn("font-semibold", textColor)}>{isPushSupported ? 'Yes' : 'No'}</span>
+                                        {'  '}• Permission: <span className={cn("font-semibold", textColor)}>{pushPermission}</span>
+                                        {'  '}• Subscribed: <span className={cn("font-semibold", textColor)}>{isPushSubscribed ? 'Yes' : 'No'}</span>
+                                    </p>
+                                    {isIOSNeedsInstall && (
+                                        <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                            iOS requires “Add to Home Screen” for push.
+                                        </p>
+                                    )}
+                                    {!hasVapidKey && (
+                                        <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                            Missing VAPID public key in frontend env.
+                                        </p>
+                                    )}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        triggerHaptic();
+                                        await refreshPushStatus();
+                                        toast.success("Notification status refreshed");
+                                    }}
+                                    className={cn(
+                                        "h-10 px-4 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.99] shrink-0",
+                                        isDark ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                    )}
+                                >
+                                    Refresh
+                                </button>
+                            </div>
                             <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-amber-500/5 text-amber-500/80" : "bg-amber-50 text-amber-600")}>
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <p className="text-[11px] leading-relaxed font-medium">
