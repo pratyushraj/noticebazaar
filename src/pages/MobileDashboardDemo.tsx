@@ -2273,11 +2273,9 @@ const MobileDashboardDemo = ({
                                                 {brandDeals.slice(0, 10).map((deal: any, idx: number) => {
                                                     const startedDays = 2 + (idx % 5);
                                                     return (
-                                                        <motion.div
+                                                        <motion.button
                                                             key={idx}
-                                                            drag="x"
-                                                            dragConstraints={{ left: -100, right: 0 }}
-                                                            dragElastic={0.1}
+                                                            type="button"
                                                             whileTap={{ scale: 0.98 }}
                                                             onClick={() => {
                                                                 triggerHaptic();
@@ -2333,7 +2331,7 @@ const MobileDashboardDemo = ({
                                                                     ))}
                                                                 </div>
                                                             </div>
-                                                        </motion.div>
+                                                        </motion.button>
                                                     );
                                                 })}
                                             </div>
@@ -2359,8 +2357,9 @@ const MobileDashboardDemo = ({
                                                     const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
 
                                                     return (
-                                                        <motion.div
+                                                        <motion.button
                                                             key={idx}
+                                                            type="button"
                                                             whileTap={{ scale: 0.983 }}
                                                             onClick={() => {
                                                                 triggerHaptic();
@@ -2432,7 +2431,7 @@ const MobileDashboardDemo = ({
                                                                     </button>
                                                                 </div>
                                                             </div>
-                                                        </motion.div>
+                                                        </motion.button>
                                                     );
                                                 })}
                                             </div>

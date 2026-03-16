@@ -35,6 +35,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   // Specifically hide for the new demo dashboard replacing creator-dashboard
   const isDemoOverride = location.pathname === '/creator-dashboard' || location.pathname === '/demo-dashboard';
+  const isFullScreenDashboard = location.pathname === '/creator-dashboard' || location.pathname === '/brand-dashboard';
 
   // Show bottom nav for creator routes (default for all users), hide for admin/CA/lawyer/advisor routes
   // Allow bottom nav if:
@@ -72,7 +73,7 @@ const Layout = ({ children }: LayoutProps) => {
             id="main"
             className={cn(
               "relative flex-1 w-full py-6 px-4 md:px-6 lg:px-8 transition-all duration-300 ease-in-out",
-              "overflow-y-auto overscroll-contain",
+              isFullScreenDashboard ? "overflow-hidden p-0" : "overflow-y-auto overscroll-contain",
               isOpen && "md:ml-[280px]"
             )}
           >
