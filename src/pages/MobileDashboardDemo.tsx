@@ -2968,19 +2968,18 @@ const MobileDashboardDemo = ({
                                         </div>
                                     </div>
 
-                                    {/* Status Row (deals only) */}
-                                    {selectedType === 'deal' && (
-                                        <div className="mt-4 flex items-center justify-center">
-                                            <div className={cn(
-                                                "flex items-center px-3.5 py-1.5 rounded-full border shadow-sm",
-                                                isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
-                                            )}>
-                                                <span className={cn("text-[13px] font-bold tracking-tight", isDark ? 'text-emerald-400' : 'text-emerald-700')}>
-                                                    🟢 Active Collaboration
-                                                </span>
-                                            </div>
+                                    {/* Status Row */}
+                                    <div className="mt-4 flex items-center justify-center">
+                                        <div className={cn("flex items-center px-3.5 py-1.5 rounded-full border shadow-sm",
+                                            selectedType === 'deal'
+                                                ? (isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")
+                                                : (isDark ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-200")
+                                        )}>
+                                            <span className={cn("text-[13px] font-bold tracking-tight", selectedType === 'deal' ? (isDark ? 'text-emerald-400' : 'text-emerald-700') : (isDark ? 'text-amber-400' : 'text-amber-700'))}>
+                                                {selectedType === 'deal' ? '🟢 Active Collaboration' : '🟡 Pending Review'}
+                                            </span>
                                         </div>
-                                    )}
+                                    </div>
 
                                     {/* Quick decision snapshot (offers) */}
                                     {selectedType === 'offer' && (
