@@ -4,7 +4,7 @@ import {
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
     Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
-    MessageCircle, MessageSquare, Edit3, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight
+    MessageCircle, MessageSquare, Edit3, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -225,6 +225,7 @@ const MobileDashboardDemo = ({
         }
         return 'dark';
     });
+    const [showItemMenu, setShowItemMenu] = useState(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -237,6 +238,44 @@ const MobileDashboardDemo = ({
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
+
+    const getSelectedItemUrl = () => {
+        if (!selectedItem) return null;
+        const itemId = String(selectedItem?.id || selectedItem?.raw?.id || '').trim();
+        if (!itemId) return null;
+
+        if (selectedType === 'offer') return `/collab-requests/${itemId}/brief`;
+        if (selectedType === 'deal') return `/creator-contracts/${itemId}`;
+        return null;
+    };
+
+    const copySelectedItemLink = async () => {
+        const path = getSelectedItemUrl();
+        if (!path) return toast.error('No link available for this item.');
+        const full = new URL(path, window.location.origin).toString();
+        try {
+            await navigator.clipboard.writeText(full);
+            toast.success('Link copied');
+        } catch {
+            toast.error('Could not copy link on this device.');
+        }
+    };
+
+    const shareSelectedItemLink = async () => {
+        const path = getSelectedItemUrl();
+        if (!path) return toast.error('No link available for this item.');
+        const full = new URL(path, window.location.origin).toString();
+        const title = selectedType === 'deal' ? 'Deal link' : 'Offer link';
+        try {
+            if (navigator.share) {
+                await navigator.share({ title, url: full });
+                return;
+            }
+        } catch {
+            // fall back to copy
+        }
+        await copySelectedItemLink();
+    };
 
     // Sync theme to document element for Tailwind dark mode support
     // This is scoped: we add the class on mount/theme change, and remove it on unmount
@@ -2868,7 +2907,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => { triggerHaptic(); }}
+                                    onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
                                     className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
                                 >
                                     <MoreHorizontal className="w-4 h-4 opacity-40" />
@@ -3367,6 +3406,106 @@ const MobileDashboardDemo = ({
                                     )}
                                 </div>
                             </div>
+
+                            {/* Item menu (three-dots) */}
+                            <AnimatePresence>
+                                {showItemMenu && (
+                                    <>
+                                        <motion.div
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            onClick={() => setShowItemMenu(false)}
+                                            className="fixed inset-0 z-[220] bg-black/40 backdrop-blur-md"
+                                        />
+                                        <motion.div
+                                            initial={{ y: '100%' }}
+                                            animate={{ y: 0 }}
+                                            exit={{ y: '100%' }}
+                                            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+                                            className={cn(
+                                                "fixed bottom-0 inset-x-0 z-[230] rounded-t-[2.25rem] border-t p-5 pb-safe shadow-2xl",
+                                                isDark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-200"
+                                            )}
+                                        >
+                                            <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-5" />
+                                            <div className="max-w-md mx-auto">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="min-w-0">
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.18em] opacity-40", textColor)}>Options</p>
+                                                        <p className={cn("text-[16px] font-extrabold tracking-tight truncate", textColor)}>
+                                                            {selectedType === 'deal' ? 'Deal actions' : 'Offer actions'}
+                                                        </p>
+                                                    </div>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.92 }}
+                                                        onClick={() => setShowItemMenu(false)}
+                                                        className={cn("w-10 h-10 rounded-full flex items-center justify-center border", borderColor, isDark ? "bg-white/5" : "bg-slate-50")}
+                                                    >
+                                                        <X className={cn("w-4 h-4", textColor)} />
+                                                    </motion.button>
+                                                </div>
+
+                                                <div className={cn("rounded-2xl border overflow-hidden", borderColor)}>
+                                                    <button
+                                                        onClick={async () => { triggerHaptic(); await copySelectedItemLink(); setShowItemMenu(false); }}
+                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                                                <Copy className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-700")} />
+                                                            </span>
+                                                            <span>
+                                                                <p className={cn("text-[14px] font-bold", textColor)}>Copy link</p>
+                                                                <p className={cn("text-[12px] opacity-60", textColor)}>Share this offer/deal</p>
+                                                            </span>
+                                                        </span>
+                                                        <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                    </button>
+                                                    <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                                    <button
+                                                        onClick={async () => { triggerHaptic(); await shareSelectedItemLink(); setShowItemMenu(false); }}
+                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                                                <Share2 className={cn("w-4 h-4", isDark ? "text-sky-300" : "text-sky-700")} />
+                                                            </span>
+                                                            <span>
+                                                                <p className={cn("text-[14px] font-bold", textColor)}>Share</p>
+                                                                <p className={cn("text-[12px] opacity-60", textColor)}>Send via WhatsApp, etc.</p>
+                                                            </span>
+                                                        </span>
+                                                        <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                    </button>
+                                                    <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                                    <button
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            const path = getSelectedItemUrl();
+                                                            if (path) navigate(path);
+                                                            else toast.error('No page available for this item.');
+                                                            setShowItemMenu(false);
+                                                        }}
+                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                                                <Eye className={cn("w-4 h-4", isDark ? "text-white/80" : "text-slate-700")} />
+                                                            </span>
+                                                            <span>
+                                                                <p className={cn("text-[14px] font-bold", textColor)}>Open full page</p>
+                                                                <p className={cn("text-[12px] opacity-60", textColor)}>View outside the dashboard</p>
+                                                            </span>
+                                                        </span>
+                                                        <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    </>
+                                )}
+                            </AnimatePresence>
                         </motion.div>
                     )}
                 </AnimatePresence>
