@@ -376,7 +376,7 @@ const App = () => {
                         <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator', 'client']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
                         <Route path="/creator-collab" element={<ProtectedLayout allowedRoles={['creator']}><CreatorCollab /></ProtectedLayout>} />
                         {/* Legacy creator page: keep the new mobile dashboard as the primary entry point */}
-                        <Route path="/collab-requests" element={<Navigate to="/creator-dashboard?tab=collabs" replace />} />
+                        <Route path="/collab-requests" element={<Navigate to="/creator-dashboard?tab=collabs&subtab=pending" replace />} />
                         <Route path="/collab-requests/:requestId/brief" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestBriefPage /></ProtectedLayout>} />
                         <Route path="/collab-requests/:requestId/counter" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestCounterPage /></ProtectedLayout>} />
                         <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />

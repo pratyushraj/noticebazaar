@@ -3,7 +3,7 @@ self.addEventListener('push', (event) => {
   let payload = {
     title: 'New Brand Offer',
     body: 'A brand wants to collaborate with you.',
-    url: '/creator-dashboard?tab=collabs',
+    url: '/creator-dashboard?tab=collabs&subtab=pending',
   };
 
   try {
@@ -27,7 +27,7 @@ self.addEventListener('push', (event) => {
         { action: 'view-offer', title: 'View Offer' },
       ],
       data: {
-        url: payload.url || '/creator-dashboard?tab=collabs',
+        url: payload.url || '/creator-dashboard?tab=collabs&subtab=pending',
       },
       tag: payload.requestId ? `collab-request-${payload.requestId}` : 'collab-request',
       renotify: true,

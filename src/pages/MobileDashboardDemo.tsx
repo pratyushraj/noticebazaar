@@ -182,10 +182,43 @@ const MobileDashboardDemo = ({
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = (searchParams.get('tab') as 'dashboard' | 'collabs' | 'payments' | 'profile') || 'dashboard';
     const setActiveTab = (tab: string) => {
-        setSearchParams({ tab });
+        const next = new URLSearchParams(searchParams);
+        next.set('tab', tab);
+        setSearchParams(next, { replace: true });
     };
 
+    const requestIdParam = (searchParams.get('requestId') || '').trim() || null;
+    const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | null) || null;
+
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
+    const hasHandledDeepLinkRef = useRef(false);
+    useEffect(() => {
+        if (activeTab !== 'collabs') return;
+
+        // Deep-link from push notifications: always show Pending and open the offer if present.
+        if (requestIdParam) {
+            setCollabSubTab('pending');
+
+            if (!hasHandledDeepLinkRef.current) {
+                const match = (collabRequests || []).find((r: any) => String(r?.id || r?.raw?.id || '') === requestIdParam);
+                if (match) {
+                    hasHandledDeepLinkRef.current = true;
+                    setSelectedItem(match);
+                    setSelectedType('offer');
+                    // Clear requestId so the user can freely navigate tabs/subtabs afterwards.
+                    const next = new URLSearchParams(searchParams);
+                    next.delete('requestId');
+                    next.set('tab', 'collabs');
+                    next.set('subtab', 'pending');
+                    setSearchParams(next, { replace: true });
+                }
+            }
+            return;
+        }
+
+        if (subtabParam === 'pending') setCollabSubTab('pending');
+        else if (subtabParam === 'active') setCollabSubTab('active');
+    }, [activeTab, requestIdParam, subtabParam, collabRequests, searchParams, setSearchParams]);
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined' && window.matchMedia) {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -2101,7 +2134,15 @@ const MobileDashboardDemo = ({
                             {/* Toggle Header */}
                             <div className={cn("flex p-1.5 rounded-2xl mb-8", isDark ? "bg-white/5" : "bg-slate-100")}>
                                 <button
-                                    onClick={() => { triggerHaptic(); setCollabSubTab('active'); }}
+                                    onClick={() => {
+                                        triggerHaptic();
+                                        setCollabSubTab('active');
+                                        const next = new URLSearchParams(searchParams);
+                                        next.set('tab', 'collabs');
+                                        next.set('subtab', 'active');
+                                        next.delete('requestId');
+                                        setSearchParams(next, { replace: true });
+                                    }}
                                     className={cn(
                                         "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                         collabSubTab === 'active'
@@ -2112,7 +2153,15 @@ const MobileDashboardDemo = ({
                                     Active ({activeDealsCount})
                                 </button>
                                 <button
-                                    onClick={() => { triggerHaptic(); setCollabSubTab('pending'); }}
+                                    onClick={() => {
+                                        triggerHaptic();
+                                        setCollabSubTab('pending');
+                                        const next = new URLSearchParams(searchParams);
+                                        next.set('tab', 'collabs');
+                                        next.set('subtab', 'pending');
+                                        next.delete('requestId');
+                                        setSearchParams(next, { replace: true });
+                                    }}
                                     className={cn(
                                         "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                         collabSubTab === 'pending'
