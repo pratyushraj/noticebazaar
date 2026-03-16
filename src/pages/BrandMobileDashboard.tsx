@@ -242,19 +242,38 @@ const BrandMobileDashboard = ({
 
   const {
     isSupported: isPushSupported,
+    permission: pushPermission,
     isSubscribed: isPushSubscribed,
     isBusy: isPushBusy,
+    promptDismissed: isPushPromptDismissed,
+    isIOSNeedsInstall,
+    hasVapidKey,
     enableNotifications,
+    dismissPrompt: dismissPushPrompt,
   } = useDealAlertNotifications();
 
   const handleEnablePush = async () => {
     try {
-      await enableNotifications();
-      toast.success('Notifications enabled');
+      const result = await enableNotifications();
+      if (result?.success) {
+        toast.success('Notifications enabled');
+      } else {
+        const reason = result?.reason || 'unknown';
+        if (reason === 'missing_vapid_key') toast.error('Notifications not configured yet');
+        else if (reason === 'denied') toast.error('Notifications blocked in browser settings');
+        else toast.error('Failed to enable notifications');
+      }
     } catch {
       toast.error('Failed to enable notifications');
     }
   };
+
+  const showPushPrompt =
+    isPushSupported &&
+    hasVapidKey &&
+    !isPushSubscribed &&
+    !isPushPromptDismissed &&
+    activeTab === 'dashboard';
 
   return (
     <div className={cn('fixed inset-0 font-sans selection:bg-emerald-500/25 overflow-hidden', bgColor, textColor)}>
@@ -418,6 +437,59 @@ const BrandMobileDashboard = ({
             <div className="px-5">
               {activeTab === 'dashboard' && (
                 <>
+                  {showPushPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={cn(
+                        'mb-5 p-4 rounded-[24px] border shadow-sm',
+                        isDark ? 'bg-white/5 border-white/10' : 'bg-white/80 border-slate-200'
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-emerald-500/15' : 'bg-emerald-500/10')}>
+                          <Bell className={cn('w-5 h-5', isDark ? 'text-emerald-200' : 'text-emerald-700')} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn('text-[13px] font-bold', textColor)}>Enable deal alerts</p>
+                          <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>
+                            {isIOSNeedsInstall
+                              ? 'On iPhone/iPad, install the app (Add to Home Screen) to receive notifications.'
+                              : 'Get notified when creators reply and deals need action.'}
+                          </p>
+                          {pushPermission === 'denied' && (
+                            <p className={cn('text-[12px] mt-2', isDark ? 'text-amber-200/80' : 'text-amber-700')}>
+                              Notifications are blocked in your browser settings.
+                            </p>
+                          )}
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              type="button"
+                              disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
+                              onClick={handleEnablePush}
+                              className={cn(
+                                'flex-1 h-10 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all disabled:opacity-50 active:scale-[0.99]',
+                                isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              )}
+                            >
+                              Enable
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => dismissPushPrompt()}
+                              className={cn(
+                                'h-10 px-4 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.99]',
+                                isDark ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                              )}
+                            >
+                              Later
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Quick summary (makes the dashboard feel alive immediately) */}
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className={cn('grid grid-cols-3 gap-2.5 mb-6')}>
                     {[
