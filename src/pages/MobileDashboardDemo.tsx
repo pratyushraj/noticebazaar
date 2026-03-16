@@ -2206,54 +2206,52 @@ const MobileDashboardDemo = ({
                     {/* ─── COLLABS TAB ─── */}
                     {activeTab === 'collabs' && (
                         <div className="px-5 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-                            {/* Toggle Header (hide when viewing an offer/deal brief) */}
-                            {!selectedItem && (
-                                <div className={cn(
-                                    "sticky top-0 z-20 -mx-5 px-5 pt-2 pb-4 mb-6",
-                                    isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-white/10" : "bg-white/80 backdrop-blur-xl border-b border-slate-100"
-                                )}>
-                                    <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                        <button
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                setCollabSubTab('active');
-                                                const next = new URLSearchParams(searchParams);
-                                                next.set('tab', 'collabs');
-                                                next.set('subtab', 'active');
-                                                next.delete('requestId');
-                                                setSearchParams(next, { replace: true });
-                                            }}
-                                            className={cn(
-                                                "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
-                                                collabSubTab === 'active'
-                                                    ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
-                                                    : cn("opacity-40", textColor)
-                                            )}
-                                        >
-                                            Active ({activeDealsCount})
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                setCollabSubTab('pending');
-                                                const next = new URLSearchParams(searchParams);
-                                                next.set('tab', 'collabs');
-                                                next.set('subtab', 'pending');
-                                                next.delete('requestId');
-                                                setSearchParams(next, { replace: true });
-                                            }}
-                                            className={cn(
-                                                "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
-                                                collabSubTab === 'pending'
-                                                    ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
-                                                    : cn("opacity-40", textColor)
-                                            )}
-                                        >
-                                            Pending ({pendingOffersCount})
-                                        </button>
-                                    </div>
+                            {/* Toggle Header */}
+                            <div className={cn(
+                                "sticky top-0 z-20 -mx-5 px-5 pt-2 pb-4 mb-6",
+                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-white/10" : "bg-white/80 backdrop-blur-xl border-b border-slate-100"
+                            )}>
+                                <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                    <button
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            setCollabSubTab('active');
+                                            const next = new URLSearchParams(searchParams);
+                                            next.set('tab', 'collabs');
+                                            next.set('subtab', 'active');
+                                            next.delete('requestId');
+                                            setSearchParams(next, { replace: true });
+                                        }}
+                                        className={cn(
+                                            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
+                                            collabSubTab === 'active'
+                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                : cn("opacity-40", textColor)
+                                        )}
+                                    >
+                                        Active ({activeDealsCount})
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            setCollabSubTab('pending');
+                                            const next = new URLSearchParams(searchParams);
+                                            next.set('tab', 'collabs');
+                                            next.set('subtab', 'pending');
+                                            next.delete('requestId');
+                                            setSearchParams(next, { replace: true });
+                                        }}
+                                        className={cn(
+                                            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
+                                            collabSubTab === 'pending'
+                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                : cn("opacity-40", textColor)
+                                        )}
+                                    >
+                                        Pending ({pendingOffersCount})
+                                    </button>
                                 </div>
-                            )}
+                            </div>
 
                             <AnimatePresence mode="wait">
                                 {collabSubTab === 'active' ? (
