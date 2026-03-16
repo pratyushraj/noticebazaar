@@ -2860,19 +2860,22 @@ const MobileDashboardDemo = ({
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                            className="fixed inset-0 z-[200] flex flex-col overflow-hidden relative"
+                            className="fixed inset-0 z-[200] flex flex-col overflow-hidden relative isolate"
                             style={{ backgroundColor: bgColor }}
                         >
+                            {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
+                            <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
+
                             {/* Background gradient + blobs (match brand dashboard vibe) */}
                             {isDark ? (
-                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
                                     <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
                                     <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
                                     <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
                                     <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
                                 </div>
                             ) : (
-                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
                                     <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
                                 </div>
                             )}
