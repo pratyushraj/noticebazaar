@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
@@ -2863,7 +2864,8 @@ const MobileDashboardDemo = ({
                 </AnimatePresence>
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
-                <AnimatePresence>
+                {typeof document !== 'undefined' && createPortal(
+                    <AnimatePresence>
                     {selectedItem && (
                         <motion.div
                             initial={{ x: '100%' }}
@@ -3511,7 +3513,9 @@ const MobileDashboardDemo = ({
                             </AnimatePresence>
                         </motion.div>
                     )}
-                </AnimatePresence>
+                    </AnimatePresence>,
+                    document.body
+                )}
             </div>
 
             {/* Creator Signing Modal */}
