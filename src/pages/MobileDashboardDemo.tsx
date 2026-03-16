@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
@@ -2327,16 +2326,6 @@ const MobileDashboardDemo = ({
                                         exit={{ opacity: 0, x: -10 }}
                                         className="space-y-4"
                                     >
-                                        <div className="flex items-center justify-between mb-5">
-                                            <div>
-                                                <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>Pending Offers</h2>
-                                                <p className={cn("text-[11px] font-medium opacity-50", textColor)}>{pendingOffersCount} opportunities waiting</p>
-                                            </div>
-                                            <div className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-[10px] font-black tracking-widest uppercase">
-                                                Active Inbox
-                                            </div>
-                                        </div>
-
                                         {pendingOffersCount > 0 ? (
                                             <div className="space-y-4">
                                                 {collabRequests.slice(0, 10).map((req: any, idx: number) => {
@@ -2864,8 +2853,7 @@ const MobileDashboardDemo = ({
                 </AnimatePresence>
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
-                {typeof document !== 'undefined' && createPortal(
-                    <AnimatePresence>
+                <AnimatePresence>
                     {selectedItem && (
                         <motion.div
                             initial={{ x: '100%' }}
@@ -3513,9 +3501,7 @@ const MobileDashboardDemo = ({
                             </AnimatePresence>
                         </motion.div>
                     )}
-                    </AnimatePresence>,
-                    document.body
-                )}
+                </AnimatePresence>
             </div>
 
             {/* Creator Signing Modal */}
