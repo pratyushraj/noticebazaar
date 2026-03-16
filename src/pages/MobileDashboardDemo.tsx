@@ -424,9 +424,9 @@ const MobileDashboardDemo = ({
     const isDark = theme === 'dark';
     // Brand-like background base (gradient overlays applied in JSX below)
     const bgColor = isDark ? '#061318' : '#FFFFFF';
-    const cardBgColor = isDark ? 'bg-slate-900' : 'bg-white';
-    const borderColor = isDark ? 'border-slate-800' : 'border-slate-200';
-    const secondaryTextColor = isDark ? 'text-slate-400' : 'text-slate-500';
+    const cardBgColor = isDark ? 'bg-white/5 backdrop-blur-md' : 'bg-white';
+    const borderColor = isDark ? 'border-white/10' : 'border-slate-200';
+    const secondaryTextColor = isDark ? 'text-white/60' : 'text-slate-500';
     const textColor = isDark ? 'text-white' : 'text-slate-900';
 
     const shouldShowPushPrompt =
@@ -2888,7 +2888,7 @@ const MobileDashboardDemo = ({
                             {/* Fixed Header */}
                             <div className={cn(
                                 "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
-                                isDark ? "bg-[#0B0F14]/95 backdrop-blur-md border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
+                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
                             )}>
                                 <div className="flex items-center gap-3">
                                     <button
