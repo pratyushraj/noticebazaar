@@ -7,6 +7,7 @@ import {
   CreditCard,
   Handshake,
   LayoutDashboard,
+  Loader2,
   LogOut,
   MessageCircle,
   Menu,
@@ -44,6 +45,7 @@ type BrandMobileDashboardProps = {
   stats?: BrandDashboardStats;
   initialTab?: BrandTab;
   isLoading?: boolean;
+  onRefresh?: () => Promise<void>;
   onLogout?: () => void | Promise<void>;
 };
 
@@ -83,10 +85,14 @@ const BrandMobileDashboard = ({
   stats,
   initialTab = 'dashboard',
   isLoading = false,
+  onRefresh,
   onLogout,
 }: BrandMobileDashboardProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<BrandTab>(initialTab);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [startY, setStartY] = useState(0);
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -292,7 +298,55 @@ const BrandMobileDashboard = ({
         </div>
       )}
 
-      <div className="h-full overflow-y-auto overflow-x-hidden relative z-10 pb-[110px] scrollbar-hide">
+      {/* Pull-to-refresh indicator */}
+      <div
+        className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-[60]"
+        style={{ transform: `translateY(${pullDistance - 44}px)`, opacity: pullDistance > 10 ? 1 : 0 }}
+      >
+        <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shadow-lg border', isDark ? 'bg-[#0B0F14]/90 border-white/10' : 'bg-white/90 border-slate-200')}>
+          {isRefreshing ? <Loader2 className={cn('w-5 h-5 animate-spin', isDark ? 'text-white/60' : 'text-slate-500')} /> : <div className={cn('w-2.5 h-2.5 rounded-full', isDark ? 'bg-emerald-400/70' : 'bg-emerald-600/70')} />}
+        </div>
+      </div>
+
+      <div
+        className="h-full overflow-y-auto overflow-x-hidden relative z-10 pb-[110px] scrollbar-hide"
+        onTouchStart={(e) => {
+          if (isRefreshing) return;
+          const target = e.currentTarget as HTMLDivElement;
+          if (target.scrollTop > 0) return;
+          if (e.touches.length !== 1) return;
+          setStartY(e.touches[0].clientY);
+        }}
+        onTouchMove={(e) => {
+          if (isRefreshing) return;
+          const target = e.currentTarget as HTMLDivElement;
+          if (target.scrollTop > 0) return;
+          if (startY <= 0) return;
+          const dy = e.touches[0].clientY - startY;
+          if (dy <= 0) return;
+          setPullDistance(Math.min(90, dy));
+        }}
+        onTouchEnd={async () => {
+          if (isRefreshing) return;
+          const shouldRefresh = pullDistance > 60;
+          setStartY(0);
+          setPullDistance(0);
+          if (!shouldRefresh || !onRefresh) return;
+
+          setIsRefreshing(true);
+          try {
+            await onRefresh();
+          } finally {
+            setIsRefreshing(false);
+          }
+        }}
+        onScroll={(e) => {
+          if ((e.currentTarget as HTMLDivElement).scrollTop > 10 && pullDistance > 0) {
+            setPullDistance(0);
+            setStartY(0);
+          }
+        }}
+      >
         <div className="max-w-md md:max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -869,13 +923,13 @@ const BrandMobileDashboard = ({
                   </div>
 
                   <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#1C1C1E] divide-[#2C2C2E]' : 'bg-white divide-[#E5E5EA] shadow-sm', 'divide-y')}>
-                    <button onClick={() => toast.message('Brand profile', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                    <button onClick={() => navigate('/brand-settings')} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
                       <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-500/15 text-emerald-700')}>
-                        <User className="w-5 h-5" />
+                        <Settings className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Brand profile</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Logo, website, and preferences</p>
+                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Brand settings</p>
+                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Profile, website, and preferences</p>
                       </div>
                       <ChevronRight className="w-5 h-5 opacity-20" />
                     </button>

@@ -39,7 +39,11 @@ const BrandDashboard = () => {
     return 'dashboard' as const;
   }, [location.pathname]);
 
-  const { data: requests = [], isLoading: isLoadingRequests } = useSupabaseQuery(
+  const {
+    data: requests = [],
+    isLoading: isLoadingRequests,
+    refetch: refetchRequests,
+  } = useSupabaseQuery(
     ['brandRequests', user?.id],
     async () => {
       if (!user?.id) return [];
@@ -123,7 +127,11 @@ const BrandDashboard = () => {
     { enabled: !!user?.id }
   );
 
-  const { data: deals = [], isLoading: isLoadingDeals } = useSupabaseQuery(
+  const {
+    data: deals = [],
+    isLoading: isLoadingDeals,
+    refetch: refetchDeals,
+  } = useSupabaseQuery(
     ['brandDeals', user?.id],
     async () => {
       if (!user?.id) return [];
@@ -208,6 +216,10 @@ const BrandDashboard = () => {
     navigate('/login');
   };
 
+  const handleRefresh = async () => {
+    await Promise.all([refetchRequests(), refetchDeals()]);
+  };
+
   return (
     <BrandMobileDashboard
       profile={profile}
@@ -216,6 +228,7 @@ const BrandDashboard = () => {
       stats={stats}
       initialTab={initialTab}
       isLoading={isLoading}
+      onRefresh={handleRefresh}
       onLogout={handleLogout}
     />
   );
