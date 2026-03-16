@@ -244,7 +244,20 @@ const MobileDashboardDemo = ({
         ? normalizedUsername
         : '';
     const username = instagramHandle || usernameFallback || 'creator';
-    const avatarUrl = liveCollabProfile?.profile_photo || profile?.instagram_profile_photo || profile?.avatar_url || 'https://i.pravatar.cc/150?img=47';
+    const avatarFallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=10B981&color=fff`;
+    const resolveAvatarUrl = (candidate: any) => {
+        const raw = String(candidate || '').trim();
+        if (!raw) return '';
+        if (/^(https?:)?\/\//i.test(raw)) return raw.startsWith('//') ? `https:${raw}` : raw;
+        if (/^(data:|blob:)/i.test(raw)) return raw;
+        // Avoid relative/non-URL values which commonly break on iOS (renders as a "?" placeholder).
+        return '';
+    };
+    const avatarUrl =
+        resolveAvatarUrl(liveCollabProfile?.profile_photo) ||
+        resolveAvatarUrl(profile?.instagram_profile_photo) ||
+        resolveAvatarUrl(profile?.avatar_url) ||
+        avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
     const activeDealsCount = (brandDeals || []).length;
     const pendingOffersCount = (collabRequests || []).length;
@@ -1404,7 +1417,15 @@ const MobileDashboardDemo = ({
 
                                         {/* Avatar */}
                                         <button onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
-                                            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                                            <img
+                                                src={avatarUrl}
+                                                alt="avatar"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    (e.currentTarget as HTMLImageElement).onerror = null;
+                                                    (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                                }}
+                                            />
                                         </button>
                                     </div>
                                 </div>
@@ -2192,7 +2213,15 @@ const MobileDashboardDemo = ({
                                                 )}>
                                                     <div className="relative">
                                                         <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-md">
-                                                            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                                                            <img
+                                                                src={avatarUrl}
+                                                                alt="avatar"
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    (e.currentTarget as HTMLImageElement).onerror = null;
+                                                                    (e.currentTarget as HTMLImageElement).src = avatarFallbackUrl;
+                                                                }}
+                                                            />
                                                         </div>
                                                         <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                                                             <Camera className="w-3.5 h-3.5 text-white" />
