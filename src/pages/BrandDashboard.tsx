@@ -39,7 +39,7 @@ const BrandDashboard = () => {
     return 'dashboard' as const;
   }, [location.pathname]);
 
-  const { data: requests = [] } = useSupabaseQuery(
+  const { data: requests = [], isLoading: isLoadingRequests } = useSupabaseQuery(
     ['brandRequests', user?.id],
     async () => {
       if (!user?.id) return [];
@@ -123,7 +123,7 @@ const BrandDashboard = () => {
     { enabled: !!user?.id }
   );
 
-  const { data: deals = [] } = useSupabaseQuery(
+  const { data: deals = [], isLoading: isLoadingDeals } = useSupabaseQuery(
     ['brandDeals', user?.id],
     async () => {
       if (!user?.id) return [];
@@ -193,6 +193,8 @@ const BrandDashboard = () => {
     { enabled: !!user?.id }
   );
 
+  const isLoading = Boolean(isLoadingRequests || isLoadingDeals);
+
   const stats = useMemo(() => {
     const totalSent = requests.length;
     const activeDeals = deals.filter((d: any) => d.status !== 'completed' && d.status !== 'cancelled').length;
@@ -213,10 +215,10 @@ const BrandDashboard = () => {
       deals={deals}
       stats={stats}
       initialTab={initialTab}
+      isLoading={isLoading}
       onLogout={handleLogout}
     />
   );
 };
 
 export default BrandDashboard;
-
