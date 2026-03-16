@@ -25,8 +25,21 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   process.exit(1);
 }
 
-const DEMO_BRAND_EMAIL = 'brand-demo@noticebazaar.com';
-const TARGET_CREATOR_EMAIL = 'notice2@yopmail.com';
+const getArg = (name: string) => {
+  const idx = process.argv.findIndex((a) => a === `--${name}`);
+  if (idx === -1) return undefined;
+  return process.argv[idx + 1];
+};
+
+const toNumber = (value: any) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+};
+
+const DEMO_BRAND_EMAIL = getArg('brand-email') || 'brand-demo@noticebazaar.com';
+const TARGET_CREATOR_EMAIL = getArg('to') || 'notice2@yopmail.com';
+const OFFER_AMOUNT = toNumber(getArg('amount')) ?? 1200;
+const DEADLINE_DAYS = toNumber(getArg('deadline-days')) ?? 10;
 const PUSH_API_BASE_URL = (process.env.PUSH_API_BASE_URL || process.env.API_BASE_URL || 'https://noticebazaar-api.onrender.com').replace(/\/$/, '');
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
@@ -95,12 +108,12 @@ async function main() {
     brand_name: 'Demo Brand Co',
     brand_email: DEMO_BRAND_EMAIL,
     collab_type: 'paid',
-    exact_budget: 15000,
-    budget_range: '10k-25k',
+    exact_budget: OFFER_AMOUNT,
+    budget_range: OFFER_AMOUNT <= 2000 ? '1k-2k' : OFFER_AMOUNT <= 5000 ? '2k-5k' : OFFER_AMOUNT <= 10000 ? '5k-10k' : '10k+',
     campaign_description: 'Demo campaign: 1 Reel + 2 Stories (7-day usage).',
     deliverables: ['1 Reel', '2 Stories'],
     usage_rights: true,
-    deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    deadline: new Date(Date.now() + DEADLINE_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
     status: 'pending',
     submitted_ip: '127.0.0.1',
     submitted_user_agent: 'demo-script',
