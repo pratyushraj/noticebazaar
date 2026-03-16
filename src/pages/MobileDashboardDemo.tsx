@@ -20,22 +20,6 @@ import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/util
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
 
-let itemDetailPortalRoot: HTMLElement | null = null;
-const getItemDetailPortalRoot = () => {
-    if (typeof document === 'undefined') return null;
-    if (itemDetailPortalRoot && document.body.contains(itemDetailPortalRoot)) return itemDetailPortalRoot;
-    const existing = document.getElementById('nb-item-detail-root');
-    if (existing) {
-        itemDetailPortalRoot = existing;
-        return existing;
-    }
-    const el = document.createElement('div');
-    el.id = 'nb-item-detail-root';
-    document.body.appendChild(el);
-    itemDetailPortalRoot = el;
-    return el;
-};
-
 interface MobileDashboardProps {
     profile?: any;
     collabRequests?: any[];
@@ -320,6 +304,7 @@ const MobileDashboardDemo = ({
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
+    const [itemDetailPortalRoot, setItemDetailPortalRoot] = useState<HTMLElement | null>(null);
 
     // Signing states
     const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
@@ -478,6 +463,20 @@ const MobileDashboardDemo = ({
         document.body.style.backgroundColor = bgColor;
         return () => { if (meta && orig) meta.setAttribute('content', orig); };
     }, [theme, bgColor]);
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        const existing = document.getElementById('nb-item-detail-root') as HTMLElement | null;
+        if (existing) {
+            setItemDetailPortalRoot(existing);
+            return;
+        }
+        const el = document.createElement('div');
+        el.id = 'nb-item-detail-root';
+        document.body.appendChild(el);
+        setItemDetailPortalRoot(el);
+        // Keep node for the app lifetime to avoid iOS unmount race conditions.
+    }, []);
 
     const { session, user, refetchProfile } = useSession();
 
@@ -2420,7 +2419,15 @@ const MobileDashboardDemo = ({
                                                                 </div>
 
                                                                 <div className="flex gap-2">
-                                                                    <button className={cn("px-4 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all")}>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            triggerHaptic();
+                                                                            setSelectedItem(req);
+                                                                            setSelectedType('offer');
+                                                                        }}
+                                                                        className={cn("px-4 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all")}
+                                                                    >
                                                                         Accept Offer
                                                                     </button>
                                                                 </div>
@@ -2881,7 +2888,7 @@ const MobileDashboardDemo = ({
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
                 {(() => {
-                    const portalRoot = getItemDetailPortalRoot();
+                    const portalRoot = itemDetailPortalRoot;
                     const overlay = (
                         <AnimatePresence>
                             {selectedItem && (
