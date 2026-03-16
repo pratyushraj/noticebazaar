@@ -122,7 +122,7 @@ const BrandMobileDashboard = ({
   const isDark = theme === 'dark';
   const textColor = isDark ? 'text-white' : 'text-slate-900';
   const secondaryTextColor = isDark ? 'text-white/50' : 'text-slate-500';
-  const bgColor = isDark ? 'bg-black' : 'bg-slate-50';
+  const bgColor = isDark ? 'bg-[#061318]' : 'bg-white';
   const borderColor = isDark ? 'border-white/10' : 'border-slate-200';
   const cardBgColor = isDark ? 'bg-white/5' : 'bg-white';
 
@@ -138,7 +138,7 @@ const BrandMobileDashboard = ({
   const brandLogo = useMemo(() => {
     const src = profile?.avatar_url || profile?.logo_url;
     if (src) return src;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(brandName)}&background=0D8ABC&color=fff`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(brandName)}&background=10B981&color=fff`;
   }, [profile, brandName]);
 
   const displayStats: BrandDashboardStats = useMemo(() => {
@@ -257,11 +257,19 @@ const BrandMobileDashboard = ({
   };
 
   return (
-    <div className={cn('fixed inset-0 font-sans selection:bg-blue-500/30 overflow-hidden', bgColor, textColor)}>
+    <div className={cn('fixed inset-0 font-sans selection:bg-emerald-500/25 overflow-hidden', bgColor, textColor)}>
       {isDark && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[120px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
+          <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
+          <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
+          <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
+        </div>
+      )}
+
+      {!isDark && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
         </div>
       )}
 
@@ -355,7 +363,7 @@ const BrandMobileDashboard = ({
                           <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'text-white/40' : 'text-slate-500')}>
                             Updates
                           </p>
-                          <div className={cn('h-1.5 w-1.5 rounded-full animate-pulse', isDark ? 'bg-blue-500' : 'bg-blue-600')} />
+                          <div className={cn('h-1.5 w-1.5 rounded-full animate-pulse', isDark ? 'bg-emerald-400' : 'bg-emerald-600')} />
                         </div>
                         <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 -mr-1 custom-scrollbar">
                           {notifications.map((n: any) => (
@@ -488,8 +496,8 @@ const BrandMobileDashboard = ({
                       <Plus size={120} />
                     </div>
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                        <Plus className="w-5 h-5 text-blue-500" />
+                      <div className="w-10 h-10 rounded-2xl bg-emerald-500/12 flex items-center justify-center">
+                        <Plus className={cn('w-5 h-5', isDark ? 'text-emerald-300' : 'text-emerald-600')} />
                       </div>
                       <div>
                         <h3 className={cn('text-[15px] font-bold tracking-tight', textColor)}>Quick actions</h3>
@@ -505,7 +513,7 @@ const BrandMobileDashboard = ({
                         onClick={() => { triggerHaptic(HapticPatterns.success); setShowActionSheet(true); }}
                         className={cn(
                           'flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]',
-                          isDark ? 'bg-blue-600/95 border-blue-500/40 hover:bg-blue-600 text-white shadow-[0_10px_35px_rgba(59,130,246,0.25)]' : 'bg-slate-900 border-slate-900 hover:bg-slate-800 text-white shadow-lg'
+                          isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
                         )}
                       >
                         <Send className="w-4 h-4 mb-2 opacity-90" />
@@ -529,7 +537,7 @@ const BrandMobileDashboard = ({
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Deals</h2>
                       </div>
-                      <button onClick={() => setActiveTab('deals')} className={cn('text-[12px] font-bold', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                      <button onClick={() => setActiveTab('deals')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
@@ -555,7 +563,7 @@ const BrandMobileDashboard = ({
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
-                    <button onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                    <button onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                       Back
                     </button>
                   </div>
@@ -580,7 +588,7 @@ const BrandMobileDashboard = ({
                     {offers.length === 0 ? (
                       <div className="p-8 text-center">
                         <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No offers yet</p>
-                        <Button type="button" onClick={() => setShowActionSheet(true)} className={cn('mt-4 rounded-2xl', isDark ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white')}>
+                        <Button type="button" onClick={() => setShowActionSheet(true)} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
                           <Send className="w-4 h-4 mr-2" /> Send new offer
                         </Button>
                       </div>
@@ -656,7 +664,7 @@ const BrandMobileDashboard = ({
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Creators</h2>
-                    <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-blue-400' : 'text-blue-600')}>
+                    <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                       Browse
                     </button>
                   </div>
@@ -698,7 +706,7 @@ const BrandMobileDashboard = ({
                             </button>
                             <button
                               onClick={() => { triggerHaptic(HapticPatterns.success); setShowActionSheet(true); }}
-                              className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white')}
+                              className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white')}
                             >
                               Send offer
                             </button>
@@ -714,7 +722,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[13px] font-bold', textColor)}>Find creators to collaborate with.</p>
                         <p className={cn('text-[12px] opacity-60 mt-2', textColor)}>Browse our creator database and send your first offer.</p>
                         <div className="flex flex-col gap-2 mt-5">
-                          <Button type="button" onClick={() => navigate('/creators')} className={cn('rounded-2xl', isDark ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white')}>
+                          <Button type="button" onClick={() => navigate('/creators')} className={cn('rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
                             <User className="w-4 h-4 mr-2" /> Browse creators
                           </Button>
                           <Button
@@ -812,7 +820,7 @@ const BrandMobileDashboard = ({
                     </button>
 
                     <button onClick={() => toast.message('Team members', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-500/15 text-purple-700')}>
+                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-500/15 text-sky-700')}>
                         <Users className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0 text-left">
@@ -874,7 +882,7 @@ const BrandMobileDashboard = ({
           </motion.button>
 
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { triggerHaptic(HapticPatterns.success); setShowActionSheet(true); }} className="relative flex flex-col items-center -mt-8">
-            <div className={cn('w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110', isDark ? 'bg-blue-600 border-4 border-[#0B0F14] text-white shadow-[0_4px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.4)] ring-1 ring-blue-400/30' : 'bg-slate-900 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-slate-200')}>
+            <div className={cn('w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#061318] text-white shadow-[0_4px_30px_rgba(16,185,129,0.28)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.20)] ring-1 ring-emerald-300/30' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-slate-200')}>
               <Plus className="w-7 h-7" />
             </div>
             <span className={cn('text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap', isDark ? 'text-slate-400' : 'text-slate-600')}>Create</span>
@@ -917,7 +925,7 @@ const BrandMobileDashboard = ({
                     onClick={() => { setShowActionSheet(false); navigate('/brand-console-demo'); }}
                     className={cn(
                       'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
-                      isDark ? 'bg-blue-600/95 border-blue-500/40 hover:bg-blue-600 text-white shadow-[0_10px_35px_rgba(59,130,246,0.25)]' : 'bg-slate-900 border-slate-900 hover:bg-slate-800 text-white shadow-lg'
+                      isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
                     )}
                   >
                     <div className="flex items-center gap-3">
