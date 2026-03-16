@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
@@ -2853,16 +2854,18 @@ const MobileDashboardDemo = ({
                 </AnimatePresence>
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
-                <AnimatePresence>
-                    {selectedItem && (
-                        <motion.div
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                            className="fixed inset-0 z-[200] flex flex-col overflow-hidden relative isolate"
-                            style={{ backgroundColor: bgColor }}
-                        >
+                {(() => {
+                    const node = (
+                        <AnimatePresence>
+                            {selectedItem && (
+                                <motion.div
+                                    initial={{ x: '100%' }}
+                                    animate={{ x: 0 }}
+                                    exit={{ x: '100%' }}
+                                    transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
+                                    className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
+                                    style={{ backgroundColor: bgColor }}
+                                >
                             {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
                             <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
 
@@ -3412,7 +3415,7 @@ const MobileDashboardDemo = ({
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
                                             onClick={() => setShowItemMenu(false)}
-                                            className="fixed inset-0 z-[220] bg-black/40 backdrop-blur-md"
+                                            className="fixed inset-0 z-[20100] bg-black/40 backdrop-blur-md"
                                         />
                                         <motion.div
                                             initial={{ y: '100%' }}
@@ -3420,7 +3423,7 @@ const MobileDashboardDemo = ({
                                             exit={{ y: '100%' }}
                                             transition={{ type: 'spring', damping: 26, stiffness: 220 }}
                                             className={cn(
-                                                "fixed bottom-0 inset-x-0 z-[230] rounded-t-[2.25rem] border-t p-5 pb-safe shadow-2xl",
+                                                "fixed bottom-0 inset-x-0 z-[20110] rounded-t-[2.25rem] border-t p-5 pb-safe shadow-2xl",
                                                 isDark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-200"
                                             )}
                                         >
@@ -3502,9 +3505,12 @@ const MobileDashboardDemo = ({
                                     </>
                                 )}
                             </AnimatePresence>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    );
+                    return typeof document !== 'undefined' ? createPortal(node, document.body) : node;
+                })()}
             </div>
 
             {/* Creator Signing Modal */}
