@@ -136,15 +136,20 @@ const CreatorsDirectory = () => {
       {/* Breadcrumb Schema */}
       <BreadcrumbSchema items={breadcrumbItems} />
 
-	      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
-	        <div className="container mx-auto px-4 py-12">
+	      <div className="min-h-screen text-slate-900 bg-white relative overflow-hidden">
+          {/* Brand theme background (green/white/blue) */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.16),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.14),transparent_60%)]" />
+            <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-emerald-50/80 via-sky-50/40 to-transparent" />
+          </div>
+	        <div className="container mx-auto px-4 py-12 relative">
             {/* Signed-in navigation affordance (mobile-first) */}
             {session && (
-              <div className="sticky top-0 z-40 -mx-4 px-4 pt-[max(0px,env(safe-area-inset-top,0px))] pb-3 mb-4 bg-gradient-to-b from-black/25 via-black/10 to-transparent backdrop-blur-sm">
+              <div className="sticky top-0 z-40 -mx-4 px-4 pt-[max(0px,env(safe-area-inset-top,0px))] pb-3 mb-4 bg-gradient-to-b from-white/80 via-white/60 to-transparent backdrop-blur-md">
                 <button
                   type="button"
                   onClick={() => navigate(dashboardPath)}
-                  className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/10 border border-white/20 hover:bg-white/15 active:scale-[0.99] transition-all text-[12px] font-bold"
+                  className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/70 border border-slate-200 hover:bg-white active:scale-[0.99] transition-all text-[12px] font-bold text-slate-900 shadow-sm"
                   aria-label="Back to dashboard"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -155,10 +160,10 @@ const CreatorsDirectory = () => {
             )}
           {/* SEO Content */}
           <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-emerald-700 via-sky-700 to-emerald-600 text-transparent bg-clip-text">
               {category && category !== 'all' ? `${category} Creators` : 'Creator Directory'}
             </h1>
-            <p className="text-xl text-purple-200 mb-6 leading-relaxed">
+            <p className="text-xl text-slate-600 mb-6 leading-relaxed">
               {category && category !== 'all'
                 ? `Discover verified ${category} creators and influencers. Browse profiles, view platforms, and connect with creators for brand collaborations.`
                 : 'Discover verified creators and influencers across all categories. Browse profiles, view platforms, and connect with creators for brand collaborations and partnerships.'}
@@ -171,8 +176,8 @@ const CreatorsDirectory = () => {
               <Badge
                 variant={!category || category === 'all' ? 'default' : 'outline'}
                 className={`cursor-pointer ${!category || category === 'all'
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-white/5 text-purple-200 border-white/20 hover:bg-white/10'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-white/70 text-slate-700 border-slate-200 hover:bg-white'
                   }`}
               >
                 All Categories
@@ -183,8 +188,8 @@ const CreatorsDirectory = () => {
                 <Badge
                   variant={category === cat ? 'default' : 'outline'}
                   className={`cursor-pointer ${category === cat
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white/5 text-purple-200 border-white/20 hover:bg-white/10'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white/70 text-slate-700 border-slate-200 hover:bg-white'
                     }`}
                 >
                   {cat}
@@ -195,29 +200,29 @@ const CreatorsDirectory = () => {
 
           {/* Search */}
           <div className="mb-8 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-300" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-600" />
             <Input
               type="text"
               placeholder="Search creators by name, username, or category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 py-3 bg-white/10 backdrop-blur-md text-white placeholder:text-purple-300/60 border-white/20"
+              className="w-full pl-10 py-3 bg-white/80 backdrop-blur-md text-slate-900 placeholder:text-slate-500 border-slate-200 shadow-sm"
             />
           </div>
 
           {/* Creators Grid */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
             </div>
           ) : filteredCreators.length === 0 ? (
-            <Card className="bg-white/5 backdrop-blur-md border-white/10">
+            <Card className="bg-white/80 backdrop-blur-md border-slate-200 shadow-sm">
               <CardContent className="p-12 text-center">
-                <Users className="h-12 w-12 text-purple-400 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold text-white mb-2">
+                <Users className="h-12 w-12 text-emerald-600 mx-auto mb-4 opacity-50" />
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
                   No creators found
                 </h3>
-                <p className="text-purple-200">
+                <p className="text-slate-600">
                   {searchTerm ? 'Try a different search term.' : 'No creators available in this category yet.'}
                 </p>
               </CardContent>
@@ -236,40 +241,40 @@ const CreatorsDirectory = () => {
 	                      navigate(`/creator/${creator.username}`);
 	                    }
 	                  }}
-	                  className="outline-none focus-visible:ring-2 focus-visible:ring-purple-300/40 rounded-xl"
+	                  className="outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 rounded-xl"
 	                >
-	                  <Card className="bg-white/10 backdrop-blur-md border-white/20 hover:border-purple-400/50 transition-all duration-200 hover:scale-[1.02] cursor-pointer h-full">
+	                  <Card className="bg-white/80 backdrop-blur-md border-slate-200 hover:border-emerald-300 transition-all duration-200 hover:scale-[1.02] cursor-pointer h-full shadow-sm">
 	                    <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-white mb-1">
+                          <h3 className="text-xl font-bold text-slate-900 mb-1">
                             {creator.name}
                           </h3>
-                          <p className="text-sm text-purple-300">@{creator.username}</p>
+                          <p className="text-sm text-sky-700">@{creator.username}</p>
                         </div>
                         {creator.category && (
-                          <Badge className="bg-purple-600/30 text-purple-200 border-purple-400/30">
+                          <Badge className="bg-emerald-500/10 text-emerald-800 border-emerald-200">
                             {creator.category}
                           </Badge>
                         )}
                       </div>
 
                       {creator.bio && (
-                        <p className="text-purple-200 text-sm mb-4 line-clamp-2">
+                        <p className="text-slate-600 text-sm mb-4 line-clamp-2">
                           {creator.bio}
                         </p>
                       )}
 
                       {creator.platforms.length > 0 && (
                         <div className="space-y-2">
-                          <p className="text-xs text-purple-300 font-medium">Platforms:</p>
+                          <p className="text-xs text-slate-500 font-medium">Platforms:</p>
                           <div className="flex flex-wrap gap-2">
                             {creator.platforms.map((platform, idx) => {
                               const isInstagram = platform.name.toLowerCase() === 'instagram';
                               return (
                                 <div
                                   key={idx}
-                                  className={`flex items-center gap-1 text-xs text-purple-200 bg-white/5 px-2 py-1 rounded ${isInstagram && platform.handle ? 'hover:bg-white/10 transition-colors' : ''}`}
+                                  className={`flex items-center gap-1 text-xs text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200 ${isInstagram && platform.handle ? 'hover:bg-white transition-colors' : ''}`}
                                 >
                                   {getPlatformIcon(platform.name)}
                                   {isInstagram && platform.handle ? (
@@ -277,7 +282,7 @@ const CreatorsDirectory = () => {
                                       href={`https://instagram.com/${platform.handle.replace('@', '')}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center gap-1 hover:text-white transition-colors"
+                                      className="flex items-center gap-1 hover:text-slate-900 transition-colors"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       <span>@{platform.handle.replace('@', '')}</span>
@@ -286,7 +291,7 @@ const CreatorsDirectory = () => {
                                     <>
                                       <span>{platform.name}</span>
                                       {platform.followers && (
-                                        <span className="text-purple-300">
+                                        <span className="text-slate-500">
                                           {platform.followers >= 1000
                                             ? `${(platform.followers / 1000).toFixed(1)}K`
                                             : platform.followers}
@@ -302,8 +307,8 @@ const CreatorsDirectory = () => {
                       )}
 
 	                      <Button
-	                        className="w-full mt-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-	                        onClick={(e) => {
+	                        className="w-full mt-4 bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-700 hover:to-sky-700 text-white"
+		                        onClick={(e) => {
 	                          e.preventDefault();
 	                          e.stopPropagation();
 	                          navigate(`/creator/${creator.username}`);
@@ -319,15 +324,15 @@ const CreatorsDirectory = () => {
           )}
 
           {/* SEO Footer Content */}
-          <div className="mt-12 bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <h2 className="text-2xl font-bold text-white mb-4">
+          <div className="mt-12 bg-white/80 backdrop-blur-md rounded-xl p-6 border border-slate-200 shadow-sm">
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">
               About the Creator Directory
             </h2>
-            <p className="text-purple-200 leading-relaxed mb-4">
+            <p className="text-slate-600 leading-relaxed mb-4">
               Our creator directory helps brands discover verified influencers and content creators for collaborations.
               All creators listed have verified profiles and can be contacted through secure collaboration links.
             </p>
-            <p className="text-purple-200 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed">
               {category && category !== 'all'
                 ? `Browse ${category} creators to find the perfect match for your brand. Each creator profile includes platform information, follower counts, and collaboration details.`
                 : 'Browse creators by category to find influencers in fashion, tech, fitness, food, travel, and more. Each creator profile includes platform information and collaboration details.'}
