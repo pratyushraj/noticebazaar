@@ -2829,9 +2829,23 @@ const MobileDashboardDemo = ({
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                            className="fixed inset-0 z-[200] flex flex-col overflow-hidden"
+                            className="fixed inset-0 z-[200] flex flex-col overflow-hidden relative"
                             style={{ backgroundColor: bgColor }}
                         >
+                            {/* Background gradient + blobs (match brand dashboard vibe) */}
+                            {isDark ? (
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
+                                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
+                                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
+                                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
+                                </div>
+                            ) : (
+                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+                                    <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
+                                </div>
+                            )}
+
                             {/* Fixed Header */}
                             <div className={cn(
                                 "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
@@ -2861,7 +2875,7 @@ const MobileDashboardDemo = ({
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40">
+                            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 relative z-10">
 
                                 {/* ── COMPACT BRAND HERO ── */}
                                 <div className={cn("rounded-2xl border p-4 mb-5", cardBgColor, borderColor)}>
