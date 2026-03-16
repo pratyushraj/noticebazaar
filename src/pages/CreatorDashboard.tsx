@@ -167,7 +167,7 @@ const CreatorDashboard = () => {
     checkProStatus();
   }, [user?.id]);
 
-  const { data: rawBrandDeals = [], isLoading: isLoadingDeals, error: brandDealsError } = useBrandDeals({
+  const { data: rawBrandDeals = [], isLoading: isLoadingDeals, error: brandDealsError, refetch: refetchBrandDeals } = useBrandDeals({
     creatorId: creatorId,
     enabled: !sessionLoading && !!creatorId,
   });
@@ -229,15 +229,19 @@ const CreatorDashboard = () => {
           creator_id: profile?.id,
           collab_type: req.collab_type || 'paid',
         });
-        if (data.needs_delivery_details) {
-          toast.success('Share delivery details to proceed');
-          await fetchPendingCollabRequestsPreview();
-          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}/delivery-details`);
-        } else {
-          toast.success(data.contract ? 'Contract generated and ready for signing' : 'Deal accepted!');
-          await fetchPendingCollabRequestsPreview();
-          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
-        }
+        toast.success(
+          data.needs_delivery_details
+            ? 'Deal accepted — add delivery details to proceed'
+            : (data.contract ? 'Deal accepted — contract ready' : 'Deal accepted!')
+        );
+
+        await Promise.all([
+          fetchPendingCollabRequestsPreview(),
+          refetchBrandDeals?.(),
+        ]);
+
+        // Keep creators inside the new mobile dashboard UI instead of bouncing to legacy pages.
+        navigate('/creator-dashboard?tab=collabs', { replace: true });
       } else {
         toast.error(data.error || 'Failed to accept request');
       }
