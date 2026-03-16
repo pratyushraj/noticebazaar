@@ -755,20 +755,45 @@ const ContractReadyPage = () => {
     }
   };
 
-  // Parse deliverables
+  const normalizeDeliverable = (deliverable: any): string => {
+    if (typeof deliverable === 'string') return deliverable;
+    if (!deliverable || typeof deliverable !== 'object') return String(deliverable ?? '');
+
+    const count = deliverable.count ?? deliverable.quantity;
+    const name = deliverable.name ?? deliverable.contentType ?? deliverable.type;
+    const platform = deliverable.platform;
+    if (name) {
+      const parts = [count ? String(count) : null, platform ? String(platform) : null, String(name)].filter(Boolean);
+      return parts.join(' ');
+    }
+
+    try {
+      return JSON.stringify(deliverable);
+    } catch {
+      return String(deliverable);
+    }
+  };
+
+  // Parse deliverables (supports both string[] and structured objects like { contentType, count }).
   const parseDeliverables = (): string[] => {
     if (!dealInfo?.deliverables) return [];
+
+    const coerceToList = (value: any): any[] => {
+      if (Array.isArray(value)) return value;
+      if (value === null || value === undefined) return [];
+      return [value];
+    };
 
     if (typeof dealInfo.deliverables === 'string') {
       try {
         const parsed = JSON.parse(dealInfo.deliverables);
-        return Array.isArray(parsed) ? parsed : [dealInfo.deliverables];
+        return coerceToList(parsed).map(normalizeDeliverable).filter(Boolean);
       } catch {
-        return [dealInfo.deliverables];
+        return [dealInfo.deliverables].map(normalizeDeliverable).filter(Boolean);
       }
     }
 
-    return Array.isArray(dealInfo.deliverables) ? dealInfo.deliverables : [];
+    return coerceToList(dealInfo.deliverables).map(normalizeDeliverable).filter(Boolean);
   };
 
   if (isLoading) {

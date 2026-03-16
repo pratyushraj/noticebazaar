@@ -28,13 +28,44 @@ interface CollabRequest {
   creator_id: string;
 }
 
-const parseDeliverables = (deliverables: string | string[]): string[] => {
-  if (Array.isArray(deliverables)) return deliverables;
-  try {
-    return JSON.parse(deliverables);
-  } catch {
-    return [];
+const normalizeDeliverable = (deliverable: any): string => {
+  if (typeof deliverable === 'string') return deliverable;
+  if (!deliverable || typeof deliverable !== 'object') return String(deliverable ?? '');
+
+  const count = deliverable.count ?? deliverable.quantity;
+  const name = deliverable.name ?? deliverable.contentType ?? deliverable.type;
+  const platform = deliverable.platform;
+  if (name) {
+    const parts = [count ? String(count) : null, platform ? String(platform) : null, String(name)].filter(Boolean);
+    return parts.join(' ');
   }
+
+  try {
+    return JSON.stringify(deliverable);
+  } catch {
+    return String(deliverable);
+  }
+};
+
+const parseDeliverables = (deliverables: any): string[] => {
+  if (!deliverables) return [];
+
+  const coerceToList = (value: any): any[] => {
+    if (Array.isArray(value)) return value;
+    if (value === null || value === undefined) return [];
+    return [value];
+  };
+
+  if (Array.isArray(deliverables)) return deliverables.map(normalizeDeliverable).filter(Boolean);
+  if (typeof deliverables === 'string') {
+    try {
+      const parsed = JSON.parse(deliverables);
+      return coerceToList(parsed).map(normalizeDeliverable).filter(Boolean);
+    } catch {
+      return [deliverables].map(normalizeDeliverable).filter(Boolean);
+    }
+  }
+  return coerceToList(deliverables).map(normalizeDeliverable).filter(Boolean);
 };
 
 const isHybrid = (collabType: CollabType) => collabType === 'hybrid' || collabType === 'both';

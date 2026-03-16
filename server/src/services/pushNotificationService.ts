@@ -315,7 +315,7 @@ export const notifyCreatorOnCollabRequestCreated = async ({
       const payload = JSON.stringify({
         title: '💼 New Brand Offer!',
         body: `${brandName} wants to collaborate with you. Tap to review.`,
-        url: '/collab-requests',
+        url: `/creator-dashboard?tab=collabs&requestId=${encodeURIComponent(requestId)}`,
         requestId,
       });
 
