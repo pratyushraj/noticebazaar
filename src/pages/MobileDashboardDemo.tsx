@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
@@ -18,6 +19,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
+
+let itemDetailPortalRoot: HTMLElement | null = null;
+const getItemDetailPortalRoot = () => {
+    if (typeof document === 'undefined') return null;
+    if (itemDetailPortalRoot && document.body.contains(itemDetailPortalRoot)) return itemDetailPortalRoot;
+    const existing = document.getElementById('nb-item-detail-root');
+    if (existing) {
+        itemDetailPortalRoot = existing;
+        return existing;
+    }
+    const el = document.createElement('div');
+    el.id = 'nb-item-detail-root';
+    document.body.appendChild(el);
+    itemDetailPortalRoot = el;
+    return el;
+};
 
 interface MobileDashboardProps {
     profile?: any;
@@ -2865,16 +2882,19 @@ const MobileDashboardDemo = ({
                 </AnimatePresence>
 
                 {/* ─── ITEM DETAIL VIEW ─── */}
-                <AnimatePresence>
-                    {selectedItem && (
-                        <motion.div
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
-                            className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
-                            style={{ backgroundColor: bgColor }}
-                        >
+                {(() => {
+                    const portalRoot = getItemDetailPortalRoot();
+                    const overlay = (
+                        <AnimatePresence>
+                            {selectedItem && (
+                                <motion.div
+                                    initial={{ x: '100%' }}
+                                    animate={{ x: 0 }}
+                                    exit={{ x: '100%' }}
+                                    transition={{ type: 'spring', damping: 28, stiffness: 220, mass: 0.9 }}
+                                    className="fixed inset-0 z-[20050] flex flex-col overflow-hidden relative isolate"
+                                    style={{ backgroundColor: bgColor }}
+                                >
                             {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
                             <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
 
@@ -3513,9 +3533,12 @@ const MobileDashboardDemo = ({
                                     </>
                                 )}
                             </AnimatePresence>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    );
+                    return portalRoot ? createPortal(overlay, portalRoot) : overlay;
+                })()}
             </div>
 
             {/* Creator Signing Modal */}
