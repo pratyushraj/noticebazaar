@@ -225,28 +225,8 @@ const BrandMobileDashboard = ({
 
   const offers = useMemo(() => {
     const base = (requests || []) as any[];
-    const combined = [...localOffers, ...base];
-    
-    if (isDemoBrand && combined.length === 0) {
-      return [
-        {
-          id: 'offer-1',
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          status: 'pending',
-          exact_budget: 15000,
-          profiles: { username: 'creator_armour', first_name: 'Creator', last_name: 'Armour', avatar_url: 'https://i.pravatar.cc/150?u=1' }
-        },
-        {
-          id: 'offer-2',
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          status: 'countered',
-          exact_budget: 8000,
-          profiles: { username: 'notice102', first_name: 'Notice', last_name: '102', avatar_url: 'https://i.pravatar.cc/150?u=notice102' }
-        }
-      ];
-    }
-    return combined;
-  }, [requests, localOffers, isDemoBrand]);
+    return [...localOffers, ...base];
+  }, [requests, localOffers]);
 
   const handleQuickSend = async () => {
     if (!quickSendEmail.trim() || !quickSendEmail.includes('@')) {
@@ -285,15 +265,33 @@ const BrandMobileDashboard = ({
     setQuickSendEmail('');
     triggerHaptic(HapticPatterns.success);
   };
+  // Pending offers = requests that haven't been accepted/declined yet
+  const pendingOffersList = useMemo(() => {
+    return offers.filter((o: any) => {
+      const s = normalizeStatus(o?.status);
+      return s === 'pending' || s === 'countered';
+    });
+  }, [offers]);
+
   const activeDealsList = useMemo(() => {
-    return (deals || []).filter((d: any) => {
+    // Include brand_deals that are active (not cancelled/completed)
+    const fromDeals = (deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
       if (!s) return true;
       if (s.includes('cancel')) return false;
       if (s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid')) return false;
       return true;
-    }) as any[];
-  }, [deals]);
+    });
+    // Also include collab_requests accepted by creator (these are active collabs)
+    const fromAcceptedRequests = (requests || []).filter((r: any) => {
+      const s = normalizeStatus(r?.status);
+      return s === 'accepted';
+    });
+    // Merge: prefer brand_deals entry if we have one for same creator
+    const dealCreatorIds = new Set(fromDeals.map((d: any) => String(d.creator_id || '')).filter(Boolean));
+    const acceptedNotInDeals = fromAcceptedRequests.filter((r: any) => !dealCreatorIds.has(String(r.creator_id || '')));
+    return [...fromDeals, ...acceptedNotInDeals] as any[];
+  }, [deals, requests]);
 
   const completedDealsList = useMemo(() => {
     return (deals || []).filter((d: any) => {
@@ -785,19 +783,19 @@ const BrandMobileDashboard = ({
                     <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
                       <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Pending Offers</p>
                     </div>
-                    {offers.length === 0 ? (
+                    {pendingOffersList.length === 0 ? (
                       <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No offers yet</p>
+                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No pending offers</p>
                         <Button type="button" onClick={() => setShowActionSheet(true)} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
                           <Send className="w-4 h-4 mr-2" /> Send new offer
                         </Button>
                       </div>
                     ) : (
                       <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
-                        {offers.slice(0, 20).map((o: any) => (
+                        {pendingOffersList.slice(0, 20).map((o: any) => (
                           <button
                             key={o.id}
-                            onClick={() => o.id.toString().startsWith('offer-') || o.id.toString().startsWith('local-') ? toast.success('Demo offer details coming soon!') : navigate(`/deal-details/${o.id}`)}
+                            onClick={() => navigate(`/deal-details/${o.id}`)}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
                             <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>

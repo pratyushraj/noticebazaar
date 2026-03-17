@@ -214,24 +214,25 @@ const BrandDashboard = () => {
   const isLoading = Boolean(isLoadingRequests || isLoadingDeals);
 
   const stats = useMemo(() => {
-    const totalSent = requests.length;
-    const activeDeals = deals.filter((d: any) => d.status !== 'completed' && d.status !== 'cancelled').length;
+    const pendingRequests = requests.filter((r: any) => {
+      const s = String(r?.status || '').toLowerCase();
+      return s === 'pending' || s === 'countered';
+    });
+    const acceptedRequests = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'accepted');
+    const activeFromDeals = deals.filter((d: any) => {
+      const s = String(d?.status || '').toLowerCase();
+      return !s.includes('cancel') && !s.includes('complete') && !s.includes('closed') && !s.includes('paid');
+    });
+    // Active = brand_deals that are active + accepted requests not already in brand_deals
+    const dealCreatorIds = new Set(activeFromDeals.map((d: any) => String(d.creator_id || '')).filter(Boolean));
+    const acceptedNotInDeals = acceptedRequests.filter((r: any) => !dealCreatorIds.has(String(r.creator_id || '')));
+    const activeDeals = activeFromDeals.length + acceptedNotInDeals.length;
+
     const totalInvestment = deals.reduce((acc: number, d: any) => acc + (Number(d?.deal_amount) || 0), 0);
     const needsAction = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'countered').length;
 
-    const baseStats = { totalSent, activeDeals, totalInvestment, needsAction };
-
-    if (isDemoBrand && requests.length === 0 && deals.length === 0) {
-      return {
-        totalSent: 12,
-        activeDeals: 5,
-        totalInvestment: 85000,
-        needsAction: 3,
-      };
-    }
-
-    return baseStats;
-  }, [requests, deals, isDemoBrand]);
+    return { totalSent: pendingRequests.length, activeDeals, totalInvestment, needsAction };
+  }, [requests, deals]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
