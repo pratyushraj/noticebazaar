@@ -797,7 +797,7 @@ const BrandMobileDashboard = ({
                         {offers.slice(0, 20).map((o: any) => (
                           <button
                             key={o.id}
-                            onClick={() => navigate(`/deal-details/${o.id}`)}
+                            onClick={() => o.id.toString().startsWith('offer-') || o.id.toString().startsWith('local-') ? toast.success('Demo offer details coming soon!') : navigate(`/deal-details/${o.id}`)}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
                             <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
