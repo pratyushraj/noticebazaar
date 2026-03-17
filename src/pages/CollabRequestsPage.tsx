@@ -183,7 +183,8 @@ const CollabRequestsPage = () => {
           }
           invalidate();
           setSelectedRequest(null);
-          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
+          // Keep creators inside the Collabs flow; deal details are accessible from Active.
+          navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
         }
       } else {
         toast.error(data.error || 'Please review details before accepting');
