@@ -56,11 +56,16 @@ export const useDealAlertNotifications = () => {
     // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari
     // CSP cross-origin blocking of direct fetches to noticebazaar-api.onrender.com.
     if (isPublicHost) return '';
-    // Localhost dev: default to production API (most dev flows don't run the backend locally).
-    // If you *do* run the backend locally, set VITE_API_URL/VITE_API_BASE_URL accordingly.
-    if (isLocalhostDev) return getApiBaseUrl();
-    return getApiBaseUrl();
-  }, [isLocalhostDev]);
+    // Local/dev hosts: push endpoints should default to the Render API (most dev
+    // flows don't run the backend locally). Avoid using getApiBaseUrl() here
+    // because it can be forced to localhost via localStorage.useLocalApi which
+    // breaks push with ERR_CONNECTION_REFUSED.
+    const override = String((import.meta as any)?.env?.VITE_PUSH_API_BASE_URL || '')
+      .trim()
+      .replace(/\/$/, '');
+    if (override) return override;
+    return 'https://noticebazaar-api.onrender.com';
+  }, []);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
