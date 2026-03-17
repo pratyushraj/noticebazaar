@@ -39,22 +39,27 @@ export const useDealAlertNotifications = () => {
   const isIOS = useMemo(() => isIOSDevice(), []);
   const isStandalone = useMemo(() => isStandaloneMode(), []);
   const isIOSNeedsInstall = isIOS && !isStandalone;
+  const isLocalhostDev = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const host = window.location.hostname.toLowerCase();
+    return host === 'localhost' || host === '127.0.0.1';
+  }, []);
+
   const pushApiBase = useMemo(() => {
     if (typeof window === 'undefined') return getApiBaseUrl();
     const host = window.location.hostname.toLowerCase();
-    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
     const isPublicHost =
       host.endsWith('creatorarmour.com') ||
-      host.endsWith('creatorarmour.com') ||
+      host.endsWith('noticebazaar.com') ||
       host.endsWith('vercel.app');
     // On production Vercel, use RELATIVE paths so requests go through the
     // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari
     // CSP cross-origin blocking of direct fetches to noticebazaar-api.onrender.com.
     if (isPublicHost) return '';
     // Localhost dev: prefer local API to avoid CORS on Render during development.
-    if (isLocalhost) return 'http://localhost:3001';
+    if (isLocalhostDev) return 'http://localhost:3001';
     return getApiBaseUrl();
-  }, []);
+  }, [isLocalhostDev]);
 
   const hasVapidKey = !!import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
@@ -63,46 +68,86 @@ export const useDealAlertNotifications = () => {
 
     setPermission(Notification.permission);
 
+    let browserSub: PushSubscription | null = null;
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       // Force an update check to clear PWA cache for the new UI
       await registration.update();
 
-      const browserSub = await registration.pushManager.getSubscription();
-      if (browserSub) {
-        setIsSubscribed(true);
-        return;
-      }
+      browserSub = await registration.pushManager.getSubscription();
     } catch (error: any) {
       // Non-fatal: we still allow email fallback
       logger.warn('Service worker check failed in syncSubscriptionStatus', { error: error?.message });
+    }
+
+    // On localhost dev the backend isn't running — skip the server-side status
+    // check entirely to avoid ERR_CONNECTION_REFUSED noise in the console.
+    if (isLocalhostDev) {
+      setIsSubscribed(!!browserSub);
+      return;
     }
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       if (!token) {
-        setIsSubscribed(false);
+        // Without auth, we can only reflect the local browser subscription state.
+        setIsSubscribed(!!browserSub);
         return;
       }
 
-      const response = await fetchWithTimeout(`${pushApiBase}/api/push/status`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      // Canonical source is server-side: push delivery depends on the server storing a subscription.
+      const statusResponse = await fetchWithTimeout(
+        `${pushApiBase}/api/push/status`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      }, 5000); // 5s timeout for status check
+        5000
+      ); // 5s timeout for status check
 
-      if (!response.ok) {
+      if (!statusResponse.ok) {
         setIsSubscribed(false);
         return;
       }
-      const data = await response.json();
-      setIsSubscribed(!!data?.hasSubscription);
+
+      const statusData = await statusResponse.json();
+      const serverHasSubscription = !!statusData?.hasSubscription;
+
+      // If the browser has a subscription but the server doesn't, attempt a best-effort re-register.
+      if (browserSub && !serverHasSubscription) {
+        try {
+          const subscribeResponse = await fetchWithTimeout(
+            `${pushApiBase}/api/push/subscribe`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                subscription: browserSub.toJSON(),
+              }),
+            },
+            15000
+          ); // 15s timeout for subscription upsert
+
+          setIsSubscribed(subscribeResponse.ok);
+          return;
+        } catch (error: any) {
+          logger.warn('Push subscribe retry failed in syncSubscriptionStatus', { error: error?.message });
+          setIsSubscribed(false);
+          return;
+        }
+      }
+
+      setIsSubscribed(serverHasSubscription);
     } catch (error: any) {
       logger.warn('Push status check failed', { error: error?.message });
       setIsSubscribed(false);
     }
-  }, [pushApiBase]);
+  }, [pushApiBase, isLocalhostDev]);
 
   useEffect(() => {
     const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
