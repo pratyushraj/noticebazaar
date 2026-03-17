@@ -1,2 +1,16 @@
-api/server/**
+# Never upload local caches / build artifacts
+node_modules/
+dist/
+playwright-report/
+test-results/
+.pnpm-store/
 
+# OS junk
+**/.DS_Store
+
+# Local one-off scripts (may contain secrets)
+send_collab_notice104.mjs
+check_*.mjs
+fix_demo_brand_ids.mjs
+server/*.mjs
+server/pnpm-lock.yaml
