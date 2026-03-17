@@ -352,6 +352,7 @@ const BrandMobileDashboard = ({
     async () => {
       const apiBase = getApiBaseUrl();
       const res = await fetch(`${apiBase}/api/creators/suggested?limit=10`);
+      if (res.status === 404) return [];
       const data: any = await res.json().catch(() => ({}));
       if (!res.ok || !data?.success) throw new Error(data?.error || 'Failed to fetch creators');
       return Array.isArray(data.creators) ? (data.creators as SuggestedCreator[]) : [];
