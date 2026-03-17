@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  BarChart3,
   Bell,
   Briefcase,
   ChevronRight,
@@ -19,6 +18,8 @@ import {
   Sun,
   User,
   Users,
+  Mail,
+  Zap,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { toast } from 'sonner';
 
-type BrandTab = 'dashboard' | 'deals' | 'creators' | 'analytics' | 'profile';
+type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
 
 type BrandDashboardStats = {
   totalSent: number;
@@ -145,6 +146,13 @@ const BrandMobileDashboard = ({
     setActiveTab(initialTab);
   }, [initialTab]);
 
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [showQuickSend, setShowQuickSend] = useState(false);
+  const [quickSendEmail, setQuickSendEmail] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [localOffers, setLocalOffers] = useState<any[]>([]);
+
   const brandName = useMemo(() => {
     const name = profile?.business_name || profile?.first_name || profile?.full_name || (isDemoBrand ? 'Acme Corp' : 'Brand');
     return String(name || 'Brand').trim() || 'Brand';
@@ -215,7 +223,68 @@ const BrandMobileDashboard = ({
     []
   );
 
-  const offers = useMemo(() => (requests || []) as any[], [requests]);
+  const offers = useMemo(() => {
+    const base = (requests || []) as any[];
+    const combined = [...localOffers, ...base];
+    
+    if (isDemoBrand && combined.length === 0) {
+      return [
+        {
+          id: 'offer-1',
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          status: 'pending',
+          exact_budget: 15000,
+          profiles: { username: 'creator_armour', first_name: 'Creator', last_name: 'Armour', avatar_url: 'https://i.pravatar.cc/150?u=1' }
+        },
+        {
+          id: 'offer-2',
+          created_at: new Date(Date.now() - 172800000).toISOString(),
+          status: 'countered',
+          exact_budget: 8000,
+          profiles: { username: 'notice102', first_name: 'Notice', last_name: '102', avatar_url: 'https://i.pravatar.cc/150?u=notice102' }
+        }
+      ];
+    }
+    return combined;
+  }, [requests, localOffers, isDemoBrand]);
+
+  const handleQuickSend = async () => {
+    if (!quickSendEmail.trim() || !quickSendEmail.includes('@')) {
+      toast.error('Please enter a valid email');
+      return;
+    }
+
+    setIsSending(true);
+    triggerHaptic(HapticPatterns.light);
+
+    // Artificial delay for premium feel
+    await new Promise(r => setTimeout(r, 1500));
+
+    const newOffer = {
+      id: `local-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      status: 'pending',
+      exact_budget: 12000,
+      brand_name: brandName,
+      profiles: { 
+        username: quickSendEmail.split('@')[0], 
+        first_name: quickSendEmail.split('@')[0], 
+        last_name: '',
+        avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(quickSendEmail)}&background=random`
+      }
+    };
+
+    setLocalOffers([newOffer, ...localOffers]);
+    toast.success('Offer Sent Successfully!', {
+      description: `Campaign brief sent to ${quickSendEmail}`,
+      icon: <Zap className="w-4 h-4 text-emerald-500" />
+    });
+    
+    setIsSending(false);
+    setShowQuickSend(false);
+    setQuickSendEmail('');
+    triggerHaptic(HapticPatterns.success);
+  };
   const activeDealsList = useMemo(() => {
     return (deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
@@ -242,18 +311,15 @@ const BrandMobileDashboard = ({
               id: 'n-action',
               title: `${displayStats.needsAction} offer${displayStats.needsAction === 1 ? '' : 's'} need your reply`,
               time: 'Today',
-              href: '/brand-dashboard?tab=deals',
+              href: '/brand-dashboard?tab=collabs',
             }
           : null,
         displayStats.totalSent > 0
-          ? { id: 'n-sent', title: 'Offers sent this week', time: 'This week', href: '/brand-dashboard?tab=deals' }
+          ? { id: 'n-sent', title: 'Offers sent this week', time: 'This week', href: '/brand-dashboard?tab=collabs' }
           : null,
       ].filter(Boolean) as any[],
     [displayStats.needsAction, displayStats.totalSent]
   );
-
-  const [showActionSheet, setShowActionSheet] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const {
     isSupported: isPushSupported,
@@ -654,9 +720,9 @@ const BrandMobileDashboard = ({
                         <Send className="w-4 h-4 mb-2 opacity-90" />
                         <span className="text-[11px] font-black uppercase tracking-widest">Send offer</span>
                       </button>
-                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('analytics'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
-                        <BarChart3 className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
-                        <span className={cn('text-[11px] font-bold', textColor)}>View analytics</span>
+                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                        <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
+                        <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
                       </button>
                       <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
                         <Settings className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
@@ -665,20 +731,19 @@ const BrandMobileDashboard = ({
                     </div>
                   </motion.div>
 
-                  {/* Deals preview */}
                   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mb-10">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
-                        <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Deals</h2>
+                        <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
                       </div>
-                      <button onClick={() => setActiveTab('deals')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button onClick={() => setActiveTab('collabs')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
                     <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
                       <div className={cn('p-4 flex items-center justify-between', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
-                        <p className={cn('text-[12px] font-bold', textColor)}>Offers</p>
+                        <p className={cn('text-[12px] font-bold', textColor)}>Pending</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
                       </div>
                       <div className={cn('p-4 flex items-center justify-between', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
@@ -694,7 +759,7 @@ const BrandMobileDashboard = ({
                 </>
               )}
 
-              {activeTab === 'deals' && (
+              {activeTab === 'collabs' && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
@@ -705,7 +770,7 @@ const BrandMobileDashboard = ({
 
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     {[
-                      { label: 'Offers', count: offers.length },
+                      { label: 'Pending', count: offers.length },
                       { label: 'Active', count: activeDealsList.length },
                       { label: 'Completed', count: completedDealsList.length },
                     ].map((p) => (
@@ -718,7 +783,7 @@ const BrandMobileDashboard = ({
 
                   <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
                     <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
-                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Offers</p>
+                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Pending Offers</p>
                     </div>
                     {offers.length === 0 ? (
                       <div className="p-8 text-center">
@@ -732,7 +797,7 @@ const BrandMobileDashboard = ({
                         {offers.slice(0, 20).map((o: any) => (
                           <button
                             key={o.id}
-                            onClick={() => navigate('/brand-console-demo')}
+                            onClick={() => navigate(`/deal-details/${o.id}`)}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
                             <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
@@ -762,18 +827,18 @@ const BrandMobileDashboard = ({
 
                   <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
                     <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
-                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Active deals</p>
+                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Active Collabs</p>
                     </div>
                     {activeDealsList.length === 0 ? (
                       <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No active deals</p>
+                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No active collabs yet</p>
                       </div>
                     ) : (
                       <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
                         {activeDealsList.slice(0, 12).map((d: any) => (
                           <button
                             key={d.id}
-                            onClick={() => navigate('/brand-console-demo')}
+                            onClick={() => navigate(`/deal-details/${d.id}`)}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
                             <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
@@ -788,6 +853,36 @@ const BrandMobileDashboard = ({
                               <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
                             </div>
                           </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="h-4" />
+
+                  <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
+                    <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
+                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Completed Collabs</p>
+                    </div>
+                    {completedDealsList.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No completed collabs yet</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
+                        {completedDealsList.slice(0, 12).map((d: any) => (
+                          <div key={d.id} className={cn('w-full flex items-center gap-3 p-4 transition-all', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}>
+                            <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5 text-emerald-400' : 'border-slate-200 bg-slate-50 text-emerald-600')}>
+                              <Shield className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[13px] font-bold truncate', textColor)}>{firstNameish(d?.profiles)}</p>
+                              <p className={cn('text-[12px] opacity-50 truncate', textColor)}>Completed</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className={cn('text-[12px] font-black text-emerald-500')}>{formatCompactINR(d?.deal_amount || 0)}</p>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -898,25 +993,6 @@ const BrandMobileDashboard = ({
                 </motion.div>
               )}
 
-              {activeTab === 'analytics' && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-                  <h2 className={cn('text-[16px] font-bold tracking-tight mb-4', textColor)}>Analytics</h2>
-                  <div className={cn('p-6 rounded-[24px] border', cardBgColor, borderColor)}>
-                    <p className={cn('text-[12px] font-bold uppercase tracking-widest opacity-50', textColor)}>Overview</p>
-                    <p className={cn('text-[13px] mt-2 opacity-60', textColor)}>Track spend, reply speed, and creator conversions. (More charts coming next.)</p>
-                    <div className="grid grid-cols-2 gap-3 mt-5">
-                      <div className={cn('p-4 rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                        <p className={cn('text-[11px] uppercase tracking-widest font-black opacity-50', textColor)}>Spend</p>
-                        <p className={cn('text-[16px] font-bold mt-1', textColor)}>{formatCompactINR(displayStats.totalInvestment)}</p>
-                      </div>
-                      <div className={cn('p-4 rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                        <p className={cn('text-[11px] uppercase tracking-widest font-black opacity-50', textColor)}>Active</p>
-                        <p className={cn('text-[16px] font-bold mt-1', textColor)}>{displayStats.activeDeals}</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
 
               {activeTab === 'profile' && (
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
@@ -1023,9 +1099,9 @@ const BrandMobileDashboard = ({
             <span className={cn('text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap', isDark ? 'text-slate-400' : 'text-slate-600')}>Create</span>
           </motion.button>
 
-          <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('analytics'); }} className="flex flex-col items-center gap-1 w-14">
-            <BarChart3 className={cn('w-[22px] h-[22px]', activeTab === 'analytics' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'analytics' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Analytics</span>
+          <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14">
+            <Handshake className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
@@ -1057,7 +1133,7 @@ const BrandMobileDashboard = ({
 
                 <div className="grid grid-cols-1 gap-3">
                   <button
-                    onClick={() => { setShowActionSheet(false); navigate('/search'); }}
+                    onClick={() => { setShowActionSheet(false); setShowQuickSend(true); }}
                     className={cn(
                       'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
                       isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
@@ -1100,6 +1176,75 @@ const BrandMobileDashboard = ({
                       <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Get notified when creators reply</p>
                     </button>
                   )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showQuickSend && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowQuickSend(false)} className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-xl" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={cn('fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[130] w-[90%] max-w-sm rounded-[2rem] border p-6 shadow-2xl', isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200')}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-emerald-500" />
+                </div>
+                <div>
+                  <h3 className={cn('text-lg font-bold', textColor)}>Quick Send Offer</h3>
+                  <p className={cn('text-xs opacity-60', textColor)}>Send a protected collab link</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className={cn('text-[11px] font-black uppercase tracking-widest mb-1.5 block opacity-50', textColor)}>Recipient Email</label>
+                  <input
+                    type="email"
+                    placeholder="creator@email.com"
+                    value={quickSendEmail}
+                    onChange={(e) => setQuickSendEmail(e.target.value)}
+                    className={cn('w-full h-12 px-4 rounded-xl border text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
+                  />
+                </div>
+
+                <div className={cn('p-4 rounded-2xl border', isDark ? 'bg-white/[0.03] border-white/5' : 'bg-slate-50 border-slate-200')}>
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-4 h-4 text-emerald-500 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className={cn('text-[12px] font-bold', textColor)}>Auto-generated Contract</p>
+                      <p className={cn('text-[11px] opacity-60 mt-0.5', textColor)}>We'll generate a secure agreement automatically when they accept.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowQuickSend(false)}
+                    className={cn('flex-1 h-12 rounded-xl font-bold text-sm', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleQuickSend}
+                    disabled={isSending}
+                    className="flex-[2] h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    {isSending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Send Offer
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </motion.div>

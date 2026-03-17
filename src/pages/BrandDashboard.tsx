@@ -41,11 +41,13 @@ const BrandDashboard = () => {
 
   const initialTab = useMemo(() => {
     const path = location.pathname;
-    if (path.includes('/brand/collaborations')) return 'creators' as const;
-    if (path.includes('/brand/analytics')) return 'analytics' as const;
-    if (path.includes('/brand/offers') || path.includes('/brand/deals')) return 'deals' as const;
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    
+    if (tabParam === 'collabs' || path.includes('/brand/collaborations') || path.includes('/brand/offers') || path.includes('/brand/deals')) return 'collabs' as const;
+    if (path.includes('/brand/creators')) return 'creators' as const;
     return 'dashboard' as const;
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
 
   const {
     data: requests = [],
