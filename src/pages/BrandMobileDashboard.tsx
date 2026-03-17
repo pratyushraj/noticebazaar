@@ -29,6 +29,8 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
+import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
@@ -58,6 +60,27 @@ const formatCompactINR = (n: any) => {
   return `₹${safe.toLocaleString('en-IN')}`;
 };
 
+const formatFollowers = (n: any) => {
+  const num = Number(n);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  if (num >= 1_00_00_000) return `${(num / 1_00_00_000).toFixed(1)}Cr`.replace('.0', '') + ' followers';
+  if (num >= 1_00_000) return `${(num / 1_00_000).toFixed(1)}L`.replace('.0', '') + ' followers';
+  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`.replace('.0', '') + ' followers';
+  return `${num} followers`;
+};
+
+const timeSince = (iso: any) => {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return '';
+  const diffMs = Date.now() - d.getTime();
+  const mins = Math.max(0, Math.round(diffMs / (1000 * 60)));
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 48) return `${hrs}h`;
+  const days = Math.round(hrs / 24);
+  return `${days}d`;
+};
+
 const uniqBy = <T,>(items: T[], key: (item: T) => string) => {
   const seen = new Set<string>();
   const out: T[] = [];
@@ -79,6 +102,86 @@ const normalizeStatus = (status: any) => String(status || '').trim().toLowerCase
 const firstNameish = (profile: any) => {
   const label = profile?.business_name || profile?.first_name || profile?.username || 'Creator';
   return String(label || 'Creator').trim() || 'Creator';
+};
+
+type SuggestedCreator = {
+  id: string;
+  username?: string | null;
+  name: string;
+  category?: string | null;
+  bio?: string | null;
+  profile_photo?: string | null;
+  followers?: number | null;
+  pricing?: {
+    min?: number | null;
+    avg?: number | null;
+    max?: number | null;
+    reel?: number | null;
+  } | null;
+  trust?: {
+    completed_deals?: number;
+    total_deals?: number;
+    completion_rate?: number;
+    avg_response_hours?: number | null;
+  } | null;
+};
+
+const formatDeliverables = (row: any) => {
+  const d = row?.deliverables;
+  if (!d) return '';
+  if (typeof d === 'string') return d.trim();
+  if (Array.isArray(d)) {
+    const parts = d
+      .map((x: any) => {
+        if (!x) return null;
+        if (typeof x === 'string') return x.trim();
+        const label = x?.type || x?.name || x?.deliverable;
+        const qty = x?.qty || x?.count || x?.quantity;
+        if (label && qty) return `${qty} ${label}`;
+        if (label) return String(label);
+        return null;
+      })
+      .filter(Boolean);
+    return parts.slice(0, 3).join(' • ');
+  }
+  try {
+    const asJson = JSON.stringify(d);
+    return asJson.length > 5 ? asJson : '';
+  } catch {
+    return '';
+  }
+};
+
+const formatBudget = (row: any) => {
+  const exact = Number(row?.exact_budget);
+  if (Number.isFinite(exact) && exact > 0) return formatCompactINR(exact);
+  const range = String(row?.budget_range || '').trim();
+  if (range) return range;
+  const barter = Number(row?.barter_value);
+  if (Number.isFinite(barter) && barter > 0) return `${formatCompactINR(barter)} barter`;
+  return '';
+};
+
+const dealStageLabel = (row: any) => {
+  const s = normalizeStatus(row?.status);
+  if (!s) return 'In progress';
+  if (s.includes('draft')) return 'Drafting';
+  if (s.includes('create')) return 'Creating';
+  if (s.includes('submit')) return 'Submitted';
+  if (s.includes('payment') || s.includes('pay')) return 'Payment';
+  if (s.includes('accepted')) return 'Accepted';
+  return row?.status || 'In progress';
+};
+
+const deadlineLabel = (row: any) => {
+  const raw = row?.due_date || row?.deadline;
+  const d = raw ? new Date(raw) : null;
+  if (!d || Number.isNaN(d.getTime())) return null;
+  const diffDays = Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return { text: 'Overdue', tone: 'danger' as const };
+  if (diffDays === 0) return { text: 'Due today', tone: 'danger' as const };
+  if (diffDays <= 2) return { text: `Due in ${diffDays}d`, tone: 'warn' as const };
+  return { text: `Due in ${diffDays}d`, tone: 'neutral' as const };
 };
 
 const BrandMobileDashboard = ({
@@ -151,9 +254,25 @@ const BrandMobileDashboard = ({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [showQuickSend, setShowQuickSend] = useState(false);
   const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [monthlyBudgetInr, setMonthlyBudgetInr] = useState<number | null>(null);
+  const [budgetDraft, setBudgetDraft] = useState('');
   const [quickSendEmail, setQuickSendEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [localOffers, setLocalOffers] = useState<any[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('brandMonthlyBudgetInr');
+      const parsed = raw ? Number(raw) : NaN;
+      if (Number.isFinite(parsed) && parsed > 0) {
+        setMonthlyBudgetInr(parsed);
+        setBudgetDraft(String(Math.round(parsed)));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const brandName = useMemo(() => {
     const name = profile?.business_name || profile?.first_name || profile?.full_name || (isDemoBrand ? 'Acme Corp' : 'Brand');
@@ -187,6 +306,18 @@ const BrandMobileDashboard = ({
     }, 0);
   }, [deals]);
 
+  const budgetUsedPct = useMemo(() => {
+    if (!monthlyBudgetInr || !(monthlyBudgetInr > 0)) return null;
+    const pct = (Number(spendThisMonth) / monthlyBudgetInr) * 100;
+    if (!Number.isFinite(pct)) return null;
+    return Math.min(999, Math.max(0, Math.round(pct)));
+  }, [monthlyBudgetInr, spendThisMonth]);
+
+  const budgetRemaining = useMemo(() => {
+    if (!monthlyBudgetInr || !(monthlyBudgetInr > 0)) return null;
+    return Math.max(0, Math.round(monthlyBudgetInr - Number(spendThisMonth)));
+  }, [monthlyBudgetInr, spendThisMonth]);
+
   const creatorReplies = useMemo(() => {
     // "Reply" for a brand generally means offer moved beyond "pending".
     return (requests || []).filter((r: any) => {
@@ -216,13 +347,16 @@ const BrandMobileDashboard = ({
     return uniqBy([...fromReqs, ...fromDeals].filter((c) => c.id), (c) => c.id).slice(0, 12);
   }, [requests, deals]);
 
-  const suggestedCreators = useMemo(
-    () => [
-      { id: 's-1', name: 'Priya Sharma', niche: 'Fashion', followers: 120_000, avgViews: 45_000, rate: 8000, avatar: 'https://i.pravatar.cc/150?img=32' },
-      { id: 's-2', name: 'Arjun Mehta', niche: 'Tech', followers: 86_000, avgViews: 28_000, rate: 6500, avatar: 'https://i.pravatar.cc/150?img=12' },
-      { id: 's-3', name: 'Neha Verma', niche: 'Lifestyle', followers: 64_000, avgViews: 22_000, rate: 5500, avatar: 'https://i.pravatar.cc/150?img=47' },
-    ],
-    []
+  const { data: suggestedCreators = [], isLoading: isLoadingSuggestedCreators } = useSupabaseQuery<SuggestedCreator[]>(
+    ['brandSuggestedCreators'],
+    async () => {
+      const apiBase = getApiBaseUrl();
+      const res = await fetch(`${apiBase}/api/creators/suggested?limit=10`);
+      const data: any = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) throw new Error(data?.error || 'Failed to fetch creators');
+      return Array.isArray(data.creators) ? (data.creators as SuggestedCreator[]) : [];
+    },
+    { staleTime: 60_000 }
   );
 
   const offers = useMemo(() => {
@@ -302,6 +436,68 @@ const BrandMobileDashboard = ({
       return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid');
     }) as any[];
   }, [deals]);
+
+  const acceptedDealsCount = useMemo(() => {
+    const acceptedRequests = (requests || []).filter((r: any) => normalizeStatus(r?.status) === 'accepted').length;
+    const activeDeals = (deals || []).filter((d: any) => !normalizeStatus(d?.status).includes('cancel')).length;
+    return Math.max(acceptedRequests, activeDeals);
+  }, [requests, deals]);
+
+  const conversionRate = useMemo(() => {
+    const sent = Math.max(0, Number(displayStats.totalSent) || 0);
+    if (sent <= 0) return 0;
+    return Math.round((acceptedDealsCount / sent) * 100);
+  }, [acceptedDealsCount, displayStats.totalSent]);
+
+  const primaryAction = useMemo(() => {
+    if (displayStats.needsAction > 0) {
+      return {
+        title: `⚡ ${displayStats.needsAction} creator${displayStats.needsAction === 1 ? '' : 's'} awaiting your response`,
+        cta: 'Review offers',
+        onClick: () => setActiveTab('collabs'),
+        tone: 'attention' as const,
+      };
+    }
+    if (displayStats.totalSent === 0 && displayStats.activeDeals === 0) {
+      return {
+        title: '🚀 Start your first campaign',
+        cta: 'Send offer',
+        onClick: () => setShowActionSheet(true),
+        tone: 'primary' as const,
+      };
+    }
+    return {
+      title: 'Send your next offer in 30 seconds',
+      cta: 'Send offer',
+      onClick: () => setShowActionSheet(true),
+      tone: 'neutral' as const,
+    };
+  }, [displayStats.activeDeals, displayStats.needsAction, displayStats.totalSent]);
+
+  const getSmartTags = (c: SuggestedCreator) => {
+    const tags: string[] = [];
+    const completion = Number(c?.trust?.completion_rate ?? 0);
+    const completed = Number(c?.trust?.completed_deals ?? 0);
+    const avgHrs = c?.trust?.avg_response_hours ?? null;
+    const rate = Number(c?.pricing?.avg ?? c?.pricing?.reel ?? 0);
+
+    if (completion >= 95 && completed >= 5) tags.push('🔥 High reliability');
+    if (avgHrs !== null && avgHrs <= 6) tags.push('⚡ Fast responder');
+    if (rate > 0 && rate <= 6000) tags.push('💰 Budget friendly');
+    return tags.slice(0, 2);
+  };
+
+  const getReliabilityLines = (c: SuggestedCreator) => {
+    const lines: string[] = [];
+    const completion = Number(c?.trust?.completion_rate ?? 0);
+    const completed = Number(c?.trust?.completed_deals ?? 0);
+    const avgHrs = c?.trust?.avg_response_hours ?? null;
+
+    if (completion > 0) lines.push(`✔ ${completion}% completion`);
+    if (avgHrs !== null && avgHrs > 0) lines.push(`⚡ Responds in ~${avgHrs}h`);
+    if (completed > 0) lines.push(`✔ ${completed} completed deals`);
+    return lines.slice(0, 3);
+  };
 
   const notifications = useMemo(
     () =>
@@ -663,10 +859,10 @@ const BrandMobileDashboard = ({
 
               <div className="flex items-end justify-between gap-3">
                 <div className="min-w-0">
-                  <p className={cn('text-[13px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Dashboard</p>
+                  <p className={cn('text-[13px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Welcome back</p>
                   <h1 className={cn('text-[28px] font-semibold tracking-tight leading-tight', textColor)}>{brandName}</h1>
                   <p className={cn('text-[13px] mt-1 opacity-60', textColor)}>
-                    Track offers, manage creators, and close collaborations.
+                    Trust-first collabs — no vanity metrics.
                   </p>
                 </div>
               </div>
@@ -728,6 +924,47 @@ const BrandMobileDashboard = ({
                     </motion.div>
                   )}
 
+                  {/* Next action banner (always answers: what should I do next?) */}
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(HapticPatterns.light);
+                      primaryAction.onClick();
+                    }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.03 }}
+                    className={cn(
+                      'w-full mb-5 p-4 rounded-[24px] border text-left transition-all active:scale-[0.99] overflow-hidden relative',
+                      isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white shadow-sm'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'absolute inset-0 opacity-40',
+                        primaryAction.tone === 'primary'
+                          ? 'bg-gradient-to-br from-emerald-500/20 to-sky-500/10'
+                          : primaryAction.tone === 'attention'
+                            ? 'bg-gradient-to-br from-amber-500/15 to-rose-500/10'
+                            : 'bg-gradient-to-br from-white/0 to-white/0'
+                      )}
+                    />
+                    <div className="relative flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className={cn('text-[13px] font-bold', textColor)}>{primaryAction.title}</p>
+                        <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>No views. Just verified deal behavior.</p>
+                      </div>
+                      <span
+                        className={cn(
+                          'shrink-0 px-3 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest border',
+                          isDark ? 'border-white/10 bg-white/5 text-white/80' : 'border-slate-200 bg-slate-50 text-slate-700'
+                        )}
+                      >
+                        {primaryAction.cta}
+                      </span>
+                    </div>
+                  </motion.button>
+
                   {/* Quick summary (makes the dashboard feel alive immediately) */}
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className={cn('grid grid-cols-3 gap-2.5 mb-6')}>
                     {[
@@ -744,6 +981,41 @@ const BrandMobileDashboard = ({
                         )}
                       </div>
                     ))}
+                  </motion.div>
+
+                  {/* Budget awareness */}
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} className={cn('mb-6 p-4 rounded-[24px] border', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Budget</p>
+                        {monthlyBudgetInr ? (
+                          <>
+                            <p className={cn('text-[13px] font-bold mt-1', textColor)}>
+                              {formatCompactINR(spendThisMonth)} spent • {formatCompactINR(budgetRemaining ?? 0)} remaining
+                            </p>
+                            <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>
+                              {budgetUsedPct}% used this month
+                            </p>
+                          </>
+                        ) : (
+                          <p className={cn('text-[13px] font-bold mt-1', textColor)}>Set a monthly budget to stay on track</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setShowBudgetModal(true);
+                        }}
+                        className={cn('shrink-0 px-3 py-2 rounded-2xl border text-[11px] font-black uppercase tracking-widest transition-all active:scale-[0.99]', isDark ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100')}
+                      >
+                        {monthlyBudgetInr ? 'Edit' : 'Set'}
+                      </button>
+                    </div>
+                    {monthlyBudgetInr && budgetUsedPct !== null && budgetUsedPct >= 80 && (
+                      <p className={cn('text-[12px] mt-3', isDark ? 'text-amber-200/80' : 'text-amber-700')}>
+                        ⚠ You’ve used {budgetUsedPct}% of your budget
+                      </p>
+                    )}
                   </motion.div>
 
                   {/* Stats grouped for scan speed */}
@@ -770,12 +1042,12 @@ const BrandMobileDashboard = ({
                       {isLoading ? (
                         <div className={cn('h-8 rounded-xl animate-pulse', isDark ? 'bg-white/10' : 'bg-slate-200')} />
                       ) : (
-                        <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{displayStats.needsAction}</p>
+                        <p className={cn('text-[28px] font-semibold tracking-tight', displayStats.needsAction > 0 ? (isDark ? 'text-amber-200' : 'text-amber-700') : textColor)}>{displayStats.needsAction}</p>
                       )}
                     </motion.div>
 
                     <div className="col-span-2 mt-4">
-                      <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] mb-2 opacity-50', textColor)}>Performance</p>
+                      <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] mb-2 opacity-50', textColor)}>Trust performance</p>
                     </div>
                     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }} className={cn('p-5 rounded-[16px] border shadow-md transition-all', cardBgColor, borderColor)}>
                       <div className="flex items-center gap-2 mb-2.5">
@@ -799,6 +1071,82 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[20px] sm:text-[24px] font-semibold tracking-tight', textColor)}>{formatCompactINR(displayStats.totalInvestment)}</p>
                       )}
                     </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }} className={cn('col-span-2 p-5 rounded-[16px] border shadow-md transition-all', cardBgColor, borderColor)}>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Offer conversion</p>
+                          <p className={cn('text-[24px] font-semibold tracking-tight mt-1', textColor)}>{conversionRate}%</p>
+                        </div>
+                        <div className={cn('text-[11px] font-bold leading-relaxed', secondaryTextColor)}>
+                          <div>Sent: {displayStats.totalSent}</div>
+                          <div>Accepted: {acceptedDealsCount}</div>
+                          <div>Completed: {completedDealsList.length}</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested creators</p>
+                        <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
+                      </div>
+                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                        View all
+                      </button>
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 6)).map((c: any) => (
+                        <div key={c.id} className={cn('min-w-[290px] p-4 rounded-[24px] border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white shadow-sm')}>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-11 h-11">
+                              <AvatarImage src={c.profile_photo || c.avatar_url} alt={c.name} />
+                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <p className={cn('text-[13px] font-bold truncate', textColor)}>{c.name}</p>
+                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
+                                {(c.category || 'Creator')}{c.followers ? ` • ${formatFollowers(c.followers)}` : ''}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>From</p>
+                              <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(c?.pricing?.avg ?? c?.pricing?.reel ?? 0)} / reel</p>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 space-y-1">
+                            {getReliabilityLines(c).map((line) => (
+                              <p key={line} className={cn('text-[12px] opacity-70', textColor)}>{line}</p>
+                            ))}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {getSmartTags(c).map((t) => (
+                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                                {t}
+                              </span>
+                            ))}
+                            {getSmartTags(c).length === 0 && (
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                                ✔ Verified profile
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex gap-2 mt-4">
+                            <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}>
+                              View profile
+                            </button>
+                            <button onClick={() => { triggerHaptic(HapticPatterns.success); setShowActionSheet(true); }} className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white')}>
+                              Send offer
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={cn('p-6 rounded-[2.5rem] border relative overflow-hidden mb-10', isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
@@ -833,9 +1181,9 @@ const BrandMobileDashboard = ({
                         <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
                       </button>
-                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
-                        <Settings className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
-                        <span className={cn('text-[11px] font-bold', textColor)}>Settings</span>
+                      <button onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                        <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
+                        <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
                       </button>
                     </div>
                   </motion.div>
@@ -916,14 +1264,16 @@ const BrandMobileDashboard = ({
                               <p className={cn('text-[13px] font-bold truncate', textColor)}>
                                 Offer to {firstNameish(o?.profiles)}
                               </p>
-                              <p className={cn('text-[12px] opacity-50 truncate', textColor)}>{o?.collab_type || 'Collaboration'}</p>
+                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
+                                {[formatDeliverables(o) || o?.collab_type || 'Collaboration', formatBudget(o) ? `Budget: ${formatBudget(o)}` : null, o?.created_at ? `Sent ${timeSince(o.created_at)} ago` : null]
+                                  .filter(Boolean)
+                                  .join(' • ')}
+                              </p>
                             </div>
                             <div className="flex items-center gap-2">
-                              {o?.status && (
-                                <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
-                                  {String(o.status)}
-                                </span>
-                              )}
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                                {normalizeStatus(o?.status) === 'countered' ? 'Countered' : 'Waiting'}
+                              </span>
                               <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
                             </div>
                           </button>
@@ -955,10 +1305,26 @@ const BrandMobileDashboard = ({
                             </div>
                             <div className="flex-1 min-w-0 text-left">
                               <p className={cn('text-[13px] font-bold truncate', textColor)}>{firstNameish(d?.profiles)}</p>
-                              <p className={cn('text-[12px] opacity-50 truncate', textColor)}>{d?.status || 'Active'}</p>
+                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
+                                {[dealStageLabel(d), deadlineLabel(d)?.text].filter(Boolean).join(' • ')}
+                              </p>
                             </div>
                             <div className="flex items-center gap-2">
                               <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(d?.deal_amount || 0)}</p>
+                              {deadlineLabel(d) && (
+                                <span
+                                  className={cn(
+                                    'text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border',
+                                    deadlineLabel(d)!.tone === 'danger'
+                                      ? (isDark ? 'border-rose-300/30 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-700')
+                                      : deadlineLabel(d)!.tone === 'warn'
+                                        ? (isDark ? 'border-amber-300/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')
+                                        : (isDark ? 'border-white/10 bg-white/5 text-white/60' : 'border-slate-200 bg-white text-slate-600')
+                                  )}
+                                >
+                                  {deadlineLabel(d)!.text}
+                                </span>
+                              )}
                               <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
                             </div>
                           </button>
@@ -1012,29 +1378,42 @@ const BrandMobileDashboard = ({
                   <div className="mb-5">
                     <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] mb-2 opacity-50', textColor)}>Suggested</p>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                      {suggestedCreators.map((c) => (
-                        <div key={c.id} className={cn('min-w-[260px] p-4 rounded-[24px] border', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
+                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 10)).map((c: any) => (
+                        <div key={c.id} className={cn('min-w-[280px] p-4 rounded-[24px] border', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
                           <div className="flex items-center gap-3 mb-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarImage src={c.avatar} alt={c.name} />
-                              <AvatarFallback>{c.name.slice(0, 1).toUpperCase()}</AvatarFallback>
+                              <AvatarImage src={c.profile_photo || c.avatar} alt={c.name} />
+                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p className={cn('text-[13px] font-bold truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] opacity-50 truncate', textColor)}>
-                                {c.followers.toLocaleString('en-IN')} followers • {c.niche}
+                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
+                                {(c.category || c.niche || 'Creator')}{c.followers ? ` • ${formatFollowers(c.followers)}` : ''}
                               </p>
                             </div>
+                            <div className="text-right">
+                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>From</p>
+                              <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(c?.pricing?.avg ?? c?.pricing?.reel ?? c.rate ?? 0)} / reel</p>
+                            </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className={cn('p-3 rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>Avg views</p>
-                              <p className={cn('text-[12px] font-bold mt-1', textColor)}>{c.avgViews.toLocaleString('en-IN')}</p>
-                            </div>
-                            <div className={cn('p-3 rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>Rate</p>
-                              <p className={cn('text-[12px] font-bold mt-1', textColor)}>{formatCompactINR(c.rate)} / reel</p>
-                            </div>
+
+                          <div className="mt-2 space-y-1">
+                            {getReliabilityLines(c).map((line) => (
+                              <p key={line} className={cn('text-[12px] opacity-70', textColor)}>{line}</p>
+                            ))}
+                          </div>
+
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {getSmartTags(c).map((t) => (
+                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                                {t}
+                              </span>
+                            ))}
+                            {getSmartTags(c).length === 0 && (
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                                ✔ Verified profile
+                              </span>
+                            )}
                           </div>
                           <div className="flex gap-2 mt-3">
                             <button
@@ -1293,6 +1672,85 @@ const BrandMobileDashboard = ({
                       <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Get notified when creators reply</p>
                     </button>
                   )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showBudgetModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBudgetModal(false)}
+              className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-xl"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 20 }}
+              className={cn(
+                'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[130] w-[90%] max-w-sm rounded-[2rem] border p-6 shadow-2xl',
+                isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200'
+              )}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-emerald-500" />
+                </div>
+                <div>
+                  <h3 className={cn('text-lg font-bold', textColor)}>Monthly budget</h3>
+                  <p className={cn('text-xs opacity-60', textColor)}>Used to show “remaining budget” alerts</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className={cn('text-[11px] font-black uppercase tracking-widest mb-1.5 block opacity-50', textColor)}>Budget (INR)</label>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    placeholder="e.g. 100000"
+                    value={budgetDraft}
+                    onChange={(e) => setBudgetDraft(e.target.value)}
+                    className={cn(
+                      'w-full h-12 px-4 rounded-xl border text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none',
+                      isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
+                    )}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowBudgetModal(false)}
+                    className={cn('flex-1 h-12 rounded-xl font-bold text-sm', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      const parsed = Number(budgetDraft);
+                      if (!Number.isFinite(parsed) || parsed <= 0) {
+                        toast.error('Enter a valid budget amount');
+                        return;
+                      }
+                      try {
+                        localStorage.setItem('brandMonthlyBudgetInr', String(Math.round(parsed)));
+                      } catch {
+                        // ignore
+                      }
+                      setMonthlyBudgetInr(Math.round(parsed));
+                      setShowBudgetModal(false);
+                      toast.success('Budget saved');
+                    }}
+                    className="flex-[2] h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    Save budget
+                  </button>
                 </div>
               </div>
             </motion.div>
