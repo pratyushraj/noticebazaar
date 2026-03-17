@@ -12,6 +12,7 @@ import {
   Menu,
   Moon,
   Plus,
+  RefreshCw,
   Send,
   Settings,
   Shield,
@@ -149,6 +150,7 @@ const BrandMobileDashboard = ({
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [showQuickSend, setShowQuickSend] = useState(false);
+  const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
   const [quickSendEmail, setQuickSendEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [localOffers, setLocalOffers] = useState<any[]>([]);
@@ -329,6 +331,8 @@ const BrandMobileDashboard = ({
     hasVapidKey,
     enableNotifications,
     dismissPrompt: dismissPushPrompt,
+    sendTestPush,
+    refreshStatus: refreshPushStatus,
   } = useDealAlertNotifications();
 
   const handleEnablePush = async () => {
@@ -347,12 +351,119 @@ const BrandMobileDashboard = ({
     }
   };
 
+  const PageHeader = ({ title }: { title: string }) => (
+    <div className="flex items-center gap-4 px-5 py-4 mb-4">
+      <button
+        onClick={() => {
+          triggerHaptic(HapticPatterns.light);
+          setActiveSettingsPage(null);
+        }}
+        className={cn('p-2 -ml-2 rounded-full transition-all active:scale-90', secondaryTextColor, isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100')}
+      >
+        <ChevronRight className="w-6 h-6 rotate-180" />
+      </button>
+      <h2 className={cn('text-[20px] font-bold tracking-tight', textColor)}>{title}</h2>
+    </div>
+  );
+
+  const renderNotificationSettings = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="pb-20"
+    >
+      <PageHeader title="Notifications" />
+      <div className="px-5 space-y-6">
+        <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#1C1C1E] divide-[#2C2C2E]' : 'bg-white divide-[#E5E5EA] shadow-sm', 'divide-y')}>
+          <div className="p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-500/15 text-blue-700')}>
+                <Bell className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Push Alerts</p>
+                <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isPushSubscribed ? 'Active on this device' : 'Receive deal updates'}</p>
+              </div>
+            </div>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (isPushSubscribed) {
+                  toast.info('To disable, please use your browser settings.');
+                } else {
+                  await handleEnablePush();
+                }
+              }}
+              className={cn(
+                'w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out',
+                isPushSubscribed ? 'bg-emerald-500' : isDark ? 'bg-[#39393D]' : 'bg-[#E9E9EB]'
+              )}
+            >
+              <motion.div
+                animate={{ x: isPushSubscribed ? 22 : 2 }}
+                className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+              />
+            </button>
+          </div>
+
+          {isPushSubscribed && (
+            <button
+              disabled={isPushBusy}
+              onClick={async () => {
+                triggerHaptic(HapticPatterns.light);
+                const res = await sendTestPush();
+                if (res.success) toast.success('Test notification sent!');
+                else toast.error('Failed: ' + res.reason);
+              }}
+              className={cn('w-full py-4 text-[13px] font-bold text-center transition-all active:bg-opacity-50', isDark ? 'text-sky-400 active:bg-white/5' : 'text-sky-600 active:bg-slate-50')}
+            >
+              {isPushBusy ? 'Sending...' : 'Send Test Notification'}
+            </button>
+          )}
+        </div>
+
+        <div className={cn('p-5 rounded-[24px] border', borderColor, isDark ? 'bg-white/5' : 'bg-white shadow-sm')}>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 mb-1', textColor)}>Current Status</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                <p className={cn('text-[12px]', textColor)}>
+                  <span className="opacity-50">Supported:</span> {isPushSupported ? 'Yes' : 'No'}
+                </p>
+                <p className={cn('text-[12px]', textColor)}>
+                  <span className="opacity-50">Permission:</span> {pushPermission}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                triggerHaptic(HapticPatterns.light);
+                await refreshPushStatus();
+                toast.success('Status refreshed');
+              }}
+              className={cn('p-2 rounded-xl border transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
+            >
+              <RefreshCw className={cn('w-4 h-4 opacity-60', textColor)} />
+            </button>
+          </div>
+          {isIOSNeedsInstall && (
+            <p className={cn('text-[12px] opacity-60', isDark ? 'text-amber-200/80' : 'text-amber-700')}>
+              iOS requires “Add to Home Screen” to support push notifications.
+            </p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+
   const showPushPrompt =
     isPushSupported &&
     hasVapidKey &&
     !isPushSubscribed &&
     !isPushPromptDismissed &&
-    activeTab === 'dashboard';
+    activeTab === 'dashboard' &&
+    !activeSettingsPage;
 
   return (
     <div className={cn('fixed inset-0 font-sans selection:bg-emerald-500/25 overflow-hidden', bgColor, textColor)}>
@@ -1005,72 +1116,80 @@ const BrandMobileDashboard = ({
                     </div>
                   </div>
 
-                  <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#1C1C1E] divide-[#2C2C2E]' : 'bg-white divide-[#E5E5EA] shadow-sm', 'divide-y')}>
-                    <button onClick={() => navigate('/brand-settings')} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-500/15 text-emerald-700')}>
-                        <Settings className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Brand settings</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Profile, website, and preferences</p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 opacity-20" />
-                    </button>
+                  <AnimatePresence mode="wait">
+                    {activeSettingsPage === 'notifications' ? (
+                      renderNotificationSettings()
+                    ) : (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                        <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#1C1C1E] divide-[#2C2C2E]' : 'bg-white divide-[#E5E5EA] shadow-sm', 'divide-y')}>
+                          <button onClick={() => navigate('/brand-settings')} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-500/15 text-emerald-700')}>
+                              <Settings className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Brand settings</p>
+                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Profile, website, and preferences</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 opacity-20" />
+                          </button>
 
-                    <button onClick={() => toast.message('Billing', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-500/15 text-indigo-700')}>
-                        <CreditCard className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Billing</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Invoices and payment methods</p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 opacity-20" />
-                    </button>
+                          <button onClick={() => toast.message('Billing', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-500/15 text-indigo-700')}>
+                              <CreditCard className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Billing</p>
+                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Invoices and payment methods</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 opacity-20" />
+                          </button>
 
-                    <button onClick={() => toast.message('Team members', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-500/15 text-sky-700')}>
-                        <Users className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Team members</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Invite teammates and roles</p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 opacity-20" />
-                    </button>
+                          <button onClick={() => toast.message('Team members', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-500/15 text-sky-700')}>
+                              <Users className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Team members</p>
+                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Invite teammates and roles</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 opacity-20" />
+                          </button>
 
-                    <button onClick={() => { triggerHaptic(HapticPatterns.light); setTheme((t) => (t === 'dark' ? 'light' : 'dark')); }} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-500/15 text-amber-700')}>
-                        {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Theme</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isDark ? 'Dark' : 'Light'}</p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 opacity-20" />
-                    </button>
+                          <button onClick={() => { triggerHaptic(HapticPatterns.light); setTheme((t) => (t === 'dark' ? 'light' : 'dark')); }} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-500/15 text-amber-700')}>
+                              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Theme</p>
+                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isDark ? 'Dark' : 'Light'}</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 opacity-20" />
+                          </button>
 
-                    <button disabled={!isPushSupported || isPushBusy} onClick={handleEnablePush} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all disabled:opacity-50 active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-500/15 text-blue-700')}>
-                        <Bell className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Notifications</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isPushSubscribed ? 'Enabled' : isPushSupported ? 'Enable notifications' : 'Not supported'}</p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 opacity-20" />
-                    </button>
+                          <button onClick={() => setActiveSettingsPage('notifications')} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-500/15 text-blue-700')}>
+                              <Bell className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Notifications</p>
+                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isPushSubscribed ? 'Enabled' : isPushSupported ? 'Setup push alerts' : 'Not supported'}</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 opacity-20" />
+                          </button>
 
-                    <button onClick={() => onLogout?.()} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                      <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-red-500/20 text-red-300' : 'bg-red-500/15 text-red-700')}>
-                        <LogOut className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Logout</p>
-                        <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Sign out of this brand account</p>
-                      </div>
-                    </button>
-                  </div>
+                          <button onClick={() => onLogout?.()} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
+                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-red-500/20 text-red-300' : 'bg-red-500/15 text-red-700')}>
+                              <LogOut className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Logout</p>
+                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Sign out of this brand account</p>
+                            </div>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               )}
             </div>

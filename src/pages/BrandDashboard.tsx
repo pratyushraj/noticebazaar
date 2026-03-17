@@ -3,35 +3,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { supabase } from '@/integrations/supabase/client';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import BrandMobileDashboard from './BrandMobileDashboard';
 
-const buildProfilesById = (profiles: any[] | null | undefined) => {
-  const map = new Map<string, any>();
-  (profiles || []).forEach((p) => {
-    if (!p?.id) return;
-    map.set(String(p.id), p);
-  });
-  return map;
-};
-
-const isMissingColumnError = (err: any, column: string) => {
-  const msg = String(err?.message || err?.details || err?.hint || '').toLowerCase();
-  const col = String(column || '').toLowerCase();
-  return (
-    msg.includes(`could not find the '${col}' column`) ||
-    msg.includes(`could not find the \"${col}\" column`) ||
-    msg.includes(`column ${col} does not exist`) ||
-    msg.includes(`column "${col}" does not exist`) ||
-    msg.includes(`${col} does not exist`) ||
-    (msg.includes('column') && msg.includes(col) && msg.includes('does not exist')) ||
-    (msg.includes('schema cache') && msg.includes(col))
-  );
-};
+const PROD_API_BASE = 'https://noticebazaar-api.onrender.com';
 
 const BrandDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, user } = useSession();
+  const { profile, user, session } = useSession();
 
   const isDemoBrand = useMemo(() => {
     const email = (user?.email || '').toLowerCase();
@@ -49,6 +29,54 @@ const BrandDashboard = () => {
     return 'dashboard' as const;
   }, [location.pathname, location.search]);
 
+  const isLocalApiForced = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return localStorage.getItem('useLocalApi') === 'true' || params.get('localApi') === 'true';
+  }, []);
+
+  const isLocalhostApiBase = (apiBase: string) =>
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(String(apiBase || ''));
+
+  const fetchBrandDashboard = async (path: string) => {
+    if (!session?.access_token) throw new Error('Authentication required');
+    const apiBase = getApiBaseUrl() || PROD_API_BASE;
+
+    const doFetch = async (base: string) => {
+      const res = await fetch(`${base}${path}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data: any = await res.json().catch(() => ({}));
+      return { res, data };
+    };
+
+    try {
+      const first = await doFetch(apiBase);
+      if (first.res.ok && first.data?.success) return first.data;
+
+      // Common pitfall: frontend accidentally pointing to a local API server (or an old local build)
+      // which doesn't have the newest routes. Auto-fallback to production API unless local API is forced.
+      if (!isLocalApiForced && isLocalhostApiBase(apiBase) && (first.res.status === 404 || first.res.status >= 500)) {
+        const second = await doFetch(PROD_API_BASE);
+        if (second.res.ok && second.data?.success) return second.data;
+        throw new Error(second.data?.error || 'Failed to load brand dashboard data');
+      }
+
+      throw new Error(first.data?.error || 'Failed to load brand dashboard data');
+    } catch (err: any) {
+      // Connection refused / server down on localhost → fallback to prod API when not forced.
+      const msg = String(err?.message || err || '').toLowerCase();
+      if (!isLocalApiForced && isLocalhostApiBase(getApiBaseUrl()) && (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('connection'))) {
+        const second = await fetch(`${PROD_API_BASE}${path}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const data: any = await second.json().catch(() => ({}));
+        if (second.ok && data?.success) return data;
+      }
+      throw err;
+    }
+  };
+
   const {
     data: requests = [],
     isLoading: isLoadingRequests,
@@ -56,85 +84,19 @@ const BrandDashboard = () => {
   } = useSupabaseQuery(
     ['brandRequests', user?.id],
     async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !session?.access_token) return [];
 
-      const selectV2 = `
-          id, 
-          brand_name, 
-          brand_email, 
-          collab_type, 
-          status, 
-          created_at, 
-          budget_range, 
-          exact_budget, 
-          barter_value,
-          barter_description,
-          deliverables,
-          deadline,
-          creator_id,
-          counter_offer,
-          brand_id
-        `;
-
-      const selectV1 = `
-          id, 
-          brand_name, 
-          brand_email, 
-          collab_type, 
-          status, 
-          created_at, 
-          budget_range, 
-          exact_budget, 
-          barter_value,
-          barter_description,
-          deliverables,
-          deadline,
-          creator_id,
-          counter_offer
-        `;
-
-      const run = async (select: string, canUseBrandId: boolean) => {
-        const baseQuery = supabase
-          .from('collab_requests')
-          .select(select)
-          .order('created_at', { ascending: false }) as any;
-
-        if (canUseBrandId) {
-          const query = (user.email
-            ? baseQuery.or(`brand_id.eq.${user.id},brand_email.eq.${user.email}`)
-            : baseQuery.eq('brand_id', user.id)) as any;
-          const { data, error } = await query;
-          if (error) throw error;
-          return (data || []) as any[];
-        }
-
-        if (!user.email) return [] as any[];
-        const { data, error } = await baseQuery.eq('brand_email', user.email);
-        if (error) throw error;
-        return (data || []) as any[];
-      };
-
-      let rows: any[] = [];
-      try {
-        rows = await run(selectV2, true);
-      } catch (err: any) {
-        if (isMissingColumnError(err, 'brand_id')) rows = await run(selectV1, false);
-        else throw err;
-      }
-
-      const creatorIds = Array.from(new Set(rows.map((r) => String(r.creator_id || '')).filter(Boolean)));
-      if (creatorIds.length === 0) return rows;
-
-      const { data: profs, error: profErr } = await supabase
-        .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url')
-        .in('id' as any, creatorIds as any[]);
-
-      if (profErr) return rows;
-      const byId = buildProfilesById(profs);
-      return rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
+      // Use backend (service-role) to avoid RLS blocking brand accounts from reading
+      // collab_requests / brand_deals directly via Supabase.
+      const data = await fetchBrandDashboard('/api/brand-dashboard/requests');
+      return Array.isArray(data.requests) ? data.requests : [];
     },
-    { enabled: !!user?.id }
+    {
+      enabled: !!user?.id && !!session?.access_token,
+      refetchOnWindowFocus: true,
+      refetchInterval: 15000,
+      staleTime: 5000,
+    }
   );
 
   const {
@@ -144,71 +106,17 @@ const BrandDashboard = () => {
   } = useSupabaseQuery(
     ['brandDeals', user?.id],
     async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !session?.access_token) return [];
 
-      const selectV2 = `
-          id,
-          creator_id,
-          status,
-          created_at,
-          deal_amount,
-          due_date,
-          brand_id,
-          brand_email
-        `;
-
-      const selectV1 = `
-          id,
-          creator_id,
-          status,
-          created_at,
-          deal_amount,
-          due_date,
-          brand_email
-        `;
-
-      const run = async (select: string, canUseBrandId: boolean) => {
-        const baseQuery = supabase
-          .from('brand_deals')
-          .select(select)
-          .order('created_at', { ascending: false }) as any;
-
-        if (canUseBrandId) {
-          const query = (user.email
-            ? baseQuery.or(`brand_id.eq.${user.id},brand_email.eq.${user.email}`)
-            : baseQuery.eq('brand_id', user.id)) as any;
-          const { data, error } = await query;
-          if (error) throw error;
-          return (data || []) as any[];
-        }
-
-        if (!user.email) return [] as any[];
-        const { data, error } = await baseQuery.eq('brand_email', user.email);
-        if (error) throw error;
-        return (data || []) as any[];
-      };
-
-      let rows: any[] = [];
-      try {
-        rows = await run(selectV2, true);
-      } catch (err: any) {
-        if (isMissingColumnError(err, 'brand_id')) rows = await run(selectV1, false);
-        else throw err;
-      }
-
-      const creatorIds = Array.from(new Set(rows.map((r) => String(r.creator_id || '')).filter(Boolean)));
-      if (creatorIds.length === 0) return rows;
-
-      const { data: profs, error: profErr } = await supabase
-        .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url')
-        .in('id' as any, creatorIds as any[]);
-
-      if (profErr) return rows;
-      const byId = buildProfilesById(profs);
-      return rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
+      const data = await fetchBrandDashboard('/api/brand-dashboard/deals');
+      return Array.isArray(data.deals) ? data.deals : [];
     },
-    { enabled: !!user?.id }
+    {
+      enabled: !!user?.id && !!session?.access_token,
+      refetchOnWindowFocus: true,
+      refetchInterval: 15000,
+      staleTime: 5000,
+    }
   );
 
   const isLoading = Boolean(isLoadingRequests || isLoadingDeals);

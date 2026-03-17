@@ -10,24 +10,8 @@
       "destination": "https://noticebazaar-api.onrender.com/api/push/$1"
     },
     {
-      "source": "/api/dashboard-preview",
-      "destination": "/api/dashboard-preview"
-    },
-    {
-      "source": "/api/debug",
-      "destination": "/api/debug"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "https://api.creatorarmour.com/api/$1"
-    },
-    {
-      "source": "/dashboard-preview",
-      "destination": "/api/dashboard-preview"
-    },
-    {
-      "source": "/dashboard-preview/:path*",
-      "destination": "/api/dashboard-preview"
     },
     {
       "source": "/assets/:path*",
@@ -42,11 +26,6 @@
       "destination": "/index.html"
     }
   ],
-  "functions": {
-    "api/dashboard-preview.ts": {
-      "includeFiles": "dist/**"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",

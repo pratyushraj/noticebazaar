@@ -182,7 +182,8 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
           fetchRequests();
           setAction(null);
           setSelectedRequest(null);
-          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}`);
+          // Keep creators inside the Collabs flow; deal details are accessible from Active.
+          navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
         }
       } else {
         toast.error(data.error || 'Failed to accept request');
