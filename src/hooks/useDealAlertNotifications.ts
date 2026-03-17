@@ -294,17 +294,39 @@ export const useDealAlertNotifications = () => {
         return { success: false, reason: 'not_authenticated' };
       }
 
-      const response = await fetchWithTimeout(`${pushApiBase}/api/push/test`, {
+      // Prefer direct-test using the browser's active PushSubscription.
+      // This avoids backend-side subscription enumeration edge cases and gives a
+      // deterministic "does *this device* receive push?" check.
+      let browserSubscription: any = null;
+      try {
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          const sub = await registration.pushManager.getSubscription();
+          browserSubscription = sub ? sub.toJSON() : null;
+        }
+      } catch (error: any) {
+        logger.warn('Failed to read browser push subscription for direct-test; falling back to server test', {
+          error: error?.message,
+        });
+      }
+
+      const endpoint = browserSubscription ? '/api/push/direct-test' : '/api/push/test';
+      const requestBody: any = {
+        title: options?.title || 'Test Notification 🚀',
+        body: options?.body || 'If you see this, your push notifications are working perfectly!',
+        url: '/creator-profile?section=account',
+      };
+      if (browserSubscription) {
+        requestBody.subscription = browserSubscription;
+      }
+
+      const response = await fetchWithTimeout(`${pushApiBase}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          title: options?.title || 'Test Notification 🚀',
-          body: options?.body || 'If you see this, your push notifications are working perfectly!',
-          url: '/creator-profile?section=account',
-        }),
+        body: JSON.stringify(requestBody),
       }, 20000); // 20s timeout for test push
 
       const textBody = await response.text();
