@@ -1726,7 +1726,11 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
     if (!creator) {
       const leadInsertData: any = {
-        ...basePayload,
+        brand_name: basePayload.brand_name,
+        brand_email: basePayload.brand_email,
+        brand_phone: basePayload.brand_phone,
+        brand_website: basePayload.brand_website,
+        brand_instagram: basePayload.brand_instagram,
         target_channel: 'username',
         status: 'pending',
         submitted_ip: clientIp,
@@ -1832,7 +1836,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       brand_logo_url: basePayload.brand_logo_url,
       collab_type: basePayload.collab_type,
       campaign_description: basePayload.campaign_description,
-      deliverables: JSON.stringify(basePayload.deliverables),
+      deliverables: basePayload.deliverables,
       usage_rights: basePayload.usage_rights,
       deadline: basePayload.deadline,
       offer_expires_at: basePayload.offer_expires_at,

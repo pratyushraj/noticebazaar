@@ -419,6 +419,11 @@ const CollabLinkLanding = () => {
     const html = document.documentElement;
     const hadDark = html.classList.contains('dark');
     html.classList.remove('dark');
+    
+    // Safety check: ensure no prior components left the screen locked
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+
     return () => {
       // Restore dark if it was set before entering this page
       if (hadDark) html.classList.add('dark');
@@ -2068,7 +2073,7 @@ const CollabLinkLanding = () => {
 
       {/* NOTE: `overflow-x-clip` breaks `position: sticky` in Chromium when applied on an ancestor.
           Keep it on mobile to avoid horizontal scroll, but disable it on desktop so the right panel can stick. */}
-      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900 relative overflow-x-clip lg:overflow-x-visible" style={{ backgroundColor: "#F7F9FB" }}>
+      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
         <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
         {isOwner && (
@@ -2143,8 +2148,8 @@ const CollabLinkLanding = () => {
             </div>
           </div>
         )}
-	        <div className="container mx-auto px-4 lg:px-6 pt-4 pb-36 lg:pb-10 lg:pt-10 max-w-lg lg:max-w-[1280px] relative">
-	          <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] items-start gap-7 lg:gap-8 w-full">
+	        <div className="container mx-auto px-4 md:px-6 pt-4 pb-36 md:pb-10 md:pt-10 max-w-lg md:max-w-4xl lg:max-w-[1280px] relative">
+	          <div className="flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_380px] items-start gap-7 md:gap-8 w-full">
 
             {/* LEFT COLUMN - Creator Context */}
 		            <div className="w-full shrink-0 space-y-3 lg:space-y-5 z-10">
@@ -2725,7 +2730,7 @@ const CollabLinkLanding = () => {
 	                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
 
                   {/* Mobile header + disclosure */}
-                  <div className="lg:hidden flex items-start justify-between gap-3 mb-4">
+                  <div className="md:hidden flex items-start justify-between gap-3 mb-4">
                     <div className="min-w-0">
                       <h2 className="text-[14px] font-black text-slate-900 tracking-tight">About the creator</h2>
                       <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Bio and active platforms</p>
@@ -2746,7 +2751,7 @@ const CollabLinkLanding = () => {
 
                   {/* Mobile preview (collapsed) */}
                   {!editMode && !aboutCreatorOpen && (
-                    <div className="lg:hidden">
+                    <div className="md:hidden">
                       {creatorBio && (
                         <p className="text-slate-700 leading-relaxed font-medium line-clamp-4">
                           {creatorBio}
@@ -2774,7 +2779,7 @@ const CollabLinkLanding = () => {
                   {/* Full content (always shown on desktop, toggled on mobile) */}
                   <div
                     id="about-creator-panel"
-                    className={(aboutCreatorOpen || editMode) ? '' : 'hidden lg:block'}
+                    className={(aboutCreatorOpen || editMode) ? '' : 'hidden md:block'}
                   >
 	                {editMode ? (
 	                  <div className="mb-6 relative">
@@ -2953,7 +2958,7 @@ const CollabLinkLanding = () => {
 	            </div> {/* END LEFT COLUMN */}
 
 	            {/* RIGHT COLUMN - Offer Form */}
-			            <div className="w-full lg:w-[380px] lg:max-w-[380px] lg:justify-self-end lg:pb-32 lg:sticky lg:top-24 self-start">
+			            <div className="w-full md:w-[380px] md:max-w-[380px] md:justify-self-end md:pb-32 md:sticky md:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
                 {!showCustomFlow && (
@@ -3399,7 +3404,7 @@ const CollabLinkLanding = () => {
 	                          } else {
                             setCurrentStep(currentStep - 1);
                           }
-                          triggerHaptic(HapticPatterns.soft);
+                          triggerHaptic(HapticPatterns.light);
                         }}
                         variant="outline"
                         className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
@@ -3484,7 +3489,7 @@ const CollabLinkLanding = () => {
 	                      {currentStep < 5 && (
 	                        <Button
 	                          onClick={handleStickySubmit}
-                          className="hidden lg:flex w-auto h-12 px-8 rounded-2xl bg-slate-100 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                          className="hidden md:flex w-auto h-12 px-8 rounded-2xl bg-slate-100 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
                         >
                           Next Step: Step {currentStep + 1}
                         </Button>
@@ -3510,7 +3515,7 @@ const CollabLinkLanding = () => {
             </div> {/* END RIGHT COLUMN */}
 	          </div> {/* END flex-row container */}
 
-	          <div className="lg:hidden h-24" />
+	          <div className="md:hidden h-24" />
 
           {isOwner && !previewAsBrand && hasIncompleteSetup && (
             <div className="fixed right-4 bottom-24 z-50 md:hidden">
@@ -3577,7 +3582,7 @@ const CollabLinkLanding = () => {
           </div>
 
           {/* Sticky Bottom CTA (mobile compact) */}
-          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
             <div className="relative">
               {isCoreReady && !hasStartedOffer && (
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />

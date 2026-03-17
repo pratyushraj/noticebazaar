@@ -105,7 +105,7 @@ router.post('/confirm', async (req, res) => {
         }
 
         // 2. Create Brand Deal (Contract Generation Logic)
-        const dealData = {
+        const dealData: any = {
             brand_id: request.brand_id,
             creator_id: request.creator_id,
             brand_name: request.brand_name,

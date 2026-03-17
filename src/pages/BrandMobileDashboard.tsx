@@ -20,7 +20,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -45,6 +45,7 @@ type BrandMobileDashboardProps = {
   stats?: BrandDashboardStats;
   initialTab?: BrandTab;
   isLoading?: boolean;
+  isDemoBrand?: boolean;
   onRefresh?: () => Promise<void>;
   onLogout?: () => void | Promise<void>;
 };
@@ -87,9 +88,17 @@ const BrandMobileDashboard = ({
   isLoading = false,
   onRefresh,
   onLogout,
+  isDemoBrand = false,
 }: BrandMobileDashboardProps) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<BrandTab>(initialTab);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as BrandTab) || (searchParams.get('subtab') as BrandTab) || initialTab;
+
+  const setActiveTab = (tab: BrandTab) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('tab', tab);
+    setSearchParams(next, { replace: true });
+  };
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [startY, setStartY] = useState(0);
@@ -137,9 +146,9 @@ const BrandMobileDashboard = ({
   }, [initialTab]);
 
   const brandName = useMemo(() => {
-    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
+    const name = profile?.business_name || profile?.first_name || profile?.full_name || (isDemoBrand ? 'Acme Corp' : 'Brand');
     return String(name || 'Brand').trim() || 'Brand';
-  }, [profile]);
+  }, [profile, isDemoBrand]);
 
   const brandLogo = useMemo(() => {
     const src = profile?.avatar_url || profile?.logo_url;
@@ -184,7 +193,7 @@ const BrandMobileDashboard = ({
       username: r?.profiles?.username || '',
       avatar_url: r?.profiles?.avatar_url || '',
       status: String(r?.status || ''),
-      href: '/brand-console-demo',
+      href: `/deal-details/${r.id}`,
     }));
     const fromDeals = (deals || []).map((d: any) => ({
       id: String(d?.creator_id || d?.profiles?.id || ''),
@@ -192,7 +201,7 @@ const BrandMobileDashboard = ({
       username: d?.profiles?.username || '',
       avatar_url: d?.profiles?.avatar_url || '',
       status: String(d?.status || ''),
-      href: '/brand-console-demo',
+      href: `/deal-details/${d.id}`,
     }));
     return uniqBy([...fromReqs, ...fromDeals].filter((c) => c.id), (c) => c.id).slice(0, 12);
   }, [requests, deals]);
@@ -233,11 +242,11 @@ const BrandMobileDashboard = ({
               id: 'n-action',
               title: `${displayStats.needsAction} offer${displayStats.needsAction === 1 ? '' : 's'} need your reply`,
               time: 'Today',
-              href: '/brand-console-demo',
+              href: '/brand-dashboard?tab=deals',
             }
           : null,
         displayStats.totalSent > 0
-          ? { id: 'n-sent', title: 'Offers sent this week', time: 'This week', href: '/brand-console-demo' }
+          ? { id: 'n-sent', title: 'Offers sent this week', time: 'This week', href: '/brand-dashboard?tab=deals' }
           : null,
       ].filter(Boolean) as any[],
     [displayStats.needsAction, displayStats.totalSent]
@@ -1048,7 +1057,7 @@ const BrandMobileDashboard = ({
 
                 <div className="grid grid-cols-1 gap-3">
                   <button
-                    onClick={() => { setShowActionSheet(false); navigate('/brand-console-demo'); }}
+                    onClick={() => { setShowActionSheet(false); navigate('/search'); }}
                     className={cn(
                       'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
                       isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'

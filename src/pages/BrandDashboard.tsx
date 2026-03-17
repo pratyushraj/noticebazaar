@@ -33,9 +33,17 @@ const BrandDashboard = () => {
   const location = useLocation();
   const { profile, user } = useSession();
 
+  const isDemoBrand = useMemo(() => {
+    const email = (user?.email || '').toLowerCase();
+    const params = new URLSearchParams(window.location.search);
+    return email === 'brand-demo@noticebazaar.com' || ['1', 'true', 'yes'].includes((params.get('demo') || '').toLowerCase());
+  }, [user?.email]);
+
   const initialTab = useMemo(() => {
-    if (location.pathname.includes('/brand/collaborations')) return 'creators' as const;
-    if (location.pathname.includes('/brand/analytics')) return 'analytics' as const;
+    const path = location.pathname;
+    if (path.includes('/brand/collaborations')) return 'creators' as const;
+    if (path.includes('/brand/analytics')) return 'analytics' as const;
+    if (path.includes('/brand/offers') || path.includes('/brand/deals')) return 'deals' as const;
     return 'dashboard' as const;
   }, [location.pathname]);
 
@@ -208,8 +216,20 @@ const BrandDashboard = () => {
     const activeDeals = deals.filter((d: any) => d.status !== 'completed' && d.status !== 'cancelled').length;
     const totalInvestment = deals.reduce((acc: number, d: any) => acc + (Number(d?.deal_amount) || 0), 0);
     const needsAction = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'countered').length;
-    return { totalSent, activeDeals, totalInvestment, needsAction };
-  }, [requests, deals]);
+
+    const baseStats = { totalSent, activeDeals, totalInvestment, needsAction };
+
+    if (isDemoBrand && requests.length === 0 && deals.length === 0) {
+      return {
+        totalSent: 12,
+        activeDeals: 5,
+        totalInvestment: 85000,
+        needsAction: 3,
+      };
+    }
+
+    return baseStats;
+  }, [requests, deals, isDemoBrand]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -228,6 +248,7 @@ const BrandDashboard = () => {
       stats={stats}
       initialTab={initialTab}
       isLoading={isLoading}
+      isDemoBrand={isDemoBrand}
       onRefresh={handleRefresh}
       onLogout={handleLogout}
     />

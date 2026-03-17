@@ -67,7 +67,7 @@ const BrandDealConsole = () => {
             if (!token) return;
             try {
                 const apiBaseUrl = getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const response = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
                 const result = await response.json();
 
                 if (result.success) {
@@ -107,7 +107,7 @@ const BrandDealConsole = () => {
             if (result.success) {
                 toast.success('Content submitted for review');
                 // Refresh data
-                const refreshRes = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const refreshRes = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
                 const refreshData = await refreshRes.json();
                 if (refreshData.success) setData(refreshData);
             } else {
@@ -133,7 +133,7 @@ const BrandDealConsole = () => {
             if (result.success) {
                 toast.success(status === 'approved' ? 'Content approved!' : 'Feedback sent to creator');
                 // Refresh data
-                const refreshRes = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const refreshRes = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
                 const refreshData = await refreshRes.json();
                 if (refreshData.success) {
                     setData(refreshData);

@@ -1209,3 +1209,18 @@ body {
       rgba(11, 15, 20, 0.98) 100%);
   filter: saturate(105%) contrast(105%);
 }
+
+/* ============================================ */
+/* Z-INDEX MANAGEMENT (Fixed Overlay & Modal Issues) */
+/* ============================================ */
+
+/* Ensure Radix Portals (Dialogs, Menus, Popovers) are always on top */
+[data-radix-portal] {
+  z-index: 20000 !important;
+}
+
+/* Toast notifications should be above everything */
+.sonner-toast {
+  z-index: 20100 !important;
+}
+
