@@ -61,6 +61,7 @@ import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
 import onboardingEmailsRouter from './routes/onboardingEmails.js';
+import brandDashboardRouter from './routes/brandDashboard.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
@@ -604,6 +605,7 @@ app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
 app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
 app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
+app.use('/api/brand-dashboard', authMiddleware, rateLimitMiddleware, brandDashboardRouter);
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);
