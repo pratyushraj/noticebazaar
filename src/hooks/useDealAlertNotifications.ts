@@ -56,8 +56,9 @@ export const useDealAlertNotifications = () => {
     // same-origin /api/push/* Vercel rewrite → Render. This avoids iOS Safari
     // CSP cross-origin blocking of direct fetches to noticebazaar-api.onrender.com.
     if (isPublicHost) return '';
-    // Localhost dev: prefer local API to avoid CORS on Render during development.
-    if (isLocalhostDev) return 'http://localhost:3001';
+    // Localhost dev: default to production API (most dev flows don't run the backend locally).
+    // If you *do* run the backend locally, set VITE_API_URL/VITE_API_BASE_URL accordingly.
+    if (isLocalhostDev) return getApiBaseUrl();
     return getApiBaseUrl();
   }, [isLocalhostDev]);
 
@@ -78,13 +79,6 @@ export const useDealAlertNotifications = () => {
     } catch (error: any) {
       // Non-fatal: we still allow email fallback
       logger.warn('Service worker check failed in syncSubscriptionStatus', { error: error?.message });
-    }
-
-    // On localhost dev the backend isn't running — skip the server-side status
-    // check entirely to avoid ERR_CONNECTION_REFUSED noise in the console.
-    if (isLocalhostDev) {
-      setIsSubscribed(!!browserSub);
-      return;
     }
 
     try {
