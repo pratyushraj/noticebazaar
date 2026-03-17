@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import BrandMobileDashboard from './BrandMobileDashboard';
 
+const PROD_API_BASE = 'https://noticebazaar-api.onrender.com';
+
 const BrandDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,6 +29,54 @@ const BrandDashboard = () => {
     return 'dashboard' as const;
   }, [location.pathname, location.search]);
 
+  const isLocalApiForced = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search);
+    return localStorage.getItem('useLocalApi') === 'true' || params.get('localApi') === 'true';
+  }, []);
+
+  const isLocalhostApiBase = (apiBase: string) =>
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(String(apiBase || ''));
+
+  const fetchBrandDashboard = async (path: string) => {
+    if (!session?.access_token) throw new Error('Authentication required');
+    const apiBase = getApiBaseUrl() || PROD_API_BASE;
+
+    const doFetch = async (base: string) => {
+      const res = await fetch(`${base}${path}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data: any = await res.json().catch(() => ({}));
+      return { res, data };
+    };
+
+    try {
+      const first = await doFetch(apiBase);
+      if (first.res.ok && first.data?.success) return first.data;
+
+      // Common pitfall: frontend accidentally pointing to a local API server (or an old local build)
+      // which doesn't have the newest routes. Auto-fallback to production API unless local API is forced.
+      if (!isLocalApiForced && isLocalhostApiBase(apiBase) && (first.res.status === 404 || first.res.status >= 500)) {
+        const second = await doFetch(PROD_API_BASE);
+        if (second.res.ok && second.data?.success) return second.data;
+        throw new Error(second.data?.error || 'Failed to load brand dashboard data');
+      }
+
+      throw new Error(first.data?.error || 'Failed to load brand dashboard data');
+    } catch (err: any) {
+      // Connection refused / server down on localhost → fallback to prod API when not forced.
+      const msg = String(err?.message || err || '').toLowerCase();
+      if (!isLocalApiForced && isLocalhostApiBase(getApiBaseUrl()) && (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('connection'))) {
+        const second = await fetch(`${PROD_API_BASE}${path}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const data: any = await second.json().catch(() => ({}));
+        if (second.ok && data?.success) return data;
+      }
+      throw err;
+    }
+  };
+
   const {
     data: requests = [],
     isLoading: isLoadingRequests,
@@ -38,15 +88,15 @@ const BrandDashboard = () => {
 
       // Use backend (service-role) to avoid RLS blocking brand accounts from reading
       // collab_requests / brand_deals directly via Supabase.
-      const apiBase = getApiBaseUrl();
-      const res = await fetch(`${apiBase}/api/brand-dashboard/requests`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data: any = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.success) throw new Error(data?.error || 'Failed to load brand requests');
+      const data = await fetchBrandDashboard('/api/brand-dashboard/requests');
       return Array.isArray(data.requests) ? data.requests : [];
     },
-    { enabled: !!user?.id && !!session?.access_token }
+    {
+      enabled: !!user?.id && !!session?.access_token,
+      refetchOnWindowFocus: true,
+      refetchInterval: 15000,
+      staleTime: 5000,
+    }
   );
 
   const {
@@ -58,15 +108,15 @@ const BrandDashboard = () => {
     async () => {
       if (!user?.id || !session?.access_token) return [];
 
-      const apiBase = getApiBaseUrl();
-      const res = await fetch(`${apiBase}/api/brand-dashboard/deals`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data: any = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.success) throw new Error(data?.error || 'Failed to load brand deals');
+      const data = await fetchBrandDashboard('/api/brand-dashboard/deals');
       return Array.isArray(data.deals) ? data.deals : [];
     },
-    { enabled: !!user?.id && !!session?.access_token }
+    {
+      enabled: !!user?.id && !!session?.access_token,
+      refetchOnWindowFocus: true,
+      refetchInterval: 15000,
+      staleTime: 5000,
+    }
   );
 
   const isLoading = Boolean(isLoadingRequests || isLoadingDeals);
