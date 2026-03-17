@@ -14,3 +14,7 @@ check_*.mjs
 fix_demo_brand_ids.mjs
 server/*.mjs
 server/pnpm-lock.yaml
+
+# Do not deploy backend/serverless code from this repo on Vercel Hobby (function limit).
+api/
+server/
