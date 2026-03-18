@@ -1207,18 +1207,39 @@ const BrandMobileDashboard = ({
                       </button>
                     </div>
                     <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
-                      <div className={cn('p-4 flex items-center justify-between', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setActiveTab('collabs');
+                        }}
+                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'border-b border-white/10 hover:bg-white/5' : 'border-b border-slate-200 hover:bg-slate-50')}
+                      >
                         <p className={cn('text-[12px] font-bold', textColor)}>Pending</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
-                      </div>
-                      <div className={cn('p-4 flex items-center justify-between', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setActiveTab('collabs');
+                        }}
+                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'border-b border-white/10 hover:bg-white/5' : 'border-b border-slate-200 hover:bg-slate-50')}
+                      >
                         <p className={cn('text-[12px] font-bold', textColor)}>Active</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{activeDealsList.length}</p>
-                      </div>
-                      <div className="p-4 flex items-center justify-between">
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setActiveTab('collabs');
+                        }}
+                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
+                      >
                         <p className={cn('text-[12px] font-bold', textColor)}>Completed</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{completedDealsList.length}</p>
-                      </div>
+                      </button>
                     </div>
                   </motion.div>
                 </>
