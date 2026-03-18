@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { useSession } from '@/contexts/SessionContext';
 
 // Structured deliverable interface
 interface Deliverable {
@@ -86,6 +87,7 @@ const BrandDealDetailsPage = () => {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { session } = useSession();
   const isTestMode = searchParams.get('test') === 'true' || searchParams.get('autofill') === 'true';
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -216,6 +218,13 @@ const BrandDealDetailsPage = () => {
         const data = await response.json();
 
         if (!response.ok || !data.success) {
+          // Common internal navigation mistake: a brand opens /deal-details/<collab_request_id>
+          // but this route expects a deal-details *token*.
+          if (response.status === 404 && session?.access_token) {
+            setError('This looks like an internal offer ID (not a public link token). Open it from Brand Dashboard → Collabs.');
+            setIsLoading(false);
+            return;
+          }
           setError(data.error || 'This link is no longer valid. Please contact the creator.');
           setIsLoading(false);
           return;
@@ -842,6 +851,14 @@ const BrandDealDetailsPage = () => {
           </div>
           <h2 className="text-xl font-semibold mb-2">Link Invalid</h2>
           <p className="text-white/70">{error}</p>
+          {session?.access_token && (
+            <button
+              onClick={() => navigate('/brand-dashboard?tab=collabs')}
+              className="mt-5 w-full h-11 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold transition-all"
+            >
+              Open Brand Collabs
+            </button>
+          )}
         </div>
       </div>
     );
