@@ -341,7 +341,7 @@ const BrandMobileDashboard = ({
       username: r?.profiles?.username || '',
       avatar_url: r?.profiles?.avatar_url || '',
       status: String(r?.status || ''),
-      href: `/deal-details/${r.id}`,
+      href: '/brand-dashboard?tab=collabs',
     }));
     const fromDeals = (deals || []).map((d: any) => ({
       id: String(d?.creator_id || d?.profiles?.id || ''),
@@ -349,7 +349,7 @@ const BrandMobileDashboard = ({
       username: d?.profiles?.username || '',
       avatar_url: d?.profiles?.avatar_url || '',
       status: String(d?.status || ''),
-      href: `/deal-details/${d.id}`,
+      href: '/brand-dashboard?tab=collabs',
     }));
     return uniqBy([...fromReqs, ...fromDeals].filter((c) => c.id), (c) => c.id).slice(0, 12);
   }, [requests, deals]);
@@ -1262,7 +1262,10 @@ const BrandMobileDashboard = ({
                         {pendingOffersList.slice(0, 20).map((o: any) => (
                           <button
                             key={o.id}
-                            onClick={() => navigate(`/deal-details/${o.id}`)}
+                            onClick={() => {
+                              triggerHaptic(HapticPatterns.light);
+                              setActiveTab('collabs');
+                            }}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
                             <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
@@ -1305,7 +1308,10 @@ const BrandMobileDashboard = ({
                         {activeDealsList.slice(0, 12).map((d: any) => (
                           <button
                             key={d.id}
-                            onClick={() => navigate(`/deal-details/${d.id}`)}
+                            onClick={() => {
+                              triggerHaptic(HapticPatterns.light);
+                              setActiveTab('collabs');
+                            }}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
                             <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
