@@ -50,9 +50,10 @@ export function getApiBaseUrl(): string {
         // between frontend serverless handlers and backend API routes.
         apiUrl = 'https://noticebazaar-api.onrender.com';
       } else if (isLocalhost) {
-        // Localhost default: use production API to avoid local backend dependency.
-        // To force local API, set localStorage.useLocalApi = 'true'.
-        apiUrl = 'https://noticebazaar-api.onrender.com';
+        // Localhost default: prefer local API for developer experience.
+        // To force production API, set localStorage.useProdApi = 'true' (or ?prodApi=true).
+        const useProdApi = localStorage.getItem('useProdApi') === 'true' || urlParams.get('prodApi') === 'true';
+        apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://localhost:3001';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API
         apiUrl = origin.replace(/:\d+$/, '') + ':3001';
