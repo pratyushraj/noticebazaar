@@ -37,6 +37,13 @@ import { supabase } from '@/integrations/supabase/client';
 // Lifecycle Stages
 type Stage = 'PROPOSAL' | 'INTAKE' | 'SIGNING' | 'ESCROW' | 'EXECUTING' | 'VESTED';
 
+const safeImageSrc = (src?: string | null) => {
+    const value = (src || '').trim();
+    if (!value) return undefined;
+    if (/cdninstagram\.com/i.test(value)) return undefined;
+    return value;
+};
+
 const STAGES: { id: Stage; label: string; description: string }[] = [
     { id: 'PROPOSAL', label: 'Proposal', description: 'Reviewing initial brief' },
     { id: 'INTAKE', label: 'Deal Lock', description: 'Mutual commitment layer' },
@@ -67,7 +74,7 @@ const BrandDealConsole = () => {
             if (!token) return;
             try {
                 const apiBaseUrl = getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const response = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
                 const result = await response.json();
 
                 if (result.success) {
@@ -107,7 +114,7 @@ const BrandDealConsole = () => {
             if (result.success) {
                 toast.success('Content submitted for review');
                 // Refresh data
-                const refreshRes = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const refreshRes = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
                 const refreshData = await refreshRes.json();
                 if (refreshData.success) setData(refreshData);
             } else {
@@ -133,7 +140,7 @@ const BrandDealConsole = () => {
             if (result.success) {
                 toast.success(status === 'approved' ? 'Content approved!' : 'Feedback sent to creator');
                 // Refresh data
-                const refreshRes = await fetch(`${apiBaseUrl}/api/collab-requests/console/${token}`);
+                const refreshRes = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
                 const refreshData = await refreshRes.json();
                 if (refreshData.success) {
                     setData(refreshData);
@@ -209,9 +216,9 @@ const BrandDealConsole = () => {
                             <ChevronRight className="w-4 h-4 text-slate-600" />
                             <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-slate-800 overflow-hidden">
-                                    {creator?.avatar_url ? (
+                                    {safeImageSrc(creator?.avatar_url) ? (
                                         <img
-                                            src={creator.avatar_url}
+                                            src={safeImageSrc(creator.avatar_url)}
                                             alt=""
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
