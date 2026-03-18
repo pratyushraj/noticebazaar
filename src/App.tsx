@@ -1,7 +1,7 @@
 import { useState, useEffect, lazy, Suspense, type ReactNode } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { SplashScreen } from "@/components/mobile/SplashScreen";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -125,7 +125,6 @@ import ScrollToTop from "./components/ScrollToTop";
 import AddToHomeScreen from "./components/mobile/AddToHomeScreen";
 
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
-const DealDetailPage = lazy(() => import("./pages/DealDetailPage"));
 const ContractUploadFlow = lazy(() => import("./pages/ContractUploadFlow"));
 
 const RouteFallback = () => (
@@ -145,6 +144,23 @@ const LazyRoute = ({ children }: { children: ReactNode }) => (
 const ContractReadyRedirect = () => {
   const { token } = useParams<{ token: string }>();
   return <Navigate to={`/contract-ready/${token}`} replace />;
+};
+
+const CreatorContractDashboardRoute = () => {
+  const { dealId } = useParams<{ dealId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", "collabs");
+    next.set("subtab", "active");
+    if (dealId) next.set("dealId", dealId);
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [dealId, searchParams, setSearchParams]);
+
+  return <CreatorDashboard />;
 };
 
 // Configure React Query with timeout and retry settings
@@ -396,7 +412,7 @@ const App = () => {
                         <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
                         <Route path="/create-deal" element={<ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout>} />
                         <Route path="/creator-contracts/:dealId/delivery-details" element={<ProtectedLayout allowedRoles={['creator']}><DealDeliveryDetailsPage /></ProtectedLayout>} />
-                        <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><LazyRoute><DealDetailPage /></LazyRoute></ProtectedLayout>} />
+                        <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContractDashboardRoute /></ProtectedLayout>} />
                         <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
                         <Route path="/payment/:paymentId" element={<ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout>} />
                         {/* Protection route redirected to Deals - Protection is now integrated into each Deal */}

@@ -2949,39 +2949,48 @@ export const viewContractHandler = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Deal ID is required' });
     }
 
-    // Fetch deal - try with contract_html first, fallback to basic fields if column doesn't exist
+    // Fetch deal with schema-safe fallbacks because some deployments do not have
+    // contract_html and/or safe_contract_url yet.
     let deal: any = null;
     let dealError: any = null;
 
-    // First, try to fetch with contract_html
-    const { data: dealWithHtml, error: htmlError } = await supabase
-      .from('brand_deals')
-      .select('id, creator_id, contract_html, brand_response_status')
-      .eq('id', dealId)
-      .maybeSingle();
+    const selectAttempts = [
+      'id, creator_id, contract_html, brand_response_status, status, brand_name, campaign_name, contract_file_url, safe_contract_url',
+      'id, creator_id, contract_html, brand_response_status, status, brand_name, campaign_name, contract_file_url',
+      'id, creator_id, brand_response_status, status, brand_name, campaign_name, contract_file_url, safe_contract_url',
+      'id, creator_id, brand_response_status, status, brand_name, campaign_name, contract_file_url',
+    ];
 
-    if (htmlError && htmlError.message?.includes('contract_html') && htmlError.message?.includes('does not exist')) {
-      // Column doesn't exist - fetch without it
-      console.warn('[Protection] contract_html column does not exist, fetching without it');
-      const { data: dealBasic, error: basicError } = await supabase
+    for (const fields of selectAttempts) {
+      const { data, error } = await supabase
         .from('brand_deals')
-        .select('id, creator_id, brand_response_status, contract_file_url, safe_contract_url')
+        .select(fields)
         .eq('id', dealId)
         .maybeSingle();
 
-      deal = dealBasic;
-      dealError = basicError;
-    } else {
-      deal = dealWithHtml;
-      dealError = htmlError;
-    }
+      if (!error) {
+        deal = data;
+        dealError = null;
+        break;
+      }
 
-    console.log('[Protection] Deal query result:', {
-      hasDeal: !!deal,
-      error: dealError?.message,
-      hasContractHtml: !!deal?.contract_html,
-      brandResponseStatus: deal?.brand_response_status
-    });
+      const message = String(error?.message || '');
+      const missingOptionalColumn =
+        message.includes('does not exist') &&
+        (message.includes('contract_html') || message.includes('safe_contract_url'));
+
+      if (!missingOptionalColumn) {
+        dealError = error;
+        break;
+      }
+
+      console.warn('[Protection] Optional contract column missing, retrying query:', {
+        dealId,
+        fields,
+        error: message,
+      });
+      dealError = error;
+    }
 
     if (dealError) {
       console.error('[Protection] Deal query error:', dealError);
@@ -3035,14 +3044,116 @@ export const viewContractHandler = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Allow access if deal is approved (brand has accepted)
-    // This allows viewing contracts without requiring authentication in new tabs
-    if (deal.brand_response_status !== 'accepted_verified') {
-      return res.status(403).json({ error: 'Contract is not yet available for viewing' });
-    }
-
     // Get HTML contract
-    const contractHtml = (deal as any).contract_html;
+    let contractHtml = (deal as any).contract_html;
+
+    if (!contractHtml) {
+      // If deal is signed by creator, generate a professional summary instead of just redirecting
+      const status = (deal.status || '').toLowerCase();
+      if (status.includes('signed') || status.includes('fully_executed') || status.includes('completed')) {
+        // Fetch signatures
+        const { data: signatures } = await supabase
+          .from('contract_signatures')
+          .select('*')
+          .eq('deal_id', dealId);
+
+        const creatorSig = signatures?.find(s => s.signer_role === 'creator' && s.signed);
+        const brandSig = signatures?.find(s => s.signer_role === 'brand' && s.signed);
+
+        if (creatorSig || brandSig) {
+          // Generate a professional signature summary HTML
+          contractHtml = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Digital Collaboration Agreement - ${deal.brand_name || 'Brand Partner'}</title>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #334155; max-width: 800px; mx-auto: 40px; padding: 40px; background: #f8fafc; }
+                .container { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 48px; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+                .header { border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+                h1 { margin: 0; color: #1e293b; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+                .status-badge { display: inline-block; padding: 6px 16px; border-radius: 9999px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 10px; }
+                .status-signed { background: #dcfce7; color: #166534; }
+                .section { margin-bottom: 32px; }
+                h2 { font-size: 16px; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; border-left: 4px solid #3b82f6; padding-left: 12px; }
+                .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+                .label { font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+                .value { font-size: 15px; color: #334155; font-weight: 500; }
+                .signature-box { border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; background: #f1f5f9; position: relative; overflow: hidden; }
+                .signature-box::after { content: "SIGNED DIGITAL"; position: absolute; top: 10px; right: -25px; transform: rotate(45deg); background: #22c55e; color: white; font-size: 10px; font-weight: 800; padding: 4px 30px; }
+                .timestamp { font-size: 11px; color: #64748b; font-family: monospace; }
+                .footer { margin-top: 60px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                .view-orig { display: block; margin-top: 20px; color: #3b82f6; text-decoration: none; font-weight: 600; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Collaboration Agreement</h1>
+                  <div class="status-badge status-signed">✓ Digitally Signed & Secured</div>
+                </div>
+
+                <div class="section">
+                  <h2>Engagement Overview</h2>
+                  <div class="details-grid">
+                    <div>
+                      <div class="label">Brand Partner</div>
+                      <div class="value">${deal.brand_name || 'YYYU'}</div>
+                    </div>
+                    <div>
+                      <div class="label">Campaign</div>
+                      <div class="value">${deal.campaign_name || 'Standard Collaboration'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="section">
+                  <h2>Creator Execution</h2>
+                  <div class="signature-box">
+                    <div class="label">Signer Name</div>
+                    <div class="value">${creatorSig?.signer_name || 'Creator Partner'}</div>
+                    <div class="label" style="margin-top: 12px;">Email Address</div>
+                    <div class="value">${creatorSig?.signer_email || 'N/A'}</div>
+                    <div class="label" style="margin-top: 12px;">OTP Verification</div>
+                    <div class="value">Verified via SMS/Email OTP</div>
+                    <div class="label" style="margin-top: 12px;">Timestamp</div>
+                    <div class="timestamp">${creatorSig?.signed_at ? new Date(creatorSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' }) : 'Execution in progress'}</div>
+                  </div>
+                </div>
+
+                ${brandSig ? `
+                <div class="section">
+                  <h2>Brand Execution</h2>
+                  <div class="signature-box">
+                    <div class="label">Signer Name</div>
+                    <div class="value">${brandSig.signer_name}</div>
+                    <div class="label" style="margin-top: 12px;">Timestamp</div>
+                    <div class="timestamp">${new Date(brandSig.signed_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'long', timeStyle: 'medium' })}</div>
+                  </div>
+                </div>
+                ` : ''}
+
+                <div class="section">
+                   <p style="font-size: 13px; color: #64748b;">
+                     This document serves as a digital certificate of execution for the agreement between the parties listed above. 
+                     The parties have confirmed their acceptance through secure multi-factor authentication.
+                   </p>
+                   ${deal.contract_file_url ? `<a href="${deal.contract_file_url}" class="view-orig" target="_blank">View Original Contract Draft →</a>` : ''}
+                </div>
+
+                <div class="footer">
+                  <p>Certified by CreatorArmour Protection Engine</p>
+                  <p>Audit ID: ${deal.id}</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `;
+        }
+      }
+    }
 
     if (!contractHtml) {
       // If contract_html column doesn't exist or is null, check for PDF URLs

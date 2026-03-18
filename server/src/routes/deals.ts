@@ -1024,6 +1024,68 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
   }
 });
 
+router.get('/:dealId/contract-review-link', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const userEmail = String(req.user?.email || '').toLowerCase();
+    const { dealId } = req.params;
+
+    if (!dealId) {
+      return res.status(400).json({ success: false, error: 'Deal ID is required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, creator_id, brand_id, brand_email')
+      .eq('id', dealId)
+      .single();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const isCreatorOwner = deal.creator_id === userId;
+    const isBrandOwner = deal.brand_id === userId || (userEmail && String(deal.brand_email || '').toLowerCase() === userEmail);
+    const isAdmin = req.user!.role === 'admin';
+
+    if (!isCreatorOwner && !isBrandOwner && !isAdmin) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    let tokenId: string | null = null;
+    const { data: existingToken } = await (supabase as any)
+      .from('contract_ready_tokens')
+      .select('id')
+      .eq('deal_id', dealId)
+      .eq('is_active', true)
+      .is('revoked_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingToken?.id) {
+      tokenId = existingToken.id;
+    } else {
+      const token = await createContractReadyToken({
+        dealId,
+        creatorId: deal.creator_id,
+        expiresAt: null,
+      });
+      tokenId = token.id;
+    }
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    return res.json({
+      success: true,
+      token: tokenId,
+      viewUrl: `${baseUrl}/api/protection/contracts/${dealId}/view?token=${tokenId}`,
+    });
+  } catch (error: any) {
+    console.error('[Deals] contract-review-link error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to create contract review link' });
+  }
+});
+
 /**
  * PATCH /api/deals/:dealId/shipping/report-issue
  * Creator reports shipping issue (shipping_status = issue_reported, notify brand).

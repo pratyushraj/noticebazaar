@@ -193,6 +193,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       // Define signed statuses that should be visible (includes barter: Drafting, Awaiting Product Shipment)
       const signedStatuses = [
+        'sent', // Awaiting creator signature
         'signed',
         'SIGNED_BY_BRAND',
         'SIGNED_BY_CREATOR',

@@ -95,6 +95,7 @@ function DealDetailPageContent() {
   const { dealId } = useParams<{ dealId: string }>();
   const { profile, session, user } = useSession();
 
+
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
   const queryClient = useQueryClient();
@@ -3989,10 +3990,14 @@ ${link}`;
 // Main component with DealProvider wrapper
 export default function DealDetailPage() {
   const { dealId } = useParams<{ dealId: string }>();
+  const navigate = useNavigate();
 
-  return (
-    <DealProvider dealId={dealId}>
-      <DealDetailPageContent />
-    </DealProvider>
-  );
+  useEffect(() => {
+    if (dealId) {
+      console.log('[DealDetailPage] Redirecting to new dashboard for deal:', dealId);
+      navigate(`/creator-dashboard?tab=collabs&subtab=active&dealId=${dealId}`, { replace: true });
+    }
+  }, [dealId, navigate]);
+
+  return null;
 }

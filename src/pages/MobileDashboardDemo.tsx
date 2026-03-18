@@ -120,16 +120,24 @@ const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
 
 const parseLocationParts = (location?: string | null) => {
     const raw = (location || '').trim();
-    if (!raw) return { city: '', pincode: '' };
+    if (!raw) return { address: '', city: '', pincode: '' };
     const pincodeMatch = raw.match(/\b\d{6}\b/);
     const pincode = pincodeMatch?.[0] || '';
-    const city = raw
-        .replace(/\b\d{6}\b/, '')
-        .split(',')
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .pop() || '';
-    return { city, pincode };
+    
+    const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
+    const nonPincodeParts = parts.filter(p => !/\b\d{6}\b/.test(p));
+    
+    let city = '';
+    let address = '';
+    
+    if (nonPincodeParts.length >= 2) {
+        city = nonPincodeParts[nonPincodeParts.length - 1];
+        address = nonPincodeParts.slice(0, -1).join(', ');
+    } else if (nonPincodeParts.length === 1) {
+        city = nonPincodeParts[0];
+    }
+    
+    return { address, city, pincode };
 };
 
 const buildProfileFormData = (profile: any, userEmail?: string | null) => {
@@ -142,6 +150,7 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         bio: profile?.bio || '',
         pincode: profile?.pincode || parsedLocation.pincode || '',
         city: profile?.city || parsedLocation.city || '',
+        address: profile?.address || parsedLocation.address || '',
         instagram_handle: profile?.instagram_handle || '',
         media_kit_url: profile?.media_kit_url || '',
         open_to_collabs: profile?.open_to_collabs ?? true,
@@ -189,6 +198,7 @@ const MobileDashboardDemo = ({
     };
 
     const requestIdParam = (searchParams.get('requestId') || '').trim() || null;
+    const dealIdParam = (searchParams.get('dealId') || '').trim() || null;
     const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | null) || null;
 
     const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
@@ -196,7 +206,7 @@ const MobileDashboardDemo = ({
     useEffect(() => {
         if (activeTab !== 'collabs') return;
 
-        // Deep-link from push notifications: always show Pending and open the offer if present.
+        // Deep-link for Pending Offers (requestId)
         if (requestIdParam) {
             setCollabSubTab('pending');
 
@@ -217,9 +227,30 @@ const MobileDashboardDemo = ({
             return;
         }
 
+        // Deep-link for Active Deals (dealId)
+        if (dealIdParam) {
+            setCollabSubTab('active');
+
+            if (!hasHandledDeepLinkRef.current) {
+                const match = (brandDeals || []).find((d: any) => String(d?.id || d?.raw?.id || '') === dealIdParam);
+                if (match) {
+                    hasHandledDeepLinkRef.current = true;
+                    setSelectedItem(match);
+                    setSelectedType('deal');
+                    // Clear dealId so the user can freely navigate tabs/subtabs afterwards
+                    const next = new URLSearchParams(searchParams);
+                    next.delete('dealId');
+                    next.set('tab', 'collabs');
+                    next.set('subtab', 'active');
+                    setSearchParams(next, { replace: true });
+                }
+            }
+            return;
+        }
+
         if (subtabParam === 'pending') setCollabSubTab('pending');
         else if (subtabParam === 'active') setCollabSubTab('active');
-    }, [activeTab, requestIdParam, subtabParam, collabRequests, searchParams, setSearchParams]);
+    }, [activeTab, requestIdParam, dealIdParam, subtabParam, collabRequests, brandDeals, searchParams, setSearchParams]);
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined' && window.matchMedia) {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -246,7 +277,7 @@ const MobileDashboardDemo = ({
         if (!itemId) return null;
 
         if (selectedType === 'offer') return `/collab-requests/${itemId}/brief`;
-        if (selectedType === 'deal') return `/creator-contracts/${itemId}`;
+        if (selectedType === 'deal') return `/creator-dashboard?tab=collabs&subtab=active&dealId=${itemId}`;
         return null;
     };
 
@@ -302,6 +333,7 @@ const MobileDashboardDemo = ({
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
+    const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
     useEffect(() => {
@@ -517,9 +549,11 @@ const MobileDashboardDemo = ({
 
             // Step 1: Update fields that are guaranteed to exist in profiles.
             // Keep this payload minimal — do NOT include columns that may not exist.
-            const location = profileFormData.city && profileFormData.pincode
-                ? `${profileFormData.city.trim()}, ${profileFormData.pincode.trim()}`
-                : (profileFormData.city?.trim() || profileFormData.pincode?.trim() || null);
+            const locParts = [];
+            if (profileFormData.address) locParts.push(profileFormData.address.trim());
+            if (profileFormData.city) locParts.push(profileFormData.city.trim());
+            if (profileFormData.pincode) locParts.push(profileFormData.pincode.trim());
+            const location = locParts.join(', ') || null;
 
             const corePayload: Record<string, unknown> = {
                 first_name,
@@ -741,9 +775,55 @@ const MobileDashboardDemo = ({
             }
         } catch (error: any) {
             console.error('[MobileDashboard] Signing error:', error);
-            toast.error(error.message || 'Failed to sign contract');
+            const msg = error.message || '';
+            if (msg.includes('already been signed')) {
+                toast.success('Contract already signed!');
+                setShowCreatorSigningModal(false);
+                if (onRefresh) onRefresh();
+            } else {
+                toast.error(msg || 'Failed to sign contract');
+            }
         } finally {
             setIsSigningAsCreator(false);
+        }
+    };
+
+    const openDealContractReview = async (deal: any = selectedItem) => {
+        const dealId = String(deal?.id || deal?.raw?.id || '').trim();
+        if (!dealId || !session?.access_token) {
+            toast.error('Contract details unavailable');
+            return;
+        }
+
+        const directContractUrl =
+            deal?.contract_file_url ||
+            deal?.signed_contract_url ||
+            deal?.safe_contract_url ||
+            deal?.raw?.contract_file_url ||
+            deal?.raw?.signed_contract_url ||
+            deal?.raw?.safe_contract_url ||
+            null;
+
+        if (directContractUrl) {
+            window.open(directContractUrl, '_blank', 'noopener,noreferrer');
+            return;
+        }
+
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const resp = await fetch(`${apiBaseUrl}/api/deals/${dealId}/contract-review-link`, {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok || !data?.viewUrl) {
+                throw new Error(data?.error || 'Failed to open contract');
+            }
+            window.open(data.viewUrl, '_blank', 'noopener,noreferrer');
+        } catch (error: any) {
+            console.error('[MobileDashboard] Contract review error:', error);
+            toast.error(error?.message || 'Failed to open contract');
         }
     };
 
@@ -879,6 +959,10 @@ const MobileDashboardDemo = ({
                                             className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px] resize-none h-20", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
                                             value={profileFormData.bio || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
                                         />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Address</p>
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="House, Street, Area" value={profileFormData.address || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Pincode / City</p>
@@ -1790,81 +1874,11 @@ const MobileDashboardDemo = ({
                                         </motion.div>
                                     </div>
 
-                                    {/* Setup Progress -> Profile Strength */}
-                                    <div className="px-5 mb-8">
-                                        <div className={cn("p-6 rounded-[2.5rem] border relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
-                                            <div className="flex justify-between items-end mb-3">
-                                                <div>
-                                                    <h3 className={cn("text-[15px] font-bold tracking-tight mb-1", textColor)}>Profile Strength</h3>
-                                                    <p className={cn("text-[11px] opacity-40 font-black uppercase tracking-widest", textColor)}>Get ready for brands</p>
-                                                </div>
-                                                <span className="text-[18px] font-black text-blue-500 font-outfit">80%</span>
-                                            </div>
-                                            <div className={cn("w-full h-2.5 rounded-full overflow-hidden mb-5", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                <motion.div initial={{ width: 0 }} animate={{ width: '80%' }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-blue-500 rounded-full" />
-                                            </div>
 
-                                            <div className="mb-5">
-                                                <ul className="space-y-2 opacity-80">
-                                                    <li className="flex items-center gap-2.5 text-[12px] font-medium">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                                                        <span className={textColor}>Add Media Kit</span>
-                                                    </li>
-                                                    <li className="flex items-center gap-2.5 text-[12px] font-medium">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                                                        <span className={textColor}>Verify Identity</span>
-                                                    </li>
-                                                    <li className="flex items-center gap-2.5 text-[12px] font-medium">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                                                        <span className={textColor}>Add Audience Info</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <div className="flex gap-2.5">
-                                                <button onClick={() => setActiveSettingsPage('personal')} className={cn("w-full py-3.5 rounded-2xl font-bold text-[11px] uppercase tracking-wider active:scale-95 transition-all shadow-sm", isDark ? "bg-blue-500/15 text-blue-400" : "bg-blue-50 text-blue-600")}>Complete Profile</button>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </>
                             ) : (
                                 <>
-                                    {/* Setup Progress */}
-                                    <div className="px-5 mb-8">
-                                        <div className={cn("p-6 rounded-[2.5rem] border relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
-                                            <div className="flex justify-between items-end mb-3">
-                                                <div>
-                                                    <h3 className={cn("text-[15px] font-bold tracking-tight mb-1", textColor)}>Profile Strength</h3>
-                                                    <p className={cn("text-[11px] opacity-40 font-black uppercase tracking-widest", textColor)}>Get ready for brands</p>
-                                                </div>
-                                                <span className="text-[18px] font-black text-blue-500 font-outfit">80%</span>
-                                            </div>
-                                            <div className={cn("w-full h-2.5 rounded-full overflow-hidden mb-5", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                <motion.div initial={{ width: 0 }} animate={{ width: '80%' }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-blue-500 rounded-full" />
-                                            </div>
 
-                                            <div className="mb-5">
-                                                <ul className="space-y-2 opacity-80">
-                                                    <li className="flex items-center gap-2.5 text-[12px] font-medium">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                                                        <span className={textColor}>Add Media Kit</span>
-                                                    </li>
-                                                    <li className="flex items-center gap-2.5 text-[12px] font-medium">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                                                        <span className={textColor}>Verify Identity</span>
-                                                    </li>
-                                                    <li className="flex items-center gap-2.5 text-[12px] font-medium">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
-                                                        <span className={textColor}>Add Audience Info</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <div className="flex gap-2.5">
-                                                <button onClick={() => setActiveSettingsPage('personal')} className={cn("w-full py-3.5 rounded-2xl font-bold text-[11px] uppercase tracking-wider active:scale-95 transition-all shadow-sm", isDark ? "bg-blue-500/15 text-blue-400" : "bg-blue-50 text-blue-600")}>Complete Profile</button>
-                                            </div>
-                                        </div>
-                                    </div>
 
                                     {/* Metrics Strip */}
                                     <div className="px-5 mb-8">
@@ -3344,11 +3358,12 @@ const MobileDashboardDemo = ({
                                     <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
                                         {(() => {
-                                            const d = selectedItem.deadline ? new Date(selectedItem.deadline) : new Date(Date.now() + 13 * 86400000);
+                                            const rawDeadline = selectedItem.due_date || selectedItem.deadline;
+                                            const d = rawDeadline ? new Date(rawDeadline) : new Date(Date.now() + 13 * 86400000);
                                             const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
                                             const deadlineColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : 'text-blue-500';
-                                            const deadlineStr = selectedItem.deadline
-                                                ? new Date(selectedItem.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                                            const deadlineStr = rawDeadline
+                                                ? new Date(rawDeadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                                                 : '21 Mar 2026';
                                             return (
                                                 <>
@@ -3358,6 +3373,82 @@ const MobileDashboardDemo = ({
                                                     <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1", deadlineColor)}>
                                                         ⚡ {diff > 0 ? `${diff} days remaining` : 'Overdue'}
                                                     </span>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+
+                                {/* ── CONTRACT DETAILS ── */}
+                                <div ref={contractSectionRef} className="mb-6 scroll-mt-24">
+                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Contract Details</h4>
+                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
+                                        {(() => {
+                                            const status = String(selectedItem.status || '').toLowerCase();
+                                            const hasContract = Boolean(selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url);
+                                            const signedAt = selectedItem.signed_at || selectedItem.creator_signed_at || selectedItem.brand_signed_at || selectedItem.raw?.signed_at || null;
+                                            const contractUrl = selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url || '';
+                                            const contractName = contractUrl
+                                                ? decodeURIComponent(contractUrl.split('/').pop() || 'collaboration-contract.pdf')
+                                                : 'Contract is being prepared';
+                                            const contractState = status.includes('signed')
+                                                ? 'Signed and active'
+                                                : hasContract
+                                                    ? 'Ready for review'
+                                                    : (status === 'drafting' || status === 'brand_details_pending')
+                                                        ? 'Brand is preparing the contract'
+                                                        : 'Contract details unavailable';
+
+                                            return (
+                                                <>
+                                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                                        <div>
+                                                            <p className={cn("text-[16px] font-black leading-tight", textColor)}>{contractState}</p>
+                                                            <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
+                                                                {signedAt
+                                                                    ? `Signed on ${new Date(signedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                                                                    : hasContract
+                                                                        ? 'Your contract is ready to review and download.'
+                                                                        : 'The contract will appear here once the brand finalizes the setup.'}
+                                                            </p>
+                                                        </div>
+                                                        <span className={cn(
+                                                            "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
+                                                            status.includes('signed')
+                                                                ? (isDark ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")
+                                                                : hasContract
+                                                                    ? (isDark ? "bg-blue-500/10 text-blue-300 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-200")
+                                                                    : (isDark ? "bg-amber-500/10 text-amber-300 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-200")
+                                                        )}>
+                                                            {status.includes('signed') ? 'Signed' : hasContract ? 'Ready' : 'Pending'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className={cn("rounded-2xl border px-4 py-3 mb-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Document</p>
+                                                        <p className={cn("text-[13px] font-bold break-all", textColor)}>{contractName}</p>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                        <button
+                                                            onClick={() => { triggerHaptic(); openDealContractReview(selectedItem); }}
+                                                            className={cn(
+                                                                "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
+                                                                isDark ? "bg-white text-[#0B0F14] border-white" : "bg-slate-900 text-white border-slate-900"
+                                                            )}
+                                                        >
+                                                            Open Contract
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { triggerHaptic(); copySelectedItemLink(); }}
+                                                            className={cn(
+                                                                "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
+                                                                isDark ? "bg-white/5 text-white border-white/10" : "bg-white text-slate-900 border-slate-200"
+                                                            )}
+                                                        >
+                                                            Copy Deal Link
+                                                        </button>
+                                                    </div>
                                                 </>
                                             );
                                         })()}
@@ -3450,14 +3541,26 @@ const MobileDashboardDemo = ({
                                                 const status = (selectedItem.status || '').toLowerCase();
                                                 const selectedDealId = selectedItem?.id || selectedItem?.raw?.id;
 
-                                                if (status === 'signed_pending_creator' || status === 'sent' || status.includes('pending_creator') || status === 'signed_by_brand') {
+                                                const isSignable = status === 'signed_pending_creator' || status === 'sent' || status.includes('pending_creator') || status === 'signed_by_brand';
+                                                const isSigned = status === 'signed' || status === 'fully_signed' || status === 'fully_executed' || status.includes('signed');
+                                                
+                                                if (isSignable) {
                                                     triggerHaptic();
                                                     setShowCreatorSigningModal(true);
+                                                } else if (isSigned) {
+                                                    triggerHaptic();
+                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                } else if (selectedItem.contract_file_url) {
+                                                    triggerHaptic();
+                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                 } else if (selectedDealId) {
                                                     triggerHaptic();
-                                                    setSelectedItem(null);
-                                                    setSelectedType(null);
-                                                    navigate(`/creator-contracts/${selectedDealId}`);
+                                                    const isDrafting = status === 'drafting' || status === 'brand_details_pending';
+                                                    if (isDrafting) {
+                                                        contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    } else {
+                                                        contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    }
                                                 } else {
                                                     triggerHaptic();
                                                     toast.error('Deal details unavailable');
@@ -3489,7 +3592,9 @@ const MobileDashboardDemo = ({
                                             <span className="text-[16px] font-black">
                                                 {((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
                                                     ? '✍️ Sign Contract'
-                                                    : 'Review Contract'}
+                                                    : ((selectedItem.status || '').toLowerCase() === 'drafting' || (selectedItem.status || '').toLowerCase() === 'brand_details_pending')
+                                                        ? 'View Contract Details'
+                                                        : 'View Contract Details'}
                                             </span>
                                         )}
                                     </motion.button>
@@ -3657,13 +3762,13 @@ const MobileDashboardDemo = ({
 
             {/* Creator Signing Modal */}
             <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
-                <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
+                <DialogContent className={cn("sm:max-w-[440px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200")}>
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
-                            <FileText className="w-5 h-5 text-sky-400" />
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                            <ShieldCheck className="w-6 h-6 text-emerald-500" />
                             Sign Agreement
                         </DialogTitle>
-                        <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
                             {creatorSigningStep === 'send'
                                 ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
                                 : 'Enter the 6-digit code sent to your email to complete the signing process.'}
@@ -3672,13 +3777,16 @@ const MobileDashboardDemo = ({
 
                     <div className="px-6 py-5">
                         {creatorSigningStep === 'send' ? (
-                            <div className="space-y-4">
-                                <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
-                                    <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
-                                        <p className="text-xs text-sky-100/80 mt-1">
-                                            Signing as: <span className="text-white">{profile?.email || 'Your registered email'}</span>
+                            <div className="space-y-6">
+                                <div className={cn("p-4 rounded-2xl flex items-start gap-3 border", 
+                                    isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50/50 border-emerald-100")}>
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                        <Mail className="w-5 h-5 text-emerald-500" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[14px] font-bold tracking-tight">OTP Verification</p>
+                                        <p className="text-[12px] opacity-60 font-medium truncate mt-0.5">
+                                            Signing as: <span className="font-bold opacity-100">{profile?.email || 'Your registered email'}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -3686,76 +3794,78 @@ const MobileDashboardDemo = ({
                                     onClick={handleSendCreatorOTP}
                                     disabled={isSendingCreatorOTP}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-slate-800 disabled:text-slate-500"
                                 >
                                     {isSendingCreatorOTP ? (
                                         <>
-                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            <Loader2 className="w-4 h-4 animate-spin" />
                                             Sending OTP...
                                         </>
                                     ) : (
                                         <>
-                                            <Mail className="w-5 h-5" />
+                                            <Mail className="w-4 h-4" />
                                             Send OTP to Email
                                         </>
                                     )}
                                 </motion.button>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-xs font-semibold text-neutral-300 mb-2 block tracking-wide uppercase font-black">Enterprise OTP Code</label>
+                            <div className="space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Verification Code</label>
                                     <input
                                         type="text"
                                         maxLength={6}
-                                        placeholder="123456"
+                                        placeholder="······"
                                         value={creatorOTP}
                                         onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
                                         inputMode="numeric"
                                         autoComplete="one-time-code"
-                                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
-                                    />
-                                    <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
-                                </div>
-
-                                <div className="flex flex-col gap-2">
-                                    <motion.button
-                                        onClick={handleVerifyCreatorOTP}
-                                        disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
-                                        whileTap={{ scale: 0.98 }}
-                                        className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
-                                    >
-                                        {isVerifyingCreatorOTP || isSigningAsCreator ? (
-                                            <>
-                                                <Loader2 className="w-5 h-5 animate-spin" />
-                                                {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CheckCircle2 className="w-5 h-5" />
-                                                Verify & Sign
-                                            </>
+                                        className={cn(
+                                            "w-full rounded-2xl px-4 py-5 text-center text-4xl tracking-[0.3em] font-black font-outfit focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all placeholder:opacity-20 border",
+                                            isDark ? "bg-white/5 border-white/10 text-white focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-emerald-500/50"
                                         )}
-                                    </motion.button>
-
-                                    <button
-                                        onClick={() => {
-                                            setCreatorSigningStep('send');
-                                            setCreatorOTP('');
-                                        }}
-                                        disabled={isVerifyingCreatorOTP || isSigningAsCreator}
-                                        className="text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
-                                    >
-                                        Change method or resend OTP
-                                    </button>
+                                    />
+                                    <div className="flex items-center justify-between px-1">
+                                        <p className="text-[11px] font-bold opacity-40 italic">Exp. in 10 minutes</p>
+                                        <button
+                                            onClick={() => {
+                                                setCreatorSigningStep('send');
+                                                setCreatorOTP('');
+                                            }}
+                                            disabled={isVerifyingCreatorOTP || isSigningAsCreator}
+                                            className="text-[11px] font-black uppercase tracking-widest text-emerald-500 hover:opacity-70 transition-opacity"
+                                        >
+                                            Resend
+                                        </button>
+                                    </div>
                                 </div>
+
+                                <motion.button
+                                    onClick={handleVerifyCreatorOTP}
+                                    disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400"
+                                >
+                                    {isVerifyingCreatorOTP || isSigningAsCreator ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            {isSigningAsCreator ? 'Signing Contract...' : 'Verifying...'}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            Complete & Sign
+                                        </>
+                                    )}
+                                </motion.button>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Secure Enterprise-grade E-signature powered by Creator Armour Armor</span>
+                    <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-40 border-t px-6 py-5", isDark ? "border-white/5" : "border-slate-100")}>
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Aadhar Verified · Secure E-signature by Creator Armour</span>
                     </div>
                 </DialogContent>
             </Dialog>
