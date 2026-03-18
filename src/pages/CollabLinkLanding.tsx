@@ -3497,12 +3497,12 @@ const CollabLinkLanding = () => {
                           <ArrowRight className="ml-2 h-4 w-4" />
 		                        </Button>
 		                      ) : (
-		                        <div className="flex flex-col sm:flex-row gap-3 flex-1">
+		                        <div className="flex flex-col gap-3 w-full">
 		                          <Button
 		                            type="button"
 		                            onClick={() => setShowSaveDraftModal(true)}
 		                            variant="outline"
-		                            className="h-14 rounded-full border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95 flex-1"
+		                            className="h-14 w-full min-w-0 rounded-full border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
 		                          >
 		                            <span className="flex items-center gap-2">
 		                              <Lock className="h-4 w-4" />
@@ -3515,7 +3515,7 @@ const CollabLinkLanding = () => {
 		                          <Button
 		                            onClick={handleSubmit}
 		                            disabled={submitting || !isStep5Ready}
-	                            className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-95 group relative overflow-hidden"
+	                            className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
 	                          >
 	                            <span className="flex items-center justify-center gap-2">
 	                              {submitting ? (
