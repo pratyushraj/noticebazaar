@@ -495,6 +495,7 @@ const CollabLinkLanding = () => {
   const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
   const [newNicheInput, setNewNicheInput] = useState('');
   const [showCustomFlow, setShowCustomFlow] = useState(false);
+  const [templateContinueNudge, setTemplateContinueNudge] = useState(0);
 
   // Deal Templates State (Moved up to fix Hook Order violations)
   const [localDealTemplates, setLocalDealTemplates] = useState<DealTemplate[]>([]);
@@ -1911,6 +1912,12 @@ const CollabLinkLanding = () => {
     // Selecting a package should feel lightweight; move into the form only on explicit "Continue".
     toast.success(`${template.label} selected`);
     triggerHaptic(HapticPatterns.success);
+
+    // Make the next step obvious: bring the offer panel into view and nudge the "Continue" CTA.
+    setTemplateContinueNudge(Date.now());
+    requestAnimationFrame(() => {
+      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
 
 
@@ -2070,6 +2077,14 @@ const CollabLinkLanding = () => {
       />
 
       <JsonLdSchema schemaKey="creator-collab-graph" schema={creatorCollabSchema} />
+
+      <style>{`
+        @keyframes nbPulse {
+          0% { transform: scale(1); box-shadow: 0 14px 30px rgba(15,164,127,0.16); }
+          45% { transform: scale(1.012); box-shadow: 0 18px 44px rgba(15,164,127,0.22); }
+          100% { transform: scale(1); box-shadow: 0 14px 30px rgba(15,164,127,0.16); }
+        }
+      `}</style>
 
       {/* NOTE: `overflow-x-clip` breaks `position: sticky` in Chromium when applied on an ancestor.
           Keep it on mobile to avoid horizontal scroll, but disable it on desktop so the right panel can stick. */}
@@ -2963,6 +2978,60 @@ const CollabLinkLanding = () => {
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
                 {!showCustomFlow && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-5">
+                    {selectedTemplate && (
+                      <div
+                        className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 shadow-[0_14px_30px_rgba(15,164,127,0.16)]"
+                        style={{
+                          transform: templateContinueNudge ? 'translateZ(0)' : undefined,
+                          animation: templateContinueNudge ? 'nbPulse 900ms ease-out 1' : undefined,
+                        }}
+                      >
+                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Selected package</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[15px] font-black text-slate-900 truncate">{selectedTemplate.label}</p>
+                            <p className="text-[12px] font-semibold text-slate-600 mt-0.5">
+                              {selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
+                            </p>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-1.5">
+                            <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm">
+                              <CheckCircle2 className="w-5 h-5" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setShowCustomFlow(true);
+                              setCurrentStep(2);
+                              triggerHaptic(HapticPatterns.success);
+                              requestAnimationFrame(() => {
+                                document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              });
+                            }}
+                            className="w-full h-12 rounded-2xl bg-[#0FA47F] text-white hover:bg-emerald-600 font-black text-[11px] uppercase tracking-widest shadow-[0_10px_26px_rgba(15,164,127,0.20)]"
+                          >
+                            Continue to Customize
+                            <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              triggerHaptic(HapticPatterns.selection);
+                            }}
+                            className="w-full h-12 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[11px] uppercase tracking-widest"
+                          >
+                            Change Package
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid gap-3">
                       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
                         <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
