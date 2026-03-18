@@ -2140,11 +2140,7 @@ router.get('/console/:token', async (req: Request, res: Response) => {
           username,
           first_name,
           last_name,
-          avatar_url,
-          profile_label,
-          collab_brands_count_override,
-          collab_response_hours_override,
-          collab_cancellations_percent_override
+          avatar_url
         )
       `)
       .eq('id', token)
@@ -2262,7 +2258,7 @@ router.get('/console/:token', async (req: Request, res: Response) => {
         name: `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || creator.username,
         username: creator.username,
         avatar_url: creator.avatar_url,
-        profile_label: creator.profile_label,
+        profile_label: (creator as any).profile_label || null,
         trust_stats: collabRequest?.creator?.trust_stats || null
       } : null,
       activity,
