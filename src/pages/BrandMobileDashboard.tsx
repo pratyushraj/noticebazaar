@@ -81,6 +81,13 @@ const timeSince = (iso: any) => {
   return `${days}d`;
 };
 
+const safeImageSrc = (url: any) => {
+  const s = typeof url === 'string' ? url : '';
+  if (!s) return undefined;
+  if (s.includes('cdninstagram.com')) return undefined;
+  return s;
+};
+
 const uniqBy = <T,>(items: T[], key: (item: T) => string) => {
   const seen = new Set<string>();
   const out: T[] = [];
@@ -1103,7 +1110,7 @@ const BrandMobileDashboard = ({
                         <div key={c.id} className={cn('min-w-[290px] p-4 rounded-[24px] border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white shadow-sm')}>
                           <div className="flex items-center gap-3">
                             <Avatar className="w-11 h-11">
-                              <AvatarImage src={c.profile_photo || c.avatar_url} alt={c.name} />
+                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
@@ -1383,7 +1390,7 @@ const BrandMobileDashboard = ({
                         <div key={c.id} className={cn('min-w-[280px] p-4 rounded-[24px] border', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
                           <div className="flex items-center gap-3 mb-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarImage src={c.profile_photo || c.avatar} alt={c.name} />
+                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
@@ -1459,7 +1466,7 @@ const BrandMobileDashboard = ({
                         {creatorFeed.map((c) => (
                           <button key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}>
                             <Avatar className="w-10 h-10">
-                              <AvatarImage src={c.avatar_url} alt={c.name} />
+                              <AvatarImage src={safeImageSrc(c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0 text-left">
