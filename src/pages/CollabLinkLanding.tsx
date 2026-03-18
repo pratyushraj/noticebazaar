@@ -3434,25 +3434,73 @@ const CollabLinkLanding = () => {
                             </div>
                           </div>
 
-                          <div className="space-y-2">
-                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Authorized Person Name</label>
-                            <Input
-                              value={authorizedSignerName}
-                              onChange={(e) => setAuthorizedSignerName(e.target.value)}
-                              placeholder="Full name for contract signing"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
-                            />
-                          </div>
+                          {(() => {
+                            const hasSavedLegalDetails = Boolean(authorizedSignerName.trim() || brandAddress.trim());
+                            const mustShowLegalDetails = !brandAddress.trim();
+                            const showLegalDetails = showOptionalBrandDetails || mustShowLegalDetails;
 
-	                          <div className="space-y-2">
-	                            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Registered Address</label>
-	                            <Textarea
-	                              value={brandAddress}
-	                              onChange={(e) => setBrandAddress(e.target.value)}
-	                              placeholder="Enter full office address for the legal agreement..."
-	                              className="bg-white border-white rounded-xl min-h-[80px] shadow-sm p-4 font-medium text-sm"
-	                            />
-	                          </div>
+                            if (!showLegalDetails) {
+                              return (
+                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Legal details</p>
+                                    <p className="text-[12px] font-semibold text-slate-500 mt-0.5">
+                                      {hasSavedLegalDetails ? 'Saved on file (hidden for privacy)' : 'Not provided'}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setShowOptionalBrandDetails(true)}
+                                    className="h-9 rounded-xl border-slate-200 text-slate-700 font-black text-[10px] uppercase tracking-widest"
+                                  >
+                                    Edit
+                                  </Button>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="rounded-3xl border border-slate-200 bg-white p-4 space-y-4 shadow-sm">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Legal details</p>
+                                    <p className="text-[12px] font-semibold text-slate-500 mt-0.5">
+                                      Used only for the contract. You can keep it private unless editing.
+                                    </p>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setShowOptionalBrandDetails(false)}
+                                    className="h-9 rounded-xl border-slate-200 text-slate-600 font-black text-[10px] uppercase tracking-widest"
+                                  >
+                                    Hide
+                                  </Button>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Authorized Person Name</label>
+                                  <Input
+                                    value={authorizedSignerName}
+                                    onChange={(e) => setAuthorizedSignerName(e.target.value)}
+                                    placeholder="Full name for contract signing"
+                                    className="h-12 px-4 rounded-xl border-white bg-slate-50 font-bold text-[14px] shadow-sm"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Registered Address</label>
+                                  <Textarea
+                                    value={brandAddress}
+                                    onChange={(e) => setBrandAddress(e.target.value)}
+                                    placeholder="Enter full office address for the legal agreement..."
+                                    className="bg-slate-50 border-white rounded-xl min-h-[80px] shadow-sm p-4 font-medium text-sm"
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })()}
 
 	                          {/* Form confirmation panel is shown near the send button for consistency */}
 	                        </div>
