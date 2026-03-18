@@ -1246,6 +1246,82 @@ router.patch('/:id/review-content', async (req, res) => {
   }
 });
 
+/**
+ * PATCH /api/deals/:id/mark-complete
+ * Brand manually marks a collaboration as completed from the dashboard.
+ */
+router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, status, brand_id, brand_email')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String(deal.brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String(deal.brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    if (String(deal.status || '').toLowerCase() === 'completed') {
+      return res.json({ success: true, alreadyCompleted: true, message: 'Deal already marked complete.' });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        status: 'Completed',
+        updated_at: now,
+        brand_approved_at: now,
+      } as any)
+      .eq('id', dealId);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'DEAL_MARKED_COMPLETE_BY_BRAND',
+      metadata: {
+        completed_at: now,
+        source: 'brand_dashboard',
+      },
+    }).then(({ error }) => {
+      if (error) console.warn('[Deals] mark-complete action log failed:', error.message);
+    });
+
+    return res.json({ success: true, message: 'Deal marked as completed.' });
+  } catch (error: any) {
+    console.error('[Deals] mark-complete error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
 // Debug route to test routing
 router.get('/test-routing', (req, res) => {
   console.log('[Deals] Test routing endpoint hit');

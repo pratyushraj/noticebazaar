@@ -1507,10 +1507,10 @@ const ProfileSettings = () => {
               }
               navigate('/creator-dashboard');
             }}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="min-h-12 min-w-12 p-3 -m-2 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors touch-manipulation"
             aria-label="Back to dashboard"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-7 h-7" />
           </button>
 
           <div className="text-lg font-semibold">Profile & Settings</div>

@@ -839,7 +839,10 @@ function DealDetailPageContent() {
     if (!deal?.brand_name) return 'Collaboration Agreement';
     return `${deal.brand_name} · Collaboration Agreement`;
   }, [deal?.brand_name]);
-  const contractFileName = useMemo(() => deal?.contract_file_url ? getFilenameFromUrl(deal.contract_file_url) : null, [deal?.contract_file_url]);
+  const contractFileName = useMemo(() => {
+    const previewUrl = ((deal as any)?.signed_contract_url as string | null | undefined) || deal?.contract_file_url;
+    return previewUrl ? getFilenameFromUrl(previewUrl) : null;
+  }, [deal?.contract_file_url, (deal as any)?.signed_contract_url]);
 
   // Extract deal status fields (must be defined before getContractStatus)
   const signedContractUrl = (deal as any)?.signed_contract_url as string | null | undefined;
@@ -971,29 +974,9 @@ function DealDetailPageContent() {
   // ALL HANDLERS MUST BE DEFINED BEFORE EARLY RETURNS
   // Handlers (must be useCallback and defined before early returns)
   const handlePreviewContract = useCallback(() => {
-    // Check for HTML contract first (primary source)
-    const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
+    const previewUrl = signedContractUrl || contractDocxUrl;
 
-    if (contractDocxUrl && deal?.id) {
-      // Download DOCX contract
-      const link = document.createElement('a');
-      link.href = contractDocxUrl;
-      link.download = `Contract_${deal.id}.docx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      trackEvent('contract_downloaded', {
-        dealId: deal.id,
-        dealTitle: deal.brand_name,
-        contractType: 'docx',
-      });
-
-      return;
-    }
-
-    // Fallback to PDF preview if HTML not available
-    if (!deal?.contract_file_url) {
+    if (!previewUrl) {
       toast.error('No contract available');
       return;
     }
@@ -1005,7 +988,7 @@ function DealDetailPageContent() {
     });
 
     setShowContractPreview(true);
-  }, [deal?.id, deal?.contract_file_url, deal?.brand_name]);
+  }, [deal?.id, deal?.brand_name, signedContractUrl, contractDocxUrl]);
 
   // Generate Contract Summary PDF
   const handleDownloadContractSummary = useCallback(async () => {
@@ -3673,11 +3656,11 @@ ${link}`;
 
       {/* Lazy Modals */}
       < Suspense fallback={null} >
-        {showContractPreview && (deal as any).contract_file_url && (
+        {showContractPreview && (signedContractUrl || (deal as any).contract_file_url) && (
           <ContractPreviewModal
             open={showContractPreview}
             onClose={() => setShowContractPreview(false)}
-            fileUrl={(deal as any).contract_file_url}
+            fileUrl={signedContractUrl || (deal as any).contract_file_url}
             fileName={contractFileName || undefined}
             dealTitle={dealTitle}
           />

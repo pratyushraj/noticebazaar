@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from 'sonner';
 
 const BrandSettings = () => {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ const BrandSettings = () => {
 
   const brandName = profile?.first_name || profile?.business_name || 'Brand';
   const brandLogo = profile?.avatar_url || `https://ui-avatars.com/api/?name=${brandName}&background=0D8ABC&color=fff`;
+  const supportEmailStorageKey = profile?.id ? `brand_settings_support_email:${profile.id}` : 'brand_settings_support_email';
 
   const textColor = isDark ? 'text-white' : 'text-slate-900';
   const bgColor = isDark ? 'bg-black' : 'bg-slate-50';
@@ -62,6 +64,7 @@ const BrandSettings = () => {
     description: 'We build creator-first campaigns across fashion and lifestyle categories.',
     supportEmail: 'marketing@brand.com',
   });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   const [billingForm, setBillingForm] = useState({
     plan: 'Growth',
@@ -103,6 +106,123 @@ const BrandSettings = () => {
     navigate('/login');
   };
 
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    let cancelled = false;
+
+    const loadBrandSettings = async () => {
+      const fallbackSupportEmail =
+        (typeof window !== 'undefined' ? localStorage.getItem(supportEmailStorageKey) : null) ||
+        profile.email ||
+        'marketing@brand.com';
+
+      setProfileForm((current) => ({
+        ...current,
+        brandName: profile.business_name || profile.first_name || current.brandName,
+        location: profile.location || current.location,
+        description: profile.bio || current.description,
+        supportEmail: fallbackSupportEmail,
+      }));
+
+      const { data: brandRow, error } = await supabase
+        .from('brands')
+        .select('name, website_url, industry, description')
+        .eq('external_id', profile.id)
+        .maybeSingle();
+
+      if (cancelled || error || !brandRow) return;
+
+      setProfileForm((current) => ({
+        ...current,
+        brandName: brandRow.name || current.brandName,
+        website: brandRow.website_url || current.website,
+        industry: brandRow.industry || current.industry,
+        description: brandRow.description || current.description,
+      }));
+    };
+
+    void loadBrandSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile?.id, profile?.business_name, profile?.first_name, profile?.location, profile?.bio, profile?.email, supportEmailStorageKey]);
+
+  const handleSaveProfile = async () => {
+    if (!profile?.id) {
+      toast.error('Profile not available');
+      return;
+    }
+
+    const normalizedName = profileForm.brandName.trim();
+    if (!normalizedName) {
+      toast.error('Brand name is required');
+      return;
+    }
+
+    setIsSavingProfile(true);
+
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          business_name: normalizedName,
+          first_name: normalizedName,
+          bio: profileForm.description.trim() || null,
+          location: profileForm.location.trim() || null,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq('id', profile.id);
+
+      if (profileError) throw profileError;
+
+      const { data: existingBrand, error: existingBrandError } = await supabase
+        .from('brands')
+        .select('id')
+        .eq('external_id', profile.id)
+        .maybeSingle();
+
+      if (existingBrandError) throw existingBrandError;
+
+      const brandPayload = {
+        external_id: profile.id,
+        name: normalizedName,
+        website_url: profileForm.website.trim() || null,
+        industry: profileForm.industry.trim() || 'General',
+        description: profileForm.description.trim() || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingBrand?.id) {
+        const { error: brandUpdateError } = await supabase
+          .from('brands')
+          .update(brandPayload as any)
+          .eq('id', existingBrand.id);
+        if (brandUpdateError) throw brandUpdateError;
+      } else {
+        const { error: brandInsertError } = await supabase
+          .from('brands')
+          .insert({
+            ...brandPayload,
+            created_at: new Date().toISOString(),
+          } as any);
+        if (brandInsertError) throw brandInsertError;
+      }
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(supportEmailStorageKey, profileForm.supportEmail.trim());
+      }
+
+      toast.success('Brand profile saved');
+    } catch (error: any) {
+      console.error('[BrandSettings] Save profile failed:', error);
+      toast.error(error?.message || 'Failed to save profile');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   return (
     <div className={cn(
       "min-h-screen font-sans selection:bg-blue-500/30 overflow-x-hidden pb-20",
@@ -120,11 +240,11 @@ const BrandSettings = () => {
             type="button"
             onClick={() => navigate('/brand-dashboard')}
             className={cn(
-              "h-10 px-3 rounded-xl flex items-center gap-2 border text-[11px] font-black uppercase tracking-widest",
+              "min-h-12 px-4 rounded-xl flex items-center gap-2 border text-[11px] font-black uppercase tracking-widest touch-manipulation",
               isDark ? "bg-white/0 border-white/10 text-white/70 hover:bg-white/10" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
             )}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5" />
             Back
           </button>
           <div className="flex items-center gap-3">
@@ -249,12 +369,16 @@ const BrandSettings = () => {
             />
           </div>
           <div className="mt-5 flex justify-end">
-            <Button className={cn(
+            <Button
+              type="button"
+              onClick={handleSaveProfile}
+              disabled={isSavingProfile}
+              className={cn(
               "h-11 px-5 rounded-xl text-white font-black uppercase tracking-widest text-[11px] shadow-sm",
               isDark ? "bg-emerald-500 hover:bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"
             )}>
               <Save className="w-4 h-4 mr-2" />
-              Save Changes
+              {isSavingProfile ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </SectionCard>

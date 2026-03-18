@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
@@ -282,6 +283,7 @@ const BrandMobileDashboard = ({
   const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
   const [quickSendEmail, setQuickSendEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const [localOffers, setLocalOffers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -617,6 +619,8 @@ const BrandMobileDashboard = ({
     if (!offer) return null;
     const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
     const username = String(offer?.profiles?.username || '').trim();
+    const isMarkedCompleted = normalizeStatus(offer?.status) === 'completed';
+    const canMarkComplete = activeCollabTab === 'active' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
     const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
     const budget = formatBudget(offer);
     const deadline = offer?.deadline ? new Date(offer.deadline) : null;
@@ -669,6 +673,57 @@ const BrandMobileDashboard = ({
             </div>
 
             <div className="grid grid-cols-1 gap-2">
+              {canMarkComplete && (
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsMarkingComplete(true);
+                      triggerHaptic(HapticPatterns.light);
+                      const { data: { session } } = await supabase.auth.getSession();
+                      const token = session?.access_token;
+                      if (!token) {
+                        toast.error('Authentication required');
+                        return;
+                      }
+
+                      const apiBase = getApiBaseUrl();
+                      const response = await fetch(`${apiBase}/api/deals/${offer.id}/mark-complete`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                      });
+                      const data = await response.json().catch(() => ({}));
+                      if (!response.ok || !data?.success) {
+                        throw new Error(data?.error || 'Failed to mark complete');
+                      }
+
+                      toast.success(data?.alreadyCompleted ? 'Deal already completed' : 'Collaboration marked complete');
+                      setSelectedOffer(null);
+                      await onRefresh?.();
+                      setActiveTab('collabs', 'completed');
+                      triggerHaptic(HapticPatterns.success);
+                    } catch (error: any) {
+                      toast.error(error?.message || 'Failed to mark collaboration complete');
+                    } finally {
+                      setIsMarkingComplete(false);
+                    }
+                  }}
+                  disabled={isMarkingComplete}
+                  className={cn(
+                    'p-4 rounded-2xl border text-left transition-all active:scale-[0.99] disabled:opacity-60',
+                    isDark ? 'bg-emerald-500/10 border-emerald-400/25 hover:bg-emerald-500/15' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+                  )}
+                >
+                  <p className={cn('text-[13px] font-bold', isDark ? 'text-emerald-200' : 'text-emerald-800')}>
+                    {isMarkingComplete ? 'Marking complete...' : 'Mark collaboration complete'}
+                  </p>
+                  <p className={cn('text-[12px] mt-1', isDark ? 'text-emerald-200/70' : 'text-emerald-700/80')}>
+                    Move this deal to completed once the campaign is fully done
+                  </p>
+                </button>
+              )}
               <button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
