@@ -458,6 +458,33 @@ const CollabLinkLanding = () => {
   const [campaignCategory, setCampaignCategory] = useState('General');
   const [barterProductImageUrl, setBarterProductImageUrl] = useState<string | null>(null);
   const [barterImageUploading, setBarterImageUploading] = useState(false);
+
+  // If the visitor is already logged in as a brand, prefill the form from their profile.
+  // We only fill blanks so we never overwrite what the user already typed.
+  useEffect(() => {
+    if (!profile || profile.role !== 'brand') return;
+
+    const inferredBrandName =
+      (profile.business_name || '').trim() ||
+      [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() ||
+      'Brand';
+
+    const inferredEmail = (profile.email || user?.email || '').trim();
+    const inferredAddress = ((profile as any).address || '').trim();
+    const inferredGstin = ((profile as any).gstin || (profile as any).gst_number || '').trim();
+    const inferredPhone = (profile.phone || '').trim();
+
+    setBrandName((prev) => (prev.trim() ? prev : inferredBrandName));
+    setBrandEmail((prev) => (prev.trim() ? prev : inferredEmail));
+    setBrandAddress((prev) => (prev.trim() ? prev : inferredAddress));
+    setBrandGstin((prev) => (prev.trim() ? prev : inferredGstin));
+    setBrandPhone((prev) => (prev.trim() ? prev : inferredPhone));
+
+    const signer =
+      [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() ||
+      inferredBrandName;
+    setAuthorizedSignerName((prev) => (prev.trim() ? prev : signer));
+  }, [profile?.id, profile?.role, user?.email]);
   const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const [brandLogoUploading, setBrandLogoUploading] = useState(false);
   const [campaignDescription, setCampaignDescription] = useState('');
