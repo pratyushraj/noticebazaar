@@ -25,6 +25,7 @@ router.get('/', async (req: Request, res: Response) => {
         first_name,
         last_name,
         business_name,
+        avatar_url,
         creator_category,
         bio,
         instagram_handle,
@@ -108,13 +109,19 @@ router.get('/', async (req: Request, res: Response) => {
         `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
         'Creator';
 
+      const rawPhoto = (profile as any).avatar_url || (profile as any).instagram_profile_photo || null;
+      const profilePhoto =
+        rawPhoto && typeof rawPhoto === 'string' && rawPhoto.includes('cdninstagram.com')
+          ? null
+          : rawPhoto;
+
       return {
         id: profile.id,
         username: profile.username,
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
-        profile_photo: (profile as any).instagram_profile_photo || null,
+        profile_photo: profilePhoto,
         followers: profile.instagram_followers ?? null,
         last_instagram_sync: (profile as any).last_instagram_sync || null,
         pricing: {
@@ -161,6 +168,7 @@ router.get('/suggested', async (req: Request, res: Response) => {
         first_name,
         last_name,
         business_name,
+        avatar_url,
         creator_category,
         bio,
         instagram_handle,
@@ -264,7 +272,12 @@ router.get('/suggested', async (req: Request, res: Response) => {
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
-        profile_photo: profile.instagram_profile_photo || null,
+        profile_photo:
+          ((profile as any).avatar_url && typeof (profile as any).avatar_url === 'string' && !(profile as any).avatar_url.includes('cdninstagram.com'))
+            ? (profile as any).avatar_url
+            : (profile.instagram_profile_photo && typeof profile.instagram_profile_photo === 'string' && profile.instagram_profile_photo.includes('cdninstagram.com'))
+              ? null
+              : (profile.instagram_profile_photo || null),
         followers: profile.instagram_followers ?? null,
         pricing: {
           min: profile.pricing_min ?? null,
