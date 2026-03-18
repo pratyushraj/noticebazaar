@@ -3644,6 +3644,7 @@ const CollabLinkLanding = () => {
           </div>
 
           {/* Sticky Bottom CTA (mobile compact) */}
+          {!(showCustomFlow && currentStep === 5) && (
           <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
             <div className="relative">
               {isCoreReady && !hasStartedOffer && (
@@ -3726,6 +3727,7 @@ const CollabLinkLanding = () => {
               </div>
             )}
           </div>
+          )}
         </div >
       </div >
 
