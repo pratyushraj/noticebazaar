@@ -1658,15 +1658,16 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       }
     }
 
-    // Rate limiting: Check for recent submissions from same email/IP
-    // Disabled in development mode for easier testing
+    // Rate limiting (optional): prevent rapid repeat submits to the same creator from the same email.
+    // Default is OFF (COLLAB_REQUEST_RATE_LIMIT_MINUTES=0) to avoid blocking legitimate retries.
     const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
     const userAgent = req.get('user-agent') || 'unknown';
     const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
     const allowDemoEmail = process.env.ALLOW_DEMO_EMAIL === 'true';
+    const rateLimitMinutes = Number(process.env.COLLAB_REQUEST_RATE_LIMIT_MINUTES || '0');
 
-    if (!isDevelopment && !allowDemoEmail) {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    if (rateLimitMinutes > 0 && !isDevelopment && !allowDemoEmail) {
+      const windowAgo = new Date(Date.now() - rateLimitMinutes * 60 * 1000).toISOString();
 
       let hasRecentSubmission = false;
       if (creator?.id) {
@@ -1675,7 +1676,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
           .select('id')
           .eq('brand_email', brand_email.toLowerCase().trim())
           .eq('creator_id', creator.id)
-          .gte('created_at', oneHourAgo)
+          .gte('created_at', windowAgo)
           .limit(1);
 
         if (rateLimitError) {
@@ -1690,7 +1691,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
             .select('id')
             .eq('brand_email', brand_email.toLowerCase().trim())
             .eq('target_handle', normalizedUsername)
-            .gte('created_at', oneHourAgo)
+            .gte('created_at', windowAgo)
             .limit(1);
 
           if (leadRateLimitError) {
@@ -1710,11 +1711,11 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       if (hasRecentSubmission) {
         return res.status(429).json({
           success: false,
-          error: 'Please wait before submitting another request. You can submit one request per hour.',
+          error: `Please wait before submitting another request. You can submit one request every ${rateLimitMinutes} minute${rateLimitMinutes === 1 ? '' : 's'}.`,
         });
       }
     } else {
-      console.log('[CollabRequests] Rate limiting disabled in development mode');
+      console.log('[CollabRequests] Rate limiting disabled (COLLAB_REQUEST_RATE_LIMIT_MINUTES=0 or dev/demo)');
     }
 
     if (creatorError) {
