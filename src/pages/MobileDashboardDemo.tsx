@@ -517,11 +517,16 @@ const MobileDashboardDemo = ({
 
             // Step 1: Update fields that are guaranteed to exist in profiles.
             // Keep this payload minimal — do NOT include columns that may not exist.
+            const location = profileFormData.city && profileFormData.pincode
+                ? `${profileFormData.city.trim()}, ${profileFormData.pincode.trim()}`
+                : (profileFormData.city?.trim() || profileFormData.pincode?.trim() || null);
+
             const corePayload: Record<string, unknown> = {
                 first_name,
                 last_name,
                 phone: profileFormData.phone || null,
                 bio: profileFormData.bio || null,
+                location: location,
             };
 
             const { error: coreError } = await (supabase as any)
@@ -3442,13 +3447,20 @@ const MobileDashboardDemo = ({
                                                 }
                                                 handleAccept(selectedItem);
                                             } else {
-
                                                 const status = (selectedItem.status || '').toLowerCase();
+                                                const selectedDealId = selectedItem?.id || selectedItem?.raw?.id;
+
                                                 if (status === 'signed_pending_creator' || status === 'sent' || status.includes('pending_creator') || status === 'signed_by_brand') {
                                                     triggerHaptic();
                                                     setShowCreatorSigningModal(true);
+                                                } else if (selectedDealId) {
+                                                    triggerHaptic();
+                                                    setSelectedItem(null);
+                                                    setSelectedType(null);
+                                                    navigate(`/creator-contracts/${selectedDealId}`);
                                                 } else {
                                                     triggerHaptic();
+                                                    toast.error('Deal details unavailable');
                                                 }
                                             }
                                         }}

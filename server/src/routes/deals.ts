@@ -23,6 +23,16 @@ function maskPhone(phone: string): string {
   return digits.slice(0, 2) + 'XXXXXX' + digits.slice(-2);
 }
 
+const isMissingColumnError = (err: any) => {
+  const msg = String(err?.message || err?.details || err?.hint || '').toLowerCase();
+  return (
+    msg.includes('could not find the') ||
+    msg.includes('does not exist') ||
+    msg.includes('column') ||
+    msg.includes('schema cache')
+  );
+};
+
 // Multer configuration for signed contract uploads (in-memory, PDF only, max 10MB)
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -819,6 +829,7 @@ router.post('/:id/confirm-receipt', confirmReceivedHandler);
 router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
+    const userEmail = String(req.user?.email || '').toLowerCase();
     const { dealId } = req.params;
 
     if (!dealId) {
@@ -835,21 +846,63 @@ router.post('/:dealId/regenerate-contract', async (req: AuthenticatedRequest, re
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
-    if (deal.creator_id !== userId && req.user!.role !== 'admin') {
+    const isCreatorOwner = deal.creator_id === userId;
+    const isBrandOwner = deal.brand_id === userId || (userEmail && String(deal.brand_email || '').toLowerCase() == userEmail);
+    const isAdmin = req.user!.role === 'admin';
+
+    if (!isCreatorOwner && !isBrandOwner && !isAdmin) {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
     // Fetch creator profile
-    const { data: creatorProfile } = await supabase
-      .from('profiles')
-      .select('first_name, last_name, location')
-      .eq('id', userId)
-      .maybeSingle();
+    let creatorProfile: any = null;
+    const selectV2 = 'first_name, last_name, full_name, location, address, email';
+    const selectV1 = 'first_name, last_name, location';
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(selectV2)
+        .eq('id', deal.creator_id)
+        .maybeSingle();
+
+      if (error) throw error;
+      creatorProfile = data;
+    } catch (err: any) {
+      if (isMissingColumnError(err)) {
+        const { data: v1Data, error: v1Error } = await supabase
+          .from('profiles')
+          .select(selectV1)
+          .eq('id', deal.creator_id)
+          .maybeSingle();
+        if (v1Error) throw v1Error;
+        creatorProfile = v1Data;
+      } else {
+        throw err;
+      }
+    }
 
     const creatorName = creatorProfile
-      ? `${(creatorProfile.first_name || '').trim()} ${(creatorProfile.last_name || '').trim()}`.trim() || 'Creator'
+      ? `${(creatorProfile.first_name || '').trim()} ${(creatorProfile.last_name || '').trim()}`.trim() || (creatorProfile as any)?.full_name?.trim() || 'Creator'
       : 'Creator';
-    const creatorEmail = (creatorProfile as any)?.email || req.user?.email || undefined;
+
+    // Fallback email fetching if not in profiles
+    let creatorEmail = (creatorProfile as any)?.email;
+    if (!creatorEmail) {
+      // If we are the creator, we have the email in req.user
+      if (isCreatorOwner) {
+        creatorEmail = req.user?.email;
+      } else {
+        // Otherwise try auth.admin (requires service role, which server client matches)
+        try {
+          const { data: authUser } = await supabase.auth.admin.getUserById(deal.creator_id);
+          creatorEmail = authUser?.user?.email;
+        } catch (authErr) {
+          console.warn('[Deals] Failed to fetch creator email from auth.admin:', authErr);
+        }
+      }
+    }
+
     const creatorAddress = (creatorProfile as any)?.location || (creatorProfile as any)?.address || undefined;
 
     // Parse deliverables

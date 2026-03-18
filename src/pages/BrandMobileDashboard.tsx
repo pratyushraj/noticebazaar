@@ -164,6 +164,8 @@ const formatDeliverables = (row: any) => {
 const formatBudget = (row: any) => {
   const exact = Number(row?.exact_budget);
   if (Number.isFinite(exact) && exact > 0) return formatCompactINR(exact);
+  const dealAmount = Number(row?.deal_amount);
+  if (Number.isFinite(dealAmount) && dealAmount > 0) return formatCompactINR(dealAmount);
   const range = String(row?.budget_range || '').trim();
   if (range) return range;
   const barter = Number(row?.barter_value);
@@ -284,6 +286,7 @@ const BrandMobileDashboard = ({
   const [quickSendEmail, setQuickSendEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [isGeneratingContract, setIsGeneratingContract] = useState(false);
   const [localOffers, setLocalOffers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -623,11 +626,13 @@ const BrandMobileDashboard = ({
     const canMarkComplete = activeCollabTab === 'active' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
     const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
     const budget = formatBudget(offer);
-    const deadline = offer?.deadline ? new Date(offer.deadline) : null;
+    const deadlineValue = offer?.due_date || offer?.deadline;
+    const deadline = deadlineValue ? new Date(deadlineValue) : null;
     const deadlineText = deadline && !Number.isNaN(deadline.getTime())
       ? deadline.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
       : null;
     const status = String(offer?.status || '').toUpperCase() || 'PENDING';
+    const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
 
     return (
       <>
@@ -673,6 +678,88 @@ const BrandMobileDashboard = ({
             </div>
 
             <div className="grid grid-cols-1 gap-2">
+              <button
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  if (!contractUrl) {
+                    toast.error('Contract not generated yet');
+                    return;
+                  }
+                  window.open(contractUrl, '_blank', 'noopener,noreferrer');
+                }}
+                className={cn(
+                  'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98]',
+                  isDark
+                    ? 'border-white/10 bg-white/5 hover:bg-white/10'
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                )}
+              >
+                <p className={cn('text-[13px] font-bold', textColor)}>Review Contract</p>
+                <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>
+                  {contractUrl ? 'Open the generated collaboration agreement' : 'Contract not generated yet'}
+                </p>
+              </button>
+              {!contractUrl && (
+                <button
+                  onClick={async () => {
+                    try {
+                      setIsGeneratingContract(true);
+                      triggerHaptic(HapticPatterns.light);
+                      const { data: { session } } = await supabase.auth.getSession();
+                      const token = session?.access_token;
+                      if (!token) {
+                        toast.error('Authentication required');
+                        return;
+                      }
+
+                      const apiBase = getApiBaseUrl();
+                      const response = await fetch(`${apiBase}/api/deals/${offer.id}/regenerate-contract`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                      });
+                      const data = await response.json().catch(() => ({}));
+                      if (!response.ok || !data?.success) {
+                        throw new Error(data?.error || 'Failed to generate contract');
+                      }
+
+                      const nextUrl = data?.contract?.url || null;
+                      if (nextUrl) {
+                        setSelectedOffer((prev: any) => prev ? {
+                          ...prev,
+                          contract_file_url: nextUrl,
+                          signed_contract_url: prev?.signed_contract_url || null,
+                          safe_contract_url: prev?.safe_contract_url || null,
+                        } : prev);
+                      }
+                      toast.success('Contract generated');
+                      if (nextUrl) {
+                        window.open(nextUrl, '_blank', 'noopener,noreferrer');
+                      }
+                      await onRefresh?.();
+                      triggerHaptic(HapticPatterns.success);
+                    } catch (error: any) {
+                      toast.error(error?.message || 'Failed to generate contract');
+                    } finally {
+                      setIsGeneratingContract(false);
+                    }
+                  }}
+                  disabled={isGeneratingContract}
+                  className={cn(
+                    'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98] disabled:opacity-60',
+                    isDark ? 'border-cyan-400/20 bg-cyan-500/10 hover:bg-cyan-500/15' : 'border-cyan-200 bg-cyan-50 hover:bg-cyan-100'
+                  )}
+                >
+                  <p className={cn('text-[13px] font-bold', isDark ? 'text-cyan-200' : 'text-cyan-800')}>
+                    {isGeneratingContract ? 'Generating contract...' : 'Generate Contract'}
+                  </p>
+                  <p className={cn('text-[12px] mt-1', isDark ? 'text-cyan-200/70' : 'text-cyan-700/80')}>
+                    Create the collaboration agreement for this deal now
+                  </p>
+                </button>
+              )}
               {canMarkComplete && (
                 <button
                   onClick={async () => {
@@ -1445,19 +1532,6 @@ const BrandMobileDashboard = ({
                     <button onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                       Back
                     </button>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {[
-                      { label: 'Pending', count: offers.length },
-                      { label: 'Active', count: activeDealsList.length },
-                      { label: 'Completed', count: completedDealsList.length },
-                    ].map((p) => (
-                      <div key={p.label} className={cn('p-3 rounded-2xl border', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
-                        <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>{p.label}</p>
-                        <p className={cn('text-[14px] font-bold mt-1', textColor)}>{p.count}</p>
-                      </div>
-                    ))}
                   </div>
 
                   <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
