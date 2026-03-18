@@ -105,6 +105,7 @@ import UpgradePage from "./pages/UpgradePage";
 import CollabLinkLanding from "./pages/CollabLinkLanding";
 import CollabLinkSuccess from "./pages/CollabLinkSuccess";
 import BrandDealConsole from "./pages/BrandDealConsole";
+import ProposalSent from "./pages/ProposalSent";
 import BrandDashboard from "./pages/BrandDashboard";
 import BrandSettings from "./pages/BrandSettings";
 import CollabAcceptPage from "./pages/CollabAcceptPage";
@@ -183,7 +184,9 @@ const App = () => {
     const hash = window.location.hash;
     if (pathname !== "/" || !hash || !hash.startsWith("#/")) return;
     const pathFromHash = hash.slice(1);
-    const hashRouteMatch = pathFromHash.match(/^\/(contract-ready|ship|deal-details|deal\/brand-response|deal|feedback|brand-reply|brand\/response)\/[^/]+/);
+    const hashRouteMatch = pathFromHash.match(
+      /^\/(contract-ready|ship|deal-details|deal\/brand-response|deal|proposal-sent|feedback|brand-reply|brand\/response)\/[^/]+/
+    );
     if (hashRouteMatch) {
       window.location.replace(window.location.origin + pathFromHash);
     }
@@ -421,6 +424,7 @@ const App = () => {
                         {/* Public Brand Deal Details Page - No auth required */}
                         <Route path="/deal-details/:token" element={<BrandDealDetailsPage />} />
                         <Route path="/deal/:token" element={<BrandDealConsole />} />
+                        <Route path="/proposal-sent/:token" element={<ProposalSent />} />
                         {/* Public Feedback Page - No auth required (read-only view) */}
                         <Route path="/feedback/:reportId" element={<FeedbackPage />} />
                         {/* Public Brand eSign Status Page - No auth required */}

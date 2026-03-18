@@ -1574,11 +1574,9 @@ const CollabLinkLanding = () => {
 
       if (data.success) {
         trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
-        // Redirect to the unified Brand Deal Console
+        // Redirect to the proposal confirmation screen (install-first conversion moment)
         const consoleToken = data.request.id;
-        // After submission, encourage App Mode (PWA Add-to-Home-Screen) on the deal console.
-        // The banner is query-driven so it doesn't appear prematurely on the collab link page.
-        navigate(`/deal/${consoleToken}?openApp=1&source=collab_submit`, {
+        navigate(`/proposal-sent/${consoleToken}?openApp=1&source=collab_submit`, {
           state: {
             creatorName: creator?.name || 'the creator',
             submissionType: data.submission_type || (data.lead ? 'lead' : 'request'),

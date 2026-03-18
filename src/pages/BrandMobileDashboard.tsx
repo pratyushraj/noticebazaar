@@ -34,6 +34,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
+type BrandCollabTab = 'pending' | 'active' | 'completed';
 
 type BrandDashboardStats = {
   totalSent: number;
@@ -204,11 +205,25 @@ const BrandMobileDashboard = ({
 }: BrandMobileDashboardProps) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get('tab') as BrandTab) || (searchParams.get('subtab') as BrandTab) || initialTab;
+  const tabParam = searchParams.get('tab');
+  const subtabParam = searchParams.get('subtab');
+  const highlightedDealId = searchParams.get('dealId');
+  const highlightedRequestId = searchParams.get('requestId');
+  const activeTab: BrandTab =
+    tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile'
+      ? tabParam
+      : initialTab;
+  const activeCollabTab: BrandCollabTab =
+    subtabParam === 'pending' || subtabParam === 'active' || subtabParam === 'completed' ? subtabParam : 'pending';
 
-  const setActiveTab = (tab: BrandTab) => {
+  const setActiveTab = (tab: BrandTab, subtab?: BrandCollabTab) => {
     const next = new URLSearchParams(searchParams);
     next.set('tab', tab);
+    if (tab === 'collabs') {
+      next.set('subtab', subtab || activeCollabTab || 'pending');
+    } else {
+      next.delete('subtab');
+    }
     setSearchParams(next, { replace: true });
   };
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -254,7 +269,7 @@ const BrandMobileDashboard = ({
   const cardBgColor = isDark ? 'bg-white/5' : 'bg-white';
 
   useEffect(() => {
-    setActiveTab(initialTab);
+    setActiveTab(initialTab, initialTab === 'collabs' ? activeCollabTab : undefined);
   }, [initialTab]);
 
   const [showActionSheet, setShowActionSheet] = useState(false);
@@ -446,6 +461,33 @@ const BrandMobileDashboard = ({
     }) as any[];
   }, [deals]);
 
+  const visibleCollabItems = useMemo(() => {
+    if (activeCollabTab === 'active') return activeDealsList;
+    if (activeCollabTab === 'completed') return completedDealsList;
+    return pendingOffersList;
+  }, [activeCollabTab, activeDealsList, completedDealsList, pendingOffersList]);
+
+  useEffect(() => {
+    if (activeTab !== 'collabs') return;
+    if (!highlightedDealId && !highlightedRequestId) return;
+
+    const match =
+      activeDealsList.find((item: any) => String(item?.id) === String(highlightedDealId)) ||
+      pendingOffersList.find((item: any) => String(item?.id) === String(highlightedRequestId)) ||
+      completedDealsList.find((item: any) => String(item?.id) === String(highlightedDealId));
+
+    if (match) {
+      setSelectedOffer((current) => (current?.id === match.id ? current : match));
+    }
+  }, [
+    activeTab,
+    highlightedDealId,
+    highlightedRequestId,
+    activeDealsList,
+    pendingOffersList,
+    completedDealsList,
+  ]);
+
   const acceptedDealsCount = useMemo(() => {
     const acceptedRequests = (requests || []).filter((r: any) => normalizeStatus(r?.status) === 'accepted').length;
     const activeDeals = (deals || []).filter((d: any) => !normalizeStatus(d?.status).includes('cancel')).length;
@@ -574,6 +616,7 @@ const BrandMobileDashboard = ({
   const OfferDetailsSheet = ({ offer }: { offer: any }) => {
     if (!offer) return null;
     const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
+    const username = String(offer?.profiles?.username || '').trim();
     const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
     const budget = formatBudget(offer);
     const deadline = offer?.deadline ? new Date(offer.deadline) : null;
@@ -629,22 +672,28 @@ const BrandMobileDashboard = ({
               <button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
-                  toast.message('Messaging', { description: 'Message creator — coming soon.' });
+                  setSelectedOffer(null);
+                  if (username) {
+                    navigate(`/creator/${username}`);
+                    return;
+                  }
+                  toast.message('Creator profile unavailable');
                 }}
                 className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
               >
-                <p className={cn('text-[13px] font-bold', textColor)}>Message creator</p>
-                <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep everything in one thread</p>
+                <p className={cn('text-[13px] font-bold', textColor)}>View creator profile</p>
+                <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Open the creator page in the same app</p>
               </button>
               <button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
-                  toast.message('Resend', { description: 'Resend offer email/push — coming soon.' });
+                  setSelectedOffer(null);
+                  setActiveTab('collabs', normalizeStatus(offer?.status) === 'accepted' ? 'active' : activeCollabTab);
                 }}
                 className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
               >
-                <p className={cn('text-[13px] font-bold', textColor)}>Resend offer</p>
-                <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Nudge without spamming</p>
+                <p className={cn('text-[13px] font-bold', textColor)}>Back to {activeCollabTab} list</p>
+                <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep reviewing offers without leaving this screen</p>
               </button>
               <button
                 onClick={() => setSelectedOffer(null)}
@@ -1291,7 +1340,7 @@ const BrandMobileDashboard = ({
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
                       </div>
-                      <button onClick={() => setActiveTab('collabs')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button onClick={() => setActiveTab('collabs', 'pending')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
@@ -1300,7 +1349,7 @@ const BrandMobileDashboard = ({
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs');
+                          setActiveTab('collabs', 'pending');
                         }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'border-b border-white/10 hover:bg-white/5' : 'border-b border-slate-200 hover:bg-slate-50')}
                       >
@@ -1311,7 +1360,7 @@ const BrandMobileDashboard = ({
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs');
+                          setActiveTab('collabs', 'active');
                         }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'border-b border-white/10 hover:bg-white/5' : 'border-b border-slate-200 hover:bg-slate-50')}
                       >
@@ -1322,7 +1371,7 @@ const BrandMobileDashboard = ({
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs');
+                          setActiveTab('collabs', 'completed');
                         }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                       >
@@ -1356,133 +1405,126 @@ const BrandMobileDashboard = ({
                     ))}
                   </div>
 
-                  <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
-                    <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
-                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Pending Offers</p>
-                    </div>
-                    {pendingOffersList.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No pending offers</p>
-                        <Button type="button" onClick={() => setShowActionSheet(true)} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
-                          <Send className="w-4 h-4 mr-2" /> Send new offer
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
-                        {pendingOffersList.slice(0, 20).map((o: any) => (
-                          <button
-                            key={o.id}
-                            onClick={() => {
-                              triggerHaptic(HapticPatterns.light);
-                              setSelectedOffer(o);
-                            }}
-                            className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
-                          >
-                            <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <Send className={cn('w-4 h-4', secondaryTextColor)} />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[13px] font-bold truncate', textColor)}>
-                                Offer to {firstNameish(o?.profiles)}
-                              </p>
-                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
-                                {[formatDeliverables(o) || o?.collab_type || 'Collaboration', formatBudget(o) ? `Budget: ${formatBudget(o)}` : null, o?.created_at ? `Sent ${timeSince(o.created_at)} ago` : null]
-                                  .filter(Boolean)
-                                  .join(' • ')}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
-                                {normalizeStatus(o?.status) === 'countered' ? 'Countered' : 'Waiting'}
-                              </span>
-                              <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <div className={cn('mb-4 rounded-[22px] border p-1.5 flex gap-1.5', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm')}>
+                    {[
+                      { key: 'pending', label: 'Pending', count: pendingOffersList.length },
+                      { key: 'active', label: 'Active', count: activeDealsList.length },
+                      { key: 'completed', label: 'Completed', count: completedDealsList.length },
+                    ].map((item) => {
+                      const isSelected = activeCollabTab === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(HapticPatterns.light);
+                            setActiveTab('collabs', item.key as BrandCollabTab);
+                          }}
+                          className={cn(
+                            'flex-1 rounded-[18px] px-3 py-3 text-left transition-all active:scale-[0.98]',
+                            isSelected
+                              ? isDark
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'bg-emerald-600 text-white shadow-sm'
+                              : isDark
+                                ? 'text-white/70 hover:bg-white/5'
+                                : 'text-slate-600 hover:bg-slate-50'
+                          )}
+                        >
+                          <p className={cn('text-[10px] font-black uppercase tracking-widest', isSelected ? 'opacity-80' : 'opacity-50')}>{item.label}</p>
+                          <p className="mt-1 text-[16px] font-black">{item.count}</p>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  <div className="h-4" />
-
                   <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
                     <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
-                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Active Collabs</p>
+                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
+                        {activeCollabTab === 'pending' ? 'Pending Offers' : activeCollabTab === 'active' ? 'Active Collabs' : 'Completed Collabs'}
+                      </p>
                     </div>
-                    {activeDealsList.length === 0 ? (
+                    {visibleCollabItems.length === 0 ? (
                       <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No active collabs yet</p>
+                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
+                          {activeCollabTab === 'pending'
+                            ? 'No pending offers'
+                            : activeCollabTab === 'active'
+                              ? 'No active collabs yet'
+                              : 'No completed collabs yet'}
+                        </p>
+                        {activeCollabTab === 'pending' && (
+                          <Button type="button" onClick={() => setShowActionSheet(true)} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
+                            <Send className="w-4 h-4 mr-2" /> Send new offer
+                          </Button>
+                        )}
                       </div>
                     ) : (
                       <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
-                        {activeDealsList.slice(0, 12).map((d: any) => (
-                          <button
-                            key={d.id}
-                            onClick={() => {
-                              triggerHaptic(HapticPatterns.light);
-                              setSelectedOffer(d);
-                            }}
-                            className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
-                          >
-                            <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <Handshake className={cn('w-4 h-4', secondaryTextColor)} />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[13px] font-bold truncate', textColor)}>{firstNameish(d?.profiles)}</p>
-                              <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
-                                {[dealStageLabel(d), deadlineLabel(d)?.text].filter(Boolean).join(' • ')}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(d?.deal_amount || 0)}</p>
-                              {deadlineLabel(d) && (
-                                <span
-                                  className={cn(
-                                    'text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border',
-                                    deadlineLabel(d)!.tone === 'danger'
-                                      ? (isDark ? 'border-rose-300/30 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-700')
-                                      : deadlineLabel(d)!.tone === 'warn'
-                                        ? (isDark ? 'border-amber-300/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')
-                                        : (isDark ? 'border-white/10 bg-white/5 text-white/60' : 'border-slate-200 bg-white text-slate-600')
-                                  )}
-                                >
-                                  {deadlineLabel(d)!.text}
-                                </span>
-                              )}
-                              <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="h-4" />
-
-                  <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#0B0F14]/40' : 'bg-white')}>
-                    <div className={cn('p-4', isDark ? 'border-b border-white/10' : 'border-b border-slate-200')}>
-                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>Completed Collabs</p>
-                    </div>
-                    {completedDealsList.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No completed collabs yet</p>
-                      </div>
-                    ) : (
-                      <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
-                        {completedDealsList.slice(0, 12).map((d: any) => (
-                          <div key={d.id} className={cn('w-full flex items-center gap-3 p-4 transition-all', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}>
-                            <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5 text-emerald-400' : 'border-slate-200 bg-slate-50 text-emerald-600')}>
-                              <Shield className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[13px] font-bold truncate', textColor)}>{firstNameish(d?.profiles)}</p>
-                              <p className={cn('text-[12px] opacity-50 truncate', textColor)}>Completed</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <p className={cn('text-[12px] font-black text-emerald-500')}>{formatCompactINR(d?.deal_amount || 0)}</p>
-                            </div>
-                          </div>
-                        ))}
+                        {visibleCollabItems.slice(0, 20).map((item: any) => {
+                          const isPendingItem = activeCollabTab === 'pending';
+                          const isCompletedItem = activeCollabTab === 'completed';
+                          const due = deadlineLabel(item);
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                triggerHaptic(HapticPatterns.light);
+                                setSelectedOffer(item);
+                              }}
+                              className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
+                            >
+                              <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                                {isPendingItem ? (
+                                  <Send className={cn('w-4 h-4', secondaryTextColor)} />
+                                ) : isCompletedItem ? (
+                                  <Shield className={cn('w-4 h-4', isDark ? 'text-emerald-400' : 'text-emerald-600')} />
+                                ) : (
+                                  <Handshake className={cn('w-4 h-4', secondaryTextColor)} />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0 text-left">
+                                <p className={cn('text-[13px] font-bold truncate', textColor)}>
+                                  {isPendingItem ? `Offer to ${firstNameish(item?.profiles)}` : firstNameish(item?.profiles)}
+                                </p>
+                                <p className={cn('text-[12px] opacity-60 truncate', textColor)}>
+                                  {isPendingItem
+                                    ? [formatDeliverables(item) || item?.collab_type || 'Collaboration', formatBudget(item) ? `Budget: ${formatBudget(item)}` : null, item?.created_at ? `Sent ${timeSince(item.created_at)} ago` : null]
+                                        .filter(Boolean)
+                                        .join(' • ')
+                                    : isCompletedItem
+                                      ? ['Completed', formatBudget(item) || formatCompactINR(item?.deal_amount || 0)].filter(Boolean).join(' • ')
+                                      : [dealStageLabel(item), due?.text, formatCompactINR(item?.deal_amount || 0)].filter(Boolean).join(' • ')}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {isPendingItem ? (
+                                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                                    {normalizeStatus(item?.status) === 'countered' ? 'Countered' : 'Waiting'}
+                                  </span>
+                                ) : isCompletedItem ? (
+                                  <p className={cn('text-[12px] font-black text-emerald-500')}>{formatCompactINR(item?.deal_amount || 0)}</p>
+                                ) : due ? (
+                                  <span
+                                    className={cn(
+                                      'text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border',
+                                      due.tone === 'danger'
+                                        ? (isDark ? 'border-rose-300/30 bg-rose-500/10 text-rose-200' : 'border-rose-200 bg-rose-50 text-rose-700')
+                                        : due.tone === 'warn'
+                                          ? (isDark ? 'border-amber-300/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')
+                                          : (isDark ? 'border-white/10 bg-white/5 text-white/60' : 'border-slate-200 bg-white text-slate-600')
+                                    )}
+                                  >
+                                    {due.text}
+                                  </span>
+                                ) : (
+                                  <p className={cn('text-[12px] font-bold', textColor)}>{formatCompactINR(item?.deal_amount || 0)}</p>
+                                )}
+                                <ChevronRight className={cn('w-4 h-4 opacity-30', textColor)} />
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>

@@ -22,7 +22,7 @@ import {
 import { resolveOrCreateBrandContact } from '../services/brandContactService.js';
 import { estimateBarterValueRange, estimateReelBudgetRange, estimateReelRate, getEffectiveReelRate } from '../services/creatorRateService.js';
 import { fetchInstagramPublicData } from '../services/instagramService.js';
-import { notifyCreatorOnCollabRequestCreated } from '../services/pushNotificationService.js';
+import { notifyCreatorOnCollabRequestCreated, sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
 import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brandAuthService.js';
 
 const router = express.Router();
@@ -120,6 +120,67 @@ const LEAD_SOURCE_TABLES = [PRIMARY_UNCLAIMED_REQUESTS_TABLE, LEGACY_LEADS_TABLE
 const isMissingTableError = (error: any): boolean => {
   if (!error) return false;
   return error.code === '42P01' || /relation .* does not exist/i.test(error.message || '');
+};
+
+const resolveBrandUserIdForPush = async (brandId?: string | null, brandEmail?: string | null) => {
+  if (brandId) return brandId;
+  if (!brandEmail) return null;
+
+  const { data: brandProfile, error } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', brandEmail)
+    .maybeSingle();
+
+  if (error) {
+    console.warn('[CollabRequests] Failed to resolve brand profile for push:', error.message);
+    return null;
+  }
+
+  return brandProfile?.id || null;
+};
+
+const notifyBrandOnCreatorAcceptance = async ({
+  brandId,
+  brandEmail,
+  creatorName,
+  dealId,
+  requestId,
+  isBarter,
+}: {
+  brandId?: string | null;
+  brandEmail?: string | null;
+  creatorName: string;
+  dealId: string;
+  requestId: string;
+  isBarter: boolean;
+}) => {
+  const targetBrandUserId = await resolveBrandUserIdForPush(brandId, brandEmail);
+  if (!targetBrandUserId) {
+    console.log('[CollabRequests] Skipping brand push: no brand user id found', { requestId, brandEmail });
+    return;
+  }
+
+  const result = await sendGenericPushNotificationToCreator({
+    creatorId: targetBrandUserId,
+    title: 'Creator accepted your offer',
+    body: isBarter
+      ? `${creatorName} accepted. Add delivery details to keep the deal moving.`
+      : `${creatorName} accepted. Review the deal and complete the next step.`,
+    url: `/brand-dashboard?tab=collabs&subtab=active&dealId=${encodeURIComponent(dealId)}`,
+    data: {
+      type: 'brand_offer_accepted',
+      requestId,
+      dealId,
+    },
+  });
+
+  console.log('[CollabRequests] Brand acceptance push result:', {
+    requestId,
+    dealId,
+    brandUserId: targetBrandUserId,
+    ...result,
+  });
 };
 
 const isMissingColumnError = (error: any): boolean => {
@@ -2513,6 +2574,25 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr);
     });
 
+    const { data: creatorProfileForBrandPush } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', userId)
+      .maybeSingle();
+    const creatorNameForBrandPush =
+      `${creatorProfileForBrandPush?.first_name || ''} ${creatorProfileForBrandPush?.last_name || ''}`.trim() || 'Creator';
+
+    notifyBrandOnCreatorAcceptance({
+      brandId: request.brand_id || null,
+      brandEmail: request.brand_email || null,
+      creatorName: creatorNameForBrandPush,
+      dealId: deal.id,
+      requestId: id,
+      isBarter,
+    }).catch((pushError) => {
+      console.error('[CollabRequests] Accept confirm: brand push failed (non-fatal):', pushError);
+    });
+
     if (isBarter) {
       return res.json({
         success: true,
@@ -2787,6 +2867,20 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       },
     }).then(({ error: logErr }) => {
       if (logErr) console.warn('[CollabRequests] Audit log insert failed:', logErr);
+    });
+
+    const creatorNameForBrandPush =
+      creatorProfile ? `${creatorProfile.first_name || ''} ${creatorProfile.last_name || ''}`.trim() || 'Creator' : 'Creator';
+
+    notifyBrandOnCreatorAcceptance({
+      brandId: request.brand_id || null,
+      brandEmail: request.brand_email || null,
+      creatorName: creatorNameForBrandPush,
+      dealId: deal.id,
+      requestId: id,
+      isBarter,
+    }).catch((pushError) => {
+      console.error('[CollabRequests] PATCH accept: brand push failed (non-fatal):', pushError);
     });
 
     // Barter: require delivery details before contract generation. Redirect creator to delivery-details screen.
