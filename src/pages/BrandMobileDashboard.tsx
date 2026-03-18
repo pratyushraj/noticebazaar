@@ -264,6 +264,7 @@ const BrandMobileDashboard = ({
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [monthlyBudgetInr, setMonthlyBudgetInr] = useState<number | null>(null);
   const [budgetDraft, setBudgetDraft] = useState('');
+  const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
   const [quickSendEmail, setQuickSendEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [localOffers, setLocalOffers] = useState<any[]>([]);
@@ -569,6 +570,94 @@ const BrandMobileDashboard = ({
       <h2 className={cn('text-[20px] font-bold tracking-tight', textColor)}>{title}</h2>
     </div>
   );
+
+  const OfferDetailsSheet = ({ offer }: { offer: any }) => {
+    if (!offer) return null;
+    const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
+    const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
+    const budget = formatBudget(offer);
+    const deadline = offer?.deadline ? new Date(offer.deadline) : null;
+    const deadlineText = deadline && !Number.isNaN(deadline.getTime())
+      ? deadline.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : null;
+    const status = String(offer?.status || '').toUpperCase() || 'PENDING';
+
+    return (
+      <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSelectedOffer(null)}
+          className="fixed inset-0 z-[140] bg-black/50 backdrop-blur-md"
+        />
+        <motion.div
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+          className={cn(
+            'fixed bottom-0 inset-x-0 z-[150] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl',
+            isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200'
+          )}
+        >
+          <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-6" />
+          <div className="max-w-md mx-auto">
+            <div className="flex items-start justify-between gap-3 mb-5">
+              <div className="min-w-0">
+                <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Offer</p>
+                <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>Offer to {title}</h3>
+                <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{deliverables}</p>
+              </div>
+              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/70 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                {status}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              <div className={cn('p-4 rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>Budget</p>
+                <p className={cn('text-[13px] font-bold mt-1', textColor)}>{budget || '—'}</p>
+              </div>
+              <div className={cn('p-4 rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>Deadline</p>
+                <p className={cn('text-[13px] font-bold mt-1', textColor)}>{deadlineText || '—'}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <button
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  toast.message('Messaging', { description: 'Message creator — coming soon.' });
+                }}
+                className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+              >
+                <p className={cn('text-[13px] font-bold', textColor)}>Message creator</p>
+                <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep everything in one thread</p>
+              </button>
+              <button
+                onClick={() => {
+                  triggerHaptic(HapticPatterns.light);
+                  toast.message('Resend', { description: 'Resend offer email/push — coming soon.' });
+                }}
+                className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+              >
+                <p className={cn('text-[13px] font-bold', textColor)}>Resend offer</p>
+                <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Nudge without spamming</p>
+              </button>
+              <button
+                onClick={() => setSelectedOffer(null)}
+                className={cn('h-12 rounded-2xl font-bold text-[13px] transition-all active:scale-[0.99]', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </>
+    );
+  };
 
   const renderNotificationSettings = () => (
     <motion.div
@@ -1285,7 +1374,7 @@ const BrandMobileDashboard = ({
                             key={o.id}
                             onClick={() => {
                               triggerHaptic(HapticPatterns.light);
-                              setActiveTab('collabs');
+                              setSelectedOffer(o);
                             }}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
@@ -1331,7 +1420,7 @@ const BrandMobileDashboard = ({
                             key={d.id}
                             onClick={() => {
                               triggerHaptic(HapticPatterns.light);
-                              setActiveTab('collabs');
+                              setSelectedOffer(d);
                             }}
                             className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
                           >
@@ -1860,6 +1949,10 @@ const BrandMobileDashboard = ({
             </motion.div>
           </>
         )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedOffer && <OfferDetailsSheet offer={selectedOffer} />}
       </AnimatePresence>
     </div>
   );
