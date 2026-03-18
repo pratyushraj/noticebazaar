@@ -1914,7 +1914,8 @@ const CollabLinkLanding = () => {
 
     // Auto-advance into customization. Selecting a package should immediately open the form.
     setShowCustomFlow(true);
-    setCurrentStep(2);
+    // Package flow: jump to contact + send (edits are optional via custom deal / change package).
+    setCurrentStep(5);
 
     // Make the next step obvious: bring the offer panel into view and nudge the header.
     setTemplateContinueNudge(Date.now());
@@ -3456,20 +3457,22 @@ const CollabLinkLanding = () => {
 			                        </div>
 			                      )}
 			                      <div className="flex flex-col sm:flex-row gap-3">
-			                      <Button
-			                        onClick={() => {
-			                          if (currentStep === 1) {
-		                            setShowCustomFlow(false);
-	                          } else {
-                            setCurrentStep(currentStep - 1);
-                          }
-                          triggerHaptic(HapticPatterns.light);
-                        }}
-                        variant="outline"
-                        className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
-                      >
-		                        {currentStep === 1 ? 'Go Back' : 'Previous Step'}
-		                      </Button>
+			                      {!(selectedTemplate && currentStep === 5) && (
+			                        <Button
+			                          onClick={() => {
+			                            if (currentStep === 1) {
+		                              setShowCustomFlow(false);
+	                            } else {
+                              setCurrentStep(currentStep - 1);
+                            }
+                            triggerHaptic(HapticPatterns.light);
+                          }}
+                          variant="outline"
+                          className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
+                        >
+		                          {currentStep === 1 ? 'Go Back' : 'Previous Step'}
+		                        </Button>
+			                      )}
 
 		                      {currentStep < 5 ? (
 	                        <Button
