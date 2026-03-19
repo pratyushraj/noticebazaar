@@ -42,12 +42,34 @@ const StatusBadge = ({ status }: { status: string }) => {
         'active': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'ACTIVE' },
         'completed': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'COMPLETED' },
     };
-    const c = config[status?.toLowerCase()] ?? config['new'];
+    const normalizeStatus = (status: string) => {
+        const s = String(status || '').toLowerCase();
+        if (s.includes('complete') || s.includes('closed') || s.includes('paid')) return 'completed';
+        if (s.includes('active') || s.includes('sign') || s.includes('execut') || s.includes('making') || s.includes('deliver') || s.includes('ship')) return 'active';
+        if (s.includes('neg')) return 'negotiating';
+        return 'pending';
+    };
+
+    const c = config[normalizeStatus(status)] ?? config['pending'];
     return (
         <span className={cn('px-2.5 py-1 rounded-full text-[12px] font-semibold tracking-wider', c.bg, c.text)}>
             {c.label}
         </span>
     );
+};
+
+const renderBudgetValue = (item: any) => {
+    const exact = Number(item?.deal_amount || item?.exact_budget);
+    if (Number.isFinite(exact) && exact > 0) return `₹${exact.toLocaleString()}`;
+    
+    // Check for budget range in nested properties
+    const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));
+    if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
+    
+    const barter = Number(item?.barter_value || item?.form_data?.barter_value);
+    if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Barter)`;
+    
+    return 'Flexible Budget';
 };
 
 // Animated Number Counter
@@ -2265,7 +2287,7 @@ const MobileDashboardDemo = ({
                                             "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                             collabSubTab === 'active'
                                                 ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
-                                                : cn("opacity-40", textColor)
+                                                : cn("opacity-70", textColor)
                                         )}
                                     >
                                         Active Deals ({activeDealsCount})
@@ -2284,7 +2306,7 @@ const MobileDashboardDemo = ({
                                             "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                             collabSubTab === 'pending'
                                                 ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
-                                                : cn("opacity-40", textColor)
+                                                : cn("opacity-70", textColor)
                                         )}
                                     >
                                         New Offers ({pendingOffersCount})
@@ -2468,7 +2490,7 @@ const MobileDashboardDemo = ({
                                                                     : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
                                                             )}
                                                         >
-                                                            <div className="flex items-center gap-1.5 mb-3 px-1">
+                                                            <div className="inline-flex items-center gap-1.5 mb-3 px-2 py-1 rounded-full bg-amber-500/10">
                                                                 <AlertTriangle className="w-3.5 h-3.5 text-amber-500" strokeWidth={3} />
                                                                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Action Required</span>
                                                             </div>
@@ -2489,7 +2511,7 @@ const MobileDashboardDemo = ({
                                                                     <p className={cn("text-xl font-bold font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
                                                                         Earn ₹{amount.toLocaleString()}
                                                                     </p>
-                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-40 mt-1", isDark ? "text-emerald-400" : "text-emerald-600")}>Target Budget</p>
+                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-70 mt-1", isDark ? "text-emerald-400" : "text-emerald-600")}>Target Budget</p>
                                                                 </div>
                                                             </div>
 
@@ -2523,8 +2545,8 @@ const MobileDashboardDemo = ({
                                                                         })()}
                                                                     </div>
                                                                     <div className={cn(
-                                                                        "flex items-center gap-1.5 ml-auto px-2.5 py-1.5 rounded-lg border",
-                                                                        isDark ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-red-50 text-red-600 border-red-200"
+                                                                        "flex items-center gap-1.5 ml-auto px-2.5 py-1.5 rounded-lg",
+                                                                        isDark ? "bg-red-500/15 text-red-400" : "bg-red-100 text-red-700"
                                                                     )}>
                                                                         <Clock className="w-3.5 h-3.5" />
                                                                         <span className="text-[10px] font-bold uppercase tracking-widest">Offer Expires in {expiresDays}d</span>
@@ -2532,14 +2554,14 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                                 
                                                                 {/* Expected Payment Time callout */}
-                                                                <div className={cn("flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold", isDark ? "bg-[#1C2C2A] text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
-                                                                    <Landmark className="w-3.5 h-3.5 shrink-0" />
+                                                                <div className={cn("flex items-start gap-2 px-3 py-2.5 rounded-xl text-[11px] font-medium leading-relaxed", isDark ? "bg-[#1C2C2A]/80 text-emerald-400" : "bg-emerald-50 text-emerald-700")}>
+                                                                    <Landmark className="w-3.5 h-3.5 shrink-0 mt-[2px]" />
                                                                     Expected Payment: Released immediately after content approval
                                                                 </div>
                                                             </div>
 
                                                             <div className="flex items-center justify-between pt-3 border-t border-slate-500/10">
-                                                                <div className={cn("text-[10px] font-bold opacity-30", textColor)}>
+                                                                <div className={cn("text-[10px] font-bold opacity-50", isDark ? "text-slate-400" : "text-slate-500")}>
                                                                     ⟷ Swipe to accept/decline
                                                                 </div>
 
@@ -2571,6 +2593,7 @@ const MobileDashboardDemo = ({
                                     </motion.div>
                                 )}
                             </AnimatePresence>
+                            <div className="h-24 opacity-0 pointer-events-none" aria-hidden="true" />
                         </div>
                     )}
 
@@ -3098,7 +3121,7 @@ const MobileDashboardDemo = ({
 
                                         {/* Hero Budget */}
                                         <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                                            ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
+                                            {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
                                         </p>
 
                                         {/* Deliverables */}
@@ -3326,7 +3349,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                             <div>
                                                 <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
-                                                <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</p>
+                                                <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>
                                                 <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
                                             </div>
                                         </div>
@@ -3499,13 +3522,13 @@ const MobileDashboardDemo = ({
                                         <div className={cn("rounded-2xl border p-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
                                             <div className="mb-5">
                                                 <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-emerald-400" : "text-emerald-600")}>You Receive</p>
-                                                <p className={cn("text-[32px] font-black leading-none", textColor)}>₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</p>
+                                                <p className={cn("text-[32px] font-black leading-none", textColor)}>{renderBudgetValue(selectedItem)}</p>
                                             </div>
 
                                             <div className="space-y-2.5 text-[12px]">
                                                 <div className="flex items-center justify-between">
                                                     <span className={cn("font-medium opacity-70", textColor)}>Offer budget</span>
-                                                    <span className={cn("font-bold", textColor)}>₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}</span>
+                                                    <span className={cn("font-bold", textColor)}>{renderBudgetValue(selectedItem)}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span className={cn("font-medium opacity-70", textColor)}>Platform fee</span>
@@ -3582,7 +3605,7 @@ const MobileDashboardDemo = ({
                                         ) : selectedType === 'offer' ? (
                                             <>
                                                 <span className="text-[17px] font-black leading-tight">
-                                                    Accept Offer ₹{(selectedItem.deal_amount || selectedItem.exact_budget || 12500).toLocaleString()}
+                                                    Accept Offer {renderBudgetValue(selectedItem)}
                                                 </span>
                                                 <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
                                                     Contract generated instantly
@@ -4010,7 +4033,7 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-600"))}>
                                             {isPaid ? 'RECEIVED' : isEscrow ? 'IN ESCROW' : 'OVERDUE'}
                                         </p>
-                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>₹{(pay.deal_amount || 0).toLocaleString()}</p>
+                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
                                         {isEscrow ? (
                                             <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Funds secured in escrow · Release after approval</p>
                                         ) : isPaid ? (
@@ -4029,7 +4052,7 @@ const MobileDashboardDemo = ({
                                     <p className={cn("text-[10px] font-black uppercase tracking-widest px-4 pt-4 pb-2 opacity-40", textColor)}>Deal Breakdown</p>
                                     {[
                                         { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel' },
-                                        { label: 'Deal Value', value: `₹${(pay.deal_amount || 0).toLocaleString()}` },
+                                        { label: 'Deal Value', value: renderBudgetValue(pay) },
                                         { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Barter' : '💰 Paid Campaign' },
                                         { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
                                     ].map((row, i) => (
