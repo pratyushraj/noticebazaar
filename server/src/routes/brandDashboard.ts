@@ -242,17 +242,187 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
     const brand = await requireBrand(req, res);
     if (!brand.ok) return;
 
+    // Schema evolves over time across environments. Keep the brand dashboard resilient by
+    // progressively falling back when optional columns are missing.
+    //
+    // Important: some deployments do not have `deal_execution_status`, so every "full" select
+    // has a corresponding fallback without it.
     const selectAttempts = [
+      // Brand id available (preferred)
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
       {
         select: `
           id,
           creator_id,
           status,
           created_at,
+          updated_at,
           deal_amount,
+          deliverables,
           due_date,
           contract_file_url,
+          safe_contract_url,
           signed_contract_url,
+          signed_contract_path,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
           brand_id,
           brand_email
         `,
@@ -272,16 +442,174 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
         `,
         canUseBrandId: true,
       },
+
+      // Brand email only (fallback)
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
       {
         select: `
           id,
           creator_id,
           status,
           created_at,
+          updated_at,
           deal_amount,
+          deliverables,
           due_date,
           contract_file_url,
+          safe_contract_url,
           signed_contract_url,
+          signed_contract_path,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
           brand_email
         `,
         canUseBrandId: false,
@@ -327,7 +655,14 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
         lastError = err;
         const missingOptionalColumn =
           isMissingColumnError(err, 'brand_id') ||
-          isMissingColumnError(err, 'signed_contract_url');
+          isMissingColumnError(err, 'signed_contract_url') ||
+          isMissingColumnError(err, 'signed_contract_path') ||
+          isMissingColumnError(err, 'safe_contract_url') ||
+          isMissingColumnError(err, 'deal_execution_status') ||
+          isMissingColumnError(err, 'esign_status') ||
+          isMissingColumnError(err, 'signed_at') ||
+          isMissingColumnError(err, 'signed_pdf_url') ||
+          isMissingColumnError(err, 'updated_at');
         if (!missingOptionalColumn) {
           throw err;
         }
