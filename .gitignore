@@ -32,3 +32,22 @@ ADD_FACEBOOK_SECRETS.md
 cursor_mac_id_modifier.sh
 server/.env
 *.env.bak
+
+# Local tooling / caches
+.pnpm-store/
+.tmp/
+.venv/
+.python-version
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Temp/output
+tmp/
+coverage/
+*.zip
+
+# Secrets / private exports (never commit)
+rzp.csv
+RENDER_ENV_VARIABLES.txt

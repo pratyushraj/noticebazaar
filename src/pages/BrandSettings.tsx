@@ -1,18 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Bell, Building2, CreditCard, Globe, LogOut, Settings, Shield,
-  Sun, Moon, Laptop, Users, Save, ChevronLeft
+  AlertTriangle,
+  Bell,
+  ChevronLeft,
+  CreditCard,
+  Globe,
+  Landmark,
+  LogOut,
+  Laptop,
+  Moon,
+  Save,
+  ShieldCheck,
+  Sun,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
-import { SectionCard } from '@/components/ui/card-variants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
 
 const BrandSettings = () => {
@@ -45,33 +56,28 @@ const BrandSettings = () => {
 
   const isDark = themePreference === 'system' ? systemPrefersDark : themePreference === 'dark';
   const themeModeLabel = themePreference === 'system' ? 'AUTO' : themePreference.toUpperCase();
-  const themeIcon = themePreference === 'system'
-    ? <Laptop className="w-4 h-4" />
-    : (isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />);
+  const themeIcon =
+    themePreference === 'system'
+      ? <Laptop className="w-4 h-4" />
+      : (isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />);
 
   const brandName = profile?.first_name || profile?.business_name || 'Brand';
-  const brandLogo = profile?.avatar_url || `https://ui-avatars.com/api/?name=${brandName}&background=0D8ABC&color=fff`;
+  const brandLogo = profile?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(brandName)}&background=0D8ABC&color=fff`;
   const supportEmailStorageKey = profile?.id ? `brand_settings_support_email:${profile.id}` : 'brand_settings_support_email';
 
   const textColor = isDark ? 'text-white' : 'text-slate-900';
-  const bgColor = isDark ? 'bg-black' : 'bg-slate-50';
+  const cardBorder = isDark ? 'border-white/10' : 'border-slate-200';
+  const cardBg = isDark ? 'bg-white/[0.04]' : 'bg-white/80';
 
   const [profileForm, setProfileForm] = useState({
     brandName,
-    website: 'https://brand.com',
-    industry: 'Fashion',
-    location: 'Mumbai, India',
-    description: 'We build creator-first campaigns across fashion and lifestyle categories.',
-    supportEmail: 'marketing@brand.com',
+    website: '',
+    industry: '',
+    location: '',
+    description: '',
+    supportEmail: '',
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
-
-  const [billingForm, setBillingForm] = useState({
-    plan: 'Growth',
-    billingEmail: 'billing@brand.com',
-    cardLast4: '4242',
-    nextInvoice: 'Apr 05, 2026',
-  });
 
   const [notificationPrefs, setNotificationPrefs] = useState({
     countered: true,
@@ -89,17 +95,32 @@ const BrandSettings = () => {
   });
 
   const [campaignDefaults, setCampaignDefaults] = useState({
-    budgetRange: '₹15,000 – ₹30,000',
-    deliverables: '1 Reel, 2 Stories',
-    timeline: '7 days',
-    approval: 'Required',
+    budgetRange: '',
+    deliverables: '',
+    timeline: '',
+    approval: '',
   });
 
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   const teamMembers = useMemo(() => ([
-    { id: 't-1', name: 'Priya Mehta', role: 'Brand Owner', email: 'priya@brand.com', avatar: 'https://i.pravatar.cc/150?img=47' },
-    { id: 't-2', name: 'Rahul Shah', role: 'Marketing Lead', email: 'rahul@brand.com', avatar: 'https://i.pravatar.cc/150?img=12' },
-    { id: 't-3', name: 'Aditi Kapoor', role: 'Campaign Manager', email: 'aditi@brand.com', avatar: 'https://i.pravatar.cc/150?img=33' },
-  ]), []);
+    {
+      id: profile?.id || 'me',
+      name: brandName,
+      role: 'Admin',
+      email: profile?.email || '—',
+      avatar: brandLogo,
+    },
+  ]), [brandLogo, brandName, profile?.email, profile?.id]);
+
+  const [metrics, setMetrics] = useState({
+    isLoading: true,
+    activeDeals: 0,
+    completedDeals: 0,
+    actionRequired: 0,
+    contentPendingReview: 0,
+    spendThisMonth: 0,
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -115,23 +136,23 @@ const BrandSettings = () => {
       const fallbackSupportEmail =
         (typeof window !== 'undefined' ? localStorage.getItem(supportEmailStorageKey) : null) ||
         profile.email ||
-        'marketing@brand.com';
+        '';
 
       setProfileForm((current) => ({
         ...current,
         brandName: profile.business_name || profile.first_name || current.brandName,
         location: profile.location || current.location,
         description: profile.bio || current.description,
-        supportEmail: fallbackSupportEmail,
+        supportEmail: fallbackSupportEmail || current.supportEmail,
       }));
 
-      const { data: brandRow, error } = await supabase
+      const { data: brandRow } = await supabase
         .from('brands')
         .select('name, website_url, industry, description')
         .eq('external_id', profile.id)
         .maybeSingle();
 
-      if (cancelled || error || !brandRow) return;
+      if (cancelled || !brandRow) return;
 
       setProfileForm((current) => ({
         ...current,
@@ -143,11 +164,68 @@ const BrandSettings = () => {
     };
 
     void loadBrandSettings();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [profile?.id, profile?.business_name, profile?.first_name, profile?.location, profile?.bio, profile?.email, supportEmailStorageKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadMetrics = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          if (!cancelled) setMetrics((m) => ({ ...m, isLoading: false }));
+          return;
+        }
+
+        const apiBase = getApiBaseUrl();
+        const [dealsRes, reqRes] = await Promise.all([
+          fetch(`${apiBase}/api/brand-dashboard/deals`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${apiBase}/api/brand-dashboard/requests`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+
+        const dealsJson = await dealsRes.json().catch(() => ({}));
+        const reqJson = await reqRes.json().catch(() => ({}));
+
+        const deals = Array.isArray(dealsJson?.deals) ? dealsJson.deals : [];
+        const requests = Array.isArray(reqJson?.requests) ? reqJson.requests : [];
+
+        const activeDeals = deals.filter((d: any) => String(d?.status || '').toUpperCase() !== 'COMPLETED').length;
+        const completedDeals = deals.filter((d: any) => String(d?.status || '').toUpperCase() === 'COMPLETED').length;
+        const contentPendingReview = deals.filter((d: any) => String(d?.status || '').toUpperCase() === 'CONTENT_DELIVERED').length;
+        const needsActionDeals = deals.filter((d: any) => {
+          const s = String(d?.status || '').toUpperCase();
+          return s === 'CONTRACT_READY' || s === 'SENT' || s === 'CONTENT_DELIVERED';
+        }).length;
+        const needsActionOffers = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'countered').length;
+
+        const now = new Date();
+        const spendThisMonth = deals.reduce((sum: number, d: any) => {
+          const created = d?.created_at ? new Date(d.created_at) : null;
+          const amt = Number(d?.deal_amount || 0);
+          if (!created || Number.isNaN(created.getTime())) return sum;
+          if (created.getFullYear() !== now.getFullYear() || created.getMonth() !== now.getMonth()) return sum;
+          return sum + (Number.isFinite(amt) ? amt : 0);
+        }, 0);
+
+        if (cancelled) return;
+        setMetrics({
+          isLoading: false,
+          activeDeals,
+          completedDeals,
+          actionRequired: needsActionDeals + needsActionOffers,
+          contentPendingReview,
+          spendThisMonth,
+        });
+      } catch {
+        if (!cancelled) setMetrics((m) => ({ ...m, isLoading: false }));
+      }
+    };
+
+    void loadMetrics();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleSaveProfile = async () => {
     if (!profile?.id) {
@@ -223,350 +301,314 @@ const BrandSettings = () => {
     }
   };
 
+  const toggleTheme = () => {
+    const next = themePreference === 'system' ? 'dark' : themePreference === 'dark' ? 'light' : 'system';
+    setThemePreference(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch { /* ignore */ }
+  };
+
   return (
-    <div className={cn(
-      "min-h-screen font-sans selection:bg-blue-500/30 overflow-x-hidden pb-20",
-      "-mx-4 md:-mx-6 lg:-mx-8 -mt-6 -mb-6",
-      bgColor,
-      textColor
-    )}>
-      {/* Top Navigation */}
-      <header className={cn(
-        "h-16 sm:h-20 border-b px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50 backdrop-blur-2xl transition-all duration-300",
-        isDark ? "bg-black/60 border-white/10" : "bg-white/80 border-slate-200"
-      )}>
-        <div className="flex items-center gap-4">
+    <div className={cn('min-h-screen font-sans selection:bg-emerald-500/25', isDark ? 'bg-[#061318]' : 'bg-[#F7FFFB]', textColor)}>
+      {!isDark && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
+        </div>
+      )}
+      {isDark && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
+        </div>
+      )}
+
+      <header className={cn('sticky top-0 z-20 border-b backdrop-blur-xl', isDark ? 'bg-[#061318]/92 border-white/10' : 'bg-white/90 border-slate-100')}>
+        <div className="max-w-md md:max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <button
             type="button"
             onClick={() => navigate('/brand-dashboard')}
-            className={cn(
-              "min-h-12 px-4 rounded-xl flex items-center gap-2 border text-[11px] font-black uppercase tracking-widest touch-manipulation",
-              isDark ? "bg-white/0 border-white/10 text-white/70 hover:bg-white/10" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            )}
+            className={cn('w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
           >
-            <ChevronLeft className="w-5 h-5" />
-            Back
+            <ChevronLeft className={cn('w-5 h-5', textColor)} />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className={cn("text-[14px] sm:text-[16px] font-black tracking-tight font-outfit uppercase", textColor)}>
-                {brandName}
-              </h1>
-              <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40", textColor)}>
-                Brand Settings
-              </p>
-            </div>
+          <div className="text-center">
+            <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Settings</p>
+            <p className={cn('text-[16px] font-black tracking-tight', textColor)}>Business control</p>
           </div>
-        </div>
-        <div className="flex items-center gap-4">
           <button
             type="button"
-            onClick={() => {
-              const next =
-                themePreference === 'system' ? 'dark' :
-                  themePreference === 'dark' ? 'light' : 'system';
-              setThemePreference(next);
-              try {
-                localStorage.setItem(THEME_KEY, next);
-              } catch { /* ignore */ }
-            }}
-            className={cn(
-              "h-10 px-2.5 sm:px-3 rounded-xl flex items-center gap-2 transition-all border text-[11px] font-black uppercase tracking-widest",
-              isDark ? "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            )}
-          >
-            <span className={cn(
-              "w-7 h-7 rounded-lg flex items-center justify-center",
-              isDark ? "bg-white/5" : "bg-slate-100"
-            )}>
-              {themeIcon}
-            </span>
-            <span className="hidden sm:inline">{themeModeLabel}</span>
-          </button>
-          <button className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-            isDark ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-          )}>
-            <Bell className="w-5 h-5" />
-          </button>
-          <Avatar className={cn("h-10 w-10 ring-2 ring-primary/20", isDark ? "border border-white/10" : "border border-slate-200")}>
-            <AvatarImage src={brandLogo} />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold">{brandName.charAt(0)}</AvatarFallback>
-          </Avatar>
-          <button
             onClick={handleLogout}
-            className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-              isDark ? "text-white/40 hover:text-red-400 hover:bg-red-400/10" : "text-slate-500 hover:text-red-600 hover:bg-red-50"
-            )}
+            className={cn('w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-700')}
           >
             <LogOut className="w-5 h-5" />
           </button>
         </div>
       </header>
 
-      <main className="max-w-[1280px] mx-auto px-4 sm:px-8 py-8 sm:py-10 space-y-8">
-        {/* Brand Profile */}
-        <SectionCard
-          theme={isDark ? 'dark' : 'light'}
-          title="Brand Profile"
-          subtitle="Core brand details and public info"
-          icon={<Building2 className={cn("w-4 h-4", isDark ? "text-blue-400" : "text-blue-600")} />}
-          variant="tertiary"
-          className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Brand name</p>
-              <Input
-                value={profileForm.brandName}
-                onChange={(e) => setProfileForm((p) => ({ ...p, brandName: e.target.value }))}
-                className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")}
-              />
+      <main className="relative z-10 max-w-md md:max-w-2xl mx-auto px-5 py-6 pb-24 space-y-6">
+        {/* Brand identity */}
+        <div className={cn('rounded-[28px] border overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.10)]', cardBorder, cardBg)}>
+          <div className="p-5">
+            <div className="flex items-center gap-4">
+              <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-white/10' : 'border-slate-200')}>
+                <AvatarImage src={brandLogo} alt={brandName} />
+                <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+                  {brandName.slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className={cn('text-[18px] font-black tracking-tight truncate', textColor)}>{brandName}</p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-700')}>
+                    Verified Business
+                  </span>
+                  <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800')}>
+                    Protected by Creator Armour
+                  </span>
+                </div>
+              </div>
+              <ShieldCheck className={cn('w-5 h-5 opacity-60', textColor)} />
             </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Website</p>
-              <Input
-                value={profileForm.website}
-                onChange={(e) => setProfileForm((p) => ({ ...p, website: e.target.value }))}
-                className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")}
-              />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Industry</p>
-              <Input
-                value={profileForm.industry}
-                onChange={(e) => setProfileForm((p) => ({ ...p, industry: e.target.value }))}
-                className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")}
-              />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Location</p>
-              <Input
-                value={profileForm.location}
-                onChange={(e) => setProfileForm((p) => ({ ...p, location: e.target.value }))}
-                className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")}
-              />
+
+            <div className="grid grid-cols-1 gap-3 mt-5">
+              <div>
+                <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50 mb-1', textColor)}>Brand name</p>
+                <Input value={profileForm.brandName} onChange={(e) => setProfileForm((p) => ({ ...p, brandName: e.target.value }))} className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50 mb-1', textColor)}>Website</p>
+                  <Input value={profileForm.website} onChange={(e) => setProfileForm((p) => ({ ...p, website: e.target.value }))} placeholder="https://…" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                </div>
+                <div>
+                  <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50 mb-1', textColor)}>Industry</p>
+                  <Input value={profileForm.industry} onChange={(e) => setProfileForm((p) => ({ ...p, industry: e.target.value }))} placeholder="Fashion, SaaS…" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                </div>
+              </div>
+              <div>
+                <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50 mb-1', textColor)}>Support email</p>
+                <Input value={profileForm.supportEmail} onChange={(e) => setProfileForm((p) => ({ ...p, supportEmail: e.target.value }))} placeholder="billing@…" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+              </div>
+              <div>
+                <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50 mb-1', textColor)}>Description</p>
+                <Textarea value={profileForm.description} onChange={(e) => setProfileForm((p) => ({ ...p, description: e.target.value }))} placeholder="What you do, who you collaborate with…" className={cn('min-h-[110px]', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+              </div>
             </div>
           </div>
-          <div className="mt-4">
-            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Brand description</p>
-            <Textarea
-              value={profileForm.description}
-              onChange={(e) => setProfileForm((p) => ({ ...p, description: e.target.value }))}
-              className={cn("min-h-[90px]", isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")}
-            />
-          </div>
-          <div className="mt-4">
-            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Support email</p>
-            <Input
-              value={profileForm.supportEmail}
-              onChange={(e) => setProfileForm((p) => ({ ...p, supportEmail: e.target.value }))}
-              className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")}
-            />
-          </div>
-          <div className="mt-5 flex justify-end">
-            <Button
-              type="button"
-              onClick={handleSaveProfile}
-              disabled={isSavingProfile}
-              className={cn(
-              "h-11 px-5 rounded-xl text-white font-black uppercase tracking-widest text-[11px] shadow-sm",
-              isDark ? "bg-emerald-500 hover:bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"
-            )}>
+
+          <div className={cn('p-4 border-t', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-slate-100 bg-white/60')}>
+            <Button onClick={handleSaveProfile} disabled={isSavingProfile} className={cn('w-full rounded-2xl font-black uppercase tracking-widest', 'bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500')}>
               <Save className="w-4 h-4 mr-2" />
-              {isSavingProfile ? 'Saving...' : 'Save Changes'}
+              {isSavingProfile ? 'Saving…' : 'Save identity'}
             </Button>
           </div>
-        </SectionCard>
+        </div>
 
-        {/* Team Members */}
-        <SectionCard
-          theme={isDark ? 'dark' : 'light'}
-          title="Team & Roles"
-          subtitle="Manage people who can access the brand console"
-          icon={<Users className={cn("w-4 h-4", isDark ? "text-purple-400" : "text-purple-600")} />}
-          variant="tertiary"
-          className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
-        >
-          <div className="space-y-3">
-            {teamMembers.map((m) => (
-              <div key={m.id} className={cn(
-                "rounded-2xl border p-3 flex items-center justify-between gap-3",
-                isDark ? "bg-white/[0.03] border-white/10" : "bg-white border-slate-200"
-              )}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className={cn("h-10 w-10 border", isDark ? "border-white/10" : "border-slate-200")}>
-                    <AvatarImage src={m.avatar} />
-                    <AvatarFallback className={cn(isDark ? "bg-white/10 text-white/70" : "bg-slate-100 text-slate-700")}>
-                      {m.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className={cn("text-[12px] font-black truncate", isDark ? "text-white" : "text-slate-900")}>{m.name}</p>
-                    <p className={cn("text-[11px] font-semibold truncate", isDark ? "text-white/40" : "text-slate-600")}>{m.role} • {m.email}</p>
+        {/* Payments & Billing */}
+        <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
+          <div className="p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Payments & billing</p>
+              <CreditCard className={cn('w-5 h-5', isDark ? 'text-sky-200' : 'text-sky-700')} />
+            </div>
+            <div className="grid grid-cols-3 gap-2.5">
+              {[
+                { label: 'Spend this month', value: metrics.isLoading ? '—' : `₹${Math.round(metrics.spendThisMonth).toLocaleString('en-IN')}` },
+                { label: 'Active deals', value: metrics.isLoading ? '—' : String(metrics.activeDeals) },
+                { label: 'Needs action', value: metrics.isLoading ? '—' : String(metrics.actionRequired), warn: (metrics.actionRequired ?? 0) > 0 },
+              ].map((i) => (
+                <div key={i.label} className={cn('p-3 rounded-2xl border', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                  <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>{i.label}</p>
+                  <p className={cn('text-[14px] font-black mt-1', i.warn ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>{i.value}</p>
+                </div>
+              ))}
+            </div>
+            <div className={cn('mt-4 rounded-2xl border p-4', isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200')}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className={cn('text-[13px] font-black', isDark ? 'text-emerald-200' : 'text-emerald-900')}>Invoices & methods</p>
+                  <p className={cn('text-[12px] font-semibold mt-1', isDark ? 'text-emerald-100/70' : 'text-emerald-800/80')}>Full billing history is coming next.</p>
+                </div>
+                <Landmark className={cn('w-5 h-5', isDark ? 'text-emerald-200' : 'text-emerald-800')} />
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                <button onClick={() => toast.message('Payment methods', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+                  Payment methods
+                </button>
+                <button onClick={() => toast.message('Invoices', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+                  Invoice history
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Team */}
+        <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
+          <div className="p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Team members</p>
+              <button onClick={() => toast.message('Invite member', { description: 'Team invites are coming next.' })} className={cn('px-3 py-2 rounded-2xl border text-[11px] font-black uppercase tracking-widest', isDark ? 'border-white/10 bg-white/5 text-white/80' : 'border-slate-200 bg-white text-slate-700')}>
+                Invite
+              </button>
+            </div>
+            <div className={cn('rounded-2xl border overflow-hidden', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}>
+              {teamMembers.map((m) => (
+                <div key={m.id} className={cn('p-4 flex items-center justify-between gap-3', isDark ? 'border-b border-white/10 last:border-b-0' : 'border-b border-slate-100 last:border-b-0')}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className={cn('w-10 h-10 border', isDark ? 'border-white/10' : 'border-slate-200')}>
+                      <AvatarImage src={m.avatar} alt={m.name} />
+                      <AvatarFallback>{String(m.name || 'A').slice(0, 1).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className={cn('text-[13px] font-black truncate', textColor)}>{m.name}</p>
+                      <p className={cn('text-[12px] font-semibold opacity-60 truncate', textColor)}>{m.email}</p>
+                    </div>
+                  </div>
+                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'bg-white/5 border-white/10 text-white/70' : 'bg-slate-50 border-slate-200 text-slate-700')}>
+                    {m.role}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Preferences */}
+        <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
+          <div className="p-5">
+            <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50 mb-3', textColor)}>Preferences</p>
+            <button onClick={toggleTheme} className={cn('w-full p-4 rounded-2xl border flex items-center justify-between active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+              <div className="flex items-center gap-3">
+                <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-amber-500/15 text-amber-200' : 'bg-amber-500/10 text-amber-800')}>
+                  {themeIcon}
+                </div>
+                <div className="text-left">
+                  <p className={cn('text-[13px] font-black', textColor)}>Theme</p>
+                  <p className={cn('text-[12px] font-semibold opacity-60', textColor)}>{themeModeLabel}</p>
+                </div>
+              </div>
+              <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-60', textColor)}>Toggle</span>
+            </button>
+
+            <div className={cn('mt-3 rounded-2xl border p-4', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+              <div className="flex items-center justify-between mb-3">
+                <p className={cn('text-[13px] font-black', textColor)}>Notifications</p>
+                <Bell className={cn('w-4 h-4 opacity-40', textColor)} />
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { id: 'accepted', label: 'Contracts & signatures' },
+                  { id: 'deliverable', label: 'Content approvals' },
+                  { id: 'countered', label: 'Offer counters' },
+                ].map((item) => (
+                  <label key={item.id} className="flex items-center justify-between gap-3">
+                    <span className={cn('text-[12px] font-semibold', textColor)}>{item.label}</span>
+                    <Checkbox checked={(notificationPrefs as any)[item.id]} onCheckedChange={(checked) => setNotificationPrefs((p) => ({ ...p, [item.id]: Boolean(checked) }))} />
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust */}
+        <div className={cn('rounded-[28px] border overflow-hidden', isDark ? 'bg-emerald-500/8 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200')}>
+          <div className="p-5 relative overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-emerald-500/12 to-transparent" />
+            <div className="relative flex items-start justify-between gap-3">
+              <div>
+                <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-60', isDark ? 'text-emerald-100' : 'text-emerald-900')}>Creator Armour protection</p>
+                <p className={cn('text-[15px] font-black mt-2', isDark ? 'text-emerald-200' : 'text-emerald-900')}>Contracts + rights + dispute support</p>
+                <p className={cn('text-[12px] font-semibold mt-1', isDark ? 'text-emerald-100/70' : 'text-emerald-800/80')}>Reliable collaboration rails for your team and creators.</p>
+              </div>
+              <ShieldCheck className={cn('w-6 h-6', isDark ? 'text-emerald-200' : 'text-emerald-800')} />
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <button onClick={() => navigate('/brand-dashboard?tab=collabs&subtab=active')} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+                View active deals
+              </button>
+              <button onClick={() => toast.message('Disputes', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+                Raise issue
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Account health */}
+        <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
+          <div className="p-5">
+            <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50 mb-3', textColor)}>Account health</p>
+            <div className="grid grid-cols-3 gap-2.5">
+              {[
+                { label: 'Active', value: metrics.isLoading ? '—' : String(metrics.activeDeals), icon: <Landmark className="w-4 h-4" /> },
+                { label: 'Pending', value: metrics.isLoading ? '—' : String(metrics.actionRequired), icon: <AlertTriangle className="w-4 h-4" /> },
+                { label: 'Completed', value: metrics.isLoading ? '—' : String(metrics.completedDeals), icon: <ShieldCheck className="w-4 h-4" /> },
+              ].map((i) => (
+                <button key={i.label} type="button" onClick={() => navigate('/brand-dashboard?tab=collabs')} className={cn('p-3 rounded-2xl border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                  <div className={cn('w-9 h-9 rounded-2xl flex items-center justify-center mb-2', isDark ? 'bg-white/5 text-white/70' : 'bg-slate-50 text-slate-700')}>
+                    {i.icon}
+                  </div>
+                  <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-50', textColor)}>{i.label}</p>
+                  <p className={cn('text-[14px] font-black mt-1', textColor)}>{i.value}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Advanced */}
+        <button type="button" onClick={() => setShowAdvanced((s) => !s)} className={cn('w-full p-4 rounded-[24px] border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-white/5 text-white/70' : 'bg-slate-50 text-slate-700')}>
+                <Globe className="w-4 h-4" />
+              </div>
+              <div>
+                <p className={cn('text-[13px] font-black', textColor)}>Advanced settings</p>
+                <p className={cn('text-[12px] font-semibold opacity-60', textColor)}>Integrations + default campaign terms</p>
+              </div>
+            </div>
+            <span className={cn('text-[11px] font-black uppercase tracking-widest opacity-60', textColor)}>{showAdvanced ? 'Hide' : 'Show'}</span>
+          </div>
+        </button>
+
+        {showAdvanced && (
+          <div className="space-y-6">
+            <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
+              <div className="p-5">
+                <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50 mb-3', textColor)}>Integrations</p>
+                <div className="grid grid-cols-1 gap-3">
+                  <Input value={integrations.whatsapp} onChange={(e) => setIntegrations((p) => ({ ...p, whatsapp: e.target.value }))} placeholder="WhatsApp number" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                  <Input value={integrations.slack} onChange={(e) => setIntegrations((p) => ({ ...p, slack: e.target.value }))} placeholder="Slack channel" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                  <Input value={integrations.webhook} onChange={(e) => setIntegrations((p) => ({ ...p, webhook: e.target.value }))} placeholder="Webhook URL" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                </div>
+              </div>
+            </div>
+
+            <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
+              <div className="p-5">
+                <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50 mb-3', textColor)}>Default campaign terms</p>
+                <div className="grid grid-cols-1 gap-3">
+                  <Input value={campaignDefaults.budgetRange} onChange={(e) => setCampaignDefaults((p) => ({ ...p, budgetRange: e.target.value }))} placeholder="Budget range" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                  <Input value={campaignDefaults.deliverables} onChange={(e) => setCampaignDefaults((p) => ({ ...p, deliverables: e.target.value }))} placeholder="Deliverables" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input value={campaignDefaults.timeline} onChange={(e) => setCampaignDefaults((p) => ({ ...p, timeline: e.target.value }))} placeholder="Timeline" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
+                    <Input value={campaignDefaults.approval} onChange={(e) => setCampaignDefaults((p) => ({ ...p, approval: e.target.value }))} placeholder="Approval" className={cn(isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200')} />
                   </div>
                 </div>
-                <Button variant="outline" className={cn(
-                  "h-9 px-4 rounded-xl font-black uppercase tracking-widest text-[10px] border",
-                  isDark ? "bg-white/5 hover:bg-white/10 text-white border-white/10" : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200"
-                )}>
-                  Manage
-                </Button>
               </div>
-            ))}
+            </div>
           </div>
-          <div className="mt-4 flex justify-end">
-            <Button className={cn(
-              "h-10 px-4 rounded-xl text-white font-black uppercase tracking-widest text-[10px] shadow-sm",
-              isDark ? "bg-emerald-500 hover:bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"
-            )}>
-              Invite Member
-            </Button>
-          </div>
-        </SectionCard>
+        )}
 
-        {/* Billing */}
-        <SectionCard
-          theme={isDark ? 'dark' : 'light'}
-          title="Billing & Invoices"
-          subtitle="Plan, payment method, and invoices"
-          icon={<CreditCard className={cn("w-4 h-4", isDark ? "text-emerald-400" : "text-emerald-600")} />}
-          variant="tertiary"
-          className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Plan</p>
-              <Input value={billingForm.plan} onChange={(e) => setBillingForm((p) => ({ ...p, plan: e.target.value }))} className={cn(isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Billing email</p>
-              <Input value={billingForm.billingEmail} onChange={(e) => setBillingForm((p) => ({ ...p, billingEmail: e.target.value }))} className={cn(isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Card</p>
-              <Input value={`•••• ${billingForm.cardLast4}`} readOnly className={cn(isDark ? "bg-white/5 border-white/10 text-white/70" : "bg-white border-slate-200 text-slate-600")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Next invoice</p>
-              <Input value={billingForm.nextInvoice} readOnly className={cn(isDark ? "bg-white/5 border-white/10 text-white/70" : "bg-white border-slate-200 text-slate-600")} />
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <Button className={cn(
-              "h-10 px-4 rounded-xl text-white font-black uppercase tracking-widest text-[10px] shadow-sm",
-              isDark ? "bg-emerald-500 hover:bg-emerald-400" : "bg-emerald-600 hover:bg-emerald-700"
-            )}>
-              Manage Billing
-            </Button>
-          </div>
-        </SectionCard>
-
-        {/* Notification Preferences */}
-        <SectionCard
-          theme={isDark ? 'dark' : 'light'}
-          title="Notification Preferences"
-          subtitle="Control when and how we notify your team"
-          icon={<Bell className={cn("w-4 h-4", isDark ? "text-orange-400" : "text-orange-600")} />}
-          variant="tertiary"
-          className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2", isDark ? "text-white/40" : "text-slate-500")}>Notify when</p>
-              {[
-                { id: 'countered', label: 'Creator counters offer' },
-                { id: 'accepted', label: 'Creator accepts offer' },
-                { id: 'deliverable', label: 'Creator uploads deliverable' },
-              ].map((item) => (
-                <label key={item.id} className="flex items-center gap-2 mb-2">
-                  <Checkbox
-                    checked={(notificationPrefs as any)[item.id]}
-                    onCheckedChange={(checked) => setNotificationPrefs((p) => ({ ...p, [item.id]: Boolean(checked) }))}
-                  />
-                  <span className={cn("text-[12px] font-semibold", isDark ? "text-white/70" : "text-slate-700")}>{item.label}</span>
-                </label>
-              ))}
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-2", isDark ? "text-white/40" : "text-slate-500")}>Channels</p>
-              {[
-                { id: 'email', label: 'Email' },
-                { id: 'whatsapp', label: 'WhatsApp' },
-                { id: 'push', label: 'Push notifications' },
-              ].map((item) => (
-                <label key={item.id} className="flex items-center gap-2 mb-2">
-                  <Checkbox
-                    checked={(notificationPrefs as any)[item.id]}
-                    onCheckedChange={(checked) => setNotificationPrefs((p) => ({ ...p, [item.id]: Boolean(checked) }))}
-                  />
-                  <span className={cn("text-[12px] font-semibold", isDark ? "text-white/70" : "text-slate-700")}>{item.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Integrations */}
-        <SectionCard
-          theme={isDark ? 'dark' : 'light'}
-          title="Integrations"
-          subtitle="Connect messaging and automation channels"
-          icon={<Globe className={cn("w-4 h-4", isDark ? "text-indigo-400" : "text-indigo-600")} />}
-          variant="tertiary"
-          className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>WhatsApp number</p>
-              <Input value={integrations.whatsapp} onChange={(e) => setIntegrations((p) => ({ ...p, whatsapp: e.target.value }))} placeholder="+91 90000 00000" className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Slack channel</p>
-              <Input value={integrations.slack} onChange={(e) => setIntegrations((p) => ({ ...p, slack: e.target.value }))} placeholder="#campaigns" className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Webhook URL</p>
-              <Input value={integrations.webhook} onChange={(e) => setIntegrations((p) => ({ ...p, webhook: e.target.value }))} placeholder="https://hooks.brand.com" className={cn(isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200")} />
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Default Campaign Settings */}
-        <SectionCard
-          theme={isDark ? 'dark' : 'light'}
-          title="Default Campaign Settings"
-          subtitle="Pre-fill new offers with your standard terms"
-          icon={<Settings className={cn("w-4 h-4", isDark ? "text-slate-300" : "text-slate-600")} />}
-          variant="tertiary"
-          className={cn(isDark ? "border-white/5 bg-white/[0.02]" : "border-slate-200 bg-white")}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Default budget range</p>
-              <Input value={campaignDefaults.budgetRange} onChange={(e) => setCampaignDefaults((p) => ({ ...p, budgetRange: e.target.value }))} className={cn(isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Default deliverables</p>
-              <Input value={campaignDefaults.deliverables} onChange={(e) => setCampaignDefaults((p) => ({ ...p, deliverables: e.target.value }))} className={cn(isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Default timeline</p>
-              <Input value={campaignDefaults.timeline} onChange={(e) => setCampaignDefaults((p) => ({ ...p, timeline: e.target.value }))} className={cn(isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200")} />
-            </div>
-            <div>
-              <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isDark ? "text-white/40" : "text-slate-500")}>Approval required</p>
-              <Input value={campaignDefaults.approval} onChange={(e) => setCampaignDefaults((p) => ({ ...p, approval: e.target.value }))} className={cn(isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200")} />
-            </div>
-          </div>
-        </SectionCard>
+        <div className={cn('rounded-[24px] border p-4', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
+          <button onClick={handleLogout} className={cn('w-full h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.99]', isDark ? 'bg-rose-500/10 border-rose-300/30 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100')}>
+            Logout
+          </button>
+        </div>
       </main>
     </div>
   );
 };
 
 export default BrandSettings;
+

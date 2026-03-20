@@ -66,43 +66,10 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
     const brand = await requireBrand(req, res);
     if (!brand.ok) return;
 
-    const selectV2 = `
-      id,
-      brand_name,
-      brand_email,
-      collab_type,
-      status,
-      created_at,
-      budget_range,
-      exact_budget,
-      barter_value,
-      barter_description,
-      deliverables,
-      deadline,
-      creator_id,
-      counter_offer,
-      brand_id
-    `;
-
-    const selectV1 = `
-      id,
-      brand_name,
-      brand_email,
-      collab_type,
-      status,
-      created_at,
-      budget_range,
-      exact_budget,
-      barter_value,
-      barter_description,
-      deliverables,
-      deadline,
-      creator_id,
-      counter_offer
-    `;
-
-    const run = async (select: string, canUseBrandId: boolean) => {
-      let query: any = supabase.from('collab_requests').select(select).order('created_at', { ascending: false });
+    const run = async (canUseBrandId: boolean) => {
+      // Use `*` so brand dashboards always receive full campaign + brand metadata as the schema evolves,
+      // while still filtering access via brand_id / brand_email.
+      let query: any = supabase.from('collab_requests').select('*').order('created_at', { ascending: false });
       if (canUseBrandId) {
         if (brand.email) query = query.or(`brand_id.eq.${brand.id},brand_email.eq.${brand.email}`);
         else query = query.eq('brand_id', brand.id);
@@ -118,9 +85,9 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
 
     let rows: any[] = [];
     try {
-      rows = await run(selectV2, true);
+      rows = await run(true);
     } catch (err: any) {
-      if (isMissingColumnError(err, 'brand_id')) rows = await run(selectV1, false);
+      if (isMissingColumnError(err, 'brand_id')) rows = await run(false);
       else throw err;
     }
 
@@ -136,11 +103,137 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
       }
     }
 
+    // Avoid sending internal telemetry columns to the brand UI.
+    rows = rows.map((r) => {
+      const { submitted_ip, submitted_user_agent, ...safe } = r || {};
+      return safe;
+    });
+
     res.setHeader('Cache-Control', 'no-store');
     return res.json({ success: true, requests: rows });
   } catch (error: any) {
     console.error('[BrandDashboard] GET /requests failed:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Failed to fetch brand requests' });
+  }
+});
+
+router.patch('/requests/:id/withdraw', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, error: 'Request id required' });
+
+    const runFetch = async (canUseBrandId: boolean) => {
+      let query: any = supabase.from('collab_requests').select('*').eq('id', id).maybeSingle();
+      if (canUseBrandId) {
+        if (brand.email) query = query.or(`brand_id.eq.${brand.id},brand_email.eq.${brand.email}`);
+        else query = query.eq('brand_id', brand.id);
+      } else if (brand.email) {
+        query = query.eq('brand_email', brand.email);
+      } else {
+        return null;
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || null;
+    };
+
+    let request: any = null;
+    try {
+      request = await runFetch(true);
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'brand_id')) request = await runFetch(false);
+      else throw err;
+    }
+
+    if (!request) return res.status(404).json({ success: false, error: 'Offer not found' });
+
+    const now = new Date().toISOString();
+    const baseUpdate: any = { status: 'declined', updated_at: now };
+
+    const tryUpdate = async (payload: any) => {
+      const { data, error } = await supabase
+        .from('collab_requests')
+        .update(payload)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      return data || null;
+    };
+
+    let updated: any = null;
+    try {
+      updated = await tryUpdate({ ...baseUpdate, decline_reason: 'withdrawn_by_brand' });
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'decline_reason')) updated = await tryUpdate(baseUpdate);
+      else throw err;
+    }
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, request: updated });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PATCH /requests/:id/withdraw failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to withdraw offer' });
+  }
+});
+
+router.patch('/requests/:id/revise', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, error: 'Request id required' });
+
+    const {
+      exact_budget,
+      deliverables,
+      deadline,
+      campaign_description,
+      offer_expires_at,
+    } = req.body || {};
+
+    const now = new Date().toISOString();
+
+    const update: any = { status: 'pending', updated_at: now };
+    if (exact_budget !== undefined) update.exact_budget = exact_budget === null ? null : Number(exact_budget);
+    if (deadline !== undefined) update.deadline = deadline;
+    if (campaign_description !== undefined) update.campaign_description = campaign_description;
+    if (offer_expires_at !== undefined) update.offer_expires_at = offer_expires_at;
+    if (deliverables !== undefined) {
+      if (Array.isArray(deliverables)) update.deliverables = JSON.stringify(deliverables);
+      else update.deliverables = deliverables;
+    }
+
+    const tryUpdate = async (payload: any) => {
+      const { data, error } = await supabase
+        .from('collab_requests')
+        .update(payload)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      return data || null;
+    };
+
+    let updated: any = null;
+    try {
+      updated = await tryUpdate({ ...update, counter_offer: null });
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'counter_offer')) updated = await tryUpdate(update);
+      else throw err;
+    }
+
+    if (!updated) return res.status(404).json({ success: false, error: 'Offer not found' });
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, request: updated });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PATCH /requests/:id/revise failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to revise offer' });
   }
 });
 

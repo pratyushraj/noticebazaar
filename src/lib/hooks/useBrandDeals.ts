@@ -161,9 +161,11 @@ interface UseBrandDealsOptions {
 
 export const useBrandDeals = (options: UseBrandDealsOptions) => {
   const { creatorId, enabled = true, statusFilter, platformFilter, sortBy = 'created_at', sortOrder = 'desc', limit } = options;
+  // Bump this when changing the internal signed-status allowlist to force a refetch.
+  const SIGNED_STATUSES_VERSION = 2;
 
   return useSupabaseQuery<BrandDeal[], Error>(
-    ['brand_deals', creatorId, statusFilter, platformFilter, sortBy, sortOrder, limit],
+    ['brand_deals', SIGNED_STATUSES_VERSION, creatorId, statusFilter, platformFilter, sortBy, sortOrder, limit],
     async () => {
       // Debug: Log creatorId (dev only)
       if (import.meta.env.DEV) {
@@ -194,6 +196,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       // Define signed statuses that should be visible (includes barter: Drafting, Awaiting Product Shipment)
       const signedStatuses = [
         'sent', // Awaiting creator signature
+        'CONTRACT_READY', // Contract generated, awaiting signature (new accept flow)
+        'contract_ready',
         'signed',
         'SIGNED_BY_BRAND',
         'SIGNED_BY_CREATOR',
@@ -206,6 +210,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         'FULLY_EXECUTED', // Both parties signed
         'fully_executed',
         'Drafting', // Barter deal created, delivery details pending
+        'drafting',
         'Awaiting Product Shipment', // Barter: delivery details saved, waiting for brand to ship
       ];
 
