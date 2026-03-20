@@ -1,0 +1,68 @@
+name: Sync Brands Daily
+
+on:
+  schedule:
+    # Run daily at 2:00 AM UTC (adjust timezone as needed)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync-brands:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to ensure latest commit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify script exists and run sync
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "=== Debugging Information ==="
+          echo "Current directory: $(pwd)"
+          echo "Repository root contents:"
+          ls -la
+          echo ""
+          echo "Scripts directory contents:"
+          ls -la scripts/ || echo "❌ scripts/ directory does not exist!"
+          echo ""
+          echo "Checking for sync-brands.ts:"
+          if [ -f "scripts/sync-brands.ts" ]; then
+            echo "✅ File exists at: $(pwd)/scripts/sync-brands.ts"
+            echo "File size: $(stat -f%z scripts/sync-brands.ts 2>/dev/null || stat -c%s scripts/sync-brands.ts 2>/dev/null || echo 'unknown') bytes"
+            echo ""
+            echo "=== Running sync-brands script ==="
+            npx tsx scripts/sync-brands.ts
+          else
+            echo "❌ File NOT found at: $(pwd)/scripts/sync-brands.ts"
+            echo "Searching for file in repository:"
+            find . -name "sync-brands.ts" -type f 2>/dev/null || echo "File not found anywhere"
+            exit 1
+          fi
+
+      - name: Upload logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync-logs
+          path: |
+            *.log
+            sync-*.txt
+          retention-days: 7
+          if-no-files-found: ignore
+

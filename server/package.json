@@ -1,0 +1,65 @@
+{
+  "name": "creatorarmour-server",
+  "version": "1.0.0",
+  "description": "Creator Armour Backend API Server",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "dev:fresh": "node scripts/kill-port-3001.js; tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:meon": "tsx tests/meon-upload-tester.ts",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@sparticuz/chromium-min": "^121.0.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "apify-client": "^2.21.0",
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "docx": "^8.6.0",
+    "docxtemplater": "^3.67.6",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "form-data": "^4.0.0",
+    "googleapis": "^128.0.0",
+    "helmet": "^7.1.0",
+    "mammoth": "^1.11.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "pdfjs-dist": "^3.11.174",
+    "pdfkit": "^0.14.0",
+    "pizzip": "^3.2.0",
+    "puppeteer-core": "^21.6.1",
+    "resend": "^3.2.0",
+    "web-push": "^3.6.7"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "puppeteer"
+    ],
+    "packageExtensions": {
+      "pdfjs-dist": {
+        "optionalDependencies": {
+          "canvas": "*"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "esbuild": "^0.27.4",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

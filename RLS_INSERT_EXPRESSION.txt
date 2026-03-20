@@ -1,0 +1,1 @@
+(auth.uid() = creator_id)

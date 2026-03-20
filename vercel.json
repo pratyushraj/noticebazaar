@@ -1,0 +1,75 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/push/(.*)",
+      "destination": "https://noticebazaar-api.onrender.com/api/push/$1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://api.creatorarmour.com/api/$1"
+    },
+    {
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/collab/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; frame-src 'self' https://www.facebook.com https://facebook.com https://*.facebook.com https://calendly.com https://assets.calendly.com https://vercel.live https://*.vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://vercel.live https://*.vercel.live va.vercel-scripts.com vercel.com vercel.live instant-preview-site.vercel.app instant-preview-site-e4sagrlvu.vercel.sh https://assets.calendly.com https://www.googletagmanager.com https://connect.facebook.net https://static.ads-twitter.com; style-src 'self' 'unsafe-inline' https://assets.calendly.com https://fonts.googleapis.com; img-src 'self' data: blob: https://api.dicebear.com https://www.facebook.com https://www.google-analytics.com https://t.co https://ooaxtwmqrvfzdqzoijcj.supabase.co *; connect-src 'self' ws: wss: http://localhost:3001 https://api.postalpincode.in https://ooaxtwmqrvfzdqzoijcj.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://connect.facebook.net https://graph.facebook.com https://overbridgenet.com https://www.facebook.com https://mpc-prod-17-s6uit34pua-wl.a.run.app https://*.a.run.app https://demo-1.conversionsapigateway.com https://*.conversionsapigateway.com https://vercel.live https://*.vercel.live https://noticebazaar-api.onrender.com https://api.noticebazaar.com https://api.creatorarmour.com https://web.push.apple.com wss://web.push.apple.com; font-src 'self' https://fonts.gstatic.com https://vercel.live https://*.vercel.live;"
+        }
+      ]
+    },
+    {
+      "source": "/(assets|public)/(.+)\\.(js|css|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|eot|ttf|otf)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        }
+      ]
+    }
+  ]
+}

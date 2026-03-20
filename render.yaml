@@ -1,0 +1,22 @@
+services:
+  # API Backend Service
+  - type: web
+    name: noticebazaar-api
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install --no-optional --ignore-scripts && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"
+    healthCheckPath: /health
+
+# Note: Frontend static site must be deployed separately via Render Dashboard
+# (Render Blueprint doesn't support static_site type)
+# See RENDER_FRONTEND_DEPLOY.md for instructions
+

@@ -1,0 +1,60 @@
+-- Storage Policy: Allow Service Role to Upload Safe Contracts
+-- 
+-- ⚠️ IMPORTANT: Storage policies CANNOT be created via SQL migrations.
+-- The storage.objects table is a system table and requires owner permissions.
+-- 
+-- You MUST create these policies through the Supabase Dashboard.
+-- See: server/database/migrations/STORAGE_POLICY_SETUP_INSTRUCTIONS.md
+--
+-- ========================================
+-- Quick Setup Instructions:
+-- ========================================
+-- 1. Go to Supabase Dashboard > Storage > Policies
+-- 2. Select the 'creator-assets' bucket
+-- 3. Click "New Policy"
+-- 4. Create policies as described in STORAGE_POLICY_SETUP_INSTRUCTIONS.md
+--
+-- ========================================
+-- Policy Definitions (for reference):
+-- ========================================
+--
+-- Policy 1: Service Role Upload
+-- Name: "Service role can upload to protection-reports"
+-- Operations: INSERT
+-- Roles: service_role
+-- USING: bucket_id = 'creator-assets' AND (storage.foldername(name))[1] = 'protection-reports'
+-- WITH CHECK: bucket_id = 'creator-assets' AND (storage.foldername(name))[1] = 'protection-reports'
+--
+-- Policy 2: Service Role Download
+-- Name: "Service role can download from protection-reports"
+-- Operations: SELECT
+-- Roles: service_role
+-- USING: bucket_id = 'creator-assets' AND (storage.foldername(name))[1] = 'protection-reports'
+--
+-- Policy 3: Users Read Own Reports (Optional)
+-- Name: "Users can read their own protection reports"
+-- Operations: SELECT
+-- Roles: authenticated
+-- USING: bucket_id = 'creator-assets' AND 
+--        (storage.foldername(name))[1] = 'protection-reports' AND
+--        (storage.foldername(name))[2] = auth.uid()::text
+--
+-- ========================================
+-- Alternative: REST API Fallback
+-- ========================================
+-- The code in server/src/services/safeContractGenerator.ts already includes
+-- a REST API fallback that uses the service role key directly. This should
+-- work even without storage policies, as it bypasses RLS by using the
+-- service role key in the Authorization header.
+--
+-- If you're getting RLS errors, the REST API method should still work.
+-- Check server logs for: "✅ File uploaded successfully via REST API"
+--
+-- ========================================
+-- Notes:
+-- ========================================
+-- - The service role key should bypass RLS by default, but storage policies
+--   might still be enforced depending on your Supabase configuration.
+-- - If policies are set up correctly, direct upload will work.
+-- - If policies aren't set up, the REST API fallback will handle uploads.
+-- - Verify SUPABASE_SERVICE_ROLE_KEY is set in server/.env
