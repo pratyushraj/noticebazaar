@@ -72,6 +72,122 @@ const renderBudgetValue = (item: any) => {
     return 'Flexible Budget';
 };
 
+const parseDealDate = (value: any): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+    const asString = String(value);
+    const dt = new Date(asString);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+};
+
+const getDaysUntil = (date: Date | null) => {
+    if (!date) return null;
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+};
+
+const normalizeDealStatus = (deal: any) => String(deal?.status ?? deal?.raw?.status ?? '').toLowerCase();
+
+const getCreatorDealCardUX = (deal: any) => {
+    const rawStatus = normalizeDealStatus(deal);
+
+    const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
+    const isRevisionRequested = rawStatus.includes('revision') || rawStatus.includes('brand_revision');
+    const isDelivered = rawStatus.includes('content_delivered') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
+    const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting') || rawStatus.includes('awaiting product shipment');
+    const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
+    const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
+
+    const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
+    const daysUntilDue = getDaysUntil(dueDate);
+
+    let progressStep = 1;
+    if (isCompleted) progressStep = 5;
+    else if (isDelivered || isRevisionRequested) progressStep = 4;
+    else if (isMaking) progressStep = 3;
+    else if (isFullyExecuted) progressStep = 2;
+    else if (isContractPending) progressStep = 1;
+
+    const contractLabel = isContractPending
+        ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
+        : (isFullyExecuted || isMaking || isDelivered || isCompleted ? 'Contract: signed' : null);
+
+    const needsSignature = isContractPending;
+    const needsCreatorAction = !isCompleted && (needsSignature || isRevisionRequested || isMaking);
+
+    const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
+        ? 'critical'
+        : daysUntilDue !== null && daysUntilDue <= 5
+            ? 'warning'
+            : 'normal';
+
+    let stagePill = 'IN PROGRESS';
+    let nextStep = 'Open deal';
+    let cta = 'Open';
+
+    if (isCompleted) {
+        stagePill = 'COMPLETED';
+        nextStep = 'View summary';
+        cta = 'View Summary';
+    } else if (needsSignature) {
+        stagePill = 'SIGN CONTRACT';
+        nextStep = 'Review and sign the agreement';
+        cta = rawStatus.includes('signed_by_brand') ? 'Sign Now' : 'View Contract';
+    } else if (isRevisionRequested) {
+        stagePill = 'REVISION REQUESTED';
+        nextStep = 'Update content and resubmit';
+        cta = 'View Feedback';
+    } else if (isDelivered) {
+        stagePill = 'AWAITING REVIEW';
+        nextStep = 'Wait for brand approval';
+        cta = 'View Progress';
+    } else if (isFullyExecuted) {
+        stagePill = 'COLLAB STARTED';
+        nextStep = 'Start creating content';
+        cta = 'View Deal';
+    } else if (isMaking) {
+        stagePill = 'MAKE CONTENT';
+        nextStep = 'Upload your draft';
+        cta = 'Submit Draft';
+    } else {
+        stagePill = 'WAITING';
+        nextStep = 'Open deal';
+        cta = 'View Deal';
+    }
+
+    return {
+        rawStatus,
+        dueDate,
+        daysUntilDue,
+        urgencyLevel,
+        progressStep,
+        contractLabel,
+        needsCreatorAction,
+        needsSignature,
+        isRevisionRequested,
+        isMaking,
+        stagePill,
+        nextStep,
+        cta,
+    };
+};
+
+const getCreatorPaymentListUX = (deal: any) => {
+    const ux = getCreatorDealCardUX(deal);
+    const rawStatus = ux.rawStatus;
+    const isPaid = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus.includes('payment_received');
+    const isAwaitingApproval = rawStatus.includes('content_delivered') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
+    const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('needs signature');
+
+    if (isPaid) return { label: 'PAID', sublabel: 'Payment released', tone: 'success' as const };
+    if (isAwaitingApproval) return { label: 'PENDING APPROVAL', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
+    if (isContractPending) return { label: 'CONTRACT PENDING', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
+    if (ux.isRevisionRequested) return { label: 'REVISION', sublabel: 'Fix requested before approval', tone: 'warning' as const };
+    return { label: 'PENDING', sublabel: 'Released after approval', tone: 'info' as const };
+};
+
 // Animated Number Counter
 const AnimatedCounter = ({ value }: { value: number }) => {
     const springValue = useSpring(0, { stiffness: 45, damping: 20 });
@@ -2332,18 +2448,121 @@ const MobileDashboardDemo = ({
 
                                         {activeDealsCount > 0 ? (
                                             <div className="space-y-4">
-                                                {brandDeals.slice(0, 10).map((deal: any, idx: number) => {
-                                                    const rawStatus = (deal.status || '').toLowerCase();
-                                                    
-                                                    // Determine visual stage
-                                                    let stageText = 'Waiting for Draft';
-                                                    let progressStep = 1;
+                                                {(() => {
+                                                    const insights = brandDeals.slice(0, 50).reduce(
+                                                        (acc: any, deal: any) => {
+                                                            const ux = getCreatorDealCardUX(deal);
+                                                            if (ux.needsSignature) acc.signature += 1;
+                                                            if (ux.isRevisionRequested) acc.revision += 1;
+                                                            if (ux.isMaking) acc.drafts += 1;
+                                                            if (ux.urgencyLevel === 'critical' && !String(deal?.status || '').toLowerCase().includes('completed')) acc.risk += 1;
+                                                            return acc;
+                                                        },
+                                                        { signature: 0, revision: 0, drafts: 0, risk: 0 }
+                                                    );
 
-                                                    if (['signed_pending_creator', 'sent', 'signed_by_brand'].includes(rawStatus)) { stageText = 'Needs Signature'; progressStep = 1; }
-                                                    else if (rawStatus === 'content_pending') { stageText = 'Content Pending'; progressStep = 2; }
-                                                    else if (rawStatus === 'draft_review' || rawStatus === 'brand_revision') { stageText = 'In Review'; progressStep = 3; }
-                                                    else if (rawStatus === 'approved') { stageText = 'Awaiting Payment'; progressStep = 4; }
-                                                    else if (['paid', 'completed'].includes(rawStatus)) { stageText = 'Paid'; progressStep = 5; }
+                                                    const items: Array<{ label: string; count: number; tone: 'amber' | 'red' | 'blue' }> = [
+                                                        { label: 'Signature pending', count: insights.signature, tone: 'amber' },
+                                                        { label: 'Revision requested', count: insights.revision, tone: 'red' },
+                                                        { label: 'Drafts to submit', count: insights.drafts, tone: 'blue' },
+                                                    ].filter((x) => x.count > 0);
+
+                                                    if (items.length === 0) return null;
+
+                                                    return (
+                                                        <div
+                                                            role="button"
+                                                            tabIndex={0}
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                const firstRisk = brandDeals.find((d: any) => {
+                                                                    const ux = getCreatorDealCardUX(d);
+                                                                    return ux.urgencyLevel === 'critical' && !String(d?.status || '').toLowerCase().includes('completed');
+                                                                });
+                                                                const firstSig = brandDeals.find((d: any) => getCreatorDealCardUX(d).needsSignature);
+                                                                const firstRev = brandDeals.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested);
+                                                                const firstDraft = brandDeals.find((d: any) => getCreatorDealCardUX(d).isMaking);
+                                                                const target = firstRisk || firstSig || firstRev || firstDraft;
+                                                                if (target) {
+                                                                    setSelectedItem(target);
+                                                                    setSelectedType('deal');
+                                                                }
+                                                            }}
+                                                            className={cn(
+                                                                "p-4 rounded-2xl border mb-1 transition-all active:scale-[0.99]",
+                                                                isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-white",
+                                                                borderColor
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-3 mb-2">
+                                                                <div className="flex items-center gap-2 min-w-0">
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 truncate", textColor)}>Needs attention</p>
+                                                                </div>
+                                                                {insights.risk > 0 && (
+                                                                    <span
+                                                                        className={cn(
+                                                                            "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border shrink-0",
+                                                                            isDark ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-red-50 text-red-700 border-red-200"
+                                                                        )}
+                                                                    >
+                                                                        {insights.risk} AT RISK
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {items.map((it) => {
+                                                                    const pluralize = (singular: string, plural: string) => (it.count === 1 ? singular : plural);
+                                                                    const label =
+                                                                        it.label === 'Signature pending'
+                                                                            ? pluralize('Signature pending', 'Signatures pending')
+                                                                            : it.label === 'Revision requested'
+                                                                                ? pluralize('Revision requested', 'Revisions requested')
+                                                                                : it.label === 'Drafts to submit'
+                                                                                    ? pluralize('Draft to submit', 'Drafts to submit')
+                                                                                    : it.label;
+
+                                                                    const toneCls =
+                                                                        it.tone === 'amber'
+                                                                            ? (isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200")
+                                                                            : it.tone === 'red'
+                                                                                ? (isDark ? "bg-red-500/10 text-red-200 border-red-500/20" : "bg-red-50 text-red-800 border-red-200")
+                                                                                : (isDark ? "bg-blue-500/10 text-blue-200 border-blue-500/20" : "bg-blue-50 text-blue-800 border-blue-200");
+
+                                                                    const onChip = () => {
+                                                                        triggerHaptic();
+                                                                        const target =
+                                                                            it.label === 'Signature pending'
+                                                                                ? brandDeals.find((d: any) => getCreatorDealCardUX(d).needsSignature)
+                                                                                : it.label === 'Revision requested'
+                                                                                    ? brandDeals.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested)
+                                                                                    : brandDeals.find((d: any) => getCreatorDealCardUX(d).isMaking);
+                                                                        if (target) {
+                                                                            setSelectedItem(target);
+                                                                            setSelectedType('deal');
+                                                                        }
+                                                                    };
+
+                                                                    return (
+                                                                        <button
+                                                                            key={it.label}
+                                                                            type="button"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                onChip();
+                                                                            }}
+                                                                            className={cn("px-3 py-1.5 rounded-full text-[11px] font-bold border", toneCls)}
+                                                                        >
+                                                                            {it.count} {label}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                                {brandDeals.slice(0, 10).map((deal: any, idx: number) => {
+                                                    const ux = getCreatorDealCardUX(deal);
 
                                                     return (
                                                         <motion.div
@@ -2407,16 +2626,40 @@ const MobileDashboardDemo = ({
                                                                     })()}
                                                                 </div>
                                                                 <span className={cn("text-[11px] opacity-20", textColor)}>•</span>
-                                                                <span className={cn("text-[10px] font-bold", isDark ? "text-amber-400" : "text-amber-600")}>Due in {8 + (idx % 3)} days</span>
+                                                                {ux.daysUntilDue !== null ? (
+                                                                    <span
+                                                                        className={cn(
+                                                                            "text-[10px] font-bold",
+                                                                            ux.urgencyLevel === 'critical'
+                                                                                ? (isDark ? "text-red-300" : "text-red-700")
+                                                                                : ux.urgencyLevel === 'warning'
+                                                                                    ? (isDark ? "text-amber-300" : "text-amber-700")
+                                                                                    : (isDark ? "text-amber-400" : "text-amber-600")
+                                                                        )}
+                                                                    >
+                                                                        {ux.daysUntilDue < 0 ? `Overdue by ${Math.abs(ux.daysUntilDue)} days` : `Due in ${ux.daysUntilDue} days`}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className={cn("text-[10px] font-bold", isDark ? "text-amber-400" : "text-amber-600")}>Due soon</span>
+                                                                )}
                                                             </div>
+
+                                                            {ux.contractLabel && (
+                                                                <div className={cn("text-[10px] font-bold mt-1.5", isDark ? "text-white/60" : "text-slate-500")}>
+                                                                    {ux.contractLabel}
+                                                                </div>
+                                                            )}
 
                                                             <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-500/10">
                                                                 <div className={cn(
                                                                     "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
-                                                                    progressStep === 1 ? (isDark ? "bg-red-500/10 text-red-400" : "bg-red-50 text-red-600") :
-                                                                    (isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-600")
+                                                                    ux.needsCreatorAction
+                                                                        ? (ux.urgencyLevel === 'critical'
+                                                                            ? (isDark ? "bg-red-500/10 text-red-300" : "bg-red-50 text-red-700")
+                                                                            : (isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-800"))
+                                                                        : (isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-700")
                                                                 )}>
-                                                                    <span className="opacity-60 text-[9px]">Stage:</span> {stageText}
+                                                                    {ux.stagePill}
                                                                 </div>
 
                                                                 <div className="flex gap-1 items-center">
@@ -2425,11 +2668,38 @@ const MobileDashboardDemo = ({
                                                                             key={step}
                                                                             className={cn(
                                                                                 "w-4 h-1.5 rounded-full",
-                                                                                step <= progressStep ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" : (isDark ? "bg-white/10" : "bg-slate-200")
+                                                                                step <= ux.progressStep ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" : (isDark ? "bg-white/10" : "bg-slate-200")
                                                                             )}
                                                                         />
                                                                     ))}
                                                                 </div>
+                                                            </div>
+
+                                                            <div className="mt-3 flex items-center justify-between gap-3">
+                                                                <div className={cn("text-[11px] font-semibold leading-tight", isDark ? "text-white/70" : "text-slate-600")}>
+                                                                    <span className={cn("font-black uppercase tracking-widest text-[9px] opacity-50 mr-1.5", textColor)}>Next:</span>
+                                                                    {ux.nextStep}
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    onPointerDown={(e) => e.stopPropagation()}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        triggerHaptic();
+                                                                        setSelectedItem(deal);
+                                                                        setSelectedType('deal');
+                                                                    }}
+                                                                    className={cn(
+                                                                        "shrink-0 px-4 h-10 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm",
+                                                                        ux.needsCreatorAction
+                                                                            ? (ux.urgencyLevel === 'critical'
+                                                                                ? "bg-red-600 hover:bg-red-500 text-white shadow-red-500/20"
+                                                                                : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20")
+                                                                            : (isDark ? "bg-white/10 hover:bg-white/15 text-white" : "bg-slate-900 text-white hover:bg-slate-800")
+                                                                    )}
+                                                                >
+                                                                    {ux.cta}
+                                                                </button>
                                                             </div>
                                                         </motion.div>
                                                     );
@@ -2452,49 +2722,49 @@ const MobileDashboardDemo = ({
                                     >
                                         {pendingOffersCount > 0 ? (
                                             <div className="space-y-4">
-                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
-                                                    const expiresDays = 2 + (idx % 3);
-                                                    const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
+	                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
+	                                                    const expiresDays = 2 + (idx % 3);
+	                                                    const sentAt = req.created_at || req.raw?.created_at || null;
+	                                                    const sentHours = sentAt ? Math.max(0, Math.round((Date.now() - new Date(sentAt).getTime()) / 3600000)) : null;
+	                                                    const sentText = sentHours !== null && Number.isFinite(sentHours) ? `Sent ${sentHours}h ago` : null;
+	                                                    const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
 
-                                                    return (
-                                                        <motion.div
-                                                            key={idx}
-                                                            whileTap={{ scale: 0.983 }}
-                                                            drag="x"
-                                                            dragConstraints={{ left: 0, right: 0 }}
-                                                            dragElastic={0.6}
-                                                            onDragEnd={(e, { offset }) => {
-                                                                if (offset.x > 80) {
-                                                                    triggerHaptic('success');
-                                                                    // Show modal via selecting item which automatically opens item overlay
-                                                                    setSelectedItem(req);
-                                                                    setSelectedType('offer'); 
-                                                                    toast.success("Ready to accept?");
-                                                                } else if (offset.x < -80) {
-                                                                    triggerHaptic('warning');
-                                                                    if (onDeclineRequest && !req.isDemo) onDeclineRequest(req.id);
-                                                                    else toast.error("Declined offer.");
-                                                                }
-                                                            }}
-                                                            onTap={() => {
-                                                                console.log("Card tapped: pending offer", req);
-                                                                triggerHaptic();
-                                                                setSelectedItem(req);
+	                                                    const expTone =
+	                                                        expiresDays <= 1
+	                                                            ? 'danger'
+	                                                            : expiresDays <= 2
+	                                                                ? 'danger'
+	                                                                : expiresDays <= 4
+	                                                                    ? 'warn'
+	                                                                    : 'neutral';
+
+	                                                    return (
+	                                                        <motion.div
+	                                                            key={idx}
+	                                                            whileTap={{ scale: 0.983 }}
+	                                                            onTap={() => {
+	                                                                console.log("Card tapped: pending offer", req);
+	                                                                triggerHaptic();
+	                                                                setSelectedItem(req);
                                                                 setSelectedType('offer');
                                                             }}
                                                             className={cn(
                                                                 "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
                                                                 borderColor,
-                                                                isDark
-                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-                                                                    : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
-                                                            )}
-                                                        >
-                                                            <div className="inline-flex items-center gap-1.5 mb-3 px-2 py-1 rounded-full bg-amber-500/10">
-                                                                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" strokeWidth={3} />
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Action Required</span>
-                                                            </div>
-                                                            <div className="flex items-start justify-between mb-4">
+	                                                                isDark
+	                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+	                                                                    : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
+	                                                            )}
+	                                                        >
+	                                                            <div className="flex flex-wrap items-center gap-2 mb-3">
+	                                                                <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
+	                                                                    isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200"
+	                                                                )}>
+	                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-amber-200" : "text-amber-700")} strokeWidth={3} />
+	                                                                    Action required
+	                                                                </span>
+	                                                            </div>
+                                                            <div className="flex items-start justify-between mb-3.5">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-11 h-11 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
                                                                         {getBrandIcon(req.brand_logo || req.brand_logo_url || req.logo_url || req.raw?.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)}
@@ -2508,17 +2778,18 @@ const MobileDashboardDemo = ({
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className={cn("text-xl font-bold font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                                                                        Earn ₹{amount.toLocaleString()}
+                                                                    <p className={cn("text-[22px] font-black font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                        ₹{amount.toLocaleString()}
                                                                     </p>
-                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-70 mt-1", isDark ? "text-emerald-400" : "text-emerald-600")}>Target Budget</p>
+                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-60 mt-1", isDark ? "text-emerald-300" : "text-emerald-600")}>
+                                                                        You’ll earn
+                                                                    </p>
                                                                 </div>
                                                             </div>
 
                                                             <div className="flex flex-col gap-3 mb-4">
                                                                 <div className="flex flex-wrap items-center gap-2">
-                                                                    <div className="flex items-center gap-1.5 px-1 py-1">
-                                                                        <span className={cn("text-[10px] uppercase font-black tracking-widest opacity-40 mr-1", textColor)}>Deliverables</span>
+                                                                    <div className="flex items-center gap-2 flex-wrap">
                                                                         {(() => {
                                                                             const raw = req.deliverables || req.raw?.deliverables;
                                                                             let items: string[] = ['🎬 1 Reel'];
@@ -2545,44 +2816,78 @@ const MobileDashboardDemo = ({
                                                                         })()}
                                                                     </div>
                                                                     <div className={cn(
-                                                                        "flex items-center gap-1.5 ml-auto px-2.5 py-1.5 rounded-lg",
-                                                                        isDark ? "bg-red-500/15 text-red-400" : "bg-red-100 text-red-700"
+                                                                        "flex items-center gap-1.5 ml-auto px-2.5 py-1.5 rounded-lg border",
+                                                                        expTone === 'danger'
+                                                                            ? (isDark ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-red-50 text-red-700 border-red-200")
+                                                                            : expTone === 'warn'
+                                                                                ? (isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200")
+                                                                                : (isDark ? "bg-white/5 text-white/70 border-white/10" : "bg-white text-slate-700 border-slate-200")
                                                                     )}>
                                                                         <Clock className="w-3.5 h-3.5" />
-                                                                        <span className="text-[10px] font-bold uppercase tracking-widest">Offer Expires in {expiresDays}d</span>
+                                                                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                                                                            {sentText ? `${sentText} • ${expiresDays}d left` : `${expiresDays}d left`}
+                                                                        </span>
                                                                     </div>
                                                                 </div>
                                                                 
                                                                 {/* Expected Payment Time callout */}
-                                                                <div className={cn("flex items-start gap-2 px-3 py-2.5 rounded-xl text-[11px] font-medium leading-relaxed", isDark ? "bg-[#1C2C2A]/80 text-emerald-400" : "bg-emerald-50 text-emerald-700")}>
+                                                                <div className={cn("flex items-start gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold leading-relaxed border", isDark ? "bg-[#1C2C2A]/70 text-emerald-200 border-emerald-500/20" : "bg-emerald-50 text-emerald-800 border-emerald-200")}>
                                                                     <Landmark className="w-3.5 h-3.5 shrink-0 mt-[2px]" />
-                                                                    Expected Payment: Released immediately after content approval
+                                                                    Payment released after content approval
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex items-center justify-between pt-3 border-t border-slate-500/10">
-                                                                <div className={cn("text-[10px] font-bold opacity-50", isDark ? "text-slate-400" : "text-slate-500")}>
-                                                                    ⟷ Swipe to accept/decline
-                                                                </div>
+                                                            <div className="space-y-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
+                                                                    className="h-11 w-full bg-blue-600 text-white rounded-[16px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                                                                >
+                                                                    Review & Respond
+                                                                    <ArrowRight className="w-3.5 h-3.5 opacity-70" />
+                                                                </button>
 
-                                                                <div className="flex gap-2">
+                                                                <div className="flex items-center justify-between">
                                                                     <button
+                                                                        type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             triggerHaptic();
                                                                             setSelectedItem(req);
                                                                             setSelectedType('offer');
+                                                                            toast.message("Counter inside offer details", { description: "Open offer → Counter." });
                                                                         }}
-                                                                        className={cn("px-5 py-2.5 bg-blue-600 text-white rounded-[14px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5")}
+                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-white/70 hover:text-white" : "text-slate-600 hover:text-slate-900")}
                                                                     >
-                                                                        Review
-                                                                        <ArrowRight className="w-3.5 h-3.5 opacity-70" />
+                                                                        Counter
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            triggerHaptic(HapticPatterns.warning);
+                                                                            if (req.isDemo) {
+                                                                                toast.message("This is a demo offer", { description: "Accept/counter/decline is disabled for demo." });
+                                                                                return;
+                                                                            }
+                                                                            if (onDeclineRequest) onDeclineRequest(req.id);
+                                                                            else toast.error("Declined offer.");
+                                                                        }}
+                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-white/60 hover:text-white" : "text-slate-600 hover:text-slate-900")}
+                                                                    >
+                                                                        Decline
                                                                     </button>
                                                                 </div>
+
+                                                                {idx === 0 && (
+                                                                    <p className={cn("text-[11px] font-semibold opacity-55", textColor)}>
+                                                                        Tip: Reply within 24h to unlock more brand offers.
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                         </motion.div>
-                                                    );
-                                                })}
+	                                                    );
+	                                                })}
                                             </div>
                                         ) : (
                                             <div className="text-center py-12">
@@ -2772,39 +3077,42 @@ const MobileDashboardDemo = ({
                                 </button>
                             </div>
 
-                            {/* Main Highlight: Pending Amount */}
-                            <motion.div
-                                initial={{ scale: 0.95, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: 0.1 }}
-                                className={cn(
-                                    "py-8 px-8 rounded-[2.5rem] shadow-xl shadow-orange-500/20 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-                                    isDark
-                                        ? "from-amber-400 via-orange-500 to-rose-600"
-                                        : "bg-orange-600 from-orange-600 via-rose-500 to-purple-700"
-                                )}
-                            >
-                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-                                <div className="relative z-10">
-                                    <div className="flex items-center justify-between text-white/90 mb-3">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 text-white">Pending Amount</span>
-                                        <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-                                            <Clock className="w-4 h-4 text-white" />
-                                        </div>
-                                    </div>
-                                    <div className="text-4xl font-black text-white mb-6 flex items-baseline gap-1 font-outfit">
-                                        <span className="text-2xl font-bold opacity-70">₹</span>
-                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
-                                    </div>
-                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/10 w-fit">
-                                        <div className="w-5 h-5 rounded-full bg-amber-400/20 flex items-center justify-center border border-amber-400/30">
-                                            <ShieldCheck className="w-3 h-3 text-amber-200" />
-                                        </div>
-                                        <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Escrow Protection Active</span>
-                                    </div>
-                                </div>
-                            </motion.div>
+	                            {/* Main Highlight: Pending Amount */}
+	                            <motion.div
+	                                initial={{ scale: 0.95, opacity: 0 }}
+	                                animate={{ scale: 1, opacity: 1 }}
+	                                transition={{ delay: 0.1 }}
+	                                className={cn(
+	                                    "py-7 px-7 rounded-[2.25rem] shadow-xl border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
+	                                    isDark
+	                                        ? "from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
+	                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
+	                                )}
+	                            >
+	                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+	                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+	                                <div className="relative z-10">
+	                                    <div className="flex items-center justify-between text-white/90 mb-3">
+	                                        <div className="space-y-0.5">
+	                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-white">Pending Amount</span>
+	                                            <span className="block text-[11px] font-semibold text-white/70">Released after content approval</span>
+	                                        </div>
+	                                        <div className="p-2 rounded-xl bg-white/12 backdrop-blur-md border border-white/20">
+	                                            <Clock className="w-4 h-4 text-white" />
+	                                        </div>
+	                                    </div>
+	                                    <div className="text-4xl font-black text-white mb-5 flex items-baseline gap-1 font-outfit">
+	                                        <span className="text-2xl font-bold opacity-75">₹</span>
+	                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
+	                                    </div>
+	                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/15 w-fit">
+	                                        <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
+	                                            <ShieldCheck className="w-3 h-3 text-white/90" />
+	                                        </div>
+	                                        <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Creator Armour protection active</span>
+	                                    </div>
+	                                </div>
+	                            </motion.div>
 
                             {/* Secondary Stats Row */}
                             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -2818,41 +3126,55 @@ const MobileDashboardDemo = ({
                                 </div>
                             </div>
 
-                            {/* Transaction List */}
-                            <div className="space-y-3">
-                                {brandDeals.length > 0 ? (
-                                    brandDeals.map((deal: any, idx: number) => (
-                                        <motion.div
-                                            key={idx}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: idx * 0.05 }}
-                                            onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
-                                            className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-white/5" : "bg-slate-50")}>
-                                                    {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
-                                                </div>
-                                                <div>
-                                                    <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
-                                                    <span className="inline-flex mt-1 px-2 py-0.5 rounded-md bg-red-500/10 text-red-500 text-[9px] font-black uppercase tracking-widest border border-red-500/10">
-                                                        {(deal.status || '').toLowerCase().includes('paid') ? 'Paid' : 'Overdue'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="text-right">
-                                                    <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
-                                                </div>
-                                                <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
-                                            </div>
-                                        </motion.div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-12">
-                                        <div className="w-16 h-16 rounded-full bg-slate-500/10 flex items-center justify-center mx-auto mb-4 border border-slate-500/10">
-                                            <CreditCard className={cn("w-8 h-8 opacity-20", textColor)} />
+	                            {/* Transaction List */}
+	                            <div className="space-y-3">
+	                                {brandDeals.length > 0 ? (
+	                                    brandDeals.map((deal: any, idx: number) => (
+	                                        (() => {
+	                                            const payUx = getCreatorPaymentListUX(deal);
+	                                            const badgeClass = payUx.tone === 'success'
+	                                                ? (isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-500/10 text-emerald-700 border-emerald-500/15")
+	                                                : payUx.tone === 'warning'
+	                                                    ? (isDark ? "bg-amber-500/14 text-amber-200 border-amber-400/25" : "bg-amber-500/10 text-amber-700 border-amber-500/15")
+	                                                    : payUx.tone === 'neutral'
+	                                                        ? (isDark ? "bg-white/10 text-white/80 border-white/10" : "bg-slate-900/5 text-slate-700 border-slate-900/10")
+	                                                        : (isDark ? "bg-sky-500/14 text-sky-200 border-sky-400/25" : "bg-sky-500/10 text-sky-700 border-sky-500/15");
+
+	                                        <motion.div
+	                                            key={idx}
+	                                            initial={{ opacity: 0, y: 10 }}
+	                                            animate={{ opacity: 1, y: 0 }}
+	                                            transition={{ delay: idx * 0.05 }}
+	                                            onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
+	                                            className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
+	                                        >
+	                                            <div className="flex items-center gap-4">
+	                                                <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-white/5" : "bg-slate-50")}>
+	                                                    {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+	                                                </div>
+	                                                <div>
+	                                                    <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
+	                                                    <div className="mt-1 flex items-center gap-2 min-w-0">
+	                                                        <span className={cn("inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", badgeClass)}>
+	                                                            {payUx.label}
+	                                                        </span>
+	                                                        <span className={cn("text-[11px] font-semibold opacity-60 truncate", textColor)}>{payUx.sublabel}</span>
+	                                                    </div>
+	                                                </div>
+	                                            </div>
+	                                            <div className="flex items-center gap-2">
+	                                                <div className="text-right">
+	                                                    <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+	                                                </div>
+	                                                <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
+	                                            </div>
+	                                        </motion.div>
+	                                        })()
+	                                    ))
+	                                ) : (
+	                                    <div className="text-center py-12">
+	                                        <div className="w-16 h-16 rounded-full bg-slate-500/10 flex items-center justify-center mx-auto mb-4 border border-slate-500/10">
+	                                            <CreditCard className={cn("w-8 h-8 opacity-20", textColor)} />
                                         </div>
                                         <p className={cn("text-sm font-bold opacity-30", textColor)}>No transactions found</p>
                                     </div>
@@ -3940,8 +4262,7 @@ const MobileDashboardDemo = ({
                 {selectedPayment && (() => {
                     const pay = selectedPayment;
                     const isPaid = (pay.status || '').toLowerCase().includes('paid') || (pay.status || '').toLowerCase().includes('complete');
-                    const isEscrow = (pay.payment_terms || '').toLowerCase().includes('escrow');
-                    const dueDate = pay.due_date || pay.payment_expected_date || pay.deadline;
+	                    const dueDate = pay.due_date || pay.payment_expected_date || pay.deadline;
                     const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
                     const daysPast = dueDate ? Math.ceil((Date.now() - new Date(dueDate).getTime()) / 86400000) : 0;
                     const invoiceId = pay.invoice_id || pay.id?.slice(0, 8).toUpperCase() || 'CA-' + Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -4027,25 +4348,23 @@ const MobileDashboardDemo = ({
                                     <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                                     <div className="relative">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-emerald-400/70" : "text-emerald-700/70") : (isDark ? "text-red-400/70" : "text-red-600/70"))}>
-                                            {isEscrow ? 'Escrow Status' : 'Payment Status'}
-                                        </p>
-                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-600"))}>
-                                            {isPaid ? 'RECEIVED' : isEscrow ? 'IN ESCROW' : 'OVERDUE'}
-                                        </p>
-                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
-                                        {isEscrow ? (
-                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Funds secured in escrow · Release after approval</p>
-                                        ) : isPaid ? (
-                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
-                                        ) : (
-                                            <div className="space-y-1">
-                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
-                                                {daysPast > 0 && <p className="text-[11px] font-black text-red-500">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+	                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-emerald-400/70" : "text-emerald-700/70") : (isDark ? "text-red-400/70" : "text-red-600/70"))}>
+	                                            Payment Status
+	                                        </p>
+	                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-600"))}>
+	                                            {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
+	                                        </p>
+	                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
+	                                        {isPaid ? (
+	                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
+	                                        ) : (
+	                                            <div className="space-y-1">
+	                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
+	                                                {daysPast > 0 && <p className="text-[11px] font-black text-red-500">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
+	                                            </div>
+	                                        )}
+	                                    </div>
+	                                </div>
 
                                 {/* ── DEAL BREAKDOWN ── */}
                                 <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
@@ -4131,7 +4450,7 @@ const MobileDashboardDemo = ({
                                         { label: 'Invoice ID', value: invoiceId },
                                         { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank Transfer' },
                                         { label: 'Agreement Signed', value: signedDateStr },
-                                        { label: 'Escrow Protection', value: isEscrow ? '✓ Active' : 'Standard' },
+	                                        { label: 'Creator Armour Protection', value: '✓ Active' },
                                     ].map((row, i) => (
                                         <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
                                             <span className={cn("text-[12px] font-semibold opacity-60", textColor)}>{row.label}</span>

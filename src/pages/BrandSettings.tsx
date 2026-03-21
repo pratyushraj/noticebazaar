@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Bell,
+  Camera,
   ChevronLeft,
   CreditCard,
   Globe,
   Landmark,
+  Loader2,
   LogOut,
   Laptop,
   Moon,
@@ -25,10 +27,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { toast } from 'sonner';
+import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
 
 const BrandSettings = () => {
   const navigate = useNavigate();
-  const { profile } = useSession();
+  const { profile, refetchProfile } = useSession();
 
   const THEME_KEY = 'brand_console_theme_preference';
   const [themePreference, setThemePreference] = useState<'system' | 'dark' | 'light'>(() => {
@@ -62,8 +65,14 @@ const BrandSettings = () => {
       : (isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />);
 
   const brandName = profile?.first_name || profile?.business_name || 'Brand';
-  const brandLogo = profile?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(brandName)}&background=0D8ABC&color=fff`;
+  const [brandLogoDbUrl, setBrandLogoDbUrl] = useState<string | null>(null);
+  const storedBrandLogo = (profile as any)?.avatar_url || (profile as any)?.logo_url || brandLogoDbUrl || null;
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const brandLogo = logoPreviewUrl || storedBrandLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(brandName)}&background=0D8ABC&color=fff`;
+  const hasUploadedLogo = !!storedBrandLogo;
   const supportEmailStorageKey = profile?.id ? `brand_settings_support_email:${profile.id}` : 'brand_settings_support_email';
+  const logoFileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const textColor = isDark ? 'text-white' : 'text-slate-900';
   const cardBorder = isDark ? 'border-white/10' : 'border-slate-200';
@@ -127,6 +136,67 @@ const BrandSettings = () => {
     navigate('/login');
   };
 
+  const uploadBrandLogo = async (file: File) => {
+    if (!profile?.id) {
+      toast.error('Please sign in again');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Logo must be less than 5MB');
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      const fileExt = (file.name.split('.').pop() || 'png').toLowerCase();
+      const filePath = `${profile.id}/brand-logo.${fileExt}`;
+
+      const existingPath = extractFilePathFromUrl(storedBrandLogo, CREATOR_ASSETS_BUCKET);
+      if (existingPath) {
+        await supabase.storage.from(CREATOR_ASSETS_BUCKET).remove([existingPath.split('?')[0]]);
+      }
+
+      const { error: uploadError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage.from(CREATOR_ASSETS_BUCKET).getPublicUrl(filePath);
+      const publicUrl = publicUrlData?.publicUrl;
+      if (!publicUrl) throw new Error('Failed to get logo URL');
+
+      setLogoPreviewUrl(`${publicUrl}?t=${Date.now()}`);
+
+      const now = new Date().toISOString();
+      const [{ error: profileError }, { error: brandError }] = await Promise.all([
+        supabase.from('profiles').update({ avatar_url: publicUrl, updated_at: now }).eq('id', profile.id),
+        supabase.from('brands').update({ logo_url: publicUrl }).eq('external_id', profile.id),
+      ]);
+
+      if (profileError) throw profileError;
+      if (brandError) {
+        // non-fatal in older schemas/environments
+        console.warn('[BrandSettings] Failed to update brands.logo_url:', (brandError as any)?.message || brandError);
+      }
+
+      toast.success('Logo updated');
+      refetchProfile();
+      setTimeout(() => setLogoPreviewUrl(null), 1500);
+    } catch (err: any) {
+      toast.error('Logo upload failed', { description: err?.message || 'Please try again.' });
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoFileInputRef.current) logoFileInputRef.current.value = '';
+    }
+  };
+
   useEffect(() => {
     if (!profile?.id) return;
 
@@ -148,12 +218,13 @@ const BrandSettings = () => {
 
       const { data: brandRow } = await supabase
         .from('brands')
-        .select('name, website_url, industry, description')
+        .select('name, website_url, industry, description, logo_url')
         .eq('external_id', profile.id)
         .maybeSingle();
 
       if (cancelled || !brandRow) return;
 
+      setBrandLogoDbUrl((brandRow as any)?.logo_url || null);
       setProfileForm((current) => ({
         ...current,
         brandName: brandRow.name || current.brandName,
@@ -348,12 +419,36 @@ const BrandSettings = () => {
         <div className={cn('rounded-[28px] border overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.10)]', cardBorder, cardBg)}>
           <div className="p-5">
             <div className="flex items-center gap-4">
-              <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-white/10' : 'border-slate-200')}>
-                <AvatarImage src={brandLogo} alt={brandName} />
-                <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
-                  {brandName.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-white/10' : 'border-slate-200')}>
+                  <AvatarImage src={brandLogo} alt={brandName} />
+                  <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+                    {brandName.slice(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  type="button"
+                  disabled={isUploadingLogo}
+                  onClick={() => logoFileInputRef.current?.click()}
+                  className={cn(
+                    'absolute -bottom-1 -right-1 w-7 h-7 rounded-full border flex items-center justify-center transition active:scale-90',
+                    isDark ? 'bg-[#061318] border-white/10 text-white/70' : 'bg-white border-slate-200 text-slate-700',
+                    isUploadingLogo && 'opacity-70 cursor-not-allowed'
+                  )}
+                >
+                  {isUploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                </button>
+                <input
+                  ref={logoFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void uploadBrandLogo(file);
+                  }}
+                />
+              </div>
               <div className="min-w-0 flex-1">
                 <p className={cn('text-[18px] font-black tracking-tight truncate', textColor)}>{brandName}</p>
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -363,7 +458,17 @@ const BrandSettings = () => {
                   <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800')}>
                     Protected by Creator Armour
                   </span>
+                  {!hasUploadedLogo && (
+                    <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')}>
+                      Logo required
+                    </span>
+                  )}
                 </div>
+                {!hasUploadedLogo && (
+                  <p className={cn('text-[12px] font-semibold mt-2', isDark ? 'text-amber-200/80' : 'text-amber-800/80')}>
+                    Upload your logo so creators recognize and trust your offers.
+                  </p>
+                )}
               </div>
               <ShieldCheck className={cn('w-5 h-5 opacity-60', textColor)} />
             </div>
@@ -611,4 +716,3 @@ const BrandSettings = () => {
 };
 
 export default BrandSettings;
-
