@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Bell,
   Briefcase,
+  Camera,
   Clock,
   ChevronRight,
   CreditCard,
