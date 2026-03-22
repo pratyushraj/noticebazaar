@@ -240,7 +240,23 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-Client-Info', 'apikey', 'Prefer', 'X-Supabase-Api-Version'],
+  // Supabase/PostgREST uses additional headers like Accept-Profile/Content-Profile.
+  // Missing these causes browsers to block requests at CORS preflight time, surfacing as "TypeError: Failed to fetch".
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'X-Client-Info',
+    'apikey',
+    'Prefer',
+    'X-Supabase-Api-Version',
+    'Accept-Profile',
+    'Content-Profile',
+    'X-Profile',
+    'Range',
+    'Content-Range',
+  ],
   // Reflect Access-Control-Request-Headers so Supabase client headers
   // like apikey/x-client-info/x-supabase-api-version are accepted.
   exposedHeaders: ['Content-Length', 'Content-Type'],
