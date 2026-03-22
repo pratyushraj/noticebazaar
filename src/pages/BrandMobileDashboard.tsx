@@ -24,6 +24,7 @@ import {
   MoreHorizontal,
   Plus,
   RefreshCw,
+  Search,
   Send,
   Settings,
   Shield,
