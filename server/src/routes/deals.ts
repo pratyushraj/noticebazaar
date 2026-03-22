@@ -1063,28 +1063,35 @@ router.get('/:dealId/contract-review-link', async (req: AuthenticatedRequest, re
       .limit(1)
       .maybeSingle();
 
-    if (existingToken?.id) {
-      tokenId = existingToken.id;
-    } else {
-      const token = await createContractReadyToken({
-        dealId,
-        creatorId: deal.creator_id,
-        expiresAt: null,
-      });
-      tokenId = token.id;
-    }
+	    if (existingToken?.id) {
+	      tokenId = existingToken.id;
+	    } else {
+	      const token = await createContractReadyToken({
+	        dealId,
+	        creatorId: deal.creator_id,
+	        expiresAt: null,
+	      });
+	      tokenId = token.id;
+	    }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    return res.json({
-      success: true,
-      token: tokenId,
-      viewUrl: `${baseUrl}/api/protection/contracts/${dealId}/view?token=${tokenId}`,
-    });
-  } catch (error: any) {
-    console.error('[Deals] contract-review-link error:', error);
-    return res.status(500).json({ success: false, error: error?.message || 'Failed to create contract review link' });
-  }
-});
+	    const apiBaseUrl = `${req.protocol}://${req.get('host')}`;
+	    // Prefer the frontend origin (where the user is browsing) so we can send them to the
+	    // ContractReadyPage for signing instead of a protected-file view that often downloads.
+	    const frontendOriginRaw = req.get('origin') || process.env.FRONTEND_URL || '';
+	    const frontendOrigin = String(frontendOriginRaw || '').replace(/\/$/, '');
+	    return res.json({
+	      success: true,
+	      token: tokenId,
+	      // Read-only contract view (can download depending on browser / content-disposition).
+	      viewUrl: `${apiBaseUrl}/api/protection/contracts/${dealId}/view?token=${tokenId}`,
+	      // Signing UX (brand flow) hosted on the frontend.
+	      signUrl: frontendOrigin ? `${frontendOrigin}/contract-ready/${tokenId}` : undefined,
+	    });
+	  } catch (error: any) {
+	    console.error('[Deals] contract-review-link error:', error);
+	    return res.status(500).json({ success: false, error: error?.message || 'Failed to create contract review link' });
+	  }
+	});
 
 /**
  * PATCH /api/deals/:dealId/shipping/report-issue

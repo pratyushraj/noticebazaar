@@ -1515,17 +1515,18 @@ const BrandMobileDashboard = ({
           return null;
         }
 
-	        const apiBase = getApiBaseUrl();
-	        const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
-	          headers: { Authorization: `Bearer ${token}` },
-	        });
-	        const data = await response.json().catch(() => ({}));
-	        if (response.ok && data?.success && data?.viewUrl) {
-	          return String(data.viewUrl);
-	        }
+		        const apiBase = getApiBaseUrl();
+		        const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
+		          headers: { Authorization: `Bearer ${token}` },
+		        });
+		        const data = await response.json().catch(() => ({}));
+		        const nextUrl = data?.signUrl || data?.viewUrl || null;
+		        if (response.ok && data?.success && nextUrl) {
+		          return String(nextUrl);
+		        }
 
-	        if (contractUrl) return contractUrl;
-	        throw new Error(data?.error || 'Failed to open contract');
+		        if (contractUrl) return contractUrl;
+		        throw new Error(data?.error || 'Failed to open contract');
 	      } catch (error: any) {
 	        if (contractUrl) return contractUrl;
 	        toast.error(error?.message || 'Contract not generated yet');
@@ -1573,18 +1574,19 @@ const BrandMobileDashboard = ({
         setSelectedDealPage(nextOffer);
         setSelectedOffer(nextOffer);
 	        toast.success('Contract generated');
-	        if (nextUrl) {
-	          try {
-	            const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
-	              headers: { Authorization: `Bearer ${token}` },
-	            });
-	            const view = await response.json().catch(() => ({}));
-	            if (response.ok && view?.success && view?.viewUrl) {
-	              window.open(String(view.viewUrl), '_blank', 'noopener,noreferrer');
-	            } else {
-	              window.open(nextUrl, '_blank', 'noopener,noreferrer');
-	            }
-	          } catch (_) {
+		        if (nextUrl) {
+		          try {
+		            const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
+		              headers: { Authorization: `Bearer ${token}` },
+		            });
+		            const view = await response.json().catch(() => ({}));
+		            const viewUrl = view?.signUrl || view?.viewUrl || null;
+		            if (response.ok && view?.success && viewUrl) {
+		              window.open(String(viewUrl), '_blank', 'noopener,noreferrer');
+		            } else {
+		              window.open(nextUrl, '_blank', 'noopener,noreferrer');
+		            }
+		          } catch (_) {
 	            window.open(nextUrl, '_blank', 'noopener,noreferrer');
 	          }
 	        }
