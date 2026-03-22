@@ -180,6 +180,25 @@ const corsOptions = {
       return callback(null, true);
     }
 
+    // Allow private LAN origins for local dev (e.g. opening Vite via Network URL).
+    // This avoids opaque browser "TypeError: Failed to fetch" when hitting localhost:3001 from 192.168.x.y pages.
+    try {
+      const u = new URL(origin);
+      const host = (u.hostname || '').toLowerCase();
+      const isPrivateIp =
+        host.startsWith('10.') ||
+        host.startsWith('192.168.') ||
+        // 172.16.0.0 - 172.31.255.255
+        (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host));
+      const isLocalTld = host.endsWith('.local');
+      if (isPrivateIp || isLocalTld) {
+        console.log('[CORS] ✓ Allowing private LAN origin:', origin);
+        return callback(null, true);
+      }
+    } catch {
+      // ignore invalid origin
+    }
+
     // Allow Render frontend URLs
     if (normalizedOrigin.includes('onrender.com')) {
       console.log('[CORS] ✓ Allowing Render origin:', origin);
