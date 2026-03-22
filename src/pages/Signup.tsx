@@ -41,7 +41,6 @@ const Signup = () => {
       .update({
         role: 'brand',
         business_name: cleanBrandName,
-        email: emailToUse?.trim() || null,
         onboarding_complete: true,
       })
       .eq('id', userId);
