@@ -415,6 +415,7 @@ const brandDealCardUi = (row: any) => {
   const s = effectiveDealStatus(row);
   const human = dealStageLabel({ status: s });
   const signedSignal = s === 'FULLY_EXECUTED' || s === 'CONTENT_MAKING' || s === 'CONTENT_DELIVERED' || s === 'COMPLETED';
+  const hasAnyContractFile = Boolean(row?.safe_contract_url || row?.contract_file_url || row?.contract_file_path || row?.signed_contract_url || row?.signed_contract_path || row?.signed_pdf_url);
   const stageBadge =
     s === 'CONTRACT_READY' ? 'WAITING FOR SIGNATURE'
       : s === 'AWAITING_CREATOR_SIGNATURE' ? 'WAITING FOR CREATOR'
@@ -435,13 +436,13 @@ const brandDealCardUi = (row: any) => {
 
   const primaryActionLabel =
     s === 'AWAITING_BRAND_SIGNATURE'
-      ? 'View & Sign Contract'
+      ? 'Review & Sign Contract'
     : s === 'AWAITING_CREATOR_SIGNATURE'
       ? 'View Contract'
     : s === 'CONTRACT_READY' || s === 'SENT'
-        ? 'View & Sign Contract'
+        ? 'Review & Sign Contract'
         : s === 'FULLY_EXECUTED'
-          ? 'Track Progress'
+          ? (hasAnyContractFile ? 'Review Contract' : 'Track Progress')
         : s === 'CONTENT_MAKING'
           ? 'Track Progress'
           : s === 'CONTENT_DELIVERED'
@@ -455,14 +456,16 @@ const brandDealCardUi = (row: any) => {
       ? '📩 Content ready for review'
       : s === 'REVISION_REQUESTED'
         ? '⚠️ Revision requested'
-        : s === 'AWAITING_BRAND_SIGNATURE' || s === 'CONTRACT_READY' || s === 'SENT'
-          ? '⚠️ Signature required'
+        : s === 'AWAITING_BRAND_SIGNATURE'
+          ? '⚠️ Creator signed. Your signature required'
+          : s === 'CONTRACT_READY' || s === 'SENT'
+            ? '⚠️ Contract ready. Signature required'
           : s === 'AWAITING_CREATOR_SIGNATURE'
             ? '⏳ Waiting for creator signature'
             : s === 'CONTENT_MAKING'
               ? '⏳ Creator working'
               : s === 'FULLY_EXECUTED'
-                ? '✅ Collaboration started'
+                ? '✅ Contract signed'
                 : s === 'COMPLETED'
                   ? '✅ Completed'
                   : '⏳ In progress';
@@ -1821,15 +1824,17 @@ const BrandMobileDashboard = ({
 	                    normalizedDealStatus === 'CONTENT_MAKING' ||
 	                    normalizedDealStatus === 'CONTENT_DELIVERED' ||
 	                    normalizedDealStatus === 'COMPLETED';
-	                  const contractTitle = isSignedStage
-	                    ? 'Signed and active'
-	                    : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
-	                      ? 'Signature required'
-	                      : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE'
-	                        ? 'Waiting for creator signature'
-	                        : contractUrl
-	                          ? 'Ready for review'
-	                          : 'Contract is being prepared';
+		                  const contractTitle = isSignedStage
+		                    ? 'Signed and active'
+		                    : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
+		                      ? 'Your signature required'
+		                      : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE'
+		                        ? 'Waiting for creator signature'
+		                        : (normalizedDealStatus === 'CONTRACT_READY' || normalizedDealStatus === 'SENT')
+		                          ? (contractUrl ? 'Ready for signature' : 'Contract is being prepared')
+		                        : contractUrl
+		                          ? 'Ready for review'
+		                          : 'Contract is being prepared';
 	                  const contractDescription = isSignedStage
 	                    ? 'Next: confirm deliverables and execution timeline.'
 	                    : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'

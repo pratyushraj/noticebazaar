@@ -137,7 +137,9 @@ const RouteFallback = () => (
 );
 
 const LazyRoute = ({ children }: { children: ReactNode }) => (
-  <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+  <ErrorBoundary variant="inline">
+    <Suspense fallback={<RouteFallback />}>{children}</Suspense>
+  </ErrorBoundary>
 );
 
 // Redirect component for old brand-reply routes
