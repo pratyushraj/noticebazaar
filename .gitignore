@@ -51,3 +51,6 @@ coverage/
 # Secrets / private exports (never commit)
 rzp.csv
 RENDER_ENV_VARIABLES.txt
+
+# Nested repos / local clones
+server/nanobot/

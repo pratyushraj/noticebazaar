@@ -37,6 +37,43 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+// Types for collab request preview
+interface CollabRequestPreview {
+  id: string;
+  brand_name: string;
+  brand_email?: string;
+  collab_type?: string;
+  budget_range?: string | null;
+  exact_budget?: number | null;
+  barter_value?: number | null;
+  deadline?: string | null;
+  brand_logo?: string | null;
+  created_at: string;
+  raw: Record<string, unknown>;
+}
+
+interface CollabRequestsResponse {
+  success?: boolean;
+  requests?: CollabRequestData[];
+}
+
+interface CollabRequestData {
+  id: string;
+  brand_name?: string;
+  brand_email?: string;
+  collab_type?: string;
+  budget_range?: string | null;
+  exact_budget?: number | null;
+  barter_value?: number | null;
+  deadline?: string | null;
+  brand_logo?: string | null;
+  brand_logo_url?: string | null;
+  created_at?: string;
+  status?: string;
+  raw?: { brand_logo?: string; brand_logo_url?: string };
+  brand?: { logo_url?: string };
+}
+
 // NEW: Premium Dashboard Components
 import {
   calculateDashboardStats,
@@ -61,7 +98,7 @@ const CreatorDashboard = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [isPro, setIsPro] = useState(false);
   const [pendingCollabRequestsCount, setPendingCollabRequestsCount] = useState(0);
-  const [collabRequestsPreview, setCollabRequestsPreview] = useState<any[]>([]);
+  const [collabRequestsPreview, setCollabRequestsPreview] = useState<CollabRequestPreview[]>([]);
   const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
   const [declineRequestId, setDeclineRequestId] = useState<string | null>(null);
   const [showDeclineRequestDialog, setShowDeclineRequestDialog] = useState(false);
@@ -93,17 +130,17 @@ const CreatorDashboard = () => {
         headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
         signal: signal ?? undefined,
       });
-      let data: { success?: boolean; requests?: any[] };
+      let data: CollabRequestsResponse;
       if (res.ok) {
         data = await res.json().catch(() => ({ success: false, requests: [] }));
       } else {
         data = { success: false, requests: [] };
       }
       const list = Array.isArray(data?.requests) ? data.requests : [];
-      const pending = list.filter((r: any) => (r.status || '').toLowerCase() === 'pending');
+      const pending = list.filter((r: CollabRequestData) => (r.status || '').toLowerCase() === 'pending');
       setPendingCollabRequestsCount(pending.length);
       setCollabRequestsPreview(
-        pending.slice(0, 10).map((r: any) => ({
+        pending.slice(0, 10).map((r: CollabRequestData) => ({
           id: r.id,
           brand_name: r.brand_name || 'Brand',
           brand_email: r.brand_email || undefined,
@@ -112,13 +149,13 @@ const CreatorDashboard = () => {
           exact_budget: r.exact_budget ?? null,
           barter_value: r.barter_value ?? null,
           deadline: r.deadline ?? null,
-          brand_logo: r.brand_logo || r.brand_logo_url || r.raw?.brand_logo || r.raw?.brand_logo_url || (r as any).brand?.logo_url,
+          brand_logo: r.brand_logo || r.brand_logo_url || r.raw?.brand_logo || r.raw?.brand_logo_url || (r as { brand?: { logo_url?: string } }).brand?.logo_url,
           created_at: r.created_at || '',
           raw: r,
         }))
       );
-    } catch (err: any) {
-      if (err?.name === 'AbortError') return;
+    } catch (err: unknown) {
+      if ((err as { name?: string })?.name === 'AbortError') return;
       setPendingCollabRequestsCount(0);
       setCollabRequestsPreview([]);
     }
@@ -174,7 +211,8 @@ const CreatorDashboard = () => {
 
   const brandDeals = useMemo(() => {
     return rawBrandDeals.filter(deal => {
-      if (deal.deal_type === 'barter' && (deal.status === 'Drafting' || (deal as any).status === 'drafting') && !deal.delivery_address) {
+      const status = (deal.status || '').toString().toLowerCase();
+      if (deal.deal_type === 'barter' && (deal.status === 'Drafting' || status === 'drafting') && !deal.delivery_address) {
         return false;
       }
       return true;
@@ -205,7 +243,7 @@ const CreatorDashboard = () => {
     triggerHaptic(HapticPatterns.light);
   };
 
-  const acceptCollabRequest = async (req: any) => {
+  const acceptCollabRequest = async (req: CollabRequestPreview) => {
     if (!req?.id) return;
     try {
       setAcceptingRequestId(req.id);

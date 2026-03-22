@@ -2,7 +2,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { ShieldCheck, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -11,17 +11,67 @@ import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { cn } from '@/lib/utils';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { session, loading } = useSession();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const accountModeParam = (searchParams.get('mode') || '').toLowerCase();
+  const accountMode: 'creator' | 'brand' = accountModeParam === 'brand' ? 'brand' : 'creator';
   const [isLoading, setIsLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [name, setName] = useState('');
+  const [brandName, setBrandName] = useState('');
+  const [brandIndustry, setBrandIndustry] = useState('Other');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const ensureBrandWorkspace = async (userId: string, emailToUse: string) => {
+    const cleanBrandName = String(brandName || '').trim();
+    const cleanIndustry = String(brandIndustry || '').trim() || 'Other';
+
+    if (!cleanBrandName) throw new Error('Brand name is required');
+
+    // Update profile role so ProtectedLayout allows brand routes.
+    const { error: profileErr } = await supabase
+      .from('profiles')
+      .update({
+        role: 'brand',
+        business_name: cleanBrandName,
+        email: emailToUse?.trim() || null,
+        onboarding_complete: true,
+      })
+      .eq('id', userId);
+
+    if (profileErr) {
+      console.warn('[Signup] Failed to set profile role=brand:', profileErr);
+      throw new Error('Failed to set up brand account');
+    }
+
+    // Ensure `brands` row exists (brand dashboard reads brands.external_id).
+    const { data: existing } = await supabase
+      .from('brands')
+      .select('id')
+      .eq('external_id', userId)
+      .maybeSingle();
+
+    if (!existing?.id) {
+      const { error: insertErr } = await supabase.from('brands').insert({
+        external_id: userId,
+        name: cleanBrandName,
+        industry: cleanIndustry,
+        source: 'signup',
+        status: 'active',
+        verified: false,
+      } as any);
+      if (insertErr) {
+        console.warn('[Signup] Failed to create brands row:', insertErr);
+      }
+    }
+  };
 
   const triggerWelcomeEmail = async (accessToken: string) => {
     try {
@@ -109,13 +159,26 @@ const Signup = () => {
 
       if (!justSignedUp) {
         // Wait a moment for profile to be created by database trigger
-        const timer = setTimeout(() => {
-          // Session has user; redirect to intended route (e.g. after Google login) or creator-dashboard, not homepage
+        const timer = setTimeout(async () => {
+          // Session has user; redirect to intended route (e.g. after Google login) or role dashboard.
           if (session?.user) {
             const intendedRoute = sessionStorage.getItem('oauth_intended_route');
+            let fallbackPath = accountMode === 'brand' ? '/brand-dashboard' : '/creator-dashboard';
+            try {
+              const { data: p } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              if (p?.role === 'brand') fallbackPath = '/brand-dashboard';
+              if (p?.role && p.role !== 'brand') fallbackPath = '/creator-dashboard';
+            } catch {
+              // ignore
+            }
+
             const path = intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup'
               ? `/${intendedRoute}`
-              : '/creator-dashboard';
+              : fallbackPath;
             sessionStorage.removeItem('oauth_intended_route');
             navigate(path, { replace: true });
           }
@@ -123,7 +186,7 @@ const Signup = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [session, loading, navigate, isLoading]);
+  }, [session, loading, navigate, isLoading, accountMode]);
 
   const handleEmailPasswordSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,10 +195,18 @@ const Signup = () => {
       toast.error('Please enter your name, email, and password');
       return;
     }
+    if (accountMode === 'brand' && !brandName.trim()) {
+      toast.error('Please enter your brand name');
+      return;
+    }
+
+    // Capture values before any state resets; used in delayed callbacks.
+    const emailAtSignup = email.trim();
+    const passwordAtSignup = password;
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
+    if (!emailRegex.test(emailAtSignup)) {
       toast.error('Please enter a valid email address');
       setEmailError('Invalid email format');
       return;
@@ -154,14 +225,16 @@ const Signup = () => {
       const lastName = nameParts.slice(1).join(' ') || '';
 
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: emailAtSignup,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/creator-onboarding`,
+          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding'}`,
           data: {
             first_name: firstName,
             last_name: lastName,
             full_name: name.trim(),
+            account_mode: accountMode,
+            brand_name: accountMode === 'brand' ? brandName.trim() : undefined,
           },
         },
       });
@@ -200,7 +273,7 @@ const Signup = () => {
               onClick: () => {
                 setShowLogin(true);
                 // Pre-fill email
-                setEmail(email.trim());
+                setEmail(emailAtSignup);
               },
             },
             duration: 5000,
@@ -223,7 +296,7 @@ const Signup = () => {
               label: 'Sign In',
               onClick: () => {
                 setShowLogin(true);
-                setEmail(email.trim());
+                setEmail(emailAtSignup);
               },
             },
             duration: 5000,
@@ -270,14 +343,23 @@ const Signup = () => {
                 if (profileData || attempts >= maxAttempts) {
                   clearInterval(checkProfile);
                   sessionStorage.removeItem('just_signed_up');
+                  if (accountMode === 'brand') {
+                    try {
+                      await ensureBrandWorkspace(currentSession.user.id, currentSession.user.email || emailAtSignup);
+                      window.location.assign('/brand-dashboard');
+                      return;
+                    } catch (e: any) {
+                      toast.error(e?.message || 'Failed to set up brand account');
+                    }
+                  }
                   navigate('/creator-onboarding', { replace: true });
                 }
               }, 500);
             } else {
               // No session yet - try signin once
               const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: email.trim(),
-                password: password,
+                email: emailAtSignup,
+                password: passwordAtSignup,
               });
 
               if (signInData.session) {
@@ -286,7 +368,17 @@ const Signup = () => {
 
                 sessionStorage.removeItem('just_signed_up');
                 // Wait a moment for profile creation
-                setTimeout(() => {
+                setTimeout(async () => {
+                  if (accountMode === 'brand') {
+                    try {
+                      await ensureBrandWorkspace(signInData.session.user.id, signInData.session.user.email || emailAtSignup);
+                    } catch (e: any) {
+                      toast.error(e?.message || 'Failed to set up brand account');
+                      return;
+                    }
+                    window.location.assign('/brand-dashboard');
+                    return;
+                  }
                   navigate('/creator-onboarding', { replace: true });
                 }, 1000);
               } else {
@@ -299,7 +391,7 @@ const Signup = () => {
                   duration: 5000,
                 });
                 setShowLogin(true);
-                setEmail(email.trim());
+                setEmail(emailAtSignup);
               }
             }
           }, 1000); // Wait 1 second for session to be established
@@ -357,7 +449,20 @@ const Signup = () => {
         }
       } else if (data.session) {
         // Don't show toast - AuthLoadingScreen will handle the transition
-        navigate('/creator-dashboard', { replace: true });
+        try {
+          const { data: p } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', data.session.user.id)
+            .maybeSingle();
+          if (p?.role === 'brand') {
+            navigate('/brand-dashboard', { replace: true });
+          } else {
+            navigate('/creator-dashboard', { replace: true });
+          }
+        } catch {
+          navigate(accountMode === 'brand' ? '/brand-dashboard' : '/creator-dashboard', { replace: true });
+        }
       }
     } catch (err: any) {
       console.error('[Signup] Email/password exception:', err);
@@ -508,19 +613,60 @@ const Signup = () => {
                 <ShieldCheck className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</h1>
-            </div>
+	            </div>
+	
+	            <div className="mb-10">
+                {!showLogin && (
+                  <div className="mb-6">
+                    <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 w-full">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = new URLSearchParams(searchParams);
+                          next.set('mode', 'creator');
+                          setSearchParams(next, { replace: true });
+                        }}
+                        className={cn(
+                          'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
+                          accountMode === 'creator'
+                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                            : 'bg-transparent text-slate-600 hover:text-slate-900'
+                        )}
+                      >
+                        Creator
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = new URLSearchParams(searchParams);
+                          next.set('mode', 'brand');
+                          setSearchParams(next, { replace: true });
+                        }}
+                        className={cn(
+                          'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
+                          accountMode === 'brand'
+                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                            : 'bg-transparent text-slate-600 hover:text-slate-900'
+                        )}
+                      >
+                        Brand
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-            <div className="mb-10">
-              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
-                {showLogin ? 'Sign In' : 'Join Armour'}
-              </h2>
-              <p className="text-slate-600 font-medium leading-relaxed">
-                {showLogin
-                  ? 'Access your creator business OS to manage deals.'
-                  : 'Start protecting your deals and scale your earnings.'
-                }
-              </p>
-            </div>
+	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
+	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Join Armour'}
+	              </h2>
+	              <p className="text-slate-600 font-medium leading-relaxed">
+	                {showLogin
+	                  ? 'Access your dashboard.'
+	                  : accountMode === 'brand'
+	                    ? 'Send structured offers, track deals, and sign contracts without DMs.'
+	                    : 'Start protecting your deals and scale your earnings.'
+	                }
+	              </p>
+	            </div>
 
             {/* Login Form (shorthand for users already registered) */}
             {showLogin && (
@@ -579,30 +725,62 @@ const Signup = () => {
             {/* Email/Password Signup Form */}
             {!showLogin && (
               <div className="mb-8">
-                <form onSubmit={handleEmailPasswordSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                      Full Name
-                    </Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="e.g. Pratyush Raj"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
-                      required
-                      autoComplete="name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                      Business Email
-                    </Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="name@example.com"
+	                <form onSubmit={handleEmailPasswordSignup} className="space-y-4">
+	                  <div className="space-y-2">
+	                    <Label htmlFor="signup-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+	                      {accountMode === 'brand' ? 'Your Name' : 'Full Name'}
+	                    </Label>
+	                    <Input
+	                      id="signup-name"
+	                      type="text"
+	                      placeholder="e.g. Pratyush Raj"
+	                      value={name}
+	                      onChange={(e) => setName(e.target.value)}
+	                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+	                      required
+	                      autoComplete="name"
+	                    />
+	                  </div>
+                    {accountMode === 'brand' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-brand-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                            Brand Name
+                          </Label>
+                          <Input
+                            id="signup-brand-name"
+                            type="text"
+                            placeholder="e.g. Demo Brand Co"
+                            value={brandName}
+                            onChange={(e) => setBrandName(e.target.value)}
+                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                            required
+                            autoComplete="organization"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-brand-industry" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                            Industry
+                          </Label>
+                          <Input
+                            id="signup-brand-industry"
+                            type="text"
+                            placeholder="e.g. Fashion"
+                            value={brandIndustry}
+                            onChange={(e) => setBrandIndustry(e.target.value)}
+                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                          />
+                        </div>
+                      </>
+                    )}
+	                  <div className="space-y-2">
+	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+	                      {accountMode === 'brand' ? 'Work Email' : 'Business Email'}
+	                    </Label>
+	                    <Input
+	                      id="signup-email"
+	                      type="email"
+	                      placeholder="name@example.com"
                       value={email}
                       onChange={(e) => handleEmailChange(e.target.value)}
                       className={`bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
@@ -637,17 +815,17 @@ const Signup = () => {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !name.trim() || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
-                  >
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                    {isLoading ? 'Creating Account...' : 'Get My Collab Link'}
-                  </Button>
-                </form>
-              </div>
+	                  </div>
+	                  <Button
+	                    type="submit"
+	                    disabled={isLoading || !name.trim() || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
+	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	                  >
+	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+	                    {isLoading ? 'Creating Account...' : accountMode === 'brand' ? 'Create Brand Console' : 'Get My Collab Link'}
+	                  </Button>
+	                </form>
+	              </div>
             )}
 
             <div className="relative my-8">
@@ -659,22 +837,23 @@ const Signup = () => {
               </div>
             </div>
 
-            <div className="space-y-3 mb-8">
-              <Button
-                onClick={async () => {
-                  try {
-                    const redirectUrl = `${window.location.origin}/creator-onboarding`;
-                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
-                    const { data, error } = await supabase.auth.signInWithOAuth({
-                      provider: 'google',
-                      options: {
-                        redirectTo: redirectUrl,
-                      },
-                    });
-                    if (error) toast.error('Google error: ' + error.message);
-                    else if (data?.url) window.location.replace(data.url);
-                  } catch (err) { toast.error('Failed to start Google sign-up'); }
-                }}
+	            <div className="space-y-3 mb-8">
+	              <Button
+	                onClick={async () => {
+	                  try {
+	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding';
+	                    const redirectUrl = `${window.location.origin}/${redirectPath}`;
+	                    sessionStorage.setItem('oauth_intended_route', redirectPath);
+	                    const { data, error } = await supabase.auth.signInWithOAuth({
+	                      provider: 'google',
+	                      options: {
+	                        redirectTo: redirectUrl,
+	                      },
+	                    });
+	                    if (error) toast.error('Google error: ' + error.message);
+	                    else if (data?.url) window.location.replace(data.url);
+	                  } catch (err) { toast.error('Failed to start Google sign-up'); }
+	                }}
                 variant="outline"
                 className="w-full bg-white border-slate-300 text-slate-900 hover:bg-slate-50 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
               >

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Brand } from '@/types';
 import { useSession } from '@/contexts/SessionContext';
 import { useMemo } from 'react';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 interface UseBrandsOptions {
   industry?: string;
@@ -13,11 +14,54 @@ interface UseBrandsOptions {
   enabled?: boolean;
 }
 
+// Types for the raw database response with joins
+interface BrandReviewJoin {
+  rating: number;
+}
+
+interface BrandBookmarkJoin {
+  creator_id: string;
+}
+
+interface BrandOpportunityJoin {
+  id: string;
+  status: string;
+  deadline: string;
+}
+
+interface BrandRawData {
+  id: string;
+  name: string;
+  description?: string | null;
+  industry?: string | null;
+  logo_url?: string | null;
+  website?: string | null;
+  verified?: boolean;
+  status?: string;
+  source?: string;
+  created_at?: string;
+  updated_at?: string;
+  brand_reviews?: BrandReviewJoin[];
+  brand_bookmarks?: BrandBookmarkJoin[];
+  opportunities?: BrandOpportunityJoin[];
+  [key: string]: unknown; // Allow additional fields from the database
+}
+
 // Helper function to calculate average rating from reviews
 function calculateAverageRating(reviews?: Array<{ rating: number }>): number {
   if (!reviews || reviews.length === 0) return 0;
   const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
   return Math.round((sum / reviews.length) * 10) / 10;
+}
+
+// Helper to safely extract error properties
+function getErrorInfo(error: unknown): { status?: number; code?: string; message: string } {
+  const err = error as PostgrestError & { statusCode?: number };
+  return {
+    status: err?.status || err?.statusCode,
+    code: err?.code,
+    message: err?.message || '',
+  };
 }
 
 export const useBrands = (options?: UseBrandsOptions) => {
@@ -41,29 +85,29 @@ export const useBrands = (options?: UseBrandsOptions) => {
     async () => {
       // Build the base query
       // Type assertion needed because tables might not exist in TypeScript types until migrations are run
-      let query: any = supabase
-        .from('brands' as any)
+      let query = supabase
+        .from('brands')
         .select(`
           *,
           brand_reviews(rating),
           brand_bookmarks(creator_id),
           opportunities(id, status)
         `)
-        .eq('status' as any, 'active')
+        .eq('status', 'active')
         // Filter out manual/seed data - only show scraped/marketplace brands
-        .in('source' as any, ['scraped', 'marketplace', 'self-signup']);
+        .in('source', ['scraped', 'marketplace', 'self-signup']);
 
       // Apply filters
       if (industry && industry !== 'all') {
-        query = (query.eq('industry' as any, industry) as any);
+        query = query.eq('industry', industry);
       }
 
       if (verifiedOnly) {
-        query = (query.eq('verified' as any, true) as any);
+        query = query.eq('verified', true);
       }
 
       if (searchTerm) {
-        query = (query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,industry.ilike.%${searchTerm}%`) as any);
+        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,industry.ilike.%${searchTerm}%`);
       }
 
       // For bookmarked only, we need to filter by creator_id in the join
@@ -73,14 +117,12 @@ export const useBrands = (options?: UseBrandsOptions) => {
 
       if (error) {
         // If the tables don't exist yet (404, PGRST116, or relation errors), return empty array silently
-        const errorStatus = (error as any)?.status || (error as any)?.statusCode;
-        const errorCode = (error as any)?.code;
-        const errorMessage = error.message || '';
+        const { status, code, message: errorMessage } = getErrorInfo(error);
         
         if (
-          errorStatus === 404 ||
-          errorCode === 'PGRST116' ||
-          errorCode === '42P01' ||
+          status === 404 ||
+          code === 'PGRST116' ||
+          code === '42P01' ||
           errorMessage.includes('relation') ||
           errorMessage.includes('does not exist') ||
           errorMessage.includes('not found') ||
@@ -95,7 +137,7 @@ export const useBrands = (options?: UseBrandsOptions) => {
       if (!data) return [];
 
       // Process data: calculate ratings, check bookmarks, count opportunities
-      let processedBrands = data.map((brand: any) => {
+      let processedBrands = (data as BrandRawData[]).map((brand) => {
         const reviews = brand.brand_reviews || [];
         const bookmarks = brand.brand_bookmarks || [];
         const opportunities = brand.opportunities || [];
@@ -103,10 +145,10 @@ export const useBrands = (options?: UseBrandsOptions) => {
         const rating = calculateAverageRating(reviews);
         const reviewCount = reviews.length;
         const activeOpportunitiesCount = opportunities.filter(
-          (opp: any) => opp.status === 'open' && new Date(opp.deadline) >= new Date()
+          (opp) => opp.status === 'open' && new Date(opp.deadline) >= new Date()
         ).length;
         const isBookmarked = profile?.id
-          ? bookmarks.some((b: any) => b.creator_id === profile.id)
+          ? bookmarks.some((b) => b.creator_id === profile.id)
           : false;
 
         return {

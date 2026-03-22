@@ -2,6 +2,21 @@
 import { Tables } from './supabase';
 import { LucideIcon } from 'lucide-react'; // Import LucideIcon for CreatorKpi
 
+// Deal Template for creator collaboration packages
+export interface DealTemplate {
+  id: string;
+  name: string;
+  description?: string | null;
+  deliverables?: string[] | null;
+  rate?: number | null;
+  revision_count?: number | null;
+  turnaround_days?: number | null;
+  terms?: string | null;
+  is_default?: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
 export type Profile = Tables<'profiles'> & {
   role: 'client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer' | 'brand'; // Override role to be specific string literals
   business_name?: string | null; // New field
@@ -86,7 +101,7 @@ export type Profile = Tables<'profiles'> & {
   revision_policy?: string | null;
   allow_negotiation?: boolean | null;
   allow_counter_offer?: boolean | null;
-  deal_templates?: any[] | null; // Customized collaboration packages
+  deal_templates?: DealTemplate[] | null; // Customized collaboration packages
 };
 
 export type Message = Tables<'messages'> & {
@@ -185,7 +200,17 @@ export type BrandDeal = Tables<'brand_deals'> & {
 };
 
 // NEW: Payment Reminder Type
-export type PaymentReminder = any; // Tables<'payment_reminders'>;
+export interface PaymentReminder {
+  id: string;
+  brand_deal_id: string;
+  creator_id: string;
+  reminder_date: string;
+  amount?: number | null;
+  status?: 'pending' | 'sent' | 'acknowledged' | null;
+  notes?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
 
 // NEW: Copyright Scanner Types
 export type OriginalContent = Tables<'original_content'>;

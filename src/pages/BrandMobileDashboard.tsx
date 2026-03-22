@@ -1,18 +1,23 @@
 import { cloneElement, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AlertTriangle,
   Bell,
   Briefcase,
   Camera,
+  Check,
   Clock,
   ChevronRight,
   CreditCard,
+  FileText,
   Handshake,
   Landmark,
   LayoutDashboard,
   Loader2,
+  Lock,
   LogOut,
+  Mail,
   MessageCircle,
   Menu,
   Moon,
@@ -43,6 +48,8 @@ import { toast } from 'sonner';
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
 type BrandCollabTab = 'pending' | 'active' | 'completed';
 
+import type { Profile, BrandDeal } from '@/types';
+
 type BrandDashboardStats = {
   totalSent: number;
   needsAction: number;
@@ -51,9 +58,9 @@ type BrandDashboardStats = {
 };
 
 type BrandMobileDashboardProps = {
-  profile?: any;
-  requests?: any[];
-  deals?: any[];
+  profile?: Profile;
+  requests?: BrandDeal[];
+  deals?: BrandDeal[];
   stats?: BrandDashboardStats;
   initialTab?: BrandTab;
   isLoading?: boolean;
@@ -62,13 +69,13 @@ type BrandMobileDashboardProps = {
   onLogout?: () => void | Promise<void>;
 };
 
-const formatCompactINR = (n: any) => {
+const formatCompactINR = (n: number | string | null | undefined) => {
   const num = Number(n);
   const safe = Number.isFinite(num) ? num : 0;
   return `₹${safe.toLocaleString('en-IN')}`;
 };
 
-const formatFollowers = (n: any) => {
+const formatFollowers = (n: number | string | null | undefined) => {
   const num = Number(n);
   if (!Number.isFinite(num) || num <= 0) return null;
   if (num >= 1_00_00_000) return `${(num / 1_00_00_000).toFixed(1)}Cr`.replace('.0', '') + ' followers';
@@ -77,7 +84,7 @@ const formatFollowers = (n: any) => {
   return `${num} followers`;
 };
 
-const timeSince = (iso: any) => {
+const timeSince = (iso: string | Date | null | undefined) => {
   const d = iso ? new Date(iso) : null;
   if (!d || Number.isNaN(d.getTime())) return '';
   const diffMs = Date.now() - d.getTime();
@@ -89,7 +96,7 @@ const timeSince = (iso: any) => {
   return `${days}d`;
 };
 
-const hoursSince = (iso: any) => {
+const hoursSince = (iso: string | Date | null | undefined) => {
   const d = iso ? new Date(iso) : null;
   if (!d || Number.isNaN(d.getTime())) return null;
   const diffMs = Date.now() - d.getTime();
@@ -98,7 +105,7 @@ const hoursSince = (iso: any) => {
   return hrs;
 };
 
-const safeImageSrc = (url: any) => {
+const safeImageSrc = (url: string | null | undefined) => {
   const s = typeof url === 'string' ? url : '';
   if (!s) return undefined;
   if (s.includes('cdninstagram.com')) return undefined;
@@ -117,14 +124,14 @@ const uniqBy = <T,>(items: T[], key: (item: T) => string) => {
   return out;
 };
 
-const uniqById = <T extends Record<string, any>,>(items: T[]) => {
+const uniqById = <T extends { id?: string | number }>(items: T[]) => {
   // Preserve first occurrence, avoid duplicated cards when backend returns duplicates.
   const withId = items.filter((x) => String(x?.id || '').trim());
   const withoutId = items.filter((x) => !String(x?.id || '').trim());
   return [...uniqBy(withId, (x) => String(x.id)), ...withoutId];
 };
 
-const dealFingerprint = (row: any) => {
+const dealFingerprint = (row: BrandDeal | null | undefined) => {
   // Prefer contract identifiers; fall back to a conservative composite.
   const signedKey = row?.signed_contract_path || row?.signed_contract_url || row?.signed_pdf_url || null;
   if (signedKey) return `signed:${String(signedKey)}`;
@@ -139,7 +146,7 @@ const dealFingerprint = (row: any) => {
   return `fallback:${creator}:${amount}:${due}:${deliverables}`;
 };
 
-const uniqDeals = (rows: any[]) => {
+const uniqDeals = (rows: BrandDeal[]) => {
   // If the backend contains duplicated deals with different ids but same contract, collapse them.
   return uniqById(uniqBy(rows, (r) => dealFingerprint(r)));
 };
@@ -148,9 +155,9 @@ const startOfLocalMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1
 
 const sameLocalMonth = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 
-const normalizeStatus = (status: any) => String(status || '').trim().toLowerCase();
+const normalizeStatus = (status: string | null | undefined) => String(status || '').trim().toLowerCase();
 
-const firstNameish = (profile: any) => {
+const firstNameish = (profile: Profile | null | undefined) => {
   const label = profile?.business_name || profile?.first_name || profile?.username || 'Creator';
   return String(label || 'Creator').trim() || 'Creator';
 };
@@ -177,7 +184,7 @@ type SuggestedCreator = {
   } | null;
 };
 
-const formatDeliverables = (row: any) => {
+const formatDeliverables = (row: BrandDeal | null | undefined) => {
   const d = row?.deliverables;
   if (!d) return '';
   const uniq = (parts: string[]) => {
@@ -228,7 +235,7 @@ const formatDeliverables = (row: any) => {
   }
 };
 
-const formatBudget = (row: any) => {
+const formatBudget = (row: BrandDeal | null | undefined) => {
   const exact = Number(row?.exact_budget);
   if (Number.isFinite(exact) && exact > 0) return formatCompactINR(exact);
   const dealAmount = Number(row?.deal_amount);
@@ -240,7 +247,7 @@ const formatBudget = (row: any) => {
   return '';
 };
 
-const effectiveDealStatus = (row: any) => {
+const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   const raw = String(row?.status || '').trim();
   const lower = raw.toLowerCase();
   const upper = raw.toUpperCase();
@@ -271,8 +278,16 @@ const effectiveDealStatus = (row: any) => {
     return false;
   };
 
-  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign)/i);
-  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign)/i);
+  // Note: backend may attach `brand_signed_at` / `creator_signed_at` fields (e.g. derived from `contract_signatures`).
+  // Include those here so already-signed deals never show "Signature required" incorrectly.
+  const creatorSigned = hasTruthyKeyMatch(
+    signatureSources,
+    /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at|creatorSignedAt)/i
+  );
+  const brandSigned = hasTruthyKeyMatch(
+    signatureSources,
+    /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at|brandSignedAt)/i
+  );
   if (creatorSigned && brandSigned) return 'FULLY_EXECUTED';
   if (creatorSigned && !brandSigned) return 'AWAITING_BRAND_SIGNATURE';
   if (brandSigned && !creatorSigned) return 'AWAITING_CREATOR_SIGNATURE';
@@ -338,7 +353,7 @@ const effectiveDealStatus = (row: any) => {
   return upper;
 };
 
-const collectSignatureHints = (row: any) => {
+const collectSignatureHints = (row: BrandDeal | null | undefined) => {
   const sources = [
     row,
     row?.raw,
@@ -373,7 +388,7 @@ const collectSignatureHints = (row: any) => {
   };
 };
 
-const dealStageLabel = (row: any) => {
+const dealStageLabel = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   if (!s) return 'In progress';
   if (s === 'CONTRACT_READY') return 'Waiting for Signature';
@@ -387,7 +402,7 @@ const dealStageLabel = (row: any) => {
   return 'In progress';
 };
 
-const deadlineLabel = (row: any) => {
+const deadlineLabel = (row: BrandDeal | null | undefined) => {
   const raw = row?.due_date || row?.deadline;
   const d = raw ? new Date(raw) : null;
   if (!d || Number.isNaN(d.getTime())) return null;
@@ -400,7 +415,7 @@ const deadlineLabel = (row: any) => {
   return { text: `Due in ${diffDays} ${dayText}`, tone: 'neutral' as const };
 };
 
-const offerExpiryLabel = (row: any) => {
+const offerExpiryLabel = (row: BrandDeal | null | undefined) => {
   const raw = row?.offer_expires_at || row?.expires_at || null;
   const d = raw ? new Date(raw) : null;
   if (!d || Number.isNaN(d.getTime())) return null;
@@ -412,7 +427,7 @@ const offerExpiryLabel = (row: any) => {
   return { text: `Expires in ${diffDays}d`, tone: 'neutral' as const };
 };
 
-const brandDealCardUi = (row: any) => {
+const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   const human = dealStageLabel({ status: s });
   const signedSignal = s === 'FULLY_EXECUTED' || s === 'CONTENT_MAKING' || s === 'CONTENT_DELIVERED' || s === 'COMPLETED';
@@ -591,6 +606,16 @@ const BrandMobileDashboard = ({
   const [isGeneratingContract, setIsGeneratingContract] = useState(false);
   const [isOpeningContract, setIsOpeningContract] = useState(false);
   const [brandLogoDbUrl, setBrandLogoDbUrl] = useState<string | null>(null);
+  const [showBrandSigningModal, setShowBrandSigningModal] = useState(false);
+  const [brandSigningDeal, setBrandSigningDeal] = useState<any | null>(null);
+  const [brandSigningToken, setBrandSigningToken] = useState<string | null>(null);
+  const [brandSigningEmail, setBrandSigningEmail] = useState('');
+  const [brandSigningStep, setBrandSigningStep] = useState<'send' | 'verify'>('send');
+  const [brandSigningOtp, setBrandSigningOtp] = useState('');
+  const [isSendingBrandOTP, setIsSendingBrandOTP] = useState(false);
+  const [isVerifyingBrandOTP, setIsVerifyingBrandOTP] = useState(false);
+  const [isSigningBrandContract, setIsSigningBrandContract] = useState(false);
+  const [brandSigningInitError, setBrandSigningInitError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -605,10 +630,210 @@ const BrandMobileDashboard = ({
     }
   }, []);
 
-	  const brandName = useMemo(() => {
-	    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
-	    return String(name || 'Brand').trim() || 'Brand';
-	  }, [profile, isDemoBrand]);
+		  const brandName = useMemo(() => {
+		    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
+		    return String(name || 'Brand').trim() || 'Brand';
+		  }, [profile, isDemoBrand]);
+
+  const startBrandSigningFlow = async (deal: any) => {
+    if (!deal?.id) {
+      toast.error('Deal details unavailable');
+      return;
+    }
+    console.log('[BrandMobileDashboard] startBrandSigningFlow', { dealId: deal.id });
+    toast.message('Opening signing…');
+    setBrandSigningDeal(deal);
+    setBrandSigningToken(null);
+    setBrandSigningInitError(null);
+    setBrandSigningOtp('');
+    setBrandSigningStep('send');
+    setShowBrandSigningModal(true);
+  };
+
+  useEffect(() => {
+    if (!showBrandSigningModal || !brandSigningDeal?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setBrandSigningInitError(null);
+        const { data: { session } } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+        const email = session?.user?.email || profile?.email || brandSigningDeal?.brand_email || '';
+        if (!cancelled) setBrandSigningEmail(String(email || ''));
+        if (!accessToken) {
+          if (!cancelled) setBrandSigningInitError('Authentication required. Please log in again.');
+          return;
+        }
+
+        const apiBase = getApiBaseUrl();
+        const resp = await fetch(`${apiBase}/api/deals/${brandSigningDeal.id}/contract-review-link`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data?.success || !data?.token) {
+          throw new Error(data?.error || 'Failed to initialize signing');
+        }
+        if (!cancelled) setBrandSigningToken(String(data.token));
+      } catch (e: any) {
+        if (!cancelled) setBrandSigningInitError(e?.message || 'Failed to initialize signing');
+      }
+	    })();
+	    return () => {
+	      cancelled = true;
+	    };
+  }, [showBrandSigningModal, brandSigningDeal?.id, profile?.email]);
+
+  const handleSendBrandOTP = async () => {
+    try {
+      const email = String(brandSigningEmail || '').trim();
+      if (!brandSigningToken) {
+        toast.error('Signing token not ready yet');
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error('Enter a valid email address');
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      setIsSendingBrandOTP(true);
+      const apiBase = getApiBaseUrl();
+      const resp = await fetch(`${apiBase}/api/otp/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ token: brandSigningToken, email }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data?.success) throw new Error(data?.error || 'Failed to send OTP');
+      toast.success('OTP sent to your email');
+      setBrandSigningStep('verify');
+      triggerHaptic(HapticPatterns.success);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to send OTP');
+      triggerHaptic(HapticPatterns.error);
+    } finally {
+      setIsSendingBrandOTP(false);
+    }
+  };
+
+  const handleVerifyAndSignBrand = async () => {
+    try {
+      const otp = String(brandSigningOtp || '').replace(/\D/g, '');
+      if (!brandSigningToken) {
+        toast.error('Signing token not ready yet');
+        return;
+      }
+      if (otp.length !== 6) {
+        toast.error('Enter the 6-digit OTP');
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      setIsVerifyingBrandOTP(true);
+      const apiBase = getApiBaseUrl();
+      const verifyResp = await fetch(`${apiBase}/api/otp/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ token: brandSigningToken, otp }),
+      });
+      const verifyData = await verifyResp.json().catch(() => ({}));
+      if (!verifyResp.ok || !verifyData?.success) throw new Error(verifyData?.error || 'OTP verification failed');
+
+      setIsSigningBrandContract(true);
+      const signerEmail = String(brandSigningEmail || '').trim();
+      const signedAt = new Date().toISOString();
+      const signPayload = {
+        signerName: brandName || 'Brand',
+        signerEmail,
+        signerPhone: profile?.phone || null,
+        contractVersionId: brandSigningDeal?.contract_version || 'v3',
+        contractSnapshotHtml: brandSigningDeal?.contract_file_url
+          ? `Contract URL: ${brandSigningDeal.contract_file_url}\nSigned at: ${signedAt}`
+          : undefined,
+        otpVerified: true,
+        otpVerifiedAt: signedAt,
+      };
+      const signResp = await fetch(`${apiBase}/api/contract-ready-tokens/${brandSigningToken}/sign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(signPayload),
+      });
+      const signData = await signResp.json().catch(() => ({}));
+      if (!signResp.ok || !signData?.success) throw new Error(signData?.error || 'Failed to sign contract');
+
+      toast.success('Contract signed');
+      triggerHaptic(HapticPatterns.success);
+      setShowBrandSigningModal(false);
+      setBrandSigningDeal(null);
+      setBrandSigningToken(null);
+      await onRefresh?.();
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to sign');
+      triggerHaptic(HapticPatterns.error);
+    } finally {
+      setIsVerifyingBrandOTP(false);
+      setIsSigningBrandContract(false);
+    }
+  };
+
+  const closeBrandSigningModal = () => {
+    setShowBrandSigningModal(false);
+    setBrandSigningDeal(null);
+    setBrandSigningToken(null);
+    setBrandSigningInitError(null);
+    setBrandSigningStep('send');
+    setBrandSigningOtp('');
+    setIsSendingBrandOTP(false);
+    setIsVerifyingBrandOTP(false);
+    setIsSigningBrandContract(false);
+  };
+
+  useEffect(() => {
+    if (!showBrandSigningModal) return;
+    // Reset step state when the modal opens.
+    setBrandSigningInitError(null);
+    setBrandSigningStep('send');
+    setBrandSigningOtp('');
+    setIsSendingBrandOTP(false);
+    setIsVerifyingBrandOTP(false);
+    setIsSigningBrandContract(false);
+
+    // Debug: confirm portal nodes exist. If they don't, rendering is being blocked/unmounted.
+    setTimeout(() => {
+      try {
+        const overlay = document.querySelector('[data-brand-signing-overlay]');
+        const panel = document.querySelector('[data-brand-signing-panel]');
+        console.log('[BrandMobileDashboard] signing modal DOM', {
+          overlay: !!overlay,
+          panel: !!panel,
+        });
+      } catch (e) {
+        console.warn('[BrandMobileDashboard] signing modal DOM check failed', e);
+      }
+    }, 0);
+  }, [showBrandSigningModal]);
 
 	  useEffect(() => {
 	    if (!profile?.id) return;
@@ -1233,45 +1458,28 @@ const BrandMobileDashboard = ({
 	                </div>
 
 	                <div className="grid grid-cols-1 gap-2">
-	                  <button
-	                    onClick={async () => {
-	                      try {
-	                        triggerHaptic(HapticPatterns.light);
-	                        if (!offer?.id) {
-	                          toast.error('Deal details unavailable');
-	                          return;
-	                        }
+		                  <button
+		                    onClick={async () => {
+		                      triggerHaptic(HapticPatterns.light);
+			                      if (!offer?.id) {
+			                        toast.error('Deal details unavailable');
+			                        return;
+			                      }
 
-	                        setIsOpeningContract(true);
-	                        const { data: { session } } = await supabase.auth.getSession();
-	                        const token = session?.access_token;
-	                        if (!token) {
-	                          toast.error('Authentication required');
-	                          return;
-	                        }
-
-		                        const apiBase = getApiBaseUrl();
-		                        const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
-		                          headers: {
-		                            Authorization: `Bearer ${token}`,
-	                          },
-	                        });
-	                        const data = await response.json().catch(() => ({}));
-	                        if (!response.ok || !data?.success || !data?.viewUrl) {
-	                          throw new Error(data?.error || 'Failed to open contract');
-	                        }
-		                        window.open(data.viewUrl, '_blank', 'noopener,noreferrer');
-		                      } catch (error: any) {
-		                        if (contractUrl) window.open(contractUrl, '_blank', 'noopener,noreferrer');
-		                        else toast.error(error?.message || 'Contract not generated yet');
-		                      } finally {
-		                        setIsOpeningContract(false);
-		                      }
-		                    }}
-	                    disabled={isOpeningContract}
-	                    className={cn(
-	                      'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98] disabled:opacity-60',
-	                      isDark
+			                      setIsOpeningContract(true);
+			                      try {
+			                        setSelectedOffer(null);
+			                        await startBrandSigningFlow(offer);
+			                      } catch (error: any) {
+			                        toast.error(error?.message || 'Failed to open signing');
+			                      } finally {
+			                        setIsOpeningContract(false);
+			                      }
+				                    }}
+		                    disabled={isOpeningContract}
+		                    className={cn(
+		                      'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98] disabled:opacity-60',
+		                      isDark
 	                        ? 'border-white/10 bg-white/5 hover:bg-white/10'
 	                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
 	                    )}
@@ -1281,15 +1489,24 @@ const BrandMobileDashboard = ({
 	                      {contractUrl ? 'Open the generated collaboration agreement' : 'Open the protected contract review page'}
 	                    </p>
 	                  </button>
-	                  {!contractUrl && (
-	                    <button
-	                      onClick={async () => {
-	                        try {
-	                          setIsGeneratingContract(true);
-	                          triggerHaptic(HapticPatterns.light);
-	                          const { data: { session } } = await supabase.auth.getSession();
-	                          const token = session?.access_token;
-	                          if (!token) {
+		                  {!contractUrl && (
+		                    <button
+		                      onClick={async () => {
+		                        // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
+		                        let popup: Window | null = null;
+		                        try {
+		                          popup = window.open('about:blank', '_blank');
+		                          if (popup) popup.opener = null;
+		                        } catch {
+		                          popup = null;
+		                        }
+
+		                        try {
+		                          setIsGeneratingContract(true);
+		                          triggerHaptic(HapticPatterns.light);
+		                          const { data: { session } } = await supabase.auth.getSession();
+		                          const token = session?.access_token;
+		                          if (!token) {
 	                            toast.error('Authentication required');
 	                            return;
 	                          }
@@ -1315,19 +1532,26 @@ const BrandMobileDashboard = ({
 	                              signed_contract_url: prev?.signed_contract_url || null,
 	                              safe_contract_url: prev?.safe_contract_url || null,
 	                            } : prev);
-	                          }
-	                          toast.success('Contract generated');
-	                          if (nextUrl) {
-	                            window.open(nextUrl, '_blank', 'noopener,noreferrer');
-	                          }
-	                          await onRefresh?.();
-	                          triggerHaptic(HapticPatterns.success);
-	                        } catch (error: any) {
-	                          toast.error(error?.message || 'Failed to generate contract');
-	                        } finally {
-	                          setIsGeneratingContract(false);
-	                        }
-	                      }}
+		                          }
+		                          toast.success('Contract generated');
+		                          if (nextUrl) {
+		                            const finalUrl = String(nextUrl);
+		                            if (popup && !popup.closed) popup.location.href = finalUrl;
+		                            else window.location.assign(finalUrl);
+		                          }
+		                          await onRefresh?.();
+		                          triggerHaptic(HapticPatterns.success);
+		                        } catch (error: any) {
+		                          try {
+		                            popup?.close();
+		                          } catch {
+		                            // ignore
+		                          }
+		                          toast.error(error?.message || 'Failed to generate contract');
+		                        } finally {
+		                          setIsGeneratingContract(false);
+		                        }
+		                      }}
 	                      disabled={isGeneratingContract}
 	                      className={cn(
 	                        'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98] disabled:opacity-60',
@@ -1532,21 +1756,61 @@ const BrandMobileDashboard = ({
 	        if (contractUrl) return contractUrl;
 	        toast.error(error?.message || 'Contract not generated yet');
 	        return null;
-	      }
-	    };
+      }
+    };
+
+    // iOS/Safari blocks `window.open()` if it happens after an async boundary (await/fetch).
+    // Workaround: open a blank tab synchronously on click, then redirect it once the URL is resolved.
+    const openUrlFromUserGesture = async (resolveUrl: () => Promise<string | null>) => {
+      let popup: Window | null = null;
+      try {
+        popup = window.open('about:blank', '_blank');
+        // Best-effort hardening; safe even if browser ignores it.
+        if (popup) popup.opener = null;
+      } catch {
+        popup = null;
+      }
+
+      const url = await resolveUrl();
+      if (!url) {
+        try {
+          popup?.close();
+        } catch {
+          // ignore
+        }
+        return;
+      }
+
+      if (popup && !popup.closed) {
+        try {
+          popup.location.href = url;
+          return;
+        } catch {
+          // If we can't navigate the popup (or it got blocked), fallback to same-tab navigation.
+        }
+      }
+      window.location.assign(url);
+    };
 
     const openContract = async () => {
       setIsOpeningContract(true);
       try {
-        const url = await getContractViewUrl();
-        if (!url) return;
-        window.open(url, '_blank', 'noopener,noreferrer');
+        await startBrandSigningFlow(offer);
       } finally {
         setIsOpeningContract(false);
       }
     };
 
     const generateContract = async () => {
+      // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
+      let popup: Window | null = null;
+      try {
+        popup = window.open('about:blank', '_blank');
+        if (popup) popup.opener = null;
+      } catch {
+        popup = null;
+      }
+
       try {
         setIsGeneratingContract(true);
         triggerHaptic(HapticPatterns.light);
@@ -1575,25 +1839,31 @@ const BrandMobileDashboard = ({
         setSelectedDealPage(nextOffer);
         setSelectedOffer(nextOffer);
 	        toast.success('Contract generated');
-		        if (nextUrl) {
-		          try {
-		            const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
-		              headers: { Authorization: `Bearer ${token}` },
-		            });
-		            const view = await response.json().catch(() => ({}));
-		            const viewUrl = view?.signUrl || view?.viewUrl || null;
-		            if (response.ok && view?.success && viewUrl) {
-		              window.open(String(viewUrl), '_blank', 'noopener,noreferrer');
-		            } else {
-		              window.open(nextUrl, '_blank', 'noopener,noreferrer');
-		            }
-		          } catch (_) {
-	            window.open(nextUrl, '_blank', 'noopener,noreferrer');
+	        if (nextUrl) {
+	          try {
+	            const response = await fetch(`${apiBase}/api/deals/${offer.id}/contract-review-link`, {
+	              headers: { Authorization: `Bearer ${token}` },
+	            });
+	            const view = await response.json().catch(() => ({}));
+	            const viewUrl = view?.signUrl || view?.viewUrl || null;
+	            const finalUrl =
+	              response.ok && view?.success && viewUrl ? String(viewUrl) : String(nextUrl);
+              if (popup && !popup.closed) popup.location.href = finalUrl;
+              else window.location.assign(finalUrl);
+	          } catch (_) {
+            const finalUrl = String(nextUrl);
+            if (popup && !popup.closed) popup.location.href = finalUrl;
+            else window.location.assign(finalUrl);
 	          }
 	        }
 	        await onRefresh?.();
 	        triggerHaptic(HapticPatterns.success);
-	      } catch (error: any) {
+      } catch (error: any) {
+        try {
+          popup?.close();
+        } catch {
+          // ignore
+        }
         toast.error(error?.message || 'Failed to generate contract');
       } finally {
         setIsGeneratingContract(false);
@@ -2100,8 +2370,180 @@ const BrandMobileDashboard = ({
     activeTab === 'dashboard' &&
     !activeSettingsPage;
 
+  const renderBrandSigningPortal = (): ReactNode => {
+    if (typeof document === 'undefined') return null;
+    return createPortal(
+      <AnimatePresence>
+        {showBrandSigningModal && (
+          <>
+            <motion.div
+              key="brandSigningOverlay"
+              data-brand-signing-overlay
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[40000] bg-black/70 backdrop-blur-xl"
+            />
+            <div
+              key="brandSigningPanelWrap"
+              data-brand-signing-panel
+              className="fixed left-1/2 top-1/2 z-[40010] w-[92%] max-w-md -translate-x-1/2 -translate-y-1/2"
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 18 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: 18 }}
+                className="rounded-3xl border border-white/10 bg-neutral-950/95 text-white shadow-2xl shadow-black/60 overflow-hidden"
+              >
+              <div className="px-6 pt-6 pb-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-white/50">Contract</p>
+                    <h3 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight">
+                      <FileText className="w-5 h-5 text-sky-400" />
+                      Sign Agreement
+                    </h3>
+                    <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
+                      {brandSigningStep === 'send'
+                        ? 'We will send a secure OTP to your email to verify your identity and sign the contract.'
+                        : 'Enter the 6-digit code sent to your email to complete signing.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={closeBrandSigningModal}
+                    className="w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center"
+                    aria-label="Close"
+                  >
+                    <ChevronRight className="w-4 h-4 rotate-45 text-white/70" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-6 pb-6 space-y-4">
+                {brandSigningInitError && (
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {brandSigningInitError}
+                  </div>
+                )}
+
+                {!brandSigningToken && !brandSigningInitError && (
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin text-white/70" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">Preparing signing…</p>
+                      <p className="text-xs text-white/60">Fetching your secure contract token.</p>
+                    </div>
+                  </div>
+                )}
+
+                {brandSigningToken && brandSigningStep === 'send' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-neutral-300 tracking-wide uppercase flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Email for OTP
+                      </label>
+                      <input
+                        value={brandSigningEmail}
+                        onChange={(e) => setBrandSigningEmail(e.target.value)}
+                        placeholder="you@company.com"
+                        inputMode="email"
+                        autoComplete="email"
+                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3 text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500"
+                      />
+                    </div>
+
+                    <motion.button
+                      onClick={handleSendBrandOTP}
+                      disabled={isSendingBrandOTP || !!brandSigningInitError}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                    >
+                      {isSendingBrandOTP ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Sending OTP…
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-5 h-5" />
+                          Send OTP
+                        </>
+                      )}
+                    </motion.button>
+                  </>
+                )}
+
+                {brandSigningToken && brandSigningStep === 'verify' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-neutral-300 tracking-wide uppercase">OTP Code</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="123456"
+                        value={brandSigningOtp}
+                        onChange={(e) => setBrandSigningOtp(e.target.value.replace(/\D/g, ''))}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                      />
+                      <p className="text-xs text-neutral-400">Code expires in 10 minutes.</p>
+                    </div>
+
+                    <motion.button
+                      onClick={handleVerifyAndSignBrand}
+                      disabled={isVerifyingBrandOTP || isSigningBrandContract || brandSigningOtp.replace(/\D/g, '').length !== 6}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                    >
+                      {isVerifyingBrandOTP || isSigningBrandContract ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          {isSigningBrandContract ? 'Signing…' : 'Verifying…'}
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-5 h-5" />
+                          Verify & Sign
+                        </>
+                      )}
+                    </motion.button>
+
+                    <button
+                      onClick={() => {
+                        setBrandSigningStep('send');
+                        setBrandSigningOtp('');
+                      }}
+                      disabled={isVerifyingBrandOTP || isSigningBrandContract}
+                      className="w-full text-xs text-neutral-400 hover:text-neutral-200 py-2 transition-all tracking-wide font-semibold"
+                    >
+                      Resend OTP
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Secure OTP-based e-signature powered by Creator Armour</span>
+              </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>,
+      document.body
+    );
+  };
+
   if (selectedDealPage) {
-    return <BrandDealDetailScreen offer={selectedDealPage} />;
+    return (
+      <>
+        {renderBrandSigningPortal()}
+        <BrandDealDetailScreen offer={selectedDealPage} />
+      </>
+    );
   }
 
   return (
@@ -3847,8 +4289,10 @@ const BrandMobileDashboard = ({
 	      <AnimatePresence>
 	        {selectedOffer && <OfferDetailsSheet key={selectedOffer?.id || 'offer'} offer={selectedOffer} />}
 	      </AnimatePresence>
-    </div>
-  );
+
+		        {renderBrandSigningPortal()}
+	    </div>
+	  );
 };
 
 export default BrandMobileDashboard;

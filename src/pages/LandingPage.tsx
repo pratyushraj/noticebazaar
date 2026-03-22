@@ -82,16 +82,27 @@ const LandingPage = () => {
             <a href="#social-proof" className="text-[13px] font-bold text-slate-600 hover:text-emerald-600 transition-colors">Creators</a>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-colors rounded-full hover:bg-slate-100">
-              Log In
-            </Link>
-            <Link to="/signup" onClick={() => triggerHaptic(HapticPatterns.success)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap">
-              Create Collab Link
-            </Link>
-          </div>
-        </div>
-      </nav>
+	          <div className="flex items-center gap-4">
+	            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-colors rounded-full hover:bg-slate-100">
+	              Log In
+	            </Link>
+              <Link
+                to="/signup?mode=brand"
+                onClick={() => triggerHaptic(HapticPatterns.light)}
+                className="hidden md:inline-flex items-center px-4 py-2 text-[14px] font-black text-slate-700 hover:text-slate-900 transition-colors rounded-full bg-white/70 hover:bg-white border border-slate-200 shadow-sm"
+              >
+                Brand Console
+              </Link>
+	            <Link
+                to="/signup?mode=creator"
+                onClick={() => triggerHaptic(HapticPatterns.success)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
+              >
+	              Create Collab Link
+	            </Link>
+	          </div>
+	        </div>
+	      </nav>
 
       <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-16 lg:space-y-28">
         {/* 1. HERO SECTION */}
@@ -116,14 +127,23 @@ const LandingPage = () => {
                 Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
-                <Link to="/signup" className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-full font-black text-[16px] shadow-xl shadow-emerald-600/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-emerald-700">
-                  Create Your Collab Link <ArrowRight className="w-5 h-5" />
-                </Link>
-                <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white hover:bg-slate-50 border shadow-sm border-slate-200 text-slate-700 px-8 py-4 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2">
-                  View Demo Creator Page
-                </button>
-              </div>
+	              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
+	                <Link
+                    to="/signup?mode=creator"
+                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-full font-black text-[16px] shadow-xl shadow-emerald-600/20 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 border border-emerald-700"
+                  >
+	                  I'm a Creator <ArrowRight className="w-5 h-5" />
+	                </Link>
+                  <Link
+                    to="/signup?mode=brand"
+                    className="w-full sm:w-auto bg-white hover:bg-slate-50 border shadow-sm border-slate-200 text-slate-800 px-8 py-4 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2"
+                  >
+                    I'm a Brand <ArrowRight className="w-5 h-5" />
+                  </Link>
+	                <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white hover:bg-slate-50 border shadow-sm border-slate-200 text-slate-700 px-8 py-4 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2">
+	                  View Demo Creator Page
+	                </button>
+	              </div>
             </div>
 
             {/* Hero Mockup */}
