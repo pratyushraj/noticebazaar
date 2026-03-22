@@ -3,129 +3,136 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { SplashScreen } from "@/components/mobile/SplashScreen";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ResetPassword from "./pages/ResetPassword";
-import MarketingHome from "./pages/MarketingHome";
-import LandingPage from "./pages/LandingPage";
-import AdminDashboard from "./pages/AdminDashboard";
-import CADashboard from "./pages/CADashboard";
-import CreatorDashboard from "./pages/CreatorDashboard";
-import CreatorCollab from "./pages/CreatorCollab";
-import CollabRequestsPage from "./pages/CollabRequestsPage";
-import CollabRequestCounterPage from "./pages/CollabRequestCounterPage";
-import CollabRequestBriefPage from "./pages/CollabRequestBriefPage";
-import CreatorAnalytics from "./pages/CreatorAnalytics"; // New: Import CreatorDashboard
-import NotificationCenter from "./pages/NotificationCenter";
-import AdminDocuments from "./pages/AdminDocuments";
-import AdminCases from "./pages/AdminCases";
-import AdminClients from "./pages/AdminClients";
-import AdminConsultations from "./pages/AdminConsultations";
-import AdminSubscriptions from "./pages/AdminSubscriptions";
-import ClientProfile from "./pages/ClientProfile";
-import ClientSubscription from "./pages/ClientSubscription";
-import ClientCases from "./pages/ClientCases";
-import ClientDocuments from "./pages/ClientDocuments";
-import ClientConsultations from "./pages/ClientConsultations";
-import AdminActivityLog from "./pages/AdminActivityLog";
-import ClientActivityLog from "./pages/ClientActivityLog";
-import AdminProfile from "./pages/AdminProfile";
-import AdminInfluencers from "./pages/AdminInfluencers";
-import AdminDiscovery from "./pages/AdminDiscovery";
-import CreatorProfile from "./pages/CreatorProfile";
-import About from "./pages/About";
-import Blog from "./pages/Blog";
-import BlogPostDetail from "./pages/BlogPostDetail";
-import Careers from "./pages/Careers";
-import FreeInfluencerContract from "./pages/FreeInfluencerContract";
-import CollaborationAgreementGenerator from "./pages/CollaborationAgreementGenerator";
-import PricingComparison from "./pages/PricingComparison";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import RefundPolicy from "./pages/RefundPolicy";
-import DeleteData from "./pages/DeleteData";
-import Sitemap from "./pages/Sitemap";
-import EssentialPlan from "./pages/EssentialPlan";
-import GrowthPlan from "./pages/GrowthPlan";
-import StrategicPlan from "./pages/StrategicPlan";
-import FreeLegalCheck from "./pages/FreeLegalCheck";
-import ThankYou from "./pages/ThankYou";
+
+// Lazy-loaded page components for better bundle splitting
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const MarketingHome = lazy(() => import("./pages/MarketingHome"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const CADashboard = lazy(() => import("./pages/CADashboard"));
+const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
+const CreatorCollab = lazy(() => import("./pages/CreatorCollab"));
+const CollabRequestsPage = lazy(() => import("./pages/CollabRequestsPage"));
+const CollabRequestCounterPage = lazy(() => import("./pages/CollabRequestCounterPage"));
+const CollabRequestBriefPage = lazy(() => import("./pages/CollabRequestBriefPage"));
+const CreatorAnalytics = lazy(() => import("./pages/CreatorAnalytics"));
+const NotificationCenter = lazy(() => import("./pages/NotificationCenter"));
+const AdminDocuments = lazy(() => import("./pages/AdminDocuments"));
+const AdminCases = lazy(() => import("./pages/AdminCases"));
+const AdminClients = lazy(() => import("./pages/AdminClients"));
+const AdminConsultations = lazy(() => import("./pages/AdminConsultations"));
+const AdminSubscriptions = lazy(() => import("./pages/AdminSubscriptions"));
+const ClientProfile = lazy(() => import("./pages/ClientProfile"));
+const ClientSubscription = lazy(() => import("./pages/ClientSubscription"));
+const ClientCases = lazy(() => import("./pages/ClientCases"));
+const ClientDocuments = lazy(() => import("./pages/ClientDocuments"));
+const ClientConsultations = lazy(() => import("./pages/ClientConsultations"));
+const AdminActivityLog = lazy(() => import("./pages/AdminActivityLog"));
+const ClientActivityLog = lazy(() => import("./pages/ClientActivityLog"));
+const AdminProfile = lazy(() => import("./pages/AdminProfile"));
+const AdminInfluencers = lazy(() => import("./pages/AdminInfluencers"));
+const AdminDiscovery = lazy(() => import("./pages/AdminDiscovery"));
+const CreatorProfile = lazy(() => import("./pages/CreatorProfile"));
+const About = lazy(() => import("./pages/About"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPostDetail = lazy(() => import("./pages/BlogPostDetail"));
+const Careers = lazy(() => import("./pages/Careers"));
+const FreeInfluencerContract = lazy(() => import("./pages/FreeInfluencerContract"));
+const CollaborationAgreementGenerator = lazy(() => import("./pages/CollaborationAgreementGenerator"));
+const PricingComparison = lazy(() => import("./pages/PricingComparison"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
+const DeleteData = lazy(() => import("./pages/DeleteData"));
+const Sitemap = lazy(() => import("./pages/Sitemap"));
+const EssentialPlan = lazy(() => import("./pages/EssentialPlan"));
+const GrowthPlan = lazy(() => import("./pages/GrowthPlan"));
+const StrategicPlan = lazy(() => import("./pages/StrategicPlan"));
+const FreeLegalCheck = lazy(() => import("./pages/FreeLegalCheck"));
+const ThankYou = lazy(() => import("./pages/ThankYou"));
+
+// Creator-specific pages
+const CreatorContracts = lazy(() => import("./pages/CreatorContracts"));
+const DealDeliveryDetailsPage = lazy(() => import("./pages/DealDeliveryDetailsPage"));
+const CreateDealPage = lazy(() => import("./pages/CreateDealPage"));
+const CreatorPaymentsAndRecovery = lazy(() => import("./pages/CreatorPaymentsAndRecovery"));
+const DashboardWhitePreview = lazy(() => import("./pages/DashboardWhitePreview"));
+const CreatorTaxCompliancePage = lazy(() => import("./pages/CreatorTaxCompliancePage"));
+const CreatorOnboarding = lazy(() => import("./pages/CreatorOnboarding"));
+const CreatorDashboardPreview = lazy(() => import("./pages/CreatorDashboardPreview"));
+const DashboardPreview = lazy(() => import("./pages/DashboardPreview"));
+const MobileDashboardDemo = lazy(() => import("./pages/MobileDashboardDemo"));
+const BrandDealConsoleDemo = lazy(() => import("./pages/BrandDealConsoleDemo"));
+const BrandDesktopDashboard = lazy(() => import("./pages/BrandDesktopDashboard"));
+const BrandDirectory = lazy(() => import("./pages/BrandDirectory"));
+const BrandDetails = lazy(() => import("./pages/BrandDetails"));
+const BrandOpportunities = lazy(() => import("./pages/BrandOpportunities"));
+const ContractAnalyzer = lazy(() => import("./pages/ContractAnalyzer"));
+const RateCalculator = lazy(() => import("./pages/RateCalculator"));
+const DynamicRateCalculator = lazy(() => import("./pages/DynamicRateCalculator"));
+const PartnerProgram = lazy(() => import("./pages/PartnerProgram"));
+const AIPitchGenerator = lazy(() => import("./pages/AIPitchGenerator"));
+const ReferralLanding = lazy(() => import("./pages/ReferralLanding"));
+const DocumentsVault = lazy(() => import("./pages/DocumentsVault"));
+const InsightsPage = lazy(() => import("./pages/InsightsPage"));
+const ContractComparison = lazy(() => import("./pages/ContractComparison"));
+const MaintenancePage = lazy(() => import("./pages/MaintenancePage"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const ContractProtectionDetails = lazy(() => import("./pages/ContractProtectionDetails"));
+const PaymentDetailPage = lazy(() => import("./pages/PaymentDetailPage"));
+const BrandDealDetailsPage = lazy(() => import("./pages/BrandDealDetailsPage"));
+const ContractReadyPage = lazy(() => import("./pages/ContractReadyPage"));
+const CreatorSignPage = lazy(() => import("./pages/CreatorSignPage"));
+const ShipPage = lazy(() => import("./pages/ShipPage"));
+const FeedbackPage = lazy(() => import("./pages/FeedbackPage"));
+const AdvisorDashboard = lazy(() => import("./pages/AdvisorDashboard"));
+const LawyerDashboard = lazy(() => import("./pages/LawyerDashboard"));
+const ConsumerComplaints = lazy(() => import("./pages/lawyer/ConsumerComplaints"));
+const ConsumerComplaintsPage = lazy(() => import("./pages/ConsumerComplaintsPage"));
+const ComplaintFormPage = lazy(() => import("./pages/ComplaintFormPage"));
+const MyConsumerComplaintsPage = lazy(() => import("./pages/MyConsumerComplaintsPage"));
+const ConsumerComplaintsHowItWorks = lazy(() => import("./pages/ConsumerComplaintsHowItWorks"));
+const UpgradePage = lazy(() => import("./pages/UpgradePage"));
+const CollabLinkLanding = lazy(() => import("./pages/CollabLinkLanding"));
+const CollabLinkSuccess = lazy(() => import("./pages/CollabLinkSuccess"));
+const BrandDealConsole = lazy(() => import("./pages/BrandDealConsole"));
+const ProposalSent = lazy(() => import("./pages/ProposalSent"));
+const BrandDashboard = lazy(() => import("./pages/BrandDashboard"));
+const BrandSettings = lazy(() => import("./pages/BrandSettings"));
+const CollabAcceptPage = lazy(() => import("./pages/CollabAcceptPage"));
+const CollabActionPage = lazy(() => import("./pages/CollabActionPage"));
+const CreatorsDirectory = lazy(() => import("./pages/CreatorsDirectory"));
+const DiscoverCreators = lazy(() => import("./pages/DiscoverCreators"));
+const CreatorProfilePage = lazy(() => import("./pages/CreatorProfilePage"));
+const CreatorReputationDashboard = lazy(() => import("./pages/CreatorReputationDashboard"));
+const PreviewAmanParmar = lazy(() => import("./pages/PreviewAmanParmar"));
+const PushTestLab = lazy(() => import("./pages/PushTestLab"));
+const SeoDashboard = lazy(() => import("./pages/seo-dashboard"));
+
+// Already lazy-loaded
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const ContractUploadFlow = lazy(() => import("./pages/ContractUploadFlow"));
+
+// Non-page imports (keep as static imports)
 import { SessionContextProvider } from "./contexts/SessionContext";
 import { SidebarProvider } from "./contexts/SidebarContext";
 import ProtectedLayout from "./components/ProtectedLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppToaster from "./components/AppToaster";
 import FacebookPixelTracker from "./components/FacebookPixelTracker";
-import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker"; // Import new tracker
-
-// NEW: Import Creator-specific pages
-import CreatorContracts from "./pages/CreatorContracts";
-import DealDeliveryDetailsPage from "./pages/DealDeliveryDetailsPage";
-import CreateDealPage from "./pages/CreateDealPage";
-import CreatorPaymentsAndRecovery from "./pages/CreatorPaymentsAndRecovery";
-import DashboardWhitePreview from "./pages/DashboardWhitePreview";
-import CreatorTaxCompliancePage from "./pages/CreatorTaxCompliancePage";
-import CreatorOnboarding from "./pages/CreatorOnboarding"; // NEW: Import CreatorOnboarding
-import CreatorDashboardPreview from "./pages/CreatorDashboardPreview"; // NEW: Import CreatorDashboardPreview
-import DashboardPreview from "./pages/DashboardPreview"; // NEW: Dashboard Components Preview
-import MobileDashboardDemo from "./pages/MobileDashboardDemo"; // NEW: Premium Mobile Demo
-import BrandDealConsoleDemo from './pages/BrandDealConsoleDemo';
-import BrandDesktopDashboard from './pages/BrandDesktopDashboard';
-import BrandDirectory from "./pages/BrandDirectory";
-import BrandDetails from "./pages/BrandDetails";
-import BrandOpportunities from "./pages/BrandOpportunities";
-import ContractAnalyzer from "./pages/ContractAnalyzer";
-import RateCalculator from "./pages/RateCalculator";
-import DynamicRateCalculator from "./pages/DynamicRateCalculator";
-import PartnerProgram from "./pages/PartnerProgram";
-import AIPitchGenerator from "./pages/AIPitchGenerator";
-import ReferralLanding from "./pages/ReferralLanding";
-import DocumentsVault from "./pages/DocumentsVault";
-import InsightsPage from "./pages/InsightsPage";
-import ContractComparison from "./pages/ContractComparison";
-import MaintenancePage from "./pages/MaintenancePage";
-import SearchResults from "./pages/SearchResults";
-import CalendarPage from "./pages/CalendarPage";
-import ContractProtectionDetails from "./pages/ContractProtectionDetails";
-import PaymentDetailPage from "./pages/PaymentDetailPage";
-import BrandDealDetailsPage from "./pages/BrandDealDetailsPage";
-import ContractReadyPage from "./pages/ContractReadyPage";
-import CreatorSignPage from "./pages/CreatorSignPage";
-import ShipPage from "./pages/ShipPage";
-import FeedbackPage from "./pages/FeedbackPage";
-import AdvisorDashboard from "./pages/AdvisorDashboard";
-import LawyerDashboard from "./pages/LawyerDashboard";
-import ConsumerComplaints from "./pages/lawyer/ConsumerComplaints";
-import ConsumerComplaintsPage from "./pages/ConsumerComplaintsPage";
-import ComplaintFormPage from "./pages/ComplaintFormPage";
-import MyConsumerComplaintsPage from "./pages/MyConsumerComplaintsPage";
-import ConsumerComplaintsHowItWorks from "./pages/ConsumerComplaintsHowItWorks";
-import UpgradePage from "./pages/UpgradePage";
-import CollabLinkLanding from "./pages/CollabLinkLanding";
-import CollabLinkSuccess from "./pages/CollabLinkSuccess";
-import BrandDealConsole from "./pages/BrandDealConsole";
-import ProposalSent from "./pages/ProposalSent";
-import BrandDashboard from "./pages/BrandDashboard";
-import BrandSettings from "./pages/BrandSettings";
-import CollabAcceptPage from "./pages/CollabAcceptPage";
-import CollabActionPage from "./pages/CollabActionPage";
+import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
-import CreatorsDirectory from "./pages/CreatorsDirectory";
-import DiscoverCreators from "./pages/DiscoverCreators";
-import CreatorProfilePage from "./pages/CreatorProfilePage";
-import CreatorReputationDashboard from "./pages/CreatorReputationDashboard";
-import PreviewAmanParmar from "./pages/PreviewAmanParmar";
-import PushTestLab from "./pages/PushTestLab";
-import SeoDashboard from "./pages/seo-dashboard";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
 import AddToHomeScreen from "./components/mobile/AddToHomeScreen";
 
-const MessagesPage = lazy(() => import("./pages/MessagesPage"));
-const ContractUploadFlow = lazy(() => import("./pages/ContractUploadFlow"));
+// Lazy-loaded pages for better bundle splitting
 
 const RouteFallback = () => (
   <div className="min-h-[45vh] flex items-center justify-center px-4">
@@ -301,68 +308,68 @@ const App = () => {
                     <SidebarProvider>
                       <Routes>
                         {/* Root route: Public marketing landing page. LandingPage handles redirecting logged-in users. */}
-                        <Route path="/" element={<LandingPage />} />
-                        <Route path="/old-home" element={<ProtectedRoute><MarketingHome /></ProtectedRoute>} />
+                        <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
+                        <Route path="/old-home" element={<LazyRoute><ProtectedRoute><MarketingHome /></ProtectedRoute></LazyRoute>} />
 
                         {/* Auth routes: Accessible directly, not protected */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/signup" element={<Signup />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/login" element={<LazyRoute><Login /></LazyRoute>} />
+                        <Route path="/signup" element={<LazyRoute><Signup /></LazyRoute>} />
+                        <Route path="/reset-password" element={<LazyRoute><ResetPassword /></LazyRoute>} />
 
                         {/* Public routes */}
-                        <Route path="/about" element={<About />} />
-                        <Route path="/blog" element={<Blog />} />
-                        <Route path="/blog/:slug" element={<BlogPostDetail />} />
-                        <Route path="/careers" element={<Careers />} />
+                        <Route path="/about" element={<LazyRoute><About /></LazyRoute>} />
+                        <Route path="/blog" element={<LazyRoute><Blog /></LazyRoute>} />
+                        <Route path="/blog/:slug" element={<LazyRoute><BlogPostDetail /></LazyRoute>} />
+                        <Route path="/careers" element={<LazyRoute><Careers /></LazyRoute>} />
 
                         {/* Free Tool Landing Pages */}
-                        <Route path="/free-influencer-contract" element={<FreeInfluencerContract />} />
-                        <Route path="/collaboration-agreement-generator" element={<CollaborationAgreementGenerator />} />
-                        <Route path="/pricing-comparison" element={<PricingComparison />} />
-                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="/terms-of-service" element={<TermsOfService />} />
-                        <Route path="/refund-policy" element={<RefundPolicy />} />
-                        <Route path="/delete-data" element={<DeleteData />} />
-                        <Route path="/sitemap" element={<Sitemap />} />
-                        <Route path="/consumer-complaints/how-it-works" element={<ConsumerComplaintsHowItWorks />} />
+                        <Route path="/free-influencer-contract" element={<LazyRoute><FreeInfluencerContract /></LazyRoute>} />
+                        <Route path="/collaboration-agreement-generator" element={<LazyRoute><CollaborationAgreementGenerator /></LazyRoute>} />
+                        <Route path="/pricing-comparison" element={<LazyRoute><PricingComparison /></LazyRoute>} />
+                        <Route path="/privacy-policy" element={<LazyRoute><PrivacyPolicy /></LazyRoute>} />
+                        <Route path="/terms-of-service" element={<LazyRoute><TermsOfService /></LazyRoute>} />
+                        <Route path="/refund-policy" element={<LazyRoute><RefundPolicy /></LazyRoute>} />
+                        <Route path="/delete-data" element={<LazyRoute><DeleteData /></LazyRoute>} />
+                        <Route path="/sitemap" element={<LazyRoute><Sitemap /></LazyRoute>} />
+                        <Route path="/consumer-complaints/how-it-works" element={<LazyRoute><ConsumerComplaintsHowItWorks /></LazyRoute>} />
 
                         {/* Plan Detail Routes */}
-                        <Route path="/plan/essential" element={<EssentialPlan />} />
-                        <Route path="/plan/growth" element={<GrowthPlan />} />
-                        <Route path="/plan/strategic" element={<StrategicPlan />} />
+                        <Route path="/plan/essential" element={<LazyRoute><EssentialPlan /></LazyRoute>} />
+                        <Route path="/plan/growth" element={<LazyRoute><GrowthPlan /></LazyRoute>} />
+                        <Route path="/plan/strategic" element={<LazyRoute><StrategicPlan /></LazyRoute>} />
 
                         {/* NEW LEAD FUNNEL ROUTES */}
-                        <Route path="/free-legal-check" element={<FreeLegalCheck />} />
-                        <Route path="/thank-you" element={<ThankYou />} />
+                        <Route path="/free-legal-check" element={<LazyRoute><FreeLegalCheck /></LazyRoute>} />
+                        <Route path="/thank-you" element={<LazyRoute><ThankYou /></LazyRoute>} />
 
                         {/* Preview Routes */}
-                        <Route path="/dashboard-white-preview" element={<DashboardWhitePreview />} />
-                        <Route path="/dashboard-preview" element={<CreatorDashboardPreview />} />
-                        <Route path="/dashboard-components-preview" element={<DashboardPreview />} />
-                        <Route path="/demo-dashboard" element={<MobileDashboardDemo />} />
-                        <Route path="/brand-console-demo" element={<BrandDealConsoleDemo />} />
-                        <Route path="/brand-desktop-demo" element={<BrandDesktopDashboard />} />
-                        <Route path="/preview/aman-parmar" element={<PreviewAmanParmar />} />
+                        <Route path="/dashboard-white-preview" element={<LazyRoute><DashboardWhitePreview /></LazyRoute>} />
+                        <Route path="/dashboard-preview" element={<LazyRoute><CreatorDashboardPreview /></LazyRoute>} />
+                        <Route path="/dashboard-components-preview" element={<LazyRoute><DashboardPreview /></LazyRoute>} />
+                        <Route path="/demo-dashboard" element={<LazyRoute><MobileDashboardDemo /></LazyRoute>} />
+                        <Route path="/brand-console-demo" element={<LazyRoute><BrandDealConsoleDemo /></LazyRoute>} />
+                        <Route path="/brand-desktop-demo" element={<LazyRoute><BrandDesktopDashboard /></LazyRoute>} />
+                        <Route path="/preview/aman-parmar" element={<LazyRoute><PreviewAmanParmar /></LazyRoute>} />
 
                         {/* Referral Landing */}
-                        <Route path="/p/:code" element={<ReferralLanding />} />
+                        <Route path="/p/:code" element={<LazyRoute><ReferralLanding /></LazyRoute>} />
 
                         {/* Creator Discovery & Directory Routes (Public) */}
-                        <Route path="/discover" element={<DiscoverCreators />} />
-                        <Route path="/discover/:category" element={<DiscoverCreators />} />
-                        <Route path="/creators" element={<CreatorsDirectory />} />
-                        <Route path="/creators/:category" element={<CreatorsDirectory />} />
-                        <Route path="/creator/:username" element={<CreatorProfilePage />} />
+                        <Route path="/discover" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
+                        <Route path="/discover/:category" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
+                        <Route path="/creators" element={<LazyRoute><CreatorsDirectory /></LazyRoute>} />
+                        <Route path="/creators/:category" element={<LazyRoute><CreatorsDirectory /></LazyRoute>} />
+                        <Route path="/creator/:username" element={<LazyRoute><CreatorProfilePage /></LazyRoute>} />
 
                         {/* Collaboration Request Link Routes (Public) - SEO-friendly clean URLs */}
                         {/* Accept from email: public preview + soft auth, then redirect to deal */}
-                        <Route path="/collab/accept/:requestToken" element={<CollabAcceptPage />} />
+                        <Route path="/collab/accept/:requestToken" element={<LazyRoute><CollabAcceptPage /></LazyRoute>} />
                         <Route path="/collab/push-test" element={<Navigate to="/push-test" replace />} />
-                        <Route path="/collab-action" element={<CollabActionPage />} />
-                         <Route path="/seo-dashboard" element={<SeoDashboard />} />
+                        <Route path="/collab-action" element={<LazyRoute><CollabActionPage /></LazyRoute>} />
+                         <Route path="/seo-dashboard" element={<LazyRoute><SeoDashboard /></LazyRoute>} />
                          {/* Primary public creator routes: /:username */}
-                         <Route path="/:username" element={<CollabLinkLanding />} />
-                        <Route path="/:username/success" element={<CollabLinkSuccess />} />
+                         <Route path="/:username" element={<LazyRoute><CollabLinkLanding /></LazyRoute>} />
+                        <Route path="/:username/success" element={<LazyRoute><CollabLinkSuccess /></LazyRoute>} />
 
                         {/* Legacy redirect: /collab/:username → /:username */}
                         <Route path="/collab/:username" element={<LegacyCollabRedirect />} />
@@ -370,114 +377,110 @@ const App = () => {
 
                         {/* Client-specific routes - Redirected to Creator Dashboard */}
                         <Route path="/client-dashboard" element={<Navigate to="/creator-dashboard" replace />} />
-                        <Route path="/client-profile" element={<ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout>} />
-                        <Route path="/client-subscription" element={<ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout>} />
-                        <Route path="/client-cases" element={<ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout>} />
-                        <Route path="/client-documents" element={<ProtectedLayout allowedRoles={['client']}><ClientDocuments /></ProtectedLayout>} />
-                        <Route path="/client-consultations" element={<ProtectedLayout allowedRoles={['client']}><ClientConsultations /></ProtectedLayout>} />
-                        <Route path="/client-activity-log" element={<ProtectedLayout allowedRoles={['client']}><ClientActivityLog /></ProtectedLayout>} />
+                        <Route path="/client-profile" element={<LazyRoute><ProtectedLayout allowedRoles={['client']}><ClientProfile /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/client-subscription" element={<LazyRoute><ProtectedLayout allowedRoles={['client']}><ClientSubscription /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/client-cases" element={<LazyRoute><ProtectedLayout allowedRoles={['client']}><ClientCases /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/client-documents" element={<LazyRoute><ProtectedLayout allowedRoles={['client']}><ClientDocuments /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/client-consultations" element={<LazyRoute><ProtectedLayout allowedRoles={['client']}><ClientConsultations /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/client-activity-log" element={<LazyRoute><ProtectedLayout allowedRoles={['client']}><ClientActivityLog /></ProtectedLayout></LazyRoute>} />
 
                         {/* Admin-specific routes */}
-                        <Route path="/admin-dashboard" element={<ProtectedLayout allowedRoles={['admin']}><AdminDashboard /></ProtectedLayout>} />
-                        <Route path="/admin-documents" element={<ProtectedLayout allowedRoles={['admin']}><AdminDocuments /></ProtectedLayout>} />
-                        <Route path="/admin-cases" element={<ProtectedLayout allowedRoles={['admin']}><AdminCases /></ProtectedLayout>} />
-                        <Route path="/admin-clients" element={<ProtectedLayout allowedRoles={['admin']}><AdminClients /></ProtectedLayout>} />
-                        <Route path="/admin-consultations" element={<ProtectedLayout allowedRoles={['admin']}><AdminConsultations /></ProtectedLayout>} />
-                        <Route path="/admin-subscriptions" element={<ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout>} />
-                        <Route path="/admin-activity-log" element={<ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout>} />
-                        <Route path="/admin-profile" element={<ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout>} />
-                        <Route path="/admin-influencers" element={<ProtectedLayout allowedRoles={['admin']}><AdminInfluencers /></ProtectedLayout>} />
-                        <Route path="/admin-discovery" element={<ProtectedLayout allowedRoles={['admin']}><AdminDiscovery /></ProtectedLayout>} />
+                        <Route path="/admin-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-documents" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminDocuments /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-cases" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminCases /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-clients" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminClients /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-consultations" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminConsultations /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-subscriptions" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminSubscriptions /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-activity-log" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminActivityLog /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-profile" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminProfile /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-influencers" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminInfluencers /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/admin-discovery" element={<LazyRoute><ProtectedLayout allowedRoles={['admin']}><AdminDiscovery /></ProtectedLayout></LazyRoute>} />
 
                         {/* CA-specific routes */}
-                        <Route path="/ca-dashboard" element={<ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout>} />
+                        <Route path="/ca-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['chartered_accountant']}><CADashboard /></ProtectedLayout></LazyRoute>} />
 
                         {/* Creator-specific routes */}
-                        <Route path="/creator-onboarding" element={<ProtectedLayout allowedRoles={['creator']}><CreatorOnboarding /></ProtectedLayout>} /> {/* NEW: Onboarding Route */}
-                        <Route path="/creator-dashboard" element={<ProtectedLayout allowedRoles={['creator', 'client']}><CreatorDashboard /></ProtectedLayout>} /> {/* New: Creator Dashboard Route */}
-                        <Route path="/creator-collab" element={<ProtectedLayout allowedRoles={['creator']}><CreatorCollab /></ProtectedLayout>} />
+                        <Route path="/creator-onboarding" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorOnboarding /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['creator', 'client']}><CreatorDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-collab" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorCollab /></ProtectedLayout></LazyRoute>} />
                         {/* Legacy creator page: keep the new mobile dashboard as the primary entry point */}
                         <Route path="/collab-requests" element={<Navigate to="/creator-dashboard?tab=collabs&subtab=pending" replace />} />
-                        <Route path="/collab-requests/:requestId/brief" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestBriefPage /></ProtectedLayout>} />
-                        <Route path="/collab-requests/:requestId/counter" element={<ProtectedLayout allowedRoles={['creator']}><CollabRequestCounterPage /></ProtectedLayout>} />
-                        <Route path="/creator-profile" element={<ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout>} />
-                        <Route path="/push-test" element={<ProtectedLayout allowedRoles={['creator']}><PushTestLab /></ProtectedLayout>} />
-                        <Route path="/creator-analytics" element={<ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout>} />
-                        <Route path="/creator-reputation" element={<ProtectedLayout allowedRoles={['creator']}><CreatorReputationDashboard /></ProtectedLayout>} />
-                        <Route path="/notifications" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><NotificationCenter /></ProtectedLayout>} />
-                        <Route path="/search" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><SearchResults /></ProtectedLayout>} />
-                        <Route path="/calendar" element={<ProtectedLayout allowedRoles={['creator']}><CalendarPage /></ProtectedLayout>} />
-                        <Route path="/partner-program" element={<ProtectedLayout allowedRoles={['creator']}><PartnerProgram /></ProtectedLayout>} />
-                        {/* NEW: Creator-specific pages */}
-                        <Route path="/creator-contracts" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
-                        <Route path="/dashboard/brand-deals" element={<Navigate to="/collab-requests" replace />} />
-                        <Route path="/brand-deals" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout>} />
-                        <Route path="/create-deal" element={<ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout>} />
-                        <Route path="/creator-contracts/:dealId/delivery-details" element={<ProtectedLayout allowedRoles={['creator']}><DealDeliveryDetailsPage /></ProtectedLayout>} />
-                        <Route path="/creator-contracts/:dealId" element={<ProtectedLayout allowedRoles={['creator']}><CreatorContractDashboardRoute /></ProtectedLayout>} />
-                        <Route path="/creator-payments" element={<ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout>} />
-                        <Route path="/payment/:paymentId" element={<ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout>} />
-                        {/* Protection route redirected to Deals - Protection is now integrated into each Deal */}
-                        <Route path="/creator-content-protection" element={<Navigate to="/creator-contracts" replace />} />
-                        <Route path="/creator-tax-compliance" element={<ProtectedLayout allowedRoles={['creator']}><CreatorTaxCompliancePage /></ProtectedLayout>} />
-                        <Route path="/documents-vault" element={<ProtectedLayout allowedRoles={['creator']}><DocumentsVault /></ProtectedLayout>} />
-                        <Route path="/insights" element={<ProtectedLayout allowedRoles={['creator']}><InsightsPage /></ProtectedLayout>} />
-                        {/* NEW: Creator tools */}
-                        <Route path="/brand-directory" element={<ProtectedLayout allowedRoles={['creator']}><BrandDirectory /></ProtectedLayout>} />
-                        <Route path="/brands/:brandId" element={<ProtectedLayout allowedRoles={['creator']}><BrandDetails /></ProtectedLayout>} />
-                        <Route path="/brands/:brandId/opportunities" element={<ProtectedLayout allowedRoles={['creator']}><BrandOpportunities /></ProtectedLayout>} />
-                        <Route path="/contract-analyzer" element={<ProtectedLayout allowedRoles={['creator']}><ContractAnalyzer /></ProtectedLayout>} />
-                        <Route path="/contract-upload" element={<ProtectedLayout allowedRoles={['creator']}><LazyRoute><ContractUploadFlow /></LazyRoute></ProtectedLayout>} />
-                        <Route path="/contract-comparison" element={<ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout>} />
-                        <Route path="/contract-protection/:contractId" element={<ProtectedLayout allowedRoles={['creator']}><ContractProtectionDetails /></ProtectedLayout>} />
-                        {/* Public Brand Response Page - Redirect old routes to new Contract Ready page */}
+                        <Route path="/collab-requests/:requestId/brief" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CollabRequestBriefPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/collab-requests/:requestId/counter" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CollabRequestCounterPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-profile" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorProfile /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/push-test" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><PushTestLab /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-analytics" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorAnalytics /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-reputation" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorReputationDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/notifications" element={<LazyRoute><ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><NotificationCenter /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/search" element={<LazyRoute><ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><SearchResults /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/calendar" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CalendarPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-contracts" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorContracts /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-tax-compliance" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorTaxCompliancePage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/creator-payments" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorPaymentsAndRecovery /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/documents-vault" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><DocumentsVault /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/insights" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><InsightsPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/contract-comparison" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><ContractComparison /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/contract-protection-details/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><ContractProtectionDetails /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/deal-delivery-details/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><DealDeliveryDetailsPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/create-deal" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreateDealPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/payment/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><PaymentDetailPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/deal/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><BrandDealDetailsPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/deal/:dealId/brand-response" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><BrandDealDetailsPage /></ProtectedLayout></LazyRoute>} />
+
+                        {/* Creator Standalone Routes - For new tab views */}
+                        <Route path="/contract-ready/:token" element={<LazyRoute><ContractReadyPage /></LazyRoute>} />
+                        <Route path="/creator-sign/:token" element={<LazyRoute><CreatorSignPage /></LazyRoute>} />
+                        <Route path="/ship/:token" element={<LazyRoute><ShipPage /></LazyRoute>} />
+                        <Route path="/proposal-sent/:token" element={<LazyRoute><ProposalSent /></LazyRoute>} />
+                        <Route path="/feedback/:token" element={<LazyRoute><FeedbackPage /></LazyRoute>} />
+
+                        {/* Legacy brand-reply route redirect */}
                         <Route path="/brand-reply/:token" element={<ContractReadyRedirect />} />
                         <Route path="/brand/response/:token" element={<ContractReadyRedirect />} />
-                        <Route path="/deal/brand-response/:token" element={<ContractReadyRedirect />} />
-                        <Route path="/contract-ready/:token" element={<ContractReadyPage />} />
-                        {/* Public Creator Signing Page - Magic link (no login required) */}
-                        <Route path="/creator-sign/:token" element={<CreatorSignPage />} />
-                        {/* Public Brand Shipping Update Page - No auth required */}
-                        <Route path="/ship/:token" element={<ShipPage />} />
-                        {/* Public Brand Deal Details Page - No auth required */}
-                        <Route path="/deal-details/:token" element={<BrandDealDetailsPage />} />
-                        <Route path="/deal/:token" element={<BrandDealConsole />} />
-                        <Route path="/proposal-sent/:token" element={<ProposalSent />} />
-                        {/* Public Feedback Page - No auth required (read-only view) */}
-                        <Route path="/feedback/:reportId" element={<FeedbackPage />} />
-                        {/* Public Brand eSign Status Page - No auth required */}
-                        <Route path="/rate-calculator/:platform/:niche" element={<DynamicRateCalculator />} />
-                        <Route path="/rate-calculator" element={<ProtectedLayout allowedRoles={['creator']}><RateCalculator /></ProtectedLayout>} />
-                        <Route path="/ai-pitch-generator" element={<ProtectedLayout allowedRoles={['creator']}><AIPitchGenerator /></ProtectedLayout>} />
 
-                        {/* Lifestyle Shield - Pro-only features */}
-                        <Route path="/lifestyle/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><ConsumerComplaintsPage /></ProtectedLayout>} />
-                        <Route path="/lifestyle/consumer-complaints/form" element={<ProtectedLayout allowedRoles={['creator']}><ComplaintFormPage /></ProtectedLayout>} />
-                        <Route path="/dashboard/consumer-complaints" element={<ProtectedLayout allowedRoles={['creator']}><MyConsumerComplaintsPage /></ProtectedLayout>} />
+                        {/* Legal Tools & Calculators */}
+                        <Route path="/contract-analyzer" element={<LazyRoute><ContractAnalyzer /></LazyRoute>} />
+                        <Route path="/rate-calculator" element={<LazyRoute><RateCalculator /></LazyRoute>} />
+                        <Route path="/dynamic-rate-calculator" element={<LazyRoute><DynamicRateCalculator /></LazyRoute>} />
+                        <Route path="/ai-pitch-generator" element={<LazyRoute><AIPitchGenerator /></LazyRoute>} />
 
-                        {/* Upgrade page */}
-                        <Route path="/upgrade" element={<ProtectedLayout allowedRoles={['creator']}><UpgradePage /></ProtectedLayout>} />
+                        {/* Brand Routes */}
+                        <Route path="/brand-directory" element={<LazyRoute><BrandDirectory /></LazyRoute>} />
+                        <Route path="/brand/:brandId" element={<LazyRoute><BrandDetails /></LazyRoute>} />
+                        <Route path="/brand-opportunities" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><BrandOpportunities /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/brand-deal-console" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><BrandDealConsole /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/brand-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/brand-settings" element={<LazyRoute><ProtectedLayout allowedRoles={['brand']}><BrandSettings /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/upgrade" element={<LazyRoute><ProtectedLayout><UpgradePage /></ProtectedLayout></LazyRoute>} />
 
-                        {/* Shared routes (accessible by client, admin, CA, and creator - NOT lawyer) */}
-                        <Route path="/messages" element={<ProtectedLayout allowedRoles={['client', 'admin', 'chartered_accountant', 'creator']}><LazyRoute><MessagesPage /></LazyRoute></ProtectedLayout>} />
+                        {/* Consumer Complaints */}
+                        <Route path="/consumer-complaints" element={<LazyRoute><ConsumerComplaintsPage /></LazyRoute>} />
+                        <Route path="/consumer-complaints/new" element={<LazyRoute><ComplaintFormPage /></LazyRoute>} />
+                        <Route path="/consumer-complaints/my" element={<LazyRoute><ProtectedLayout><MyConsumerComplaintsPage /></ProtectedLayout></LazyRoute>} />
 
-                        {/* Advisor Dashboard (for admin and CA roles) */}
-                        <Route path="/advisor-dashboard" element={<ProtectedLayout allowedRoles={['admin', 'chartered_accountant']}><AdvisorDashboard /></ProtectedLayout>} />
+                        {/* Messages */}
+                        <Route path="/messages" element={<LazyRoute><ProtectedLayout><MessagesPage /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/messages/:conversationId" element={<LazyRoute><ProtectedLayout><MessagesPage /></ProtectedLayout></LazyRoute>} />
 
-                        {/* Lawyer Dashboard (for lawyer role) */}
-                        <Route path="/lawyer-dashboard" element={<ProtectedLayout allowedRoles={['lawyer']}><LawyerDashboard /></ProtectedLayout>} />
-                        <Route path="/lawyer/consumer-complaints" element={<ProtectedLayout allowedRoles={['lawyer', 'admin']}><ConsumerComplaints /></ProtectedLayout>} />
+                        {/* Contract Upload Flow */}
+                        <Route path="/contract-upload" element={<LazyRoute><ProtectedLayout><ContractUploadFlow /></ProtectedLayout></LazyRoute>} />
 
-                        {/* Brand Console Routes */}
-                        <Route path="/brand-dashboard" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
-                        <Route path="/brand/offers" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
-                        <Route path="/brand/collaborations" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
-                        <Route path="/brand/analytics" element={<ProtectedLayout allowedRoles={['brand']}><BrandDashboard /></ProtectedLayout>} />
-                        <Route path="/brand-settings" element={<ProtectedLayout allowedRoles={['brand']}><BrandSettings /></ProtectedLayout>} />
+                        {/* Partner Program */}
+                        <Route path="/partner-program" element={<LazyRoute><PartnerProgram /></LazyRoute>} />
 
-                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                        <Route path="/maintenance" element={<MaintenancePage />} />
-                        <Route path="*" element={<NotFound />} />
+                        {/* Professional Dashboard Routes */}
+                        <Route path="/advisor-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['advisor']}><AdvisorDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/lawyer-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['lawyer']}><LawyerDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/lawyer/consumer-complaints" element={<LazyRoute><ProtectedLayout allowedRoles={['lawyer']}><ConsumerComplaints /></ProtectedLayout></LazyRoute>} />
+
+                        {/* Maintenance Page */}
+                        <Route path="/maintenance" element={<LazyRoute><MaintenancePage /></LazyRoute>} />
+
+                        {/* Creator contract dashboard with query params */}
+                        <Route path="/creator-contract-dashboard/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={['creator']}><CreatorContractDashboardRoute /></ProtectedLayout></LazyRoute>} />
+
+                        {/* 404 - MUST BE LAST */}
+                        <Route path="*" element={<LazyRoute><NotFound /></LazyRoute>} />
                       </Routes>
                       <AddToHomeScreen />
                     </SidebarProvider>
