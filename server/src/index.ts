@@ -153,6 +153,9 @@ if (supabaseInitialized && supabaseServiceKey && supabaseServiceKey.length > 50)
 // Configure Helmet for API server (disable CSP since APIs don't serve HTML/scripts)
 app.use(helmet({
   contentSecurityPolicy: false, // APIs don't need CSP - they don't serve HTML
+  // This server is consumed cross-origin by the Vite dev server (localhost:8080) and sometimes by other frontends.
+  // Helmet defaults CORP to `same-origin`, which can cause browsers to block fetch/XHR even when CORS allows it.
+  crossOriginResourcePolicy: false,
 }));
 // CORS configuration - allow all localhost and common development/production origins
 const corsOptions = {
