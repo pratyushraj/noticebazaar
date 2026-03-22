@@ -13,10 +13,11 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const getSupabaseUrl = () => {
   if (!rawSupabaseUrl) return '';
 
-  const isLocalhost = typeof window !== 'undefined' &&
+ const isLocalhost = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  const useProxy = import.meta.env.VITE_USE_SUPABASE_PROXY === 'true' && !isLocalhost;
+  // Proxy is opt-in. Allow it on localhost too (helps when browsers/ISPs block direct Supabase calls).
+  const useProxy = import.meta.env.VITE_USE_SUPABASE_PROXY === 'true';
 
   if (useProxy) {
     const apiBase = getApiBaseUrl();
