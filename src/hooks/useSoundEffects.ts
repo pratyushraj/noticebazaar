@@ -20,6 +20,7 @@ export const useSoundEffects = () => {
     return saved ? parseFloat(saved) : 0.3;
   });
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     localStorage.setItem('sound_effects_enabled', enabled.toString());
@@ -29,11 +30,51 @@ export const useSoundEffects = () => {
     localStorage.setItem('sound_effects_volume', volume.toString());
   }, [volume]);
 
+  const getAudioContext = () => {
+    if (typeof window === 'undefined') return null;
+    const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext | undefined;
+    if (!Ctx) return null;
+    if (!audioContextRef.current) audioContextRef.current = new Ctx();
+    return audioContextRef.current;
+  };
+
+  // CSP-safe fallback: generate a quick tone using WebAudio (no media/data: URL fetch).
+  const playTone = (soundId: string) => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(Math.max(0.0001, Math.min(0.8, volume)), now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      gain.connect(ctx.destination);
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(soundId === 'whoosh' ? 220 : 660, now);
+      if (soundId === 'whoosh') {
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.18);
+      }
+      osc.connect(gain);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } catch {
+      // no-op
+    }
+  };
+
   const playSound = (soundId: string) => {
     if (!enabled) return;
 
     const soundUrl = soundEffects[soundId];
     if (!soundUrl) return;
+
+    // Avoid CSP violations from `data:` media URLs (common in strict CSP builds).
+    if (soundUrl.startsWith('data:audio/')) {
+      playTone(soundId);
+      return;
+    }
 
     // Create audio element if it doesn't exist
     if (!audioRefs.current[soundId]) {
@@ -58,4 +99,3 @@ export const useSoundEffects = () => {
     playSound,
   };
 };
-
