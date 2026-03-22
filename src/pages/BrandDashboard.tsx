@@ -14,9 +14,10 @@ const BrandDashboard = () => {
   const { profile, user, session } = useSession();
 
   const isDemoBrand = useMemo(() => {
-    const email = (user?.email || '').toLowerCase();
     const params = new URLSearchParams(window.location.search);
-    return email === 'brand-demo@noticebazaar.com' || ['1', 'true', 'yes'].includes((params.get('demo') || '').toLowerCase());
+    // Demo mode should be an explicit opt-in via URL param, not tied to a specific account.
+    // This keeps the demo brand account behaving like a real brand by default.
+    return ['1', 'true', 'yes'].includes((params.get('demo') || '').toLowerCase());
   }, [user?.email]);
 
   const initialTab = useMemo(() => {

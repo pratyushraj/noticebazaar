@@ -604,17 +604,17 @@ const BrandMobileDashboard = ({
     }
   }, []);
 
-  const brandName = useMemo(() => {
-    const name = profile?.business_name || profile?.first_name || profile?.full_name || (isDemoBrand ? 'Acme Corp' : 'Brand');
-    return String(name || 'Brand').trim() || 'Brand';
-  }, [profile, isDemoBrand]);
+	  const brandName = useMemo(() => {
+	    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
+	    return String(name || 'Brand').trim() || 'Brand';
+	  }, [profile, isDemoBrand]);
 
-  useEffect(() => {
-    if (!profile?.id || isDemoBrand) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await supabase
+	  useEffect(() => {
+	    if (!profile?.id) return;
+	    let cancelled = false;
+	    (async () => {
+	      try {
+	        const { data, error } = await supabase
           .from('brands')
           .select('logo_url')
           .eq('external_id', profile.id)
@@ -625,8 +625,8 @@ const BrandMobileDashboard = ({
         // ignore
       }
     })();
-    return () => { cancelled = true; };
-  }, [profile?.id, isDemoBrand]);
+	    return () => { cancelled = true; };
+	  }, [profile?.id, isDemoBrand]);
 
   const brandLogo = useMemo(() => {
     const src = profile?.avatar_url || profile?.logo_url || brandLogoDbUrl;
@@ -638,21 +638,17 @@ const BrandMobileDashboard = ({
     return !!(profile?.avatar_url || profile?.logo_url || brandLogoDbUrl);
   }, [profile?.avatar_url, profile?.logo_url, brandLogoDbUrl]);
 
-  const openCreateOfferSheet = () => {
-    if (isDemoBrand) {
-      setShowActionSheet(true);
-      return;
-    }
-    if (hasUploadedBrandLogo) {
-      setShowActionSheet(true);
-      return;
-    }
+	  const openCreateOfferSheet = () => {
+	    if (hasUploadedBrandLogo) {
+	      setShowActionSheet(true);
+	      return;
+	    }
 
     toast.error('Upload your brand logo first', {
       description: 'Creators trust offers more when the brand identity is clear.',
     });
     navigate('/brand-settings');
-  };
+	  };
 
   const displayStats: BrandDashboardStats = useMemo(() => {
     return {
@@ -2365,7 +2361,7 @@ const BrandMobileDashboard = ({
                     </motion.div>
                   )}
 
-                  {!hasUploadedBrandLogo && !isDemoBrand && (
+                  {!hasUploadedBrandLogo && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -3512,7 +3508,7 @@ const BrandMobileDashboard = ({
                           <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800')}>
                             Protected by Creator Armour
                           </span>
-                          {!hasUploadedBrandLogo && !isDemoBrand && (
+                          {!hasUploadedBrandLogo && (
                             <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')}>
                               Logo required
                             </span>
@@ -3521,7 +3517,7 @@ const BrandMobileDashboard = ({
                       </div>
                     </div>
 
-                    {!hasUploadedBrandLogo && !isDemoBrand && (
+                    {!hasUploadedBrandLogo && (
                       <div className={cn('relative mt-4 p-3 rounded-2xl border flex items-center justify-between gap-3', isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50/70 border-amber-200')}>
                         <div className="min-w-0">
                           <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
@@ -3705,13 +3701,13 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-3">
-                  <button
-                    onClick={() => {
-                      if (!hasUploadedBrandLogo && !isDemoBrand) {
-                        toast.error('Upload your brand logo first', {
-                          description: 'Creators trust offers more when the brand identity is clear.',
-                        });
-                        setShowActionSheet(false);
+	                  <button
+	                    onClick={() => {
+	                      if (!hasUploadedBrandLogo) {
+	                        toast.error('Upload your brand logo first', {
+	                          description: 'Creators trust offers more when the brand identity is clear.',
+	                        });
+	                        setShowActionSheet(false);
                         navigate('/brand-settings');
                         return;
                       }
