@@ -15,7 +15,13 @@ const router = express.Router();
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { category, limit = '50', offset = '0' } = req.query;
+    const { category, limit = '50', offset = '0', username, q } = req.query as any;
+
+    const normalizeHandle = (raw: unknown) => {
+      const s = String(raw || '').trim().replace(/^@+/, '').toLowerCase();
+      // Keep it conservative so we don't generate invalid PostgREST filters.
+      return s.replace(/[^a-z0-9._]/g, '');
+    };
 
     let query = supabase
       .from('profiles')
@@ -48,8 +54,30 @@ router.get('/', async (req: Request, res: Response) => {
       `)
       .eq('role', 'creator')
       .not('username', 'is', null)
-      .order('created_at', { ascending: false })
-      .range(parseInt(offset as string, 10), parseInt(offset as string, 10) + parseInt(limit as string, 10) - 1);
+      .order('created_at', { ascending: false });
+
+    // Username search (exact match preferred; supports "@handle" input).
+    // This is used by Brand Dashboard "Search by username".
+    const usernameTerm = normalizeHandle(username);
+    if (usernameTerm) {
+      // ilike without wildcards behaves like a case-insensitive equals in Postgres.
+      query = query.or(`username.ilike.${usernameTerm},instagram_handle.ilike.${usernameTerm}`);
+    }
+
+    // Generic text search (partial).
+    const qTerm = normalizeHandle(q);
+    if (qTerm) {
+      const like = `%${qTerm}%`;
+      query = query.or(
+        `username.ilike.${like},instagram_handle.ilike.${like},business_name.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`
+      );
+    }
+
+    // Pagination
+    query = query.range(
+      parseInt(offset as string, 10),
+      parseInt(offset as string, 10) + parseInt(limit as string, 10) - 1
+    );
 
     if (category && category !== 'all') {
       query = query.eq('creator_category', category as string);

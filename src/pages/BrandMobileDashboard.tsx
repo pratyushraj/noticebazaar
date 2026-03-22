@@ -951,6 +951,45 @@ const BrandMobileDashboard = ({
     { staleTime: 60_000 }
   );
 
+  const [creatorSearch, setCreatorSearch] = useState('');
+  const [creatorSearchResults, setCreatorSearchResults] = useState<SuggestedCreator[]>([]);
+  const [isSearchingCreators, setIsSearchingCreators] = useState(false);
+
+  useEffect(() => {
+    const raw = String(creatorSearch || '').trim();
+    const term = raw.replace(/^@+/, '').trim();
+    if (term.length < 2) {
+      setCreatorSearchResults([]);
+      setIsSearchingCreators(false);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearchingCreators(true);
+        const apiBase = getApiBaseUrl();
+        const res = await fetch(`${apiBase}/api/creators?username=${encodeURIComponent(term)}&limit=8`, {
+          signal: controller.signal,
+        });
+        const data: any = await res.json().catch(() => ({}));
+        if (!res.ok || !data?.success) {
+          setCreatorSearchResults([]);
+          return;
+        }
+        setCreatorSearchResults(Array.isArray(data.creators) ? data.creators : []);
+      } catch (e: any) {
+        if (e?.name === 'AbortError') return;
+        setCreatorSearchResults([]);
+      } finally {
+        setIsSearchingCreators(false);
+      }
+    }, 250);
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [creatorSearch]);
+
 	  // Pending offers = requests that haven't been accepted/declined yet
 		  const pendingOffersList = useMemo(() => {
 		    const base = uniqById((requests || []).filter((o: any) => {
@@ -3812,6 +3851,65 @@ const BrandMobileDashboard = ({
                     <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                       Browse
                     </button>
+                  </div>
+
+                  <div className={cn('mb-5 rounded-[22px] border px-4 py-3', borderColor, isDark ? 'bg-white/[0.04]' : 'bg-white')}>
+                    <div className="flex items-center gap-3">
+                      <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-slate-100')}>
+                        <Search className={cn('h-4 w-4', isDark ? 'text-white/70' : 'text-slate-600')} />
+                      </div>
+                      <input
+                        value={creatorSearch}
+                        onChange={(e) => setCreatorSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key !== 'Enter') return;
+                          const handle = String(creatorSearch || '').trim().replace(/^@+/, '').trim();
+                          if (!handle) return;
+                          triggerHaptic(HapticPatterns.light);
+                          navigate(`/${handle}`);
+                        }}
+                        placeholder="Search by @username"
+                        className={cn(
+                          'flex-1 bg-transparent outline-none text-[13px] font-semibold placeholder:font-medium',
+                          isDark ? 'text-white placeholder:text-white/35' : 'text-slate-900 placeholder:text-slate-400'
+                        )}
+                        inputMode="text"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
+                      />
+                      {isSearchingCreators && <Loader2 className={cn('h-4 w-4 animate-spin', isDark ? 'text-white/60' : 'text-slate-500')} />}
+                    </div>
+                    {creatorSearchResults.length > 0 && (
+                      <div className="mt-3 grid gap-2">
+                        {creatorSearchResults.slice(0, 4).map((c: any) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              const handle = String(c.username || '').trim().replace(/^@+/, '');
+                              if (!handle) return;
+                              triggerHaptic(HapticPatterns.light);
+                              navigate(`/${handle}`);
+                            }}
+                            className={cn(
+                              'w-full text-left flex items-center gap-3 rounded-2xl px-3 py-2 border transition active:scale-[0.99]',
+                              isDark ? 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                            )}
+                          >
+                            <Avatar className="w-9 h-9">
+                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
+                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <p className={cn('text-[13px] font-black truncate', textColor)}>{c.name}</p>
+                              <p className={cn('text-[12px] truncate', secondaryTextColor)}>@{String(c.username || '').replace(/^@+/, '')}</p>
+                            </div>
+                            <ChevronRight className={cn('h-4 w-4', isDark ? 'text-white/40' : 'text-slate-400')} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Discovery cards (makes the platform feel real immediately) */}
