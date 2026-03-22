@@ -127,6 +127,7 @@ import FacebookPixelTracker from "./components/FacebookPixelTracker";
 import GoogleAnalyticsTracker from "./components/GoogleAnalyticsTracker";
 import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
+import LegacyCreatorProfileRedirect from "./components/collab/LegacyCreatorProfileRedirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
@@ -359,7 +360,8 @@ const App = () => {
                         <Route path="/discover/:category" element={<LazyRoute><DiscoverCreators /></LazyRoute>} />
                         <Route path="/creators" element={<LazyRoute><CreatorsDirectory /></LazyRoute>} />
                         <Route path="/creators/:category" element={<LazyRoute><CreatorsDirectory /></LazyRoute>} />
-                        <Route path="/creator/:username" element={<LazyRoute><CreatorProfilePage /></LazyRoute>} />
+                        {/* Legacy route: keep old links working, but render canonical public page */}
+                        <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
 
                         {/* Collaboration Request Link Routes (Public) - SEO-friendly clean URLs */}
                         {/* Accept from email: public preview + soft auth, then redirect to deal */}
