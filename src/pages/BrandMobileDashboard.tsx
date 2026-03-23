@@ -344,6 +344,11 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   if (lower === 'fully_executed' || lower === 'executed' || lower.includes('fully_executed')) return 'FULLY_EXECUTED';
   if (lower === 'live' || lower.includes('live_deal') || lower.includes('legally active') || lower.includes('live')) return 'FULLY_EXECUTED';
 
+  // Normalize "progress" statuses that may be stored as human strings in some environments.
+  if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
+  if (lower.includes('content_delivered') || lower.includes('content delivered')) return 'CONTENT_DELIVERED';
+  if (lower === 'completed' || lower.includes('completed')) return 'COMPLETED';
+
   if (lower === 'signed_by_brand' || lower.includes('signed_by_brand')) return 'AWAITING_CREATOR_SIGNATURE';
   if (lower === 'signed_by_creator' || lower.includes('signed_by_creator')) return 'AWAITING_BRAND_SIGNATURE';
 
