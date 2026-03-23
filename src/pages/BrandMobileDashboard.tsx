@@ -631,6 +631,27 @@ const BrandMobileDashboard = ({
     }
   }, []);
 
+  // When the parent refreshes `deals`, re-hydrate any "detail view" state objects so
+  // status/signature UI updates immediately after actions like signing.
+  useEffect(() => {
+    if (!Array.isArray(deals) || deals.length === 0) return;
+
+    const findDeal = (id: any) => {
+      const needle = String(id || '');
+      if (!needle) return null;
+      return deals.find((d: any) => String(d?.id || '') === needle) || null;
+    };
+
+    if (selectedOffer?.id) {
+      const updated = findDeal(selectedOffer.id);
+      if (updated && updated !== selectedOffer) setSelectedOffer(updated);
+    }
+    if (selectedDealPage?.id) {
+      const updated = findDeal(selectedDealPage.id);
+      if (updated && updated !== selectedDealPage) setSelectedDealPage(updated);
+    }
+  }, [deals, selectedOffer?.id, selectedDealPage?.id]);
+
 		  const brandName = useMemo(() => {
 		    const name = profile?.business_name || profile?.first_name || profile?.full_name || 'Brand';
 		    return String(name || 'Brand').trim() || 'Brand';
