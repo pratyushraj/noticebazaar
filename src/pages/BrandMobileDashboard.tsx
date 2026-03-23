@@ -185,7 +185,7 @@ type SuggestedCreator = {
   } | null;
 };
 
-const formatDeliverables = (row: BrandDeal | null | undefined) => {
+function formatDeliverables(row: BrandDeal | null | undefined) {
   const d = row?.deliverables;
   if (!d) return '';
   const uniq = (parts: string[]) => {
@@ -234,7 +234,7 @@ const formatDeliverables = (row: BrandDeal | null | undefined) => {
   } catch {
     return '';
   }
-};
+}
 
 const formatBudget = (row: BrandDeal | null | undefined) => {
   const exact = Number(row?.exact_budget);
