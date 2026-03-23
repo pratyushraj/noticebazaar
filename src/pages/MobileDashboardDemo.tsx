@@ -337,9 +337,9 @@ const MobileDashboardDemo = ({
 
     const requestIdParam = (searchParams.get('requestId') || '').trim() || null;
     const dealIdParam = (searchParams.get('dealId') || '').trim() || null;
-    const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | null) || null;
+    const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | 'completed' | null) || null;
 
-    const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending'>('active');
+    const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>('active');
     const hasHandledDeepLinkRef = useRef(false);
     useEffect(() => {
         if (activeTab !== 'collabs') return;
@@ -387,6 +387,7 @@ const MobileDashboardDemo = ({
         }
 
         if (subtabParam === 'pending') setCollabSubTab('pending');
+        else if (subtabParam === 'completed') setCollabSubTab('completed');
         else if (subtabParam === 'active') setCollabSubTab('active');
     }, [activeTab, requestIdParam, dealIdParam, subtabParam, collabRequests, brandDeals, searchParams, setSearchParams]);
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -524,8 +525,21 @@ const MobileDashboardDemo = ({
         resolveAvatarUrl(profile?.avatar_url) ||
         avatarFallbackUrl;
     const displayName = liveCollabProfile?.name || profile?.full_name || profile?.first_name || 'Pratyush';
-    const activeDealsCount = (brandDeals || []).length;
     const pendingOffersCount = (collabRequests || []).length;
+    const completedDealsList = React.useMemo(() => {
+        return (brandDeals || []).filter((d: any) => {
+            const s = normalizeDealStatus(d);
+            return s.includes('completed') || s === 'paid';
+        });
+    }, [brandDeals]);
+    const activeDealsList = React.useMemo(() => {
+        return (brandDeals || []).filter((d: any) => {
+            const s = normalizeDealStatus(d);
+            return !(s.includes('completed') || s === 'paid');
+        });
+    }, [brandDeals]);
+    const activeDealsCount = activeDealsList.length;
+    const completedDealsCount = completedDealsList.length;
 
     // Compute Monthly Revenue based on active deals this month
     const monthlyRevenue = React.useMemo(() => {
@@ -2392,25 +2406,6 @@ const MobileDashboardDemo = ({
                                     <button
                                         onClick={() => {
                                             triggerHaptic();
-                                            setCollabSubTab('active');
-                                            const next = new URLSearchParams(searchParams);
-                                            next.set('tab', 'collabs');
-                                            next.set('subtab', 'active');
-                                            next.delete('requestId');
-                                            setSearchParams(next, { replace: true });
-                                        }}
-                                        className={cn(
-                                            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
-                                            collabSubTab === 'active'
-                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
-                                                : cn("opacity-70", textColor)
-                                        )}
-                                    >
-                                        Active Deals ({activeDealsCount})
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            triggerHaptic();
                                             setCollabSubTab('pending');
                                             const next = new URLSearchParams(searchParams);
                                             next.set('tab', 'collabs');
@@ -2425,7 +2420,45 @@ const MobileDashboardDemo = ({
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
-                                        New Offers ({pendingOffersCount})
+                                        Action required ({pendingOffersCount})
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            setCollabSubTab('active');
+                                            const next = new URLSearchParams(searchParams);
+                                            next.set('tab', 'collabs');
+                                            next.set('subtab', 'active');
+                                            next.delete('requestId');
+                                            setSearchParams(next, { replace: true });
+                                        }}
+                                        className={cn(
+                                            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
+                                            collabSubTab === 'active'
+                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                : cn("opacity-70", textColor)
+                                        )}
+                                    >
+                                        Active ({activeDealsCount})
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            triggerHaptic();
+                                            setCollabSubTab('completed');
+                                            const next = new URLSearchParams(searchParams);
+                                            next.set('tab', 'collabs');
+                                            next.set('subtab', 'completed');
+                                            next.delete('requestId');
+                                            setSearchParams(next, { replace: true });
+                                        }}
+                                        className={cn(
+                                            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
+                                            collabSubTab === 'completed'
+                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                : cn("opacity-70", textColor)
+                                        )}
+                                    >
+                                        Completed ({completedDealsCount})
                                     </button>
                                 </div>
                             </div>
@@ -2449,7 +2482,7 @@ const MobileDashboardDemo = ({
                                         {activeDealsCount > 0 ? (
                                             <div className="space-y-4">
                                                 {(() => {
-                                                    const insights = brandDeals.slice(0, 50).reduce(
+                                                    const insights = activeDealsList.slice(0, 50).reduce(
                                                         (acc: any, deal: any) => {
                                                             const ux = getCreatorDealCardUX(deal);
                                                             if (ux.needsSignature) acc.signature += 1;
@@ -2533,10 +2566,10 @@ const MobileDashboardDemo = ({
                                                                         triggerHaptic();
                                                                         const target =
                                                                             it.label === 'Signature pending'
-                                                                                ? brandDeals.find((d: any) => getCreatorDealCardUX(d).needsSignature)
+                                                                                ? activeDealsList.find((d: any) => getCreatorDealCardUX(d).needsSignature)
                                                                                 : it.label === 'Revision requested'
-                                                                                    ? brandDeals.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested)
-                                                                                    : brandDeals.find((d: any) => getCreatorDealCardUX(d).isMaking);
+                                                                                    ? activeDealsList.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested)
+                                                                                    : activeDealsList.find((d: any) => getCreatorDealCardUX(d).isMaking);
                                                                         if (target) {
                                                                             setSelectedItem(target);
                                                                             setSelectedType('deal');
@@ -2561,7 +2594,7 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     );
                                                 })()}
-                                                {brandDeals.slice(0, 10).map((deal: any, idx: number) => {
+                                                {activeDealsList.slice(0, 10).map((deal: any, idx: number) => {
                                                     const ux = getCreatorDealCardUX(deal);
 
                                                     return (
@@ -2580,127 +2613,118 @@ const MobileDashboardDemo = ({
                                                                 isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
                                                             )}
                                                         >
-                                                            <div className="flex items-start justify-between mb-2.5">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
-                                                                        {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
-                                                                    </div>
-                                                                    <div>
-                                                                        <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{deal.brand_name}</h4>
-                                                                        <span className={cn("text-[10px] uppercase font-black tracking-widest opacity-40 mt-0.5", textColor)}>{deal.category || 'Brand'}</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="text-right">
-                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
-                                                                        Earn ₹{(deal.deal_amount || deal.exact_budget || 12500).toLocaleString()}
-                                                                    </div>
-                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-slate-300" : "text-slate-500")}>Campaign Budget</p>
-                                                                </div>
-                                                            </div>
+                                                            {(() => {
+                                                                const budget = Number(deal?.deal_amount || deal?.exact_budget || 0);
+                                                                const dueText = ux.daysUntilDue === null
+                                                                    ? null
+                                                                    : ux.daysUntilDue < 0
+                                                                        ? `Overdue ${Math.abs(ux.daysUntilDue)}d`
+                                                                        : `Due in ${ux.daysUntilDue}d`;
+                                                                const dueTone =
+                                                                    ux.urgencyLevel === 'critical'
+                                                                        ? (isDark ? "text-red-200" : "text-red-700")
+                                                                        : ux.urgencyLevel === 'warning'
+                                                                            ? (isDark ? "text-amber-200" : "text-amber-700")
+                                                                            : (isDark ? "text-orange-200" : "text-orange-700");
 
-                                                            <div className="flex items-center gap-2 mb-4 mt-2">
-                                                                <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold">
-                                                                    {(() => {
-                                                                        const raw = deal.deliverables || deal.raw?.deliverables;
-                                                                        let items: string[] = ['🎬 1 Reel'];
-                                                                        try {
-                                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                                                                items = parsed.map((d: any) => {
-                                                                                    if (typeof d === 'string') return d;
-                                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
-                                                                                    const count = d.count || d.quantity || 1;
-                                                                                    let emoji = '📋', label = 'Content';
-                                                                                    if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
-                                                                                    else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
-                                                                                    else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
-                                                                                    return `${emoji} ${count} ${label}`;
-                                                                                });
-                                                                            }
-                                                                        } catch (_) { }
-                                                                        return items.slice(0, 2).map((d, i) => (
-                                                                            <span key={i} className={cn("px-2 py-0.5 rounded-md border", isDark ? "bg-slate-500/10 text-slate-300 border-white/10" : "bg-slate-50 text-slate-600 border-slate-200")}>
-                                                                                {d}
+                                                                const contractSigned = Boolean(ux.contractLabel && /signed/i.test(ux.contractLabel) && !ux.needsSignature);
+                                                                const ctaLabel = ux.needsSignature
+                                                                    ? 'Review & Sign Contract'
+                                                                    : contractSigned
+                                                                        ? 'Review Contract'
+                                                                        : (ux.cta || 'Open deal');
+
+                                                                return (
+                                                                    <>
+                                                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                                                            <div className="flex items-center gap-3 min-w-0">
+                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                                    {getBrandIcon(
+                                                                                        deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url,
+                                                                                        deal.category,
+                                                                                        deal.brand_name
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="min-w-0">
+                                                                                    <h4 className={cn("text-[15px] font-black tracking-tight truncate", textColor)}>{deal.brand_name}</h4>
+                                                                                    <p className={cn("text-[11px] font-semibold mt-0.5 truncate", secondaryTextColor)}>{deal.category || 'Collaboration'}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="text-right shrink-0">
+                                                                                <p className={cn("text-[18px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                                    {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
+                                                                                </p>
+                                                                                {dueText && (
+                                                                                    <p className={cn("text-[11px] font-bold mt-1 flex items-center justify-end gap-1.5", dueTone)}>
+                                                                                        <Clock className="w-3.5 h-3.5" />
+                                                                                        {dueText}
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex items-center justify-between gap-3 mb-2">
+                                                                            <p className={cn("text-[12px] font-semibold truncate", secondaryTextColor)}>
+                                                                                {String(deal.collab_type || 'Collaboration')}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        <p className={cn(
+                                                                            "text-[12px] font-bold mb-3",
+                                                                            ux.needsSignature
+                                                                                ? (isDark ? "text-amber-200" : "text-amber-700")
+                                                                                : contractSigned
+                                                                                    ? (isDark ? "text-emerald-200" : "text-emerald-700")
+                                                                                    : (isDark ? "text-white/70" : "text-slate-600")
+                                                                        )}>
+                                                                            {ux.needsSignature ? '⚠️ Signature required' : contractSigned ? '✅ Contract signed' : (ux.contractLabel || 'In progress')}
+                                                                        </p>
+
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                                                    <span
+                                                                                        key={i}
+                                                                                        className={cn(
+                                                                                            "h-1.5 w-6 rounded-full",
+                                                                                            i < ux.progressStep
+                                                                                                ? (isDark ? "bg-emerald-400/80" : "bg-emerald-500")
+                                                                                                : (isDark ? "bg-white/10" : "bg-slate-200")
+                                                                                        )}
+                                                                                    />
+                                                                                ))}
+                                                                            </div>
+                                                                            <span className={cn(
+                                                                                "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border",
+                                                                                ux.needsCreatorAction
+                                                                                    ? (isDark ? "border-amber-500/25 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-800")
+                                                                                    : (isDark ? "border-white/10 bg-white/5 text-white/60" : "border-slate-200 bg-slate-50 text-slate-600")
+                                                                            )}>
+                                                                                {ux.stagePill}
                                                                             </span>
-                                                                        ));
-                                                                    })()}
-                                                                </div>
-                                                                <span className={cn("text-[11px] opacity-20", textColor)}>•</span>
-                                                                {ux.daysUntilDue !== null ? (
-                                                                    <span
-                                                                        className={cn(
-                                                                            "text-[10px] font-bold",
-                                                                            ux.urgencyLevel === 'critical'
-                                                                                ? (isDark ? "text-red-300" : "text-red-700")
-                                                                                : ux.urgencyLevel === 'warning'
-                                                                                    ? (isDark ? "text-amber-300" : "text-amber-700")
-                                                                                    : (isDark ? "text-amber-400" : "text-amber-600")
-                                                                        )}
-                                                                    >
-                                                                        {ux.daysUntilDue < 0 ? `Overdue by ${Math.abs(ux.daysUntilDue)} days` : `Due in ${ux.daysUntilDue} days`}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className={cn("text-[10px] font-bold", isDark ? "text-amber-400" : "text-amber-600")}>Due soon</span>
-                                                                )}
-                                                            </div>
+                                                                        </div>
 
-                                                            {ux.contractLabel && (
-                                                                <div className={cn("text-[10px] font-bold mt-1.5", isDark ? "text-white/60" : "text-slate-500")}>
-                                                                    {ux.contractLabel}
-                                                                </div>
-                                                            )}
-
-                                                            <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-500/10">
-                                                                <div className={cn(
-                                                                    "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
-                                                                    ux.needsCreatorAction
-                                                                        ? (ux.urgencyLevel === 'critical'
-                                                                            ? (isDark ? "bg-red-500/10 text-red-300" : "bg-red-50 text-red-700")
-                                                                            : (isDark ? "bg-amber-500/10 text-amber-200" : "bg-amber-50 text-amber-800"))
-                                                                        : (isDark ? "bg-emerald-500/10 text-emerald-400" : "bg-emerald-50 text-emerald-700")
-                                                                )}>
-                                                                    {ux.stagePill}
-                                                                </div>
-
-                                                                <div className="flex gap-1 items-center">
-                                                                    {[1, 2, 3, 4, 5].map(step => (
-                                                                        <div
-                                                                            key={step}
+                                                                        <button
+                                                                            type="button"
+                                                                            onPointerDown={(e) => e.stopPropagation()}
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                triggerHaptic();
+                                                                                setSelectedItem(deal);
+                                                                                setSelectedType('deal');
+                                                                            }}
                                                                             className={cn(
-                                                                                "w-4 h-1.5 rounded-full",
-                                                                                step <= ux.progressStep ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" : (isDark ? "bg-white/10" : "bg-slate-200")
+                                                                                "mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]",
+                                                                                ux.needsCreatorAction
+                                                                                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_14px_34px_rgba(245,158,11,0.25)]"
+                                                                                    : "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_14px_34px_rgba(16,185,129,0.22)]"
                                                                             )}
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="mt-3 flex items-center justify-between gap-3">
-                                                                <div className={cn("text-[11px] font-semibold leading-tight", isDark ? "text-white/70" : "text-slate-600")}>
-                                                                    <span className={cn("font-black uppercase tracking-widest text-[9px] opacity-50 mr-1.5", textColor)}>Next:</span>
-                                                                    {ux.nextStep}
-                                                                </div>
-                                                                <button
-                                                                    type="button"
-                                                                    onPointerDown={(e) => e.stopPropagation()}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        triggerHaptic();
-                                                                        setSelectedItem(deal);
-                                                                        setSelectedType('deal');
-                                                                    }}
-                                                                    className={cn(
-                                                                        "shrink-0 px-4 h-10 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm",
-                                                                        ux.needsCreatorAction
-                                                                            ? (ux.urgencyLevel === 'critical'
-                                                                                ? "bg-red-600 hover:bg-red-500 text-white shadow-red-500/20"
-                                                                                : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20")
-                                                                            : (isDark ? "bg-white/10 hover:bg-white/15 text-white" : "bg-slate-900 text-white hover:bg-slate-800")
-                                                                    )}
-                                                                >
-                                                                    {ux.cta}
-                                                                </button>
-                                                            </div>
+                                                                        >
+                                                                            {ctaLabel}
+                                                                        </button>
+                                                                    </>
+                                                                );
+                                                            })()}
                                                         </motion.div>
                                                     );
                                                 })}
@@ -2709,6 +2733,88 @@ const MobileDashboardDemo = ({
                                             <div className="text-center py-8">
                                                 <Briefcase className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
                                                 <p className={cn("text-sm", secondaryTextColor)}>No active deals yet.</p>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ) : collabSubTab === 'completed' ? (
+                                    <motion.div
+                                        key="completed"
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        className={cn("p-6 rounded-2xl border mb-6", cardBgColor, borderColor)}
+                                    >
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className={cn("text-xl font-bold", textColor)}>Completed</h2>
+                                            <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-xs font-bold">
+                                                {completedDealsCount} Closed
+                                            </span>
+                                        </div>
+
+                                        {completedDealsCount > 0 ? (
+                                            <div className="space-y-4">
+                                                {completedDealsList.slice(0, 10).map((deal: any, idx: number) => {
+                                                    const ux = getCreatorDealCardUX(deal);
+                                                    return (
+                                                        <motion.div
+                                                            key={idx}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            onTap={() => {
+                                                                triggerHaptic();
+                                                                setSelectedItem(deal);
+                                                                setSelectedType('deal');
+                                                            }}
+                                                            className={cn(
+                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] relative cursor-pointer",
+                                                                borderColor,
+                                                                isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-start justify-between mb-3">
+                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                        {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <h4 className={cn("text-[15px] font-bold tracking-tight truncate", textColor)}>{deal.brand_name}</h4>
+                                                                        <span className={cn("text-[10px] uppercase font-black tracking-widest opacity-40 mt-0.5", textColor)}>{deal.category || 'Brand'}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right shrink-0 pl-3">
+                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                        ₹{(deal.deal_amount || deal.exact_budget || 0).toLocaleString()}
+                                                                    </div>
+                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-slate-300" : "text-slate-500")}>Earned</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className={cn("text-[11px] font-semibold", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                                ✅ Completed
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onPointerDown={(e) => e.stopPropagation()}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    triggerHaptic();
+                                                                    setSelectedItem(deal);
+                                                                    setSelectedType('deal');
+                                                                }}
+                                                                className={cn(
+                                                                    "mt-4 w-full h-12 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95",
+                                                                    isDark ? "bg-white/10 hover:bg-white/15 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+                                                                )}
+                                                            >
+                                                                {ux.cta || 'View Summary'}
+                                                            </button>
+                                                        </motion.div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-8">
+                                                <CheckCircle2 className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
+                                                <p className={cn("text-sm", secondaryTextColor)}>No completed deals yet.</p>
                                             </div>
                                         )}
                                     </motion.div>
