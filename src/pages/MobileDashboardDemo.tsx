@@ -4229,6 +4229,41 @@ const MobileDashboardDemo = ({
                                                         <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
                                                     </button>
                                                     <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+
+                                                    {selectedType === 'deal' && (() => {
+                                                        const statusLower = String(selectedItem?.status || '').toLowerCase();
+                                                        const isSignable = statusLower === 'signed_pending_creator' || statusLower === 'sent' || statusLower.includes('pending_creator') || statusLower === 'signed_by_brand';
+                                                        const isCompleted = statusLower.includes('completed') || statusLower === 'paid';
+                                                        const hasSigned = statusLower.includes('signed') || statusLower.includes('fully_executed') || statusLower.includes('executed') || statusLower.includes('content') || statusLower.includes('live');
+                                                        const canUpdate = hasSigned && !isSignable && !isCompleted;
+
+                                                        if (!canUpdate) return null;
+                                                        return (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        triggerHaptic();
+                                                                        setShowItemMenu(false);
+                                                                        setShowProgressSheet(true);
+                                                                    }}
+                                                                    className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                                >
+                                                                    <span className="flex items-center gap-3">
+                                                                        <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                                                            <TrendingUp className={cn("w-4 h-4", isDark ? "text-purple-300" : "text-purple-700")} />
+                                                                        </span>
+                                                                        <span>
+                                                                            <p className={cn("text-[14px] font-bold", textColor)}>Update progress</p>
+                                                                            <p className={cn("text-[12px] opacity-60", textColor)}>Move the deal to the next stage</p>
+                                                                        </span>
+                                                                    </span>
+                                                                    <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                                </button>
+                                                                <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                                            </>
+                                                        );
+                                                    })()}
+
                                                     <button
                                                         onClick={() => {
                                                             triggerHaptic();
