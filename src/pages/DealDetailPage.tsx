@@ -1398,6 +1398,11 @@ Best regards`;
       return;
     }
 
+    if (stage === 'fully_executed' || stage === 'completed') {
+      toast.message('This step is automatic.');
+      return;
+    }
+
     try {
       await updateDealProgress.mutateAsync({
         dealId: deal.id,

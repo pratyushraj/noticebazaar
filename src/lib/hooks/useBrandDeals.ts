@@ -932,15 +932,24 @@ export const useUpdateDealProgress = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, { dealId: string; stage: DealStage; creator_id: string }>(
     async ({ dealId, stage, creator_id }) => {
+      // Enforce "auto" states: signatures and completion are system-driven.
+      if (stage === 'fully_executed' || stage === 'completed') {
+        throw new Error('This step is automatic and cannot be set manually.');
+      }
+
       // Fetch current deal to validate sequential progression
       const { data: currentDeal, error: fetchError } = await supabase
         .from('brand_deals')
-        .select('progress_percentage, status')
+        .select('progress_percentage, status, creator_id')
         .eq('id', dealId)
         .single();
 
       if (fetchError) {
         throw new Error(`Failed to fetch deal: ${fetchError.message}`);
+      }
+
+      if ((currentDeal as any)?.creator_id && String((currentDeal as any).creator_id) !== String(creator_id)) {
+        throw new Error('You can only update your own deals.');
       }
 
       // Validate sequential progression

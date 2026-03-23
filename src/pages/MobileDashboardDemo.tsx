@@ -539,6 +539,10 @@ const MobileDashboardDemo = ({
     }, [selectedItem, selectedType]);
 
     const handleProgressStageSelect = async (stage: DealStage) => {
+        if (stage === 'fully_executed' || stage === 'completed') {
+            toast.message('This step is automatic.');
+            return;
+        }
         if (!selectedItem?.id || !profile?.id) {
             toast.error('Cannot update progress: missing deal or profile');
             return;

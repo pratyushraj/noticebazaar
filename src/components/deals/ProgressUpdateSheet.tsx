@@ -56,8 +56,11 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
     return currentStage;
   })();
 
+  const isAutoStage = (stage: DealStage) => stage === 'fully_executed' || stage === 'completed';
+
   const handleStageClick = (stage: DealStage) => {
     if (isLoading || stage === uiStage) return;
+    if (isAutoStage(stage)) return;
     
     triggerHaptic(HapticPatterns.medium);
     onStageSelect(stage);
@@ -144,6 +147,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                 {progressStages.map((stageConfig, index) => {
                   const isSelected = stageConfig.value === uiStage;
                   const percent = STAGE_TO_PROGRESS[stageConfig.value] ?? 0;
+                  const isAuto = isAutoStage(stageConfig.value);
                   
                   return (
                     <motion.button
@@ -155,7 +159,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                         delay: index * 0.05,
                       }}
                       onClick={() => handleStageClick(stageConfig.value)}
-                      disabled={isLoading || isSelected}
+                      disabled={isLoading || isSelected || isAuto}
                       whileTap={animations.microTap}
                       className={cn(
                         "w-full",
@@ -167,7 +171,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                         isSelected
                           ? "bg-white/15 border-2 border-white/30 shadow-lg shadow-purple-500/20"
                           : "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20",
-                        isLoading && "opacity-50 cursor-not-allowed",
+                        (isLoading || isAuto) && "opacity-50 cursor-not-allowed",
                         "active:scale-[0.97]"
                       )}
                     >
@@ -186,10 +190,15 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                         {/* Stage Info */}
                         <div className="flex-1 text-left">
                           <div className={cn(
-                            "font-semibold mb-1",
+                            "font-semibold mb-1 flex items-center gap-2",
                             isSelected ? "text-white" : "text-white/90"
                           )}>
-                            {stageConfig.label}
+                            <span>{stageConfig.label}</span>
+                            {isAuto && (
+                              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/70 border border-white/10">
+                                Auto
+                              </span>
+                            )}
                           </div>
                           <div className="text-xs text-white/60">
                             {stageConfig.description}
