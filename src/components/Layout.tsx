@@ -8,6 +8,7 @@ import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
 import { useSession } from '@/contexts/SessionContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { cn } from '@/lib/utils';
+import { useKeyboardAware } from '@/hooks/useKeyboardAware';
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,6 +38,8 @@ const Layout = ({ children }: LayoutProps) => {
   const isDemoOverride = location.pathname === '/creator-dashboard' || location.pathname === '/demo-dashboard';
   const isFullScreenDashboard = location.pathname === '/creator-dashboard' || location.pathname === '/brand-dashboard';
 
+  const { isKeyboardVisible } = useKeyboardAware();
+
   // Show bottom nav for creator routes (default for all users), hide for admin/CA/lawyer/advisor routes
   // Allow bottom nav if:
   // 1. User is logged in (has session)
@@ -52,7 +55,8 @@ const Layout = ({ children }: LayoutProps) => {
     !isClientRoute &&
     !isDemoOverride &&
     !!session && // User must be logged in
-    !isNonCreatorRole; // Don't show if user has a non-creator role
+    !isNonCreatorRole && // Don't show if user has a non-creator role
+    !isKeyboardVisible; // NEW: Hide when keyboard is active on mobile
 
   return (
     <div className="relative min-h-[100dvh] bg-background text-foreground overflow-hidden md:overflow-visible flex flex-col">

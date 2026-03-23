@@ -767,7 +767,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       isBrand: false,
       organizationId: null,
       refetchProfile: () => { },
-      trialStatus: { isTrial: false, isExpired: false, daysRemaining: 0, isLocked: false },
+      trialStatus: { isTrial: false, isExpired: false, daysLeft: 0, trialLocked: false, trialStartedAt: null, trialExpiresAt: null },
     };
     return (
       <SessionContext.Provider value={fallbackValue}>
@@ -804,7 +804,7 @@ export const useSession = () => {
       isBrand: false,
       organizationId: null,
       refetchProfile: () => { },
-      trialStatus: { isTrial: false, isExpired: false, daysRemaining: 0, isLocked: false },
+      trialStatus: { isTrial: false, isExpired: false, daysLeft: 0, trialLocked: false, trialStartedAt: null, trialExpiresAt: null },
     };
   }
   return context;

@@ -904,21 +904,27 @@ const BrandMobileDashboard = ({
 	  useEffect(() => {
 	    if (!profile?.id) return;
 	    let cancelled = false;
+
 	    (async () => {
 	      try {
-	        const { data, error } = await supabase
-          .from('brands')
-          .select('logo_url')
-          .eq('external_id', profile.id)
-          .maybeSingle();
-        if (cancelled) return;
-        if (!error) setBrandLogoDbUrl((data as any)?.logo_url || null);
-      } catch {
-        // ignore
-      }
-    })();
+	        const { data: { session } } = await supabase.auth.getSession();
+	        const token = session?.access_token;
+	        if (!token) return;
+
+	        const apiBase = getApiBaseUrl();
+	        const res = await fetch(`${apiBase}/api/brand-dashboard/profile`, {
+	          headers: { Authorization: `Bearer ${token}` },
+	        });
+	        const json = await res.json().catch(() => ({}));
+	        if (cancelled) return;
+	        if (res.ok && json?.success) setBrandLogoDbUrl(json?.brand?.logo_url || null);
+	      } catch {
+	        // ignore
+	      }
+	    })();
+
 	    return () => { cancelled = true; };
-	  }, [profile?.id, isDemoBrand]);
+	  }, [profile?.id]);
 
   const brandLogo = useMemo(() => {
     const src = profile?.avatar_url || profile?.logo_url || brandLogoDbUrl;

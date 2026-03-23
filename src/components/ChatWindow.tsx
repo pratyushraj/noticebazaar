@@ -12,8 +12,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Message, Profile } from '@/types';
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
-import { 
-  useConversationMessages, 
+import {
+  useConversationMessages,
   useSendConversationMessage,
   findOrCreateConversation,
   isLawyerOrAdvisor,
@@ -24,6 +24,7 @@ import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 // Sample history disabled - no demo messages
 import { isTrialFeatureRestricted } from '@/lib/trial';
 import UpgradeModal from '@/components/trial/UpgradeModal';
+import { useKeyboardAware } from '@/hooks/useKeyboardAware';
 
 // Helper function to convert markdown-like bold syntax to JSX
 const formatMessageContent = (content: string | React.ReactNode): React.ReactNode => {
@@ -55,6 +56,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   const [isCheckingConversation, setIsCheckingConversation] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const { keyboardHeight, isKeyboardVisible } = useKeyboardAware();
 
   const currentUserId = user?.id;
   
@@ -136,7 +138,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   // Count user's sent messages (only for CA/Lawyer chat during trial)
   const userMessagesCount = React.useMemo(() => {
     if (!isCAOrLawyerChat || !trialStatus.isTrial) return 0;
-    return messagesToDisplay.filter(msg => {
+    return messagesToDisplay.filter((msg: any) => {
       return msg.sender_id === currentUserId;
     }).length;
   }, [messagesToDisplay, isCAOrLawyerChat, trialStatus.isTrial, currentUserId]);
@@ -275,7 +277,13 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
   }
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-lg shadow-sm border border-border">
+    <div 
+      className="flex flex-col h-full bg-card rounded-lg shadow-sm border border-border overflow-hidden"
+      style={{ 
+        paddingBottom: isKeyboardVisible ? Math.max(0, keyboardHeight - 20) : 0,
+        transition: 'padding-bottom 0.1s ease-out'
+      }}
+    >
       <div className="flex items-center p-4 border-b border-border">
         <Avatar className="h-9 w-9 mr-3">
           <AvatarImage src={receiverAvatarUrl || DEFAULT_AVATAR_URL} alt={receiverName} />
@@ -290,7 +298,7 @@ const ChatWindow = ({ receiverId, receiverName, receiverAvatarUrl }: ChatWindowP
         {messagesToDisplay.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">No messages yet. Start the conversation!</div>
         ) : (
-          messagesToDisplay.map((msg) => {
+          messagesToDisplay.map((msg: any) => {
             // For real messages, check the actual sender_id against the current user's ID
             const isCurrentUserMessage = msg.sender_id === currentUserId;
             

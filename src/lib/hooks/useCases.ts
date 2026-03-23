@@ -16,9 +16,12 @@ interface UseCasesOptions {
 export const useCases = (options?: UseCasesOptions) => {
   const { clientId, enabled = true, page, pageSize, limit, joinProfile = true } = options || {};
 
-  return useSupabaseQuery<{ data: Case[], count: number | null }, Error>(
+  const queryKey = React.useMemo(() => 
     ['cases', clientId, page, pageSize, limit, joinProfile],
-    async () => {
+    [clientId, page, pageSize, limit, joinProfile]
+  );
+
+  const queryFn = React.useCallback(async () => {
       const selectStatement = joinProfile ? '*, profiles!client_id(first_name, last_name)' : '*';
 
       let query = supabase
@@ -44,7 +47,11 @@ export const useCases = (options?: UseCasesOptions) => {
         throw new Error(error.message);
       }
       return { data: data as Case[], count };
-    },
+    }, [clientId, page, pageSize, limit, joinProfile]);
+
+  return useSupabaseQuery<{ data: Case[], count: number | null }, Error>(
+    queryKey,
+    queryFn,
     {
       enabled: enabled,
       errorMessage: 'Failed to fetch cases',

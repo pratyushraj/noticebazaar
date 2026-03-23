@@ -15,7 +15,6 @@ import {
   Save,
   ShieldCheck,
   Sun,
-  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/contexts/SessionContext';
@@ -176,16 +175,36 @@ const BrandSettings = () => {
       setLogoPreviewUrl(`${publicUrl}?t=${Date.now()}`);
 
       const now = new Date().toISOString();
-      const [{ error: profileError }, { error: brandError }] = await Promise.all([
+      const [{ error: profileError }] = await Promise.all([
         supabase.from('profiles').update({ avatar_url: publicUrl, updated_at: now }).eq('id', profile.id),
-        supabase.from('brands').update({ logo_url: publicUrl }).eq('external_id', profile.id),
+        (async () => {
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+            if (!token) return null;
+            const apiBase = getApiBaseUrl();
+            await fetch(`${apiBase}/api/brand-dashboard/profile`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                name: profileForm.brandName.trim() || profile.business_name || profile.first_name || 'Brand',
+                website_url: profileForm.website.trim() || null,
+                industry: profileForm.industry.trim() || 'General',
+                description: profileForm.description.trim() || null,
+                logo_url: publicUrl,
+              }),
+            }).catch(() => null);
+            return null;
+          } catch {
+            return null;
+          }
+        })() as any,
       ]);
 
       if (profileError) throw profileError;
-      if (brandError) {
-        // non-fatal in older schemas/environments
-        console.warn('[BrandSettings] Failed to update brands.logo_url:', (brandError as any)?.message || brandError);
-      }
 
       toast.success('Logo updated');
       refetchProfile();
@@ -217,11 +236,19 @@ const BrandSettings = () => {
         supportEmail: fallbackSupportEmail || current.supportEmail,
       }));
 
-      const { data: brandRow } = await supabase
-        .from('brands')
-        .select('name, website_url, industry, description, logo_url')
-        .eq('external_id', profile.id)
-        .maybeSingle();
+      let brandRow: any = null;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (token) {
+          const apiBase = getApiBaseUrl();
+          const res = await fetch(`${apiBase}/api/brand-dashboard/profile`, { headers: { Authorization: `Bearer ${token}` } });
+          const json = await res.json().catch(() => ({}));
+          if (res.ok && json?.success) brandRow = json?.brand || null;
+        }
+      } catch {
+        brandRow = null;
+      }
 
       if (cancelled || !brandRow) return;
 

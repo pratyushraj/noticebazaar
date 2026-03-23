@@ -294,6 +294,83 @@ router.patch('/requests/:id/revise', async (req: AuthenticatedRequest, res: Resp
   }
 });
 
+router.get('/profile', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const userId = brand.id;
+
+    const { data, error } = await supabase
+      .from('brands')
+      .select('*')
+      .eq('external_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: data || null });
+  } catch (error: any) {
+    console.error('[BrandDashboard] GET /profile failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to fetch brand profile' });
+  }
+});
+
+router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const userId = brand.id;
+    const body = req.body || {};
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    if (!name) return res.status(400).json({ success: false, error: 'Brand name required' });
+
+    const payload: any = {
+      external_id: userId,
+      name,
+      website_url: typeof body.website_url === 'string' ? body.website_url.trim() || null : null,
+      industry: typeof body.industry === 'string' ? body.industry.trim() || 'General' : 'General',
+      description: typeof body.description === 'string' ? body.description.trim() || null : null,
+      logo_url: typeof body.logo_url === 'string' ? body.logo_url.trim() || null : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: existing, error: existingError } = await supabase
+      .from('brands')
+      .select('id')
+      .eq('external_id', userId)
+      .maybeSingle();
+    if (existingError) throw existingError;
+
+    if (existing?.id) {
+      const { data: updated, error: updErr } = await supabase
+        .from('brands')
+        .update(payload)
+        .eq('id', existing.id)
+        .select('*')
+        .maybeSingle();
+      if (updErr) throw updErr;
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ success: true, brand: updated || null });
+    }
+
+    const { data: inserted, error: insErr } = await supabase
+      .from('brands')
+      .insert({ ...payload, created_at: new Date().toISOString() })
+      .select('*')
+      .maybeSingle();
+    if (insErr) throw insErr;
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: inserted || null });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PUT /profile failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to save brand profile' });
+  }
+});
+
 router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const brand = await requireBrand(req, res);

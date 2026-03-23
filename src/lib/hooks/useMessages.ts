@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types';
@@ -14,27 +15,34 @@ interface UseMessagesOptions {
 export const useMessages = (options: UseMessagesOptions) => {
   const { currentUserId, receiverId, enabled = true } = options;
 
-  return useSupabaseQuery<Message[], Error>(
+  const queryKey = React.useMemo(() => 
     ['messages', currentUserId, receiverId],
-    async () => {
-      if (!currentUserId || !receiverId) {
-        throw new Error('Both currentUserId and receiverId are required to fetch messages.');
-      }
+    [currentUserId, receiverId]
+  );
 
-      const { data, error } = await supabase
-        .from('legacy_messages')
-        .select(`
-          *,
-          sender:profiles!sender_id(first_name, last_name, avatar_url)
-        `)
-        .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${currentUserId})`)
-        .order('sent_at', { ascending: true });
+  const queryFn = React.useCallback(async () => {
+    if (!currentUserId || !receiverId) {
+      throw new Error('Both currentUserId and receiverId are required to fetch messages.');
+    }
 
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data as Message[];
-    },
+    const { data, error } = await supabase
+      .from('legacy_messages')
+      .select(`
+        *,
+        sender:profiles!sender_id(first_name, last_name, avatar_url)
+      `)
+      .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${currentUserId})`)
+      .order('sent_at', { ascending: true });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data as Message[];
+  }, [currentUserId, receiverId]);
+
+  return useSupabaseQuery<Message[], Error>(
+    queryKey,
+    queryFn,
     {
       enabled: enabled && !!currentUserId && !!receiverId,
       errorMessage: 'Failed to fetch messages',

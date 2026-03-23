@@ -8,11 +8,12 @@ import { cn } from '@/lib/utils';
 import { iconSizes, animations, spotlight, shadows, radius } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { motion } from 'framer-motion';
+import { useKeyboardAware } from '@/hooks/useKeyboardAware';
 
 const CreatorBottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const { isKeyboardVisible: isKeyboardOpen } = useKeyboardAware();
 
   // Use centralized haptic utility
 
@@ -65,83 +66,6 @@ const CreatorBottomNav = () => {
   };
 
 
-  // Detect keyboard open/close using multiple methods
-  useEffect(() => {
-    // Only run on mobile devices
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) return;
-
-    const initialHeight = window.innerHeight;
-    const viewportInitialHeight = window.visualViewport?.height || window.innerHeight;
-
-    const handleViewportResize = () => {
-      if (!window.visualViewport) {
-        // Fallback: use window height comparison
-        const currentHeight = window.innerHeight;
-        const heightDiff = initialHeight - currentHeight;
-        // If height decreased by more than 150px, keyboard is likely open
-        setIsKeyboardOpen(heightDiff > 150);
-        return;
-      }
-
-      const viewport = window.visualViewport;
-      const currentViewportHeight = viewport.height;
-
-      // More sensitive threshold: if viewport height is less than 60% of initial, or
-      // if the difference is more than 200px, keyboard is open
-      const threshold1 = viewportInitialHeight * 0.6;
-      const threshold2 = viewportInitialHeight - 200;
-      const keyboardOpen = currentViewportHeight < Math.max(threshold1, threshold2);
-
-      setIsKeyboardOpen(keyboardOpen);
-    };
-
-    // Also detect input focus/blur as additional signal
-    const handleInputFocus = () => {
-      // Small delay to let viewport adjust
-      setTimeout(() => {
-        handleViewportResize();
-      }, 100);
-    };
-
-    const handleInputBlur = () => {
-      // Delay to check if keyboard actually closed
-      setTimeout(() => {
-        handleViewportResize();
-      }, 300);
-    };
-
-    // Initial check
-    handleViewportResize();
-
-    // Listen to visual viewport resize events
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleViewportResize);
-      window.visualViewport.addEventListener('scroll', handleViewportResize);
-    }
-
-    // Fallback: window resize
-    window.addEventListener('resize', handleViewportResize);
-
-    // Listen to input focus/blur events
-    const inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-      input.addEventListener('focus', handleInputFocus);
-      input.addEventListener('blur', handleInputBlur);
-    });
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleViewportResize);
-        window.visualViewport.removeEventListener('scroll', handleViewportResize);
-      }
-      window.removeEventListener('resize', handleViewportResize);
-      inputs.forEach(input => {
-        input.removeEventListener('focus', handleInputFocus);
-        input.removeEventListener('blur', handleInputBlur);
-      });
-    };
-  }, [location.pathname]); // Re-run when route changes to catch new inputs
 
   const bottomNavContent = (
     <motion.div

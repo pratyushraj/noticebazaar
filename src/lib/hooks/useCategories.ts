@@ -14,9 +14,12 @@ interface UseCategoriesOptions {
 export const useCategories = (options?: UseCategoriesOptions) => {
   const { clientId, enabled = true, includeSystemCategories = true, disablePagination = true } = options || {};
 
-  return useSupabaseQuery<{ data: Category[], count: number | null }, Error>(
+  const queryKey = React.useMemo(() => 
     ['categories', clientId, includeSystemCategories, disablePagination],
-    async () => {
+    [clientId, includeSystemCategories, disablePagination]
+  );
+
+  const queryFn = React.useCallback(async () => {
       let query = supabase
         .from('categories')
         .select('*', { count: 'exact' })
@@ -45,7 +48,11 @@ export const useCategories = (options?: UseCategoriesOptions) => {
         throw new Error(error.message);
       }
       return { data: data as Category[], count };
-    },
+    }, [clientId, includeSystemCategories, disablePagination]);
+
+  return useSupabaseQuery<{ data: Category[], count: number | null }, Error>(
+    queryKey,
+    queryFn,
     {
       enabled: enabled,
       errorMessage: 'Failed to fetch categories',

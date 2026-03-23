@@ -17,9 +17,12 @@ interface UseConsultationsOptions {
 export const useConsultations = (options?: UseConsultationsOptions) => {
   const { clientId, status, enabled = true, page, pageSize, joinProfile = true, limit } = options || {};
 
-  return useSupabaseQuery<{ data: Consultation[], count: number | null }, Error>(
+  const queryKey = React.useMemo(() => 
     ['consultations', clientId, status, page, pageSize, limit, joinProfile],
-    async () => {
+    [clientId, status, page, pageSize, limit, joinProfile]
+  );
+
+  const queryFn = React.useCallback(async () => {
       const selectStatement = joinProfile ? '*, profiles!client_id(first_name, last_name)' : '*';
 
       let query = supabase
@@ -48,7 +51,11 @@ export const useConsultations = (options?: UseConsultationsOptions) => {
         throw new Error(error.message);
       }
       return { data: data as Consultation[], count };
-    },
+    }, [clientId, status, page, pageSize, limit, joinProfile]);
+
+  return useSupabaseQuery<{ data: Consultation[], count: number | null }, Error>(
+    queryKey,
+    queryFn,
     {
       enabled: enabled,
       errorMessage: 'Failed to fetch consultations',
