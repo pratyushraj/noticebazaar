@@ -5,7 +5,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
-import { AlertTriangle, CheckCircle2, Clock, Loader2, Lock, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Instagram, Loader2, Lock, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ interface CollabRequest {
   id: string;
   brand_name: string;
   brand_email: string;
+  brand_instagram?: string | null;
   collab_type: CollabType;
   budget_range: string | null;
   exact_budget: number | null;
@@ -101,6 +102,16 @@ const formatBudget = (request: CollabRequest): string => {
     return 'Barter';
   }
   return 'Not specified';
+};
+
+const normalizeInstagramHandle = (value?: string | null): string | null => {
+  if (!value) return null;
+  let v = String(value).trim();
+  if (!v) return null;
+  v = v.replace(/^https?:\/\/(www\.)?instagram\.com\//i, '');
+  v = v.replace(/^@+/, '');
+  v = v.split(/[/?#]/)[0] || '';
+  return v.trim() || null;
 };
 
 const CollabRequestBriefPage = () => {
@@ -216,6 +227,7 @@ const CollabRequestBriefPage = () => {
   const subtitle = isBarterLike(request.collab_type) ? 'Barter collaboration' : (request.brand_name ?? 'Brand');
   const budgetLabel = formatBudget(request);
   const deadlineDate = request.deadline ? new Date(request.deadline) : null;
+  const brandInstagramHandle = normalizeInstagramHandle((request as any)?.brand_instagram);
 
   const timeLeft = (() => {
     if (!deadlineDate || Number.isNaN(deadlineDate.getTime())) return null;
@@ -332,6 +344,20 @@ const CollabRequestBriefPage = () => {
               <h2 className="text-[18px] font-bold text-white tracking-tight break-words">{request.brand_name ?? 'Brand'}</h2>
               <div className="flex items-center gap-2 mt-1 text-xs text-blue-300/70">
                 {request.brand_email ? <span className="truncate">{request.brand_email}</span> : <span>Protected offer</span>}
+                {brandInstagramHandle && (
+                  <>
+                    <span className="text-blue-400/60">•</span>
+                    <a
+                      href={`https://instagram.com/${brandInstagramHandle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-blue-200/80 hover:text-white transition-colors"
+                      aria-label={`Open ${request.brand_name || 'brand'} Instagram`}
+                    >
+                      <Instagram className="h-3.5 w-3.5" />
+                    </a>
+                  </>
+                )}
                 <span className="text-blue-400/60">•</span>
                 <span className="inline-flex items-center gap-1">
                   <Lock className="h-3 w-3" /> Creator Armour protected
