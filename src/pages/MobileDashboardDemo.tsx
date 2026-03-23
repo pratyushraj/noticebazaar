@@ -4133,7 +4133,7 @@ const MobileDashboardDemo = ({
                                                     contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                 } else if (isSigned) {
                                                     triggerHaptic();
-                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    setShowProgressSheet(true);
                                                 } else if (selectedItem.contract_file_url) {
                                                     triggerHaptic();
                                                     contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4182,37 +4182,14 @@ const MobileDashboardDemo = ({
                                                     if (s.includes('content_delivered') || s.includes('content delivered') || s.includes('revision_done') || s.includes('revision done')) return 'Waiting for Review';
                                                     if (s.includes('content_approved') || s.includes('content approved')) return 'Payment Pending';
                                                     if (s.includes('payment_released') || s.includes('payment released')) return 'Payment Released';
+                                                    const isPostSign = s.includes('fully_executed') || (s.includes('signed') && !s.includes('pending_creator') && s !== 'signed_by_brand') || s.includes('executed') || s.includes('live');
+                                                    if (isPostSign) return 'Update progress';
                                                     if (s === 'drafting' || s === 'brand_details_pending') return 'View Contract Details';
                                                     return 'View Contract Details';
                                                 })()}
                                             </span>
                                         )}
                                     </motion.button>
-
-                                    {selectedType === 'deal' && (() => {
-                                        const statusLower = String(selectedItem?.status || '').toLowerCase();
-                                        const isSignable = statusLower === 'signed_pending_creator' || statusLower === 'sent' || statusLower.includes('pending_creator') || statusLower === 'signed_by_brand';
-                                        const isCompleted = statusLower.includes('completed') || statusLower === 'paid';
-                                        const hasSigned = statusLower.includes('signed') || statusLower.includes('fully_executed') || statusLower.includes('executed') || statusLower.includes('content') || statusLower.includes('live');
-                                        const canUpdate = hasSigned && !isSignable && !isCompleted;
-
-                                        if (!canUpdate) return null;
-                                        return (
-                                            <button
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setShowProgressSheet(true);
-                                                }}
-                                                className={cn(
-                                                    "w-full py-3 rounded-2xl flex items-center justify-center gap-2 border transition-all active:scale-95",
-                                                    isDark ? "bg-white/5 border-white/10 hover:bg-white/10 text-white" : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800"
-                                                )}
-                                            >
-                                                <TrendingUp className="w-4 h-4" />
-                                                <span className="font-bold text-[14px]">Update progress</span>
-                                            </button>
-                                        );
-                                    })()}
 
                                     {selectedType === 'offer' && (
                                         <div className="flex flex-col gap-2.5 mt-3 pt-3">
