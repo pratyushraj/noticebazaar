@@ -72,14 +72,11 @@ const forceSingleReactChunkPlugin = (): any => {
 
 export default defineConfig(() => ({
   server: {
-    host: "::",
+    // Use the host from the current URL for HMR (mobile + LAN testing).
+    // Avoid hardcoding `hmr.host = "localhost"` which breaks WebSocket on phones.
+    host: true,
     port: 8080,
-    hmr: {
-      host: "localhost",
-      port: 8080,
-      clientPort: 8080,
-      protocol: "ws",
-    },
+    strictPort: true,
   },
   build: {
     sourcemap: false, 
