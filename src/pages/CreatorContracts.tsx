@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatIndianCurrency } from '@/lib/utils/currency';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
+import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 
 const CreatorContracts = () => {
   const navigate = useNavigate();
@@ -316,32 +317,25 @@ const CreatorContracts = () => {
     return { label: status || 'Pending', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
   };
 
-  // Get primary CTA button text and action
-  const getPrimaryAction = (status: string, dealData: any) => {
-    const statusLower = status?.toLowerCase() || '';
-    const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
-    const dealStatus = dealData?.status?.toLowerCase() || '';
+  const getCreatorDealsListCta = (dealData: any) => {
+    const dealStatus = String(dealData?.status || '').toLowerCase();
     const isBarterDrafting = (dealData as any)?.deal_type === 'barter' && dealStatus === 'drafting';
-
     if (isBarterDrafting) {
-      return { label: 'Add delivery details', action: 'delivery_details' };
+      return {
+        label: 'Add delivery details',
+        tone: 'action' as const,
+        disabled: false,
+        nav: `/creator-contracts/${dealData?.id}/delivery-details`,
+      };
     }
-    if (statusLower.includes('awaiting product shipment') || statusLower === 'awaiting_product_shipment') {
-      return { label: 'View Details', action: 'view' };
-    }
-    if (statusLower.includes('negotiation') || brandResponseStatus === 'negotiating') {
-      return { label: 'Complete Negotiation', action: 'negotiate' };
-    }
-    if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready')) {
-      return { label: 'View Contract', action: 'view' };
-    }
-    if (statusLower.includes('payment') || statusLower === 'payment pending') {
-      return { label: 'Track Payment', action: 'track' };
-    }
-    if (statusLower.includes('signed') || brandResponseStatus === 'accepted_verified') {
-      return { label: 'View Details', action: 'view' };
-    }
-    return { label: 'View Deal', action: 'view' };
+
+    const cta = getDealPrimaryCta({ role: 'creator', deal: dealData });
+    return {
+      label: cta.label,
+      tone: cta.tone,
+      disabled: cta.disabled,
+      nav: `/creator-contracts/${dealData?.id}`,
+    };
   };
 
   // Calculate closed count (paid + rejected)
@@ -912,11 +906,11 @@ const CreatorContracts = () => {
               ) : filteredDeals.length > 0 ? (
                 /* Deals List - Compact card style (match Payments page) */
                 <div className={cn("space-y-3")}>
-                  {filteredDeals.map((deal, index) => {
-                    const dealData = brandDeals.find(d => d.id === deal.id);
-                    const statusPill = getStatusPill(deal.status, dealData);
-                    const primaryAction = getPrimaryAction(deal.status, dealData);
-                    const dueDate = dealData?.payment_expected_date || dealData?.due_date;
+	                  {filteredDeals.map((deal, index) => {
+	                    const dealData = brandDeals.find(d => d.id === deal.id);
+	                    const statusPill = getStatusPill(deal.status, dealData);
+	                    const primaryCta = getCreatorDealsListCta(dealData);
+	                    const dueDate = dealData?.payment_expected_date || dealData?.due_date;
                     const now = new Date();
                     const daysUntil = dueDate
                       ? Math.ceil((new Date(dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
@@ -941,30 +935,22 @@ const CreatorContracts = () => {
                         className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
                         role="button"
                         tabIndex={0}
-                        aria-label={`Deal: ${deal.brand} - ${statusPill.label}`}
-                        onClick={() => {
-                          triggerHaptic(HapticPatterns.light);
-                          if (primaryAction.action === 'delivery_details') {
-                            navigate(`/creator-contracts/${deal.id}/delivery-details`);
-                          } else {
-                            navigate(`/creator-contracts/${deal.id}`);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            if (primaryAction.action === 'delivery_details') {
-                              navigate(`/creator-contracts/${deal.id}/delivery-details`);
-                            } else {
-                              navigate(`/creator-contracts/${deal.id}`);
-                            }
-                          }
-                        }}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base font-bold text-white truncate">{deal.brand}</h3>
-                          </div>
+	                        aria-label={`Deal: ${deal.brand} - ${statusPill.label}`}
+	                        onClick={() => {
+	                          triggerHaptic(HapticPatterns.light);
+	                          navigate(primaryCta.nav);
+	                        }}
+	                        onKeyDown={(e) => {
+	                          if (e.key === 'Enter' || e.key === ' ') {
+	                            e.preventDefault();
+	                            navigate(primaryCta.nav);
+	                          }
+	                        }}
+	                      >
+	                        <div className="flex items-center justify-between gap-3">
+	                          <div className="flex-1 min-w-0">
+	                            <h3 className="text-base font-bold text-white truncate">{deal.brand}</h3>
+	                          </div>
                           <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
                             <div className="text-lg font-bold text-white">
                               ₹{Math.round(deal.value).toLocaleString('en-IN')}
@@ -978,13 +964,30 @@ const CreatorContracts = () => {
                                   : statusPill.color
                             )}>
                               {dueLabel}
-                            </span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+	                            </span>
+	                          </div>
+	                        </div>
+
+	                        <button
+	                          type="button"
+	                          onClick={(e) => {
+	                            e.stopPropagation();
+	                            triggerHaptic(HapticPatterns.light);
+	                            navigate(primaryCta.nav);
+	                          }}
+	                          disabled={primaryCta.disabled}
+	                          className={cn(
+	                            'mt-3 w-full h-11 rounded-xl text-[13px] font-bold transition active:scale-[0.98] disabled:opacity-60',
+	                            dealPrimaryCtaButtonClass(primaryCta.tone),
+	                            primaryCta.disabled && 'cursor-not-allowed active:scale-100'
+	                          )}
+	                        >
+	                          {primaryCta.label}
+	                        </button>
+	                      </motion.div>
+	                    );
+	                  })}
+	                </div>
               ) : (
                 /* Empty State - Centered and compact */
                 <div className="flex justify-center md:pt-6">
