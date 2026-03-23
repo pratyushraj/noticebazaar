@@ -4120,6 +4120,16 @@ const MobileDashboardDemo = ({
                                                 const isRevisionDone = status.includes('revision_done') || status.includes('revision done') || status.includes('revision_submitted') || status.includes('revision submitted');
                                                 const isContentApproved = status.includes('content_approved') || status.includes('content approved');
                                                 const isPaymentReleased = status.includes('payment_released') || status.includes('payment released');
+
+                                                const primaryDealCta = (() => {
+                                                    if (isSignable) return '✍️ Sign Contract';
+                                                    if (isContentMaking) return 'Deliver Content';
+                                                    if (isRevisionRequested) return 'Upload Revision';
+                                                    if (isContentDelivered || isRevisionDone) return 'Waiting for Review';
+                                                    if (isContentApproved) return 'Payment Pending';
+                                                    if (isPaymentReleased) return 'Payment Released';
+                                                    return 'Update progress';
+                                                })();
                                                 
                                                 if (isSignable) {
                                                     triggerHaptic();
@@ -4131,20 +4141,18 @@ const MobileDashboardDemo = ({
                                                 } else if (isContentDelivered || isRevisionDone || isContentApproved || isPaymentReleased) {
                                                     triggerHaptic();
                                                     contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                } else if (primaryDealCta === 'Update progress') {
+                                                    triggerHaptic();
+                                                    setShowProgressSheet(true);
                                                 } else if (isSigned) {
                                                     triggerHaptic();
                                                     setShowProgressSheet(true);
                                                 } else if (selectedItem.contract_file_url) {
                                                     triggerHaptic();
-                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    setShowProgressSheet(true);
                                                 } else if (selectedDealId) {
                                                     triggerHaptic();
-                                                    const isDrafting = status === 'drafting' || status === 'brand_details_pending';
-                                                    if (isDrafting) {
-                                                        contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                    } else {
-                                                        contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                    }
+                                                    setShowProgressSheet(true);
                                                 } else {
                                                     triggerHaptic();
                                                     toast.error('Deal details unavailable');
@@ -4182,10 +4190,8 @@ const MobileDashboardDemo = ({
                                                     if (s.includes('content_delivered') || s.includes('content delivered') || s.includes('revision_done') || s.includes('revision done')) return 'Waiting for Review';
                                                     if (s.includes('content_approved') || s.includes('content approved')) return 'Payment Pending';
                                                     if (s.includes('payment_released') || s.includes('payment released')) return 'Payment Released';
-                                                    const isPostSign = s.includes('fully_executed') || (s.includes('signed') && !s.includes('pending_creator') && s !== 'signed_by_brand') || s.includes('executed') || s.includes('live');
-                                                    if (isPostSign) return 'Update progress';
-                                                    if (s === 'drafting' || s === 'brand_details_pending') return 'View Contract Details';
-                                                    return 'View Contract Details';
+
+                                                    return 'Update progress';
                                                 })()}
                                             </span>
                                         )}
