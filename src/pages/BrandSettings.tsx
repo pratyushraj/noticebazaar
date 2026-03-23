@@ -314,6 +314,9 @@ const BrandSettings = () => {
     setIsSavingProfile(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -327,37 +330,31 @@ const BrandSettings = () => {
 
       if (profileError) throw profileError;
 
-      const { data: existingBrand, error: existingBrandError } = await supabase
-        .from('brands')
-        .select('id')
-        .eq('external_id', profile.id)
-        .maybeSingle();
-
-      if (existingBrandError) throw existingBrandError;
-
-      const brandPayload = {
-        external_id: profile.id,
-        name: normalizedName,
-        website_url: profileForm.website.trim() || null,
-        industry: profileForm.industry.trim() || 'General',
-        description: profileForm.description.trim() || null,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (existingBrand?.id) {
-        const { error: brandUpdateError } = await supabase
-          .from('brands')
-          .update(brandPayload as any)
-          .eq('id', existingBrand.id);
-        if (brandUpdateError) throw brandUpdateError;
-      } else {
-        const { error: brandInsertError } = await supabase
-          .from('brands')
-          .insert({
-            ...brandPayload,
-            created_at: new Date().toISOString(),
-          } as any);
-        if (brandInsertError) throw brandInsertError;
+      // `brands` table usually has RLS enabled; use the backend (service role) to upsert safely.
+      try {
+        if (token) {
+          const apiBase = getApiBaseUrl();
+          const resp = await fetch(`${apiBase}/api/brand-dashboard/identity`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              name: normalizedName,
+              website_url: profileForm.website.trim() || null,
+              industry: profileForm.industry.trim() || null,
+              description: profileForm.description.trim() || null,
+              logo_url: (profile as any)?.avatar_url || null,
+            }),
+          });
+          if (!resp.ok) {
+            const payload = await resp.json().catch(() => ({}));
+            console.warn('[BrandSettings] identity upsert failed:', payload?.error || resp.statusText);
+          }
+        }
+      } catch (err) {
+        console.warn('[BrandSettings] identity upsert request failed:', err);
       }
 
       if (typeof window !== 'undefined') {

@@ -117,6 +117,63 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+// Upsert the brand identity row (service role; bypasses RLS).
+// Used by the brand console settings page and brand signup flows.
+router.post('/identity', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const name = String(req.body?.name || '').trim();
+    if (!name) return res.status(400).json({ success: false, error: 'Brand name is required' });
+
+    const payload: any = {
+      external_id: brand.id,
+      name,
+      website_url: req.body?.website_url ? String(req.body.website_url).trim() : null,
+      industry: req.body?.industry ? String(req.body.industry).trim() : null,
+      description: req.body?.description ? String(req.body.description).trim() : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    // If the caller passes a logo url, persist it (non-fatal if column doesn't exist).
+    if (req.body?.logo_url) payload.logo_url = String(req.body.logo_url).trim();
+
+    const { data: existing, error: existingErr } = await supabase
+      .from('brands')
+      .select('id')
+      .eq('external_id', brand.id)
+      .maybeSingle();
+    if (existingErr) throw existingErr;
+
+    const now = new Date().toISOString();
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from('brands')
+        .update(payload)
+        .eq('id', existing.id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ success: true, brand: data || null });
+    }
+
+    const insertPayload = { ...payload, created_at: now };
+    const { data, error } = await supabase
+      .from('brands')
+      .insert(insertPayload)
+      .select('*')
+      .maybeSingle();
+    if (error) throw error;
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: data || null });
+  } catch (error: any) {
+    console.error('[BrandDashboard] POST /identity failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to save brand identity' });
+  }
+});
+
 router.patch('/requests/:id/withdraw', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const brand = await requireBrand(req, res);

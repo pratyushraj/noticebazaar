@@ -50,25 +50,26 @@ const Signup = () => {
       throw new Error('Failed to set up brand account');
     }
 
-    // Ensure `brands` row exists (brand dashboard reads brands.external_id).
-    const { data: existing } = await supabase
-      .from('brands')
-      .select('id')
-      .eq('external_id', userId)
-      .maybeSingle();
-
-    if (!existing?.id) {
-      const { error: insertErr } = await supabase.from('brands').insert({
-        external_id: userId,
-        name: cleanBrandName,
-        industry: cleanIndustry,
-        source: 'signup',
-        status: 'active',
-        verified: false,
-      } as any);
-      if (insertErr) {
-        console.warn('[Signup] Failed to create brands row:', insertErr);
+    // Ensure `brands` row exists (RLS is enabled, so use the backend service role).
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (token) {
+        const apiBaseUrl = getApiBaseUrl();
+        await fetch(`${apiBaseUrl}/api/brand-dashboard/identity`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: cleanBrandName,
+            industry: cleanIndustry,
+          }),
+        });
       }
+    } catch (err) {
+      console.warn('[Signup] Failed to ensure brand identity:', err);
     }
   };
 
