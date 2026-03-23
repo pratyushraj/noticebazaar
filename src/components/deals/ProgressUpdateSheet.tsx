@@ -6,7 +6,7 @@ import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { animations, motion as motionTokens, glass, radius, shadows, typography, iconSizes } from '@/lib/design-system';
-import { DealStage, STAGE_TO_PROGRESS, STAGE_LABELS } from '@/lib/hooks/useBrandDeals';
+import { DealStage, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
 
 interface ProgressUpdateSheetProps {
   isOpen: boolean;
@@ -16,37 +16,18 @@ interface ProgressUpdateSheetProps {
   isLoading?: boolean;
 }
 
-const progressStages = [
-  {
-    label: 'Negotiation',
-    value: 'negotiation' as DealStage,
-    percent: 30,
-    description: 'Terms being discussed',
-  },
-  {
-    label: 'Signed',
-    value: 'signed' as DealStage,
-    percent: 70,
-    description: 'Contract signed by both parties',
-  },
-  {
-    label: 'Content Making',
-    value: 'content_making' as DealStage,
-    percent: 80,
-    description: 'Creator is producing content',
-  },
-  {
-    label: 'Content Delivered',
-    value: 'content_delivered' as DealStage,
-    percent: 90,
-    description: 'Content delivered to brand',
-  },
-  {
-    label: 'Completed',
-    value: 'completed' as DealStage,
-    percent: 100,
-    description: 'Deal fully completed',
-  },
+const progressStages: Array<{
+  label: string;
+  value: DealStage;
+  description: string;
+}> = [
+  { label: 'Negotiation', value: 'negotiation', description: 'Terms being discussed' },
+  // NOTE: The backend stage enum does not include a literal "signed" stage.
+  // "Signed" in UI maps to the legally active state (fully executed).
+  { label: 'Signed', value: 'fully_executed', description: 'Contract signed by both parties' },
+  { label: 'Content Making', value: 'content_making', description: 'Creator is producing content' },
+  { label: 'Content Delivered', value: 'content_delivered', description: 'Content delivered to brand' },
+  { label: 'Completed', value: 'completed', description: 'Deal fully completed' },
 ];
 
 const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
@@ -143,6 +124,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
               <div className="space-y-3">
                 {progressStages.map((stageConfig, index) => {
                   const isSelected = stageConfig.value === currentStage;
+                  const percent = STAGE_TO_PROGRESS[stageConfig.value] ?? 0;
                   
                   return (
                     <motion.button
@@ -179,7 +161,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                             ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white"
                             : "bg-white/10 text-white/70"
                         )}>
-                          {stageConfig.percent}%
+                          {percent}%
                         </div>
                         
                         {/* Stage Info */}
