@@ -21,13 +21,12 @@ const progressStages: Array<{
   value: DealStage;
   description: string;
 }> = [
-  { label: 'Negotiation', value: 'negotiation', description: 'Terms being discussed' },
-  // NOTE: The backend stage enum does not include a literal "signed" stage.
-  // "Signed" in UI maps to the legally active state (fully executed).
+  // Keep this list aligned with the Creator UI timeline: Contract → Signed → Create → Deliver → Done
+  { label: 'Contract', value: 'contract_ready', description: 'Agreement is being finalized' },
   { label: 'Signed', value: 'fully_executed', description: 'Contract signed by both parties' },
-  { label: 'Content Making', value: 'content_making', description: 'Creator is producing content' },
-  { label: 'Content Delivered', value: 'content_delivered', description: 'Content delivered to brand' },
-  { label: 'Completed', value: 'completed', description: 'Deal fully completed' },
+  { label: 'Create', value: 'content_making', description: 'You’re producing the content' },
+  { label: 'Deliver', value: 'content_delivered', description: 'Content submitted to brand' },
+  { label: 'Done', value: 'completed', description: 'Deal fully completed' },
 ];
 
 const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
@@ -37,8 +36,28 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
   onStageSelect,
   isLoading = false,
 }) => {
+  const uiStage: DealStage | undefined = (() => {
+    // Collapse legacy/internal stages into the simplified UI stages.
+    if (!currentStage) return undefined;
+    if (currentStage === 'contract_ready') return 'contract_ready';
+    if (currentStage === 'fully_executed') return 'fully_executed';
+    if (currentStage === 'content_making') return 'content_making';
+    if (currentStage === 'content_delivered') return 'content_delivered';
+    if (currentStage === 'completed') return 'completed';
+
+    // Legacy/support stages
+    if (currentStage === 'negotiation') return 'contract_ready';
+    if (currentStage === 'details_submitted') return 'contract_ready';
+    if (currentStage === 'brand_signed') return 'contract_ready';
+    if (currentStage === 'awaiting_product_shipment') return 'contract_ready';
+    if (currentStage === 'needs_changes') return 'contract_ready';
+    if (currentStage === 'live_deal') return 'content_making';
+    if (currentStage === 'declined') return 'contract_ready';
+    return currentStage;
+  })();
+
   const handleStageClick = (stage: DealStage) => {
-    if (isLoading || stage === currentStage) return;
+    if (isLoading || stage === uiStage) return;
     
     triggerHaptic(HapticPatterns.medium);
     onStageSelect(stage);
@@ -123,7 +142,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
             }}>
               <div className="space-y-3">
                 {progressStages.map((stageConfig, index) => {
-                  const isSelected = stageConfig.value === currentStage;
+                  const isSelected = stageConfig.value === uiStage;
                   const percent = STAGE_TO_PROGRESS[stageConfig.value] ?? 0;
                   
                   return (
