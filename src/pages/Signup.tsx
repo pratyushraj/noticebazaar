@@ -84,6 +84,10 @@ const Signup = () => {
         },
       });
 
+      // Best-effort enhancement: in fresh signups the profile row may not exist yet,
+      // and some environments may not have this endpoint. Treat 404 as non-fatal.
+      if (response.status === 404) return;
+
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         console.warn('[Signup] Welcome email trigger failed:', payload?.error || response.statusText);
@@ -326,9 +330,6 @@ const Signup = () => {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
 
             if (currentSession) {
-              // Fire-and-forget: welcome email trigger
-              void triggerWelcomeEmail(currentSession.access_token);
-
               // Session exists - wait for profile and navigate
               let attempts = 0;
               const maxAttempts = 10;
@@ -343,6 +344,10 @@ const Signup = () => {
                 if (profileData || attempts >= maxAttempts) {
                   clearInterval(checkProfile);
                   sessionStorage.removeItem('just_signed_up');
+                  if (profileData) {
+                    // Fire-and-forget: welcome email trigger (only after profile exists to avoid 404 noise)
+                    void triggerWelcomeEmail(currentSession.access_token);
+                  }
                   if (accountMode === 'brand') {
                     try {
                       await ensureBrandWorkspace(currentSession.user.id, currentSession.user.email || emailAtSignup);
