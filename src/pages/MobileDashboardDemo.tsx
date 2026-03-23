@@ -496,6 +496,12 @@ const MobileDashboardDemo = ({
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
+    const [showDeliverContentModal, setShowDeliverContentModal] = useState(false);
+    const [deliverContentUrlDraft, setDeliverContentUrlDraft] = useState('');
+    const [deliverCaptionDraft, setDeliverCaptionDraft] = useState('');
+    const [deliverDriveLinkDraft, setDeliverDriveLinkDraft] = useState('');
+    const [deliverNotesDraft, setDeliverNotesDraft] = useState('');
+    const [isSubmittingContent, setIsSubmittingContent] = useState(false);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -526,12 +532,6 @@ const MobileDashboardDemo = ({
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
     const [itemDetailPortalRoot, setItemDetailPortalRoot] = useState<HTMLElement | null>(null);
-    const [showDeliverContentModal, setShowDeliverContentModal] = useState(false);
-    const [deliverContentUrlDraft, setDeliverContentUrlDraft] = useState('');
-    const [deliverCaptionDraft, setDeliverCaptionDraft] = useState('');
-    const [deliverDriveLinkDraft, setDeliverDriveLinkDraft] = useState('');
-    const [deliverNotesDraft, setDeliverNotesDraft] = useState('');
-    const [isSubmittingContent, setIsSubmittingContent] = useState(false);
 
     const currentDealStage: DealStage | undefined = React.useMemo(() => {
         if (selectedType !== 'deal' || !selectedItem) return undefined;
