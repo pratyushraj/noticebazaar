@@ -516,6 +516,20 @@ const CollabLinkLanding = () => {
   const [lastProfileSaveAt, setLastProfileSaveAt] = useState<Date | null>(null);
   const [previewAsBrand, setPreviewAsBrand] = useState(false);
 
+  // If the brand came here via "Send offer", auto-open the offer flow.
+  useEffect(() => {
+    const offerParam = (searchParams.get('offer') || '').toLowerCase();
+    const shouldStartOffer = offerParam === 'true' || offerParam === '1' || offerParam === 'yes';
+    if (!shouldStartOffer) return;
+    if (hasStartedOffer) return;
+
+    setHasStartedOffer(true);
+    setShowDetailedForm(true);
+    window.setTimeout(() => {
+      document.getElementById('detailed-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, [searchParams, hasStartedOffer]);
+
   // Save and continue later
   const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   const [draftEmail, setDraftEmail] = useState('');

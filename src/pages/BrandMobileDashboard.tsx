@@ -3395,10 +3395,34 @@ const BrandMobileDashboard = ({
                           </div>
 
                           <div className="flex gap-2 mt-4">
-                            <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}>
+                            <button
+                              onClick={() => {
+                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                                if (!handle) {
+                                  triggerHaptic(HapticPatterns.light);
+                                  setActiveTab('creators');
+                                  return;
+                                }
+                                triggerHaptic(HapticPatterns.light);
+                                navigate(`/${handle}`);
+                              }}
+                              className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}
+                            >
                               View profile
                             </button>
-                            <button onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }} className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white')}>
+                            <button
+                              onClick={() => {
+                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                                if (!handle) {
+                                  triggerHaptic(HapticPatterns.light);
+                                  toast.error('Creator username missing', { description: 'Please try another creator.' });
+                                  return;
+                                }
+                                triggerHaptic(HapticPatterns.success);
+                                navigate(`/${handle}?offer=true`);
+                              }}
+                              className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white')}
+                            >
                               Send offer
                             </button>
                           </div>
@@ -3421,7 +3445,13 @@ const BrandMobileDashboard = ({
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
-                      <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setActiveTab('creators');
+                        }}
+                        className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}
+                      >
                         <User className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Find creators</span>
                       </button>
@@ -3962,13 +3992,32 @@ const BrandMobileDashboard = ({
                           </div>
                           <div className="flex gap-2 mt-4">
                             <button
-                              onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }}
+                              onClick={() => {
+                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                                if (!handle) {
+                                  triggerHaptic(HapticPatterns.light);
+                                  setActiveTab('creators');
+                                  return;
+                                }
+                                triggerHaptic(HapticPatterns.light);
+                                navigate(`/${handle}`);
+                              }}
                               className={cn('flex-1 py-3 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}
                             >
                               View profile
                             </button>
                             <button
-                              onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }}
+                              onClick={() => {
+                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                                if (!handle) {
+                                  triggerHaptic(HapticPatterns.light);
+                                  toast.error('Creator username missing', { description: 'Please try another creator.' });
+                                  return;
+                                }
+                                triggerHaptic(HapticPatterns.success);
+                                // Go straight to the creator link page and open the offer flow.
+                                navigate(`/${handle}?offer=true`);
+                              }}
 	                              className={cn('flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 hover:from-blue-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white')}
                             >
                               Send offer
@@ -4256,7 +4305,8 @@ const BrandMobileDashboard = ({
                         return;
                       }
                       setShowActionSheet(false);
-                      navigate('/creators');
+                      // Stay inside the brand console (avoid jumping to the public directory page).
+                      setActiveTab('creators');
                     }}
                     className={cn(
                       'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
@@ -4274,7 +4324,13 @@ const BrandMobileDashboard = ({
                     </div>
                   </button>
 
-                  <button onClick={() => { setShowActionSheet(false); navigate('/creators'); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
+                  <button
+                    onClick={() => {
+                      setShowActionSheet(false);
+                      setActiveTab('creators');
+                    }}
+                    className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                  >
                     <p className={cn('text-[13px] font-bold', textColor)}>Browse creators</p>
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Search and shortlist profiles</p>
                   </button>
