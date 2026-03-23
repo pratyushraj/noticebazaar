@@ -480,11 +480,11 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
 
   const primaryActionLabel =
     s === 'AWAITING_BRAND_SIGNATURE'
-      ? 'Review & Sign Contract'
+      ? 'View & Sign Contract'
     : s === 'AWAITING_CREATOR_SIGNATURE'
       ? 'View Contract'
     : s === 'CONTRACT_READY' || s === 'SENT'
-        ? 'Review & Sign Contract'
+        ? 'View & Sign Contract'
         : s === 'FULLY_EXECUTED'
           ? (hasAnyContractFile ? 'Review Contract' : 'Track Progress')
         : s === 'CONTENT_MAKING'
@@ -571,10 +571,10 @@ const BrandMobileDashboard = ({
 	    return params.get('debugSig') === '1';
 	  }, []);
 
-  const setActiveTab = (tab: BrandTab, subtab?: BrandCollabTab) => {
-    const next = new URLSearchParams(searchParams);
-    next.set('tab', tab);
-    if (tab === 'collabs') {
+	  const setActiveTab = (tab: BrandTab, subtab?: BrandCollabTab) => {
+	    const next = new URLSearchParams(searchParams);
+	    next.set('tab', tab);
+	    if (tab === 'collabs') {
       next.set('subtab', subtab || activeCollabTab || 'pending');
     } else {
       next.delete('subtab');
@@ -1799,17 +1799,12 @@ const BrandMobileDashboard = ({
     const usageRights = offer?.usage_rights || offer?.usage_type || 'Organic social media only';
     const usageDuration = offer?.usage_duration || '90 days limit';
 
-	    const normalizedDealStatus = effectiveDealStatus(offer);
-	    const cardUi = brandDealCardUi(offer);
-	    const showSignatureDebug = useMemo(() => {
-	      if (typeof window === 'undefined') return false;
-	      const params = new URLSearchParams(window.location.search);
-	      return params.get('debugSig') === '1';
-	    }, []);
+		  const normalizedDealStatus = effectiveDealStatus(offer);
+		  const cardUi = brandDealCardUi(offer);
 
-		    const dealUi = (() => {
-		      const label =
-		        normalizedDealStatus === 'COMPLETED'
+			  const dealUi = (() => {
+			    const label =
+			      normalizedDealStatus === 'COMPLETED'
 		          ? 'Completed'
 	          : normalizedDealStatus === 'PAYMENT_RELEASED'
 	            ? 'Payment Released'
