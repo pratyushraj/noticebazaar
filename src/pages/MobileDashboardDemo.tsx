@@ -16,9 +16,11 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { useSession } from '@/contexts/SessionContext';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
 import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
+import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -314,6 +316,7 @@ const MobileDashboardDemo = ({
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const signOutMutation = useSignOut();
+    const updateDealProgress = useUpdateDealProgress();
     const {
         isSupported: isPushSupported,
         permission: pushPermission,
@@ -397,6 +400,7 @@ const MobileDashboardDemo = ({
         return 'dark';
     });
     const [showItemMenu, setShowItemMenu] = useState(false);
+    const [showProgressSheet, setShowProgressSheet] = useState(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -489,6 +493,30 @@ const MobileDashboardDemo = ({
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
     const [itemDetailPortalRoot, setItemDetailPortalRoot] = useState<HTMLElement | null>(null);
+
+    const currentDealStage: DealStage | undefined = React.useMemo(() => {
+        if (selectedType !== 'deal' || !selectedItem) return undefined;
+        return getDealStageFromStatus(selectedItem?.status, selectedItem?.progress_percentage);
+    }, [selectedItem, selectedType]);
+
+    const handleProgressStageSelect = async (stage: DealStage) => {
+        if (!selectedItem?.id || !profile?.id) {
+            toast.error('Cannot update progress: missing deal or profile');
+            return;
+        }
+        try {
+            await updateDealProgress.mutateAsync({
+                dealId: selectedItem.id,
+                stage,
+                creator_id: profile.id,
+            });
+            toast.success('Progress updated');
+            setShowProgressSheet(false);
+            await onRefresh?.();
+        } catch (e: any) {
+            toast.error(e?.message || 'Failed to update progress');
+        }
+    };
 
     // Signing states
     const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
@@ -4050,6 +4078,31 @@ const MobileDashboardDemo = ({
                                         )}
                                     </motion.button>
 
+                                    {selectedType === 'deal' && (() => {
+                                        const statusLower = String(selectedItem?.status || '').toLowerCase();
+                                        const isSignable = statusLower === 'signed_pending_creator' || statusLower === 'sent' || statusLower.includes('pending_creator') || statusLower === 'signed_by_brand';
+                                        const isCompleted = statusLower.includes('completed') || statusLower === 'paid';
+                                        const hasSigned = statusLower.includes('signed') || statusLower.includes('fully_executed') || statusLower.includes('executed') || statusLower.includes('content') || statusLower.includes('live');
+                                        const canUpdate = hasSigned && !isSignable && !isCompleted;
+
+                                        if (!canUpdate) return null;
+                                        return (
+                                            <button
+                                                onClick={() => {
+                                                    triggerHaptic();
+                                                    setShowProgressSheet(true);
+                                                }}
+                                                className={cn(
+                                                    "w-full py-3 rounded-2xl flex items-center justify-center gap-2 border transition-all active:scale-95",
+                                                    isDark ? "bg-white/5 border-white/10 hover:bg-white/10 text-white" : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800"
+                                                )}
+                                            >
+                                                <TrendingUp className="w-4 h-4" />
+                                                <span className="font-bold text-[14px]">Update progress</span>
+                                            </button>
+                                        );
+                                    })()}
+
                                     {selectedType === 'offer' && (
                                         <div className="flex flex-col gap-2.5 mt-3 pt-3">
                                             <button
@@ -4658,6 +4711,15 @@ const MobileDashboardDemo = ({
                     );
                 })()}
             </AnimatePresence>
+
+            {/* Creator: update deal progress inside the in-dashboard deal detail */}
+            <ProgressUpdateSheet
+                isOpen={showProgressSheet}
+                onClose={() => setShowProgressSheet(false)}
+                currentStage={currentDealStage}
+                onStageSelect={handleProgressStageSelect}
+                isLoading={updateDealProgress.isPending}
+            />
         </div >
     );
 };
