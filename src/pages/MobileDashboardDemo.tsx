@@ -5,7 +5,7 @@ import {
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
     Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
-    MessageCircle, MessageSquare, Edit3, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight
+    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
