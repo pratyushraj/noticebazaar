@@ -143,11 +143,32 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Optional fields may not exist in older schemas.
       }
 
+      // Brand-specific fields are not part of the narrow "core" query above.
+      // Fetch them opportunistically so the brand console can render name/email,
+      // but don't fail if the columns don't exist in older environments.
+      let brandFields: Partial<Profile> = {};
+      try {
+        const { data: brandData, error: brandError } = await (supabase
+          .from('profiles')
+          .select('business_name, email') as any)
+          .eq('id', user.id)
+          .single();
+        if (!brandError && brandData) {
+          brandFields = {
+            business_name: (brandData as any)?.business_name ?? null,
+            email: (brandData as any)?.email ?? null,
+          } as any;
+        }
+      } catch (_error) {
+        // ignore brand fields
+      }
+
       return {
         ...(coreData as any),
         username: usernameValue,
         instagram_handle: instagramHandleValue,
         ...optionalFields,
+        ...brandFields,
       } as Profile | null;
     } catch (err: any) {
       logger.error('SessionContext: Unexpected error fetching profile', err);

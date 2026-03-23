@@ -31,7 +31,7 @@ import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/s
 
 const BrandSettings = () => {
   const navigate = useNavigate();
-  const { profile, refetchProfile } = useSession();
+  const { profile, refetchProfile, user } = useSession();
 
   const THEME_KEY = 'brand_console_theme_preference';
   const [themePreference, setThemePreference] = useState<'system' | 'dark' | 'light'>(() => {
@@ -64,7 +64,7 @@ const BrandSettings = () => {
       ? <Laptop className="w-4 h-4" />
       : (isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />);
 
-  const brandName = profile?.first_name || profile?.business_name || 'Brand';
+  const brandName = profile?.first_name || (profile as any)?.business_name || profile?.business_name || 'Brand';
   const [brandLogoDbUrl, setBrandLogoDbUrl] = useState<string | null>(null);
   const storedBrandLogo = (profile as any)?.avatar_url || (profile as any)?.logo_url || brandLogoDbUrl || null;
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
@@ -117,10 +117,10 @@ const BrandSettings = () => {
       id: profile?.id || 'me',
       name: brandName,
       role: 'Admin',
-      email: profile?.email || '—',
+      email: profile?.email || user?.email || '—',
       avatar: brandLogo,
     },
-  ]), [brandLogo, brandName, profile?.email, profile?.id]);
+  ]), [brandLogo, brandName, profile?.email, profile?.id, user?.email]);
 
   const [metrics, setMetrics] = useState({
     isLoading: true,
