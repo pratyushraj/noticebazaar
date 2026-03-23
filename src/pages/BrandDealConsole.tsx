@@ -630,27 +630,65 @@ const BrandDealConsole = () => {
                                                 </div>
                                             )}
 
-                                            {!isCreator && brandDeal?.content_submission_url && brandDeal?.brand_approval_status !== 'approved' && (
+                                            {!isCreator &&
+                                              ((Array.isArray((brandDeal as any)?.content_links) && (brandDeal as any).content_links.length > 0) || brandDeal?.content_submission_url) &&
+                                              brandDeal?.brand_approval_status !== 'approved' && (
                                                 <div className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-6">
                                                     <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                         <Edit3 className="w-4 h-4 text-blue-400" />
                                                         Review Content Draft
                                                     </h3>
                                                     <div className="space-y-4">
-                                                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center justify-between">
-                                                            <div className="flex items-center gap-3">
+                                                        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                            <div className="flex items-center gap-3 mb-3">
                                                                 <LinkIcon className="w-4 h-4 text-slate-400" />
-                                                                <span className="text-sm text-slate-200">View Submitted Content</span>
+                                                                <span className="text-sm text-slate-200">Submitted links</span>
+                                                                {String((brandDeal as any)?.content_delivery_status || '').toLowerCase() === 'posted' && (
+                                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                                                                        POSTED
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            <a
-                                                                href={brandDeal.content_submission_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
-                                                            >
-                                                                Open Link <ExternalLink className="w-3 h-3" />
-                                                            </a>
+                                                            <div className="space-y-2">
+                                                                {Array.from(
+                                                                    new Set(
+                                                                        [
+                                                                            ...(Array.isArray((brandDeal as any)?.content_links) ? (brandDeal as any).content_links : []),
+                                                                            brandDeal?.content_submission_url,
+                                                                        ]
+                                                                            .map((v: any) => String(v || '').trim())
+                                                                            .filter(Boolean)
+                                                                    )
+                                                                ).map((link, idx) => (
+                                                                    <a
+                                                                        key={`${link}-${idx}`}
+                                                                        href={link}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1 break-all"
+                                                                    >
+                                                                        Open link <ExternalLink className="w-3 h-3" />
+                                                                    </a>
+                                                                ))}
+                                                            </div>
                                                         </div>
+
+                                                        {(brandDeal?.content_caption || brandDeal?.content_notes) && (
+                                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                                                                {brandDeal?.content_caption && (
+                                                                    <div>
+                                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Caption</p>
+                                                                        <p className="text-sm text-slate-200 whitespace-pre-wrap">{brandDeal.content_caption}</p>
+                                                                    </div>
+                                                                )}
+                                                                {brandDeal?.content_notes && (
+                                                                    <div>
+                                                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Message</p>
+                                                                        <p className="text-sm text-slate-200 whitespace-pre-wrap">{brandDeal.content_notes}</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
 
                                                         <div>
                                                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Approval Feedback</label>

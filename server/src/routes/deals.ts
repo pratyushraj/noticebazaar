@@ -1260,16 +1260,32 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
   try {
     const dealId = req.params.id;
     const userId = req.user!.id;
-    const { contentUrl, caption, driveLink, notes } = req.body;
+    const {
+      contentUrl,
+      mainLink,
+      additionalLinks,
+      caption,
+      notes,
+      messageToBrand,
+      contentStatus,
+      driveLink, // legacy
+    } = req.body ?? {};
 
-    if (!contentUrl) {
-      return res.status(400).json({ success: false, error: 'Content URL is required' });
+    const primaryLink = String(mainLink || contentUrl || '').trim();
+    if (!primaryLink) {
+      return res.status(400).json({ success: false, error: 'Content link is required' });
     }
+
+    const normalizedContentStatusRaw = String(contentStatus || '').trim().toLowerCase();
+    const normalizedContentStatus =
+      normalizedContentStatusRaw === 'draft' || normalizedContentStatusRaw === 'posted'
+        ? normalizedContentStatusRaw
+        : null;
 
     // Verify access
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, status, content_revision_number, brand_email, brand_name')
+      .select('id, creator_id, status, content_revision_number, brand_approval_status, brand_email, brand_name')
       .eq('id', dealId)
       .single();
 
@@ -1283,32 +1299,44 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
 
     const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
     const current = normalizeStatus((deal as any).status);
-    const nextStatus =
-      current === 'CONTENT_MAKING' ? 'CONTENT_DELIVERED'
-        : current === 'REVISION_REQUESTED' ? 'REVISION_DONE'
-          : null;
-
-    if (!nextStatus) {
-      return res.status(409).json({
-        success: false,
-        error: `Cannot submit content from status ${current || 'UNKNOWN'}.`,
-      });
+    const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' || current === 'FULLY_EXECUTED';
+    if (!canSubmit) {
+      return res.status(409).json({ success: false, error: `Cannot submit content from status ${current || 'UNKNOWN'}.` });
     }
 
     const now = new Date().toISOString();
     const currentRev = Number((deal as any)?.content_revision_number || 0);
-    const nextRev = nextStatus === 'REVISION_DONE' ? Math.max(currentRev + 1, 1) : currentRev;
+    const approvalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
+    const isRevision = current === 'REVISION_REQUESTED' || approvalStatus === 'changes_requested';
+    const nextRev = isRevision ? Math.max(currentRev + 1, 1) : currentRev;
+
+    const sanitizeLink = (value: unknown) => {
+      const url = String(value || '').trim();
+      if (!url) return null;
+      if (!/^https?:\/\//i.test(url)) return null;
+      if (url.length > 2000) return null;
+      return url;
+    };
+
+    const cleanedAdditional = (Array.isArray(additionalLinks) ? additionalLinks : [])
+      .map(sanitizeLink)
+      .filter(Boolean) as string[];
+    const legacyDriveLink = sanitizeLink(driveLink);
+    const uniqueLinks = Array.from(new Set([sanitizeLink(primaryLink), ...cleanedAdditional, legacyDriveLink].filter(Boolean) as string[]));
+    const finalNotes = String(messageToBrand ?? notes ?? '').trim() || null;
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update({
-        status: nextStatus,
-        content_submission_url: contentUrl,
+        status: 'CONTENT_DELIVERED',
+        content_submission_url: primaryLink,
+        content_links: uniqueLinks,
+        content_delivery_status: normalizedContentStatus,
         content_caption: caption ?? null,
-        content_drive_link: driveLink ?? null,
-        content_notes: notes ?? null,
+        content_drive_link: legacyDriveLink ?? null,
+        content_notes: finalNotes,
         content_submitted_at: now,
         content_delivered_at: now,
-        revision_submitted_at: nextStatus === 'REVISION_DONE' ? now : null,
+        revision_submitted_at: isRevision ? now : null,
         brand_approval_status: 'awaiting_approval',
         milestone_status: 'content_submitted',
         content_revision_number: nextRev,
@@ -1322,13 +1350,13 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
       user_id: userId,
-      event: nextStatus === 'REVISION_DONE' ? 'REVISION_SUBMITTED' : 'CONTENT_SUBMITTED',
-      metadata: { content_url: contentUrl, caption, drive_link: driveLink, notes }
+      event: isRevision ? 'REVISION_SUBMITTED' : 'CONTENT_SUBMITTED',
+      metadata: { content_url: primaryLink, content_links: uniqueLinks, caption, notes: finalNotes, content_status: normalizedContentStatus }
     });
 
     return res.json({
       success: true,
-      message: nextStatus === 'REVISION_DONE' ? 'Revision submitted for review' : 'Content submitted for review',
+      message: isRevision ? 'Revision submitted for review' : 'Content submitted for review',
       submitted_at: now
     });
   } catch (error: any) {
@@ -1348,9 +1376,9 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     const userId = req.user?.id;
     const userEmail = String(req.user?.email || '').toLowerCase() || null;
     const role = String(req.user?.role || '').toLowerCase();
-    const { status, feedback } = req.body; // status: 'approved' | 'changes_requested'
+    const { status, feedback, disputeNotes } = req.body; // status: 'approved' | 'changes_requested' | 'disputed'
 
-    if (!['approved', 'changes_requested'].includes(status)) {
+    if (!['approved', 'changes_requested', 'disputed'].includes(status)) {
       return res.status(400).json({ success: false, error: 'Invalid status' });
     }
 
@@ -1397,12 +1425,17 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     if (status === 'approved') {
       updateData.brand_approved_at = now;
       updateData.milestone_status = 'approved';
-      updateData.status = 'CONTENT_APPROVED';
+      updateData.status = 'COMPLETED';
       updateData.content_approved_at = now;
-    } else {
+    } else if (status === 'changes_requested') {
       updateData.milestone_status = 'feedback_given';
-      updateData.status = 'REVISION_REQUESTED';
+      updateData.status = 'CONTENT_MAKING';
       updateData.revision_requested_at = now;
+    } else {
+      updateData.milestone_status = 'disputed';
+      updateData.status = 'DISPUTED';
+      updateData.disputed_at = now;
+      updateData.dispute_notes = String(disputeNotes ?? feedback ?? '').trim() || null;
     }
 
     const { error: updateError } = await supabase
@@ -1416,13 +1449,13 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
       user_id: userId,
-      event: status === 'approved' ? 'CONTENT_APPROVED' : 'REVISION_REQUESTED',
-      metadata: { feedback }
+      event: status === 'approved' ? 'CONTENT_APPROVED' : status === 'disputed' ? 'DEAL_DISPUTED' : 'REVISION_REQUESTED',
+      metadata: { feedback: feedback ?? null, dispute_notes: updateData.dispute_notes ?? null }
     });
 
     return res.json({
       success: true,
-      message: status === 'approved' ? 'Content approved' : 'Changes requested',
+      message: status === 'approved' ? 'Content approved' : status === 'disputed' ? 'Issue raised' : 'Changes requested',
       status: status
     });
   } catch (error: any) {

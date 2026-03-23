@@ -44,6 +44,7 @@ import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { buttons as dsButtons } from '@/lib/design-system';
+import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import { toast } from 'sonner';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
@@ -469,39 +470,9 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
               : s === 'COMPLETED' ? 'COMPLETED'
                 : 'IN PROGRESS';
 
-  const needsAction =
-    s === 'AWAITING_BRAND_SIGNATURE'
-    || s === 'CONTRACT_READY'
-    || s === 'SENT'
-    || s === 'CONTENT_DELIVERED'
-    || s === 'REVISION_DONE'
-    || s === 'CONTENT_APPROVED'
-    || s === 'PAYMENT_RELEASED';
-
-  const primaryActionLabel =
-    s === 'AWAITING_BRAND_SIGNATURE'
-      ? 'View & Sign Contract'
-    : s === 'AWAITING_CREATOR_SIGNATURE'
-      ? 'View Contract'
-    : s === 'CONTRACT_READY' || s === 'SENT'
-        ? 'View & Sign Contract'
-        : s === 'FULLY_EXECUTED'
-          ? (hasAnyContractFile ? 'Review Contract' : 'Track Progress')
-        : s === 'CONTENT_MAKING'
-          ? 'Track Progress'
-          : s === 'CONTENT_DELIVERED'
-            ? 'Review Content'
-            : s === 'REVISION_REQUESTED'
-              ? 'Waiting for Revision'
-              : s === 'REVISION_DONE'
-                ? 'Review Content'
-                : s === 'CONTENT_APPROVED'
-                  ? 'Release Payment'
-                  : s === 'PAYMENT_RELEASED'
-                    ? 'Mark Complete'
-            : s === 'COMPLETED'
-              ? 'View Report'
-              : 'View Collaboration';
+  const primaryCta = getDealPrimaryCta({ role: 'brand', deal: row });
+  const needsAction = primaryCta.tone === 'action' && !primaryCta.disabled;
+  const primaryActionLabel = primaryCta.label;
 
   const statusLine =
     s === 'CONTENT_DELIVERED'
@@ -538,7 +509,7 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                 : s === 'FULLY_EXECUTED' ? 2
                   : 1;
 
-  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step };
+  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled };
 };
 
 const BrandMobileDashboard = ({
@@ -1779,10 +1750,12 @@ const BrandMobileDashboard = ({
     const progressSectionRef = useRef<HTMLDivElement | null>(null);
     const contentSectionRef = useRef<HTMLDivElement | null>(null);
 
-    const [isReviewingContent, setIsReviewingContent] = useState(false);
-    const [isReleasingPayment, setIsReleasingPayment] = useState(false);
-    const [showRevisionBox, setShowRevisionBox] = useState(false);
-    const [revisionFeedbackDraft, setRevisionFeedbackDraft] = useState('');
+	    const [isReviewingContent, setIsReviewingContent] = useState(false);
+	    const [isReleasingPayment, setIsReleasingPayment] = useState(false);
+	    const [showRevisionBox, setShowRevisionBox] = useState(false);
+	    const [revisionFeedbackDraft, setRevisionFeedbackDraft] = useState('');
+	    const [showDisputeBox, setShowDisputeBox] = useState(false);
+	    const [disputeNotesDraft, setDisputeNotesDraft] = useState('');
 
     const creatorName = firstNameish(offer?.profiles);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
@@ -1799,8 +1772,9 @@ const BrandMobileDashboard = ({
     const usageRights = offer?.usage_rights || offer?.usage_type || 'Organic social media only';
     const usageDuration = offer?.usage_duration || '90 days limit';
 
-		  const normalizedDealStatus = effectiveDealStatus(offer);
-		  const cardUi = brandDealCardUi(offer);
+			  const normalizedDealStatus = effectiveDealStatus(offer);
+			  const cardUi = brandDealCardUi(offer);
+	      const primaryCta = getDealPrimaryCta({ role: 'brand', deal: offer });
 
 			  const dealUi = (() => {
 			    const label =
@@ -2011,51 +1985,38 @@ const BrandMobileDashboard = ({
     };
 
 	    const onPrimaryCta = async () => {
-	      if (
-	        normalizedDealStatus === 'CONTRACT_READY' ||
-	        normalizedDealStatus === 'SENT' ||
-	        normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE' ||
-	        normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE' ||
-	        !normalizedDealStatus
-	      ) {
+	      const cta = getDealPrimaryCta({ role: 'brand', deal: offer });
+	      if (cta.disabled) {
+	        toast.message(cta.label);
+	        return;
+	      }
+
+	      if (cta.action === 'review_sign_contract') {
 	        await openContract();
 	        return;
 	      }
 
-      if (normalizedDealStatus === 'FULLY_EXECUTED') {
-        scrollToRef(deliverablesSectionRef);
-        toast.message('Next: confirm deliverables & timeline.');
-        return;
-      }
+	      if (cta.action === 'review_content') {
+	        scrollToRef(contentSectionRef);
+	        toast.message('Review the submitted content below.');
+	        return;
+	      }
 
-      if (normalizedDealStatus === 'CONTENT_MAKING') {
-        scrollToRef(contentSectionRef);
-        toast.message('Waiting for creator to deliver content.');
-        return;
-      }
+	      if (cta.action === 'track_progress') {
+	        scrollToRef(progressSectionRef);
+	        return;
+	      }
 
-      if (normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE' || normalizedDealStatus === 'REVISION_REQUESTED') {
-        scrollToRef(contentSectionRef);
-        toast.message('Review the submitted content below.');
-        return;
-      }
+	      if (cta.action === 'view_collaboration') {
+	        scrollToRef(deliverablesSectionRef);
+	        return;
+	      }
 
-      if (normalizedDealStatus === 'CONTENT_APPROVED') {
-        await releasePayment();
-        return;
-      }
-
-      if (normalizedDealStatus === 'PAYMENT_RELEASED') {
-        scrollToRef(contentSectionRef);
-        toast.message('Next: mark the deal complete when everything is done.');
-        return;
-      }
-
-      if (normalizedDealStatus === 'COMPLETED') {
-        scrollToRef(progressSectionRef);
-        return;
-      }
-    };
+	      if (cta.action === 'view_summary' || cta.action === 'view_details') {
+	        scrollToRef(progressSectionRef);
+	        return;
+	      }
+	    };
 
     const patchDeal = async (path: string, body?: any) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -2109,6 +2070,23 @@ const BrandMobileDashboard = ({
         await onRefresh?.();
       } catch (e: any) {
         toast.error(e?.message || 'Failed to request revision');
+      } finally {
+        setIsReviewingContent(false);
+      }
+    };
+
+    const raiseDispute = async () => {
+      try {
+        triggerHaptic(HapticPatterns.light);
+        const disputeNotes = String(disputeNotesDraft || '').trim();
+        setIsReviewingContent(true);
+        await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'disputed', disputeNotes });
+        toast.success('Issue raised');
+        setShowDisputeBox(false);
+        setDisputeNotesDraft('');
+        await onRefresh?.();
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to raise issue');
       } finally {
         setIsReviewingContent(false);
       }
@@ -2417,30 +2395,46 @@ const BrandMobileDashboard = ({
                     const caption = String(offer?.content_caption || '').trim();
                     const drive = String(offer?.content_drive_link || '').trim();
                     const notes = String(offer?.content_notes || '').trim();
+                    const deliveryStatusRaw = String(offer?.content_delivery_status || '').trim().toLowerCase();
+                    const deliveryStatus = deliveryStatusRaw === 'posted' ? 'posted' : deliveryStatusRaw === 'draft' ? 'draft' : '';
                     const feedback = String(offer?.brand_feedback || '').trim();
 
                     const canReview = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
-                    const waitingRevision = normalizedDealStatus === 'REVISION_REQUESTED';
-                    const canRelease = normalizedDealStatus === 'CONTENT_APPROVED';
+                    const waitingRevision =
+                      normalizedDealStatus === 'REVISION_REQUESTED' ||
+                      (normalizedDealStatus === 'CONTENT_MAKING' && String(offer?.brand_approval_status || '').toLowerCase().includes('changes_requested'));
+                    const isCompleted = normalizedDealStatus === 'COMPLETED';
+                    const isDisputed = normalizedDealStatus === 'DISPUTED';
+
+                    const linksFromDeal = Array.isArray((offer as any)?.content_links) ? ((offer as any)?.content_links as any[]) : [];
+                    const contentLinks = Array.from(
+                      new Set(
+                        [contentUrl, ...linksFromDeal.map((v) => String(v || '').trim()), drive]
+                          .map((v) => String(v || '').trim())
+                          .filter(Boolean)
+                      )
+                    );
 
                     return (
                       <div className="space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className={cn('text-[16px] font-black leading-tight', textColor)}>
-                              {canReview ? 'Review content' : canRelease ? 'Approved' : waitingRevision ? 'Revision requested' : 'In progress'}
+                              {isDisputed ? 'Issue raised' : isCompleted ? 'Completed' : canReview ? 'Review content' : waitingRevision ? 'Revision requested' : 'In progress'}
                             </p>
                             <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>
                               {normalizedDealStatus === 'CONTENT_MAKING'
-                                ? 'Waiting for creator to deliver the Instagram link.'
+                                ? waitingRevision
+                                  ? 'Waiting for creator to submit the updated links.'
+                                  : 'Waiting for creator to deliver the content links.'
                                 : canReview
-                                  ? 'Open the link, then approve or request a revision.'
+                                  ? 'Open the links, then approve, request a revision, or raise an issue.'
                                   : waitingRevision
                                     ? 'Waiting for creator to submit a revision.'
-                                    : canRelease
-                                      ? 'Content approved. Release payment to move forward.'
-                                      : normalizedDealStatus === 'PAYMENT_RELEASED'
-                                        ? 'Payment released. Mark complete when the campaign is done.'
+                                    : isCompleted
+                                      ? 'Content approved. Deal completed.'
+                                      : isDisputed
+                                        ? 'This deal is in dispute.'
                                         : '—'}
                             </p>
                           </div>
@@ -2449,57 +2443,59 @@ const BrandMobileDashboard = ({
                               'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                               canReview
                                 ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
-                                : canRelease
+                                : isCompleted
                                   ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
-                                  : waitingRevision
+                                  : isDisputed
                                     ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
-                                    : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
+                                    : waitingRevision
+                                      ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
+                                      : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
                             )}
                           >
-                            {canReview ? 'NEEDS REVIEW' : canRelease ? 'APPROVED' : waitingRevision ? 'REVISION' : 'WAITING'}
+                            {canReview ? 'NEEDS REVIEW' : isCompleted ? 'COMPLETED' : isDisputed ? 'DISPUTED' : waitingRevision ? 'REVISION' : 'WAITING'}
                           </span>
                         </div>
 
                         <div className={cn('rounded-2xl border px-4 py-3', isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200')}>
-                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Instagram URL</p>
-                          {contentUrl ? (
-                            <a
-                              href={contentUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={cn('text-[13px] font-bold break-all underline', isDark ? 'text-sky-200' : 'text-sky-700')}
-                            >
-                              {contentUrl}
-                            </a>
+                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Content Links</p>
+                          {contentLinks.length ? (
+                            <div className="space-y-2">
+                              {contentLinks.map((link, index) => (
+                                <a
+                                  key={`${link}-${index}`}
+                                  href={link}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={cn('text-[13px] font-bold break-all underline block', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                >
+                                  {link}
+                                </a>
+                              ))}
+                            </div>
                           ) : (
                             <p className={cn('text-[13px] font-bold', secondaryTextColor)}>Not submitted yet</p>
                           )}
                         </div>
 
-                        {(caption || drive || notes) && (
+                        {(caption || notes || deliveryStatus) && (
                           <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-slate-200')}>
+                            {deliveryStatus && (
+                              <div>
+                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Status</p>
+                                <p className={cn('text-[13px] font-semibold', isDark ? 'text-white/80' : 'text-slate-700')}>
+                                  {deliveryStatus === 'posted' ? 'Already posted' : 'Draft for review'}
+                                </p>
+                              </div>
+                            )}
                             {caption && (
                               <div>
                                 <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Caption</p>
                                 <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>{caption}</p>
                               </div>
                             )}
-                            {drive && (
-                              <div>
-                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Files</p>
-                                <a
-                                  href={drive}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className={cn('text-[13px] font-bold break-all underline', isDark ? 'text-sky-200' : 'text-sky-700')}
-                                >
-                                  {drive}
-                                </a>
-                              </div>
-                            )}
                             {notes && (
                               <div>
-                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Notes</p>
+                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Message</p>
                                 <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>{notes}</p>
                               </div>
                             )}
@@ -2514,30 +2510,47 @@ const BrandMobileDashboard = ({
                         )}
 
                         {canReview && (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-2">
                             <button
                               onClick={approveContent}
                               disabled={isReviewingContent}
                               className={cn(
-                                'h-12 rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
+                                'h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
                                 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white'
                               )}
                             >
-                              {isReviewingContent ? 'Saving…' : 'Approve'}
+                              {isReviewingContent ? 'Saving…' : 'Approve content'}
                             </button>
-                            <button
-                              onClick={() => {
-                                triggerHaptic(HapticPatterns.light);
-                                setShowRevisionBox((v) => !v);
-                              }}
-                              disabled={isReviewingContent}
-                              className={cn(
-                                'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                                isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
-                              )}
-                            >
-                              Request revision
-                            </button>
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                onClick={() => {
+                                  triggerHaptic(HapticPatterns.light);
+                                  setShowRevisionBox((v) => !v);
+                                  setShowDisputeBox(false);
+                                }}
+                                disabled={isReviewingContent}
+                                className={cn(
+                                  'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
+                                  isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                                )}
+                              >
+                                Request revision
+                              </button>
+                              <button
+                                onClick={() => {
+                                  triggerHaptic(HapticPatterns.light);
+                                  setShowDisputeBox((v) => !v);
+                                  setShowRevisionBox(false);
+                                }}
+                                disabled={isReviewingContent}
+                                className={cn(
+                                  'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
+                                  isDark ? 'bg-rose-500/10 border-rose-500/20 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100'
+                                )}
+                              >
+                                Raise issue
+                              </button>
+                            </div>
                           </div>
                         )}
 
@@ -2580,17 +2593,43 @@ const BrandMobileDashboard = ({
                           </div>
                         )}
 
-                        {canRelease && (
-                          <button
-                            onClick={releasePayment}
-                            disabled={isReleasingPayment}
-                            className={cn(
-                              'h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
-                              'bg-[#0B1220] text-white'
-                            )}
-                          >
-                            {isReleasingPayment ? 'Releasing…' : 'Release Payment'}
-                          </button>
+                        {showDisputeBox && (
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200')}>
+                            <p className={cn('text-[12px] font-black', isDark ? 'text-rose-200' : 'text-rose-700')}>Issue details (optional)</p>
+                            <textarea
+                              value={disputeNotesDraft}
+                              onChange={(e) => setDisputeNotesDraft(e.target.value)}
+                              placeholder="What went wrong? Add any context for support."
+                              className={cn(
+                                'w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none',
+                                isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-white border-rose-200 text-slate-900 placeholder:text-slate-400'
+                              )}
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                onClick={() => {
+                                  triggerHaptic(HapticPatterns.light);
+                                  setShowDisputeBox(false);
+                                }}
+                                className={cn(
+                                  'h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]',
+                                  isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-100'
+                                )}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={raiseDispute}
+                                disabled={isReviewingContent}
+                                className={cn(
+                                  'h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60',
+                                  'bg-rose-600 text-white'
+                                )}
+                              >
+                                {isReviewingContent ? 'Saving…' : 'Raise issue'}
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     );
@@ -2653,19 +2692,20 @@ const BrandMobileDashboard = ({
             className="max-w-md md:max-w-2xl mx-auto px-5 pt-4"
             style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
           >
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={onPrimaryCta}
-              disabled={isOpeningContract || isGeneratingContract}
-              className={cn(
-                'w-full h-14 rounded-2xl shadow-[0_14px_45px_rgba(2,6,23,0.22)] transition-all flex items-center justify-center active:scale-[0.99] disabled:opacity-60',
-                'bg-[#0B1220] text-white'
-              )}
-            >
-              <span className="text-[16px] font-black">
-                {isOpeningContract ? 'Opening…' : isGeneratingContract ? 'Generating…' : dealUi.cta}
-              </span>
-            </motion.button>
+	            <motion.button
+	              whileTap={{ scale: 0.98 }}
+	              onClick={onPrimaryCta}
+	              disabled={isOpeningContract || isGeneratingContract || primaryCta.disabled}
+	              className={cn(
+	                'w-full h-14 rounded-2xl shadow-[0_14px_45px_rgba(2,6,23,0.22)] transition-all flex items-center justify-center active:scale-[0.99] disabled:opacity-60',
+	                dealPrimaryCtaButtonClass(primaryCta.tone),
+	                primaryCta.disabled && 'cursor-not-allowed active:scale-100'
+	              )}
+	            >
+	              <span className="text-[16px] font-black">
+	                {isOpeningContract ? 'Opening…' : isGeneratingContract ? 'Generating…' : primaryCta.label}
+	              </span>
+	            </motion.button>
           </div>
         </div>
       </motion.div>
@@ -3589,7 +3629,7 @@ const BrandMobileDashboard = ({
 	                                      </motion.div>
 	                                    );
 		                                  }
-		                                  const ui = isCompletedItem ? { ...brandDealCardUi(item), primaryActionLabel: 'View Report' } : brandDealCardUi(item);
+			                                  const ui = brandDealCardUi(item);
 		                                  return (
 		                                    <motion.div
 		                                      key={item.id}
@@ -3680,22 +3720,22 @@ const BrandMobileDashboard = ({
 		                                        </div>
 		                                      </div>
 
-		                                      <button
-		                                        type="button"
-		                                        onClick={() => {
-		                                          triggerHaptic(HapticPatterns.light);
-		                                          if (activeCollabTab === 'active') setSelectedDealPage(item);
-		                                          else setSelectedOffer(item);
-		                                        }}
-		                                        className={cn(
-		                                          'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-		                                          ui.needsAction
-		                                            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_14px_34px_rgba(245,158,11,0.25)]'
-		                                            : 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_14px_34px_rgba(16,185,129,0.22)]'
-		                                        )}
-		                                      >
-		                                        {isCompletedItem ? 'View Report' : ui.primaryActionLabel}
-		                                      </button>
+				                              <button
+				                                type="button"
+				                                onClick={() => {
+				                                  triggerHaptic(HapticPatterns.light);
+				                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
+				                                  else setSelectedOffer(item);
+				                                }}
+				                                disabled={Boolean((ui as any)?.ctaDisabled)}
+				                                className={cn(
+				                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
+				                                  dealPrimaryCtaButtonClass((ui as any)?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+				                                  Boolean((ui as any)?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+				                                )}
+				                              >
+				                                {ui.primaryActionLabel}
+				                              </button>
 		                                    </motion.div>
 		                                  );
 			                                })}
@@ -4131,7 +4171,7 @@ const BrandMobileDashboard = ({
 	                            );
 	                          }
 
-		                          const ui = isCompletedItem ? { ...brandDealCardUi(item), primaryActionLabel: 'View Report' } : brandDealCardUi(item);
+		                          const ui = brandDealCardUi(item);
 
 			                          return (
 		                            <motion.div
@@ -4209,22 +4249,22 @@ const BrandMobileDashboard = ({
 		                                </div>
 		                              </div>
 
-			                              <button
-			                                type="button"
-			                                onClick={(e) => {
-		                                  triggerHaptic(HapticPatterns.light);
-		                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
-		                                  else setSelectedOffer(item);
-		                                }}
-		                                className={cn(
-		                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-		                                  ui.needsAction
-		                                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_14px_34px_rgba(245,158,11,0.25)]'
-		                                    : 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_14px_34px_rgba(16,185,129,0.22)]'
-		                                )}
-		                              >
-		                                {isCompletedItem ? 'View Report' : ui.primaryActionLabel}
-		                              </button>
+				                              <button
+				                                type="button"
+				                                onClick={(e) => {
+			                                  triggerHaptic(HapticPatterns.light);
+			                                  if (activeCollabTab === 'active') setSelectedDealPage(item);
+			                                  else setSelectedOffer(item);
+			                                }}
+				                                disabled={Boolean((ui as any)?.ctaDisabled)}
+			                                className={cn(
+			                                  'mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
+				                                  dealPrimaryCtaButtonClass((ui as any)?.ctaTone || (ui.needsAction ? 'action' : 'view')),
+				                                  Boolean((ui as any)?.ctaDisabled) && 'opacity-60 cursor-not-allowed active:scale-100'
+			                                )}
+			                              >
+			                                {ui.primaryActionLabel}
+			                              </button>
 	                            </motion.div>
 	                          );
 	                        })}

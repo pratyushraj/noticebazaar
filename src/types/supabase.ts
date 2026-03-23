@@ -53,7 +53,9 @@ export type Database = {
           contract_version: string | null
           content_caption: string | null
           content_delivered_at: string | null
+          content_delivery_status: string | null
           content_drive_link: string | null
+          content_links: Json | null
           content_notes: string | null
           content_revision_number: number | null
           content_submission_url: string | null
@@ -63,6 +65,8 @@ export type Database = {
           creator_id: string
           deal_amount: number
           deliverables: string
+          dispute_notes: string | null
+          disputed_at: string | null
           due_date: string
           id: string
           invoice_file_url: string | null
@@ -97,7 +101,9 @@ export type Database = {
           contract_version?: string | null
           content_caption?: string | null
           content_delivered_at?: string | null
+          content_delivery_status?: string | null
           content_drive_link?: string | null
+          content_links?: Json | null
           content_notes?: string | null
           content_revision_number?: number | null
           content_submission_url?: string | null
@@ -107,6 +113,8 @@ export type Database = {
           creator_id: string
           deal_amount: number
           deliverables: string
+          dispute_notes?: string | null
+          disputed_at?: string | null
           due_date: string
           id?: string
           invoice_file_url?: string | null
@@ -139,20 +147,24 @@ export type Database = {
           contract_file_url?: string | null
           contract_metadata?: Json | null
           contract_version?: string | null
-          content_caption?: string | null
-          content_delivered_at?: string | null
-          content_drive_link?: string | null
-          content_notes?: string | null
-          content_revision_number?: number | null
-          content_submission_url?: string | null
-          content_submitted_at?: string | null
-          content_approved_at?: string | null
-          created_at?: string
-          creator_id?: string
-          deal_amount?: number
-          deliverables?: string
-          due_date?: string
-          id?: string
+	          content_caption?: string | null
+	          content_delivered_at?: string | null
+	          content_delivery_status?: string | null
+	          content_drive_link?: string | null
+	          content_links?: Json | null
+	          content_notes?: string | null
+	          content_revision_number?: number | null
+	          content_submission_url?: string | null
+	          content_submitted_at?: string | null
+	          content_approved_at?: string | null
+	          created_at?: string
+	          creator_id?: string
+	          deal_amount?: number
+	          deliverables?: string
+	          dispute_notes?: string | null
+	          disputed_at?: string | null
+	          due_date?: string
+	          id?: string
           invoice_file_url?: string | null
           invoice_url?: string | null
           invoice_number?: string | null

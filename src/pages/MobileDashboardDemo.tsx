@@ -21,6 +21,7 @@ import { triggerHaptic as globalTriggerHaptic, HapticPatterns } from '@/lib/util
 import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
+import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -499,8 +500,9 @@ const MobileDashboardDemo = ({
     const [showDeliverContentModal, setShowDeliverContentModal] = useState(false);
     const [deliverContentUrlDraft, setDeliverContentUrlDraft] = useState('');
     const [deliverCaptionDraft, setDeliverCaptionDraft] = useState('');
-    const [deliverDriveLinkDraft, setDeliverDriveLinkDraft] = useState('');
-    const [deliverNotesDraft, setDeliverNotesDraft] = useState('');
+    const [deliverAdditionalLinksDraft, setDeliverAdditionalLinksDraft] = useState('');
+    const [deliverMessageDraft, setDeliverMessageDraft] = useState('');
+    const [deliverContentStatusDraft, setDeliverContentStatusDraft] = useState<'draft' | 'posted'>('draft');
     const [isSubmittingContent, setIsSubmittingContent] = useState(false);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -521,12 +523,23 @@ const MobileDashboardDemo = ({
         if (!showDeliverContentModal) return;
         const existingUrl = String((selectedItem as any)?.content_submission_url || (selectedItem as any)?.content_url || '').trim();
         const existingCaption = String((selectedItem as any)?.content_caption || '').trim();
-        const existingDrive = String((selectedItem as any)?.content_drive_link || '').trim();
         const existingNotes = String((selectedItem as any)?.content_notes || '').trim();
+        const existingStatusRaw = String((selectedItem as any)?.content_delivery_status || '').trim().toLowerCase();
+        const existingStatus = existingStatusRaw === 'posted' ? 'posted' : 'draft';
+
+        const linksRaw = (selectedItem as any)?.content_links;
+        const linksFromDeal: string[] = Array.isArray(linksRaw)
+            ? linksRaw.map((v: any) => String(v || '').trim()).filter(Boolean)
+            : [];
+        const legacyDrive = String((selectedItem as any)?.content_drive_link || '').trim();
+        const combinedLinks = Array.from(new Set([...linksFromDeal, legacyDrive].map((v) => String(v || '').trim()).filter(Boolean)));
+        const additional = combinedLinks.filter((l) => l !== existingUrl);
+
         setDeliverContentUrlDraft(existingUrl);
         setDeliverCaptionDraft(existingCaption);
-        setDeliverDriveLinkDraft(existingDrive);
-        setDeliverNotesDraft(existingNotes);
+        setDeliverAdditionalLinksDraft(additional.join('\n'));
+        setDeliverMessageDraft(existingNotes);
+        setDeliverContentStatusDraft(existingStatus);
     }, [showDeliverContentModal, selectedItem]);
 
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
@@ -541,6 +554,12 @@ const MobileDashboardDemo = ({
     const handleProgressStageSelect = async (stage: DealStage) => {
         if (stage === 'fully_executed' || stage === 'completed') {
             toast.message('This step is automatic.');
+            return;
+        }
+        if (stage === 'content_delivered') {
+            toast.message('Submit delivery links to mark as delivered.');
+            setShowProgressSheet(false);
+            setShowDeliverContentModal(true);
             return;
         }
         if (!selectedItem?.id || !profile?.id) {
@@ -569,7 +588,7 @@ const MobileDashboardDemo = ({
         }
         const contentUrl = String(deliverContentUrlDraft || '').trim();
         if (!contentUrl) {
-            toast.error('Instagram URL is required');
+            toast.error('Content link is required');
             return;
         }
         try {
@@ -588,10 +607,14 @@ const MobileDashboardDemo = ({
                     Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
-                    contentUrl,
+                    mainLink: contentUrl,
+                    additionalLinks: String(deliverAdditionalLinksDraft || '')
+                        .split(/[\n,]+/)
+                        .map((v) => v.trim())
+                        .filter(Boolean),
                     caption: String(deliverCaptionDraft || '').trim() || null,
-                    driveLink: String(deliverDriveLinkDraft || '').trim() || null,
-                    notes: String(deliverNotesDraft || '').trim() || null,
+                    messageToBrand: String(deliverMessageDraft || '').trim() || null,
+                    contentStatus: deliverContentStatusDraft,
                 }),
             });
             const data = await resp.json().catch(() => ({}));
@@ -603,8 +626,9 @@ const MobileDashboardDemo = ({
             setShowDeliverContentModal(false);
             setDeliverContentUrlDraft('');
             setDeliverCaptionDraft('');
-            setDeliverDriveLinkDraft('');
-            setDeliverNotesDraft('');
+            setDeliverAdditionalLinksDraft('');
+            setDeliverMessageDraft('');
+            setDeliverContentStatusDraft('draft');
             await onRefresh?.();
         } catch (e: any) {
             toast.error(e?.message || 'Failed to submit content');
@@ -2751,12 +2775,8 @@ const MobileDashboardDemo = ({
                                                                             ? (isDark ? "text-amber-200" : "text-amber-700")
                                                                             : (isDark ? "text-orange-200" : "text-orange-700");
 
-                                                                const contractSigned = Boolean(ux.contractLabel && /signed/i.test(ux.contractLabel) && !ux.needsSignature);
-                                                                const ctaLabel = ux.needsSignature
-                                                                    ? 'Review & Sign Contract'
-                                                                    : contractSigned
-                                                                        ? 'Review Contract'
-                                                                        : (ux.cta || 'Open deal');
+                                                                const cta = getDealPrimaryCta({ role: 'creator', deal });
+                                                                const ctaLabel = cta.label;
 
                                                                 return (
                                                                     <>
@@ -2828,24 +2848,24 @@ const MobileDashboardDemo = ({
                                                                             </span>
                                                                         </div>
 
-                                                                        <button
-                                                                            type="button"
-                                                                            onPointerDown={(e) => e.stopPropagation()}
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                triggerHaptic();
-                                                                                setSelectedItem(deal);
-                                                                                setSelectedType('deal');
-                                                                            }}
-                                                                            className={cn(
-                                                                                "mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]",
-                                                                                ux.needsCreatorAction
-                                                                                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-[0_14px_34px_rgba(245,158,11,0.25)]"
-                                                                                    : "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_14px_34px_rgba(16,185,129,0.22)]"
-                                                                            )}
-                                                                        >
-                                                                            {ctaLabel}
-                                                                        </button>
+	                                                                        <button
+	                                                                            type="button"
+	                                                                            onPointerDown={(e) => e.stopPropagation()}
+	                                                                            onClick={(e) => {
+	                                                                                e.stopPropagation();
+	                                                                                triggerHaptic();
+	                                                                                setSelectedItem(deal);
+	                                                                                setSelectedType('deal');
+	                                                                            }}
+	                                                                            disabled={cta.disabled}
+	                                                                            className={cn(
+	                                                                                "mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]",
+	                                                                                dealPrimaryCtaButtonClass(cta.tone),
+	                                                                                cta.disabled && "opacity-60 cursor-not-allowed active:scale-100"
+	                                                                            )}
+	                                                                        >
+	                                                                            {ctaLabel}
+	                                                                        </button>
                                                                     </>
                                                                 );
                                                             })()}
@@ -4102,77 +4122,47 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-white/10" : "bg-white/98 backdrop-blur-xl border-slate-100"
                             )}>
                                 <div className="space-y-2.5">
-                                    <motion.button
-                                        whileTap={{ scale: 0.97 }}
-                                        onClick={() => {
-                                            if (selectedType === 'offer') {
-                                                if (selectedItem.isDemo) {
+	                                    <motion.button
+	                                        whileTap={{ scale: 0.97 }}
+	                                        onClick={() => {
+	                                            if (selectedType === 'offer') {
+	                                                if (selectedItem.isDemo) {
                                                     toast.success("This is a demo offer! Complete your profile to get real brand deals.");
                                                     triggerHaptic(HapticPatterns.success);
                                                     return;
-                                                }
-                                                handleAccept(selectedItem);
-                                            } else {
-                                                const status = (selectedItem.status || '').toLowerCase();
-                                                const selectedDealId = selectedItem?.id || selectedItem?.raw?.id;
+	                                                }
+	                                                handleAccept(selectedItem);
+	                                            } else {
+	                                                const cta = getDealPrimaryCta({ role: 'creator', deal: selectedItem });
+	                                                triggerHaptic();
 
-                                                const isSignable = status === 'signed_pending_creator' || status === 'sent' || status.includes('pending_creator') || status === 'signed_by_brand';
-                                                const isSigned = status === 'signed' || status === 'fully_signed' || status === 'fully_executed' || status.includes('signed');
-                                                const isContentMaking = status.includes('content_making') || status.includes('content making');
-                                                const isContentDelivered = status.includes('content_delivered') || status.includes('content delivered');
-                                                const isRevisionRequested = status.includes('revision_requested') || status.includes('revision requested') || status.includes('changes_requested') || status.includes('changes requested');
-                                                const isRevisionDone = status.includes('revision_done') || status.includes('revision done') || status.includes('revision_submitted') || status.includes('revision submitted');
-                                                const isContentApproved = status.includes('content_approved') || status.includes('content approved');
-                                                const isPaymentReleased = status.includes('payment_released') || status.includes('payment released');
+	                                                if (cta.disabled) return;
 
-                                                const primaryDealCta = (() => {
-                                                    if (isSignable) return '✍️ Sign Contract';
-                                                    if (isContentMaking) return 'Deliver Content';
-                                                    if (isRevisionRequested) return 'Upload Revision';
-                                                    if (isContentDelivered || isRevisionDone) return 'Waiting for Review';
-                                                    if (isContentApproved) return 'Payment Pending';
-                                                    if (isPaymentReleased) return 'Payment Released';
-                                                    return 'Update progress';
-                                                })();
-                                                
-                                                if (isSignable) {
-                                                    triggerHaptic();
-                                                    setShowCreatorSigningModal(true);
-                                                } else if (isContentMaking || isRevisionRequested) {
-                                                    triggerHaptic();
-                                                    // Creator submits the IG link (initial delivery or revision upload)
-                                                    setShowDeliverContentModal(true);
-                                                } else if (isContentDelivered || isRevisionDone || isContentApproved || isPaymentReleased) {
-                                                    triggerHaptic();
-                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                } else if (primaryDealCta === 'Update progress') {
-                                                    triggerHaptic();
-                                                    setShowProgressSheet(true);
-                                                } else if (isSigned) {
-                                                    triggerHaptic();
-                                                    setShowProgressSheet(true);
-                                                } else if (selectedItem.contract_file_url) {
-                                                    triggerHaptic();
-                                                    setShowProgressSheet(true);
-                                                } else if (selectedDealId) {
-                                                    triggerHaptic();
-                                                    setShowProgressSheet(true);
-                                                } else {
-                                                    triggerHaptic();
-                                                    toast.error('Deal details unavailable');
-                                                }
-                                            }
-                                        }}
-                                        disabled={processingDeal === selectedItem.id}
-                                        className={cn(
-                                            "w-full py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all flex flex-col items-center justify-center active:scale-[0.98] border disabled:opacity-50",
-                                            selectedType === 'offer'
-                                                ? (selectedItem.collab_type === 'barter' ? "bg-amber-500 text-white border-amber-400 shadow-amber-500/30" : "bg-blue-600 text-white border-blue-500 shadow-blue-500/30")
-                                                : ((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
-                                                    ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/30"
-                                                    : (isDark ? "bg-white text-[#0B0F14] border-white" : "bg-slate-900 text-white border-slate-900")
-                                        )}
-                                    >
+	                                                if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') {
+	                                                    setShowDeliverContentModal(true);
+	                                                    return;
+	                                                }
+
+	                                                if (cta.action === 'view_contract') {
+	                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	                                                    return;
+	                                                }
+
+	                                                // Default: show progress/actions sheet (creator control panel).
+	                                                setShowProgressSheet(true);
+	                                            }
+	                                        }}
+	                                        disabled={processingDeal === selectedItem.id || (selectedType !== 'offer' && getDealPrimaryCta({ role: 'creator', deal: selectedItem }).disabled)}
+	                                        className={cn(
+	                                            "w-full py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all flex flex-col items-center justify-center active:scale-[0.98] border disabled:opacity-50",
+	                                            selectedType === 'offer'
+	                                                ? (selectedItem.collab_type === 'barter' ? "bg-amber-500 text-white border-amber-400 shadow-amber-500/30" : "bg-blue-600 text-white border-blue-500 shadow-blue-500/30")
+	                                                : cn(
+	                                                    dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
+	                                                    isDark ? "border-white/10" : "border-slate-200"
+	                                                  )
+	                                        )}
+	                                    >
                                         {processingDeal === selectedItem.id ? (
                                             <Loader2 className="w-6 h-6 animate-spin" />
                                         ) : selectedType === 'offer' ? (
@@ -4184,22 +4174,12 @@ const MobileDashboardDemo = ({
                                                     Contract generated instantly
                                                 </span>
                                             </>
-                                        ) : (
-                                            <span className="text-[16px] font-black">
-                                                {(() => {
-                                                    const s = String(selectedItem?.status || '').toLowerCase();
-                                                    if (s.includes('pending_creator') || s === 'sent' || s === 'signed_by_brand') return '✍️ Sign Contract';
-                                                    if (s.includes('content_making') || s.includes('content making')) return 'Deliver Content';
-                                                    if (s.includes('revision_requested') || s.includes('revision requested') || s.includes('changes_requested') || s.includes('changes requested')) return 'Upload Revision';
-                                                    if (s.includes('content_delivered') || s.includes('content delivered') || s.includes('revision_done') || s.includes('revision done')) return 'Waiting for Review';
-                                                    if (s.includes('content_approved') || s.includes('content approved')) return 'Payment Pending';
-                                                    if (s.includes('payment_released') || s.includes('payment released')) return 'Payment Released';
-
-                                                    return 'Update progress';
-                                                })()}
-                                            </span>
-                                        )}
-                                    </motion.button>
+	                                        ) : (
+	                                            <span className="text-[16px] font-black">
+	                                                {getDealPrimaryCta({ role: 'creator', deal: selectedItem }).label}
+	                                            </span>
+	                                        )}
+	                                    </motion.button>
 
                                     {selectedType === 'offer' && (
                                         <div className="flex flex-col gap-2.5 mt-3 pt-3">
@@ -4412,16 +4392,17 @@ const MobileDashboardDemo = ({
                 <DialogContent className={cn("sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200")}>
                     <DialogHeader>
                         <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                            <Send className="w-6 h-6 text-emerald-500" />
-                            {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
-                            String(selectedItem?.status || '').toLowerCase().includes('changes_requested')
-                                ? 'Upload Revision'
-                                : 'Deliver Content'}
-                        </DialogTitle>
-                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
-                            Submit your Instagram post or reel link for the brand to review. You can also add caption notes or file links.
-                        </DialogDescription>
-                    </DialogHeader>
+	                            <Send className="w-6 h-6 text-emerald-500" />
+	                            {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
+	                            String(selectedItem?.status || '').toLowerCase().includes('changes_requested') ||
+	                            String((selectedItem as any)?.brand_approval_status || '').toLowerCase().includes('changes_requested')
+	                                ? 'Upload Revision'
+	                                : 'Deliver Content'}
+	                        </DialogTitle>
+	                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
+	                            Paste your content link(s) so the brand can review and approve. Use Instagram or Google Drive links — no uploads needed.
+	                        </DialogDescription>
+	                    </DialogHeader>
 
                     <div className="px-6 py-5 space-y-4">
                         {String((selectedItem as any)?.brand_feedback || '').trim() && (
@@ -4431,64 +4412,91 @@ const MobileDashboardDemo = ({
                                     {String((selectedItem as any)?.brand_feedback || '').trim()}
                                 </p>
                             </div>
-                        )}
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Instagram URL (Required)</label>
-                            <input
-                                value={deliverContentUrlDraft}
-                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
-                                placeholder="https://instagram.com/reel/..."
-                                className={cn(
-                                    "w-full rounded-2xl px-4 py-4 text-[14px] font-semibold outline-none transition-all border",
-                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
-                                )}
-                                inputMode="url"
-                                autoCapitalize="none"
-                                autoCorrect="off"
-                            />
-                        </div>
+	                        )}
+	                        <div className="space-y-2">
+	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Main Content Link (Required)</label>
+	                            <input
+	                                value={deliverContentUrlDraft}
+	                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
+	                                placeholder="https://instagram.com/reel/... or https://drive.google.com/..."
+	                                className={cn(
+	                                    "w-full rounded-2xl px-4 py-4 text-[14px] font-semibold outline-none transition-all border",
+	                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+	                                )}
+	                                inputMode="url"
+	                                autoCapitalize="none"
+	                                autoCorrect="off"
+	                            />
+	                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Caption (Optional)</label>
-                            <textarea
-                                value={deliverCaptionDraft}
+	                        <div className="space-y-2">
+	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Content Status (Required)</label>
+	                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+	                                <button
+	                                    type="button"
+	                                    onClick={() => setDeliverContentStatusDraft('draft')}
+	                                    className={cn(
+	                                        "h-12 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98]",
+	                                        deliverContentStatusDraft === 'draft'
+	                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)]"
+	                                            : isDark ? "text-white/80 hover:bg-white/5" : "text-slate-700 hover:bg-white"
+	                                    )}
+	                                >
+	                                    Draft for review
+	                                </button>
+	                                <button
+	                                    type="button"
+	                                    onClick={() => setDeliverContentStatusDraft('posted')}
+	                                    className={cn(
+	                                        "h-12 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98]",
+	                                        deliverContentStatusDraft === 'posted'
+	                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)]"
+	                                            : isDark ? "text-white/80 hover:bg-white/5" : "text-slate-700 hover:bg-white"
+	                                    )}
+	                                >
+	                                    Already posted
+	                                </button>
+	                            </div>
+	                        </div>
+	
+	                        <div className="space-y-2">
+	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Caption (Optional)</label>
+	                            <textarea
+	                                value={deliverCaptionDraft}
                                 onChange={(e) => setDeliverCaptionDraft(e.target.value)}
                                 placeholder="Paste your caption here..."
                                 className={cn(
                                     "w-full min-h-[90px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
                                     isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
                                 )}
-                            />
-                        </div>
+	                            />
+	                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Drive/Dropbox Link (Optional)</label>
-                            <input
-                                value={deliverDriveLinkDraft}
-                                onChange={(e) => setDeliverDriveLinkDraft(e.target.value)}
-                                placeholder="https://drive.google.com/..."
-                                className={cn(
-                                    "w-full rounded-2xl px-4 py-4 text-[14px] font-semibold outline-none transition-all border",
-                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
-                                )}
-                                inputMode="url"
-                                autoCapitalize="none"
-                                autoCorrect="off"
-                            />
-                        </div>
+	                        <div className="space-y-2">
+	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Additional Links (Optional)</label>
+	                            <textarea
+	                                value={deliverAdditionalLinksDraft}
+	                                onChange={(e) => setDeliverAdditionalLinksDraft(e.target.value)}
+	                                placeholder={"Add any extra links (one per line)\nhttps://drive.google.com/...\nhttps://instagram.com/p/..."}
+	                                className={cn(
+	                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
+	                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+	                                )}
+	                            />
+	                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Notes for Brand (Optional)</label>
-                            <textarea
-                                value={deliverNotesDraft}
-                                onChange={(e) => setDeliverNotesDraft(e.target.value)}
-                                placeholder="Any context, instructions, or timeline notes..."
-                                className={cn(
-                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
-                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
-                                )}
-                            />
-                        </div>
+	                        <div className="space-y-2">
+	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Message to Brand (Optional)</label>
+	                            <textarea
+	                                value={deliverMessageDraft}
+	                                onChange={(e) => setDeliverMessageDraft(e.target.value)}
+	                                placeholder="Any context for review (timelines, instructions, etc.)"
+	                                className={cn(
+	                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
+	                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+	                                )}
+	                            />
+	                        </div>
 
                         <div className="grid grid-cols-2 gap-2 pt-1">
                             <button

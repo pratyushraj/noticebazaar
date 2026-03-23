@@ -931,11 +931,15 @@ export const getDealStageFromStatus = (status: string | null | undefined, progre
 export const useUpdateDealProgress = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, { dealId: string; stage: DealStage; creator_id: string }>(
-    async ({ dealId, stage, creator_id }) => {
-      // Enforce "auto" states: signatures and completion are system-driven.
-      if (stage === 'fully_executed' || stage === 'completed') {
-        throw new Error('This step is automatic and cannot be set manually.');
-      }
+	    async ({ dealId, stage, creator_id }) => {
+	      // Enforce "auto" states: signatures and completion are system-driven.
+	      if (stage === 'fully_executed' || stage === 'completed') {
+	        throw new Error('This step is automatic and cannot be set manually.');
+	      }
+	      // Content delivery must be submitted via the delivery form (links + notes).
+	      if (stage === 'content_delivered') {
+	        throw new Error('To mark delivered, submit delivery links first.');
+	      }
 
       // Fetch current deal to validate sequential progression
       const { data: currentDeal, error: fetchError } = await supabase
