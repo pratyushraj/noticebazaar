@@ -102,6 +102,7 @@ const ProposalSent = () => {
   const [installAttempted, setInstallAttempted] = useState(false);
 
   const openApp = searchParams.get('openApp') === '1';
+  const showInstallUpsell = !openApp && !isStandalone();
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -322,60 +323,62 @@ const ProposalSent = () => {
             </div>
 
             <div className="p-5 border-t border-white/10 bg-gradient-to-r from-emerald-500/10 via-white/5 to-teal-500/10">
-              <div className="rounded-[24px] border border-emerald-400/25 bg-emerald-500/10 p-4 shadow-[0_18px_48px_rgba(15,164,127,0.18)]">
-                <p className="text-[12px] font-black uppercase tracking-[0.18em] text-emerald-100/90">Track this deal in real time</p>
-                <p className="mt-1 text-[13px] font-semibold text-white/75">
-                  Install Creator Armour for instant updates, faster approvals, and deal tracking.
-                </p>
-                {!isStandalone() && isIos() && (
-                  <p className="mt-2 text-[12px] font-semibold text-white/70">
-                    iPhone/iPad: Share → <span className="text-emerald-200 font-black">Add to Home Screen</span>
+              {showInstallUpsell && (
+                <div className="rounded-[24px] border border-emerald-400/25 bg-emerald-500/10 p-4 shadow-[0_18px_48px_rgba(15,164,127,0.18)]">
+                  <p className="text-[12px] font-black uppercase tracking-[0.18em] text-emerald-100/90">Track this deal in real time</p>
+                  <p className="mt-1 text-[13px] font-semibold text-white/75">
+                    Install Creator Armour for instant updates, faster approvals, and deal tracking.
                   </p>
-                )}
-                <div className="mt-3 grid gap-2 text-[12px] text-white/70 font-semibold">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-300/80" />
-                    Instant notifications when creator responds
+                  {isIos() && (
+                    <p className="mt-2 text-[12px] font-semibold text-white/70">
+                      iPhone/iPad: Share → <span className="text-emerald-200 font-black">Add to Home Screen</span>
+                    </p>
+                  )}
+                  <div className="mt-3 grid gap-2 text-[12px] text-white/70 font-semibold">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-300/80" />
+                      Instant notifications when creator responds
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-300/80" />
+                      Faster deal management
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-300/80" />
+                      Track all collaborations in one place
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-300/80" />
-                    Faster deal management
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-300/80" />
-                    Track all collaborations in one place
-                  </div>
-                </div>
 
-                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <Button
-                    type="button"
-                    onClick={handleInstall}
-                    className={cn(
-                      'h-12 rounded-2xl font-black uppercase tracking-widest',
-                      'bg-[#0FA47F] hover:bg-emerald-600 text-white shadow-[0_16px_40px_rgba(15,164,127,0.30)]',
-                      'animate-[pulse_1.6s_ease-in-out_infinite]'
-                    )}
-                  >
-                    Install App
-                    <Download className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(`/deal/${token}?source=collab_submit`, { replace: true })}
-                    className="h-12 rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10 font-black uppercase tracking-widest"
-                  >
-                    Continue in browser
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <Button
+                      type="button"
+                      onClick={handleInstall}
+                      className={cn(
+                        'h-12 rounded-2xl font-black uppercase tracking-widest',
+                        'bg-[#0FA47F] hover:bg-emerald-600 text-white shadow-[0_16px_40px_rgba(15,164,127,0.30)]',
+                        'animate-[pulse_1.6s_ease-in-out_infinite]'
+                      )}
+                    >
+                      Install App
+                      <Download className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate(`/deal/${token}?source=collab_submit`, { replace: true })}
+                      className="h-12 rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10 font-black uppercase tracking-widest"
+                    >
+                      Continue in browser
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="mt-3 text-[11px] text-white/55 font-semibold">
+                    You can install later from the menu.
+                  </p>
                 </div>
-                <p className="mt-3 text-[11px] text-white/55 font-semibold">
-                  You can install later from the menu.
-                </p>
-              </div>
+              )}
 
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className={cn(showInstallUpsell ? 'mt-4' : 'mt-0', 'grid grid-cols-1 sm:grid-cols-2 gap-2.5')}>
                 <Button
                   type="button"
                   variant="outline"
