@@ -117,7 +117,8 @@ const BrandSettings = () => {
       id: profile?.id || 'me',
       name: brandName,
       role: 'Admin',
-      email: profile?.email || user?.email || '—',
+      // Profile table often doesn't store email; prefer auth email.
+      email: (profile as any)?.email || user?.email || '—',
       avatar: brandLogo,
     },
   ]), [brandLogo, brandName, profile?.email, profile?.id, user?.email]);

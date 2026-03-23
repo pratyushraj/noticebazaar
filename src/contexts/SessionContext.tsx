@@ -150,13 +150,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       try {
         const { data: brandData, error: brandError } = await (supabase
           .from('profiles')
-          .select('business_name, email') as any)
+          // `profiles.email` doesn't exist in many environments (auth email lives in `auth.users`).
+          // Only read `business_name` here to avoid noisy 400s.
+          .select('business_name') as any)
           .eq('id', user.id)
           .single();
         if (!brandError && brandData) {
           brandFields = {
             business_name: (brandData as any)?.business_name ?? null,
-            email: (brandData as any)?.email ?? null,
           } as any;
         }
       } catch (_error) {
