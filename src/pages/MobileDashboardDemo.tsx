@@ -4343,12 +4343,9 @@ const MobileDashboardDemo = ({
 
                                                     {selectedType === 'deal' && (() => {
                                                         const statusLower = String(selectedItem?.status || '').toLowerCase();
-                                                        const isSignable = statusLower === 'signed_pending_creator' || statusLower === 'sent' || statusLower.includes('pending_creator') || statusLower === 'signed_by_brand';
                                                         const isCompleted = statusLower.includes('completed') || statusLower === 'paid';
-                                                        const hasSigned = statusLower.includes('signed') || statusLower.includes('fully_executed') || statusLower.includes('executed') || statusLower.includes('content') || statusLower.includes('live');
-                                                        const canUpdate = hasSigned && !isSignable && !isCompleted;
+                                                        if (isCompleted) return null;
 
-                                                        if (!canUpdate) return null;
                                                         return (
                                                             <>
                                                                 <button
