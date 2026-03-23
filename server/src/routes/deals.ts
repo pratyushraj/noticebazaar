@@ -1260,7 +1260,7 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
   try {
     const dealId = req.params.id;
     const userId = req.user!.id;
-    const { contentUrl, notes } = req.body;
+    const { contentUrl, caption, driveLink, notes } = req.body;
 
     if (!contentUrl) {
       return res.status(400).json({ success: false, error: 'Content URL is required' });
@@ -1269,7 +1269,7 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     // Verify access
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, brand_email, brand_name')
+      .select('id, creator_id, status, content_revision_number, brand_email, brand_name')
       .eq('id', dealId)
       .single();
 
@@ -1281,15 +1281,38 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
+    const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
+    const current = normalizeStatus((deal as any).status);
+    const nextStatus =
+      current === 'CONTENT_MAKING' ? 'CONTENT_DELIVERED'
+        : current === 'REVISION_REQUESTED' ? 'REVISION_DONE'
+          : null;
+
+    if (!nextStatus) {
+      return res.status(409).json({
+        success: false,
+        error: `Cannot submit content from status ${current || 'UNKNOWN'}.`,
+      });
+    }
+
     const now = new Date().toISOString();
+    const currentRev = Number((deal as any)?.content_revision_number || 0);
+    const nextRev = nextStatus === 'REVISION_DONE' ? Math.max(currentRev + 1, 1) : currentRev;
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update({
+        status: nextStatus,
         content_submission_url: contentUrl,
+        content_caption: caption ?? null,
+        content_drive_link: driveLink ?? null,
+        content_notes: notes ?? null,
         content_submitted_at: now,
+        content_delivered_at: now,
+        revision_submitted_at: nextStatus === 'REVISION_DONE' ? now : null,
         brand_approval_status: 'awaiting_approval',
         milestone_status: 'content_submitted',
-        updated_at: now
+        content_revision_number: nextRev,
+        updated_at: now,
       } as any)
       .eq('id', dealId);
 
@@ -1299,13 +1322,13 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
       user_id: userId,
-      event: 'CONTENT_SUBMITTED',
-      metadata: { content_url: contentUrl, notes }
+      event: nextStatus === 'REVISION_DONE' ? 'REVISION_SUBMITTED' : 'CONTENT_SUBMITTED',
+      metadata: { content_url: contentUrl, caption, drive_link: driveLink, notes }
     });
 
     return res.json({
       success: true,
-      message: 'Content submitted for review',
+      message: nextStatus === 'REVISION_DONE' ? 'Revision submitted for review' : 'Content submitted for review',
       submitted_at: now
     });
   } catch (error: any) {
@@ -1319,13 +1342,49 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
  * Brand reviews submitted content (approve or request changes)
  * This route might be called via a brand-specific token or auth
  */
-router.patch('/:id/review-content', async (req, res) => {
+router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
     const { status, feedback } = req.body; // status: 'approved' | 'changes_requested'
 
     if (!['approved', 'changes_requested'].includes(status)) {
       return res.status(400).json({ success: false, error: 'Invalid status' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, status, brand_id, brand_email')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
+    const current = normalizeStatus((deal as any).status);
+    if (!(current === 'CONTENT_DELIVERED' || current === 'REVISION_DONE')) {
+      return res.status(409).json({ success: false, error: `Cannot review content from status ${current || 'UNKNOWN'}.` });
     }
 
     const now = new Date().toISOString();
@@ -1338,9 +1397,12 @@ router.patch('/:id/review-content', async (req, res) => {
     if (status === 'approved') {
       updateData.brand_approved_at = now;
       updateData.milestone_status = 'approved';
-      updateData.status = 'Completed'; // Or next stage
+      updateData.status = 'CONTENT_APPROVED';
+      updateData.content_approved_at = now;
     } else {
       updateData.milestone_status = 'feedback_given';
+      updateData.status = 'REVISION_REQUESTED';
+      updateData.revision_requested_at = now;
     }
 
     const { error: updateError } = await supabase
@@ -1353,7 +1415,8 @@ router.patch('/:id/review-content', async (req, res) => {
     // Log action
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
-      event: status === 'approved' ? 'CONTENT_APPROVED' : 'CHANGES_REQUESTED',
+      user_id: userId,
+      event: status === 'approved' ? 'CONTENT_APPROVED' : 'REVISION_REQUESTED',
       metadata: { feedback }
     });
 
@@ -1365,6 +1428,78 @@ router.patch('/:id/review-content', async (req, res) => {
   } catch (error: any) {
     console.error('[Deals] review-content error:', error);
     return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
+  }
+});
+
+/**
+ * PATCH /api/deals/:id/release-payment
+ * Brand releases payment after content approval.
+ */
+router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, status, brand_id, brand_email')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
+    const current = normalizeStatus((deal as any).status);
+    if (current !== 'CONTENT_APPROVED') {
+      return res.status(409).json({ success: false, error: `Payment can be released only after approval. Current: ${current || 'UNKNOWN'}.` });
+    }
+
+    const now = new Date().toISOString();
+    const { error: updateError } = await supabase
+      .from('brand_deals')
+      .update({
+        status: 'PAYMENT_RELEASED',
+        payment_released_at: now,
+        updated_at: now,
+      } as any)
+      .eq('id', dealId);
+
+    if (updateError) throw updateError;
+
+    await supabase.from('deal_action_logs').insert({
+      deal_id: dealId,
+      user_id: userId,
+      event: 'PAYMENT_RELEASED',
+      metadata: { released_at: now },
+    }).then(({ error }) => {
+      if (error) console.warn('[Deals] release-payment action log failed:', error.message);
+    });
+
+    return res.json({ success: true, message: 'Payment released.' });
+  } catch (error: any) {
+    console.error('[Deals] release-payment error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
 
@@ -1407,17 +1542,22 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    if (String(deal.status || '').toLowerCase() === 'completed') {
+    const normalizedCurrent = String(deal.status || '').trim().toUpperCase().replaceAll(' ', '_');
+    if (normalizedCurrent === 'COMPLETED') {
       return res.json({ success: true, alreadyCompleted: true, message: 'Deal already marked complete.' });
+    }
+
+    // Enforce: only after payment release (admins can override).
+    if (role !== 'admin' && normalizedCurrent !== 'PAYMENT_RELEASED') {
+      return res.status(409).json({ success: false, error: `Deal can be completed only after payment release. Current: ${normalizedCurrent || 'UNKNOWN'}.` });
     }
 
     const now = new Date().toISOString();
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update({
-        status: 'Completed',
+        status: 'COMPLETED',
         updated_at: now,
-        brand_approved_at: now,
       } as any)
       .eq('id', dealId);
 

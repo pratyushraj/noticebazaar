@@ -42,11 +42,23 @@ export type Database = {
         Row: {
           brand_address: string | null
           brand_email: string | null
+          brand_feedback: string | null
+          brand_id: string | null
           brand_name: string
+          brand_approval_status: string | null
+          brand_approved_at: string | null
           contact_person: string | null
           contract_file_url: string | null
           contract_metadata: Json | null
           contract_version: string | null
+          content_caption: string | null
+          content_delivered_at: string | null
+          content_drive_link: string | null
+          content_notes: string | null
+          content_revision_number: number | null
+          content_submission_url: string | null
+          content_submitted_at: string | null
+          content_approved_at: string | null
           created_at: string
           creator_id: string
           deal_amount: number
@@ -56,11 +68,16 @@ export type Database = {
           invoice_file_url: string | null
           invoice_url: string | null
           invoice_number: string | null
+          milestone_status: string | null
           organization_id: string
           otp_verified_at: string | null
+          payment_released_at: string | null
           payment_expected_date: string
           payment_received_date: string | null
           platform: string | null
+          progress_percentage: number | null
+          revision_requested_at: string | null
+          revision_submitted_at: string | null
           safe_contract_url: string | null
           status: string
           updated_at: string | null
@@ -69,11 +86,23 @@ export type Database = {
         Insert: {
           brand_address?: string | null
           brand_email?: string | null
+          brand_feedback?: string | null
+          brand_id?: string | null
           brand_name: string
+          brand_approval_status?: string | null
+          brand_approved_at?: string | null
           contact_person?: string | null
           contract_file_url?: string | null
           contract_metadata?: Json | null
           contract_version?: string | null
+          content_caption?: string | null
+          content_delivered_at?: string | null
+          content_drive_link?: string | null
+          content_notes?: string | null
+          content_revision_number?: number | null
+          content_submission_url?: string | null
+          content_submitted_at?: string | null
+          content_approved_at?: string | null
           created_at?: string
           creator_id: string
           deal_amount: number
@@ -83,11 +112,16 @@ export type Database = {
           invoice_file_url?: string | null
           invoice_url?: string | null
           invoice_number?: string | null
+          milestone_status?: string | null
           organization_id: string
           otp_verified_at?: string | null
+          payment_released_at?: string | null
           payment_expected_date: string
           payment_received_date?: string | null
           platform?: string | null
+          progress_percentage?: number | null
+          revision_requested_at?: string | null
+          revision_submitted_at?: string | null
           safe_contract_url?: string | null
           status?: string
           updated_at?: string | null
@@ -96,11 +130,23 @@ export type Database = {
         Update: {
           brand_address?: string | null
           brand_email?: string | null
+          brand_feedback?: string | null
+          brand_id?: string | null
           brand_name?: string
+          brand_approval_status?: string | null
+          brand_approved_at?: string | null
           contact_person?: string | null
           contract_file_url?: string | null
           contract_metadata?: Json | null
           contract_version?: string | null
+          content_caption?: string | null
+          content_delivered_at?: string | null
+          content_drive_link?: string | null
+          content_notes?: string | null
+          content_revision_number?: number | null
+          content_submission_url?: string | null
+          content_submitted_at?: string | null
+          content_approved_at?: string | null
           created_at?: string
           creator_id?: string
           deal_amount?: number
@@ -110,11 +156,16 @@ export type Database = {
           invoice_file_url?: string | null
           invoice_url?: string | null
           invoice_number?: string | null
+          milestone_status?: string | null
           organization_id?: string
           otp_verified_at?: string | null
+          payment_released_at?: string | null
           payment_expected_date?: string
           payment_received_date?: string | null
           platform?: string | null
+          progress_percentage?: number | null
+          revision_requested_at?: string | null
+          revision_submitted_at?: string | null
           safe_contract_url?: string | null
           status?: string
           updated_at?: string | null

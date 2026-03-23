@@ -33,7 +33,28 @@ export async function updatePaymentReceived(
       return { success: false, error: 'Deal not found' };
     }
 
-    const signedStatuses = ['signed', 'SIGNED_BY_BRAND', 'content_making', 'Content Making', 'content_delivered', 'Content Delivered', 'completed', 'COMPLETED'];
+    const signedStatuses = [
+      'signed',
+      'SIGNED_BY_BRAND',
+      'content_making',
+      'Content Making',
+      'content_delivered',
+      'Content Delivered',
+      'REVISION_REQUESTED',
+      'revision_requested',
+      'Revision Requested',
+      'REVISION_DONE',
+      'revision_done',
+      'Revision Done',
+      'CONTENT_APPROVED',
+      'content_approved',
+      'Content Approved',
+      'PAYMENT_RELEASED',
+      'payment_released',
+      'Payment Released',
+      'completed',
+      'COMPLETED',
+    ];
     const dealStatus = deal.status?.toLowerCase() || '';
     const isSigned = signedStatuses.some(s => s.toLowerCase() === dealStatus);
 
@@ -157,4 +178,3 @@ export async function createContractIssue(
     return { success: false, error: error.message };
   }
 }
-

@@ -347,6 +347,10 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   // Normalize "progress" statuses that may be stored as human strings in some environments.
   if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
   if (lower.includes('content_delivered') || lower.includes('content delivered')) return 'CONTENT_DELIVERED';
+  if (lower.includes('revision_requested') || lower.includes('revision requested') || lower.includes('changes_requested') || lower.includes('changes requested')) return 'REVISION_REQUESTED';
+  if (lower.includes('revision_done') || lower.includes('revision done') || lower.includes('revision_submitted') || lower.includes('revision submitted')) return 'REVISION_DONE';
+  if (lower.includes('content_approved') || lower.includes('content approved') || lower.includes('approved')) return 'CONTENT_APPROVED';
+  if (lower.includes('payment_released') || lower.includes('payment released')) return 'PAYMENT_RELEASED';
   if (lower === 'completed' || lower.includes('completed')) return 'COMPLETED';
 
   if (lower === 'signed_by_brand' || lower.includes('signed_by_brand')) return 'AWAITING_CREATOR_SIGNATURE';
@@ -404,6 +408,10 @@ const dealStageLabel = (row: BrandDeal | null | undefined) => {
   if (s === 'FULLY_EXECUTED') return 'Collaboration Started';
   if (s === 'CONTENT_MAKING') return 'Creator Working';
   if (s === 'CONTENT_DELIVERED') return 'Review Content';
+  if (s === 'REVISION_REQUESTED') return 'Revision Requested';
+  if (s === 'REVISION_DONE') return 'Review Revision';
+  if (s === 'CONTENT_APPROVED') return 'Release Payment';
+  if (s === 'PAYMENT_RELEASED') return 'Mark Complete';
   if (s === 'COMPLETED') return 'Completed';
   return 'In progress';
 };
@@ -436,7 +444,15 @@ const offerExpiryLabel = (row: BrandDeal | null | undefined) => {
 const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   const human = dealStageLabel({ status: s });
-  const signedSignal = s === 'FULLY_EXECUTED' || s === 'CONTENT_MAKING' || s === 'CONTENT_DELIVERED' || s === 'COMPLETED';
+  const signedSignal =
+    s === 'FULLY_EXECUTED' ||
+    s === 'CONTENT_MAKING' ||
+    s === 'CONTENT_DELIVERED' ||
+    s === 'REVISION_REQUESTED' ||
+    s === 'REVISION_DONE' ||
+    s === 'CONTENT_APPROVED' ||
+    s === 'PAYMENT_RELEASED' ||
+    s === 'COMPLETED';
   const hasAnyContractFile = Boolean(row?.safe_contract_url || row?.contract_file_url || row?.contract_file_path || row?.signed_contract_url || row?.signed_contract_path || row?.signed_pdf_url);
   const stageBadge =
     s === 'CONTRACT_READY' ? 'WAITING FOR SIGNATURE'
@@ -446,6 +462,10 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
         : s === 'FULLY_EXECUTED' ? 'COLLABORATION STARTED'
           : s === 'CONTENT_MAKING' ? 'CREATOR WORKING'
             : s === 'CONTENT_DELIVERED' ? 'REVIEW CONTENT'
+              : s === 'REVISION_REQUESTED' ? 'REVISION REQUESTED'
+                : s === 'REVISION_DONE' ? 'REVIEW REVISION'
+                  : s === 'CONTENT_APPROVED' ? 'APPROVED'
+                    : s === 'PAYMENT_RELEASED' ? 'PAYMENT RELEASED'
               : s === 'COMPLETED' ? 'COMPLETED'
                 : 'IN PROGRESS';
 
@@ -454,7 +474,9 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
     || s === 'CONTRACT_READY'
     || s === 'SENT'
     || s === 'CONTENT_DELIVERED'
-    || s === 'REVISION_REQUESTED';
+    || s === 'REVISION_DONE'
+    || s === 'CONTENT_APPROVED'
+    || s === 'PAYMENT_RELEASED';
 
   const primaryActionLabel =
     s === 'AWAITING_BRAND_SIGNATURE'
@@ -469,6 +491,14 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
           ? 'Track Progress'
           : s === 'CONTENT_DELIVERED'
             ? 'Review Content'
+            : s === 'REVISION_REQUESTED'
+              ? 'Waiting for Revision'
+              : s === 'REVISION_DONE'
+                ? 'Review Content'
+                : s === 'CONTENT_APPROVED'
+                  ? 'Release Payment'
+                  : s === 'PAYMENT_RELEASED'
+                    ? 'Mark Complete'
             : s === 'COMPLETED'
               ? 'View Report'
               : 'View Collaboration';
@@ -477,7 +507,13 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
     s === 'CONTENT_DELIVERED'
       ? '📩 Content ready for review'
       : s === 'REVISION_REQUESTED'
-        ? '⚠️ Revision requested'
+        ? '⚠️ Waiting for revision'
+        : s === 'REVISION_DONE'
+          ? '📩 Revision submitted'
+          : s === 'CONTENT_APPROVED'
+            ? '✅ Content approved'
+            : s === 'PAYMENT_RELEASED'
+              ? '💸 Payment released'
         : s === 'AWAITING_BRAND_SIGNATURE'
           ? '⚠️ Creator signed. Your signature required'
           : s === 'CONTRACT_READY' || s === 'SENT'
@@ -493,11 +529,14 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                   : '⏳ In progress';
 
   const step =
-    s === 'COMPLETED' ? 5
-      : s === 'CONTENT_DELIVERED' ? 4
-        : s === 'CONTENT_MAKING' ? 3
-          : s === 'FULLY_EXECUTED' ? 2
-            : 1;
+    s === 'COMPLETED' ? 7
+      : s === 'PAYMENT_RELEASED' ? 6
+        : s === 'CONTENT_APPROVED' ? 5
+          : s === 'REVISION_DONE' ? 4
+            : s === 'CONTENT_DELIVERED' ? 4
+              : s === 'CONTENT_MAKING' ? 3
+                : s === 'FULLY_EXECUTED' ? 2
+                  : 1;
 
   return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step };
 };
@@ -1732,6 +1771,12 @@ const BrandMobileDashboard = ({
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
     const deliverablesSectionRef = useRef<HTMLDivElement | null>(null);
     const progressSectionRef = useRef<HTMLDivElement | null>(null);
+    const contentSectionRef = useRef<HTMLDivElement | null>(null);
+
+    const [isReviewingContent, setIsReviewingContent] = useState(false);
+    const [isReleasingPayment, setIsReleasingPayment] = useState(false);
+    const [showRevisionBox, setShowRevisionBox] = useState(false);
+    const [revisionFeedbackDraft, setRevisionFeedbackDraft] = useState('');
 
     const creatorName = firstNameish(offer?.profiles);
     const creatorUsername = String(offer?.profiles?.username || '').trim();
@@ -1760,10 +1805,18 @@ const BrandMobileDashboard = ({
 		      const label =
 		        normalizedDealStatus === 'COMPLETED'
 		          ? 'Completed'
-	          : normalizedDealStatus === 'CONTENT_DELIVERED'
-	            ? 'Awaiting Review'
-	            : normalizedDealStatus === 'CONTENT_MAKING'
-	              ? 'In Progress'
+	          : normalizedDealStatus === 'PAYMENT_RELEASED'
+	            ? 'Payment Released'
+	            : normalizedDealStatus === 'CONTENT_APPROVED'
+	              ? 'Approved'
+	              : normalizedDealStatus === 'REVISION_REQUESTED'
+	                ? 'Revision Requested'
+	                : normalizedDealStatus === 'REVISION_DONE'
+	                  ? 'Awaiting Review'
+	                  : normalizedDealStatus === 'CONTENT_DELIVERED'
+	                    ? 'Awaiting Review'
+	                    : normalizedDealStatus === 'CONTENT_MAKING'
+	                      ? 'In Progress'
 	              : normalizedDealStatus === 'FULLY_EXECUTED'
 	                ? 'Active Collaboration'
 	                : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
@@ -1975,20 +2028,102 @@ const BrandMobileDashboard = ({
       }
 
       if (normalizedDealStatus === 'CONTENT_MAKING') {
-        scrollToRef(progressSectionRef);
-        toast.message('Progress tracking is coming next.');
+        scrollToRef(contentSectionRef);
+        toast.message('Waiting for creator to deliver content.');
         return;
       }
 
-      if (normalizedDealStatus === 'CONTENT_DELIVERED') {
-        scrollToRef(progressSectionRef);
-        toast.message('Content review is coming next.');
+      if (normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE' || normalizedDealStatus === 'REVISION_REQUESTED') {
+        scrollToRef(contentSectionRef);
+        toast.message('Review the submitted content below.');
+        return;
+      }
+
+      if (normalizedDealStatus === 'CONTENT_APPROVED') {
+        await releasePayment();
+        return;
+      }
+
+      if (normalizedDealStatus === 'PAYMENT_RELEASED') {
+        scrollToRef(contentSectionRef);
+        toast.message('Next: mark the deal complete when everything is done.');
         return;
       }
 
       if (normalizedDealStatus === 'COMPLETED') {
         scrollToRef(progressSectionRef);
         return;
+      }
+    };
+
+    const patchDeal = async (path: string, body?: any) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('Authentication required');
+      const apiBase = getApiBaseUrl();
+      const resp = await fetch(`${apiBase}${path}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data?.success) {
+        throw new Error(data?.error || 'Request failed');
+      }
+      return data;
+    };
+
+    const approveContent = async () => {
+      try {
+        triggerHaptic(HapticPatterns.light);
+        setIsReviewingContent(true);
+        await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'approved' });
+        toast.success('Content approved');
+        setShowRevisionBox(false);
+        setRevisionFeedbackDraft('');
+        await onRefresh?.();
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to approve content');
+      } finally {
+        setIsReviewingContent(false);
+      }
+    };
+
+    const requestRevision = async () => {
+      try {
+        triggerHaptic(HapticPatterns.light);
+        const feedback = String(revisionFeedbackDraft || '').trim();
+        if (!feedback) {
+          toast.error('Add a revision note for the creator');
+          return;
+        }
+        setIsReviewingContent(true);
+        await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'changes_requested', feedback });
+        toast.success('Revision requested');
+        setShowRevisionBox(false);
+        setRevisionFeedbackDraft('');
+        await onRefresh?.();
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to request revision');
+      } finally {
+        setIsReviewingContent(false);
+      }
+    };
+
+    const releasePayment = async () => {
+      try {
+        triggerHaptic(HapticPatterns.light);
+        setIsReleasingPayment(true);
+        await patchDeal(`/api/deals/${offer.id}/release-payment`);
+        toast.success('Payment released');
+        await onRefresh?.();
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to release payment');
+      } finally {
+        setIsReleasingPayment(false);
       }
     };
 
@@ -2263,6 +2398,206 @@ const BrandMobileDashboard = ({
                 ))}
             </div>
           </div>
+
+          {/* Content delivery + review */}
+          {(normalizedDealStatus === 'CONTENT_MAKING' ||
+            normalizedDealStatus === 'CONTENT_DELIVERED' ||
+            normalizedDealStatus === 'REVISION_REQUESTED' ||
+            normalizedDealStatus === 'REVISION_DONE' ||
+            normalizedDealStatus === 'CONTENT_APPROVED' ||
+            normalizedDealStatus === 'PAYMENT_RELEASED' ||
+            normalizedDealStatus === 'COMPLETED') && (
+            <div ref={contentSectionRef} className="mb-6">
+              <SectionTitle>Content</SectionTitle>
+              <DealCard>
+                <div className="p-5">
+                  {(() => {
+                    const contentUrl = String(offer?.content_submission_url || offer?.content_url || '').trim();
+                    const caption = String(offer?.content_caption || '').trim();
+                    const drive = String(offer?.content_drive_link || '').trim();
+                    const notes = String(offer?.content_notes || '').trim();
+                    const feedback = String(offer?.brand_feedback || '').trim();
+
+                    const canReview = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
+                    const waitingRevision = normalizedDealStatus === 'REVISION_REQUESTED';
+                    const canRelease = normalizedDealStatus === 'CONTENT_APPROVED';
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className={cn('text-[16px] font-black leading-tight', textColor)}>
+                              {canReview ? 'Review content' : canRelease ? 'Approved' : waitingRevision ? 'Revision requested' : 'In progress'}
+                            </p>
+                            <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>
+                              {normalizedDealStatus === 'CONTENT_MAKING'
+                                ? 'Waiting for creator to deliver the Instagram link.'
+                                : canReview
+                                  ? 'Open the link, then approve or request a revision.'
+                                  : waitingRevision
+                                    ? 'Waiting for creator to submit a revision.'
+                                    : canRelease
+                                      ? 'Content approved. Release payment to move forward.'
+                                      : normalizedDealStatus === 'PAYMENT_RELEASED'
+                                        ? 'Payment released. Mark complete when the campaign is done.'
+                                        : '—'}
+                            </p>
+                          </div>
+                          <span
+                            className={cn(
+                              'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
+                              canReview
+                                ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
+                                : canRelease
+                                  ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
+                                  : waitingRevision
+                                    ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
+                                    : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
+                            )}
+                          >
+                            {canReview ? 'NEEDS REVIEW' : canRelease ? 'APPROVED' : waitingRevision ? 'REVISION' : 'WAITING'}
+                          </span>
+                        </div>
+
+                        <div className={cn('rounded-2xl border px-4 py-3', isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200')}>
+                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Instagram URL</p>
+                          {contentUrl ? (
+                            <a
+                              href={contentUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={cn('text-[13px] font-bold break-all underline', isDark ? 'text-sky-200' : 'text-sky-700')}
+                            >
+                              {contentUrl}
+                            </a>
+                          ) : (
+                            <p className={cn('text-[13px] font-bold', secondaryTextColor)}>Not submitted yet</p>
+                          )}
+                        </div>
+
+                        {(caption || drive || notes) && (
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-slate-200')}>
+                            {caption && (
+                              <div>
+                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Caption</p>
+                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>{caption}</p>
+                              </div>
+                            )}
+                            {drive && (
+                              <div>
+                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Files</p>
+                                <a
+                                  href={drive}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={cn('text-[13px] font-bold break-all underline', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                >
+                                  {drive}
+                                </a>
+                              </div>
+                            )}
+                            {notes && (
+                              <div>
+                                <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Notes</p>
+                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>{notes}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {feedback && (
+                          <div className={cn('rounded-2xl border p-4', isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200')}>
+                            <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', isDark ? 'text-rose-200' : 'text-rose-700')}>Revision note</p>
+                            <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-rose-100/90' : 'text-rose-700')}>{feedback}</p>
+                          </div>
+                        )}
+
+                        {canReview && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={approveContent}
+                              disabled={isReviewingContent}
+                              className={cn(
+                                'h-12 rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
+                                'bg-gradient-to-r from-emerald-600 to-sky-600 text-white'
+                              )}
+                            >
+                              {isReviewingContent ? 'Saving…' : 'Approve'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                triggerHaptic(HapticPatterns.light);
+                                setShowRevisionBox((v) => !v);
+                              }}
+                              disabled={isReviewingContent}
+                              className={cn(
+                                'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
+                                isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                              )}
+                            >
+                              Request revision
+                            </button>
+                          </div>
+                        )}
+
+                        {showRevisionBox && (
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                            <p className={cn('text-[12px] font-black', textColor)}>Revision note (required)</p>
+                            <textarea
+                              value={revisionFeedbackDraft}
+                              onChange={(e) => setRevisionFeedbackDraft(e.target.value)}
+                              placeholder="What should the creator change?"
+                              className={cn(
+                                'w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none',
+                                isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400'
+                              )}
+                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                onClick={() => {
+                                  triggerHaptic(HapticPatterns.light);
+                                  setShowRevisionBox(false);
+                                }}
+                                className={cn(
+                                  'h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]',
+                                  isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                                )}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={requestRevision}
+                                disabled={isReviewingContent}
+                                className={cn(
+                                  'h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60',
+                                  isDark ? 'bg-rose-600 text-white' : 'bg-rose-600 text-white'
+                                )}
+                              >
+                                {isReviewingContent ? 'Sending…' : 'Send note'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {canRelease && (
+                          <button
+                            onClick={releasePayment}
+                            disabled={isReleasingPayment}
+                            className={cn(
+                              'h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
+                              'bg-[#0B1220] text-white'
+                            )}
+                          >
+                            {isReleasingPayment ? 'Releasing…' : 'Release Payment'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </DealCard>
+            </div>
+          )}
 
           {/* Usage rights */}
           <div className="mb-6">

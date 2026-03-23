@@ -52,7 +52,28 @@ router.post('/request', async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Safeguard: Only allow payment operations on signed deals
-    const signedStatuses = ['signed', 'SIGNED_BY_BRAND', 'content_making', 'Content Making', 'content_delivered', 'Content Delivered', 'completed', 'COMPLETED'];
+    const signedStatuses = [
+      'signed',
+      'SIGNED_BY_BRAND',
+      'content_making',
+      'Content Making',
+      'content_delivered',
+      'Content Delivered',
+      'REVISION_REQUESTED',
+      'revision_requested',
+      'Revision Requested',
+      'REVISION_DONE',
+      'revision_done',
+      'Revision Done',
+      'CONTENT_APPROVED',
+      'content_approved',
+      'Content Approved',
+      'PAYMENT_RELEASED',
+      'payment_released',
+      'Payment Released',
+      'completed',
+      'COMPLETED',
+    ];
     const dealStatus = deal.status?.toLowerCase() || '';
     const isSigned = signedStatuses.some(s => s.toLowerCase() === dealStatus);
 
@@ -103,7 +124,28 @@ router.post('/mark-received', async (req: AuthenticatedRequest, res: Response) =
     }
 
     // Safeguard: Only allow payment operations on signed deals
-    const signedStatuses = ['signed', 'SIGNED_BY_BRAND', 'content_making', 'Content Making', 'content_delivered', 'Content Delivered', 'completed', 'COMPLETED'];
+    const signedStatuses = [
+      'signed',
+      'SIGNED_BY_BRAND',
+      'content_making',
+      'Content Making',
+      'content_delivered',
+      'Content Delivered',
+      'REVISION_REQUESTED',
+      'revision_requested',
+      'Revision Requested',
+      'REVISION_DONE',
+      'revision_done',
+      'Revision Done',
+      'CONTENT_APPROVED',
+      'content_approved',
+      'Content Approved',
+      'PAYMENT_RELEASED',
+      'payment_released',
+      'Payment Released',
+      'completed',
+      'COMPLETED',
+    ];
     const dealStatus = deal.status?.toLowerCase() || '';
     const isSigned = signedStatuses.some(s => s.toLowerCase() === dealStatus);
 
@@ -134,4 +176,3 @@ router.post('/mark-received', async (req: AuthenticatedRequest, res: Response) =
 });
 
 export default router;
-

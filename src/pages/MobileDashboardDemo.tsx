@@ -96,9 +96,12 @@ const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
 
     const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
-    const isRevisionRequested = rawStatus.includes('revision') || rawStatus.includes('brand_revision');
-    const isDelivered = rawStatus.includes('content_delivered') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
-    const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting') || rawStatus.includes('awaiting product shipment');
+    const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
+    const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
+    const isDelivered = rawStatus.includes('content_delivered') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending') || isRevisionDone;
+    const isApproved = rawStatus.includes('content_approved');
+    const isPaymentReleased = rawStatus.includes('payment_released');
+    const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting') || rawStatus.includes('awaiting_product_shipment') || rawStatus.includes('awaiting product shipment');
     const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
 
@@ -106,7 +109,9 @@ const getCreatorDealCardUX = (deal: any) => {
     const daysUntilDue = getDaysUntil(dueDate);
 
     let progressStep = 1;
-    if (isCompleted) progressStep = 5;
+    if (isCompleted) progressStep = 7;
+    else if (isPaymentReleased) progressStep = 6;
+    else if (isApproved) progressStep = 5;
     else if (isDelivered || isRevisionRequested) progressStep = 4;
     else if (isMaking) progressStep = 3;
     else if (isFullyExecuted) progressStep = 2;
@@ -114,10 +119,10 @@ const getCreatorDealCardUX = (deal: any) => {
 
     const contractLabel = isContractPending
         ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
-        : (isFullyExecuted || isMaking || isDelivered || isCompleted ? 'Contract: signed' : null);
+        : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted ? 'Contract: signed' : null);
 
     const needsSignature = isContractPending;
-    const needsCreatorAction = !isCompleted && (needsSignature || isRevisionRequested || isMaking);
+    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && (needsSignature || isRevisionRequested || isMaking);
 
     const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
         ? 'critical'
@@ -133,6 +138,14 @@ const getCreatorDealCardUX = (deal: any) => {
         stagePill = 'COMPLETED';
         nextStep = 'View summary';
         cta = 'View Summary';
+    } else if (isPaymentReleased) {
+        stagePill = 'PAYMENT RELEASED';
+        nextStep = 'Confirm completion and close the deal';
+        cta = 'View Deal';
+    } else if (isApproved) {
+        stagePill = 'APPROVED';
+        nextStep = 'Waiting for payment release';
+        cta = 'Payment Pending';
     } else if (needsSignature) {
         stagePill = 'SIGN CONTRACT';
         nextStep = 'Review and sign the agreement';
@@ -140,19 +153,19 @@ const getCreatorDealCardUX = (deal: any) => {
     } else if (isRevisionRequested) {
         stagePill = 'REVISION REQUESTED';
         nextStep = 'Update content and resubmit';
-        cta = 'View Feedback';
+        cta = 'Upload Revision';
     } else if (isDelivered) {
         stagePill = 'AWAITING REVIEW';
         nextStep = 'Wait for brand approval';
-        cta = 'View Progress';
+        cta = 'Waiting for Review';
     } else if (isFullyExecuted) {
         stagePill = 'COLLAB STARTED';
         nextStep = 'Start creating content';
         cta = 'View Deal';
     } else if (isMaking) {
         stagePill = 'MAKE CONTENT';
-        nextStep = 'Upload your draft';
-        cta = 'Submit Draft';
+        nextStep = 'Deliver your Instagram link for review';
+        cta = 'Deliver Content';
     } else {
         stagePill = 'WAITING';
         nextStep = 'Open deal';
@@ -169,6 +182,9 @@ const getCreatorDealCardUX = (deal: any) => {
         needsCreatorAction,
         needsSignature,
         isRevisionRequested,
+        isRevisionDone,
+        isApproved,
+        isPaymentReleased,
         isMaking,
         stagePill,
         nextStep,
@@ -180,10 +196,14 @@ const getCreatorPaymentListUX = (deal: any) => {
     const ux = getCreatorDealCardUX(deal);
     const rawStatus = ux.rawStatus;
     const isPaid = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus.includes('payment_received');
-    const isAwaitingApproval = rawStatus.includes('content_delivered') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
+    const isPaymentReleased = rawStatus.includes('payment_released');
+    const isApproved = rawStatus.includes('content_approved');
+    const isAwaitingApproval = rawStatus.includes('content_delivered') || rawStatus.includes('revision_done') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('needs signature');
 
     if (isPaid) return { label: 'PAID', sublabel: 'Payment released', tone: 'success' as const };
+    if (isPaymentReleased) return { label: 'PAYMENT RELEASED', sublabel: 'Waiting to close the deal', tone: 'success' as const };
+    if (isApproved) return { label: 'APPROVED', sublabel: 'Payment pending', tone: 'warning' as const };
     if (isAwaitingApproval) return { label: 'PENDING APPROVAL', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
     if (isContractPending) return { label: 'CONTRACT PENDING', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
     if (ux.isRevisionRequested) return { label: 'REVISION', sublabel: 'Fix requested before approval', tone: 'warning' as const };
@@ -490,9 +510,28 @@ const MobileDashboardDemo = ({
         };
     }, [selectedItem]);
 
+    // When opening the deliver/revision modal, prefill with any previously submitted values.
+    useEffect(() => {
+        if (!showDeliverContentModal) return;
+        const existingUrl = String((selectedItem as any)?.content_submission_url || (selectedItem as any)?.content_url || '').trim();
+        const existingCaption = String((selectedItem as any)?.content_caption || '').trim();
+        const existingDrive = String((selectedItem as any)?.content_drive_link || '').trim();
+        const existingNotes = String((selectedItem as any)?.content_notes || '').trim();
+        setDeliverContentUrlDraft(existingUrl);
+        setDeliverCaptionDraft(existingCaption);
+        setDeliverDriveLinkDraft(existingDrive);
+        setDeliverNotesDraft(existingNotes);
+    }, [showDeliverContentModal, selectedItem]);
+
     const [selectedType, setSelectedType] = useState<'deal' | 'offer' | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
     const [itemDetailPortalRoot, setItemDetailPortalRoot] = useState<HTMLElement | null>(null);
+    const [showDeliverContentModal, setShowDeliverContentModal] = useState(false);
+    const [deliverContentUrlDraft, setDeliverContentUrlDraft] = useState('');
+    const [deliverCaptionDraft, setDeliverCaptionDraft] = useState('');
+    const [deliverDriveLinkDraft, setDeliverDriveLinkDraft] = useState('');
+    const [deliverNotesDraft, setDeliverNotesDraft] = useState('');
+    const [isSubmittingContent, setIsSubmittingContent] = useState(false);
 
     const currentDealStage: DealStage | undefined = React.useMemo(() => {
         if (selectedType !== 'deal' || !selectedItem) return undefined;
@@ -515,6 +554,59 @@ const MobileDashboardDemo = ({
             await onRefresh?.();
         } catch (e: any) {
             toast.error(e?.message || 'Failed to update progress');
+        }
+    };
+
+    const submitDealContent = async () => {
+        const dealId = String(selectedItem?.id || '').trim();
+        if (!dealId) {
+            toast.error('Deal details unavailable');
+            return;
+        }
+        const contentUrl = String(deliverContentUrlDraft || '').trim();
+        if (!contentUrl) {
+            toast.error('Instagram URL is required');
+            return;
+        }
+        try {
+            setIsSubmittingContent(true);
+            const { data: { session } } = await supabase.auth.getSession();
+            const accessToken = session?.access_token;
+            if (!accessToken) {
+                toast.error('Authentication required');
+                return;
+            }
+            const apiBase = getApiBaseUrl();
+            const resp = await fetch(`${apiBase}/api/deals/${encodeURIComponent(dealId)}/submit-content`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    contentUrl,
+                    caption: String(deliverCaptionDraft || '').trim() || null,
+                    driveLink: String(deliverDriveLinkDraft || '').trim() || null,
+                    notes: String(deliverNotesDraft || '').trim() || null,
+                }),
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok || !data?.success) {
+                throw new Error(data?.error || 'Failed to submit content');
+            }
+            toast.success('Submitted for review');
+            triggerHaptic(HapticPatterns.success);
+            setShowDeliverContentModal(false);
+            setDeliverContentUrlDraft('');
+            setDeliverCaptionDraft('');
+            setDeliverDriveLinkDraft('');
+            setDeliverNotesDraft('');
+            await onRefresh?.();
+        } catch (e: any) {
+            toast.error(e?.message || 'Failed to submit content');
+            triggerHaptic(HapticPatterns.error);
+        } finally {
+            setIsSubmittingContent(false);
         }
     };
 
@@ -4022,10 +4114,23 @@ const MobileDashboardDemo = ({
 
                                                 const isSignable = status === 'signed_pending_creator' || status === 'sent' || status.includes('pending_creator') || status === 'signed_by_brand';
                                                 const isSigned = status === 'signed' || status === 'fully_signed' || status === 'fully_executed' || status.includes('signed');
+                                                const isContentMaking = status.includes('content_making') || status.includes('content making');
+                                                const isContentDelivered = status.includes('content_delivered') || status.includes('content delivered');
+                                                const isRevisionRequested = status.includes('revision_requested') || status.includes('revision requested') || status.includes('changes_requested') || status.includes('changes requested');
+                                                const isRevisionDone = status.includes('revision_done') || status.includes('revision done') || status.includes('revision_submitted') || status.includes('revision submitted');
+                                                const isContentApproved = status.includes('content_approved') || status.includes('content approved');
+                                                const isPaymentReleased = status.includes('payment_released') || status.includes('payment released');
                                                 
                                                 if (isSignable) {
                                                     triggerHaptic();
                                                     setShowCreatorSigningModal(true);
+                                                } else if (isContentMaking || isRevisionRequested) {
+                                                    triggerHaptic();
+                                                    // Creator submits the IG link (initial delivery or revision upload)
+                                                    setShowDeliverContentModal(true);
+                                                } else if (isContentDelivered || isRevisionDone || isContentApproved || isPaymentReleased) {
+                                                    triggerHaptic();
+                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                                 } else if (isSigned) {
                                                     triggerHaptic();
                                                     contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4069,11 +4174,17 @@ const MobileDashboardDemo = ({
                                             </>
                                         ) : (
                                             <span className="text-[16px] font-black">
-                                                {((selectedItem.status || '').toLowerCase().includes('pending_creator') || (selectedItem.status || '').toLowerCase() === 'sent' || (selectedItem.status || '').toLowerCase() === 'signed_by_brand')
-                                                    ? '✍️ Sign Contract'
-                                                    : ((selectedItem.status || '').toLowerCase() === 'drafting' || (selectedItem.status || '').toLowerCase() === 'brand_details_pending')
-                                                        ? 'View Contract Details'
-                                                        : 'View Contract Details'}
+                                                {(() => {
+                                                    const s = String(selectedItem?.status || '').toLowerCase();
+                                                    if (s.includes('pending_creator') || s === 'sent' || s === 'signed_by_brand') return '✍️ Sign Contract';
+                                                    if (s.includes('content_making') || s.includes('content making')) return 'Deliver Content';
+                                                    if (s.includes('revision_requested') || s.includes('revision requested') || s.includes('changes_requested') || s.includes('changes requested')) return 'Upload Revision';
+                                                    if (s.includes('content_delivered') || s.includes('content delivered') || s.includes('revision_done') || s.includes('revision done')) return 'Waiting for Review';
+                                                    if (s.includes('content_approved') || s.includes('content approved')) return 'Payment Pending';
+                                                    if (s.includes('payment_released') || s.includes('payment released')) return 'Payment Released';
+                                                    if (s === 'drafting' || s === 'brand_details_pending') return 'View Contract Details';
+                                                    return 'View Contract Details';
+                                                })()}
                                             </span>
                                         )}
                                     </motion.button>
@@ -4311,6 +4422,118 @@ const MobileDashboardDemo = ({
                     />,
                     document.body
                 )}
+
+            {/* Creator: Deliver content / upload revision */}
+            <Dialog open={showDeliverContentModal} onOpenChange={setShowDeliverContentModal}>
+                <DialogContent className={cn("sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200")}>
+                    <DialogHeader>
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                            <Send className="w-6 h-6 text-emerald-500" />
+                            {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
+                            String(selectedItem?.status || '').toLowerCase().includes('changes_requested')
+                                ? 'Upload Revision'
+                                : 'Deliver Content'}
+                        </DialogTitle>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
+                            Submit your Instagram post or reel link for the brand to review. You can also add caption notes or file links.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="px-6 py-5 space-y-4">
+                        {String((selectedItem as any)?.brand_feedback || '').trim() && (
+                            <div className={cn("p-4 rounded-2xl border", isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
+                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-60", isDark ? "text-rose-200" : "text-rose-700")}>Revision note from brand</p>
+                                <p className={cn("mt-2 text-[13px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/90" : "text-rose-700")}>
+                                    {String((selectedItem as any)?.brand_feedback || '').trim()}
+                                </p>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Instagram URL (Required)</label>
+                            <input
+                                value={deliverContentUrlDraft}
+                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
+                                placeholder="https://instagram.com/reel/..."
+                                className={cn(
+                                    "w-full rounded-2xl px-4 py-4 text-[14px] font-semibold outline-none transition-all border",
+                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+                                )}
+                                inputMode="url"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Caption (Optional)</label>
+                            <textarea
+                                value={deliverCaptionDraft}
+                                onChange={(e) => setDeliverCaptionDraft(e.target.value)}
+                                placeholder="Paste your caption here..."
+                                className={cn(
+                                    "w-full min-h-[90px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
+                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+                                )}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Drive/Dropbox Link (Optional)</label>
+                            <input
+                                value={deliverDriveLinkDraft}
+                                onChange={(e) => setDeliverDriveLinkDraft(e.target.value)}
+                                placeholder="https://drive.google.com/..."
+                                className={cn(
+                                    "w-full rounded-2xl px-4 py-4 text-[14px] font-semibold outline-none transition-all border",
+                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+                                )}
+                                inputMode="url"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Notes for Brand (Optional)</label>
+                            <textarea
+                                value={deliverNotesDraft}
+                                onChange={(e) => setDeliverNotesDraft(e.target.value)}
+                                placeholder="Any context, instructions, or timeline notes..."
+                                className={cn(
+                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
+                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                            <button
+                                onClick={() => {
+                                    triggerHaptic();
+                                    setShowDeliverContentModal(false);
+                                }}
+                                disabled={isSubmittingContent}
+                                className={cn(
+                                    "h-12 rounded-2xl font-black text-[12px] border transition-all active:scale-[0.98] disabled:opacity-60",
+                                    isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-white border-slate-200 text-slate-900 hover:bg-slate-50"
+                                )}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={submitDealContent}
+                                disabled={isSubmittingContent}
+                                className={cn(
+                                    "h-12 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] disabled:opacity-60",
+                                    "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_12px_38px_rgba(16,185,129,0.22)]"
+                                )}
+                            >
+                                {isSubmittingContent ? 'Submitting…' : 'Submit Content'}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Creator Signing Modal */}
             <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
