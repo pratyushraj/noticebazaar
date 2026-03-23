@@ -4264,6 +4264,19 @@ const MobileDashboardDemo = ({
                 })()}
             </div>
 
+            {/* Deal Progress Update Sheet (portaled so it appears above the in-dashboard deal detail overlay) */}
+            {typeof document !== 'undefined' &&
+                createPortal(
+                    <ProgressUpdateSheet
+                        isOpen={showProgressSheet}
+                        onClose={() => setShowProgressSheet(false)}
+                        currentStage={currentDealStage}
+                        onStageSelect={handleProgressStageSelect}
+                        isLoading={Boolean((updateDealProgress as any)?.isPending ?? (updateDealProgress as any)?.isLoading)}
+                    />,
+                    document.body
+                )}
+
             {/* Creator Signing Modal */}
             <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
                 <DialogContent className={cn("sm:max-w-[440px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200")}>
@@ -4712,14 +4725,6 @@ const MobileDashboardDemo = ({
                 })()}
             </AnimatePresence>
 
-            {/* Creator: update deal progress inside the in-dashboard deal detail */}
-            <ProgressUpdateSheet
-                isOpen={showProgressSheet}
-                onClose={() => setShowProgressSheet(false)}
-                currentStage={currentDealStage}
-                onStageSelect={handleProgressStageSelect}
-                isLoading={updateDealProgress.isPending}
-            />
         </div >
     );
 };
