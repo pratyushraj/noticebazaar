@@ -393,7 +393,7 @@ const BrandSettings = () => {
       )}
 
       <header className={cn('sticky top-0 z-20 border-b backdrop-blur-xl', isDark ? 'bg-[#061318]/92 border-white/10' : 'bg-white/90 border-slate-100')}>
-        <div className="max-w-md md:max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="w-full md:max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <button
             type="button"
             onClick={() => navigate('/brand-dashboard')}
@@ -415,7 +415,7 @@ const BrandSettings = () => {
         </div>
       </header>
 
-      <main className="relative z-10 max-w-md md:max-w-2xl mx-auto px-5 py-6 pb-24 space-y-6">
+      <main className="relative z-10 w-full md:max-w-2xl mx-auto px-5 py-6 pb-24 space-y-6">
         {/* Brand identity */}
         <div className={cn('rounded-[28px] border overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.10)]', cardBorder, cardBg)}>
           <div className="p-5">
