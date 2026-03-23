@@ -73,7 +73,8 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
+            // High z-index so it can appear above "in-dashboard" detail screens that use z~1100.
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[2000]"
           />
           
           {/* Bottom Sheet */}
@@ -92,7 +93,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
               }
             }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-[101]",
+              "fixed bottom-0 left-0 right-0 z-[2001]",
               glass.ios17,
               radius.xl,
               shadows.depthStrong,
@@ -219,4 +220,3 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
 };
 
 export default ProgressUpdateSheet;
-
