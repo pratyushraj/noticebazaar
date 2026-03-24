@@ -129,10 +129,27 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPrimaryCta => {
   const { role, deal } = params;
   const status = getCanonicalDealStatus(deal);
+  const signatureSources = [
+    deal,
+    deal?.raw,
+    deal?.contract,
+    deal?.contract_data,
+    deal?.contract_metadata,
+    deal?.esign,
+    deal?.signature,
+    deal?.signatures,
+  ].filter((x) => x && typeof x === 'object');
+  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
+  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
 
   // Brand
   if (role === 'brand') {
     if (status === 'CONTRACT_READY' || status === 'SENT') {
+      // If the brand already signed, this is no longer an "action required" step for the brand.
+      // The next step is waiting for the creator to sign.
+      if (brandSigned && !creatorSigned) {
+        return { status, label: 'Waiting for Creator', disabled: true, tone: 'waiting', action: 'none' };
+      }
       return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
     }
     if (status === 'FULLY_EXECUTED') {
@@ -158,7 +175,12 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
 
   // Creator
   if (status === 'CONTRACT_READY' || status === 'SENT') {
-    return { status, label: 'View Contract', disabled: false, tone: 'view', action: 'view_contract' };
+    // If the creator already signed, they should see a waiting state until the brand signs.
+    if (creatorSigned && !brandSigned) {
+      return { status, label: 'Waiting for Brand', disabled: true, tone: 'waiting', action: 'none' };
+    }
+    // Otherwise, contract signing is the creator's next action.
+    return { status, label: 'Review & Sign Contract', disabled: false, tone: 'action', action: 'review_sign_contract' };
   }
   if (status === 'FULLY_EXECUTED') {
     return { status, label: 'Start Working', disabled: false, tone: 'action', action: 'start_working' };

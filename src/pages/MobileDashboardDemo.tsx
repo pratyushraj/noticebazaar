@@ -694,6 +694,11 @@ const MobileDashboardDemo = ({
             return !(s.includes('completed') || s === 'paid');
         });
     }, [brandDeals]);
+    const actionRequiredDealsList = React.useMemo(() => {
+        return (activeDealsList || []).filter((d: any) => Boolean(getCreatorDealCardUX(d).needsCreatorAction));
+    }, [activeDealsList]);
+    const actionRequiredDealsCount = actionRequiredDealsList.length;
+    const actionRequiredTotalCount = pendingOffersCount + actionRequiredDealsCount;
     const activeDealsCount = activeDealsList.length;
     const completedDealsCount = completedDealsList.length;
 
@@ -2592,7 +2597,7 @@ const MobileDashboardDemo = ({
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
-                                        Action required ({pendingOffersCount})
+                                        Action required ({actionRequiredTotalCount})
                                     </button>
                                     <button
                                         onClick={() => {
@@ -3001,13 +3006,89 @@ const MobileDashboardDemo = ({
                                         exit={{ opacity: 0, x: -10 }}
                                         className="space-y-4"
                                     >
-                                        {pendingOffersCount > 0 ? (
+                                        {actionRequiredTotalCount > 0 ? (
                                             <div className="space-y-4">
-	                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
-	                                                    const expiresDays = 2 + (idx % 3);
-	                                                    const sentAt = req.created_at || req.raw?.created_at || null;
-	                                                    const sentHours = sentAt ? Math.max(0, Math.round((Date.now() - new Date(sentAt).getTime()) / 3600000)) : null;
-	                                                    const sentText = sentHours !== null && Number.isFinite(sentHours) ? `Sent ${sentHours}h ago` : null;
+                                                {actionRequiredDealsList.map((deal: any, idx: number) => {
+                                                    const ux = getCreatorDealCardUX(deal);
+                                                    const cta = getDealPrimaryCta({ role: 'creator', deal });
+                                                    return (
+                                                        <motion.div
+                                                            key={`deal-action-${String(deal?.id || idx)}`}
+                                                            whileTap={{ scale: 0.985 }}
+                                                            onTap={() => {
+                                                                triggerHaptic();
+                                                                setSelectedItem(deal);
+                                                                setSelectedType('deal');
+                                                            }}
+                                                            className={cn(
+                                                                "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
+                                                                borderColor,
+                                                                isDark
+                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                                                                    : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
+                                                            )}
+                                                        >
+                                                            <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                                <span
+                                                                    className={cn(
+                                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
+                                                                        isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200"
+                                                                    )}
+                                                                >
+                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-amber-200" : "text-amber-700")} strokeWidth={3} />
+                                                                    Action required
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-start justify-between mb-3.5">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-11 h-11 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
+                                                                        {getBrandIcon(
+                                                                            deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url,
+                                                                            deal.category,
+                                                                            deal.brand_name
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{deal.brand_name || 'Brand'}</h4>
+                                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                                            <span className={cn("text-[12px] font-semibold opacity-70", secondaryTextColor)}>{ux.nextStep}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right shrink-0 pl-3">
+                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                        ₹{Number(deal.deal_amount || 0).toLocaleString()}
+                                                                    </div>
+                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-slate-300" : "text-slate-500")}>Campaign budget</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    triggerHaptic();
+                                                                    setSelectedItem(deal);
+                                                                    setSelectedType('deal');
+                                                                }}
+                                                                disabled={cta.disabled}
+                                                                className={cn(
+                                                                    "h-11 w-full rounded-[16px] text-[12px] font-black shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5",
+                                                                    dealPrimaryCtaButtonClass(cta.tone),
+                                                                    cta.disabled ? "opacity-60" : ""
+                                                                )}
+                                                            >
+                                                                {cta.label}
+                                                                <ArrowRight className="w-3.5 h-3.5 opacity-70" />
+                                                            </button>
+                                                        </motion.div>
+                                                    );
+                                                })}
+		                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
+		                                                    const expiresDays = 2 + (idx % 3);
+		                                                    const sentAt = req.created_at || req.raw?.created_at || null;
+		                                                    const sentHours = sentAt ? Math.max(0, Math.round((Date.now() - new Date(sentAt).getTime()) / 3600000)) : null;
+		                                                    const sentText = sentHours !== null && Number.isFinite(sentHours) ? `Sent ${sentHours}h ago` : null;
 	                                                    const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
 
 	                                                    const expTone =
