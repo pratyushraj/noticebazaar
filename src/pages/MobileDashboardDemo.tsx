@@ -34,6 +34,11 @@ interface MobileDashboardProps {
     isRefreshing?: boolean;
     onRefresh?: () => Promise<void>;
     onLogout?: () => void;
+    /**
+     * If true, the dashboard may render demo-only UI (like the Interactive Demo Offer placeholder).
+     * Default behavior is to avoid showing demo items for real accounts.
+     */
+    showDemoOffer?: boolean;
 }
 
 // Minimal Status Badge for Deal Cards
@@ -333,7 +338,8 @@ const MobileDashboardDemo = ({
     onOpenMenu,
     isRefreshing: isRefreshingProp,
     onRefresh,
-    onLogout
+    onLogout,
+    showDemoOffer = false,
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
     const signOutMutation = useSignOut();
@@ -352,6 +358,8 @@ const MobileDashboardDemo = ({
         refreshStatus: refreshPushStatus,
     } = useDealAlertNotifications();
     const [searchParams, setSearchParams] = useSearchParams();
+    const isDemoParamEnabled = ['1', 'true', 'yes'].includes(String(searchParams.get('demo') || '').toLowerCase());
+    const isDemoOfferEnabled = Boolean(showDemoOffer || isDemoParamEnabled);
     const activeTab = (searchParams.get('tab') as 'dashboard' | 'collabs' | 'payments' | 'profile') || 'dashboard';
     const setActiveTab = (tab: string) => {
         const next = new URLSearchParams(searchParams);
@@ -2316,26 +2324,42 @@ const MobileDashboardDemo = ({
                                 </div>
 
                                 <AnimatePresence mode="popLayout">
-                                    {(() => {
-                                        const fakeDemoOffer = {
-                                            id: 'demo-offer',
-                                            brand_name: 'Zepto (Demo)',
-                                            brand_logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Zepto_logo.svg/100px-Zepto_logo.svg.png',
-                                            category: 'Quick Commerce',
-                                            collab_type: 'paid',
-                                            exact_budget: 35000,
-                                            deliverables: ['1 Reel', '2 Stories'],
-                                            deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-                                            status: 'new',
-                                            isDemo: true
-                                        };
-                                        const displayOffers = collabRequests.length > 0 ? collabRequests : [fakeDemoOffer];
-                                        return (
-                                            <div className="space-y-10">
-                                                {displayOffers.map((req: any, idx) => {
-                                                    // Format deliverables accurately
-                                                    let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
-                                                    const rawDeliv = req.raw?.deliverables || req.deliverables;
+	                                    {(() => {
+	                                        const fakeDemoOffer = {
+	                                            id: 'demo-offer',
+	                                            brand_name: 'Zepto (Demo)',
+	                                            brand_logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Zepto_logo.svg/100px-Zepto_logo.svg.png',
+	                                            category: 'Quick Commerce',
+	                                            collab_type: 'paid',
+	                                            exact_budget: 35000,
+	                                            deliverables: ['1 Reel', '2 Stories'],
+	                                            deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+	                                            status: 'new',
+	                                            isDemo: true
+	                                        };
+	                                        const displayOffers =
+	                                            collabRequests.length > 0
+	                                                ? collabRequests
+	                                                : (isDemoOfferEnabled ? [fakeDemoOffer] : []);
+	                                        return (
+	                                            <div className="space-y-10">
+	                                                {displayOffers.length === 0 ? (
+	                                                    <div
+	                                                        className={cn(
+	                                                            "p-6 rounded-[20px] border text-center",
+	                                                            isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm"
+	                                                        )}
+	                                                    >
+	                                                        <p className={cn("text-[13px] font-semibold", textColor)}>No offers yet</p>
+	                                                        <p className={cn("text-[12px] mt-1 opacity-60", textColor)}>
+	                                                            Share your collab link to start receiving protected offers.
+	                                                        </p>
+	                                                    </div>
+	                                                ) : null}
+	                                                {displayOffers.map((req: any, idx) => {
+	                                                    // Format deliverables accurately
+	                                                    let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
+	                                                    const rawDeliv = req.raw?.deliverables || req.deliverables;
 
                                                     const processDeliverableItems = (items: any[]) => {
                                                         return items.map((d: any) => {
