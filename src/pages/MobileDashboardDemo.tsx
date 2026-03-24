@@ -2777,6 +2777,13 @@ const MobileDashboardDemo = ({
 
                                                                 const cta = getDealPrimaryCta({ role: 'creator', deal });
                                                                 const ctaLabel = cta.label;
+                                                                const contractSigned =
+                                                                    !ux.needsSignature &&
+                                                                    (ux.rawStatus.includes('fully_executed') ||
+                                                                        ux.rawStatus === 'signed' ||
+                                                                        ux.rawStatus.includes('content_') ||
+                                                                        ux.rawStatus.includes('payment_released') ||
+                                                                        ux.rawStatus.includes('completed'));
 
                                                                 return (
                                                                     <>
