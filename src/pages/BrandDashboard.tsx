@@ -43,22 +43,37 @@ const BrandDashboard = () => {
     if (!session?.access_token) throw new Error('Authentication required');
     const apiBase = getApiBaseUrl() || PROD_API_BASE;
 
-    const doFetch = async (base: string) => {
+    const doFetch = async (base: string, accessToken: string) => {
       const res = await fetch(`${base}${path}`, {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data: any = await res.json().catch(() => ({}));
       return { res, data };
     };
 
+    // If the access token expired while the app was backgrounded (common on mobile),
+    // refresh the session and retry once before surfacing an error to the UI.
+    const maybeRefreshAndRetry = async (base: string, accessToken: string) => {
+      const first = await doFetch(base, accessToken);
+      const msg = String(first.data?.error || '').toLowerCase();
+      if (first.res.status !== 401 || (!msg.includes('invalid') && !msg.includes('expired'))) return first;
+
+      const refreshed = await supabase.auth.refreshSession();
+      const refreshedToken = refreshed.data.session?.access_token;
+      if (!refreshedToken) return first;
+
+      return doFetch(base, refreshedToken);
+    };
+
     try {
-      const first = await doFetch(apiBase);
+      const first = await maybeRefreshAndRetry(apiBase, session.access_token);
       if (first.res.ok && first.data?.success) return first.data;
 
       // Common pitfall: frontend accidentally pointing to a local API server (or an old local build)
       // which doesn't have the newest routes. Auto-fallback to production API unless local API is forced.
       if (!isLocalApiForced && isLocalhostApiBase(apiBase) && (first.res.status === 404 || first.res.status >= 500)) {
-        const second = await doFetch(PROD_API_BASE);
+        const token = (await supabase.auth.getSession()).data.session?.access_token || session.access_token;
+        const second = await maybeRefreshAndRetry(PROD_API_BASE, token);
         if (second.res.ok && second.data?.success) return second.data;
         throw new Error(second.data?.error || 'Failed to load brand dashboard data');
       }
@@ -68,11 +83,9 @@ const BrandDashboard = () => {
       // Connection refused / server down on localhost → fallback to prod API when not forced.
       const msg = String(err?.message || err || '').toLowerCase();
       if (!isLocalApiForced && isLocalhostApiBase(getApiBaseUrl()) && (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('connection'))) {
-        const second = await fetch(`${PROD_API_BASE}${path}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        const data: any = await second.json().catch(() => ({}));
-        if (second.ok && data?.success) return data;
+        const token = (await supabase.auth.getSession()).data.session?.access_token || session.access_token;
+        const second = await maybeRefreshAndRetry(PROD_API_BASE, token);
+        if (second.res.ok && second.data?.success) return second.data;
       }
       throw err;
     }
