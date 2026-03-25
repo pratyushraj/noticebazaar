@@ -234,7 +234,7 @@ const BrandDealConsole = () => {
                             {(brandDeal?.brand_logo_url || collabRequest?.brand_logo_url) ? (
                                 <img
                                     src={brandDeal?.brand_logo_url || collabRequest?.brand_logo_url}
-                                    alt=""
+                                    alt="Brand logo"
                                     className="max-h-full max-w-full object-contain p-1.5"
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).style.display = 'none';
@@ -256,7 +256,7 @@ const BrandDealConsole = () => {
                                     {safeImageSrc(creator?.avatar_url) ? (
                                         <img
                                             src={safeImageSrc(creator.avatar_url)}
-                                            alt=""
+                                            alt="Brand logo"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).style.display = 'none';
