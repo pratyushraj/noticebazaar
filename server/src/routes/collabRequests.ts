@@ -1583,6 +1583,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       usage_duration,
       payment_terms,
       approval_sla_hours,
+      requires_shipping,
       shipping_timeline_days,
       cancellation_policy,
       offer_expires_at,
@@ -1674,6 +1675,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       usage_rights: usage_rights === true || usage_rights === 'true',
       deadline: deadline || null,
       offer_expires_at: offer_expires_at || null,
+      shipping_required: requires_shipping === true || requires_shipping === 'true',
     };
 
     if (isPaidLikeCollab(collabTypeForDb)) {
@@ -1902,6 +1904,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       usage_rights: basePayload.usage_rights,
       deadline: basePayload.deadline,
       offer_expires_at: basePayload.offer_expires_at,
+      shipping_required: basePayload.shipping_required ?? false,
       submitted_ip: clientIp,
       submitted_user_agent: userAgent,
       ...(brandContactId ? { brand_contact_id: brandContactId } : {}),
@@ -2515,6 +2518,8 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       platform: 'Other',
       status: 'Drafting',
       deal_type: isBarter ? 'barter' : 'paid',
+      collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+      shipping_required: (request as any).shipping_required === true || (request as any).shipping_required === 'true',
       created_via: 'collab_request',
       brand_address: request.brand_address,
       brand_phone: request.brand_phone,
@@ -2778,6 +2783,8 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       platform: 'Other',
       status: 'Drafting',
       deal_type: isBarter ? 'barter' : 'paid',
+      collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+      shipping_required: (request as any).shipping_required === true || (request as any).shipping_required === 'true',
       created_via: 'collab_request',
       brand_address: request.brand_address,
       brand_phone: request.brand_phone,

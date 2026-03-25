@@ -498,6 +498,7 @@ const CollabLinkLanding = () => {
   const [usageDuration, setUsageDuration] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
   const [approvalSlaHours, setApprovalSlaHours] = useState('');
+  const [requiresShipping, setRequiresShipping] = useState(false);
   const [shippingTimelineDays, setShippingTimelineDays] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [showCommercialTerms, setShowCommercialTerms] = useState(false);
@@ -930,6 +931,7 @@ const CollabLinkLanding = () => {
     usageDuration,
     paymentTerms,
     approvalSlaHours,
+    requiresShipping,
     shippingTimelineDays,
     cancellationPolicy,
   });
@@ -964,6 +966,7 @@ const CollabLinkLanding = () => {
     if (typeof data.usageDuration === 'string') setUsageDuration(data.usageDuration);
     if (typeof data.paymentTerms === 'string') setPaymentTerms(data.paymentTerms);
     if (typeof data.approvalSlaHours === 'string') setApprovalSlaHours(data.approvalSlaHours);
+    if (typeof data.requiresShipping === 'boolean') setRequiresShipping(data.requiresShipping);
     if (typeof data.shippingTimelineDays === 'string') setShippingTimelineDays(data.shippingTimelineDays);
     if (typeof data.cancellationPolicy === 'string') setCancellationPolicy(data.cancellationPolicy);
   };
@@ -1408,6 +1411,12 @@ const CollabLinkLanding = () => {
     }, 100);
   };
 
+  const scrollOfferFormIntoView = () => {
+    window.setTimeout(() => {
+      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 40);
+  };
+
   const handleStickySubmit = () => {
     if (!hasStartedOffer) {
       handleCreateOfferClick();
@@ -1420,7 +1429,7 @@ const CollabLinkLanding = () => {
         return;
       }
       setCurrentStep(2);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollOfferFormIntoView();
       return;
     }
 
@@ -1430,7 +1439,7 @@ const CollabLinkLanding = () => {
         return;
       }
       setCurrentStep(3);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollOfferFormIntoView();
       return;
     }
 
@@ -1440,7 +1449,7 @@ const CollabLinkLanding = () => {
         return;
       }
       setCurrentStep(4);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollOfferFormIntoView();
       return;
     }
 
@@ -1450,7 +1459,7 @@ const CollabLinkLanding = () => {
         return;
       }
       setCurrentStep(5);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollOfferFormIntoView();
       return;
     }
 
@@ -1579,6 +1588,7 @@ const CollabLinkLanding = () => {
           usage_duration: usageDuration || undefined,
           payment_terms: paymentTerms || undefined,
           approval_sla_hours: approvalSlaHours ? Number(approvalSlaHours) : undefined,
+          requires_shipping: requiresShipping,
           shipping_timeline_days: shippingTimelineDays ? Number(shippingTimelineDays) : undefined,
           cancellation_policy: cancellationPolicy || undefined,
         }),
@@ -1951,10 +1961,10 @@ const CollabLinkLanding = () => {
     toast.success(`${template.label} selected`);
     triggerHaptic(HapticPatterns.success);
 
-    // Auto-advance into customization. Selecting a package should immediately open the form.
+    // Auto-advance into customization. After package select, land on the
+    // campaign/shipping step so shipping requirements are always explicitly asked.
     setShowCustomFlow(true);
-    // Package flow: jump to contact + send (edits are optional via custom deal / change package).
-    setCurrentStep(5);
+    setCurrentStep(4);
 
     // Make the next step obvious: bring the offer panel into view and nudge the header.
     setTemplateContinueNudge(Date.now());
@@ -3349,6 +3359,45 @@ const CollabLinkLanding = () => {
                               className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
                             />
                           </div>
+
+                          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Product Shipping</p>
+                                <p className="text-[12px] font-semibold text-slate-500 mt-0.5">
+                                  Turn this on if the brand will send a product or sample as part of the collaboration.
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = !requiresShipping;
+                                  setRequiresShipping(next);
+                                  if (!next) setShippingTimelineDays('');
+                                }}
+                                className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border transition-colors ${requiresShipping ? 'bg-emerald-600 border-emerald-600' : 'bg-slate-100 border-slate-200'}`}
+                                aria-pressed={requiresShipping}
+                              >
+                                <span
+                                  className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${requiresShipping ? 'translate-x-7' : 'translate-x-1'}`}
+                                />
+                              </button>
+                            </div>
+
+                            {requiresShipping && (
+                              <div>
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2">Shipping timeline (days)</label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={shippingTimelineDays}
+                                  onChange={(e) => setShippingTimelineDays(e.target.value)}
+                                  placeholder="e.g. 5"
+                                  className="h-12 px-4 rounded-xl border-white bg-slate-50 font-bold text-[14px] shadow-sm"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -3573,7 +3622,7 @@ const CollabLinkLanding = () => {
                             if (canProceed) {
                               setCurrentStep(currentStep + 1);
                               triggerHaptic(HapticPatterns.success);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                              scrollOfferFormIntoView();
                             } else {
                               toast.error(`Please complete Step ${currentStep} first`);
                             }
@@ -3664,7 +3713,7 @@ const CollabLinkLanding = () => {
             </div> {/* END RIGHT COLUMN */}
 	          </div> {/* END flex-row container */}
 
-	          <div className="md:hidden h-24" />
+	          <div className="md:hidden h-36" />
 
           {isOwner && !previewAsBrand && hasIncompleteSetup && (
             <div className="fixed right-4 bottom-24 z-50 md:hidden">
@@ -3732,7 +3781,7 @@ const CollabLinkLanding = () => {
 
           {/* Sticky Bottom CTA (mobile compact) */}
           {!(showCustomFlow && currentStep === 5) && (
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
             <div className="relative">
               {isCoreReady && !hasStartedOffer && (
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
@@ -3797,7 +3846,7 @@ const CollabLinkLanding = () => {
 		                )}
               </Button>
             </div>
-            <p className="text-center text-[10.5px] font-semibold text-slate-500 mt-2">
+            <p className="text-center text-[10px] font-semibold text-slate-500 mt-1.5">
               {showSubmittingTrust ? 'Your offer is being processed securely' : '50+ brands have collaborated through Creator Armour'}
             </p>
             {showSubmittingTrust && (

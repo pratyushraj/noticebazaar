@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import CountUp from 'react-countup';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { Button } from '@/components/ui/button';
@@ -45,10 +46,12 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
 import { buttons as dsButtons } from '@/lib/design-system';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
+import { CREATOR_ASSETS_BUCKET } from '@/lib/constants/storage';
+import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
-type BrandCollabTab = 'pending' | 'active' | 'completed';
+type BrandCollabTab = 'action_required' | 'active' | 'completed';
 
 import type { Profile, BrandDeal } from '@/types';
 
@@ -75,6 +78,12 @@ const formatCompactINR = (n: number | string | null | undefined) => {
   const num = Number(n);
   const safe = Number.isFinite(num) ? num : 0;
   return `₹${safe.toLocaleString('en-IN')}`;
+};
+
+const formatCompactCount = (n: number | string | null | undefined) => {
+  const num = Number(n);
+  const safe = Number.isFinite(num) ? num : 0;
+  return safe.toLocaleString('en-IN');
 };
 
 const formatFollowers = (n: number | string | null | undefined) => {
@@ -254,6 +263,26 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   const lower = raw.toLowerCase();
   const upper = raw.toUpperCase();
 
+  // If the stored status is already in a later stage (content/payment/completion),
+  // prefer that over signature-derived "fully executed". Signatures indicate the
+  // contract is binding, but the deal lifecycle continues beyond signing.
+  if (lower.includes('dispute') || lower.includes('disputed')) return 'DISPUTED';
+  if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
+  if (
+    lower.includes('content_delivered') ||
+    lower.includes('content delivered') ||
+    lower.includes('awaiting_review') ||
+    lower.includes('waiting_for_review') ||
+    lower.includes('waiting for review')
+  ) {
+    return 'CONTENT_DELIVERED';
+  }
+  if (lower.includes('revision_requested') || lower.includes('revision requested') || lower.includes('changes_requested') || lower.includes('changes requested')) return 'REVISION_REQUESTED';
+  if (lower.includes('revision_done') || lower.includes('revision done') || lower.includes('revision_submitted') || lower.includes('revision submitted')) return 'REVISION_DONE';
+  if (lower.includes('content_approved') || lower.includes('content approved') || lower.includes('approved')) return 'CONTENT_APPROVED';
+  if (lower.includes('payment_released') || lower.includes('payment released')) return 'PAYMENT_RELEASED';
+  if (lower === 'completed' || lower.includes('completed')) return 'COMPLETED';
+
   // Prefer signature signals over the raw status when present.
   const signatureSources = [
     row,
@@ -345,15 +374,6 @@ const effectiveDealStatus = (row: BrandDeal | null | undefined) => {
   if (lower === 'fully_executed' || lower === 'executed' || lower.includes('fully_executed')) return 'FULLY_EXECUTED';
   if (lower === 'live' || lower.includes('live_deal') || lower.includes('legally active') || lower.includes('live')) return 'FULLY_EXECUTED';
 
-  // Normalize "progress" statuses that may be stored as human strings in some environments.
-  if (lower.includes('content_making') || lower.includes('content making')) return 'CONTENT_MAKING';
-  if (lower.includes('content_delivered') || lower.includes('content delivered')) return 'CONTENT_DELIVERED';
-  if (lower.includes('revision_requested') || lower.includes('revision requested') || lower.includes('changes_requested') || lower.includes('changes requested')) return 'REVISION_REQUESTED';
-  if (lower.includes('revision_done') || lower.includes('revision done') || lower.includes('revision_submitted') || lower.includes('revision submitted')) return 'REVISION_DONE';
-  if (lower.includes('content_approved') || lower.includes('content approved') || lower.includes('approved')) return 'CONTENT_APPROVED';
-  if (lower.includes('payment_released') || lower.includes('payment released')) return 'PAYMENT_RELEASED';
-  if (lower === 'completed' || lower.includes('completed')) return 'COMPLETED';
-
   if (lower === 'signed_by_brand' || lower.includes('signed_by_brand')) return 'AWAITING_CREATOR_SIGNATURE';
   if (lower === 'signed_by_creator' || lower.includes('signed_by_creator')) return 'AWAITING_BRAND_SIGNATURE';
 
@@ -402,17 +422,13 @@ const collectSignatureHints = (row: BrandDeal | null | undefined) => {
 const dealStageLabel = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   if (!s) return 'In progress';
-  if (s === 'CONTRACT_READY') return 'Waiting for Signature';
-  if (s === 'AWAITING_CREATOR_SIGNATURE') return 'Waiting for Creator Signature';
-  if (s === 'AWAITING_BRAND_SIGNATURE') return 'Waiting for Your Signature';
-  if (s === 'SENT') return 'Pending Signature';
-  if (s === 'FULLY_EXECUTED') return 'Collaboration Started';
-  if (s === 'CONTENT_MAKING') return 'Creator Working';
-  if (s === 'CONTENT_DELIVERED') return 'Review Content';
-  if (s === 'REVISION_REQUESTED') return 'Revision Requested';
-  if (s === 'REVISION_DONE') return 'Review Revision';
-  if (s === 'CONTENT_APPROVED') return 'Release Payment';
-  if (s === 'PAYMENT_RELEASED') return 'Mark Complete';
+  if (s === 'DISPUTED') return 'Issue raised';
+  if (s === 'CONTRACT_READY' || s === 'AWAITING_BRAND_SIGNATURE') return 'Signature required';
+  if (s === 'SENT' || s === 'AWAITING_CREATOR_SIGNATURE') return 'Waiting for creator signature';
+  if (s === 'FULLY_EXECUTED') return 'Collaboration started';
+  if (s === 'CONTENT_MAKING') return 'Creator working';
+  if (s === 'REVISION_REQUESTED') return 'Waiting for revision';
+  if (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') return 'Content ready for review';
   if (s === 'COMPLETED') return 'Completed';
   return 'In progress';
 };
@@ -445,69 +461,40 @@ const offerExpiryLabel = (row: BrandDeal | null | undefined) => {
 const brandDealCardUi = (row: BrandDeal | null | undefined) => {
   const s = effectiveDealStatus(row);
   const human = dealStageLabel({ status: s });
-  const signedSignal =
-    s === 'FULLY_EXECUTED' ||
-    s === 'CONTENT_MAKING' ||
-    s === 'CONTENT_DELIVERED' ||
-    s === 'REVISION_REQUESTED' ||
-    s === 'REVISION_DONE' ||
-    s === 'CONTENT_APPROVED' ||
-    s === 'PAYMENT_RELEASED' ||
-    s === 'COMPLETED';
-  const hasAnyContractFile = Boolean(row?.safe_contract_url || row?.contract_file_url || row?.contract_file_path || row?.signed_contract_url || row?.signed_contract_path || row?.signed_pdf_url);
   const stageBadge =
-    s === 'CONTRACT_READY' ? 'WAITING FOR SIGNATURE'
-      : s === 'AWAITING_CREATOR_SIGNATURE' ? 'WAITING FOR CREATOR'
-        : s === 'AWAITING_BRAND_SIGNATURE' ? 'SIGN TO START'
-      : s === 'SENT' ? 'PENDING SIGNATURE'
-        : s === 'FULLY_EXECUTED' ? 'COLLABORATION STARTED'
-          : s === 'CONTENT_MAKING' ? 'CREATOR WORKING'
-            : s === 'CONTENT_DELIVERED' ? 'REVIEW CONTENT'
-              : s === 'REVISION_REQUESTED' ? 'REVISION REQUESTED'
-                : s === 'REVISION_DONE' ? 'REVIEW REVISION'
-                  : s === 'CONTENT_APPROVED' ? 'APPROVED'
-                    : s === 'PAYMENT_RELEASED' ? 'PAYMENT RELEASED'
-              : s === 'COMPLETED' ? 'COMPLETED'
-                : 'IN PROGRESS';
+    s === 'DISPUTED' ? 'ISSUE'
+      : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE') ? 'REVIEW'
+        : s === 'CONTENT_MAKING' ? 'CREATE'
+          : s === 'FULLY_EXECUTED' ? 'SIGNED'
+            : 'CONTRACT';
 
   const primaryCta = getDealPrimaryCta({ role: 'brand', deal: row });
   const needsAction = primaryCta.tone === 'action' && !primaryCta.disabled;
   const primaryActionLabel = primaryCta.label;
 
   const statusLine =
-    s === 'CONTENT_DELIVERED'
-      ? '📩 Content ready for review'
-      : s === 'REVISION_REQUESTED'
-        ? '⚠️ Waiting for revision'
-        : s === 'REVISION_DONE'
-          ? '📩 Revision submitted'
-          : s === 'CONTENT_APPROVED'
-            ? '✅ Content approved'
-            : s === 'PAYMENT_RELEASED'
-              ? '💸 Payment released'
-        : s === 'AWAITING_BRAND_SIGNATURE'
-          ? '⚠️ Creator signed. Your signature required'
-          : s === 'CONTRACT_READY' || s === 'SENT'
-            ? '⚠️ Contract ready. Signature required'
-          : s === 'AWAITING_CREATOR_SIGNATURE'
-            ? '⏳ Waiting for creator signature'
+    s === 'DISPUTED'
+      ? 'Issue raised — view details'
+      : s === 'COMPLETED'
+        ? 'Deal completed'
+        : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE')
+          ? 'Content ready — review and approve'
+          : s === 'REVISION_REQUESTED'
+            ? 'Waiting for creator revision'
             : s === 'CONTENT_MAKING'
-              ? '⏳ Creator working'
+              ? 'Creator working on deliverables'
               : s === 'FULLY_EXECUTED'
-                ? '✅ Contract signed'
-                : s === 'COMPLETED'
-                  ? '✅ Completed'
-                  : '⏳ In progress';
+                ? 'Contract signed — creator can start work'
+                : s === 'AWAITING_CREATOR_SIGNATURE' || s === 'SENT'
+                  ? 'Waiting for creator to sign'
+                  : 'Signature required to start';
 
   const step =
-    s === 'COMPLETED' ? 7
-      : s === 'PAYMENT_RELEASED' ? 6
-        : s === 'CONTENT_APPROVED' ? 5
-          : s === 'REVISION_DONE' ? 4
-            : s === 'CONTENT_DELIVERED' ? 4
-              : s === 'CONTENT_MAKING' ? 3
-                : s === 'FULLY_EXECUTED' ? 2
-                  : 1;
+    s === 'COMPLETED' ? 5
+      : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED') ? 4
+        : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
+          : s === 'FULLY_EXECUTED' ? 2
+            : 1;
 
   return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled };
 };
@@ -533,8 +520,13 @@ const BrandMobileDashboard = ({
     tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile'
       ? tabParam
       : initialTab;
-	  const activeCollabTab: BrandCollabTab =
-	    subtabParam === 'pending' || subtabParam === 'active' || subtabParam === 'completed' ? subtabParam : 'pending';
+	  const activeCollabTab: BrandCollabTab = (() => {
+	    const raw = String(subtabParam || '').trim().toLowerCase();
+	    if (raw === 'pending' || raw === 'action_required' || raw === 'action-required' || raw === 'action') return 'action_required';
+	    if (raw === 'active') return 'active';
+	    if (raw === 'completed') return 'completed';
+	    return 'action_required';
+	  })();
 
 	  const showSignatureDebug = useMemo(() => {
 	    if (typeof window === 'undefined') return false;
@@ -546,7 +538,7 @@ const BrandMobileDashboard = ({
 	    const next = new URLSearchParams(searchParams);
 	    next.set('tab', tab);
 	    if (tab === 'collabs') {
-      next.set('subtab', subtab || activeCollabTab || 'pending');
+      next.set('subtab', subtab || activeCollabTab || 'action_required');
     } else {
       next.delete('subtab');
     }
@@ -1256,6 +1248,7 @@ const BrandMobileDashboard = ({
       const base = formatDeliverables(offer);
       return String(base || '').trim();
     });
+    const isCounteredRequest = normalizeStatus(offer?.status) === 'countered';
 
     const updateRequest = async (path: string, body?: any) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -1405,38 +1398,60 @@ const BrandMobileDashboard = ({
 	                </div>
 
 	                <div className="grid grid-cols-3 gap-2">
-	                  <button
-	                    onClick={acceptCounter}
-	                    disabled={isRequestBusy}
-	                    className={cn(
-	                      'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
-	                      normalizeStatus(offer?.status) === 'countered'
-	                        ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white border-transparent'
-	                        : (isDark ? 'bg-white/5 border-white/10 text-white/50' : 'bg-slate-50 border-slate-200 text-slate-400')
-	                    )}
-	                  >
-	                    Accept
-	                  </button>
-	                  <button
-	                    onClick={() => setShowCounterEditor(true)}
-	                    disabled={isRequestBusy}
-	                    className={cn(
-	                      'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
-	                      isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
-	                    )}
-	                  >
-	                    Counter
-	                  </button>
-	                  <button
-	                    onClick={declineOffer}
-	                    disabled={isRequestBusy}
-	                    className={cn(
-	                      'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
-	                      isDark ? 'bg-rose-500/10 border-rose-300/30 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100'
-	                    )}
-	                  >
-	                    Decline
-	                  </button>
+	                  {isCounteredRequest ? (
+	                    <>
+	                      <button
+	                        onClick={acceptCounter}
+	                        disabled={isRequestBusy}
+	                        className="h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60 bg-gradient-to-r from-blue-600 to-sky-600 text-white border-transparent"
+	                      >
+	                        Accept Counter
+	                      </button>
+	                      <button
+	                        onClick={() => setShowCounterEditor(true)}
+	                        disabled={isRequestBusy}
+	                        className={cn(
+	                          'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
+	                          isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+	                        )}
+	                      >
+	                        Revise Terms
+	                      </button>
+	                      <button
+	                        onClick={declineOffer}
+	                        disabled={isRequestBusy}
+	                        className={cn(
+	                          'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
+	                          isDark ? 'bg-rose-500/10 border-rose-300/30 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100'
+	                        )}
+	                      >
+	                        Withdraw
+	                      </button>
+	                    </>
+	                  ) : (
+	                    <>
+	                      <button
+	                        onClick={() => setShowCounterEditor(true)}
+	                        disabled={isRequestBusy}
+	                        className={cn(
+	                          'col-span-2 h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
+	                          isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+	                        )}
+	                      >
+	                        Edit Offer
+	                      </button>
+	                      <button
+	                        onClick={declineOffer}
+	                        disabled={isRequestBusy}
+	                        className={cn(
+	                          'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
+	                          isDark ? 'bg-rose-500/10 border-rose-300/30 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100'
+	                        )}
+	                      >
+	                        Withdraw
+	                      </button>
+	                    </>
+	                  )}
 	                </div>
 
 	                <AnimatePresence>
@@ -1655,6 +1670,10 @@ const BrandMobileDashboard = ({
 		              {canMarkComplete && (
 		                <button
 		                  onClick={async () => {
+                    if (!canSubmitCompletion) {
+                      toast.message(`Cannot complete yet: ${completionBlockers.join(', ')}`);
+                      return;
+                    }
                     try {
                       setIsMarkingComplete(true);
                       triggerHaptic(HapticPatterns.light);
@@ -1689,7 +1708,7 @@ const BrandMobileDashboard = ({
                       setIsMarkingComplete(false);
                     }
                   }}
-                  disabled={isMarkingComplete}
+                  disabled={isMarkingComplete || !canSubmitCompletion}
                   className={cn(
                     'p-4 rounded-2xl border text-left transition-all active:scale-[0.99] disabled:opacity-60',
                     isDark ? 'bg-emerald-500/10 border-emerald-400/25 hover:bg-emerald-500/15' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
@@ -1699,7 +1718,9 @@ const BrandMobileDashboard = ({
                     {isMarkingComplete ? 'Marking complete...' : 'Mark collaboration complete'}
                   </p>
                   <p className={cn('text-[12px] mt-1', isDark ? 'text-emerald-200/70' : 'text-emerald-700/80')}>
-                    Move this deal to completed once the campaign is fully done
+                    {canSubmitCompletion
+                      ? 'All required obligations are done. Move this deal to completed.'
+                      : `Complete after ${completionBlockers.join(', ')}.`}
                   </p>
 		                </button>
 		              )}
@@ -1752,6 +1773,17 @@ const BrandMobileDashboard = ({
 
 	    const [isReviewingContent, setIsReviewingContent] = useState(false);
 	    const [isReleasingPayment, setIsReleasingPayment] = useState(false);
+      const [isUpdatingShipping, setIsUpdatingShipping] = useState(false);
+	    const [showPaymentProofBox, setShowPaymentProofBox] = useState(false);
+	    const [paymentReferenceDraft, setPaymentReferenceDraft] = useState('');
+	    const [paymentDateDraft, setPaymentDateDraft] = useState(() => new Date().toISOString().slice(0, 10));
+	    const [paymentNotesDraft, setPaymentNotesDraft] = useState('');
+	    const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+      const [showShippingBox, setShowShippingBox] = useState(false);
+      const [courierNameDraft, setCourierNameDraft] = useState('');
+      const [trackingNumberDraft, setTrackingNumberDraft] = useState('');
+      const [trackingUrlDraft, setTrackingUrlDraft] = useState('');
+      const [expectedDeliveryDateDraft, setExpectedDeliveryDateDraft] = useState('');
 	    const [showRevisionBox, setShowRevisionBox] = useState(false);
 	    const [revisionFeedbackDraft, setRevisionFeedbackDraft] = useState('');
 	    const [showDisputeBox, setShowDisputeBox] = useState(false);
@@ -1771,53 +1803,77 @@ const BrandMobileDashboard = ({
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
     const usageRights = offer?.usage_rights || offer?.usage_type || 'Organic social media only';
     const usageDuration = offer?.usage_duration || '90 days limit';
+    const paymentReference = String(offer?.utr_number || offer?.payment_reference || '').trim();
+    const paymentReceivedDate = String(offer?.payment_received_date || '').trim();
+    const paymentProofUrl = String(offer?.payment_proof_url || '').trim();
+    const paymentNotes = String(offer?.payment_notes || '').trim();
+    const creatorPayeeName = String(offer?.profiles?.bank_account_name || creatorName || 'Creator').trim();
+    const creatorUpiId = String(offer?.profiles?.bank_upi || '').trim();
+    const collabKind = String(offer?.collab_type || offer?.deal_type || '').trim().toLowerCase();
+    const requiresPayment = typeof offer?.requires_payment === 'boolean'
+      ? Boolean(offer.requires_payment)
+      : (collabKind === 'paid' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter' || (collabKind !== 'barter' && amount > 0));
+    const requiresShipping = typeof offer?.requires_shipping === 'boolean'
+      ? Boolean(offer.requires_shipping)
+      : typeof offer?.shipping_required === 'boolean'
+        ? Boolean(offer.shipping_required)
+        : (collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter');
+    const shippingStatus = String(offer?.shipping_status || '').trim().toLowerCase();
+    const shippingDelivered = shippingStatus === 'delivered' || shippingStatus === 'received';
+    const trackingNumber = String(offer?.tracking_number || '').trim();
+    const trackingUrl = String(offer?.tracking_url || '').trim();
+    const courierName = String(offer?.courier_name || '').trim();
+    const expectedDeliveryDate = String(offer?.expected_delivery_date || '').trim();
 
 			  const normalizedDealStatus = effectiveDealStatus(offer);
+			  const canReviewContent = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
+    const canReleasePayment = requiresPayment && normalizedDealStatus === 'CONTENT_APPROVED';
+    const contentApprovedForCompletion =
+      normalizedDealStatus === 'CONTENT_APPROVED' ||
+      normalizedDealStatus === 'PAYMENT_RELEASED' ||
+      normalizedDealStatus === 'COMPLETED';
+    const paymentReleasedForCompletion =
+      !requiresPayment ||
+      normalizedDealStatus === 'PAYMENT_RELEASED' ||
+      normalizedDealStatus === 'COMPLETED';
+    const shippingSatisfiedForCompletion = !requiresShipping || shippingDelivered;
+    const completionBlockers = [
+      !contentApprovedForCompletion ? 'content approval is still pending' : null,
+      !shippingSatisfiedForCompletion ? 'product delivery is not confirmed yet' : null,
+      !paymentReleasedForCompletion ? 'payment has not been released yet' : null,
+    ].filter(Boolean) as string[];
+    const canSubmitCompletion = completionBlockers.length === 0;
 			  const cardUi = brandDealCardUi(offer);
 	      const primaryCta = getDealPrimaryCta({ role: 'brand', deal: offer });
 
 			  const dealUi = (() => {
-			    const label =
+			    const label = cardUi.human || 'In progress';
+			    const tone =
 			      normalizedDealStatus === 'COMPLETED'
-		          ? 'Completed'
-	          : normalizedDealStatus === 'PAYMENT_RELEASED'
-	            ? 'Payment Released'
-	            : normalizedDealStatus === 'CONTENT_APPROVED'
-	              ? 'Approved'
-	              : normalizedDealStatus === 'REVISION_REQUESTED'
-	                ? 'Revision Requested'
-	                : normalizedDealStatus === 'REVISION_DONE'
-	                  ? 'Awaiting Review'
-	                  : normalizedDealStatus === 'CONTENT_DELIVERED'
-	                    ? 'Awaiting Review'
-	                    : normalizedDealStatus === 'CONTENT_MAKING'
-	                      ? 'In Progress'
-	              : normalizedDealStatus === 'FULLY_EXECUTED'
-	                ? 'Active Collaboration'
-	                : normalizedDealStatus === 'AWAITING_BRAND_SIGNATURE'
-	                  ? 'Signature Required'
-	                  : normalizedDealStatus === 'AWAITING_CREATOR_SIGNATURE'
-	                    ? 'Awaiting Creator Signature'
-	                    : (normalizedDealStatus === 'SENT' || normalizedDealStatus === 'CONTRACT_READY')
-	                  ? 'Contract Pending'
-	                  : normalizedDealStatus ? normalizedDealStatus.replaceAll('_', ' ') : 'Deal';
+			        ? (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
+			        : primaryCta.tone === 'action'
+			          ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
+			          : primaryCta.tone === 'waiting'
+			            ? (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200')
+			            : (isDark ? 'bg-sky-500/10 text-sky-200 border-sky-500/25' : 'bg-sky-50 text-sky-800 border-sky-200');
 
-      const tone =
-        label === 'Active Collaboration'
-          ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/25' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
-          : label === 'Contract Pending'
-            ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
-            : label === 'Completed'
-              ? (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
-              : (isDark ? 'bg-sky-500/10 text-sky-200 border-sky-500/25' : 'bg-sky-50 text-sky-800 border-sky-200');
-
-		      const cta = cardUi.primaryActionLabel;
-
-	      const stepIndex =
-	        Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
-
-	      return { label, tone, cta, stepIndex };
+			    const stepIndex = Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
+			    return { label, tone, cta: primaryCta.label, stepIndex };
 	    })();
+
+    const copyText = async (value: string, label: string) => {
+      const text = String(value || '').trim();
+      if (!text) {
+        toast.error(`${label} not available`);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success(`${label} copied`);
+      } catch {
+        toast.error(`Failed to copy ${label.toLowerCase()}`);
+      }
+    };
 
     const getContractViewUrl = async () => {
       try {
@@ -2016,6 +2072,12 @@ const BrandMobileDashboard = ({
 	        scrollToRef(progressSectionRef);
 	        return;
 	      }
+
+	      if (cta.action === 'view_issue') {
+	        scrollToRef(contentSectionRef);
+	        toast.message('This deal has an issue raised. Review the notes below.');
+	        return;
+	      }
 	    };
 
     const patchDeal = async (path: string, body?: any) => {
@@ -2044,6 +2106,8 @@ const BrandMobileDashboard = ({
         setIsReviewingContent(true);
         await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'approved' });
         toast.success('Content approved');
+        // Optimistic UI update (avoid requiring a manual refresh to see CTA/progress changes).
+        setSelectedDealPage((prev) => (prev?.id === offer.id ? { ...prev, status: 'CONTENT_APPROVED', progress_percentage: 95, brand_approval_status: 'approved', updated_at: new Date().toISOString() } : prev));
         setShowRevisionBox(false);
         setRevisionFeedbackDraft('');
         await onRefresh?.();
@@ -2051,6 +2115,45 @@ const BrandMobileDashboard = ({
         toast.error(e?.message || 'Failed to approve content');
       } finally {
         setIsReviewingContent(false);
+      }
+    };
+
+    const updateShipping = async () => {
+      try {
+        triggerHaptic(HapticPatterns.light);
+        const tracking = String(trackingNumberDraft || '').trim();
+        if (!tracking) {
+          toast.error('Tracking number is required');
+          return;
+        }
+        setIsUpdatingShipping(true);
+        await patchDeal(`/api/deals/${offer.id}/shipping/update`, {
+          status: 'shipped',
+          courier_name: String(courierNameDraft || '').trim() || undefined,
+          tracking_number: tracking,
+          tracking_url: String(trackingUrlDraft || '').trim() || undefined,
+          expected_delivery_date: String(expectedDeliveryDateDraft || '').trim() || undefined,
+        });
+        toast.success('Shipping updated');
+        setSelectedDealPage((prev) => (
+          prev?.id === offer.id
+            ? {
+                ...prev,
+                shipping_status: 'shipped',
+                courier_name: String(courierNameDraft || '').trim() || null,
+                tracking_number: tracking,
+                tracking_url: String(trackingUrlDraft || '').trim() || null,
+                expected_delivery_date: String(expectedDeliveryDateDraft || '').trim() || null,
+                updated_at: new Date().toISOString(),
+              }
+            : prev
+        ));
+        setShowShippingBox(false);
+        await onRefresh?.();
+      } catch (e: any) {
+        toast.error(e?.message || 'Failed to update shipping');
+      } finally {
+        setIsUpdatingShipping(false);
       }
     };
 
@@ -2065,6 +2168,11 @@ const BrandMobileDashboard = ({
         setIsReviewingContent(true);
         await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'changes_requested', feedback });
         toast.success('Revision requested');
+        setSelectedDealPage((prev) =>
+          prev?.id === offer.id
+            ? { ...prev, status: 'Content Making', progress_percentage: 85, brand_approval_status: 'changes_requested', brand_feedback: feedback, updated_at: new Date().toISOString() }
+            : prev
+        );
         setShowRevisionBox(false);
         setRevisionFeedbackDraft('');
         await onRefresh?.();
@@ -2082,6 +2190,11 @@ const BrandMobileDashboard = ({
         setIsReviewingContent(true);
         await patchDeal(`/api/deals/${offer.id}/review-content`, { status: 'disputed', disputeNotes });
         toast.success('Issue raised');
+        setSelectedDealPage((prev) =>
+          prev?.id === offer.id
+            ? { ...prev, status: 'DISPUTED', brand_approval_status: 'disputed', dispute_notes: disputeNotes || null, updated_at: new Date().toISOString() }
+            : prev
+        );
         setShowDisputeBox(false);
         setDisputeNotesDraft('');
         await onRefresh?.();
@@ -2095,9 +2208,59 @@ const BrandMobileDashboard = ({
     const releasePayment = async () => {
       try {
         triggerHaptic(HapticPatterns.light);
+        if (!creatorUpiId) {
+          toast.error('Creator UPI ID missing', { description: 'Ask the creator to add a UPI ID before releasing payment.' });
+          return;
+        }
+        const paymentReference = String(paymentReferenceDraft || '').trim();
+        if (!paymentReference) {
+          toast.error('Payment reference is required');
+          return;
+        }
         setIsReleasingPayment(true);
-        await patchDeal(`/api/deals/${offer.id}/release-payment`);
+        let paymentProofUrl: string | null = null;
+        if (paymentProofFile) {
+          const fileExt = paymentProofFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+          const filePath = `${profile?.id || 'brand'}/payment-proofs/${offer.id}-${Date.now()}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage.from(CREATOR_ASSETS_BUCKET).upload(filePath, paymentProofFile, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+          if (uploadError) {
+            throw new Error(`Payment proof upload failed: ${uploadError.message}`);
+          }
+          const { data: publicUrlData } = supabase.storage.from(CREATOR_ASSETS_BUCKET).getPublicUrl(filePath);
+          paymentProofUrl = publicUrlData?.publicUrl || null;
+        }
+
+        const payload = {
+          paymentReference,
+          paymentReceivedDate: paymentDateDraft || undefined,
+          paymentNotes: String(paymentNotesDraft || '').trim() || undefined,
+          paymentProofUrl: paymentProofUrl || undefined,
+        };
+
+        await patchDeal(`/api/deals/${offer.id}/release-payment`, payload);
         toast.success('Payment released');
+        setSelectedDealPage((prev) => (
+          prev?.id === offer.id
+            ? {
+                ...prev,
+                status: 'PAYMENT_RELEASED',
+                payment_released_at: new Date().toISOString(),
+                payment_received_date: payload.paymentReceivedDate || new Date().toISOString(),
+                utr_number: paymentReference,
+                payment_proof_url: paymentProofUrl,
+                payment_notes: payload.paymentNotes || null,
+                updated_at: new Date().toISOString(),
+              }
+            : prev
+        ));
+        setShowPaymentProofBox(false);
+        setPaymentReferenceDraft('');
+        setPaymentDateDraft(new Date().toISOString().slice(0, 10));
+        setPaymentNotesDraft('');
+        setPaymentProofFile(null);
         await onRefresh?.();
       } catch (e: any) {
         toast.error(e?.message || 'Failed to release payment');
@@ -2198,6 +2361,15 @@ const BrandMobileDashboard = ({
                   {String(deliverables).replaceAll(',', ' •')}
                 </p>
 
+                {typeof offer?.campaign_description === 'string' && offer.campaign_description.trim() && (
+                  <div className={cn('mt-4 rounded-2xl border px-4 py-3', isDark ? 'bg-white/5 border-white/10' : 'bg-white/80 border-slate-200')}>
+                    <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-50 mb-1', textColor)}>Campaign brief</p>
+                    <p className={cn('text-[12px] font-semibold leading-relaxed whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>
+                      {offer.campaign_description.trim()}
+                    </p>
+                  </div>
+                )}
+
                 <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-white/10' : 'border-slate-100')}>
                   <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-white/10' : 'border-slate-200')}>
                     <AvatarImage src={offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || ''} alt={creatorName || 'Creator'} />
@@ -2242,12 +2414,18 @@ const BrandMobileDashboard = ({
           <div className="mb-6 grid grid-cols-2 gap-3">
             <DealCard>
               <div className="p-4">
-                <p className={cn('text-[11px] font-black uppercase tracking-wider mb-2 opacity-50', textColor)}>Payment</p>
+                <p className={cn('text-[11px] font-black uppercase tracking-wider mb-2 opacity-50', textColor)}>
+                  {requiresPayment ? 'Payout method' : requiresShipping ? 'Fulfillment' : 'Deal type'}
+                </p>
                 <div className="flex items-center gap-2.5">
-                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-blue-500/15' : 'bg-blue-500/10')}>
-                    <Landmark className={cn('w-4 h-4', isDark ? 'text-blue-200' : 'text-blue-700')} />
+                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-emerald-500/15' : 'bg-emerald-500/10')}>
+                    <Landmark className={cn('w-4 h-4', isDark ? 'text-emerald-200' : 'text-emerald-700')} />
                   </div>
-                  <span className={cn('text-[14px] font-black leading-tight', textColor)}>Direct Bank<br />Transfer</span>
+                  <span className={cn('text-[14px] font-black leading-tight', textColor)}>
+                    {requiresPayment ? 'UPI' : requiresShipping ? 'Product' : 'Collab'}
+                    <br />
+                    {requiresPayment ? 'Default payout' : requiresShipping ? 'Shipping required' : 'No payout needed'}
+                  </span>
                 </div>
               </div>
             </DealCard>
@@ -2378,6 +2556,148 @@ const BrandMobileDashboard = ({
             </div>
           </div>
 
+          {requiresShipping && (
+            <div className="mb-6">
+              <SectionTitle>Shipping</SectionTitle>
+              <DealCard>
+                <div className="p-5 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className={cn('text-[18px] font-black tracking-tight', textColor)}>Product fulfillment</p>
+                      <p className={cn('text-[13px] font-semibold mt-1', secondaryTextColor)}>
+                        Shipping is tracked separately from content and payment.
+                      </p>
+                    </div>
+                    <span className={cn(
+                      'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
+                      shippingDelivered
+                        ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
+                        : shippingStatus === 'shipped'
+                          ? (isDark ? 'bg-sky-500/10 text-sky-200 border-sky-500/20' : 'bg-sky-50 text-sky-800 border-sky-200')
+                          : (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
+                    )}>
+                      {shippingDelivered ? 'DELIVERED' : shippingStatus === 'shipped' ? 'SHIPPED' : 'PENDING'}
+                    </span>
+                  </div>
+
+                  {(courierName || trackingNumber || trackingUrl || expectedDeliveryDate) && (
+                    <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-slate-200')}>
+                      {courierName && (
+                        <div>
+                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Courier</p>
+                          <p className={cn('text-[13px] font-semibold', textColor)}>{courierName}</p>
+                        </div>
+                      )}
+                      {trackingNumber && (
+                        <div>
+                          <div className="flex items-center justify-between gap-3 mb-1">
+                            <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>Tracking</p>
+                            <button
+                              onClick={() => { void copyText(trackingNumber, 'Tracking number'); }}
+                              className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                          <p className={cn('text-[13px] font-semibold break-all', textColor)}>{trackingNumber}</p>
+                        </div>
+                      )}
+                      {expectedDeliveryDate && (
+                        <div>
+                          <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Expected delivery</p>
+                          <p className={cn('text-[13px] font-semibold', textColor)}>
+                            {new Date(expectedDeliveryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                      )}
+                      {trackingUrl && (
+                        <a href={trackingUrl} target="_blank" rel="noreferrer" className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-sky-200' : 'text-sky-700')}>
+                          <FileText className="w-4 h-4" />
+                          Open tracking link
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {!shippingDelivered && (
+                    !showShippingBox ? (
+                      <button
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setCourierNameDraft(courierName);
+                          setTrackingNumberDraft(trackingNumber);
+                          setTrackingUrlDraft(trackingUrl);
+                          setExpectedDeliveryDateDraft(expectedDeliveryDate ? expectedDeliveryDate.slice(0, 10) : '');
+                          setShowShippingBox(true);
+                        }}
+                        className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                      >
+                        {shippingStatus === 'shipped' ? 'Update shipping' : 'Add shipping details'}
+                      </button>
+                    ) : (
+                      <div className="space-y-3">
+                        <div>
+                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Courier name</p>
+                          <input
+                            value={courierNameDraft}
+                            onChange={(e) => setCourierNameDraft(e.target.value)}
+                            placeholder="Blue Dart, Delhivery, DHL..."
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                          />
+                        </div>
+                        <div>
+                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Tracking number (required)</p>
+                          <input
+                            value={trackingNumberDraft}
+                            onChange={(e) => setTrackingNumberDraft(e.target.value)}
+                            placeholder="Enter shipment tracking number"
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                          />
+                        </div>
+                        <div>
+                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Tracking URL (optional)</p>
+                          <input
+                            value={trackingUrlDraft}
+                            onChange={(e) => setTrackingUrlDraft(e.target.value)}
+                            placeholder="https://..."
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                          />
+                        </div>
+                        <div>
+                          <p className={cn('text-[12px] font-black mb-2', textColor)}>Expected delivery (optional)</p>
+                          <input
+                            type="date"
+                            value={expectedDeliveryDateDraft}
+                            onChange={(e) => setExpectedDeliveryDateDraft(e.target.value)}
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => {
+                              triggerHaptic(HapticPatterns.light);
+                              setShowShippingBox(false);
+                            }}
+                            className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50')}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={updateShipping}
+                            disabled={isUpdatingShipping}
+                            className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                          >
+                            {isUpdatingShipping ? 'Saving…' : shippingStatus === 'shipped' ? 'Update shipping' : 'Mark as shipped'}
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </DealCard>
+            </div>
+          )}
+
           {/* Content delivery + review */}
           {(normalizedDealStatus === 'CONTENT_MAKING' ||
             normalizedDealStatus === 'CONTENT_DELIVERED' ||
@@ -2387,7 +2707,7 @@ const BrandMobileDashboard = ({
             normalizedDealStatus === 'PAYMENT_RELEASED' ||
             normalizedDealStatus === 'COMPLETED') && (
             <div ref={contentSectionRef} className="mb-6">
-              <SectionTitle>Content</SectionTitle>
+              <SectionTitle>{canReviewContent ? 'Content Review' : 'Content'}</SectionTitle>
               <DealCard>
                 <div className="p-5">
                   {(() => {
@@ -2399,7 +2719,7 @@ const BrandMobileDashboard = ({
                     const deliveryStatus = deliveryStatusRaw === 'posted' ? 'posted' : deliveryStatusRaw === 'draft' ? 'draft' : '';
                     const feedback = String(offer?.brand_feedback || '').trim();
 
-                    const canReview = normalizedDealStatus === 'CONTENT_DELIVERED' || normalizedDealStatus === 'REVISION_DONE';
+                    const canReview = canReviewContent;
                     const waitingRevision =
                       normalizedDealStatus === 'REVISION_REQUESTED' ||
                       (normalizedDealStatus === 'CONTENT_MAKING' && String(offer?.brand_approval_status || '').toLowerCase().includes('changes_requested'));
@@ -2506,6 +2826,181 @@ const BrandMobileDashboard = ({
                           <div className={cn('rounded-2xl border p-4', isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200')}>
                             <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', isDark ? 'text-rose-200' : 'text-rose-700')}>Revision note</p>
                             <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-rose-100/90' : 'text-rose-700')}>{feedback}</p>
+                          </div>
+                        )}
+
+                        {requiresPayment && (canReleasePayment || normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED') && (
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className={cn('text-[16px] font-black leading-tight', textColor)}>
+                                  {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'Payment proof submitted' : 'Release payment'}
+                                </p>
+                                <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>
+                                  {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
+                                    ? 'Payment evidence recorded for this collaboration.'
+                                    : 'Add the payment reference before marking payment as released.'}
+                                </p>
+                              </div>
+                              <span className={cn(
+                                'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
+                                normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
+                                  ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
+                                  : (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
+                              )}>
+                                {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'RECORDED' : 'REQUIRED'}
+                              </span>
+                            </div>
+
+                            <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-emerald-500/5 border-emerald-500/15' : 'bg-emerald-50/70 border-emerald-200')}>
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-60 mb-1', textColor)}>Pay creator</p>
+                                  <p className={cn('text-[14px] font-black', textColor)}>UPI payout details</p>
+                                  <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>Use this UPI ID when sending payment for this collaboration.</p>
+                                </div>
+                                <span className={cn('px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border', isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-white text-emerald-800 border-emerald-200')}>
+                                  UPI
+                                </span>
+                              </div>
+
+                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-emerald-100')}>
+                                <div>
+                                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Payee name</p>
+                                  <p className={cn('text-[13px] font-semibold break-all', textColor)}>{creatorPayeeName || 'Creator'}</p>
+                                </div>
+                                <div>
+                                  <div className="flex items-center justify-between gap-3 mb-1">
+                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>UPI ID</p>
+                                    {creatorUpiId && (
+                                      <button
+                                        onClick={() => { void copyText(creatorUpiId, 'UPI ID'); }}
+                                        className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                      >
+                                        Copy
+                                      </button>
+                                    )}
+                                  </div>
+                                  <p className={cn('text-[13px] font-semibold break-all', textColor)}>{creatorUpiId || 'Creator has not added a UPI ID yet'}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {(paymentReference || paymentReceivedDate || paymentProofUrl || paymentNotes) && (
+                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-slate-50 border-slate-200')}>
+                                {paymentReference && (
+                                  <div>
+                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Reference</p>
+                                    <p className={cn('text-[13px] font-semibold break-all', textColor)}>{paymentReference}</p>
+                                  </div>
+                                )}
+                                {paymentReceivedDate && (
+                                  <div>
+                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Paid on</p>
+                                    <p className={cn('text-[13px] font-semibold', textColor)}>
+                                      {new Date(paymentReceivedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </p>
+                                  </div>
+                                )}
+                                {paymentNotes && (
+                                  <div>
+                                    <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Notes</p>
+                                    <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', textColor)}>{paymentNotes}</p>
+                                  </div>
+                                )}
+                                {paymentProofUrl && (
+                                  <a
+                                    href={paymentProofUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    View payment proof
+                                  </a>
+                                )}
+                              </div>
+                            )}
+
+                            {canReleasePayment && (
+                              <>
+                                {!showPaymentProofBox ? (
+                                  <button
+                                    onClick={() => {
+                                      triggerHaptic(HapticPatterns.light);
+                                      if (!creatorUpiId) {
+                                        toast.error('Creator UPI ID missing', { description: 'Ask the creator to add a UPI ID before releasing payment.' });
+                                        return;
+                                      }
+                                      setShowPaymentProofBox(true);
+                                    }}
+                                    className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                                  >
+                                    Add payment proof
+                                  </button>
+                                ) : (
+                                  <div className="space-y-3">
+                                    <div>
+                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Payment reference / UTR (required)</p>
+                                      <input
+                                        value={paymentReferenceDraft}
+                                        onChange={(e) => setPaymentReferenceDraft(e.target.value)}
+                                        placeholder="Enter UTR, bank ref, or transaction id"
+                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                                      />
+                                    </div>
+                                    <div>
+                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Payment date</p>
+                                      <input
+                                        type="date"
+                                        value={paymentDateDraft}
+                                        onChange={(e) => setPaymentDateDraft(e.target.value)}
+                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
+                                      />
+                                    </div>
+                                    <div>
+                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Receipt / screenshot (optional)</p>
+                                      <input
+                                        type="file"
+                                        accept="image/*,.pdf"
+                                        onChange={(e) => setPaymentProofFile(e.target.files?.[0] || null)}
+                                        className={cn('block w-full text-[12px] font-semibold', isDark ? 'text-white/80 file:text-white' : 'text-slate-700')}
+                                      />
+                                      {paymentProofFile && (
+                                        <p className={cn('text-[11px] font-semibold mt-2', secondaryTextColor)}>{paymentProofFile.name}</p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className={cn('text-[12px] font-black mb-2', textColor)}>Notes (optional)</p>
+                                      <textarea
+                                        value={paymentNotesDraft}
+                                        onChange={(e) => setPaymentNotesDraft(e.target.value)}
+                                        placeholder="Add bank/account/payment notes"
+                                        className={cn('w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <button
+                                        onClick={() => {
+                                          triggerHaptic(HapticPatterns.light);
+                                          setShowPaymentProofBox(false);
+                                        }}
+                                        className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50')}
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={releasePayment}
+                                        disabled={isReleasingPayment}
+                                        className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                                      >
+                                        {isReleasingPayment ? 'Saving…' : 'Release payment'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
                         )}
 
@@ -2649,19 +3144,6 @@ const BrandMobileDashboard = ({
               </div>
             </DealCard>
           </div>
-
-          {typeof offer?.campaign_description === 'string' && offer.campaign_description.trim() && (
-            <div className="mb-6">
-              <SectionTitle>Campaign Brief</SectionTitle>
-              <DealCard>
-                <div className="p-5">
-                  <p className={cn('text-[13px] leading-relaxed font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>
-                    {offer.campaign_description.trim()}
-                  </p>
-                </div>
-              </DealCard>
-            </div>
-          )}
 
           {/* Legal protection */}
           <div className="mb-6">
@@ -3296,7 +3778,10 @@ const BrandMobileDashboard = ({
                       }).length;
 	                    const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length;
 	                    const needsActionTotal = pendingCounterCount + needsActionDeals;
-	                    const contentPendingReview = activeDealsList.filter((d: any) => String(d?.status || '').toUpperCase() === 'CONTENT_DELIVERED').length;
+		                    const contentPendingReview = activeDealsList.filter((d: any) => {
+                          const s = effectiveDealStatus(d);
+                          return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
+                        }).length;
                       const attentionTotal = pendingCounterCount + contractsWaitingSignature + contentPendingReview;
 	                    const newToday = activeDealsList.filter((d: any) => {
 	                      const created = d?.created_at ? new Date(d.created_at) : null;
@@ -3312,7 +3797,7 @@ const BrandMobileDashboard = ({
                               type="button"
                               onClick={() => {
                                 triggerHaptic(HapticPatterns.light);
-                                setActiveTab('collabs', 'pending');
+                                setActiveTab('collabs', 'action_required');
                               }}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
@@ -3358,21 +3843,21 @@ const BrandMobileDashboard = ({
                           )}
 
 	                        {/* Performance (motivational) */}
-	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className={cn('mb-4 rounded-[28px] border overflow-hidden relative', borderColor, isDark ? 'bg-white/5' : 'bg-white/75 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.10)]')}>
-	                          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.14),transparent_60%)]" />
+	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className={cn('mb-4 rounded-[32px] border overflow-hidden relative', isDark ? 'border-white/10 bg-white/5' : 'border-emerald-200/70 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_22px_48px_rgba(16,185,129,0.26)]')}>
+	                          <div className={cn('absolute inset-0 pointer-events-none', isDark ? 'bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.14),transparent_60%)]' : 'bg-[radial-gradient(58%_52%_at_18%_8%,rgba(255,255,255,0.20),transparent_60%),radial-gradient(50%_45%_at_88%_12%,rgba(255,255,255,0.16),transparent_60%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]')} />
 	                          <div className="relative p-5">
 	                            <div className="flex flex-col gap-4">
 	                              <div className="min-w-0">
-	                                <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Campaign value running</p>
-	                                <p className={cn('text-[34px] font-black tracking-tight leading-none mt-2', textColor)}>
-	                                  {formatCompactINR(activeValue)}
+	                                <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'opacity-50 text-white' : 'text-white/80')}>Campaign value running</p>
+	                                <p className={cn('text-[34px] font-black tracking-tight leading-none mt-2', isDark ? textColor : 'text-white')}>
+	                                  ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
 	                                </p>
-	                                <p className={cn('text-[13px] font-bold mt-2', isDark ? 'text-white/70' : 'text-slate-700')}>
+	                                <p className={cn('text-[13px] font-bold mt-2', isDark ? 'text-white/70' : 'text-white/85')}>
 	                                  Across {activeDealsList.length} active collaboration{activeDealsList.length === 1 ? '' : 's'}
 	                                </p>
 	                                <div className="mt-3 flex flex-wrap gap-2">
 	                                  {(newToday > 0 || contentPendingReview > 0) && (
-	                                    <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')}>
+	                                    <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-white/20 bg-white/10 text-white')}>
 	                                      {newToday > 0 ? `+${newToday} new today` : `${contentPendingReview} delivered`}
 	                                    </span>
 	                                  )}
@@ -3383,20 +3868,20 @@ const BrandMobileDashboard = ({
 	                                type="button"
 	                                onClick={() => {
 	                                  triggerHaptic(HapticPatterns.light);
-	                                  if (needsActionTotal > 0) setActiveTab('collabs', 'pending');
+	                                  if (needsActionTotal > 0) setActiveTab('collabs', 'action_required');
 	                                  else openCreateOfferSheet();
 	                                }}
 	                                className={cn(
 	                                  'w-full sm:w-auto px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-[0.99]',
 	                                  needsActionTotal > 0
-	                                    ? 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white border-transparent shadow-[0_12px_30px_rgba(16,185,129,0.24)]'
-	                                    : (isDark ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10' : 'border-slate-200 bg-white/70 text-slate-800 hover:bg-white/80')
+	                                    ? 'bg-white text-slate-900 border-transparent shadow-[0_12px_30px_rgba(255,255,255,0.18)]'
+	                                    : (isDark ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10' : 'border-white/20 bg-white/10 text-white hover:bg-white/15')
 	                                )}
 	                              >
 	                                {needsActionTotal > 0 ? 'Review actions' : 'Send offer'}
 	                              </button>
 	                              {needsActionTotal > 0 && (
-	                                <p className={cn('text-[12px] font-medium', secondaryTextColor)}>
+	                                <p className={cn('text-[12px] font-medium', isDark ? secondaryTextColor : 'text-white/80')}>
 	                                  {needsActionTotal} item{needsActionTotal === 1 ? '' : 's'} waiting on you
 	                                </p>
 	                              )}
@@ -3416,7 +3901,9 @@ const BrandMobileDashboard = ({
 	                              {isLoading ? (
 	                                <div className={cn('h-5 rounded-md mt-3 animate-pulse', isDark ? 'bg-white/10' : 'bg-slate-200')} />
 	                              ) : (
-	                                <p className={cn('text-[20px] font-black tracking-tight mt-3', item.tone === 'warn' ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>{item.value}</p>
+	                                <p className={cn('text-[20px] font-black tracking-tight mt-3', item.tone === 'warn' ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>
+                                    <CountUp end={Number(item.value) || 0} duration={1.2} separator="," decimals={0} />
+                                  </p>
 	                              )}
 	                            </div>
 	                          ))}
@@ -3430,7 +3917,9 @@ const BrandMobileDashboard = ({
 	                            {isLoading ? (
 	                              <div className={cn('h-8 w-12 rounded-md animate-pulse', isDark ? 'bg-white/10' : 'bg-slate-200')} />
 	                            ) : (
-	                              <p className={cn('text-[24px] font-black tracking-tight shrink-0', contentPendingReview > 0 ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>{contentPendingReview}</p>
+	                              <p className={cn('text-[24px] font-black tracking-tight shrink-0', contentPendingReview > 0 ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>
+                                  <CountUp end={Number(contentPendingReview) || 0} duration={1.2} separator="," decimals={0} />
+                                </p>
 	                            )}
 	                          </div>
 	                        </motion.div>
@@ -3440,7 +3929,7 @@ const BrandMobileDashboard = ({
 	                            <div>
 	                              <p className={cn('text-[12px] font-black', textColor)}>Collaborations</p>
 	                              <p className={cn('text-[12px] mt-1', secondaryTextColor)}>
-	                                {activeCollabTab === 'pending'
+	                                {activeCollabTab === 'action_required'
 	                                  ? 'Review pending offers and counters first.'
 	                                  : activeCollabTab === 'active'
 	                                    ? 'Track live collaborations and deadlines.'
@@ -3457,7 +3946,7 @@ const BrandMobileDashboard = ({
 	                          </div>
 	                          <div className={cn('mb-4 rounded-[24px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.08)]', isDark ? 'bg-white/[0.06] border-white/10' : 'bg-white/75 border-emerald-100/80')}>
 	                            {[
-		                              { key: 'pending', label: 'Action Required', count: offers.length },
+		                              { key: 'action_required', label: 'Action Required', count: offers.length },
 	                              { key: 'active', label: 'Active', count: activeDealsList.length },
 	                              { key: 'completed', label: 'Completed', count: completedDealsList.length },
 	                            ].map((item) => {
@@ -3490,19 +3979,19 @@ const BrandMobileDashboard = ({
 		                          <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.10)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
 	                            <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-white/10 bg-white/[0.03]' : 'border-b border-slate-200/80 bg-white/45')}>
 	                              <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
-	                                {activeCollabTab === 'pending' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
+	                                {activeCollabTab === 'action_required' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
 	                              </p>
 	                            </div>
 	                            {visibleCollabItems.length === 0 ? (
 	                              <div className="p-8 text-center">
 	                                <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
-	                                  {activeCollabTab === 'pending'
-	                                    ? 'No pending offers'
+	                                  {activeCollabTab === 'action_required'
+	                                    ? 'No action required items'
 	                                    : activeCollabTab === 'active'
 	                                      ? 'No active collabs yet'
 	                                      : 'No completed collabs yet'}
 	                                </p>
-	                                {activeCollabTab === 'pending' && (
+	                                {activeCollabTab === 'action_required' && (
                                   <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
 	                                    <Send className="w-4 h-4 mr-2" /> Send new offer
 	                                  </Button>
@@ -3511,7 +4000,7 @@ const BrandMobileDashboard = ({
 	                            ) : (
 	                              <div className="p-4 space-y-3">
 	                                {visibleCollabItems.slice(0, 3).map((item: any) => {
-	                                  const isPendingItem = activeCollabTab === 'pending';
+	                                  const isPendingItem = activeCollabTab === 'action_required';
 	                                  const isCompletedItem = activeCollabTab === 'completed';
 	                                  const creatorName = firstNameish(item?.profiles) || 'Creator';
 	                                  const creatorMeta = item?.profiles?.username || item?.creator_email || item?.creator_name || 'Creator';
@@ -3884,7 +4373,7 @@ const BrandMobileDashboard = ({
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
                       </div>
-                      <button onClick={() => setActiveTab('collabs', 'pending')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
@@ -3893,11 +4382,11 @@ const BrandMobileDashboard = ({
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
-                          setActiveTab('collabs', 'pending');
+                          setActiveTab('collabs', 'action_required');
                         }}
                         className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-white/10 hover:bg-white/[0.06]' : 'border-b border-slate-200/80 hover:bg-white/60')}
                       >
-                        <p className={cn('text-[12px] font-bold', textColor)}>Pending</p>
+                        <p className={cn('text-[12px] font-bold', textColor)}>Action Required</p>
 	                        <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
                       </button>
                       <button
@@ -3953,7 +4442,7 @@ const BrandMobileDashboard = ({
 
 		                  <div className={cn('mb-4 rounded-[22px] border p-1 flex gap-1 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.10)]', isDark ? 'bg-white/[0.06] border-white/10' : 'bg-white/80 border-slate-200/70')}>
 		                    {[
-			                      { key: 'pending', label: 'Action Required', count: offers.length },
+			                      { key: 'action_required', label: 'Action Required', count: offers.length },
 		                      { key: 'active', label: 'Active', count: activeDealsList.length },
 		                      { key: 'completed', label: 'Completed', count: completedDealsList.length },
 		                    ].map((item) => {
@@ -3996,19 +4485,19 @@ const BrandMobileDashboard = ({
 		                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
 	                    <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-white/10 bg-white/[0.03]' : 'border-b border-slate-200/80 bg-white/45')}>
 	                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
-	                        {activeCollabTab === 'pending' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
+	                        {activeCollabTab === 'action_required' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
 	                      </p>
 	                    </div>
                     {visibleCollabItems.length === 0 ? (
                       <div className="p-8 text-center">
                         <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
-                          {activeCollabTab === 'pending'
-                            ? 'No pending offers'
+                          {activeCollabTab === 'action_required'
+                            ? 'No action required items'
                             : activeCollabTab === 'active'
                               ? 'No active collabs yet'
                               : 'No completed collabs yet'}
                         </p>
-                        {activeCollabTab === 'pending' && (
+                        {activeCollabTab === 'action_required' && (
                           <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
                             <Send className="w-4 h-4 mr-2" /> Send new offer
                           </Button>
@@ -4017,7 +4506,7 @@ const BrandMobileDashboard = ({
                     ) : (
 	                      <div className="p-4 space-y-4 pb-44">
 	                        {visibleCollabItems.slice(0, 20).map((item: any) => {
-	                          const isPendingItem = activeCollabTab === 'pending';
+	                          const isPendingItem = activeCollabTab === 'action_required';
 	                          const isCompletedItem = activeCollabTab === 'completed';
 		                          const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 	                          const amount = Number(item?.deal_amount || item?.exact_budget || 0);
@@ -4533,7 +5022,10 @@ const BrandMobileDashboard = ({
                     const pendingNeedsAction = pendingOffersList.filter((r: any) => normalizeStatus(r?.status) === 'countered').length;
                     const activeNeedsAction = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction).length;
                     const needsActionTotal = pendingNeedsAction + activeNeedsAction;
-                    const contentPendingReview = activeDealsList.filter((d: any) => String(d?.status || '').toUpperCase() === 'CONTENT_DELIVERED').length;
+	                    const contentPendingReview = activeDealsList.filter((d: any) => {
+                        const s = effectiveDealStatus(d);
+                        return s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE';
+                      }).length;
                     return (
                       <div className="grid grid-cols-3 gap-2 mb-6">
                         {[
@@ -4552,83 +5044,9 @@ const BrandMobileDashboard = ({
                     );
                   })()}
 
-	                  <AnimatePresence mode="wait" initial={false}>
-	                    {activeSettingsPage === 'notifications'
-	                      ? (() => {
-	                          const el = renderNotificationSettings();
-	                          return isValidElement(el) ? cloneElement(el, { key: 'settings-notifications' }) : el;
-	                        })()
-	                      : (
-	                      <motion.div key="settings-menu" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-	                        <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#1C1C1E] divide-[#2C2C2E]' : 'bg-white divide-[#E5E5EA] shadow-sm', 'divide-y')}>
-	                          <button onClick={() => navigate('/brand-settings')} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-	                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-500/15 text-emerald-700')}>
-	                              <Settings className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Brand settings</p>
-                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Profile, website, and preferences</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 opacity-20" />
-                          </button>
-
-                          <button onClick={() => toast.message('Billing', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-500/15 text-indigo-700')}>
-                              <CreditCard className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Billing</p>
-                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Invoices and payment methods</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 opacity-20" />
-                          </button>
-
-                          <button onClick={() => toast.message('Team members', { description: 'Coming soon.' })} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-500/15 text-sky-700')}>
-                              <Users className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Team members</p>
-                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Invite teammates and roles</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 opacity-20" />
-                          </button>
-
-                          <button onClick={() => { triggerHaptic(HapticPatterns.light); setTheme((t) => (t === 'dark' ? 'light' : 'dark')); }} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-500/15 text-amber-700')}>
-                              {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Theme</p>
-                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isDark ? 'Dark' : 'Light'}</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 opacity-20" />
-                          </button>
-
-                          <button onClick={() => setActiveSettingsPage('notifications')} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-500/15 text-blue-700')}>
-                              <Bell className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Notifications</p>
-                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isPushSubscribed ? 'Enabled' : isPushSupported ? 'Setup push alerts' : 'Not supported'}</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 opacity-20" />
-                          </button>
-
-                          <button onClick={() => onLogout?.()} className={cn('w-full flex items-center gap-4 py-4 px-4 transition-all active:scale-[0.99]', isDark ? 'active:bg-white/5' : 'active:bg-slate-100')}>
-                            <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-red-500/20 text-red-300' : 'bg-red-500/15 text-red-700')}>
-                              <LogOut className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0 text-left">
-                              <p className={cn('text-[17px] font-medium leading-tight', textColor)}>Logout</p>
-                              <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>Sign out of this brand account</p>
-                            </div>
-                          </button>
-	                        </div>
-	                      </motion.div>
-	                    )}
-	                  </AnimatePresence>
+                    <motion.div key="settings-panel" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                      <BrandSettingsPanel embedded onLogout={() => { void onLogout?.(); }} />
+                    </motion.div>
                 </motion.div>
               )}
 	              </>

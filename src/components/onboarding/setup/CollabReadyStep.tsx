@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, FileText, Loader2, Package2, Sparkles, User } from 'lucide-react';
+import { BarChart3, FileText, Landmark, Loader2, Package2, Smartphone, Sparkles, User } from 'lucide-react';
 import { PrimaryButton } from '../PrimaryButton';
 import { SecondaryButton } from '../SecondaryButton';
 import { GradientCard } from '../GradientCard';
@@ -19,6 +19,8 @@ interface CollabReadyStepProps {
   starterPrice: string;
   engagementPrice: string;
   productValue: string;
+  bankAccountName: string;
+  bankUpi: string;
   onBioChange: (value: string) => void;
   onFollowersChange: (value: string) => void;
   onBrandDealsCompletedChange: (value: string) => void;
@@ -30,6 +32,8 @@ interface CollabReadyStepProps {
   onStarterPriceChange: (value: string) => void;
   onEngagementPriceChange: (value: string) => void;
   onProductValueChange: (value: string) => void;
+  onBankAccountNameChange: (value: string) => void;
+  onBankUpiChange: (value: string) => void;
   onGenerateBio: () => void;
   onAutoSuggestPrices: () => void;
   isGeneratingBio?: boolean;
@@ -49,6 +53,8 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
   starterPrice,
   engagementPrice,
   productValue,
+  bankAccountName,
+  bankUpi,
   onBioChange,
   onFollowersChange,
   onBrandDealsCompletedChange,
@@ -60,6 +66,8 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
   onStarterPriceChange,
   onEngagementPriceChange,
   onProductValueChange,
+  onBankAccountNameChange,
+  onBankUpiChange,
   onGenerateBio,
   onAutoSuggestPrices,
   isGeneratingBio = false,
@@ -121,7 +129,8 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
   const starterValid = Number(starterPrice) > 0;
   const engagementValid = Number(engagementPrice) > 0;
   const productValid = Number(productValue) > 0;
-  const canContinue = bioValid && followersValid && brandDealsValid && hasAudiencePersona && postingFrequencyValid && hasPerformanceSignal && starterValid && engagementValid && productValid;
+  const payoutValid = bankUpi.trim().length > 0;
+  const canContinue = bioValid && followersValid && brandDealsValid && hasAudiencePersona && postingFrequencyValid && hasPerformanceSignal && starterValid && engagementValid && productValid && payoutValid;
 
   return (
     <motion.div
@@ -357,6 +366,46 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
             <p className="mt-2.5 text-[11px] text-slate-500 dark:text-white/65">
               You can change these prices anytime.
             </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-white/5 p-4">
+            <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-white/85">
+              <Smartphone className="w-4 h-4" />
+              Payment setup
+            </p>
+            <p className="mb-3 text-xs text-slate-500 dark:text-white/65">
+              Brands will use this UPI ID when releasing payment for paid collaborations.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+                  <Landmark className="w-4 h-4" />
+                  Account holder name
+                </span>
+                <input
+                  type="text"
+                  value={bankAccountName}
+                  onChange={(e) => onBankAccountNameChange(e.target.value)}
+                  placeholder="Your payout name"
+                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+                  <Smartphone className="w-4 h-4" />
+                  UPI ID
+                </span>
+                <input
+                  type="text"
+                  value={bankUpi}
+                  onChange={(e) => onBankUpiChange(e.target.value)}
+                  placeholder="yourname@upi"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                />
+              </label>
+            </div>
           </div>
         </div>
 

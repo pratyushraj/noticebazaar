@@ -33,6 +33,21 @@ const isMissingColumnError = (err: any) => {
   );
 };
 
+const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
+const normalizeCollabKind = (raw: any) => String(raw || '').trim().toLowerCase();
+const inferRequiresPayment = (deal: any) => {
+  const kind = normalizeCollabKind(deal?.collab_type || deal?.deal_type);
+  if (kind === 'barter') return false;
+  if (kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') return true;
+  return Number(deal?.deal_amount || 0) > 0;
+};
+const inferRequiresShipping = (deal: any) => {
+  if (typeof deal?.shipping_required === 'boolean') return deal.shipping_required;
+  const kind = normalizeCollabKind(deal?.collab_type || deal?.deal_type);
+  if (kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') return true;
+  return false;
+};
+
 // Multer configuration for signed contract uploads (in-memory, PDF only, max 10MB)
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -699,10 +714,43 @@ router.patch('/:dealId/delivery-details', async (req: AuthenticatedRequest, res:
  * PATCH /api/deals/:dealId/shipping/update
  * Brand/System updates shipping status (shipped, delivered, etc.).
  */
-router.patch('/:dealId/shipping/update', async (req, res) => {
+router.patch('/:dealId/shipping/update', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { dealId } = req.params;
-    const { status, tracking_number, courier_name } = req.body;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+    const { status, tracking_number, courier_name, tracking_url, expected_delivery_date } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'brand' && role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Brand access required' });
+    }
+
+    const { data: deal, error: dealError } = await supabase
+      .from('brand_deals')
+      .select('id, brand_id, brand_email, shipping_required, collab_type, deal_type')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (dealError || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const hasAccess =
+      String((deal as any).brand_id || '') === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
+      role === 'admin';
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    if (!inferRequiresShipping(deal)) {
+      return res.status(409).json({ success: false, error: 'Shipping is not required for this deal.' });
+    }
 
     const { error: updateError } = await supabase
       .from('brand_deals')
@@ -710,6 +758,9 @@ router.patch('/:dealId/shipping/update', async (req, res) => {
         shipping_status: status,
         tracking_number,
         courier_name,
+        tracking_url: tracking_url || null,
+        expected_delivery_date: expected_delivery_date || null,
+        shipped_at: status === 'shipped' ? new Date().toISOString() : undefined,
         updated_at: new Date().toISOString(),
       } as any)
       .eq('id', dealId);
@@ -719,8 +770,9 @@ router.patch('/:dealId/shipping/update', async (req, res) => {
     // Log action
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
+      user_id: userId,
       event: 'shipping_status_updated',
-      metadata: { status, tracking_number }
+      metadata: { status, tracking_number, courier_name, tracking_url: tracking_url || null, expected_delivery_date: expected_delivery_date || null }
     });
 
     return res.json({ success: true, message: `Shipping status updated to ${status}` });
@@ -1258,7 +1310,7 @@ router.post('/:id/sign-creator', async (req: AuthenticatedRequest, res: Response
  */
 router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const dealId = req.params.id;
+    const rawId = req.params.id;
     const userId = req.user!.id;
     const {
       contentUrl,
@@ -1282,14 +1334,63 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
         ? normalizedContentStatusRaw
         : null;
 
+    const resolveDealId = async (id: string): Promise<string | null> => {
+      const cleaned = String(id || '').trim();
+      if (!cleaned) return null;
+
+      // 1) Already a brand_deals id?
+      const { data: dealProbe } = await supabase
+        .from('brand_deals')
+        .select('id')
+        .eq('id', cleaned)
+        .maybeSingle();
+      if (dealProbe?.id) return dealProbe.id;
+
+      // 2) deal_details_tokens id -> deal_details_submissions -> deal_id
+      const { data: tokenRow } = await (supabase as any)
+        .from('deal_details_tokens')
+        .select('id')
+        .eq('id', cleaned)
+        .maybeSingle();
+      if (tokenRow?.id) {
+        const { data: submission } = await (supabase as any)
+          .from('deal_details_submissions')
+          .select('deal_id')
+          .eq('token_id', cleaned)
+          .maybeSingle();
+        if (submission?.deal_id) return String(submission.deal_id);
+      }
+
+      // 3) collab_requests id -> deal_id
+      const { data: collabRow } = await (supabase as any)
+        .from('collab_requests')
+        .select('deal_id')
+        .eq('id', cleaned)
+        .maybeSingle();
+      if (collabRow?.deal_id) return String(collabRow.deal_id);
+
+      return null;
+    };
+
+    const dealId = await resolveDealId(rawId);
+    if (!dealId) {
+      console.warn('[Deals] submit-content: could not resolve deal id', { rawId });
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
     // Verify access
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, creator_id, status, content_revision_number, brand_approval_status, brand_email, brand_name')
+      // Keep this select limited to columns that exist in older schemas too.
+      .select('id, creator_id, status, brand_email, brand_name, progress_percentage, updated_at')
       .eq('id', dealId)
-      .single();
+      .maybeSingle();
 
+    if (dealError) {
+      console.error('[Deals] submit-content: error fetching deal', { rawId, dealId, error: dealError.message });
+    }
     if (dealError || !deal) {
+      console.warn('[Deals] submit-content: deal not found after resolve', { rawId, dealId });
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
@@ -1297,7 +1398,6 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
     const current = normalizeStatus((deal as any).status);
     const canSubmit = current === 'CONTENT_MAKING' || current === 'REVISION_REQUESTED' || current === 'FULLY_EXECUTED';
     if (!canSubmit) {
@@ -1305,10 +1405,7 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     }
 
     const now = new Date().toISOString();
-    const currentRev = Number((deal as any)?.content_revision_number || 0);
-    const approvalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
-    const isRevision = current === 'REVISION_REQUESTED' || approvalStatus === 'changes_requested';
-    const nextRev = isRevision ? Math.max(currentRev + 1, 1) : currentRev;
+    const isRevision = current === 'REVISION_REQUESTED';
 
     const sanitizeLink = (value: unknown) => {
       const url = String(value || '').trim();
@@ -1324,22 +1421,13 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
     const legacyDriveLink = sanitizeLink(driveLink);
     const uniqueLinks = Array.from(new Set([sanitizeLink(primaryLink), ...cleanedAdditional, legacyDriveLink].filter(Boolean) as string[]));
     const finalNotes = String(messageToBrand ?? notes ?? '').trim() || null;
+    // Some deployments don't have the newer content_* columns yet.
+    // We still record the submission via `deal_action_logs` and move the deal status forward.
     const { error: updateError } = await supabase
       .from('brand_deals')
       .update({
-        status: 'CONTENT_DELIVERED',
-        content_submission_url: primaryLink,
-        content_links: uniqueLinks,
-        content_delivery_status: normalizedContentStatus,
-        content_caption: caption ?? null,
-        content_drive_link: legacyDriveLink ?? null,
-        content_notes: finalNotes,
-        content_submitted_at: now,
-        content_delivered_at: now,
-        revision_submitted_at: isRevision ? now : null,
-        brand_approval_status: 'awaiting_approval',
-        milestone_status: 'content_submitted',
-        content_revision_number: nextRev,
+        status: 'Content Delivered',
+        progress_percentage: 95,
         updated_at: now,
       } as any)
       .eq('id', dealId);
@@ -1351,7 +1439,14 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       deal_id: dealId,
       user_id: userId,
       event: isRevision ? 'REVISION_SUBMITTED' : 'CONTENT_SUBMITTED',
-      metadata: { content_url: primaryLink, content_links: uniqueLinks, caption, notes: finalNotes, content_status: normalizedContentStatus }
+      metadata: {
+        content_url: primaryLink,
+        content_links: uniqueLinks,
+        caption,
+        notes: finalNotes,
+        content_status: normalizedContentStatus,
+        submitted_at: now,
+      }
     });
 
     return res.json({
@@ -1391,7 +1486,7 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email')
+      .select('id, status, brand_id, brand_email, progress_percentage')
       .eq('id', dealId)
       .maybeSingle();
 
@@ -1419,31 +1514,43 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     const updateData: any = {
       brand_approval_status: status,
       brand_feedback: feedback,
-      updated_at: now
+      updated_at: now,
+    };
+
+    const minimalUpdate: any = {
+      updated_at: now,
     };
 
     if (status === 'approved') {
       updateData.brand_approved_at = now;
       updateData.milestone_status = 'approved';
-      updateData.status = 'COMPLETED';
+      updateData.status = 'CONTENT_APPROVED';
       updateData.content_approved_at = now;
+      updateData.progress_percentage = 95;
+      minimalUpdate.status = 'CONTENT_APPROVED';
+      minimalUpdate.progress_percentage = 95;
     } else if (status === 'changes_requested') {
       updateData.milestone_status = 'feedback_given';
-      updateData.status = 'CONTENT_MAKING';
+      // Use a status value that exists in older environments and matches client filters.
+      updateData.status = 'Content Making';
       updateData.revision_requested_at = now;
+      updateData.progress_percentage = 85;
+      minimalUpdate.status = 'Content Making';
+      minimalUpdate.progress_percentage = 85;
     } else {
       updateData.milestone_status = 'disputed';
       updateData.status = 'DISPUTED';
       updateData.disputed_at = now;
       updateData.dispute_notes = String(disputeNotes ?? feedback ?? '').trim() || null;
+      minimalUpdate.status = 'DISPUTED';
     }
 
-    const { error: updateError } = await supabase
-      .from('brand_deals')
-      .update(updateData)
-      .eq('id', dealId);
-
-    if (updateError) throw updateError;
+    const { error: updateError } = await supabase.from('brand_deals').update(updateData).eq('id', dealId);
+    if (updateError) {
+      // Older schemas may not have brand_approval_status / milestone columns. Fall back to a minimal update.
+      const { error: fallbackError } = await supabase.from('brand_deals').update(minimalUpdate).eq('id', dealId);
+      if (fallbackError) throw fallbackError;
+    }
 
     // Log action
     await supabase.from('deal_action_logs').insert({
@@ -1484,7 +1591,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email')
+      .select('id, status, brand_id, brand_email, collab_type, deal_type, deal_amount, shipping_required')
       .eq('id', dealId)
       .maybeSingle();
 
@@ -1504,32 +1611,75 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
 
     const normalizeStatus = (raw: any) => String(raw || '').trim().toUpperCase().replaceAll(' ', '_');
     const current = normalizeStatus((deal as any).status);
+    if (!inferRequiresPayment(deal)) {
+      return res.status(409).json({ success: false, error: 'This deal does not require creator payment.' });
+    }
     if (current !== 'CONTENT_APPROVED') {
       return res.status(409).json({ success: false, error: `Payment can be released only after approval. Current: ${current || 'UNKNOWN'}.` });
     }
 
+    const paymentReference = String(req.body?.paymentReference || req.body?.utrNumber || '').trim();
+    const paymentProofUrl = String(req.body?.paymentProofUrl || '').trim() || null;
+    const paymentNotes = String(req.body?.paymentNotes || '').trim() || null;
+    const paymentReceivedDateRaw = String(req.body?.paymentReceivedDate || '').trim();
+    const paymentReceivedDate = paymentReceivedDateRaw
+      ? new Date(paymentReceivedDateRaw).toISOString()
+      : new Date().toISOString();
+
+    if (!paymentReference) {
+      return res.status(400).json({ success: false, error: 'Payment reference is required before release.' });
+    }
+
     const now = new Date().toISOString();
+    const fullUpdate: any = {
+      status: 'PAYMENT_RELEASED',
+      payment_released_at: now,
+      payment_received_date: paymentReceivedDate,
+      utr_number: paymentReference,
+      updated_at: now,
+    };
+    const minimalUpdate: any = {
+      status: 'PAYMENT_RELEASED',
+      payment_released_at: now,
+      updated_at: now,
+    };
+
     const { error: updateError } = await supabase
       .from('brand_deals')
-      .update({
-        status: 'PAYMENT_RELEASED',
-        payment_released_at: now,
-        updated_at: now,
-      } as any)
+      .update(fullUpdate)
       .eq('id', dealId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      const { error: fallbackError } = await supabase
+        .from('brand_deals')
+        .update(minimalUpdate)
+        .eq('id', dealId);
+      if (fallbackError) throw fallbackError;
+    }
 
     await supabase.from('deal_action_logs').insert({
       deal_id: dealId,
       user_id: userId,
       event: 'PAYMENT_RELEASED',
-      metadata: { released_at: now },
+      metadata: {
+        released_at: now,
+        payment_reference: paymentReference,
+        payment_received_date: paymentReceivedDate,
+        payment_proof_url: paymentProofUrl,
+        payment_notes: paymentNotes,
+      },
     }).then(({ error }) => {
       if (error) console.warn('[Deals] release-payment action log failed:', error.message);
     });
 
-    return res.json({ success: true, message: 'Payment released.' });
+    return res.json({
+      success: true,
+      message: 'Payment released.',
+      payment_reference: paymentReference,
+      payment_received_date: paymentReceivedDate,
+      payment_proof_url: paymentProofUrl,
+      payment_notes: paymentNotes,
+    });
   } catch (error: any) {
     console.error('[Deals] release-payment error:', error);
     return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
@@ -1557,7 +1707,7 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email')
+      .select('id, status, brand_id, brand_email, collab_type, deal_type, deal_amount, shipping_required, shipping_status')
       .eq('id', dealId)
       .maybeSingle();
 
@@ -1580,9 +1730,22 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       return res.json({ success: true, alreadyCompleted: true, message: 'Deal already marked complete.' });
     }
 
-    // Enforce: only after payment release (admins can override).
-    if (role !== 'admin' && normalizedCurrent !== 'PAYMENT_RELEASED') {
-      return res.status(409).json({ success: false, error: `Deal can be completed only after payment release. Current: ${normalizedCurrent || 'UNKNOWN'}.` });
+    const requiresPayment = inferRequiresPayment(deal);
+    const requiresShipping = inferRequiresShipping(deal);
+    const shippingDone = ['DELIVERED', 'RECEIVED'].includes(normalizeStatus((deal as any).shipping_status));
+    const paymentDone = !requiresPayment || normalizedCurrent === 'PAYMENT_RELEASED';
+    const contentDone = requiresPayment ? normalizedCurrent === 'PAYMENT_RELEASED' : normalizedCurrent === 'CONTENT_APPROVED';
+
+    if (role !== 'admin') {
+      if (!contentDone) {
+        return res.status(409).json({ success: false, error: `Deal can be completed only after content approval and required obligations are done. Current: ${normalizedCurrent || 'UNKNOWN'}.` });
+      }
+      if (requiresShipping && !shippingDone) {
+        return res.status(409).json({ success: false, error: 'Deal can be completed only after shipping is delivered.' });
+      }
+      if (!paymentDone) {
+        return res.status(409).json({ success: false, error: `Deal can be completed only after payment release. Current: ${normalizedCurrent || 'UNKNOWN'}.` });
+      }
     }
 
     const now = new Date().toISOString();

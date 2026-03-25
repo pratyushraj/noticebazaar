@@ -95,7 +95,7 @@ router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
     if (creatorIds.length > 0) {
       const { data: profs, error: profErr } = await supabase
         .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url')
+        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         const byId = buildProfilesById(profs);
@@ -382,6 +382,10 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 	    // Important: some deployments do not have `deal_execution_status`, so every "full" select
 	    // has a corresponding fallback without it.
 	    const selectAttempts = [
+      {
+        select: '*',
+        canUseBrandId: true,
+      },
 	      // Newer schemas (signature timestamps + contract state)
 	      {
 	        select: `
@@ -863,7 +867,17 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 	          isMissingColumnError(err, 'contract_signed_at') ||
 	          isMissingColumnError(err, 'signed_at') ||
 	          isMissingColumnError(err, 'signed_pdf_url') ||
-	          isMissingColumnError(err, 'updated_at');
+	          isMissingColumnError(err, 'updated_at') ||
+            isMissingColumnError(err, 'tracking_number') ||
+            isMissingColumnError(err, 'tracking_url') ||
+            isMissingColumnError(err, 'courier_name') ||
+            isMissingColumnError(err, 'shipping_required') ||
+            isMissingColumnError(err, 'shipping_status') ||
+            isMissingColumnError(err, 'expected_delivery_date') ||
+            isMissingColumnError(err, 'delivered_at') ||
+            isMissingColumnError(err, 'shipped_at') ||
+            isMissingColumnError(err, 'collab_type') ||
+            isMissingColumnError(err, 'deal_type');
 	        if (!missingOptionalColumn) {
 	          throw err;
         }
@@ -916,12 +930,116 @@ router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
 	    if (creatorIds.length > 0) {
 	      const { data: profs, error: profErr } = await supabase
 	        .from('profiles')
-        .select('id, username, first_name, last_name, business_name, avatar_url')
+        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi')
         .in('id' as any, creatorIds as any[]);
       if (!profErr) {
         const byId = buildProfilesById(profs);
         rows = rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
       }
+    }
+
+    // Hydrate content submission details from action logs so the brand dashboard can
+    // show submitted links even when older schemas don't persist content_* columns.
+    try {
+      const dealIds = Array.from(new Set(rows.map((r) => String(r?.id || '')).filter(Boolean)));
+      if (dealIds.length > 0) {
+        const { data: logs, error: logsError } = await (supabase as any)
+          .from('deal_action_logs')
+          .select('deal_id, event, metadata, created_at')
+          .in('deal_id', dealIds as any[])
+          .in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED', 'CONTENT_APPROVED', 'REVISION_REQUESTED', 'DEAL_DISPUTED', 'PAYMENT_RELEASED', 'shipping_marked_shipped', 'shipping_status_updated', 'shipping_confirmed_delivered'] as any[])
+          .order('created_at', { ascending: false });
+
+        if (!logsError && Array.isArray(logs)) {
+          const latestByDeal = new Map<string, any[]>();
+          logs.forEach((log: any) => {
+            const dealId = String(log?.deal_id || '');
+            if (!dealId) return;
+            const bucket = latestByDeal.get(dealId) || [];
+            bucket.push(log);
+            latestByDeal.set(dealId, bucket);
+          });
+
+          rows = rows.map((row) => {
+            const dealLogs = latestByDeal.get(String(row?.id || '')) || [];
+            const submissionLog = dealLogs.find((log: any) =>
+              log?.event === 'CONTENT_SUBMITTED' || log?.event === 'REVISION_SUBMITTED'
+            );
+            const reviewLog = dealLogs.find((log: any) =>
+              log?.event === 'CONTENT_APPROVED' || log?.event === 'REVISION_REQUESTED' || log?.event === 'DEAL_DISPUTED'
+            );
+            const paymentLog = dealLogs.find((log: any) => log?.event === 'PAYMENT_RELEASED');
+
+            const submissionMeta = submissionLog?.metadata && typeof submissionLog.metadata === 'object'
+              ? submissionLog.metadata
+              : {};
+            const reviewMeta = reviewLog?.metadata && typeof reviewLog.metadata === 'object'
+              ? reviewLog.metadata
+              : {};
+            const paymentMeta = paymentLog?.metadata && typeof paymentLog.metadata === 'object'
+              ? paymentLog.metadata
+              : {};
+            const shippingLog = dealLogs.find((log: any) =>
+              log?.event === 'shipping_marked_shipped' ||
+              log?.event === 'shipping_status_updated' ||
+              log?.event === 'shipping_confirmed_delivered'
+            );
+            const shippingMeta = shippingLog?.metadata && typeof shippingLog.metadata === 'object'
+              ? shippingLog.metadata
+              : {};
+            const collabKind = String((row as any)?.collab_type || (row as any)?.deal_type || '').trim().toLowerCase();
+            const requiresPayment =
+              collabKind === 'paid' ||
+              collabKind === 'both' ||
+              collabKind === 'hybrid' ||
+              collabKind === 'paid_barter' ||
+              (collabKind !== 'barter' && Number((row as any)?.deal_amount || 0) > 0);
+            const requiresShipping =
+              typeof (row as any)?.shipping_required === 'boolean'
+                ? Boolean((row as any)?.shipping_required)
+                : collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter';
+
+            const rawLinks = Array.isArray(submissionMeta.content_links) ? submissionMeta.content_links : [];
+            const contentLinks = Array.from(
+              new Set(
+                [
+                  submissionMeta.content_url,
+                  ...rawLinks,
+                ]
+                  .map((value) => String(value || '').trim())
+                  .filter(Boolean)
+              )
+            );
+
+            return {
+              ...row,
+              content_submission_url: String((row as any)?.content_submission_url || submissionMeta.content_url || '').trim() || null,
+              content_url: String((row as any)?.content_url || submissionMeta.content_url || '').trim() || null,
+              content_links: Array.isArray((row as any)?.content_links) && (row as any).content_links.length
+                ? (row as any).content_links
+                : contentLinks,
+              content_caption: String((row as any)?.content_caption || submissionMeta.caption || '').trim() || null,
+              content_notes: String((row as any)?.content_notes || submissionMeta.notes || '').trim() || null,
+              content_delivery_status: String((row as any)?.content_delivery_status || submissionMeta.content_status || '').trim() || null,
+              brand_feedback: String((row as any)?.brand_feedback || reviewMeta.feedback || '').trim() || null,
+              utr_number: String((row as any)?.utr_number || paymentMeta.payment_reference || '').trim() || null,
+              payment_received_date: String((row as any)?.payment_received_date || paymentMeta.payment_received_date || '').trim() || null,
+              payment_proof_url: String((row as any)?.payment_proof_url || paymentMeta.payment_proof_url || '').trim() || null,
+              payment_notes: String((row as any)?.payment_notes || paymentMeta.payment_notes || '').trim() || null,
+              shipping_required: requiresShipping,
+              requires_shipping: requiresShipping,
+              requires_payment: requiresPayment,
+              shipping_status: String((row as any)?.shipping_status || shippingMeta.status || '').trim() || null,
+              courier_name: String((row as any)?.courier_name || shippingMeta.courier_name || '').trim() || null,
+              tracking_number: String((row as any)?.tracking_number || shippingMeta.tracking_number || '').trim() || null,
+              tracking_url: String((row as any)?.tracking_url || shippingMeta.tracking_url || '').trim() || null,
+              expected_delivery_date: String((row as any)?.expected_delivery_date || shippingMeta.expected_delivery_date || '').trim() || null,
+            };
+          });
+        }
+      }
+    } catch (e) {
+      // Non-fatal: keep dashboard working even if action logs are unavailable.
     }
 
     res.setHeader('Cache-Control', 'no-store');

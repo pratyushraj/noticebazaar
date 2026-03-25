@@ -55,6 +55,8 @@ interface OnboardingData {
   packageStarterPrice: string;
   packageEngagementPrice: string;
   packageProductValue: string;
+  bankAccountName: string;
+  bankUpi: string;
 }
 
 const normalizeDealType = (value: unknown): DealType => {
@@ -111,6 +113,8 @@ const CreatorOnboarding = () => {
           packageStarterPrice: '',
           packageEngagementPrice: '',
           packageProductValue: '',
+          bankAccountName: '',
+          bankUpi: '',
           ...parsed,
           dealType: normalizeDealType(parsed?.dealType),
         };
@@ -139,6 +143,8 @@ const CreatorOnboarding = () => {
       packageStarterPrice: '',
       packageEngagementPrice: '',
       packageProductValue: '',
+      bankAccountName: '',
+      bankUpi: '',
     };
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -378,6 +384,10 @@ const CreatorOnboarding = () => {
     }
     if (!Number.isFinite(Number(onboardingData.packageProductValue)) || Number(onboardingData.packageProductValue) <= 0) {
       toast.error('Please enter product review value');
+      return;
+    }
+    if (!onboardingData.bankUpi.trim()) {
+      toast.error('Please add your UPI ID');
       return;
     }
     handleOnboardingComplete();
@@ -650,6 +660,8 @@ const CreatorOnboarding = () => {
           avg_reel_views_manual: avgReelViewsManual > 0 ? avgReelViewsManual : null,
           avg_likes_manual: avgLikesManual > 0 ? avgLikesManual : null,
           collab_brands_count_override: collabBrandsCompleted,
+          bank_account_name: onboardingData.bankAccountName.trim() || null,
+          bank_upi: onboardingData.bankUpi.trim() || null,
           deal_templates: dealTemplates as any,
           onboarding_complete: true,
           avg_rate_reel: (onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.reelRate
@@ -691,6 +703,8 @@ const CreatorOnboarding = () => {
             avg_reel_views_manual: avgReelViewsManual > 0 ? avgReelViewsManual : null,
             avg_likes_manual: avgLikesManual > 0 ? avgLikesManual : null,
             collab_brands_count_override: collabBrandsCompleted,
+            bank_account_name: onboardingData.bankAccountName.trim() || null,
+            bank_upi: onboardingData.bankUpi.trim() || null,
             deal_templates: dealTemplates as any,
             onboarding_complete: true,
             avg_rate_reel: (onboardingData.dealType === 'paid' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all') && onboardingData.reelRate
@@ -973,6 +987,8 @@ const CreatorOnboarding = () => {
                   starterPrice={onboardingData.packageStarterPrice}
                   engagementPrice={onboardingData.packageEngagementPrice}
                   productValue={onboardingData.packageProductValue}
+                  bankAccountName={onboardingData.bankAccountName}
+                  bankUpi={onboardingData.bankUpi}
                   onBioChange={(collabBio) => setOnboardingData((prev) => ({ ...prev, collabBio }))}
                   onFollowersChange={(collabFollowers) => setOnboardingData((prev) => ({ ...prev, collabFollowers }))}
                   onBrandDealsCompletedChange={(collabBrandsCompleted) => setOnboardingData((prev) => ({ ...prev, collabBrandsCompleted }))}
@@ -984,6 +1000,8 @@ const CreatorOnboarding = () => {
                   onStarterPriceChange={(packageStarterPrice) => setOnboardingData((prev) => ({ ...prev, packageStarterPrice }))}
                   onEngagementPriceChange={(packageEngagementPrice) => setOnboardingData((prev) => ({ ...prev, packageEngagementPrice }))}
                   onProductValueChange={(packageProductValue) => setOnboardingData((prev) => ({ ...prev, packageProductValue }))}
+                  onBankAccountNameChange={(bankAccountName) => setOnboardingData((prev) => ({ ...prev, bankAccountName }))}
+                  onBankUpiChange={(bankUpi) => setOnboardingData((prev) => ({ ...prev, bankUpi }))}
                   onGenerateBio={handleGenerateBio}
                   onAutoSuggestPrices={handleAutoSuggestPrices}
                   isGeneratingBio={isGeneratingBio}

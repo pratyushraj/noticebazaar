@@ -205,6 +205,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         'Content Making',
         'content_delivered',
         'Content Delivered',
+        'DISPUTED',
+        'disputed',
         'REVISION_REQUESTED',
         'revision_requested',
         'Revision Requested',
@@ -356,7 +358,75 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       if (import.meta.env.DEV) {
         console.log('[useBrandDeals] Returning', data.length, 'deals');
       }
-      return data as BrandDeal[];
+
+      const rawDeals = data as BrandDeal[];
+      const brandIds = Array.from(
+        new Set(
+          rawDeals
+            .map((deal: any) => String(deal?.brand_id || '').trim())
+            .filter(Boolean)
+        )
+      );
+      const brandNames = Array.from(
+        new Set(
+          rawDeals
+            .map((deal: any) => String(deal?.brand_name || '').trim())
+            .filter(Boolean)
+        )
+      );
+
+      let logosByBrandId = new Map<string, string>();
+      let logosByBrandName = new Map<string, string>();
+
+      if (brandIds.length > 0 || brandNames.length > 0) {
+        const [brandsByIdResult, brandsByNameResult] = await Promise.all([
+          brandIds.length > 0
+            ? supabase
+                .from('brands')
+                .select('id, name, logo_url')
+                .in('id', brandIds)
+            : Promise.resolve({ data: [], error: null } as any),
+          brandNames.length > 0
+            ? supabase
+                .from('brands')
+                .select('id, name, logo_url')
+                .in('name', brandNames)
+            : Promise.resolve({ data: [], error: null } as any),
+        ]);
+
+        const allBrands = [
+          ...((brandsByIdResult?.data as any[]) || []),
+          ...((brandsByNameResult?.data as any[]) || []),
+        ];
+
+        for (const brand of allBrands) {
+          const logo = String(brand?.logo_url || '').trim();
+          if (!logo) continue;
+          const id = String(brand?.id || '').trim();
+          const name = String(brand?.name || '').trim().toLowerCase();
+          if (id) logosByBrandId.set(id, logo);
+          if (name) logosByBrandName.set(name, logo);
+        }
+      }
+
+      return rawDeals.map((deal: any) => {
+        const existingLogo = String(deal?.brand_logo || deal?.brand_logo_url || deal?.logo_url || '').trim();
+        if (existingLogo) return deal;
+
+        const hydratedLogo =
+          logosByBrandId.get(String(deal?.brand_id || '').trim()) ||
+          logosByBrandName.get(String(deal?.brand_name || '').trim().toLowerCase()) ||
+          '';
+
+        return hydratedLogo
+          ? {
+              ...deal,
+              brand_logo_url: hydratedLogo,
+              brand_logo: hydratedLogo,
+              logo_url: hydratedLogo,
+            }
+          : deal;
+      }) as BrandDeal[];
     },
     {
       enabled: enabled && !!creatorId,

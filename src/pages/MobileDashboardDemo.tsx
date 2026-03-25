@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     User, Search, ShieldCheck, Handshake, Camera,
     LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
     Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
     Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
-    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight
+    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -96,7 +97,25 @@ const getDaysUntil = (date: Date | null) => {
     return Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
 };
 
-const normalizeDealStatus = (deal: any) => String(deal?.status ?? deal?.raw?.status ?? '').toLowerCase();
+const normalizeDealStatus = (deal: any) =>
+    String(deal?.status ?? deal?.raw?.status ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s-]+/g, '_');
+
+const inferCreatorRequiresPayment = (deal: any) => {
+    if (typeof deal?.requires_payment === 'boolean') return Boolean(deal.requires_payment);
+    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
+    const amount = Number(deal?.deal_amount || deal?.exact_budget || 0);
+    return kind === 'paid' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter' || (kind !== 'barter' && amount > 0);
+};
+
+const inferCreatorRequiresShipping = (deal: any) => {
+    if (typeof deal?.requires_shipping === 'boolean') return Boolean(deal.requires_shipping);
+    if (typeof deal?.shipping_required === 'boolean') return Boolean(deal.shipping_required);
+    const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
+    return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
+};
 
 const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
@@ -104,7 +123,14 @@ const getCreatorDealCardUX = (deal: any) => {
     const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
-    const isDelivered = rawStatus.includes('content_delivered') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending') || isRevisionDone;
+    const isDelivered =
+        rawStatus.includes('content_delivered') ||
+        rawStatus.includes('draft_review') ||
+        rawStatus.includes('content_pending') ||
+        rawStatus.includes('awaiting_review') ||
+        rawStatus.includes('waiting_for_review') ||
+        rawStatus.includes('awaiting_approval') ||
+        isRevisionDone;
     const isApproved = rawStatus.includes('content_approved');
     const isPaymentReleased = rawStatus.includes('payment_released');
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting') || rawStatus.includes('awaiting_product_shipment') || rawStatus.includes('awaiting product shipment');
@@ -324,6 +350,8 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         collaboration_preference: profile?.collaboration_preference || 'Hybrid',
         avg_rate_reel: profile?.avg_rate_reel || '5000',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
+        bank_account_name: profile?.bank_account_name || '',
+        bank_upi: profile?.bank_upi || '',
     };
 };
 
@@ -342,6 +370,7 @@ const MobileDashboardDemo = ({
     showDemoOffer = false,
 }: MobileDashboardProps) => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const signOutMutation = useSignOut();
     const updateDealProgress = useUpdateDealProgress();
     const {
@@ -512,6 +541,10 @@ const MobileDashboardDemo = ({
     const [deliverMessageDraft, setDeliverMessageDraft] = useState('');
     const [deliverContentStatusDraft, setDeliverContentStatusDraft] = useState<'draft' | 'posted'>('draft');
     const [isSubmittingContent, setIsSubmittingContent] = useState(false);
+    const [showReportIssueModal, setShowReportIssueModal] = useState(false);
+    const [reportIssueReason, setReportIssueReason] = useState('');
+    const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
+    const [isReportingIssue, setIsReportingIssue] = useState(false);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -559,6 +592,99 @@ const MobileDashboardDemo = ({
         return getDealStageFromStatus(selectedItem?.status, selectedItem?.progress_percentage);
     }, [selectedItem, selectedType]);
 
+    const selectedDealStatus = normalizeDealStatus(selectedItem);
+    const selectedRequiresPayment = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresPayment(selectedItem) : false;
+    const selectedRequiresShipping = selectedType === 'deal' && !!selectedItem ? inferCreatorRequiresShipping(selectedItem) : false;
+    const selectedShippingStatus = String(selectedItem?.shipping_status || '').trim().toLowerCase() || 'pending';
+    const selectedShippingDelivered = selectedShippingStatus === 'delivered' || selectedShippingStatus === 'received';
+
+    const confirmSelectedProductReceived = async () => {
+        if (!selectedItem?.id) return;
+        setIsConfirmingReceived(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const res = await fetch(`${apiBaseUrl}/api/deals/${selectedItem.id}/shipping/confirm-received`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+                },
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data?.success) {
+                throw new Error(data?.error || 'Failed to confirm product received');
+            }
+
+            setSelectedItem((prev: any) => prev ? {
+                ...prev,
+                shipping_status: 'delivered',
+            } : prev);
+            toast.success('Product receipt confirmed');
+            await onRefresh?.();
+        } catch (error: any) {
+            toast.error(error?.message || 'Something went wrong');
+        } finally {
+            setIsConfirmingReceived(false);
+        }
+    };
+
+    const reportSelectedShippingIssue = async () => {
+        if (!selectedItem?.id || !reportIssueReason.trim()) {
+            toast.error('Please describe the issue');
+            return;
+        }
+        setIsReportingIssue(true);
+        try {
+            const apiBaseUrl = getApiBaseUrl();
+            const res = await fetch(`${apiBaseUrl}/api/deals/${selectedItem.id}/shipping/report-issue`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+                },
+                body: JSON.stringify({ reason: reportIssueReason.trim() }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data?.success) {
+                throw new Error(data?.error || 'Failed to report issue');
+            }
+
+            setSelectedItem((prev: any) => prev ? {
+                ...prev,
+                shipping_status: 'issue_reported',
+                shipping_issue_reason: reportIssueReason.trim(),
+            } : prev);
+            setShowReportIssueModal(false);
+            setReportIssueReason('');
+            toast.success('Issue reported to the brand');
+            await onRefresh?.();
+        } catch (error: any) {
+            toast.error(error?.message || 'Something went wrong');
+        } finally {
+            setIsReportingIssue(false);
+        }
+    };
+
+    const patchDealInCache = React.useCallback(
+        (dealId: string, patch: Record<string, any>) => {
+            if (!dealId) return;
+
+            queryClient.setQueriesData(
+                { queryKey: ['brand_deals'], exact: false },
+                (old: any) => {
+                    if (!Array.isArray(old)) return old;
+                    return old.map((d: any) => (String(d?.id || '') === dealId ? { ...d, ...patch } : d));
+                }
+            );
+
+            queryClient.setQueriesData(
+                { queryKey: ['brand_deal', dealId], exact: false },
+                (old: any) => (old && typeof old === 'object' ? { ...old, ...patch } : old)
+            );
+        },
+        [queryClient]
+    );
+
     const handleProgressStageSelect = async (stage: DealStage) => {
         if (stage === 'fully_executed' || stage === 'completed') {
             toast.message('This step is automatic.');
@@ -574,6 +700,32 @@ const MobileDashboardDemo = ({
             toast.error('Cannot update progress: missing deal or profile');
             return;
         }
+
+        const previousItemSnapshot = selectedItem;
+        const nextStatus = (STAGE_TO_STATUS as any)?.[stage] || selectedItem.status;
+        const nextProgress = (STAGE_TO_PROGRESS as any)?.[stage] ?? selectedItem.progress_percentage;
+
+        // Optimistic UI update: update CTA/progress instantly (no refresh needed).
+        setSelectedItem((prev: any) => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                status: nextStatus,
+                progress_percentage: nextProgress,
+                raw: prev.raw
+                    ? { ...prev.raw, status: nextStatus, progress_percentage: nextProgress }
+                    : prev.raw,
+            };
+        });
+        patchDealInCache(String(selectedItem.id), {
+            status: nextStatus,
+            progress_percentage: nextProgress,
+            updated_at: new Date().toISOString(),
+            raw: (selectedItem as any)?.raw
+                ? { ...(selectedItem as any).raw, status: nextStatus, progress_percentage: nextProgress }
+                : (selectedItem as any)?.raw,
+        });
+
         try {
             await updateDealProgress.mutateAsync({
                 dealId: selectedItem.id,
@@ -584,6 +736,9 @@ const MobileDashboardDemo = ({
             setShowProgressSheet(false);
             await onRefresh?.();
         } catch (e: any) {
+            // Roll back optimistic update (then refetch via existing query invalidations).
+            setSelectedItem(previousItemSnapshot);
+            queryClient.invalidateQueries({ queryKey: ['brand_deals'], exact: false });
             toast.error(e?.message || 'Failed to update progress');
         }
     };
@@ -627,10 +782,56 @@ const MobileDashboardDemo = ({
             });
             const data = await resp.json().catch(() => ({}));
             if (!resp.ok || !data?.success) {
-                throw new Error(data?.error || 'Failed to submit content');
+                const msg =
+                    data?.error ||
+                    data?.details ||
+                    (typeof data === 'string' ? data : null) ||
+                    `Failed to submit content (HTTP ${resp.status})`;
+                throw new Error(msg);
             }
             toast.success('Submitted for review');
             triggerHaptic(HapticPatterns.success);
+            // Optimistically update the open deal so CTA/status changes immediately.
+            setSelectedItem((prev: any) => {
+                if (!prev) return prev;
+                const nextStatus = 'Content Delivered';
+                const nextProgress = 95;
+                return {
+                    ...prev,
+                    status: nextStatus,
+                    progress_percentage: nextProgress,
+                    brand_approval_status: 'awaiting_approval',
+                    content_submission_url: contentUrl,
+                    content_links: Array.from(
+                        new Set([
+                            contentUrl,
+                            ...String(deliverAdditionalLinksDraft || '')
+                                .split(/[\n,]+/)
+                                .map((v) => v.trim())
+                                .filter(Boolean),
+                        ])
+                    ),
+                    content_caption: String(deliverCaptionDraft || '').trim() || null,
+                    content_notes: String(deliverMessageDraft || '').trim() || null,
+                    content_delivery_status: deliverContentStatusDraft,
+                    raw: prev.raw
+                        ? {
+                            ...prev.raw,
+                            status: nextStatus,
+                            progress_percentage: nextProgress,
+                            brand_approval_status: 'awaiting_approval',
+                        }
+                        : prev.raw,
+                };
+            });
+            patchDealInCache(dealId, {
+                status: 'Content Delivered',
+                progress_percentage: 95,
+                brand_approval_status: 'awaiting_approval',
+                content_submission_url: contentUrl,
+                content_delivery_status: deliverContentStatusDraft,
+                updated_at: new Date().toISOString(),
+            });
             setShowDeliverContentModal(false);
             setDeliverContentUrlDraft('');
             setDeliverCaptionDraft('');
@@ -874,6 +1075,8 @@ const MobileDashboardDemo = ({
                 phone: profileFormData.phone || null,
                 bio: profileFormData.bio || null,
                 location: location,
+                bank_account_name: profileFormData.bank_account_name?.trim() || null,
+                bank_upi: profileFormData.bank_upi?.trim() || null,
             };
 
             const { error: coreError } = await (supabase as any)
@@ -1198,12 +1401,32 @@ const MobileDashboardDemo = ({
             return <Target className="w-5 h-5 text-slate-400" />;
         };
 
-        if (logo && logo.trim() && logo !== 'null' && logo !== 'undefined') {
+        const normalizeLogoUrl = (value?: string) => {
+            const raw = String(value || '').trim();
+            if (!raw || raw === 'null' || raw === 'undefined') return '';
+            if (/^(data:|blob:)/i.test(raw)) return raw;
+            if (/^https?:\/\//i.test(raw)) return raw;
+            if (raw.startsWith('//')) return `https:${raw}`;
+            if (/^www\./i.test(raw)) return `https://${raw}`;
+            // Best-effort for common "domain/path" values.
+            if (/^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(raw)) return `https://${raw}`;
+            return raw; // fallback (might be relative)
+        };
+
+        const safeLogo = normalizeLogoUrl(logo);
+        if (safeLogo) {
+            const isSvg = /\.svg(\?|#|$)/i.test(safeLogo);
             return (
                 <div className="relative w-full h-full flex items-center justify-center">
+                    {isSvg && (
+                        <div className={cn("absolute inset-0 z-0", isDark ? "bg-white/90" : "bg-white")} />
+                    )}
                     <img
-                        src={logo}
-                        className="w-full h-full object-cover absolute inset-0 z-10"
+                        src={safeLogo}
+                        className="w-full h-full object-contain absolute inset-0 z-10 p-1"
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
                         onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
                     />
                     {fallback(category || '', name)}
@@ -1441,22 +1664,46 @@ const MobileDashboardDemo = ({
                         <div className="px-4 space-y-6">
                             <SectionHeader title="Connected Payouts" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
-                                <SettingsRow
-                                    icon={<Smartphone />} iconBg="bg-emerald-500"
-                                    label="UPI ID" subtext="razorpay.pratyush@icici"
-                                    isDark={isDark} textColor={textColor}
-                                    rightElement={<span className="text-[10px] font-black text-emerald-500">PRIMARY</span>}
-                                />
-                                <SettingsRow
-                                    icon={<Landmark />} iconBg="bg-blue-500"
-                                    label="Bank Transfer" subtext="HDFC Bank •••• 4242"
-                                    isDark={isDark} textColor={textColor} hasChevron
-                                />
+                                <div className="p-4 space-y-4">
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Account holder name</p>
+                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                            <Landmark className="w-4 h-4 text-blue-500" />
+                                            <input
+                                                className="bg-transparent outline-none font-medium text-[16px] flex-1"
+                                                placeholder="Your payout name"
+                                                value={profileFormData.bank_account_name || ''}
+                                                onChange={(e) => setProfileFormData((p: any) => ({ ...p, bank_account_name: e.target.value }))}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>UPI ID</p>
+                                            <span className="text-[10px] font-black text-emerald-500">PRIMARY</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                            <Smartphone className="w-4 h-4 text-emerald-500" />
+                                            <input
+                                                className="bg-transparent outline-none font-medium text-[16px] flex-1"
+                                                placeholder="yourname@upi"
+                                                value={profileFormData.bank_upi || ''}
+                                                onChange={(e) => setProfileFormData((p: any) => ({ ...p, bank_upi: e.target.value }))}
+                                                autoCapitalize="none"
+                                                autoCorrect="off"
+                                            />
+                                        </div>
+                                        <p className={cn("text-[12px] font-medium", secondaryTextColor)}>
+                                            Brands use this UPI ID when releasing collaboration payments.
+                                        </p>
+                                    </div>
+                                </div>
                             </SettingsGroup>
-                            <button className={cn("w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed font-bold transition-all active:scale-95", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>
-                                <Zap className="w-4 h-4 text-amber-500" />
-                                Add New Method
-                            </button>
+                            <div className="px-4 pt-4">
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Save Payout Details'}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 );
@@ -2037,7 +2284,7 @@ const MobileDashboardDemo = ({
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
                                         <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
-                                            Creator Dashboard
+                                            Dashboard
                                         </h1>
                                         <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -3554,7 +3801,7 @@ const MobileDashboardDemo = ({
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
                             <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Dashboard</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14 relative">
@@ -3569,12 +3816,12 @@ const MobileDashboardDemo = ({
                         >
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110",
-                                isDark ? "bg-blue-600 border-4 border-[#0B0F14] text-white shadow-[0_4px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_40px_rgba(59,130,246,0.4)] ring-1 ring-blue-400/30"
-                                    : "bg-slate-900 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-slate-200"
+                                isDark ? "bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#0B0F14] text-white shadow-[0_4px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.35)] ring-1 ring-emerald-400/30"
+                                    : "bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-emerald-200"
                             )}>
                                 <Link2 className="w-7 h-7" />
                             </div>
-                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>+ Collab Link</span>
+                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>Create</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">
@@ -3584,12 +3831,12 @@ const MobileDashboardDemo = ({
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
                             <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Profile</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
                         </motion.button>
                     </div>
                 </div>
 
-                {/* ─── ACTION SHEET (The Deal Intake Engine) ─── */}
+                {/* ─── ACTION SHEET ─── */}
                 <AnimatePresence>
                     {showActionSheet && (
                         <>
@@ -3612,79 +3859,67 @@ const MobileDashboardDemo = ({
                             >
                                 <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-6" />
                                 <div className="max-w-md mx-auto">
-                                    <div className="flex items-start justify-between mb-8">
+                                    <div className="flex items-start justify-between mb-6">
                                         <div>
-                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Collab Hub</h2>
-                                            <div className="flex items-center gap-3 mt-1.5">
-                                                <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">
-                                                    <Eye className="w-3.5 h-3.5" /> 24 Views
-                                                </span>
-                                                <span className="flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-blue-500 bg-blue-500/10 px-2 py-1 rounded-lg">
-                                                    <Bell className="w-3.5 h-3.5" /> 4 New
-                                                </span>
-                                            </div>
+                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Manage your collab link</h2>
+                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-white" : "text-slate-900")}>Share your profile, review offers, and keep your page current.</p>
                                         </div>
                                         <motion.button
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => setShowActionSheet(false)}
                                             className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}
                                         >
-                                            <MoreHorizontal className="w-5 h-5 text-slate-400" />
+                                            <X className="w-5 h-5 text-slate-400" />
                                         </motion.button>
                                     </div>
-
-                                    <div className={cn("p-5 rounded-3xl mb-8 border", isDark ? "bg-[#1E293B]/40 border-white/10" : "bg-slate-50 border-slate-200")}>
-                                        <div className="flex flex-col items-center text-center">
-                                            <div className="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center mb-3">
-                                                <Link2 className="w-7 h-7 text-blue-500" />
-                                            </div>
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-40 mb-1", isDark ? "text-white" : "text-slate-900")}>Official Intake Link</p>
-                                            <h3 className={cn("text-lg font-bold tracking-tight mb-5", isDark ? "text-slate-200" : "text-slate-700")}>
-                                                creatorarmour.com/{username}
-                                            </h3>
-                                            <div className="flex items-center gap-3 w-full">
-                                                <motion.button
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={handleCopyStorefront}
-                                                    className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white h-12 rounded-2xl font-bold border-0 shadow-lg shadow-blue-500/20 active:shadow-blue-500/10 transition-all"
-                                                >
-                                                    <Copy className="w-4 h-4" /> Copy
-                                                </motion.button>
-                                                <motion.button
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={handleShareStorefront}
-                                                    className={cn("flex-1 flex items-center justify-center gap-2 h-12 rounded-2xl font-bold border transition-all",
-                                                        isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-700")}
-                                                >
-                                                    <Share2 className="w-4 h-4" /> Share
-                                                </motion.button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3 mb-8">
-                                        <motion.button
-                                            whileTap={{ scale: 0.96 }}
-                                            onClick={() => { setShowActionSheet(false); setActiveTab('collabs'); setCollabSubTab('pending'); }}
-                                            className={cn("p-4 rounded-3xl text-left transition-all border group", isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-100 hover:border-blue-200")}
+                                    <div className="grid grid-cols-1 gap-3 mb-6">
+                                        <button
+                                            onClick={() => {
+                                                handleShareStorefront();
+                                                setShowActionSheet(false);
+                                            }}
+                                            className={cn(
+                                                'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
+                                                isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
+                                            )}
                                         >
-                                            <div className="w-10 h-10 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                <Handshake className="w-5 h-5 text-orange-500" />
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-white/10">
+                                                    <Share2 className="w-5 h-5" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-[13px] font-black uppercase tracking-widest">Share collab link</p>
+                                                    <p className="text-[12px] opacity-75 mt-1">Send your profile page to brands in one tap</p>
+                                                </div>
                                             </div>
-                                            <p className={cn("font-bold text-[15px]", isDark ? "text-white" : "text-slate-900")}>View Offers</p>
-                                            <p className={cn("text-[11px] opacity-40 mt-1.5", isDark ? "text-white/60" : "text-slate-500")}>Manage brand requests</p>
-                                        </motion.button>
-                                        <motion.button
-                                            whileTap={{ scale: 0.96 }}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                handleCopyStorefront();
+                                                setShowActionSheet(false);
+                                            }}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                                        >
+                                            <p className={cn('text-[13px] font-bold', textColor)}>Copy collab link</p>
+                                            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
+                                        </button>
+
+                                        <button
                                             onClick={() => { setShowActionSheet(false); window.open(`/${username}`, '_blank'); }}
-                                            className={cn("p-4 rounded-3xl text-left transition-all border group", isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-white border-slate-100 hover:border-pink-200")}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
-                                            <div className="w-10 h-10 rounded-2xl bg-pink-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                <Eye className="w-5 h-5 text-pink-500" />
-                                            </div>
-                                            <p className={cn("font-bold text-[15px]", isDark ? "text-white" : "text-slate-900")}>Preview Page</p>
-                                            <p className={cn("text-[11px] opacity-40 mt-1.5", isDark ? "text-white/60" : "text-slate-500")}>See what brands see</p>
-                                        </motion.button>
+                                            <p className={cn('text-[13px] font-bold', textColor)}>Preview page</p>
+                                            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>See what brands see before you share it</p>
+                                        </button>
+
+                                        <button
+                                            onClick={() => { setShowActionSheet(false); setActiveTab('collabs'); setCollabSubTab('pending'); }}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                                        >
+                                            <p className={cn('text-[13px] font-bold', textColor)}>Review offers</p>
+                                            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Open pending brand requests and respond faster</p>
+                                        </button>
                                     </div>
 
                                     <div className="space-y-1">
@@ -3860,7 +4095,17 @@ const MobileDashboardDemo = ({
                                                 ? (isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-100")
                                                 : (isDark ? "bg-blue-500/10 border-blue-500/20" : "bg-blue-50 border-blue-200")
                                         )}>
-                                            {getBrandIcon(selectedItem.brand_logo || selectedItem.brand_logo_url || selectedItem.logo_url || selectedItem.raw?.brand_logo || selectedItem.raw?.brand_logo_url || selectedItem.raw?.logo_url, selectedItem.category, selectedItem.brand_name || selectedItem.raw?.brand_name)}
+                                            {getBrandIcon(
+                                                selectedItem.brand_logo ||
+                                                selectedItem.brand_logo_url ||
+                                                selectedItem.logo_url ||
+                                                selectedItem.raw?.brand_logo ||
+                                                selectedItem.raw?.brand_logo_url ||
+                                                selectedItem.raw?.logo_url ||
+                                                (selectedItem as any)?.brand?.logo_url,
+                                                selectedItem.category,
+                                                selectedItem.brand_name || selectedItem.raw?.brand_name
+                                            )}
                                         </div>
                                         <div className="flex flex-col text-left">
                                             <div className="flex items-center gap-1.5">
@@ -4024,7 +4269,7 @@ const MobileDashboardDemo = ({
                                 </div>
 
                                 {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
-                                {selectedItem.collab_type === 'barter' && (
+                                {selectedRequiresShipping && (
                                     <div className="mb-6">
                                         <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
                                         <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
@@ -4036,6 +4281,129 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>
                                                 <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedType === 'deal' && selectedRequiresShipping && (
+                                    <div className="mb-6">
+                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Shipping</h4>
+                                        <div className={cn("rounded-2xl border p-4 space-y-4", cardBgColor, borderColor)}>
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className={cn("text-[16px] font-black leading-tight", textColor)}>Product delivery</p>
+                                                    <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
+                                                        {selectedShippingStatus === 'shipped'
+                                                            ? 'Track the package and confirm once it reaches you.'
+                                                            : selectedShippingDelivered
+                                                                ? 'Receipt confirmed. You can continue with the collaboration.'
+                                                                : selectedShippingStatus === 'issue_reported'
+                                                                    ? 'A shipping issue has been reported to the brand.'
+                                                                    : 'Waiting for the brand to add courier and tracking details.'}
+                                                    </p>
+                                                </div>
+                                                <span className={cn(
+                                                    "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
+                                                    selectedShippingDelivered
+                                                        ? (isDark ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")
+                                                        : selectedShippingStatus === 'shipped'
+                                                            ? (isDark ? "bg-sky-500/10 text-sky-300 border-sky-500/20" : "bg-sky-50 text-sky-700 border-sky-200")
+                                                            : selectedShippingStatus === 'issue_reported'
+                                                                ? (isDark ? "bg-rose-500/10 text-rose-300 border-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-200")
+                                                                : (isDark ? "bg-amber-500/10 text-amber-300 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-200")
+                                                )}>
+                                                    {selectedShippingDelivered ? 'RECEIVED' : selectedShippingStatus === 'shipped' ? 'SHIPPED' : selectedShippingStatus === 'issue_reported' ? 'ISSUE' : 'PENDING'}
+                                                </span>
+                                            </div>
+
+                                            {(selectedItem.courier_name || selectedItem.tracking_number || selectedItem.tracking_url || selectedItem.expected_delivery_date) && (
+                                                <div className={cn("rounded-2xl border p-4 space-y-3", isDark ? "bg-white/3 border-white/10" : "bg-white border-slate-200")}>
+                                                    {selectedItem.courier_name && (
+                                                        <div>
+                                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Courier</p>
+                                                            <p className={cn("text-[13px] font-semibold", textColor)}>{selectedItem.courier_name}</p>
+                                                        </div>
+                                                    )}
+                                                    {selectedItem.tracking_number && (
+                                                        <div>
+                                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Tracking number</p>
+                                                            <p className={cn("text-[13px] font-semibold break-all", textColor)}>{selectedItem.tracking_number}</p>
+                                                        </div>
+                                                    )}
+                                                    {selectedItem.expected_delivery_date && (
+                                                        <div>
+                                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Expected delivery</p>
+                                                            <p className={cn("text-[13px] font-semibold", textColor)}>
+                                                                {new Date(selectedItem.expected_delivery_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {selectedItem.tracking_url && (
+                                                        <a
+                                                            href={selectedItem.tracking_url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className={cn("inline-flex items-center gap-2 text-[13px] font-bold underline", isDark ? "text-sky-200" : "text-sky-700")}
+                                                        >
+                                                            <ExternalLink className="w-4 h-4" />
+                                                            Track package
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {selectedShippingStatus === 'shipped' && (
+                                                <div className="grid grid-cols-1 gap-2.5">
+                                                    <button
+                                                        onClick={confirmSelectedProductReceived}
+                                                        disabled={isConfirmingReceived}
+                                                        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-white font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+                                                    >
+                                                        {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                                        Confirm Product Received
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            setShowReportIssueModal(true);
+                                                        }}
+                                                        className={cn("w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900")}
+                                                    >
+                                                        <AlertCircle className="w-4 h-4" />
+                                                        Report Shipping Issue
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {selectedShippingStatus === 'pending' && (
+                                                <div className={cn("rounded-2xl border p-4 flex items-start gap-3", isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200")}>
+                                                    <Package className={cn("w-5 h-5 mt-0.5", isDark ? "text-amber-300" : "text-amber-700")} />
+                                                    <div>
+                                                        <p className={cn("text-[13px] font-black", textColor)}>Waiting for shipping update</p>
+                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
+                                                            The brand still needs to submit the courier and tracking details.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {selectedShippingStatus === 'issue_reported' && (
+                                                <div className={cn("rounded-2xl border p-4 space-y-2", isDark ? "bg-rose-500/5 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
+                                                    <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-700")}>Issue reported</p>
+                                                    {String(selectedItem?.shipping_issue_reason || '').trim() && (
+                                                        <p className={cn("text-[12px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/85" : "text-rose-700")}>
+                                                            {String(selectedItem?.shipping_issue_reason || '').trim()}
+                                                        </p>
+                                                    )}
+                                                    <a
+                                                        href="/#/creator-contracts"
+                                                        className={cn("inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider", isDark ? "text-rose-200" : "text-rose-700")}
+                                                    >
+                                                        <Flag className="w-4 h-4" />
+                                                        Legal support
+                                                    </a>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -4054,12 +4422,16 @@ const MobileDashboardDemo = ({
                                 {/* ── PAYMENT ── */}
                                 <div className="mb-6 grid grid-cols-2 gap-3">
                                     <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Payment Method</p>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>
+                                            {selectedRequiresPayment ? 'Payment Method' : selectedRequiresShipping ? 'Fulfillment' : 'Deal Type'}
+                                        </p>
                                         <div className="flex items-center gap-2.5 mb-1">
                                             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                                                 <Landmark className="w-4 h-4 text-blue-500" />
                                             </div>
-                                            <span className={cn("text-[14px] font-black leading-tight", textColor)}>Direct Bank<br />Transfer</span>
+                                            <span className={cn("text-[14px] font-black leading-tight", textColor)}>
+                                                {selectedRequiresPayment ? <>UPI<br />Payout</> : selectedRequiresShipping ? <>Product<br />Shipping</> : <>Collab<br />Only</>}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
@@ -4252,6 +4624,19 @@ const MobileDashboardDemo = ({
 
 	                                                if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') {
 	                                                    setShowDeliverContentModal(true);
+	                                                    return;
+	                                                }
+
+	                                                if (cta.action === 'review_sign_contract') {
+	                                                    setCreatorSigningStep('send');
+	                                                    setCreatorOTP('');
+	                                                    setShowCreatorSigningModal(true);
+	                                                    return;
+	                                                }
+
+	                                                if (cta.action === 'start_working') {
+	                                                    // Move deal into "working" state without showing the progress sheet.
+	                                                    void handleProgressStageSelect('content_making');
 	                                                    return;
 	                                                }
 
@@ -4501,7 +4886,12 @@ const MobileDashboardDemo = ({
 
             {/* Creator: Deliver content / upload revision */}
             <Dialog open={showDeliverContentModal} onOpenChange={setShowDeliverContentModal}>
-                <DialogContent className={cn("sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200")}>
+                <DialogContent
+                    className={cn(
+                        "sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto overscroll-contain",
+                        isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200"
+                    )}
+                >
                     <DialogHeader>
                         <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
 	                            <Send className="w-6 h-6 text-emerald-500" />
@@ -4513,104 +4903,131 @@ const MobileDashboardDemo = ({
 	                        </DialogTitle>
 	                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
 	                            Paste your content link(s) so the brand can review and approve. Use Instagram or Google Drive links — no uploads needed.
-	                        </DialogDescription>
-	                    </DialogHeader>
+		                        </DialogDescription>
+		                    </DialogHeader>
 
-                    <div className="px-6 py-5 space-y-4">
-                        {String((selectedItem as any)?.brand_feedback || '').trim() && (
-                            <div className={cn("p-4 rounded-2xl border", isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
-                                <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-60", isDark ? "text-rose-200" : "text-rose-700")}>Revision note from brand</p>
-                                <p className={cn("mt-2 text-[13px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/90" : "text-rose-700")}>
-                                    {String((selectedItem as any)?.brand_feedback || '').trim()}
-                                </p>
-                            </div>
-	                        )}
-	                        <div className="space-y-2">
-	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Main Content Link (Required)</label>
-	                            <input
-	                                value={deliverContentUrlDraft}
-	                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
-	                                placeholder="https://instagram.com/reel/... or https://drive.google.com/..."
-	                                className={cn(
-	                                    "w-full rounded-2xl px-4 py-4 text-[14px] font-semibold outline-none transition-all border",
-	                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
-	                                )}
-	                                inputMode="url"
-	                                autoCapitalize="none"
-	                                autoCorrect="off"
-	                            />
-	                        </div>
-
-	                        <div className="space-y-2">
-	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Content Status (Required)</label>
-	                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-	                                <button
-	                                    type="button"
-	                                    onClick={() => setDeliverContentStatusDraft('draft')}
-	                                    className={cn(
-	                                        "h-12 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98]",
-	                                        deliverContentStatusDraft === 'draft'
-	                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)]"
-	                                            : isDark ? "text-white/80 hover:bg-white/5" : "text-slate-700 hover:bg-white"
-	                                    )}
-	                                >
-	                                    Draft for review
-	                                </button>
-	                                <button
-	                                    type="button"
-	                                    onClick={() => setDeliverContentStatusDraft('posted')}
-	                                    className={cn(
-	                                        "h-12 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98]",
-	                                        deliverContentStatusDraft === 'posted'
-	                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)]"
-	                                            : isDark ? "text-white/80 hover:bg-white/5" : "text-slate-700 hover:bg-white"
-	                                    )}
-	                                >
-	                                    Already posted
-	                                </button>
+                    <div className="px-6 py-5 space-y-5">
+	                        {String((selectedItem as any)?.brand_feedback || '').trim() && (
+	                            <div className={cn("p-4 rounded-2xl border", isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
+	                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-70", isDark ? "text-rose-200" : "text-rose-700")}>Revision note from brand</p>
+	                                <p className={cn("mt-2 text-[13px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/90" : "text-rose-700")}>
+	                                    {String((selectedItem as any)?.brand_feedback || '').trim()}
+	                                </p>
 	                            </div>
-	                        </div>
-	
-	                        <div className="space-y-2">
-	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Caption (Optional)</label>
-	                            <textarea
-	                                value={deliverCaptionDraft}
+		                        )}
+		                        <div className="space-y-2">
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                                Main Content Link (Required)
+		                            </label>
+		                            <input
+		                                value={deliverContentUrlDraft}
+		                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
+		                                placeholder="Paste Instagram/Drive link (full URL)"
+		                                className={cn(
+		                                    "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border",
+		                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+		                                )}
+		                                inputMode="url"
+		                                autoComplete="url"
+		                                autoCapitalize="none"
+		                                autoCorrect="off"
+		                            />
+		                            <p className={cn("text-[11px] font-semibold px-1", isDark ? "text-white/45" : "text-slate-500")}>
+		                                Examples: `instagram.com/reel/...` or `drive.google.com/...`
+		                            </p>
+		                        </div>
+
+		                        <div className="space-y-2">
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                                Content Status (Required)
+		                            </label>
+		                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+		                                <button
+		                                    type="button"
+		                                    onClick={() => setDeliverContentStatusDraft('draft')}
+		                                    className={cn(
+		                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
+		                                        deliverContentStatusDraft === 'draft'
+		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
+		                                            : isDark ? "text-white/85 hover:bg-white/5" : "text-slate-800 hover:bg-white"
+		                                    )}
+		                                    aria-pressed={deliverContentStatusDraft === 'draft'}
+		                                >
+		                                    <span>Draft for review</span>
+		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'draft' ? "text-white/90" : isDark ? "text-white/55" : "text-slate-500")}>
+		                                        Not posted yet
+		                                    </span>
+		                                </button>
+		                                <button
+		                                    type="button"
+		                                    onClick={() => setDeliverContentStatusDraft('posted')}
+		                                    className={cn(
+		                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
+		                                        deliverContentStatusDraft === 'posted'
+		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
+		                                            : isDark ? "text-white/85 hover:bg-white/5" : "text-slate-800 hover:bg-white"
+		                                    )}
+		                                    aria-pressed={deliverContentStatusDraft === 'posted'}
+		                                >
+		                                    <span>Already posted</span>
+		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'posted' ? "text-white/90" : isDark ? "text-white/55" : "text-slate-500")}>
+		                                        Live on profile
+		                                    </span>
+		                                </button>
+		                            </div>
+		                        </div>
+		
+		                        <div className="space-y-2">
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                                Caption (Optional)
+		                            </label>
+		                            <textarea
+		                                value={deliverCaptionDraft}
                                 onChange={(e) => setDeliverCaptionDraft(e.target.value)}
                                 placeholder="Paste your caption here..."
                                 className={cn(
-                                    "w-full min-h-[90px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
-                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
+                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
+                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
                                 )}
-	                            />
-	                        </div>
+		                            />
+		                        </div>
 
-	                        <div className="space-y-2">
-	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Additional Links (Optional)</label>
-	                            <textarea
-	                                value={deliverAdditionalLinksDraft}
-	                                onChange={(e) => setDeliverAdditionalLinksDraft(e.target.value)}
-	                                placeholder={"Add any extra links (one per line)\nhttps://drive.google.com/...\nhttps://instagram.com/p/..."}
-	                                className={cn(
-	                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
-	                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
-	                                )}
-	                            />
-	                        </div>
+		                        <div className="space-y-2">
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                                Additional Links (Optional)
+		                            </label>
+		                            <textarea
+		                                value={deliverAdditionalLinksDraft}
+		                                onChange={(e) => setDeliverAdditionalLinksDraft(e.target.value)}
+		                                placeholder={"Add any extra links (one per line)\nhttps://drive.google.com/...\nhttps://instagram.com/p/..."}
+		                                className={cn(
+		                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
+		                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+		                                )}
+		                            />
+		                        </div>
 
-	                        <div className="space-y-2">
-	                            <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1">Message to Brand (Optional)</label>
-	                            <textarea
-	                                value={deliverMessageDraft}
-	                                onChange={(e) => setDeliverMessageDraft(e.target.value)}
-	                                placeholder="Any context for review (timelines, instructions, etc.)"
-	                                className={cn(
-	                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[14px] font-semibold outline-none transition-all border resize-none",
-	                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500/50"
-	                                )}
-	                            />
-	                        </div>
+		                        <div className="space-y-2">
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                                Message to Brand (Optional)
+		                            </label>
+		                            <textarea
+		                                value={deliverMessageDraft}
+		                                onChange={(e) => setDeliverMessageDraft(e.target.value)}
+		                                placeholder="Any context for review (timelines, instructions, etc.)"
+		                                className={cn(
+		                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
+		                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+		                                )}
+		                            />
+		                        </div>
+                    </div>
 
-                        <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className={cn(
+                        "sticky bottom-0 border-t px-6 backdrop-blur",
+                        isDark ? "bg-[#0B0F14]/92 border-white/10" : "bg-white/92 border-slate-200"
+                    )}>
+                        <div className="grid grid-cols-2 gap-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                             <button
                                 onClick={() => {
                                     triggerHaptic();
@@ -4633,6 +5050,62 @@ const MobileDashboardDemo = ({
                                 )}
                             >
                                 {isSubmittingContent ? 'Submitting…' : 'Submit Content'}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={showReportIssueModal}
+                onOpenChange={(open) => {
+                    setShowReportIssueModal(open);
+                    if (!open) setReportIssueReason('');
+                }}
+            >
+                <DialogContent
+                    className={cn(
+                        "sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl",
+                        isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200"
+                    )}
+                >
+                    <DialogHeader>
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                            <AlertCircle className="w-6 h-6 text-rose-500" />
+                            Report Shipping Issue
+                        </DialogTitle>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
+                            Describe what went wrong so the brand can fix the shipment quickly.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="px-6 pb-6 space-y-4">
+                        <textarea
+                            value={reportIssueReason}
+                            onChange={(e) => setReportIssueReason(e.target.value)}
+                            placeholder="Wrong product, damaged item, package not received..."
+                            rows={5}
+                            className={cn(
+                                "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border resize-none",
+                                isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-rose-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-rose-500/50"
+                            )}
+                        />
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <button
+                                onClick={() => {
+                                    setShowReportIssueModal(false);
+                                    setReportIssueReason('');
+                                }}
+                                className={cn("h-12 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900")}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={reportSelectedShippingIssue}
+                                disabled={isReportingIssue || !reportIssueReason.trim()}
+                                className="h-12 rounded-2xl bg-rose-600 text-white text-[14px] font-black transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+                            >
+                                {isReportingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                Report Issue
                             </button>
                         </div>
                     </div>
