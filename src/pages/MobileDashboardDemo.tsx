@@ -33,6 +33,10 @@ import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import AchievementBadges from '@/components/dashboard/AchievementBadges';
 import PaymentTimeline from '@/components/dashboard/PaymentTimeline';
 import EnhancedInsights from '@/components/dashboard/EnhancedInsights';
+import DealTimelineView from '@/components/dashboard/DealTimelineView';
+import DealComparison from '@/components/dashboard/DealComparison';
+import DealStatusFlow from '@/components/dashboard/DealStatusFlow';
+import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -3004,6 +3008,26 @@ const MobileDashboardDemo = ({
                             {/* Achievement Badges */}
                             <div className="px-5 mb-8">
                                 <AchievementBadges isDark={isDark} showUnlocked={true} />
+                            </div>
+
+                            {/* Deal Status Flow */}
+                            <div className="px-5 mb-8">
+                                <DealStatusFlow isDark={isDark} />
+                            </div>
+
+                            {/* Deal Timeline View */}
+                            <div className="px-5 mb-8">
+                                <DealTimelineView isDark={isDark} />
+                            </div>
+
+                            {/* Smart Notifications Center */}
+                            <div className="px-5 mb-8">
+                                <SmartNotificationsCenter isDark={isDark} />
+                            </div>
+
+                            {/* Deal Comparison */}
+                            <div className="px-5 mb-8">
+                                <DealComparison isDark={isDark} />
                             </div>
 
                             {/* Brand Offers Section */}
