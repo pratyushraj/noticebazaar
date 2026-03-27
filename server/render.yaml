@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: noticebazaar-api
+    env: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Note: RESEND_API_KEY should be set in Render dashboard, not here
+      # Go to your service → Environment → Add: RESEND_API_KEY=<your-key-from-resend.com>
+    healthCheckPath: /health
+

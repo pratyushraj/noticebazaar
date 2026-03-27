@@ -1,0 +1,1053 @@
+import express, { Response } from 'express';
+import { AuthenticatedRequest } from '../middleware/auth.js';
+import { supabase } from '../lib/supabase.js';
+
+const router = express.Router();
+
+const buildProfilesById = (profiles: any[] | null | undefined) => {
+  const map = new Map<string, any>();
+  (profiles || []).forEach((p) => {
+    if (!p?.id) return;
+    map.set(String(p.id), p);
+  });
+  return map;
+};
+
+const isMissingColumnError = (err: any, column: string) => {
+  const msg = String(err?.message || err?.details || err?.hint || '').toLowerCase();
+  const col = String(column || '').toLowerCase();
+  return (
+    msg.includes(`could not find the '${col}' column`) ||
+    msg.includes(`could not find the \"${col}\" column`) ||
+    msg.includes(`column ${col} does not exist`) ||
+    msg.includes(`column \"${col}\" does not exist`) ||
+    msg.includes(`${col} does not exist`) ||
+    (msg.includes('column') && msg.includes(col) && msg.includes('does not exist')) ||
+    (msg.includes('schema cache') && msg.includes(col))
+  );
+};
+
+const requireBrand = async (req: AuthenticatedRequest, res: Response): Promise<{ ok: true; id: string; email: string | null } | { ok: false }> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ success: false, error: 'Authentication required' });
+    return { ok: false };
+  }
+  const role = String(req.user?.role || '').toLowerCase();
+  const email = req.user?.email ? String(req.user.email).toLowerCase() : null;
+
+  if (!role || (role !== 'brand' && role !== 'admin')) {
+    let profile: any = null;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('role, business_name')
+        .eq('id', userId)
+        .maybeSingle();
+      profile = data;
+    } catch {
+      profile = null;
+    }
+
+    const profileRole = String(profile?.role || '').toLowerCase();
+    const isDemoBrand = email === 'brand-demo@noticebazaar.com';
+    const hasBrandProfile = profileRole === 'brand' || !!String(profile?.business_name || '').trim();
+
+    if (!isDemoBrand && role !== 'admin' && !hasBrandProfile) {
+      res.status(403).json({ success: false, error: 'Brand access required' });
+      return { ok: false };
+    }
+  }
+  return { ok: true, id: userId, email };
+};
+
+router.get('/requests', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const run = async (canUseBrandId: boolean) => {
+      // Use `*` so brand dashboards always receive full campaign + brand metadata as the schema evolves,
+      // while still filtering access via brand_id / brand_email.
+      let query: any = supabase.from('collab_requests').select('*').order('created_at', { ascending: false });
+      if (canUseBrandId) {
+        if (brand.email) query = query.or(`brand_id.eq.${brand.id},brand_email.eq.${brand.email}`);
+        else query = query.eq('brand_id', brand.id);
+      } else if (brand.email) {
+        query = query.eq('brand_email', brand.email);
+      } else {
+        return [] as any[];
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as any[];
+    };
+
+    let rows: any[] = [];
+    try {
+      rows = await run(true);
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'brand_id')) rows = await run(false);
+      else throw err;
+    }
+
+    const creatorIds = Array.from(new Set(rows.map((r) => String(r.creator_id || '')).filter(Boolean)));
+    if (creatorIds.length > 0) {
+      const { data: profs, error: profErr } = await supabase
+        .from('profiles')
+        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi')
+        .in('id' as any, creatorIds as any[]);
+      if (!profErr) {
+        const byId = buildProfilesById(profs);
+        rows = rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
+      }
+    }
+
+    // Avoid sending internal telemetry columns to the brand UI.
+    rows = rows.map((r) => {
+      const { submitted_ip, submitted_user_agent, ...safe } = r || {};
+      return safe;
+    });
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, requests: rows });
+  } catch (error: any) {
+    console.error('[BrandDashboard] GET /requests failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to fetch brand requests' });
+  }
+});
+
+// Upsert the brand identity row (service role; bypasses RLS).
+// Used by the brand console settings page and brand signup flows.
+router.post('/identity', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const name = String(req.body?.name || '').trim();
+    if (!name) return res.status(400).json({ success: false, error: 'Brand name is required' });
+
+    const payload: any = {
+      external_id: brand.id,
+      name,
+      website_url: req.body?.website_url ? String(req.body.website_url).trim() : null,
+      industry: req.body?.industry ? String(req.body.industry).trim() : null,
+      description: req.body?.description ? String(req.body.description).trim() : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    // If the caller passes a logo url, persist it (non-fatal if column doesn't exist).
+    if (req.body?.logo_url) payload.logo_url = String(req.body.logo_url).trim();
+
+    const { data: existing, error: existingErr } = await supabase
+      .from('brands')
+      .select('id')
+      .eq('external_id', brand.id)
+      .maybeSingle();
+    if (existingErr) throw existingErr;
+
+    const now = new Date().toISOString();
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from('brands')
+        .update(payload)
+        .eq('id', existing.id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ success: true, brand: data || null });
+    }
+
+    const insertPayload = { ...payload, created_at: now };
+    const { data, error } = await supabase
+      .from('brands')
+      .insert(insertPayload)
+      .select('*')
+      .maybeSingle();
+    if (error) throw error;
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: data || null });
+  } catch (error: any) {
+    console.error('[BrandDashboard] POST /identity failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to save brand identity' });
+  }
+});
+
+router.patch('/requests/:id/withdraw', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, error: 'Request id required' });
+
+    const runFetch = async (canUseBrandId: boolean) => {
+      let query: any = supabase.from('collab_requests').select('*').eq('id', id).maybeSingle();
+      if (canUseBrandId) {
+        if (brand.email) query = query.or(`brand_id.eq.${brand.id},brand_email.eq.${brand.email}`);
+        else query = query.eq('brand_id', brand.id);
+      } else if (brand.email) {
+        query = query.eq('brand_email', brand.email);
+      } else {
+        return null;
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return data || null;
+    };
+
+    let request: any = null;
+    try {
+      request = await runFetch(true);
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'brand_id')) request = await runFetch(false);
+      else throw err;
+    }
+
+    if (!request) return res.status(404).json({ success: false, error: 'Offer not found' });
+
+    const now = new Date().toISOString();
+    const baseUpdate: any = { status: 'declined', updated_at: now };
+
+    const tryUpdate = async (payload: any) => {
+      const { data, error } = await supabase
+        .from('collab_requests')
+        .update(payload)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      return data || null;
+    };
+
+    let updated: any = null;
+    try {
+      updated = await tryUpdate({ ...baseUpdate, decline_reason: 'withdrawn_by_brand' });
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'decline_reason')) updated = await tryUpdate(baseUpdate);
+      else throw err;
+    }
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, request: updated });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PATCH /requests/:id/withdraw failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to withdraw offer' });
+  }
+});
+
+router.patch('/requests/:id/revise', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, error: 'Request id required' });
+
+    const {
+      exact_budget,
+      deliverables,
+      deadline,
+      campaign_description,
+      offer_expires_at,
+    } = req.body || {};
+
+    const now = new Date().toISOString();
+
+    const update: any = { status: 'pending', updated_at: now };
+    if (exact_budget !== undefined) update.exact_budget = exact_budget === null ? null : Number(exact_budget);
+    if (deadline !== undefined) update.deadline = deadline;
+    if (campaign_description !== undefined) update.campaign_description = campaign_description;
+    if (offer_expires_at !== undefined) update.offer_expires_at = offer_expires_at;
+    if (deliverables !== undefined) {
+      if (Array.isArray(deliverables)) update.deliverables = JSON.stringify(deliverables);
+      else update.deliverables = deliverables;
+    }
+
+    const tryUpdate = async (payload: any) => {
+      const { data, error } = await supabase
+        .from('collab_requests')
+        .update(payload)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (error) throw error;
+      return data || null;
+    };
+
+    let updated: any = null;
+    try {
+      updated = await tryUpdate({ ...update, counter_offer: null });
+    } catch (err: any) {
+      if (isMissingColumnError(err, 'counter_offer')) updated = await tryUpdate(update);
+      else throw err;
+    }
+
+    if (!updated) return res.status(404).json({ success: false, error: 'Offer not found' });
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, request: updated });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PATCH /requests/:id/revise failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to revise offer' });
+  }
+});
+
+router.get('/profile', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const userId = brand.id;
+
+    const { data, error } = await supabase
+      .from('brands')
+      .select('*')
+      .eq('external_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: data || null });
+  } catch (error: any) {
+    console.error('[BrandDashboard] GET /profile failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to fetch brand profile' });
+  }
+});
+
+router.put('/profile', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    const userId = brand.id;
+    const body = req.body || {};
+    const name = typeof body.name === 'string' ? body.name.trim() : '';
+    if (!name) return res.status(400).json({ success: false, error: 'Brand name required' });
+
+    const payload: any = {
+      external_id: userId,
+      name,
+      website_url: typeof body.website_url === 'string' ? body.website_url.trim() || null : null,
+      industry: typeof body.industry === 'string' ? body.industry.trim() || 'General' : 'General',
+      description: typeof body.description === 'string' ? body.description.trim() || null : null,
+      logo_url: typeof body.logo_url === 'string' ? body.logo_url.trim() || null : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: existing, error: existingError } = await supabase
+      .from('brands')
+      .select('id')
+      .eq('external_id', userId)
+      .maybeSingle();
+    if (existingError) throw existingError;
+
+    if (existing?.id) {
+      const { data: updated, error: updErr } = await supabase
+        .from('brands')
+        .update(payload)
+        .eq('id', existing.id)
+        .select('*')
+        .maybeSingle();
+      if (updErr) throw updErr;
+      res.setHeader('Cache-Control', 'no-store');
+      return res.json({ success: true, brand: updated || null });
+    }
+
+    const { data: inserted, error: insErr } = await supabase
+      .from('brands')
+      .insert({ ...payload, created_at: new Date().toISOString() })
+      .select('*')
+      .maybeSingle();
+    if (insErr) throw insErr;
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, brand: inserted || null });
+  } catch (error: any) {
+    console.error('[BrandDashboard] PUT /profile failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to save brand profile' });
+  }
+});
+
+router.get('/deals', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const brand = await requireBrand(req, res);
+    if (!brand.ok) return;
+
+    // Schema evolves over time across environments. Keep the brand dashboard resilient by
+    // progressively falling back when optional columns are missing.
+    //
+	    // Important: some deployments do not have `deal_execution_status`, so every "full" select
+	    // has a corresponding fallback without it.
+	    const selectAttempts = [
+      {
+        select: '*',
+        canUseBrandId: true,
+      },
+	      // Newer schemas (signature timestamps + contract state)
+	      {
+	        select: `
+	          id,
+	          creator_id,
+	          status,
+	          deal_execution_status,
+	          esign_status,
+	          contract_status,
+	          contract_signing_status,
+	          signing_status,
+	          signature_status,
+	          brand_signed_at,
+	          creator_signed_at,
+	          contract_signed_at,
+	          signed_at,
+	          signed_pdf_url,
+	          created_at,
+	          updated_at,
+	          deal_amount,
+	          deliverables,
+	          due_date,
+	          contract_file_url,
+	          safe_contract_url,
+	          signed_contract_url,
+	          signed_contract_path,
+	          brand_id,
+	          brand_email
+	        `,
+	        canUseBrandId: true,
+	      },
+	      {
+	        select: `
+	          id,
+	          creator_id,
+	          status,
+	          esign_status,
+	          contract_status,
+	          contract_signing_status,
+	          signing_status,
+	          signature_status,
+	          brand_signed_at,
+	          creator_signed_at,
+	          contract_signed_at,
+	          signed_at,
+	          signed_pdf_url,
+	          created_at,
+	          updated_at,
+	          deal_amount,
+	          deliverables,
+	          due_date,
+	          contract_file_url,
+	          safe_contract_url,
+	          signed_contract_url,
+	          signed_contract_path,
+	          brand_id,
+	          brand_email
+	        `,
+	        canUseBrandId: true,
+	      },
+	      // Brand id available (preferred)
+	      {
+	        select: `
+	          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          deal_amount,
+          due_date,
+          contract_file_url,
+          brand_id,
+          brand_email
+        `,
+        canUseBrandId: true,
+      },
+
+      // Brand email only (fallback)
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          esign_status,
+          signed_at,
+          signed_pdf_url,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          signed_contract_path,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          signed_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          deal_execution_status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          updated_at,
+          deal_amount,
+          deliverables,
+          due_date,
+          contract_file_url,
+          safe_contract_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+      {
+        select: `
+          id,
+          creator_id,
+          status,
+          created_at,
+          deal_amount,
+          due_date,
+          contract_file_url,
+          brand_email
+        `,
+        canUseBrandId: false,
+      },
+    ];
+
+    const run = async (select: string, canUseBrandId: boolean) => {
+      let query: any = supabase.from('brand_deals').select(select).order('created_at', { ascending: false });
+      if (canUseBrandId) {
+        if (brand.email) query = query.or(`brand_id.eq.${brand.id},brand_email.eq.${brand.email}`);
+        else query = query.eq('brand_id', brand.id);
+      } else if (brand.email) {
+        query = query.eq('brand_email', brand.email);
+      } else {
+        return [] as any[];
+      }
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data || []) as any[];
+    };
+
+    let rows: any[] = [];
+    let lastError: any = null;
+    for (const attempt of selectAttempts) {
+      try {
+        rows = await run(attempt.select, attempt.canUseBrandId);
+        lastError = null;
+        break;
+      } catch (err: any) {
+        lastError = err;
+	        const missingOptionalColumn =
+	          isMissingColumnError(err, 'brand_id') ||
+	          isMissingColumnError(err, 'signed_contract_url') ||
+	          isMissingColumnError(err, 'signed_contract_path') ||
+	          isMissingColumnError(err, 'safe_contract_url') ||
+	          isMissingColumnError(err, 'deal_execution_status') ||
+	          isMissingColumnError(err, 'esign_status') ||
+	          isMissingColumnError(err, 'contract_status') ||
+	          isMissingColumnError(err, 'contract_signing_status') ||
+	          isMissingColumnError(err, 'signing_status') ||
+	          isMissingColumnError(err, 'signature_status') ||
+	          isMissingColumnError(err, 'brand_signed_at') ||
+	          isMissingColumnError(err, 'creator_signed_at') ||
+	          isMissingColumnError(err, 'contract_signed_at') ||
+	          isMissingColumnError(err, 'signed_at') ||
+	          isMissingColumnError(err, 'signed_pdf_url') ||
+	          isMissingColumnError(err, 'updated_at') ||
+            isMissingColumnError(err, 'tracking_number') ||
+            isMissingColumnError(err, 'tracking_url') ||
+            isMissingColumnError(err, 'courier_name') ||
+            isMissingColumnError(err, 'shipping_required') ||
+            isMissingColumnError(err, 'shipping_status') ||
+            isMissingColumnError(err, 'expected_delivery_date') ||
+            isMissingColumnError(err, 'delivered_at') ||
+            isMissingColumnError(err, 'shipped_at') ||
+            isMissingColumnError(err, 'collab_type') ||
+            isMissingColumnError(err, 'deal_type');
+	        if (!missingOptionalColumn) {
+	          throw err;
+        }
+      }
+    }
+	    if (lastError) {
+	      throw lastError;
+	    }
+
+	    // Attach signing timestamps from `contract_signatures` when available.
+	    // This makes the dashboard correct even in environments where `brand_deals.status` isn't updated reliably.
+	    try {
+	      const dealIds = Array.from(new Set(rows.map((r) => String(r?.id || '')).filter(Boolean)));
+	      if (dealIds.length > 0) {
+	        const { data: sigs, error: sigErr } = await (supabase as any)
+	          .from('contract_signatures')
+	          .select('deal_id, signer_role, signed, signed_at')
+	          .in('deal_id', dealIds as any[]);
+	        if (!sigErr && Array.isArray(sigs)) {
+	          const byDeal = new Map<string, { brand?: string | null; creator?: string | null }>();
+	          sigs.forEach((s: any) => {
+	            const dealId = String(s?.deal_id || '');
+	            if (!dealId) return;
+	            if (!s?.signed) return;
+	            const role = String(s?.signer_role || '').toLowerCase();
+	            const signedAt = s?.signed_at ? String(s.signed_at) : null;
+	            const existing = byDeal.get(dealId) || {};
+	            if (role === 'brand') existing.brand = signedAt || existing.brand || null;
+	            if (role === 'creator') existing.creator = signedAt || existing.creator || null;
+	            byDeal.set(dealId, existing);
+	          });
+
+	          rows = rows.map((r) => {
+	            const id = String(r?.id || '');
+	            const sig = byDeal.get(id);
+	            if (!sig) return r;
+	            return {
+	              ...r,
+	              brand_signed_at: (r as any)?.brand_signed_at || sig.brand || null,
+	              creator_signed_at: (r as any)?.creator_signed_at || sig.creator || null,
+	            };
+	          });
+	        }
+	      }
+	    } catch (e) {
+	      // Non-fatal: some environments may not have `contract_signatures`.
+	    }
+
+	    const creatorIds = Array.from(new Set(rows.map((r) => String(r.creator_id || '')).filter(Boolean)));
+	    if (creatorIds.length > 0) {
+	      const { data: profs, error: profErr } = await supabase
+	        .from('profiles')
+        .select('id, username, first_name, last_name, business_name, avatar_url, bank_account_name, bank_upi')
+        .in('id' as any, creatorIds as any[]);
+      if (!profErr) {
+        const byId = buildProfilesById(profs);
+        rows = rows.map((r) => ({ ...r, profiles: byId.get(String(r.creator_id)) || null }));
+      }
+    }
+
+    // Hydrate content submission details from action logs so the brand dashboard can
+    // show submitted links even when older schemas don't persist content_* columns.
+    try {
+      const dealIds = Array.from(new Set(rows.map((r) => String(r?.id || '')).filter(Boolean)));
+      if (dealIds.length > 0) {
+        const { data: logs, error: logsError } = await (supabase as any)
+          .from('deal_action_logs')
+          .select('deal_id, event, metadata, created_at')
+          .in('deal_id', dealIds as any[])
+          .in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED', 'CONTENT_APPROVED', 'REVISION_REQUESTED', 'DEAL_DISPUTED', 'PAYMENT_RELEASED', 'shipping_marked_shipped', 'shipping_status_updated', 'shipping_confirmed_delivered'] as any[])
+          .order('created_at', { ascending: false });
+
+        if (!logsError && Array.isArray(logs)) {
+          const latestByDeal = new Map<string, any[]>();
+          logs.forEach((log: any) => {
+            const dealId = String(log?.deal_id || '');
+            if (!dealId) return;
+            const bucket = latestByDeal.get(dealId) || [];
+            bucket.push(log);
+            latestByDeal.set(dealId, bucket);
+          });
+
+          rows = rows.map((row) => {
+            const dealLogs = latestByDeal.get(String(row?.id || '')) || [];
+            const submissionLog = dealLogs.find((log: any) =>
+              log?.event === 'CONTENT_SUBMITTED' || log?.event === 'REVISION_SUBMITTED'
+            );
+            const reviewLog = dealLogs.find((log: any) =>
+              log?.event === 'CONTENT_APPROVED' || log?.event === 'REVISION_REQUESTED' || log?.event === 'DEAL_DISPUTED'
+            );
+            const paymentLog = dealLogs.find((log: any) => log?.event === 'PAYMENT_RELEASED');
+
+            const submissionMeta = submissionLog?.metadata && typeof submissionLog.metadata === 'object'
+              ? submissionLog.metadata
+              : {};
+            const reviewMeta = reviewLog?.metadata && typeof reviewLog.metadata === 'object'
+              ? reviewLog.metadata
+              : {};
+            const paymentMeta = paymentLog?.metadata && typeof paymentLog.metadata === 'object'
+              ? paymentLog.metadata
+              : {};
+            const shippingLog = dealLogs.find((log: any) =>
+              log?.event === 'shipping_marked_shipped' ||
+              log?.event === 'shipping_status_updated' ||
+              log?.event === 'shipping_confirmed_delivered'
+            );
+            const shippingMeta = shippingLog?.metadata && typeof shippingLog.metadata === 'object'
+              ? shippingLog.metadata
+              : {};
+            const collabKind = String((row as any)?.collab_type || (row as any)?.deal_type || '').trim().toLowerCase();
+            const requiresPayment =
+              collabKind === 'paid' ||
+              collabKind === 'both' ||
+              collabKind === 'hybrid' ||
+              collabKind === 'paid_barter' ||
+              (collabKind !== 'barter' && Number((row as any)?.deal_amount || 0) > 0);
+            const requiresShipping =
+              typeof (row as any)?.shipping_required === 'boolean'
+                ? Boolean((row as any)?.shipping_required)
+                : collabKind === 'barter' || collabKind === 'both' || collabKind === 'hybrid' || collabKind === 'paid_barter';
+
+            const rawLinks = Array.isArray(submissionMeta.content_links) ? submissionMeta.content_links : [];
+            const contentLinks = Array.from(
+              new Set(
+                [
+                  submissionMeta.content_url,
+                  ...rawLinks,
+                ]
+                  .map((value) => String(value || '').trim())
+                  .filter(Boolean)
+              )
+            );
+
+            return {
+              ...row,
+              content_submission_url: String((row as any)?.content_submission_url || submissionMeta.content_url || '').trim() || null,
+              content_url: String((row as any)?.content_url || submissionMeta.content_url || '').trim() || null,
+              content_links: Array.isArray((row as any)?.content_links) && (row as any).content_links.length
+                ? (row as any).content_links
+                : contentLinks,
+              content_caption: String((row as any)?.content_caption || submissionMeta.caption || '').trim() || null,
+              content_notes: String((row as any)?.content_notes || submissionMeta.notes || '').trim() || null,
+              content_delivery_status: String((row as any)?.content_delivery_status || submissionMeta.content_status || '').trim() || null,
+              brand_feedback: String((row as any)?.brand_feedback || reviewMeta.feedback || '').trim() || null,
+              utr_number: String((row as any)?.utr_number || paymentMeta.payment_reference || '').trim() || null,
+              payment_received_date: String((row as any)?.payment_received_date || paymentMeta.payment_received_date || '').trim() || null,
+              payment_proof_url: String((row as any)?.payment_proof_url || paymentMeta.payment_proof_url || '').trim() || null,
+              payment_notes: String((row as any)?.payment_notes || paymentMeta.payment_notes || '').trim() || null,
+              shipping_required: requiresShipping,
+              requires_shipping: requiresShipping,
+              requires_payment: requiresPayment,
+              shipping_status: String((row as any)?.shipping_status || shippingMeta.status || '').trim() || null,
+              courier_name: String((row as any)?.courier_name || shippingMeta.courier_name || '').trim() || null,
+              tracking_number: String((row as any)?.tracking_number || shippingMeta.tracking_number || '').trim() || null,
+              tracking_url: String((row as any)?.tracking_url || shippingMeta.tracking_url || '').trim() || null,
+              expected_delivery_date: String((row as any)?.expected_delivery_date || shippingMeta.expected_delivery_date || '').trim() || null,
+            };
+          });
+        }
+      }
+    } catch (e) {
+      // Non-fatal: keep dashboard working even if action logs are unavailable.
+    }
+
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ success: true, deals: rows });
+  } catch (error: any) {
+    console.error('[BrandDashboard] GET /deals failed:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Failed to fetch brand deals' });
+  }
+});
+
+export default router;

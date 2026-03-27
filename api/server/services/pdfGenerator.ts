@@ -1,0 +1,268 @@
+// PDF Report Generator
+// Generates Contract Analysis Report PDF using Puppeteer
+
+import { AnalysisResult } from './contractAnalysis';
+
+export async function generateReportPdf(analysis: AnalysisResult): Promise<Buffer> {
+  const html = generateReportHtml(analysis);
+
+  let browser;
+
+  if (process.env.VERCEL) {
+    // Vercel-compatible Puppeteer initialization
+    const chromium = (await import('@sparticuz/chromium')).default;
+    const puppeteerCore = (await import('puppeteer-core')).default;
+
+    browser = await puppeteerCore.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
+  } else {
+    // Local / Render initialization (puppeteer-core requires an explicit Chrome path)
+    const puppeteerCore = (await import('puppeteer-core')).default;
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (!executablePath) {
+      throw new Error(
+        'PUPPETEER_EXECUTABLE_PATH is required for local PDF generation when using puppeteer-core.'
+      );
+    }
+    browser = await puppeteerCore.launch({
+      executablePath,
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+  }
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' }
+    });
+
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
+}
+
+function generateReportHtml(analysis: AnalysisResult): string {
+  const riskColorMap: Record<string, string> = {
+    low: '#10b981',
+    medium: '#f59e0b',
+    high: '#ef4444'
+  };
+  const riskColor = riskColorMap[analysis.overallRisk] || '#6b7280';
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .header h1 {
+      font-size: 32px;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    .score-card {
+      background: linear-gradient(135deg, ${riskColor}15 0%, ${riskColor}05 100%);
+      border: 2px solid ${riskColor}40;
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .score-value {
+      font-size: 64px;
+      font-weight: bold;
+      color: ${riskColor};
+      margin: 10px 0;
+    }
+    .risk-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 20px;
+      background: ${riskColor};
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .issue-item, .verified-item {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-left: 4px solid;
+    }
+    .issue-item {
+      border-left-color: #f59e0b;
+    }
+    .verified-item {
+      border-left-color: #10b981;
+    }
+    .issue-title, .verified-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1f2937;
+    }
+    .issue-description, .verified-description {
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    .recommendation {
+      background: #eff6ff;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #1e40af;
+    }
+    .key-terms {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .term-card {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+    .term-label {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .term-value {
+      font-weight: 600;
+      color: #1f2937;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      color: #6b7280;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Contract Analysis Report</h1>
+      <p style="color: #6b7280;">Generated by CreatorArmour AI</p>
+    </div>
+
+    <div class="score-card">
+      <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">Protection Score</div>
+      <div class="score-value">${analysis.protectionScore}</div>
+      <div class="risk-badge">${analysis.overallRisk} Risk</div>
+    </div>
+
+    ${analysis.issues.length > 0 ? `
+    <div class="section">
+      <div class="section-title">⚠️ Issues Found (${analysis.issues.length})</div>
+      ${analysis.issues.map((issue: any) => `
+        <div class="issue-item">
+          <div class="issue-title">${issue.title}</div>
+          <div class="issue-description">${issue.description}</div>
+          ${issue.clause ? `<div style="font-size: 12px; color: #6b7280; margin-top: 5px;">📄 ${issue.clause}</div>` : ''}
+          <div class="recommendation">💡 Recommendation: ${issue.recommendation}</div>
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${analysis.verified.length > 0 ? `
+    <div class="section">
+      <div class="section-title">✅ Verified Clauses (${analysis.verified.length})</div>
+      ${analysis.verified.map((item: any) => `
+        <div class="verified-item">
+          <div class="verified-title">${item.title}</div>
+          <div class="verified-description">${item.description}</div>
+          ${item.clause ? `<div style="font-size: 12px; color: #6b7280; margin-top: 5px;">📄 ${item.clause}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    ` : ''}
+
+    ${analysis.keyTerms && Object.keys(analysis.keyTerms).length > 0 ? `
+    <div class="section">
+      <div class="section-title">📋 Key Terms</div>
+      <div class="key-terms">
+        ${Object.entries(analysis.keyTerms).map(([key, value]) => value ? `
+          <div class="term-card">
+            <div class="term-label">${key.replace(/([A-Z])/g, ' $1').trim()}</div>
+            <div class="term-value">${value}</div>
+          </div>
+        ` : '').join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    ${analysis.recommendations.length > 0 ? `
+    <div class="section">
+      <div class="section-title">💡 Recommendations</div>
+      <ul style="list-style: none; padding: 0;">
+        ${analysis.recommendations.map((rec: string) => `
+          <li style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+            • ${rec}
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+    ` : ''}
+
+    <div class="footer">
+      <p>This report was generated automatically. Please consult with a legal advisor for professional advice.</p>
+      <p style="margin-top: 10px;">© ${new Date().getFullYear()} CreatorArmour. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+

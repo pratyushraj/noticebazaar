@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /sitemap.xml
+Allow: /llms.txt
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /login/
+Disallow: /signup/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /dist/
+
+Sitemap: https://creatorarmour.com/sitemap.xml

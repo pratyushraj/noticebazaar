@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "installCommand": "rm -rf node_modules pnpm-lock.yaml package-lock.json && npm install --no-optional --ignore-scripts --legacy-peer-deps",
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "src/index.ts"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "src/index.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

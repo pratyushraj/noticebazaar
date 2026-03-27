@@ -1,0 +1,34 @@
+Creator Armour
+
+Creator Armour is a creator collaboration platform for structured brand deals.
+Creators publish a collab link with packages, prices, and deal preferences.
+Brands can review creator details, choose a package, and submit collaboration offers.
+
+Primary URL: https://creatorarmour.com/
+
+Key pages:
+- Homepage: https://creatorarmour.com/
+- Discover creators: https://creatorarmour.com/discover
+- Creator directory: https://creatorarmour.com/creators
+- Blog: https://creatorarmour.com/blog
+- Free influencer contract: https://creatorarmour.com/free-influencer-contract
+- Creator profile example: https://creatorarmour.com/collab/wowvidushi
+
+Core capabilities:
+- Creator collab link for brand inquiries
+- Structured package-based offers
+- Collaboration workflows and tracking
+- Creator-focused business tooling
+
+Brand:
+- Primary brand name: Creator Armour
+- Alternate spelling: CreatorArmour
+
+Official social profiles:
+- Instagram: https://www.instagram.com/creatorarmour
+- X: https://x.com/creatorarmour
+- LinkedIn: https://www.linkedin.com/company/creatorarmour
+
+Indexing notes:
+- Public marketing and creator profile pages may be indexed.
+- Authenticated dashboard and admin surfaces are restricted.
