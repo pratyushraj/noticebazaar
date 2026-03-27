@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages } from 'lucide-react';
+import {
+    User, Search, ShieldCheck, Handshake, Camera,
+    LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
+    Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
+    Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
+    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -17,20 +23,6 @@ import PremiumDrawer from '@/components/drawer/PremiumDrawer';
 import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
-import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
-import { DealTemplate } from '@/types';
-import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
-import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
-import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
-import SkeletonLoader from '@/components/dashboard/SkeletonLoader';
-import ActivityFeed from '@/components/dashboard/ActivityFeed';
-import AchievementBadges from '@/components/dashboard/AchievementBadges';
-import PaymentTimeline from '@/components/dashboard/PaymentTimeline';
-import EnhancedInsights from '@/components/dashboard/EnhancedInsights';
-import DealTimelineView from '@/components/dashboard/DealTimelineView';
-import DealComparison from '@/components/dashboard/DealComparison';
-import DealStatusFlow from '@/components/dashboard/DealStatusFlow';
-import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -49,6 +41,101 @@ interface MobileDashboardProps {
      */
     showDemoOffer?: boolean;
 }
+
+interface CollabAnalyticsData {
+    period: number;
+    views: {
+        total: number;
+        unique: number;
+        trend: number;
+        trendDirection: 'up' | 'down';
+    };
+    submissions: {
+        total: number;
+        trend: number;
+        trendDirection: 'up' | 'down';
+    };
+    conversionRate: {
+        value: number;
+        trend: number;
+        trendDirection: 'up' | 'down' | 'neutral';
+    };
+    deviceBreakdown: {
+        mobile: number;
+        desktop: number;
+        tablet: number;
+        unknown: number;
+    };
+    dailySeries?: Array<{
+        label: string;
+        views: number;
+        submissions: number;
+    }>;
+}
+
+interface CollabAnalyticsSummary {
+    weeklyViews: number;
+    totalViews: number;
+    submissions: number;
+    weeklySubmissions: number;
+}
+
+interface PackageTemplate {
+    id: string;
+    name: string;
+    description?: string | null;
+    deliverables?: string[] | null;
+    rate?: number | null;
+    revision_count?: number | null;
+    turnaround_days?: number | null;
+    terms?: string | null;
+    is_default?: boolean | null;
+    addons?: Array<{ id: string; label: string; price: number }> | null;
+}
+
+const buildDefaultPackageTemplates = (profile: any): PackageTemplate[] => {
+    const reelRate = Math.max(0, Number(profile?.avg_rate_reel || 0) || 5000);
+    return [
+        {
+            id: 'starter_package',
+            name: 'Starter Package',
+            description: 'Quick entry package for simple brand collabs.',
+            deliverables: ['1 Reel'],
+            rate: Math.max(reelRate - 1, 999),
+            revision_count: 1,
+            turnaround_days: 7,
+            terms: 'Includes one revision.',
+            is_default: false,
+            addons: [],
+        },
+        {
+            id: 'engagement_package',
+            name: 'Engagement Package',
+            description: 'Balanced package for stronger reach and response.',
+            deliverables: ['1 Reel', '2 Stories'],
+            rate: Math.max(Math.round(reelRate * 1.5) - 1, 1499),
+            revision_count: 1,
+            turnaround_days: 10,
+            terms: 'Includes one revision and story support.',
+            is_default: true,
+            addons: [
+                { id: 'addon_story', label: 'Extra Story', price: 500 },
+            ],
+        },
+        {
+            id: 'product_review',
+            name: 'Product Review',
+            description: 'Review-led package for launches, barter, or seeding.',
+            deliverables: ['1 Unboxing Video', '1 Story'],
+            rate: Math.max(1999, Math.round(reelRate * 0.5) - 1),
+            revision_count: 1,
+            turnaround_days: 14,
+            terms: 'Product must be received before content production.',
+            is_default: false,
+            addons: [],
+        },
+    ];
+};
 
 // Minimal Status Badge for Deal Cards
 const StatusBadge = ({ status }: { status: string }) => {
@@ -123,6 +210,25 @@ const inferCreatorRequiresShipping = (deal: any) => {
     if (typeof deal?.shipping_required === 'boolean') return Boolean(deal.shipping_required);
     const kind = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
     return kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter';
+};
+
+const normalizeCreatorCollabType = (deal: any) => {
+    const raw = String(deal?.collab_type || deal?.deal_type || deal?.raw?.collab_type || '').trim().toLowerCase();
+    if (raw === 'both' || raw === 'hybrid' || raw === 'paid_barter') return 'hybrid';
+    if (raw === 'barter') return 'barter';
+    if (raw === 'paid') return 'paid';
+    if (inferCreatorRequiresPayment(deal) && inferCreatorRequiresShipping(deal)) return 'hybrid';
+    if (inferCreatorRequiresShipping(deal)) return 'barter';
+    return 'paid';
+};
+
+const isValidUpiId = (value: string) => /^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(value.trim());
+
+const getCreatorObligationBadges = (deal: any) => {
+    const collabType = normalizeCreatorCollabType(deal);
+    const badges = [collabType === 'hybrid' ? 'Hybrid' : collabType === 'barter' ? 'Barter' : 'Paid'];
+    if (inferCreatorRequiresShipping(deal)) badges.push('Shipping required');
+    return badges;
 };
 
 const getCreatorDealCardUX = (deal: any) => {
@@ -304,7 +410,7 @@ const SectionHeader = ({ title, isDark }: any) => (
 );
 
 const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
-    <button type="button"
+    <button
         onClick={(e) => { e.stopPropagation(); onToggle(); }}
         className={cn(
             "w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out",
@@ -337,8 +443,14 @@ const parseLocationParts = (location?: string | null) => {
         city = nonPincodeParts[0];
     }
     
-    return { address, city, pincode };
-};
+	    return { address, city, pincode };
+	};
+
+const buildDefaultPastWorkItems = () => ([
+    { id: 'past-work-1', brand: 'boAt', campaignType: 'Launch Reel', outcome: '42K views in 5 days', proofLabel: 'Electronics' },
+    { id: 'past-work-2', brand: 'Mamaearth', campaignType: 'Routine Story Set', outcome: 'Strong audience fit for skincare shoppers', proofLabel: 'Beauty' },
+    { id: 'past-work-3', brand: 'Lenskart', campaignType: 'Review Package', outcome: 'High saves and click-through from lifestyle audience', proofLabel: 'Lifestyle' },
+]);
 
 const buildProfileFormData = (profile: any, userEmail?: string | null) => {
     const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || profile?.full_name || '';
@@ -357,36 +469,43 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         typical_deal_size: profile?.typical_deal_size || 'standard',
         collaboration_preference: profile?.collaboration_preference || 'Hybrid',
         avg_rate_reel: profile?.avg_rate_reel || '5000',
+        pricing_min: profile?.pricing_min || '',
         content_niches: profile?.content_niches || ['Fashion', 'Tech', 'Lifestyle'],
-        bank_account_name: profile?.bank_account_name || '',
-        bank_upi: profile?.bank_upi || '',
-        deal_templates: profile?.deal_templates || [],
-        // NEW: Audience Demographics
-        audience_gender_split: profile?.audience_gender_split || '',
-        top_cities: Array.isArray(profile?.top_cities) ? profile.top_cities : [],
-        audience_age_range: profile?.audience_age_range || '',
-        primary_audience_language: profile?.primary_audience_language || '',
-        // NEW: Availability & Stats
-        posting_frequency: profile?.posting_frequency || '',
-        active_brand_collabs_month: profile?.active_brand_collabs_month || '',
-        past_brand_count: profile?.past_brand_count || profile?.collab_brands_count_override || 0,
+        creator_category: profile?.creator_category || '',
+        instagram_followers: profile?.instagram_followers || '',
         avg_reel_views_manual: profile?.avg_reel_views_manual || '',
         avg_likes_manual: profile?.avg_likes_manual || '',
-        // NEW: Professional Collab Notes
-        collab_region_label: profile?.collab_region_label || '',
-        collab_audience_fit_note: profile?.collab_audience_fit_note || '',
-        collab_recent_activity_note: profile?.collab_recent_activity_note || '',
+        audience_gender_split: profile?.audience_gender_split || '',
+        top_cities: Array.isArray(profile?.top_cities) ? profile.top_cities.join(', ') : '',
+        audience_age_range: profile?.audience_age_range || '',
+        primary_audience_language: profile?.primary_audience_language || '',
+        posting_frequency: profile?.posting_frequency || '',
+        active_brand_collabs_month: profile?.active_brand_collabs_month || '',
+        campaign_slot_note: profile?.campaign_slot_note || '',
         collab_audience_relevance_note: profile?.collab_audience_relevance_note || '',
         collab_delivery_reliability_note: profile?.collab_delivery_reliability_note || '',
         collab_response_behavior_note: profile?.collab_response_behavior_note || '',
-        campaign_slot_note: profile?.campaign_slot_note || '',
-        // NEW: Public Portfolio
-        portfolio_links: Array.isArray(profile?.portfolio_links) ? profile.portfolio_links : [],
-        past_brands: Array.isArray(profile?.past_brands) ? profile.past_brands : [],
-        // NEW: CTA & Social Customization
+        collab_engagement_confidence_note: profile?.collab_engagement_confidence_note || '',
+        collab_intro_line: profile?.collab_intro_line || '',
+        collab_region_label: profile?.collab_region_label || '',
+        collab_audience_fit_note: profile?.collab_audience_fit_note || '',
+        collab_recent_activity_note: profile?.collab_recent_activity_note || '',
         collab_cta_trust_note: profile?.collab_cta_trust_note || '',
         collab_cta_dm_note: profile?.collab_cta_dm_note || '',
         collab_cta_platform_note: profile?.collab_cta_platform_note || '',
+        collab_brands_count_override: profile?.collab_brands_count_override || '',
+        collab_response_hours_override: profile?.collab_response_hours_override || '',
+        past_brands: Array.isArray(profile?.past_brands) ? profile.past_brands.join(', ') : '',
+        recent_campaign_types: Array.isArray(profile?.recent_campaign_types) ? profile.recent_campaign_types.join(', ') : '',
+        collab_past_work_items: Array.isArray(profile?.collab_past_work_items) && profile.collab_past_work_items.length > 0
+            ? profile.collab_past_work_items
+            : buildDefaultPastWorkItems(),
+        collab_show_packages: profile?.collab_show_packages ?? true,
+        collab_show_trust_signals: profile?.collab_show_trust_signals ?? true,
+        collab_show_audience_snapshot: profile?.collab_show_audience_snapshot ?? true,
+        collab_show_past_work: profile?.collab_show_past_work ?? true,
+        bank_account_name: '',
+        bank_upi: '',
     };
 };
 
@@ -566,6 +685,10 @@ const MobileDashboardDemo = ({
 
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
+    const [packageTemplates, setPackageTemplates] = useState<PackageTemplate[]>(buildDefaultPackageTemplates(profile));
+    const [collabAnalytics, setCollabAnalytics] = useState<CollabAnalyticsData | null>(null);
+    const [collabAnalyticsSummary, setCollabAnalyticsSummary] = useState<CollabAnalyticsSummary | null>(null);
+    const [isLoadingCollabAnalytics, setIsLoadingCollabAnalytics] = useState(false);
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -580,9 +703,6 @@ const MobileDashboardDemo = ({
     const [reportIssueReason, setReportIssueReason] = useState('');
     const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
     const [isReportingIssue, setIsReportingIssue] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [dealFilters, setDealFilters] = useState({ status: 'all', sortBy: 'newest' });
-    const [isLoadingDeals, setIsLoadingDeals] = useState(false);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -885,6 +1005,15 @@ const MobileDashboardDemo = ({
         }
     };
 
+    const { session, user, refetchProfile } = useSession();
+
+    const triggerHaptic = (pattern: any = HapticPatterns.light) => {
+        globalTriggerHaptic(pattern);
+    };
+
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
+
     // Signing states
     const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
     const [isSendingCreatorOTP, setIsSendingCreatorOTP] = useState(false);
@@ -940,6 +1069,11 @@ const MobileDashboardDemo = ({
     const actionRequiredTotalCount = pendingOffersCount + actionRequiredDealsCount;
     const activeDealsCount = activeDealsList.length;
     const completedDealsCount = completedDealsList.length;
+    const collabViews = collabAnalytics?.views.total ?? 0;
+    const collabRequestCount = collabAnalytics?.submissions.total ?? 0;
+    const collabConversion = collabAnalytics?.conversionRate.value ?? 0;
+    const creatorUpiOnFile = String(profile?.bank_upi || profileFormData.bank_upi || '').trim();
+    const creatorHasPaidDealsWithoutUpi = !!(brandDeals || []).some((deal: any) => inferCreatorRequiresPayment(deal)) && !creatorUpiOnFile;
 
     // Compute Monthly Revenue based on active deals this month
     const monthlyRevenue = React.useMemo(() => {
@@ -1075,23 +1209,80 @@ const MobileDashboardDemo = ({
         // Keep node for the app lifetime to avoid iOS unmount race conditions.
     }, []);
 
-    const { session, user, refetchProfile } = useSession();
+    useEffect(() => {
+        if (activeSettingsPage !== 'collab-link') return;
+        if (!profile?.id) return;
 
-    const triggerHaptic = (pattern: any = HapticPatterns.light) => {
-        globalTriggerHaptic(pattern);
-    };
+        let isCancelled = false;
 
-    const [isSavingProfile, setIsSavingProfile] = useState(false);
-    const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
+        const fetchCollabAnalytics = async () => {
+            setIsLoadingCollabAnalytics(true);
+            try {
+                const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError || !sessionData.session?.access_token) {
+                    if (!isCancelled) {
+                        setCollabAnalytics(null);
+                        setCollabAnalyticsSummary(null);
+                    }
+                    return;
+                }
+
+                const headers = {
+                    Authorization: `Bearer ${sessionData.session.access_token}`,
+                    'Content-Type': 'application/json',
+                };
+                const apiBaseUrl = getApiBaseUrl();
+                const [analyticsRes, summaryRes] = await Promise.all([
+                    fetch(`${apiBaseUrl}/api/collab-analytics?days=7`, { headers }),
+                    fetch(`${apiBaseUrl}/api/collab-analytics/summary`, { headers }),
+                ]);
+
+                const analyticsJson = await analyticsRes.json().catch(() => null);
+                const summaryJson = await summaryRes.json().catch(() => null);
+
+                if (isCancelled) return;
+
+                setCollabAnalytics(analyticsRes.ok && analyticsJson?.success ? analyticsJson.analytics : null);
+                setCollabAnalyticsSummary(summaryRes.ok && summaryJson?.success ? {
+                    weeklyViews: Number(summaryJson.weeklyViews || 0),
+                    totalViews: Number(summaryJson.totalViews || 0),
+                    submissions: Number(summaryJson.submissions || 0),
+                    weeklySubmissions: Number(summaryJson.weeklySubmissions || 0),
+                } : null);
+            } catch {
+                if (!isCancelled) {
+                    setCollabAnalytics(null);
+                    setCollabAnalyticsSummary(null);
+                }
+            } finally {
+                if (!isCancelled) setIsLoadingCollabAnalytics(false);
+            }
+        };
+
+        fetchCollabAnalytics();
+        return () => {
+            isCancelled = true;
+        };
+    }, [activeSettingsPage, profile?.id]);
 
     useEffect(() => {
         if (profile) {
             setProfileFormData((prev: any) => ({ ...prev, ...buildProfileFormData(profile, user?.email || null) }));
+            setPackageTemplates(
+                Array.isArray((profile as any)?.deal_templates) && (profile as any).deal_templates.length > 0
+                    ? (profile as any).deal_templates.slice(0, 3)
+                    : buildDefaultPackageTemplates(profile)
+            );
         }
     }, [profile, user?.email]);
 
     const handleSaveProfile = async () => {
         if (!session?.user?.id) return;
+        const trimmedUpi = String(profileFormData.bank_upi || '').trim();
+        if (trimmedUpi && !isValidUpiId(trimmedUpi)) {
+            toast.error('Enter a valid UPI ID like yourname@upi');
+            return;
+        }
         setIsSavingProfile(true);
         triggerHaptic(HapticPatterns.light);
         try {
@@ -1113,42 +1304,77 @@ const MobileDashboardDemo = ({
                 phone: profileFormData.phone || null,
                 bio: profileFormData.bio || null,
                 location: location,
-                media_kit_url: profileFormData.media_kit_url || null,
-                open_to_collabs: profileFormData.open_to_collabs,
-                typical_deal_size: profileFormData.typical_deal_size,
-                collaboration_preference: profileFormData.collaboration_preference,
-                avg_rate_reel: Number(profileFormData.avg_rate_reel) || null,
-                content_niches: profileFormData.content_niches,
-                deal_templates: profileFormData.deal_templates,
+                creator_category: profileFormData.creator_category?.trim() || null,
+                instagram_followers: Number(profileFormData.instagram_followers || 0) || null,
+                avg_reel_views_manual: Number(profileFormData.avg_reel_views_manual || 0) || null,
+                avg_likes_manual: Number(profileFormData.avg_likes_manual || 0) || null,
+                audience_gender_split: profileFormData.audience_gender_split?.trim() || null,
+                top_cities: String(profileFormData.top_cities || '')
+                    .split(',')
+                    .map((city) => city.trim())
+                    .filter(Boolean),
+                audience_age_range: profileFormData.audience_age_range?.trim() || null,
+                primary_audience_language: profileFormData.primary_audience_language?.trim() || null,
+                posting_frequency: profileFormData.posting_frequency?.trim() || null,
+                active_brand_collabs_month: Number(profileFormData.active_brand_collabs_month || 0) || null,
+                campaign_slot_note: profileFormData.campaign_slot_note?.trim() || null,
+                collab_intro_line: profileFormData.collab_intro_line?.trim() || null,
+                collab_region_label: profileFormData.collab_region_label?.trim() || null,
+                collab_audience_fit_note: profileFormData.collab_audience_fit_note?.trim() || null,
+                collab_recent_activity_note: profileFormData.collab_recent_activity_note?.trim() || null,
+                collab_audience_relevance_note: profileFormData.collab_audience_relevance_note?.trim() || null,
+                collab_delivery_reliability_note: profileFormData.collab_delivery_reliability_note?.trim() || null,
+                collab_response_behavior_note: profileFormData.collab_response_behavior_note?.trim() || null,
+                collab_engagement_confidence_note: profileFormData.collab_engagement_confidence_note?.trim() || null,
+                collab_cta_trust_note: profileFormData.collab_cta_trust_note?.trim() || null,
+                collab_cta_dm_note: profileFormData.collab_cta_dm_note?.trim() || null,
+                collab_cta_platform_note: profileFormData.collab_cta_platform_note?.trim() || null,
+                collab_brands_count_override: Number(profileFormData.collab_brands_count_override || 0) || null,
+                collab_response_hours_override: Number(profileFormData.collab_response_hours_override || 0) || null,
+                pricing_min: Number(profileFormData.pricing_min || 0) || null,
+                content_niches: Array.isArray(profileFormData.content_niches) ? profileFormData.content_niches : [],
+                media_kit_url: profileFormData.media_kit_url?.trim() || null,
+                past_brands: (Array.isArray(profileFormData.collab_past_work_items) ? profileFormData.collab_past_work_items : [])
+                    .map((item: any) => String(item?.brand || '').trim())
+                    .filter(Boolean),
+                recent_campaign_types: (Array.isArray(profileFormData.collab_past_work_items) ? profileFormData.collab_past_work_items : [])
+                    .map((item: any) => String(item?.campaignType || '').trim())
+                    .filter(Boolean),
+                collab_past_work_items: (Array.isArray(profileFormData.collab_past_work_items) ? profileFormData.collab_past_work_items : [])
+                    .map((item: any, index: number) => ({
+                        id: String(item?.id || `past-work-${index + 1}`),
+                        brand: String(item?.brand || '').trim(),
+                        campaignType: String(item?.campaignType || '').trim(),
+                        outcome: String(item?.outcome || '').trim(),
+                        proofLabel: String(item?.proofLabel || '').trim() || null,
+                    }))
+                    .filter((item: any) => item.brand || item.campaignType || item.outcome || item.proofLabel),
+                collab_show_packages: profileFormData.collab_show_packages !== false,
+                collab_show_trust_signals: profileFormData.collab_show_trust_signals !== false,
+                collab_show_audience_snapshot: profileFormData.collab_show_audience_snapshot !== false,
+                collab_show_past_work: profileFormData.collab_show_past_work !== false,
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
-                // NEW: Audience & Demographics
-                audience_gender_split: profileFormData.audience_gender_split || null,
-                top_cities: profileFormData.top_cities || [],
-                audience_age_range: profileFormData.audience_age_range || null,
-                primary_audience_language: profileFormData.primary_audience_language || null,
-                // NEW: Stats & Availability
-                posting_frequency: profileFormData.posting_frequency || null,
-                active_brand_collabs_month: Number(profileFormData.active_brand_collabs_month) || null,
-                past_brand_count: Number(profileFormData.past_brand_count) || null,
-                avg_reel_views_manual: Number(profileFormData.avg_reel_views_manual) || null,
-                avg_likes_manual: Number(profileFormData.avg_likes_manual) || null,
-                // NEW: Collab Professional Notes
-                collab_region_label: profileFormData.collab_region_label || null,
-                collab_audience_fit_note: profileFormData.collab_audience_fit_note || null,
-                collab_recent_activity_note: profileFormData.collab_recent_activity_note || null,
-                collab_audience_relevance_note: profileFormData.collab_audience_relevance_note || null,
-                collab_delivery_reliability_note: profileFormData.collab_delivery_reliability_note || null,
-                collab_response_behavior_note: profileFormData.collab_response_behavior_note || null,
-                campaign_slot_note: profileFormData.campaign_slot_note || null,
-                // NEW: CTA Customization
-                collab_cta_trust_note: profileFormData.collab_cta_trust_note || null,
-                collab_cta_dm_note: profileFormData.collab_cta_dm_note || null,
-                collab_cta_platform_note: profileFormData.collab_cta_platform_note || null,
-                // NEW: Public Portfolio
-                portfolio_links: profileFormData.portfolio_links || [],
-                past_brands: profileFormData.past_brands || [],
-                updated_at: new Date().toISOString(),
+                deal_templates: packageTemplates.map((template) => ({
+                    ...template,
+                    name: String(template.name || '').trim() || 'Package',
+                    description: String(template.description || '').trim() || null,
+                    deliverables: Array.isArray(template.deliverables) ? template.deliverables.filter(Boolean) : [],
+                    rate: Number(template.rate || 0) || 0,
+                    revision_count: Number(template.revision_count || 0) || 0,
+                    turnaround_days: Number(template.turnaround_days || 0) || 0,
+                    terms: String(template.terms || '').trim() || null,
+                    is_default: Boolean(template.is_default),
+                    addons: Array.isArray(template.addons)
+                        ? template.addons
+                            .map((addon) => ({
+                                id: String(addon.id || `addon_${Date.now()}`),
+                                label: String(addon.label || '').trim(),
+                                price: Number(addon.price || 0) || 0,
+                            }))
+                            .filter((addon) => addon.label)
+                        : [],
+                })),
             };
 
             const { error: coreError } = await (supabase as any)
@@ -1433,6 +1659,7 @@ const MobileDashboardDemo = ({
 
     const [showMenu, setShowMenu] = useState(false);
     const [showBrandDetails, setShowBrandDetails] = useState(false);
+    const [storefrontSection, setStorefrontSection] = useState<'profile' | 'packages' | 'audience' | 'proof' | 'settings' | 'analytics'>('profile');
 
     const handleAction = (action: string) => {
         triggerHaptic();
@@ -1493,7 +1720,7 @@ const MobileDashboardDemo = ({
                     {isSvg && (
                         <div className={cn("absolute inset-0 z-0", isDark ? "bg-white/90" : "bg-white")} />
                     )}
-                    <img alt=""
+                    <img
                         src={safeLogo}
                         className="w-full h-full object-contain absolute inset-0 z-10 p-1"
                         loading="lazy"
@@ -1514,12 +1741,15 @@ const MobileDashboardDemo = ({
     };
 
     const renderSettingsPage = () => {
+        const reelRate = Math.max(0, Number(profileFormData.avg_rate_reel || 0) || 0);
         const PageHeader = ({ title }: { title: string }) => (
             <div className={cn("px-6 pt-16 pb-6 flex items-center gap-4 bg-transparent")}>
                 <motion.button
+                    type="button"
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setActiveSettingsPage(null)}
-                    className={cn("p-2 rounded-full transition-all", isDark ? "bg-[#1C1C1E] text-white" : "bg-white text-black shadow-sm")}
+                    aria-label="Back"
+                    className={cn("relative z-10 -m-2 p-4 rounded-full transition-all touch-manipulation", isDark ? "bg-[#1C1C1E] text-white" : "bg-white text-black shadow-sm")}
                 >
                     <ChevronRight className="w-5 h-5 rotate-180" />
                 </motion.button>
@@ -1545,8 +1775,15 @@ const MobileDashboardDemo = ({
                         }}
                         className="pb-20 touch-pan-y"
                     >
-                        <PageHeader title="Personal Information" />
+                        <PageHeader title="Creator Info" />
                         <div className="px-4 space-y-6">
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Who You Are</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    This shapes your public creator identity. Brands use it to understand your niche, profile, and fit at a glance.
+                                </p>
+                            </div>
+                            <SectionHeader title="Personal Info" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
                                 <div className="p-4 space-y-4">
                                     <div className="space-y-1.5">
@@ -1581,7 +1818,7 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                             </SettingsGroup>
-                            <SectionHeader title="Account Identity" isDark={isDark} />
+                            <SectionHeader title="Public Creator Profile" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
                                 <div className="p-4 space-y-4">
                                     <div className="space-y-1.5">
@@ -1600,36 +1837,315 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                             </SettingsGroup>
+                            <p className={cn("px-4 text-[12px] opacity-50 leading-relaxed", textColor)}>
+                                Brands use this section to understand your niche, profile quality, and public-facing identity.
+                            </p>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
-                                    {isSavingProfile ? 'Saving...' : 'Save Profile'}
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Save Creator Info'}
                                 </button>
                             </div>
                         </div>
                     </motion.div>
                 );
-            case 'portfolio':
+            case 'collab-preferences':
                 return (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
-                        <PageHeader title="Public Portfolio" />
+                        <PageHeader title="Collab Preferences" />
                         <div className="px-4 space-y-6">
-                            <div className={cn("p-6 rounded-[2.5rem] border text-center relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
-                                <div className="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                    <Globe className="w-10 h-10 text-blue-500" />
-                                </div>
-                                <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
-                                <p className={cn("text-[13px] opacity-40 mb-6", textColor)}>Your public intake storefront</p>
-                                <div className="flex gap-3">
-                                    <button type="button" onClick={handleCopyStorefront} className="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
-                                    <button type="button" onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>Preview</button>
-                                </div>
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>How You Work</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    Set the rules brands should know before they send an offer, from deal type and rate expectations to collaboration availability.
+                                </p>
                             </div>
-                            <SectionHeader title="Storefront Controls" isDark={isDark} />
+                            <SectionHeader title="Availability" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
-                                <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
-                                <SettingsRow icon={<Star />} iconBg="bg-amber-400" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron onClick={() => toast("Integration coming soon!")} />
-                                <SettingsRow icon={<Link2 />} iconBg="bg-blue-500" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
+                                <SettingsRow
+                                    icon={<Handshake />}
+                                    iconBg="bg-blue-600"
+                                    label="Open for Collaborations"
+                                    subtext={profileFormData.open_to_collabs !== false ? "Brands can send you deals" : "New intake is paused"}
+                                    isDark={isDark}
+                                    textColor={textColor}
+                                    rightElement={<ToggleSwitch active={profileFormData.open_to_collabs !== false} onToggle={() => setProfileFormData((p: any) => ({ ...p, open_to_collabs: !p.open_to_collabs }))} isDark={isDark} />}
+                                />
                             </SettingsGroup>
+
+                            <SectionHeader title="Budget Expectations" isDark={isDark} />
+                            <div className="grid grid-cols-1 gap-3">
+                                {[
+                                    { key: 'starter', title: 'Starter', range: '₹2K - ₹5K', sub: 'Micro brands' },
+                                    { key: 'standard', title: 'Standard', range: '₹5K - ₹15K', sub: 'Common deals' },
+                                    { key: 'premium', title: 'Premium', range: '₹15K+', sub: 'Large campaigns' },
+                                ].map((tier) => (
+                                    <button
+                                        key={tier.key}
+                                        onClick={() => setProfileFormData((p: any) => ({ ...p, typical_deal_size: tier.key }))}
+                                        className={cn(
+                                            "p-4 rounded-2xl border text-left transition-all",
+                                            profileFormData.typical_deal_size === tier.key
+                                                ? "bg-blue-600 border-blue-600 text-white"
+                                                : (isDark ? "bg-[#1C1C1E] border-white/5 text-white" : "bg-white border-slate-100 text-black")
+                                        )}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <p className="font-bold text-sm">{tier.title}</p>
+                                            <p className={cn("text-xs font-black", profileFormData.typical_deal_size === tier.key ? "text-white/80" : "text-blue-500")}>{tier.range}</p>
+                                        </div>
+                                        <p className={cn("text-[10px] uppercase tracking-wider mt-1 opacity-60")}>{tier.sub}</p>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <SectionHeader title="Minimum Budget" isDark={isDark} />
+                            <SettingsGroup isDark={isDark}>
+                                <div className="p-4 space-y-2">
+                                    <p className={cn("text-[12px] font-medium", secondaryTextColor)}>
+                                        Offers below this amount are shown as lower-fit on your public collab page.
+                                    </p>
+                                    <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                        <span className={cn("text-[16px] font-bold", textColor)}>₹</span>
+                                        <input
+                                            className="bg-transparent outline-none font-medium text-[16px] flex-1"
+                                            value={profileFormData.pricing_min || ''}
+                                            onChange={e => setProfileFormData((p: any) => ({ ...p, pricing_min: e.target.value }))}
+                                            placeholder="5000"
+                                        />
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+
+                            <SectionHeader title="Deal Type" isDark={isDark} />
+                            <div className="flex gap-2">
+                                {['Paid', 'Barter', 'Hybrid'].map((type) => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
+                                        className={cn(
+                                            "flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all",
+                                            (profileFormData.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
+                                                ? "bg-slate-900 border-slate-900 text-white"
+                                                : (isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-500")
+                                        )}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <SectionHeader title="Default Positioning" isDark={isDark} />
+                            <SettingsGroup isDark={isDark}>
+                                <div className="p-4 space-y-4">
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Avg. Rate per Reel</p>
+                                        <div className="flex items-center gap-2 border-b py-1" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                            <span className={cn("text-[16px] font-bold", textColor)}>₹</span>
+                                            <input className="bg-transparent outline-none font-medium text-[16px] flex-1" value={profileFormData.avg_rate_reel || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, avg_rate_reel: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Content Niches</p>
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            {(profileFormData.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
+                                                <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-white/5 border-white/10 text-white" : "bg-blue-50 border-blue-100 text-blue-600")}>
+                                                    {niche}
+                                                </div>
+                                            ))}
+                                            <button className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-white/20 text-white/40" : "border-black/10 text-black/40")}>
+                                                + ADD
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+                            <p className={cn("px-4 text-[12px] opacity-50 leading-relaxed", textColor)}>
+                                These defaults help brands understand your usual collaboration style before they create a custom offer.
+                            </p>
+
+                            <div className="px-4 pt-4">
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Update Preferences'}
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
+            case 'packages':
+                return (
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
+                        <PageHeader title="Packages" />
+                        <div className="px-4 space-y-6">
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>What You Sell</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    These are the collaboration products brands can buy directly. You can edit price here, while your reel-rate anchor remains <span className="font-black">₹{(reelRate || 0).toLocaleString()}</span>.
+                                </p>
+                            </div>
+
+                            <SectionHeader title="Direct Booking Packages" isDark={isDark} />
+                            <div className="grid grid-cols-1 gap-3">
+                                {packageTemplates.map((pkg, index) => (
+                                    <div
+                                        key={pkg.id}
+                                        className={cn(
+                                            "p-5 rounded-[2rem] border relative overflow-hidden",
+                                            pkg.is_default
+                                                ? (isDark ? "bg-blue-500/10 border-blue-500/25" : "bg-blue-50 border-blue-200")
+                                                : (isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")
+                                        )}
+                                    >
+                                        {pkg.is_default && (
+                                            <span className="absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white">
+                                                Most Popular
+                                            </span>
+                                        )}
+                                        <div className="space-y-4">
+                                            <div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Package Name</p>
+                                                <input
+                                                    className={cn("w-full bg-transparent border-b py-2 outline-none font-bold text-[18px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                                    value={pkg.name || ''}
+                                                    onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, name: e.target.value } : item))}
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Description</p>
+                                                <textarea
+                                                    className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[64px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                                    value={pkg.description || ''}
+                                                    onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, description: e.target.value } : item))}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Price</p>
+                                                    <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                                        <span className={cn("text-[16px] font-bold", textColor)}>₹</span>
+                                                        <input
+                                                            className="bg-transparent outline-none font-bold text-[16px] flex-1"
+                                                            value={pkg.rate || ''}
+                                                            onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, rate: Number(e.target.value || 0) } : item))}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Turnaround</p>
+                                                    <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                                        <input
+                                                            className="bg-transparent outline-none font-bold text-[16px] flex-1"
+                                                            value={pkg.turnaround_days || ''}
+                                                            onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, turnaround_days: Number(e.target.value || 0) } : item))}
+                                                        />
+                                                        <span className={cn("text-[12px] font-bold opacity-50", textColor)}>days</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Deliverables</p>
+                                                    <input
+                                                        className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                                        value={(pkg.deliverables || []).join(', ')}
+                                                        onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, deliverables: e.target.value.split(',').map((part) => part.trim()).filter(Boolean) } : item))}
+                                                        placeholder="Reel, Story"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Revisions</p>
+                                                    <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                                        <input
+                                                            className="bg-transparent outline-none font-bold text-[16px] flex-1"
+                                                            value={pkg.revision_count || ''}
+                                                            onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, revision_count: Number(e.target.value || 0) } : item))}
+                                                        />
+                                                        <span className={cn("text-[12px] font-bold opacity-50", textColor)}>rev</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-1", textColor)}>Terms</p>
+                                                <textarea
+                                                    className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                                    value={pkg.terms || ''}
+                                                    onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, terms: e.target.value } : item))}
+                                                    placeholder="Includes 1 revision, brand tag required..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Add-ons</p>
+                                                <div className="space-y-2">
+                                                    {(pkg.addons || []).map((addon, addonIndex) => (
+                                                        <div key={addon.id} className="flex items-center gap-2">
+                                                            <input
+                                                                className={cn("flex-1 bg-transparent border-b py-2 outline-none font-medium text-[14px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                                                placeholder="Extra Story"
+                                                                value={addon.label || ''}
+                                                                onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? {
+                                                                    ...item,
+                                                                    addons: (item.addons || []).map((currentAddon, currentIndex) => currentIndex === addonIndex ? { ...currentAddon, label: e.target.value } : currentAddon)
+                                                                } : item))}
+                                                            />
+                                                            <div className="flex items-center gap-2 w-28 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                                                                <span className={cn("text-[14px] font-bold", textColor)}>₹</span>
+                                                                <input
+                                                                    className="bg-transparent outline-none font-medium text-[14px] flex-1"
+                                                                    placeholder="500"
+                                                                    value={addon.price || ''}
+                                                                    onChange={(e) => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? {
+                                                                        ...item,
+                                                                        addons: (item.addons || []).map((currentAddon, currentIndex) => currentIndex === addonIndex ? { ...currentAddon, price: Number(e.target.value || 0) } : currentAddon)
+                                                                    } : item))}
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? {
+                                                                    ...item,
+                                                                    addons: (item.addons || []).filter((_, currentIndex) => currentIndex !== addonIndex)
+                                                                } : item))}
+                                                                className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-red-300" : "text-red-500")}
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPackageTemplates((prev) => prev.map((item, itemIndex) => itemIndex === index ? {
+                                                            ...item,
+                                                            addons: [...(item.addons || []), { id: `addon_${Date.now()}_${itemIndex}`, label: '', price: 0 }]
+                                                        } : item))}
+                                                        className={cn("w-full py-3 rounded-2xl border border-dashed text-[11px] font-black uppercase tracking-widest transition-all", isDark ? "border-white/15 text-white/70 bg-white/5" : "border-slate-300 text-slate-600 bg-slate-50")}
+                                                    >
+                                                        + Add Add-on
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setPackageTemplates((prev) => prev.map((item, itemIndex) => ({ ...item, is_default: itemIndex === index })))}
+                                                className={cn(
+                                                    'w-full py-3 rounded-2xl border text-[12px] font-black uppercase tracking-widest transition-all',
+                                                    pkg.is_default
+                                                        ? (isDark ? 'bg-blue-500/15 border-blue-400/30 text-blue-200' : 'bg-blue-600 border-blue-600 text-white')
+                                                        : (isDark ? 'bg-white/5 border-white/10 text-white/70' : 'bg-white border-slate-200 text-slate-700')
+                                                )}
+                                            >
+                                                {pkg.is_default ? 'Most Popular Package' : 'Mark as Most Popular'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className={cn("px-4 text-[12px] opacity-50 leading-relaxed", textColor)}>
+                                Use clear package names, pricing, deliverables, turnaround, revisions, and terms so a brand can decide quickly.
+                            </p>
+                            <div className="px-4 pt-4">
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Save Packages'}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 );
@@ -1638,7 +2154,13 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Payout Methods" />
                         <div className="px-4 space-y-6">
-                            <SectionHeader title="Connected Payouts" isDark={isDark} />
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>How You Get Paid</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    Add payout details so approved deals can move faster and brands know where to release collaboration payments.
+                                </p>
+                            </div>
+                            <SectionHeader title="Primary Payout Details" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
                                 <div className="p-4 space-y-4">
                                     <div className="space-y-1.5">
@@ -1675,8 +2197,11 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                             </SettingsGroup>
+                            <p className={cn("px-4 text-[12px] opacity-50 leading-relaxed", textColor)}>
+                                This is where collaboration money goes. Keep it updated so approved deals can be paid without delays.
+                            </p>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Payout Details'}
                                 </button>
                             </div>
@@ -1693,7 +2218,7 @@ const MobileDashboardDemo = ({
                                     <ShieldCheck className="w-9 h-9 text-white" />
                                 </div>
                                 <h3 className={cn("text-2xl font-black tracking-tight mb-2", textColor)}>Verified Creator</h3>
-                                <p className={cn("text-sm opacity-50 leading-relaxed mb-6", textColor)}>Your identity and content ownership are secured. Brands see your 'Verified' badge, increasing trust.</p>
+                                <p className={cn("text-sm opacity-50 leading-relaxed mb-6", textColor)}>This is your trust layer. Brands see your verified status and can book with more confidence.</p>
                                 <div className="flex flex-col gap-2">
                                     <div className={cn("flex items-center gap-3 p-3 rounded-xl", isDark ? "bg-white/5" : "bg-slate-50")}>
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
@@ -1706,6 +2231,9 @@ const MobileDashboardDemo = ({
                                 </div>
                                 <ShieldCheck className="absolute -right-10 -bottom-10 w-48 h-48 opacity-[0.03] text-blue-500" />
                             </div>
+                            <p className={cn("px-4 text-[12px] opacity-50 leading-relaxed", textColor)}>
+                                Verification improves trust, reduces friction, and helps brands feel confident about proceeding.
+                            </p>
                         </div>
                     </motion.div>
                 );
@@ -1714,6 +2242,12 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Earnings & History" />
                         <div className="px-4 space-y-6">
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>What You Earned</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    Track your collaboration income, payout history, and overall revenue performance in one place.
+                                </p>
+                            </div>
                             <div className={cn("p-6 rounded-[2.5rem] bg-slate-900 border border-white/10 text-white")}>
                                 <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-50 mb-4">Total Revenue Generated</p>
                                 <div className="text-4xl font-black font-outfit mb-6">₹{allTimeRevenue.toLocaleString()}</div>
@@ -1736,633 +2270,330 @@ const MobileDashboardDemo = ({
                         </div>
                     </motion.div>
                 );
-            case 'collab-link':
+            case 'collab-link': {
                 return (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-32">
-                        <PageHeader title="Collab Link Performance" />
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-32 touch-pan-y">
+                        <PageHeader title="Storefront" />
                         <div className="px-4 space-y-6">
-                            {/* Performance Header */}
-                            <div className={cn("p-6 rounded-[2.5rem] border relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center">
-                                        <TrendingUp className="w-6 h-6 text-blue-500" />
-                                    </div>
-                                    <div className="text-right">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1", textColor)}>Overall Score</p>
-                                        <div className="flex items-baseline gap-1 justify-end">
-                                            <span className={cn("text-2xl font-black font-outfit", textColor)}>72</span>
-                                            <span className={cn("text-sm font-bold opacity-30", textColor)}>/ 100</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
-                                <div className="grid grid-cols-2 gap-2 mt-4">
-                                    <button type="button"
-                                        onClick={() => {
-                                            const link = `${window.location.origin}/${username}`;
-                                            navigator.clipboard.writeText(link);
-                                            toast.success('Link copied');
-                                            triggerHaptic();
-                                        }}
-                                        className="bg-blue-600 text-white font-black py-3 rounded-xl text-[11px] active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20"
-                                    >
-                                        Copy Link
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => {
-                                            triggerHaptic();
-                                            window.open(`/${username}`, '_blank');
-                                        }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-slate-500 uppercase tracking-widest", isDark ? "border-white/10" : "border-black/5")}
-                                    >
-                                        <ExternalLink className="w-3.5 h-3.5" /> Preview
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => {
-                                            const link = `${window.location.origin}/${username}`;
-                                            const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
-                                            window.open(`https://wa.me/?text=${message}`, '_blank');
-                                            triggerHaptic();
-                                        }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-600")}
-                                    >
-                                        <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-                                    </button>
-                                    <button type="button"
-                                        onClick={() => {
-                                            const link = `${window.location.origin}/${username}`;
-                                            navigator.clipboard.writeText(link);
-                                            toast.success('Copied! Paste in your Bio.');
-                                            triggerHaptic();
-                                        }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-pink-500/10 border-pink-500/20 text-pink-400" : "bg-pink-50 border-pink-100 text-pink-600")}
-                                    >
-                                        <Instagram className="w-3.5 h-3.5" /> Instagram
-                                    </button>
-                                </div>
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Configure Store</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    This is your creator storefront. Keep it focused on what brands can buy, why they can trust you, and how they should proceed.
+                                </p>
                             </div>
-
-                                <SectionHeader title="Status" isDark={isDark} />
-                                <SettingsGroup isDark={isDark}>
-                                    <SettingsRow
-                                        icon={<CheckCircle2 />} iconBg="bg-emerald-500"
-                                        label="Open for Collaborations"
-                                        subtext={profileFormData.open_to_collabs ? "Brands can send you offers" : "Profile currently hidden from search"}
-                                        isDark={isDark} textColor={textColor}
-                                        rightElement={
-                                            <ToggleSwitch
-                                                active={profileFormData.open_to_collabs}
-                                                onToggle={(val) => setProfileFormData((p: any) => ({ ...p, open_to_collabs: val }))}
-                                                isDark={isDark}
-                                            />
-                                        }
-                                    />
-                                </SettingsGroup>
-
-                                {/* Optimization Wizard - Moved to Collab Link */}
-                            <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-[2.5rem] p-6 border border-blue-500/20 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
-                                    <Zap className="w-16 h-16 text-blue-500 fill-blue-500" />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-9 h-9 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                            <Zap className="w-5 h-5 text-white fill-white" />
-                                        </div>
-                                        <h3 className={cn("font-black text-[17px] tracking-tight", textColor)}>Optimization Wizard</h3>
-                                    </div>
-                                    <p className={cn("text-[13px] font-medium opacity-60 mb-5 leading-relaxed", textColor)}>
-                                        Your profile conversion is currently <span className="text-blue-500 font-black">Good</span>. 
-                                        Let AI analyze your bio and historical rates to boost brand appeal.
-                                    </p>
-                                    <div className="flex flex-wrap gap-2.5">
-                                        <button type="button" 
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                toast.promise(new Promise(r => setTimeout(r, 1500)), {
-                                                    loading: 'AI analyzing your bio...',
-                                                    success: 'Bio optimized! Click "Review" to see changes.',
-                                                    error: 'Analysis failed'
-                                                });
-                                            }}
-                                            className={cn("flex-1 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95", isDark ? "bg-white/5 border border-white/10 text-white" : "bg-white border border-slate-200 text-slate-900 shadow-sm")}
+                            <div className={cn("rounded-[1.75rem] border p-2", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[
+                                        { key: 'profile', label: 'Profile' },
+                                        { key: 'packages', label: 'Packages' },
+                                        { key: 'audience', label: 'Audience' },
+                                        { key: 'proof', label: 'Proof' },
+                                        { key: 'settings', label: 'Page Settings' },
+                                        { key: 'analytics', label: 'Analytics' },
+                                    ].map((item) => (
+                                        <button
+                                            key={item.key}
+                                            type="button"
+                                            onClick={() => setStorefrontSection(item.key as any)}
+                                            className={cn(
+                                                "rounded-2xl px-3 py-3 text-[11px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
+                                                storefrontSection === item.key
+                                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                                    : (isDark ? "text-white/65 bg-white/5" : "text-slate-600 bg-slate-50")
+                                            )}
                                         >
-                                            Enhance Bio
+                                            {item.label}
                                         </button>
-                                        <button type="button" 
-                                            onClick={() => {
-                                                triggerHaptic();
-                                                toast.promise(new Promise(r => setTimeout(r, 2000)), {
-                                                    loading: 'Pricing AI calculating smart rates...',
-                                                    success: 'Smart Rates generated!',
-                                                    error: 'Pricing analysis failed'
-                                                });
-                                            }}
-                                            className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl py-3.5 text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                                        >
-                                            Smart Rates
-                                        </button>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Fiverr Packages - Moved to Collab Link */}
-                            <SectionHeader title="Collaboration Packages" isDark={isDark} />
-                            <div className="px-0">
-                                <FiverrPackageEditor 
-                                    packages={profileFormData.deal_templates || []}
-                                    onChange={(pkgs) => setProfileFormData(p => ({ ...p, deal_templates: pkgs }))}
-                                />
-                            </div>
-
-                            <SectionHeader title="Deal Size Expectations" isDark={isDark} />
-                            <div className="grid grid-cols-1 gap-2">
-                                {[
-                                    { key: 'starter', title: 'Starter Level', range: '₹2k - ₹10k', sub: 'Smaller niche brands, barter or small fees' },
-                                    { key: 'standard', title: 'Professional', range: '₹10k - ₹50k', sub: 'Mainstream brands, partial cash upfront' },
-                                    { key: 'premium', title: 'High-Value', range: '₹50k - ₹2L+', sub: 'Luxury / Corporate campaigns only' },
-                                ].map((tier) => (
-                                    <button type="button"
-                                        key={tier.key}
-                                        onClick={() => setProfileFormData((p: any) => ({ ...p, typical_deal_size: tier.key }))}
-                                        className={cn(
-                                            "p-4 rounded-2xl border text-left transition-all active:scale-[0.98]",
-                                            profileFormData.typical_deal_size === tier.key
-                                                ? "bg-blue-600 border-blue-600 text-white"
-                                                : (isDark ? "bg-[#1C1C1E] border-white/5 text-white" : "bg-white border-slate-100 text-black")
-                                        )}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <p className="font-bold text-sm">{tier.title}</p>
-                                            <p className={cn("text-xs font-black", profileFormData.typical_deal_size === tier.key ? "text-white/80" : "text-blue-500")}>{tier.range}</p>
-                                        </div>
-                                        <p className={cn("text-[10px] uppercase tracking-wider mt-1 opacity-60")}>{tier.sub}</p>
-                                    </button>
-                                ))}
-                            </div>
-
-                            <SectionHeader title="Collaboration Type" isDark={isDark} />
-                            <div className="flex gap-2">
-                                {['Paid', 'Barter', 'Hybrid'].map((type) => (
-                                    <button type="button"
-                                        key={type}
-                                        onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
-                                        className={cn(
-                                            "flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all",
-                                            (profileFormData.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
-                                                ? "bg-slate-900 border-slate-900 text-white"
-                                                : (isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-500")
-                                        )}
-                                    >
-                                        {type}
-                                    </button>
-                                ))}
-                            </div>
-
-                            <SectionHeader title="Niche Alignment" isDark={isDark} />
-                            <SettingsGroup isDark={isDark}>
-                                <div className="p-4 space-y-4">
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Content Niches</p>
-                                        <div className="flex flex-wrap gap-2 pt-2">
-                                            {(profileFormData.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
-                                                <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-white/5 border-white/10 text-white" : "bg-blue-50 border-blue-100 text-blue-600")}>
-                                                    {niche}
-                                                </div>
-                                            ))}
-                                            <button type="button" className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-white/20 text-white/40" : "border-black/10 text-black/40")}>
-                                                + ADD
-                                            </button>
-                                        </div>
+                            {storefrontSection === 'profile' && (
+                                <>
+                                    <SectionHeader title="Profile" isDark={isDark} />
+                                    <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Store Header</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            Edit the first impression brands get when they open your storefront. Keep this section short, clear, and trust-building.
+                                        </p>
                                     </div>
-                                </div>
-                            </SettingsGroup>
-
-                            {/* Audience Demographics */}
-                            <SettingsGroup title="Audience Demographics" icon={<Target className="w-5 h-5 text-purple-500" />} isDark={isDark}>
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Gender Split</p>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. 70% Women"
-                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
-                                                value={profileFormData.audience_gender_split}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, audience_gender_split: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Age Range</p>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. 18-24"
-                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
-                                                value={profileFormData.audience_age_range}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, audience_age_range: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Top Cities</p>
-                                        <div className="flex flex-wrap gap-2 mb-3">
-                                            {(profileFormData.top_cities || []).map((city: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-purple-500/10 border-purple-500/20 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.1)]" : "bg-purple-50 border-purple-100 text-purple-600")}>
-                                                    {city}
-                                                    <X className="w-3 h-3 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" onClick={() => {
-                                                        const newCities = [...profileFormData.top_cities];
-                                                        newCities.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, top_cities: newCities });
-                                                    }} />
+                                    <SettingsGroup isDark={isDark}>
+                                        <div className="p-4 space-y-4">
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Public Category</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Lifestyle creator" value={profileFormData.creator_category || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, creator_category: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Public Intro</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[64px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Write the short positioning line brands should see first." value={profileFormData.collab_intro_line || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_intro_line: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Tagline</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Example: Beauty creator for metro millennial women." value={profileFormData.collab_cta_platform_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_cta_platform_note: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Region</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="NCR (Delhi Region)" value={profileFormData.collab_region_label || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_region_label: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Fit Text</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Works best for targeted audience campaigns." value={profileFormData.collab_audience_fit_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_audience_fit_note: e.target.value }))} />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Response Time</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="3" value={profileFormData.collab_response_hours_override || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_response_hours_override: e.target.value }))} />
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <div className="relative group">
-                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="Add city & press enter..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        const target = e.target as HTMLInputElement;
-                                                        if (target.value.trim()) {
-                                                            setProfileFormData({ ...profileFormData, top_cities: [...(profileFormData.top_cities || []), target.value.trim()] });
-                                                            target.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 opacity-50 group-focus-within:opacity-100 group-focus-within:bg-emerald-500/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-emerald-400" />
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Completed Collabs</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="12" value={profileFormData.collab_brands_count_override || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_brands_count_override: e.target.value }))} />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Average Views</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="12000" value={profileFormData.avg_reel_views_manual || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, avg_reel_views_manual: e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Reliability %</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="98%" value={profileFormData.collab_engagement_confidence_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_engagement_confidence_note: e.target.value }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Media Kit Link</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="https://..." value={profileFormData.media_kit_url || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, media_kit_url: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Portfolio Link</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="https://portfolio..." value={profileFormData.collab_cta_dm_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_cta_dm_note: e.target.value }))} />
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="space-y-2 mt-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Primary Language</p>
-                                        <div className="relative group">
-                                            <Languages className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Hindi, English"
-                                                className={cn("w-full pl-11 pr-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
-                                                value={profileFormData.primary_audience_language}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, primary_audience_language: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </SettingsGroup>
+                                    </SettingsGroup>
+                                </>
+                            )}
 
-                            {/* Public Portfolio */}
-                            <SettingsGroup title="Public Portfolio" icon={<Search className="w-5 h-5 text-blue-500" />} isDark={isDark}>
-                                    <div className="space-y-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Featured Work Gallery</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-60 mb-2 pl-1", textColor)}>Add links to your top-performing Reels or Posts</p>
-                                        <div className="flex flex-col gap-2 mb-3">
-                                            {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-2 px-3 py-2.5 rounded-[1rem] border text-[11px] font-black w-full shadow-sm backdrop-blur-sm", isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-blue-50 border-blue-100 text-blue-600")}>
-                                                    <Link2 className="w-4 h-4 shrink-0 opacity-70" />
-                                                    <span className="truncate flex-1 mt-0.5">{link}</span>
-                                                    <X className="w-4 h-4 cursor-pointer shrink-0 opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
-                                                        const newLinks = [...profileFormData.portfolio_links];
-                                                        newLinks.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, portfolio_links: newLinks });
-                                                    }} />
+                            {storefrontSection === 'packages' && (
+                                <>
+                                    <SectionHeader title="Packages" isDark={isDark} />
+                                    <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Services</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            Keep package editing separate from audience and proof. Brands should understand what they can buy in seconds.
+                                        </p>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {packageTemplates.slice(0, 4).map((pkg, index) => (
+                                            <div key={pkg.id || index} className={cn("p-4 rounded-[1.75rem] border flex items-center justify-between gap-4", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                                <div className="min-w-0">
+                                                    <p className={cn("text-[15px] font-black tracking-tight", textColor)}>{pkg.name || `Package ${index + 1}`}</p>
+                                                    <p className={cn("text-[12px] mt-1", secondaryTextColor)}>{Array.isArray(pkg.deliverables) && pkg.deliverables.length > 0 ? pkg.deliverables.join(' + ') : 'Deliverables not set'}</p>
+                                                    <p className={cn("text-[11px] mt-1 font-semibold", secondaryTextColor)}>{Number(pkg.turnaround_days || 0) > 0 ? `${pkg.turnaround_days} days` : 'Turnaround not set'}</p>
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <div className="relative group">
-                                            <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
-                                            <input
-                                                type="url"
-                                                placeholder="https://instagram.com/reel/..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        const target = e.target as HTMLInputElement;
-                                                        if (target.value.trim()) {
-                                                            setProfileFormData({ ...profileFormData, portfolio_links: [...(profileFormData.portfolio_links || []), target.value.trim()] });
-                                                            target.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 opacity-50 group-focus-within:opacity-100 group-focus-within:bg-emerald-500/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-emerald-400" />
+                                                <div className="shrink-0 text-right">
+                                                    <p className={cn("text-[18px] font-black font-outfit", textColor)}>₹{Number(pkg.rate || 0).toLocaleString('en-IN')}</p>
+                                                    <button type="button" onClick={() => setActiveSettingsPage('packages')} className="mt-2 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">Edit</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+
+                            {storefrontSection === 'audience' && (
+                                <>
+                                    <SectionHeader title="Audience" isDark={isDark} />
+                                    <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Audience Snapshot</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            Fill this manually for now. This tab should answer who you reach, where they are, and why the audience is relevant.
+                                        </p>
+                                    </div>
+                                    <SettingsGroup isDark={isDark}>
+                                        <div className="p-4 space-y-4">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Followers</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="10200" value={profileFormData.instagram_followers || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, instagram_followers: e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Avg Views</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="12000" value={profileFormData.avg_reel_views_manual || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, avg_reel_views_manual: e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Engagement Rate</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="7.5%" value={profileFormData.collab_engagement_confidence_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_engagement_confidence_note: e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Age Range</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="18-24" value={profileFormData.audience_age_range || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, audience_age_range: e.target.value }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Top Cities</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Delhi, Noida, Gurgaon" value={profileFormData.top_cities || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, top_cities: e.target.value }))} />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Gender Split</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="70 women" value={profileFormData.audience_gender_split || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, audience_gender_split: e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Languages</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Hindi, English" value={profileFormData.primary_audience_language || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, primary_audience_language: e.target.value }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Description</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="High-intent metro audience for lifestyle and beauty campaigns." value={profileFormData.collab_audience_relevance_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_audience_relevance_note: e.target.value }))} />
                                             </div>
                                         </div>
+                                    </SettingsGroup>
+                                </>
+                            )}
+
+                            {storefrontSection === 'proof' && (
+                                <>
+                                    <SectionHeader title="Proof" isDark={isDark} />
+                                    <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Trust Layer</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            Use proof to reduce doubt. Add delivery reliability, response behavior, niches, and past campaigns brands can evaluate quickly.
+                                        </p>
                                     </div>
-                                    
-                                    <div className="space-y-2 pt-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Past Brands</p>
-                                        <div className="flex flex-wrap gap-2 mb-3">
-                                            {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-white/5 border-white/10 text-white shadow-sm" : "bg-slate-100 border-slate-200 text-slate-800")}>
-                                                    {brand}
-                                                    <X className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
-                                                        const newBrands = [...profileFormData.past_brands];
-                                                        newBrands.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, past_brands: newBrands });
-                                                    }} />
+                                    <SettingsGroup isDark={isDark}>
+                                        <div className="p-4 space-y-4">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Completed Collabs</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="12" value={profileFormData.collab_brands_count_override || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_brands_count_override: e.target.value }))} />
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <div className="relative group">
-                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="Add past brand & press enter..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        const target = e.target as HTMLInputElement;
-                                                        if (target.value.trim()) {
-                                                            setProfileFormData({ ...profileFormData, past_brands: [...(profileFormData.past_brands || []), target.value.trim()] });
-                                                            target.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 opacity-50 group-focus-within:opacity-100 group-focus-within:bg-emerald-500/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-emerald-400" />
+                                                <div className="space-y-1.5">
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Response Hours</p>
+                                                    <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="3" value={profileFormData.collab_response_hours_override || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_response_hours_override: e.target.value }))} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Reliability / Delivery Note</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Reliable delivery across past collaborations." value={profileFormData.collab_delivery_reliability_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_delivery_reliability_note: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Response Behavior</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Most brands receive a response within the same day." value={profileFormData.collab_response_behavior_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_response_behavior_note: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Trust CTA Text</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Creator notified instantly — no DM required." value={profileFormData.collab_cta_trust_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_cta_trust_note: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Public Niches</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Lifestyle, Beauty, Food" value={Array.isArray(profileFormData.content_niches) ? profileFormData.content_niches.join(', ') : ''} onChange={e => setProfileFormData((p: any) => ({ ...p, content_niches: e.target.value.split(',').map((item) => item.trim()).filter(Boolean) }))} />
                                             </div>
                                         </div>
-                                    </div>
-                            </SettingsGroup>
+                                    </SettingsGroup>
+                                    <SettingsGroup isDark={isDark}>
+                                        <div className="p-4 space-y-4">
+                                            <p className={cn("text-[12px] font-medium", secondaryTextColor)}>Past collaborations and case-study proof cards.</p>
+                                            {(Array.isArray(profileFormData.collab_past_work_items) ? profileFormData.collab_past_work_items : []).map((item: any, index: number) => (
+                                                <div key={item.id || index} className={cn("p-4 rounded-[1.5rem] border space-y-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50/80")}>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40", textColor)}>Proof Card {index + 1}</p>
+                                                        <button type="button" onClick={() => setProfileFormData((p: any) => ({ ...p, collab_past_work_items: (p.collab_past_work_items || []).filter((_: any, itemIndex: number) => itemIndex !== index) }))} className={cn("text-[10px] font-black uppercase tracking-widest", isDark ? "text-red-300" : "text-red-500")}>Remove</button>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 gap-3">
+                                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[15px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Brand name" value={item.brand || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_past_work_items: (p.collab_past_work_items || []).map((current: any, currentIndex: number) => currentIndex === index ? { ...current, brand: e.target.value } : current) }))} />
+                                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[15px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Campaign type" value={item.campaignType || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_past_work_items: (p.collab_past_work_items || []).map((current: any, currentIndex: number) => currentIndex === index ? { ...current, campaignType: e.target.value } : current) }))} />
+                                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[15px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Proof label" value={item.proofLabel || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_past_work_items: (p.collab_past_work_items || []).map((current: any, currentIndex: number) => currentIndex === index ? { ...current, proofLabel: e.target.value } : current) }))} />
+                                                        <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[64px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Outcome or result brands should notice" value={item.outcome || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_past_work_items: (p.collab_past_work_items || []).map((current: any, currentIndex: number) => currentIndex === index ? { ...current, outcome: e.target.value } : current) }))} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <button type="button" onClick={() => setProfileFormData((p: any) => ({ ...p, collab_past_work_items: [...(p.collab_past_work_items || []), { id: `past-work-${Date.now()}`, brand: '', campaignType: '', outcome: '', proofLabel: '' }] }))} className={cn("w-full py-3 rounded-2xl border border-dashed text-[11px] font-black uppercase tracking-widest transition-all", isDark ? "border-white/15 text-white/70 bg-white/5" : "border-slate-300 text-slate-600 bg-slate-50")}>+ Add Proof Card</button>
+                                        </div>
+                                    </SettingsGroup>
+                                </>
+                            )}
 
-                            {/* Performance & Availability */}
-                            <SettingsGroup title="Performance & Availability" icon={<Zap className="w-5 h-5 text-amber-500" />} isDark={isDark}>
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Monthly Slots</p>
-                                            <input
-                                                type="number"
-                                                placeholder="e.g. 5"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                                value={profileFormData.active_brand_collabs_month}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, active_brand_collabs_month: e.target.value })}
-                                            />
+                            {storefrontSection === 'settings' && (
+                                <>
+                                    <SectionHeader title="Page Settings" isDark={isDark} />
+                                    <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Display</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            This tab controls storefront visibility and buying behavior. Keep it limited to toggles, CTA copy, budget rules, and your public link.
+                                        </p>
+                                    </div>
+                                    <SettingsGroup isDark={isDark}>
+                                        <div className="p-4 space-y-4">
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Minimum Budget</p>
+                                                <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="5000" value={profileFormData.pricing_min || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, pricing_min: e.target.value }))} />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Primary CTA Text</p>
+                                                <textarea className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[14px] resize-none min-h-[56px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Send campaign details to get a package or custom quote." value={profileFormData.collab_cta_trust_note || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, collab_cta_trust_note: e.target.value }))} />
+                                            </div>
+                                            {[
+                                                { key: 'packages', label: 'Show Packages', subtext: 'Display direct booking packages first' },
+                                                { key: 'trust', label: 'Show Trust Section', subtext: 'Display trust and proof blocks' },
+                                                { key: 'audience', label: 'Show Audience Snapshot', subtext: 'Display audience fit and audience data' },
+                                                { key: 'pastWork', label: 'Show Past Work', subtext: 'Display case studies and collaborations' },
+                                            ].map((item) => (
+                                                <SettingsRow key={item.key} icon={<Eye />} iconBg="bg-slate-500" label={item.label} subtext={item.subtext} isDark={isDark} textColor={textColor} rightElement={<ToggleSwitch active={item.key === 'packages' ? profileFormData.collab_show_packages !== false : item.key === 'trust' ? profileFormData.collab_show_trust_signals !== false : item.key === 'audience' ? profileFormData.collab_show_audience_snapshot !== false : profileFormData.collab_show_past_work !== false} onToggle={() => setProfileFormData((p: any) => ({ ...p, [item.key === 'packages' ? 'collab_show_packages' : item.key === 'trust' ? 'collab_show_trust_signals' : item.key === 'audience' ? 'collab_show_audience_snapshot' : 'collab_show_past_work']: !(item.key === 'packages' ? p.collab_show_packages !== false : item.key === 'trust' ? p.collab_show_trust_signals !== false : item.key === 'audience' ? p.collab_show_audience_snapshot !== false : p.collab_show_past_work !== false) }))} isDark={isDark} />} />
+                                            ))}
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Past Campaigns</p>
-                                            <input
-                                                type="number"
-                                                placeholder="e.g. 12"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                                value={profileFormData.past_brand_count}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, past_brand_count: e.target.value })}
-                                            />
+                                    </SettingsGroup>
+                                    <div className={cn("p-5 rounded-[2rem] border space-y-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40", textColor)}>Collab Link</p>
+                                                <p className={cn("text-[15px] font-bold mt-1", textColor)}>creatorarmour.com/{username}</p>
+                                            </div>
+                                            <button onClick={() => { const link = `${window.location.origin}/${username}`; navigator.clipboard.writeText(link); toast.success('Link copied'); triggerHaptic(); }} className="px-3 py-2 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">Copy Link</button>
                                         </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Posting Frequency</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. 3-4 times / week"
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                            value={profileFormData.posting_frequency}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, posting_frequency: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Self-Reported Views</p>
-                                            <input
-                                                type="number"
-                                                placeholder="Avg Views"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                                value={profileFormData.avg_reel_views_manual}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, avg_reel_views_manual: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Self-Reported Likes</p>
-                                            <input
-                                                type="number"
-                                                placeholder="Avg Likes"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                                value={profileFormData.avg_likes_manual}
-                                                onChange={(e) => setProfileFormData({ ...profileFormData, avg_likes_manual: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </SettingsGroup>
+                                </>
+                            )}
 
-                            {/* Trust & Professional Notes */}
-                            <SettingsGroup title="Professional Collab Notes" icon={<ShieldCheck className="w-5 h-5 text-emerald-500" />} isDark={isDark}>
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Relevance Note</p>
-                                        <textarea
-                                            placeholder="e.g. Strong relevance for North India beauty enthusiasts."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold min-h-[80px]", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                            value={profileFormData.collab_audience_relevance_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_audience_relevance_note: e.target.value })}
-                                        />
+                            {storefrontSection === 'analytics' && (
+                                <>
+                                    <SectionHeader title="Analytics" isDark={isDark} />
+                                    <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Performance</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            Analytics stays separate from editing. Use it to track how the storefront performs without turning the editor into an analytics page.
+                                        </p>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Response Policy</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Brands receive response same day"
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                            value={profileFormData.collab_response_behavior_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_response_behavior_note: e.target.value })}
-                                        />
+                                    <div className={cn("p-5 rounded-[2rem] border space-y-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Views</p>
+                                                <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabViews}</p>
+                                            </div>
+                                            <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Offers</p>
+                                                <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabRequestCount}</p>
+                                            </div>
+                                            <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Conversion</p>
+                                                <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabConversion.toFixed(1)}%</p>
+                                            </div>
+                                        </div>
+                                        <p className={cn("text-[12px] font-medium leading-relaxed", secondaryTextColor)}>
+                                            Analytics stays separate from editing so the storefront editor stays focused and lighter.
+                                        </p>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>DM Policy</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. No DMs required — I reply here."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                            value={profileFormData.collab_cta_dm_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_dm_note: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Notification Policy</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Creator notified instantly."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                            value={profileFormData.collab_cta_trust_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_trust_note: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Platform Model</p>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Direct collaboration — no middle agency."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
-                                            value={profileFormData.collab_cta_platform_note}
-                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_platform_note: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </SettingsGroup>
+                                </>
+                            )}
 
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
-                                    {isSavingProfile ? 'Saving...' : 'Save All Collab Settings'}
+                            <div className="px-4 pt-2">
+                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                    {isSavingProfile ? 'Saving...' : 'Save Storefront'}
                                 </button>
-                        {/* Analytics Grid */}
-                            <SectionHeader title="Performance Metrics" isDark={isDark} />
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Views</p>
-                                    <div className={cn("text-2xl font-black font-outfit", textColor)}>274</div>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-emerald-400" />
-                                        <span className="text-[10px] font-bold text-emerald-400">+12%</span>
-                                    </div>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Requests</p>
-                                    <div className={cn("text-2xl font-black font-outfit", textColor)}>14</div>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-emerald-400" />
-                                        <span className="text-[10px] font-bold text-emerald-400">+8%</span>
-                                    </div>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Conv.</p>
-                                    <div className={cn("text-2xl font-black font-outfit", textColor)}>5.1%</div>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-amber-500 rotate-180" />
-                                        <span className="text-[10px] font-bold text-amber-500">-2%</span>
-                                    </div>
-                                </div>
                             </div>
-
-                            {/* Weekly Trend Chart (SVG) */}
-                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                <div className="flex items-center justify-between mb-6">
-                                    <h4 className={cn("text-sm font-black uppercase tracking-wider opacity-40", textColor)}>Weekly Traffic</h4>
-                                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400")}>Last 7 Days</span>
-                                </div>
-                                <div className="h-24 w-full relative">
-                                    <svg viewBox="0 0 100 40" className="w-full h-full">
-                                        <defs>
-                                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.4" />
-                                                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                        <path
-                                            d="M0,35 Q10,30 20,25 T40,28 T60,15 T80,18 T100,5"
-                                            fill="none"
-                                            stroke="#3B82F6"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                        />
-                                        <path
-                                            d="M0,35 Q10,30 20,25 T40,28 T60,15 T80,18 T100,5 L100,40 L0,40 Z"
-                                            fill="url(#chartGradient)"
-                                        />
-                                    </svg>
-                                    <div className="absolute inset-x-0 bottom-0 flex justify-between text-[8px] font-bold opacity-30 mt-2 px-1">
-                                        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Conversion insights */}
-                            <SectionHeader title="Conversion Funnel" isDark={isDark} />
-                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><Eye className="w-4 h-4 text-blue-500" /></div>
-                                            <p className={cn("text-sm font-bold", textColor)}>Profile Views</p>
-                                        </div>
-                                        <p className={cn("text-sm font-black font-outfit", textColor)}>843</p>
-                                    </div>
-                                    <div className="flex items-center justify-between relative">
-                                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0.5 h-12 bg-slate-500/10" />
-                                        <div className="flex items-center gap-3 ml-2">
-                                            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><Handshake className="w-4 h-4 text-amber-500" /></div>
-                                            <p className={cn("text-sm font-bold", textColor)}>Started Form</p>
-                                        </div>
-                                        <p className={cn("text-sm font-black font-outfit", textColor)}>92</p>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-emerald-500" /></div>
-                                            <p className={cn("text-sm font-bold", textColor)}>Completed Deals</p>
-                                        </div>
-                                        <p className={cn("text-sm font-black font-outfit", textColor)}>14</p>
-                                    </div>
-                                </div>
-                                <div className={cn("mt-6 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-center gap-2")}>
-                                    <Zap className="w-3.5 h-3.5 text-amber-500" />
-                                    <p className="text-[10px] font-black tracking-tight text-amber-600">Brands checking profile but not converting. Try adding Audience Stats.</p>
-                                </div>
-                            </div>
-
-                            {/* Optimization Tips */}
-                            <SectionHeader title="Boost Your Conversions" isDark={isDark} />
-                            <div className="grid grid-cols-1 gap-3">
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
-                                    <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <BarChart3 className="w-5 h-5 text-indigo-500" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Add Audience Stats</p>
-                                        <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Brands verify niche alignment via demographics</p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-blue-500">+12% SCORE</span>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
-                                    <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <Star className="w-5 h-5 text-emerald-500" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Link Top Collaborations</p>
-                                        <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Showcase high-performing past brand deals</p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-blue-500">+8% SCORE</span>
-                                </div>
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
-                                    <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <CreditCard className="w-5 h-5 text-amber-500" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Set Rate Expectations</p>
-                                        <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Filter out low-budget offers automatically</p>
-                                    </div>
-                                    <span className="text-[10px] font-black text-blue-500">+5% SCORE</span>
-                                </div>
-                            </div>
-
-                            {/* AI Brand Match - KILLER FEATURE */}
-                            <SectionHeader title="AI Recommended Brands" isDark={isDark} />
-                            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-                                {[
-                                    { name: 'boAt', logo: 'B', color: 'bg-violet-600' },
-                                    { name: 'MamaEarth', logo: 'M', color: 'bg-teal-600' },
-                                    { name: 'Lenskart', logo: 'L', color: 'bg-emerald-600' },
-                                    { name: 'Nykaa', logo: 'N', color: 'bg-pink-600' },
-                                ].map((brand, i) => (
-                                    <div key={i} className={cn("w-32 shrink-0 p-4 rounded-3xl border text-center transition-all", isDark ? "bg-[#1C1C1E] border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 text-white font-black text-xl shadow-lg", brand.color)}>
-                                            {brand.logo}
-                                        </div>
-                                        <p className={cn("text-[13px] font-black tracking-tight mb-1", textColor)}>{brand.name}</p>
-                                        <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">94% Match</p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button type="button" className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
-                                <Zap className="w-4 h-4 fill-white" /> Upgrade To Growth Pro
-                            </button>
                         </div>
                     </motion.div>
                 );
+            }
             case 'dark-mode':
                 return (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
@@ -2377,7 +2608,7 @@ const MobileDashboardDemo = ({
                                     rightElement={<ToggleSwitch active={isDark} onToggle={toggleTheme} isDark={isDark} />}
                                 />
                             </SettingsGroup>
-                            <p className={cn("px-4 text-[13px] opacity-40 leading-relaxed", textColor)}>Choose between light and dark themes. We recommend dark mode to save eye strain and battery life.</p>
+                            <p className={cn("px-4 text-[13px] opacity-40 leading-relaxed", textColor)}>Choose how Creator Armour looks on your device.</p>
                         </div>
                     </motion.div>
                 );
@@ -2386,6 +2617,12 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Notifications" />
                         <div className="px-4 space-y-6">
+                            <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Stay Updated</p>
+                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                    Get notified when new deals, signatures, approvals, and payment updates require your attention.
+                                </p>
+                            </div>
                             <SectionHeader title="Deal Alerts" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
                                 <SettingsRow
@@ -2436,7 +2673,7 @@ const MobileDashboardDemo = ({
                                     }
                                 />
                                 {isPushSubscribed && (
-                                    <button type="button"
+                                    <button
                                         onClick={async () => {
                                             triggerHaptic();
                                             const res = await sendTestPush();
@@ -2469,7 +2706,7 @@ const MobileDashboardDemo = ({
                                         </p>
                                     )}
                                 </div>
-                                <button type="button"
+                                <button
                                     type="button"
                                     onClick={async () => {
                                         triggerHaptic();
@@ -2507,7 +2744,7 @@ const MobileDashboardDemo = ({
                         </div>
                         <h3 className={cn("text-xl font-bold mb-2", textColor)}>Refining Module</h3>
                         <p className={cn("opacity-40 text-sm leading-relaxed mb-8", textColor)}>We're fine-tuning this control center for your creator business.</p>
-                        <button type="button"
+                        <button
                             onClick={() => setActiveSettingsPage(null)}
                             className="bg-blue-600 text-white font-black px-10 py-4 rounded-2xl active:scale-95 transition-all text-[13px] uppercase tracking-widest"
                         >
@@ -2597,40 +2834,11 @@ const MobileDashboardDemo = ({
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
-                            {/* Complete Your Collab Link Banner */}
-                            {profile && (!profile.onboarding_complete || !profile.instagram_handle) && (
-                                <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
-                                            <ShieldCheck className="w-5 h-5 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[14px] font-bold text-slate-900">Complete Your Collab Link</p>
-                                            <p className="text-[12px] text-slate-500">Brands can't find you yet</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {!profile.instagram_handle && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add Instagram</button>
-                                        )}
-                                        {!profile.bio && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add intro line</button>
-                                        )}
-                                        {(!profile.pricing_min && !profile.avg_rate_reel) && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Set rates</button>
-                                        )}
-                                        {!profile.bank_upi && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add payout</button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
                             {/* Command Header */}
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">
                                     {/* Left: Sidebar Menu */}
-                                    <button type="button" onClick={() => handleAction('menu')} className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
+                                    <button onClick={() => handleAction('menu')} className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
                                         <Menu className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
 
@@ -2668,7 +2876,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
 
                                         {/* Bell */}
-                                        <button type="button" onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
+                                        <button onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
                                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white" style={{ borderColor: bgColor }}>
@@ -2678,7 +2886,7 @@ const MobileDashboardDemo = ({
                                         </button>
 
                                         {/* Avatar */}
-                                        <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                        <button onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
                                             <img
                                                 src={avatarUrl}
                                                 alt="avatar"
@@ -2723,7 +2931,7 @@ const MobileDashboardDemo = ({
                                                     Get instant notifications when a brand sends you a collaboration request.
                                                 </p>
                                                 <div className="mt-4 flex gap-2">
-                                                    <button type="button"
+                                                    <button
                                                         type="button"
                                                         onClick={async () => {
                                                             triggerHaptic();
@@ -2743,7 +2951,7 @@ const MobileDashboardDemo = ({
                                                     >
                                                         Enable
                                                     </button>
-                                                    <button type="button"
+                                                    <button
                                                         type="button"
                                                         onClick={() => {
                                                             triggerHaptic();
@@ -2805,7 +3013,7 @@ const MobileDashboardDemo = ({
                                                 </div>
 
                                                 <div className="flex gap-2">
-                                                    <button type="button"
+                                                    <button
                                                         onClick={() => {
                                                             handleCopyStorefront();
                                                         }}
@@ -2818,7 +3026,7 @@ const MobileDashboardDemo = ({
                                                     >
                                                         {isCollabLinkCopied ? 'Copied' : 'Copy Link'}
                                                     </button>
-                                                    <button type="button"
+                                                    <button
                                                         onClick={() => window.open(`/${profile?.handle || username || 'creator'}`, '_blank')}
                                                         className={cn("flex-1 h-12 rounded-2xl flex items-center justify-center border font-bold text-[12px] active:scale-95 transition-all whitespace-nowrap", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700")}
                                                     >
@@ -2951,7 +3159,7 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             <div className="flex gap-2.5">
-                                                <button type="button"
+                                                <button
                                                     onClick={handleCopyStorefront}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
@@ -2961,7 +3169,7 @@ const MobileDashboardDemo = ({
                                                     <Copy className="w-4 h-4 mb-2 opacity-60" />
                                                     <span className={cn("text-[11px] font-bold font-outfit", textColor)}>Copy Bio Link</span>
                                                 </button>
-                                                <button type="button"
+                                                <button
                                                     onClick={handleCopyDMReply}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
@@ -2981,82 +3189,10 @@ const MobileDashboardDemo = ({
                                 </>
                             )}
 
-                            {/* Dashboard Metrics Cards */}
-                            <div className="px-5 mb-8">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="mb-4"
-                                >
-                                    <h3 className={cn('text-sm font-bold tracking-tight mb-3', textColor)}>Your Performance</h3>
-                                </motion.div>
-                                <DashboardMetricsCards
-                                    totalDealValue={brandDeals?.reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
-                                    activeDealCount={activeDealsCount}
-                                    outstandingPayments={brandDeals?.filter((d: any) => {
-                                        const s = (d.status || '').toLowerCase();
-                                        return s.includes('payment_pending') || s.includes('payment_awaiting');
-                                    }).reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
-                                    avgDealDuration={30}
-                                    isDark={isDark}
-                                />
-                            </div>
-
-                            {/* Deal Search & Filter */}
-                            <div className="px-5 mb-8">
-                                <DealSearchFilter
-                                    onSearch={(query) => setSearchQuery(query)}
-                                    onFilterChange={(filters) => setDealFilters(filters)}
-                                    isDark={isDark}
-                                    totalDeals={brandDeals?.length || 0}
-                                />
-                            </div>
-
-                            {/* Enhanced Insights */}
-                            <div className="px-5 mb-8">
-                                <EnhancedInsights isDark={isDark} />
-                            </div>
-
-                            {/* Activity Feed */}
-                            <div className="px-5 mb-8">
-                                <ActivityFeed isDark={isDark} maxItems={4} />
-                            </div>
-
-                            {/* Payment Timeline */}
-                            <div className="px-5 mb-8">
-                                <PaymentTimeline isDark={isDark} maxItems={5} />
-                            </div>
-
-                            {/* Achievement Badges */}
-                            <div className="px-5 mb-8">
-                                <AchievementBadges isDark={isDark} showUnlocked={true} />
-                            </div>
-
-                            {/* Deal Status Flow */}
-                            <div className="px-5 mb-8">
-                                <DealStatusFlow isDark={isDark} />
-                            </div>
-
-                            {/* Deal Timeline View */}
-                            <div className="px-5 mb-8">
-                                <DealTimelineView isDark={isDark} />
-                            </div>
-
-                            {/* Smart Notifications Center */}
-                            <div className="px-5 mb-8">
-                                <SmartNotificationsCenter isDark={isDark} />
-                            </div>
-
-                            {/* Deal Comparison */}
-                            <div className="px-5 mb-8">
-                                <DealComparison isDark={isDark} />
-                            </div>
-
                             {/* Brand Offers Section */}
-                             <div className="px-5 mb-8">
+                            <div className="px-5 mb-8">
                                 <div className="flex items-center justify-between mb-5">
-                                    <h2 className={cn('text-[16px] font-medium tracking-tight', textColor)}>Active Collaborations</h2>
+                                    <h2 className={cn('text-[16px] font-medium tracking-tight', textColor)}>Active Brand Offers</h2>
                                 </div>
 
                                 <AnimatePresence mode="popLayout">
@@ -3073,31 +3209,24 @@ const MobileDashboardDemo = ({
 	                                            status: 'new',
 	                                            isDemo: true
 	                                        };
-	                                        const displayOffers = [
-	                                            ...(collabRequests || []),
-	                                            ...(brandDeals || [])
-	                                                .filter(d => {
-	                                                    const s = (d.status || '').toLowerCase();
-	                                                    return s !== 'completed' && s !== 'cancelled';
-	                                                })
-	                                                .map(d => ({ ...d, isConfirmedDeal: true }))
-	                                                .slice(0, 5)
-	                                        ];
-	                                        
-	                                        if (displayOffers.length === 0 && isDemoOfferEnabled) {
-	                                            displayOffers.push(fakeDemoOffer);
-	                                        }
+	                                        const displayOffers =
+	                                            collabRequests.length > 0
+	                                                ? collabRequests
+	                                                : (isDemoOfferEnabled ? [fakeDemoOffer] : []);
 	                                        return (
 	                                            <div className="space-y-10">
 	                                                {displayOffers.length === 0 ? (
-	                                                    <EnhancedEmptyStates
-	                                                        type="no-deals"
-	                                                        isDark={isDark}
-	                                                        onAction={() => {
-	                                                            triggerHaptic();
-	                                                            handleCopyStorefront();
-	                                                        }}
-	                                                    />
+	                                                    <div
+	                                                        className={cn(
+	                                                            "p-6 rounded-[20px] border text-center",
+	                                                            isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm"
+	                                                        )}
+	                                                    >
+	                                                        <p className={cn("text-[13px] font-semibold", textColor)}>No offers yet</p>
+	                                                        <p className={cn("text-[12px] mt-1 opacity-60", textColor)}>
+	                                                            Share your collab link to start receiving protected offers.
+	                                                        </p>
+	                                                    </div>
 	                                                ) : null}
 	                                                {displayOffers.map((req: any, idx) => {
 	                                                    // Format deliverables accurately
@@ -3133,8 +3262,8 @@ const MobileDashboardDemo = ({
 
                                                     // Determine Deadline text
                                                     let deadlineText = '';
-                                                    if (req.deadline || req.due_date) {
-                                                        const dDate = new Date(req.deadline || req.due_date);
+                                                    if (req.deadline) {
+                                                        const dDate = new Date(req.deadline);
                                                         const diffDays = Math.ceil((dDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                                                         deadlineText = diffDays > 0 ? `${diffDays}d left` : 'Past Due';
                                                     }
@@ -3147,10 +3276,10 @@ const MobileDashboardDemo = ({
                                                             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
                                                             whileTap={{ scale: 0.98 }}
                                                             onTap={() => {
-                                                                console.log("Card tapped: (main block)", req);
+                                                                console.log("Card tapped: pending offer (main block)", req);
                                                                 triggerHaptic();
                                                                 setSelectedItem(req);
-                                                                setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer');
+                                                                setSelectedType('offer');
                                                             }}
                                                             className={cn(
                                                                 'rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.99] relative',
@@ -3188,11 +3317,7 @@ const MobileDashboardDemo = ({
                                                                             <p className={cn("text-[15px] font-bold leading-tight truncate", isDark ? "text-white" : "text-slate-900")}>
                                                                                 {(req.brand_name || 'Brand').replace(/\s*\(Barter Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
                                                                             </p>
-                                                                            {req.isConfirmedDeal ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/15">
-                                                                                    🔥 Active
-                                                                                </span>
-                                                                            ) : req.collab_type === 'barter' ? (
+                                                                            {req.collab_type === 'barter' ? (
                                                                                 <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-500 border border-amber-500/20">
                                                                                     🎁 Barter
                                                                                 </span>
@@ -3224,7 +3349,7 @@ const MobileDashboardDemo = ({
                                                                     {/* Budget — more prominent */}
                                                                     <div className="shrink-0 text-right">
                                                                         <p className={cn("text-[20px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
-                                                                            {req.exact_budget || req.deal_amount ? `₹${(req.exact_budget || req.deal_amount).toLocaleString()}`
+                                                                            {req.exact_budget ? formatCurrency(req.exact_budget)
                                                                                 : req.barter_value ? `₹${(req.barter_value / 1000).toFixed(0)}K`
                                                                                     : (req.budget_range || '₹75K')}
                                                                         </p>
@@ -3248,7 +3373,7 @@ const MobileDashboardDemo = ({
                                                                         "px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all",
                                                                         isDark ? "bg-slate-800/50 border-slate-700/50 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"
                                                                     )}>
-                                                                        📅 {(req.deadline || req.due_date) ? new Date(req.deadline || req.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
+                                                                        📅 {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
                                                                     </span>
                                                                     {deadlineText && (
                                                                         <span className={cn(
@@ -3262,8 +3387,8 @@ const MobileDashboardDemo = ({
 
                                                                 {/* Row 3: Action buttons */}
                                                                 <div className="flex gap-2">
-                                                                    <button type="button"
-                                                                        onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer'); }}
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
                                                                         className={cn(
                                                                             "flex-1 h-11 rounded-xl font-semibold text-[12px] border transition-all active:scale-[0.96]",
                                                                             isDark
@@ -3273,33 +3398,33 @@ const MobileDashboardDemo = ({
                                                                     >
                                                                         Details
                                                                     </button>
-                                                                    {!req.isConfirmedDeal && (
-                                                                        <button type="button"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                if (req.isDemo) {
-                                                                                    toast.success("This is a demo offer! Complete your profile to get real brand deals.");
-                                                                                    triggerHaptic(HapticPatterns.success);
-                                                                                    return;
-                                                                                }
-                                                                                handleAccept(req);
-                                                                            }}
-                                                                            disabled={processingDeal === req.id}
-                                                                            className={cn(
-                                                                                "flex-1 h-11 rounded-xl font-bold text-[12px] text-white transition-all flex items-center justify-center gap-1.5 active:scale-[0.96] disabled:opacity-50 shadow-lg",
-                                                                                req.collab_type === 'barter'
-                                                                                    ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/25"
-                                                                                    : "bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-blue-500/25"
-                                                                            )}
-                                                                        >
-                                                                            {processingDeal === req.id ? (
-                                                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                                            ) : (
-                                                                                'Accept Offer'
-                                                                            )}
-                                                                        </button>
-                                                                    )}
-
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            if (req.isDemo) {
+                                                                                toast.success("This is a demo offer! Complete your profile to get real brand deals.");
+                                                                                triggerHaptic(HapticPatterns.success);
+                                                                                return;
+                                                                            }
+                                                                            handleAccept(req);
+                                                                        }}
+                                                                        disabled={processingDeal === req.id}
+                                                                        className={cn(
+                                                                            "flex-1 h-11 rounded-xl font-bold text-[12px] text-white transition-all flex items-center justify-center gap-1.5 active:scale-[0.96] disabled:opacity-50 shadow-lg",
+                                                                            req.collab_type === 'barter'
+                                                                                ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/25"
+                                                                                : "bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-blue-500/25"
+                                                                        )}
+                                                                    >
+                                                                        {processingDeal === req.id ? (
+                                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                                        ) : (
+                                                                            <>
+                                                                                {req.collab_type === 'barter' ? '🎁 Accept Product Collab' : req.collab_type === 'hybrid' ? '🤝 Accept Hybrid Deal' : 'Accept Deal'}
+                                                                                <ArrowRight className="w-3.5 h-3.5" />
+                                                                            </>
+                                                                        )}
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </motion.div>
@@ -3322,7 +3447,7 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-white/10" : "bg-white/80 backdrop-blur-xl border-b border-slate-100"
                             )}>
                                 <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                    <button type="button"
+                                    <button
                                         onClick={() => {
                                             triggerHaptic();
                                             setCollabSubTab('pending');
@@ -3341,7 +3466,7 @@ const MobileDashboardDemo = ({
                                     >
                                         Action required ({actionRequiredTotalCount})
                                     </button>
-                                    <button type="button"
+                                    <button
                                         onClick={() => {
                                             triggerHaptic();
                                             setCollabSubTab('active');
@@ -3360,7 +3485,7 @@ const MobileDashboardDemo = ({
                                     >
                                         Active ({activeDealsCount})
                                     </button>
-                                    <button type="button"
+                                    <button
                                         onClick={() => {
                                             triggerHaptic();
                                             setCollabSubTab('completed');
@@ -3496,7 +3621,7 @@ const MobileDashboardDemo = ({
                                                                     };
 
                                                                     return (
-                                                                        <button type="button"
+                                                                        <button
                                                                             key={it.label}
                                                                             type="button"
                                                                             onClick={(e) => {
@@ -3513,8 +3638,35 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     );
                                                 })()}
+                                                {creatorHasPaidDealsWithoutUpi && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            triggerHaptic();
+                                                            setActiveTab('profile');
+                                                            setActiveSettingsPage('payouts');
+                                                        }}
+                                                        className={cn(
+                                                            "w-full rounded-2xl border p-4 text-left transition-all active:scale-[0.99]",
+                                                            isDark ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50"
+                                                        )}
+                                                    >
+                                                        <div className="flex items-start gap-3">
+                                                            <AlertTriangle className={cn("mt-0.5 h-5 w-5 shrink-0", isDark ? "text-amber-200" : "text-amber-700")} />
+                                                            <div>
+                                                                <p className={cn("text-[13px] font-black uppercase tracking-widest", isDark ? "text-amber-100" : "text-amber-800")}>
+                                                                    Add UPI To Get Paid
+                                                                </p>
+                                                                <p className={cn("mt-1 text-[13px] font-semibold", isDark ? "text-amber-100/85" : "text-amber-900/80")}>
+                                                                    You have paid collaborations. Add your UPI ID before brands release payment.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </button>
+                                                )}
                                                 {activeDealsList.slice(0, 10).map((deal: any, idx: number) => {
                                                     const ux = getCreatorDealCardUX(deal);
+                                                    const obligationBadges = getCreatorObligationBadges(deal);
 
                                                     return (
                                                         <motion.div
@@ -3591,6 +3743,20 @@ const MobileDashboardDemo = ({
                                                                             </p>
                                                                         </div>
 
+                                                                        <div className="mb-3 flex flex-wrap gap-2">
+                                                                            {obligationBadges.map((badge) => (
+                                                                                <span
+                                                                                    key={badge}
+                                                                                    className={cn(
+                                                                                        "rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em]",
+                                                                                        isDark ? "border-white/10 bg-white/5 text-white/80" : "border-slate-200 bg-slate-50 text-slate-700"
+                                                                                    )}
+                                                                                >
+                                                                                    {badge}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+
                                                                         <p className={cn(
                                                                             "text-[12px] font-bold mb-3",
                                                                             ux.needsSignature
@@ -3626,7 +3792,7 @@ const MobileDashboardDemo = ({
                                                                             </span>
                                                                         </div>
 
-	                                                                        <button type="button"
+	                                                                        <button
 	                                                                            type="button"
 	                                                                            onPointerDown={(e) => e.stopPropagation()}
 	                                                                            onClick={(e) => {
@@ -3652,14 +3818,10 @@ const MobileDashboardDemo = ({
                                                 })}
                                             </div>
                                         ) : (
-                                            <EnhancedEmptyStates
-                                                type="no-active-deals"
-                                                isDark={isDark}
-                                                onAction={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('home');
-                                                }}
-                                            />
+                                            <div className="text-center py-8">
+                                                <Briefcase className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
+                                                <p className={cn("text-sm", secondaryTextColor)}>No active deals yet.</p>
+                                            </div>
                                         )}
                                     </motion.div>
                                 ) : collabSubTab === 'completed' ? (
@@ -3681,6 +3843,7 @@ const MobileDashboardDemo = ({
                                             <div className="space-y-4">
                                                 {completedDealsList.slice(0, 10).map((deal: any, idx: number) => {
                                                     const ux = getCreatorDealCardUX(deal);
+                                                    const obligationBadges = getCreatorObligationBadges(deal);
                                                     return (
                                                         <motion.div
                                                             key={idx}
@@ -3717,7 +3880,20 @@ const MobileDashboardDemo = ({
                                                             <div className={cn("text-[11px] font-semibold", isDark ? "text-emerald-300" : "text-emerald-700")}>
                                                                 ✅ Completed
                                                             </div>
-                                                            <button type="button"
+                                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                                {obligationBadges.map((badge) => (
+                                                                    <span
+                                                                        key={badge}
+                                                                        className={cn(
+                                                                            "rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em]",
+                                                                            isDark ? "border-white/10 bg-white/5 text-white/80" : "border-slate-200 bg-slate-50 text-slate-700"
+                                                                        )}
+                                                                    >
+                                                                        {badge}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                            <button
                                                                 type="button"
                                                                 onPointerDown={(e) => e.stopPropagation()}
                                                                 onClick={(e) => {
@@ -3809,7 +3985,7 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
 
-                                                            <button type="button"
+                                                            <button
                                                                 type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -3946,7 +4122,7 @@ const MobileDashboardDemo = ({
                                                             </div>
 
                                                             <div className="space-y-3">
-                                                                <button type="button"
+                                                                <button
                                                                     type="button"
                                                                     onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
                                                                     className="h-11 w-full bg-blue-600 text-white rounded-[16px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
@@ -3956,7 +4132,7 @@ const MobileDashboardDemo = ({
                                                                 </button>
 
                                                                 <div className="flex items-center justify-between">
-                                                                    <button type="button"
+                                                                    <button
                                                                         type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -3969,7 +4145,7 @@ const MobileDashboardDemo = ({
                                                                     >
                                                                         Counter
                                                                     </button>
-                                                                    <button type="button"
+                                                                    <button
                                                                         type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -4012,7 +4188,7 @@ const MobileDashboardDemo = ({
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
-                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative bg-transparent")}>
+                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative overflow-hidden bg-transparent")}>
                             <AnimatePresence mode="wait">
                                 {!activeSettingsPage ? (
                                     <motion.div
@@ -4044,7 +4220,7 @@ const MobileDashboardDemo = ({
                                                                 }}
                                                             />
                                                         </div>
-                                                        <button type="button" className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                                                        <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                                                             <Camera className="w-3.5 h-3.5 text-white" />
                                                         </button>
                                                     </div>
@@ -4059,74 +4235,85 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
 
-
-                                            <SectionHeader title="Account" isDark={isDark} />
+                                            <SectionHeader title="Collab Setup" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
                                                     icon={<User />} iconBg="bg-blue-500"
-                                                    label="Personal Information"
-                                                    subtext="Creator Identity & Legal details"
+                                                    label="Creator Info"
+                                                    subtext="Who you are on your public profile"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('personal')}
                                                 />
                                                 <SettingsRow
-                                                    icon={<FileText />} iconBg="bg-emerald-500"
-                                                    label="Public Portfolio"
-                                                    subtext="What brands see on your link"
+                                                    icon={<Target />} iconBg="bg-amber-400"
+                                                    label="Collab Preferences"
+                                                    subtext="How you work with brands"
                                                     isDark={isDark} textColor={textColor}
-                                                    onClick={() => setActiveSettingsPage('portfolio')}
+                                                    onClick={() => setActiveSettingsPage('collab-preferences')}
+                                                />
+                                                <SettingsRow
+                                                    icon={<Package />} iconBg="bg-emerald-500"
+                                                    label="Packages"
+                                                    subtext="What brands can buy directly"
+                                                    isDark={isDark} textColor={textColor}
+                                                    onClick={() => setActiveSettingsPage('packages')}
                                                 />
                                                 <SettingsRow
                                                     icon={<Link2 />} iconBg="bg-violet-500"
                                                     label="Collab Link"
-                                                    subtext="Manage intake control center"
+                                                    subtext="What brands see on your storefront"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('collab-link')}
                                                 />
                                             </SettingsGroup>
 
-                                            <SectionHeader title="Preferences" isDark={isDark} />
+                                            <SectionHeader title="App" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
                                                     icon={isDark ? <Sun /> : <Moon />} iconBg="bg-slate-500"
-                                                    label="Dark Mode"
-                                                    subtext="System default or custom"
+                                                    label="Theme"
+                                                    subtext="Choose light or dark mode"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('dark-mode')}
                                                 />
                                                 <SettingsRow
                                                     icon={<Bell />} iconBg="bg-rose-500"
                                                     label="Notifications"
-                                                    subtext="Alerts, contracts & payments"
+                                                    subtext="Deals, contracts, and payments"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('notifications')}
                                                 />
                                             </SettingsGroup>
 
-                                            <SectionHeader title="Payments" isDark={isDark} />
+                                            <SectionHeader title="Finance" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
                                                     icon={<Landmark />} iconBg="bg-indigo-500"
                                                     label="Payout Methods"
-                                                    subtext="Manage UPI & bank accounts"
+                                                    subtext={creatorHasPaidDealsWithoutUpi ? "UPI required for paid deals" : "How you get paid"}
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('payouts')}
+                                                    rightElement={creatorHasPaidDealsWithoutUpi ? (
+                                                        <span className={cn("rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-amber-500/15 text-amber-200" : "bg-amber-100 text-amber-800")}>
+                                                            Action needed
+                                                        </span>
+                                                    ) : undefined}
                                                 />
                                                 <SettingsRow
                                                     icon={<CreditCard />} iconBg="bg-cyan-500"
                                                     label="Earnings & History"
-                                                    subtext="Financial performance audit"
+                                                    subtext="Track revenue and payment history"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('earnings')}
                                                 />
                                             </SettingsGroup>
 
-                                            <SectionHeader title="Security" isDark={isDark} />
+                                            <SectionHeader title="Trust & Security" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
                                                     icon={<ShieldCheck />} iconBg="bg-blue-600"
                                                     label="Armour Verification"
-                                                    subtext="Trust features & fraud protection"
+                                                    subtext="Trust signals and verification status"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('verification')}
                                                 />
@@ -4136,8 +4323,8 @@ const MobileDashboardDemo = ({
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
                                                     icon={<Info />} iconBg="bg-slate-400"
-                                                    label="About Creator Armour"
-                                                    subtext="Version 2.4.1 • Support"
+                                                    label="Support"
+                                                    subtext="Help, app info, and version details"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('about')}
                                                 />
@@ -4174,7 +4361,7 @@ const MobileDashboardDemo = ({
                                     <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>Payments</h1>
                                     <p className={cn("text-[11px] font-medium opacity-60", textColor)}>Track pending payments and completed payouts</p>
                                 </div>
-                                <button type="button" className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
+                                <button className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
                                     <Download className={cn("w-5 h-5", secondaryTextColor)} />
                                 </button>
                             </div>
@@ -4366,7 +4553,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 mb-6">
-                                        <button type="button"
+                                        <button
                                             onClick={() => {
                                                 handleShareStorefront();
                                                 setShowActionSheet(false);
@@ -4387,7 +4574,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </button>
 
-                                        <button type="button"
+                                        <button
                                             onClick={() => {
                                                 handleCopyStorefront();
                                                 setShowActionSheet(false);
@@ -4398,7 +4585,7 @@ const MobileDashboardDemo = ({
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
                                         </button>
 
-                                        <button type="button"
+                                        <button
                                             onClick={() => { setShowActionSheet(false); window.open(`/${username}`, '_blank'); }}
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
@@ -4406,7 +4593,7 @@ const MobileDashboardDemo = ({
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>See what brands see before you share it</p>
                                         </button>
 
-                                        <button type="button"
+                                        <button
                                             onClick={() => { setShowActionSheet(false); setActiveTab('collabs'); setCollabSubTab('pending'); }}
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
@@ -4485,7 +4672,7 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#061318]/70 backdrop-blur-xl border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
                             )}>
                                 <div className="flex items-center gap-3">
-                                    <button type="button"
+                                    <button
                                         onClick={closeItemDetail}
                                         className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                     >
@@ -4500,7 +4687,7 @@ const MobileDashboardDemo = ({
                                         </p>
                                     </div>
                                 </div>
-                                <button type="button"
+                                <button
                                     onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
                                     className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
                                 >
@@ -4618,7 +4805,7 @@ const MobileDashboardDemo = ({
                                     layout
                                 >
                                     {/* Collapsed trigger */}
-                                    <button type="button"
+                                    <button
                                         onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
                                         className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity"
                                     >
@@ -4847,7 +5034,7 @@ const MobileDashboardDemo = ({
 
                                             {selectedShippingStatus === 'shipped' && (
                                                 <div className="grid grid-cols-1 gap-2.5">
-                                                    <button type="button"
+                                                    <button
                                                         onClick={confirmSelectedProductReceived}
                                                         disabled={isConfirmingReceived}
                                                         className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-white font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
@@ -4855,7 +5042,7 @@ const MobileDashboardDemo = ({
                                                         {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                                         Confirm Product Received
                                                     </button>
-                                                    <button type="button"
+                                                    <button
                                                         onClick={() => {
                                                             triggerHaptic();
                                                             setShowReportIssueModal(true);
@@ -5002,7 +5189,7 @@ const MobileDashboardDemo = ({
                                                     </div>
 
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                                        <button type="button"
+                                                        <button
                                                             onClick={() => { triggerHaptic(); openDealContractReview(selectedItem); }}
                                                             className={cn(
                                                                 "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
@@ -5011,7 +5198,7 @@ const MobileDashboardDemo = ({
                                                         >
                                                             Open Contract
                                                         </button>
-                                                        <button type="button"
+                                                        <button
                                                             onClick={() => { triggerHaptic(); copySelectedItemLink(); }}
                                                             className={cn(
                                                                 "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
@@ -5173,7 +5360,7 @@ const MobileDashboardDemo = ({
 
                                     {selectedType === 'offer' && (
                                         <div className="flex flex-col gap-2.5 mt-3 pt-3">
-                                            <button type="button"
+                                            <button
                                                 onClick={() => {
                                                     triggerHaptic();
                                                     if (selectedItem.isDemo) {
@@ -5190,7 +5377,7 @@ const MobileDashboardDemo = ({
                                             </button>
                                             
                                             <div className="flex gap-2.5">
-                                                <button type="button"
+                                                <button
                                                     onClick={() => {
                                                         triggerHaptic();
                                                         if (selectedItem.isDemo) {
@@ -5204,7 +5391,7 @@ const MobileDashboardDemo = ({
                                                     <Edit3 className="w-3.5 h-3.5 opacity-50 text-slate-400" /> 
                                                     <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-white" : "text-slate-600")}>Suggest New Price</span>
                                                 </button>
-                                                <button type="button"
+                                                <button
                                                     onClick={() => {
                                                         triggerHaptic();
                                                         if (selectedItem.isDemo) {
@@ -5265,7 +5452,7 @@ const MobileDashboardDemo = ({
                                                 </div>
 
                                                 <div className={cn("rounded-2xl border overflow-hidden", borderColor)}>
-                                                    <button type="button"
+                                                    <button
                                                         onClick={async () => { triggerHaptic(); await copySelectedItemLink(); setShowItemMenu(false); }}
                                                         className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                                     >
@@ -5281,7 +5468,7 @@ const MobileDashboardDemo = ({
                                                         <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
                                                     </button>
                                                     <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
-                                                    <button type="button"
+                                                    <button
                                                         onClick={async () => { triggerHaptic(); await shareSelectedItemLink(); setShowItemMenu(false); }}
                                                         className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                                     >
@@ -5305,7 +5492,7 @@ const MobileDashboardDemo = ({
 
                                                         return (
                                                             <>
-                                                                <button type="button"
+                                                                <button
                                                                     onClick={() => {
                                                                         triggerHaptic();
                                                                         setShowItemMenu(false);
@@ -5329,7 +5516,7 @@ const MobileDashboardDemo = ({
                                                         );
                                                     })()}
 
-                                                    <button type="button"
+                                                    <button
                                                         onClick={() => {
                                                             triggerHaptic();
                                                             const path = getSelectedItemUrl();
@@ -5435,7 +5622,7 @@ const MobileDashboardDemo = ({
 		                                Content Status (Required)
 		                            </label>
 		                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-		                                <button type="button"
+		                                <button
 		                                    type="button"
 		                                    onClick={() => setDeliverContentStatusDraft('draft')}
 		                                    className={cn(
@@ -5451,7 +5638,7 @@ const MobileDashboardDemo = ({
 		                                        Not posted yet
 		                                    </span>
 		                                </button>
-		                                <button type="button"
+		                                <button
 		                                    type="button"
 		                                    onClick={() => setDeliverContentStatusDraft('posted')}
 		                                    className={cn(
@@ -5521,7 +5708,7 @@ const MobileDashboardDemo = ({
                         isDark ? "bg-[#0B0F14]/92 border-white/10" : "bg-white/92 border-slate-200"
                     )}>
                         <div className="grid grid-cols-2 gap-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                            <button type="button"
+                            <button
                                 onClick={() => {
                                     triggerHaptic();
                                     setShowDeliverContentModal(false);
@@ -5534,7 +5721,7 @@ const MobileDashboardDemo = ({
                             >
                                 Cancel
                             </button>
-                            <button type="button"
+                            <button
                                 onClick={submitDealContent}
                                 disabled={isSubmittingContent}
                                 className={cn(
@@ -5583,7 +5770,7 @@ const MobileDashboardDemo = ({
                             )}
                         />
                         <div className="grid grid-cols-2 gap-2.5">
-                            <button type="button"
+                            <button
                                 onClick={() => {
                                     setShowReportIssueModal(false);
                                     setReportIssueReason('');
@@ -5592,7 +5779,7 @@ const MobileDashboardDemo = ({
                             >
                                 Cancel
                             </button>
-                            <button type="button"
+                            <button
                                 onClick={reportSelectedShippingIssue}
                                 disabled={isReportingIssue || !reportIssueReason.trim()}
                                 className="h-12 rounded-2xl bg-rose-600 text-white text-[14px] font-black transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
@@ -5673,7 +5860,7 @@ const MobileDashboardDemo = ({
                                     />
                                     <div className="flex items-center justify-between px-1">
                                         <p className="text-[11px] font-bold opacity-40 italic">Exp. in 10 minutes</p>
-                                        <button type="button"
+                                        <button
                                             onClick={() => {
                                                 setCreatorSigningStep('send');
                                                 setCreatorOTP('');
@@ -5739,14 +5926,14 @@ const MobileDashboardDemo = ({
                         </div>
 
                         <div className="flex gap-2">
-                            <button type="button"
+                            <button
                                 type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
                                 className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-3 transition-colors"
                             >
                                 Got it
                             </button>
-                            <button type="button"
+                            <button
                                 type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
                                 className="rounded-xl border border-white/20 text-white/85 hover:text-white hover:bg-white/10 text-sm px-4 py-3 transition-colors"
@@ -5795,7 +5982,7 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-100"
                             )}>
                                 <div className="flex items-center gap-3">
-                                    <button type="button"
+                                    <button
                                         onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
                                         className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                     >
@@ -5931,7 +6118,7 @@ const MobileDashboardDemo = ({
                                             <p className={cn("text-[11px] font-semibold", isDark ? "text-emerald-400/60" : "text-emerald-700/70")}>Content Rights Agreement</p>
                                         </div>
                                     </div>
-                                    <button type="button"
+                                    <button
                                         onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
                                         className={cn(
                                             "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",

@@ -80,6 +80,7 @@ interface Creator {
   collab_response_hours_override?: number | null;
   collab_cancellations_percent_override?: number | null;
   collab_region_label?: string | null;
+  collab_intro_line?: string | null;
   collab_audience_fit_note?: string | null;
   collab_recent_activity_note?: string | null;
   collab_audience_relevance_note?: string | null;
@@ -89,6 +90,17 @@ interface Creator {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  collab_show_packages?: boolean | null;
+  collab_show_trust_signals?: boolean | null;
+  collab_show_audience_snapshot?: boolean | null;
+  collab_show_past_work?: boolean | null;
+  collab_past_work_items?: Array<{
+    id: string;
+    brand: string;
+    campaignType: string;
+    outcome: string;
+    proofLabel?: string | null;
+  }> | null;
   performance_proof?: {
     median_reel_views?: number | null;
     avg_likes?: number | null;
@@ -327,6 +339,7 @@ const buildLocalPreviewCreator = (handle: string): Creator => ({
   collab_response_hours_override: 3,
   collab_cancellations_percent_override: 0,
   collab_region_label: 'NCR (Delhi Region)',
+  collab_intro_line: 'Lifestyle creator with clear package options for launches, reviews, and campaign bursts.',
   collab_audience_fit_note: 'Works best for targeted audience campaigns.',
   collab_recent_activity_note: 'Posting consistently',
   collab_audience_relevance_note: 'Strong relevance for North India audience',
@@ -1911,12 +1924,13 @@ const CollabLinkLanding = () => {
   const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities);
   const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
   const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
+  const collabIntroLine = creator.collab_intro_line?.trim() || creatorBio || 'Clear collaboration packages, fast response, and structured booking for brand campaigns.';
   const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
   const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
     ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
     : '~3 hrs';
-  const showEngagementConfidence = engagementRange !== 'Growing Audience';
-  const engagementConfidenceNote = 'Above-average engagement for creator size';
+  const showEngagementConfidence = engagementRange !== 'Growing Audience' || Boolean(creator.collab_engagement_confidence_note?.trim());
+  const engagementConfidenceNote = creator.collab_engagement_confidence_note?.trim() || 'Above-average engagement for creator size';
   const recentActivityNoteRaw = creator.past_brand_count === 0
     ? 'New Creator on Creator Armour'
     : (creator.collab_recent_activity_note?.trim() || 'Posting consistently');
@@ -2019,11 +2033,34 @@ const CollabLinkLanding = () => {
 
   const dealTemplates = localDealTemplates;
   const selectedTemplate = dealTemplates.find((template) => template.id === selectedTemplateId) || null;
-  const recentCollaborations = [
-    { name: 'Priya Sharma', type: 'Reel campaign', price: '₹4,500' },
-    { name: 'Ajay Patel', type: 'Engagement package', price: '₹3,000 + product' },
-    { name: 'Neha Verma', type: 'Product review', price: 'Barter' },
-  ];
+  const pastWorkItems = Array.isArray(creator.collab_past_work_items)
+    ? creator.collab_past_work_items
+      .map((item, index) => ({
+        id: String(item?.id || `past-work-${index}`),
+        brand: String(item?.brand || '').trim(),
+        campaignType: String(item?.campaignType || '').trim(),
+        outcome: String(item?.outcome || '').trim(),
+        proofLabel: String(item?.proofLabel || '').trim(),
+      }))
+      .filter((item) => item.brand || item.campaignType || item.outcome || item.proofLabel)
+    : [];
+  const recentCollaborations = pastWorkItems.length > 0
+    ? pastWorkItems.slice(0, 3).map((item) => ({
+      id: item.id,
+      name: item.brand || 'Brand collaboration',
+      type: item.campaignType || 'Campaign',
+      outcome: item.outcome || 'Shared campaign proof',
+      proofLabel: item.proofLabel || 'Past Work',
+    }))
+    : [
+      { id: 'demo-1', name: 'boAt', type: 'Launch reel', outcome: '42K views in 5 days', proofLabel: 'Electronics' },
+      { id: 'demo-2', name: 'Mamaearth', type: 'Routine stories', outcome: 'High-intent skincare audience fit', proofLabel: 'Beauty' },
+      { id: 'demo-3', name: 'Lenskart', type: 'Review package', outcome: 'Strong click-through and saves', proofLabel: 'Lifestyle' },
+    ];
+  const showPackagesSection = creator.collab_show_packages !== false;
+  const showTrustSections = creator.collab_show_trust_signals !== false;
+  const showAudienceSections = creator.collab_show_audience_snapshot !== false;
+  const showPastWorkSection = creator.collab_show_past_work !== false;
   const creatorCollabSchema = (() => {
     const creatorId = creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-');
     const profilePageId = `${canonicalUrl}#profile-page`;
@@ -2353,13 +2390,13 @@ const CollabLinkLanding = () => {
                     Book a Collaboration with {creatorName.split(' ')[0]}
                   </h1>
                   <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
-                    Create a legally binding term sheet and launch your campaign with {creator.name.split(' ')[0]}.
+                    {collabIntroLine}
                   </p>
                 </div>
               </div>
 
               {/* 1. Trust Indicators (Consolidated) */}
-	              <div className="mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
+	              <div className={`mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 ${showTrustSections ? '' : 'hidden'}`}>
                 <div className="grid grid-cols-3 gap-2.5 px-0">
                   {[
                     { label: 'Legally Binding', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-contract' },
@@ -2407,7 +2444,7 @@ const CollabLinkLanding = () => {
                 </div>
               )}
               {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-              <div ref={overviewSectionRef}>
+              <div ref={overviewSectionRef} className={showTrustSections || showAudienceSections ? '' : 'hidden'}>
                 <Accordion
                   type="single"
                   collapsible
@@ -2422,7 +2459,7 @@ const CollabLinkLanding = () => {
                         <TrendingUp className="w-4 h-4 text-teal-600" />
                       </div>
                       <div className="text-left">
-                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Creator Overview</h3>
+                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Why Brands Book</h3>
                         <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
                       </div>
                     </div>
@@ -2433,6 +2470,8 @@ const CollabLinkLanding = () => {
                     )}
                   </AccordionTrigger>
                   <AccordionContent className="p-4 space-y-8 bg-[#F7F9FB]">
+                    {showTrustSections && (
+                    <div className="space-y-8">
                     {/* 1. Creator Insights Grid */}
                     <div className="space-y-3">
                       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Performance</h4>
@@ -2564,10 +2603,13 @@ const CollabLinkLanding = () => {
                         </div>
                       </div>
                     </div>
+                    </div>
+                    )}
 
                     {/* 4. Audience Insights Grid */}
+                    {showAudienceSections && (
                     <div className="space-y-3 pb-4">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Insights</h4>
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Snapshot</h4>
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Core Geo</p>
@@ -2594,6 +2636,7 @@ const CollabLinkLanding = () => {
                         </div>
                       </div>
                     </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
                 </Accordion>
@@ -2601,7 +2644,7 @@ const CollabLinkLanding = () => {
 	            {/* LEFT COLUMN continues below (packages + bio) */}
 
             {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-		            <div id="packages-section" ref={packagesSectionRef} className="deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
+		            <div id="packages-section" ref={packagesSectionRef} className={`deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl ${showPackagesSection ? '' : 'hidden'}`} style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
 	              <div className="flex items-center justify-between mb-3.5">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
@@ -2772,7 +2815,7 @@ const CollabLinkLanding = () => {
               )}
 
               {!showCustomFlow && (
-                <div className="mt-3.5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)] ${showPackagesSection ? '' : 'hidden'}`}>
                   <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
                   <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
@@ -2800,21 +2843,26 @@ const CollabLinkLanding = () => {
 	                </div>
               )}
 
-              <div className="mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
+              <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-[14px] font-black text-slate-900 tracking-tight">
-                    Recent collaborations <span className="text-slate-400 font-black">(social proof)</span>
+                    Past Work <span className="text-slate-400 font-black">(social proof)</span>
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-	                  {recentCollaborations.map((item) => (
-	                    <div key={item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
-	                      <p className="text-[12px] font-black text-slate-900 leading-tight">{item.name}</p>
-	                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">{item.type}</p>
-	                      <p className="text-[11px] font-black text-slate-900 mt-0.5">{item.price}</p>
-	                    </div>
-	                  ))}
-                </div>
+	                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+		                  {recentCollaborations.map((item) => (
+		                    <div key={item.id || item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
+		                      <p className="text-[12px] font-black text-slate-900 leading-tight">{item.name}</p>
+		                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">{item.type}</p>
+                          {item.proofLabel && (
+                            <p className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                              {item.proofLabel}
+                            </p>
+                          )}
+		                      <p className="text-[11px] font-black text-slate-900 mt-2 leading-snug">{item.outcome}</p>
+		                    </div>
+		                  ))}
+	                </div>
               </div>
             </div>
 
@@ -3941,8 +3989,8 @@ const CollabLinkLanding = () => {
             )}
           </div>
           )}
-        </div >
-      </div >
+        </div>
+      </div>
 
       {/* Edit Deal Template Modal */}
       {

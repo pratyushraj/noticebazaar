@@ -263,6 +263,7 @@ interface UpdateProfileVariables {
   collab_response_hours_override?: number | null;
   collab_cancellations_percent_override?: number | null;
   collab_region_label?: string | null;
+  collab_intro_line?: string | null;
   collab_audience_fit_note?: string | null;
   collab_recent_activity_note?: string | null;
   collab_audience_relevance_note?: string | null;
@@ -272,6 +273,17 @@ interface UpdateProfileVariables {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  collab_show_packages?: boolean | null;
+  collab_show_trust_signals?: boolean | null;
+  collab_show_audience_snapshot?: boolean | null;
+  collab_show_past_work?: boolean | null;
+  collab_past_work_items?: Array<{
+    id: string;
+    brand: string;
+    campaignType: string;
+    outcome: string;
+    proofLabel?: string | null;
+  }> | null;
   auto_pricing_enabled?: boolean | null;
   deal_templates?: any[] | null;
 }
@@ -343,6 +355,7 @@ export const useUpdateProfile = () => {
       collab_response_hours_override,
       collab_cancellations_percent_override,
       collab_region_label,
+      collab_intro_line,
       collab_audience_fit_note,
       collab_recent_activity_note,
       collab_audience_relevance_note,
@@ -352,6 +365,7 @@ export const useUpdateProfile = () => {
       collab_cta_trust_note,
       collab_cta_dm_note,
       collab_cta_platform_note,
+      collab_past_work_items,
       auto_pricing_enabled,
       deal_templates,
     }) => {
@@ -414,6 +428,7 @@ export const useUpdateProfile = () => {
         collab_response_hours_override?: number | null;
         collab_cancellations_percent_override?: number | null;
         collab_region_label?: string | null;
+        collab_intro_line?: string | null;
         collab_audience_fit_note?: string | null;
         collab_recent_activity_note?: string | null;
         collab_audience_relevance_note?: string | null;
@@ -423,6 +438,13 @@ export const useUpdateProfile = () => {
         collab_cta_trust_note?: string | null;
         collab_cta_dm_note?: string | null;
         collab_cta_platform_note?: string | null;
+        collab_past_work_items?: Array<{
+          id: string;
+          brand: string;
+          campaignType: string;
+          outcome: string;
+          proofLabel?: string | null;
+        }> | null;
         auto_pricing_enabled?: boolean | null;
         deal_templates?: any[] | null;
       } = {
@@ -595,6 +617,9 @@ export const useUpdateProfile = () => {
       if (collab_region_label !== undefined) {
         updateData.collab_region_label = collab_region_label;
       }
+      if (collab_intro_line !== undefined) {
+        updateData.collab_intro_line = collab_intro_line;
+      }
       if (collab_audience_fit_note !== undefined) {
         updateData.collab_audience_fit_note = collab_audience_fit_note;
       }
@@ -621,6 +646,9 @@ export const useUpdateProfile = () => {
       }
       if (collab_cta_platform_note !== undefined) {
         updateData.collab_cta_platform_note = collab_cta_platform_note;
+      }
+      if (collab_past_work_items !== undefined) {
+        updateData.collab_past_work_items = collab_past_work_items;
       }
       if (auto_pricing_enabled !== undefined) {
         updateData.auto_pricing_enabled = auto_pricing_enabled;
@@ -691,6 +719,7 @@ export const useUpdateProfile = () => {
             'collab_response_hours_override',
             'collab_cancellations_percent_override',
             'collab_region_label',
+            'collab_intro_line',
             'collab_audience_fit_note',
             'collab_recent_activity_note',
             'collab_audience_relevance_note',
@@ -700,6 +729,7 @@ export const useUpdateProfile = () => {
             'collab_cta_trust_note',
             'collab_cta_dm_note',
             'collab_cta_platform_note',
+            'collab_past_work_items',
             'auto_pricing_enabled',
             'deal_templates',
           ]);

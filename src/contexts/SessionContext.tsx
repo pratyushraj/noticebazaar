@@ -54,6 +54,38 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (!user?.id) return null; // Don't fetch if no user ID
 
     try {
+      const fetchOptionalProfileFields = async (fields: string[]): Promise<Record<string, any>> => {
+        if (fields.length === 0) return {};
+
+        try {
+          const { data, error } = await (supabase
+            .from('profiles')
+            .select(fields.join(', ')) as any)
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            throw error;
+          }
+
+          return (data as Record<string, any>) || {};
+        } catch (error: any) {
+          // In partially migrated environments, one missing column breaks the whole select.
+          // Split the request until we isolate only the columns that actually exist.
+          if (fields.length === 1) {
+            return {};
+          }
+
+          const midpoint = Math.ceil(fields.length / 2);
+          const [left, right] = await Promise.all([
+            fetchOptionalProfileFields(fields.slice(0, midpoint)),
+            fetchOptionalProfileFields(fields.slice(midpoint)),
+          ]);
+
+          return { ...left, ...right };
+        }
+      };
+
       // Keep the profile query intentionally narrow so it doesn't fail in partially-migrated environments.
       const { data: coreData, error: coreError } = await (supabase
         .from('profiles')
@@ -95,12 +127,51 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
       let instagramHandleValue: string | null = null;
       let optionalFields: Partial<Profile> = {};
       try {
-        const { data: handleData, error: handleError } = await (supabase
-          .from('profiles')
-          .select('username, instagram_handle, instagram_followers, last_instagram_sync, instagram_profile_photo, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
-          .eq('id', user.id)
-          .single();
-        if (!handleError) {
+        const handleData = await fetchOptionalProfileFields([
+          'username',
+          'instagram_handle',
+          'instagram_followers',
+          'last_instagram_sync',
+          'instagram_profile_photo',
+          'creator_category',
+          'avg_rate_reel',
+          'pricing_min',
+          'pricing_avg',
+          'pricing_max',
+          'open_to_collabs',
+          'content_niches',
+          'media_kit_url',
+          'avg_reel_views_manual',
+          'avg_likes_manual',
+          'audience_gender_split',
+          'top_cities',
+          'audience_age_range',
+          'primary_audience_language',
+          'posting_frequency',
+          'active_brand_collabs_month',
+          'campaign_slot_note',
+          'collab_brands_count_override',
+          'collab_response_hours_override',
+          'collab_cancellations_percent_override',
+          'collab_region_label',
+          'collab_intro_line',
+          'collab_audience_fit_note',
+          'collab_recent_activity_note',
+          'collab_audience_relevance_note',
+          'collab_delivery_reliability_note',
+          'collab_engagement_confidence_note',
+          'collab_response_behavior_note',
+          'collab_cta_trust_note',
+          'collab_cta_dm_note',
+          'collab_cta_platform_note',
+          'collab_show_packages',
+          'collab_show_trust_signals',
+          'collab_show_audience_snapshot',
+          'collab_show_past_work',
+          'collab_past_work_items',
+        ]);
+
+        if (Object.keys(handleData).length > 0) {
           usernameValue = (handleData as any)?.username || null;
           instagramHandleValue = (handleData as any)?.instagram_handle || null;
           optionalFields = {
@@ -128,6 +199,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             collab_response_hours_override: (handleData as any)?.collab_response_hours_override ?? null,
             collab_cancellations_percent_override: (handleData as any)?.collab_cancellations_percent_override ?? null,
             collab_region_label: (handleData as any)?.collab_region_label ?? null,
+            collab_intro_line: (handleData as any)?.collab_intro_line ?? null,
             collab_audience_fit_note: (handleData as any)?.collab_audience_fit_note ?? null,
             collab_recent_activity_note: (handleData as any)?.collab_recent_activity_note ?? null,
             collab_audience_relevance_note: (handleData as any)?.collab_audience_relevance_note ?? null,
@@ -137,6 +209,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             collab_cta_trust_note: (handleData as any)?.collab_cta_trust_note ?? null,
             collab_cta_dm_note: (handleData as any)?.collab_cta_dm_note ?? null,
             collab_cta_platform_note: (handleData as any)?.collab_cta_platform_note ?? null,
+            collab_show_packages: (handleData as any)?.collab_show_packages ?? true,
+            collab_show_trust_signals: (handleData as any)?.collab_show_trust_signals ?? true,
+            collab_show_audience_snapshot: (handleData as any)?.collab_show_audience_snapshot ?? true,
+            collab_show_past_work: (handleData as any)?.collab_show_past_work ?? true,
+            collab_past_work_items: Array.isArray((handleData as any)?.collab_past_work_items) ? (handleData as any).collab_past_work_items : [],
           };
         }
       } catch (_error) {
