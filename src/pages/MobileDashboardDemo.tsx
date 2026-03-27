@@ -355,6 +355,29 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         bank_account_name: profile?.bank_account_name || '',
         bank_upi: profile?.bank_upi || '',
         deal_templates: profile?.deal_templates || [],
+        // NEW: Audience Demographics
+        audience_gender_split: profile?.audience_gender_split || '',
+        top_cities: Array.isArray(profile?.top_cities) ? profile.top_cities : [],
+        audience_age_range: profile?.audience_age_range || '',
+        primary_audience_language: profile?.primary_audience_language || '',
+        // NEW: Availability & Stats
+        posting_frequency: profile?.posting_frequency || '',
+        active_brand_collabs_month: profile?.active_brand_collabs_month || '',
+        past_brand_count: profile?.past_brand_count || profile?.collab_brands_count_override || 0,
+        avg_reel_views_manual: profile?.avg_reel_views_manual || '',
+        avg_likes_manual: profile?.avg_likes_manual || '',
+        // NEW: Professional Collab Notes
+        collab_region_label: profile?.collab_region_label || '',
+        collab_audience_fit_note: profile?.collab_audience_fit_note || '',
+        collab_recent_activity_note: profile?.collab_recent_activity_note || '',
+        collab_audience_relevance_note: profile?.collab_audience_relevance_note || '',
+        collab_delivery_reliability_note: profile?.collab_delivery_reliability_note || '',
+        collab_response_behavior_note: profile?.collab_response_behavior_note || '',
+        campaign_slot_note: profile?.campaign_slot_note || '',
+        // NEW: CTA & Social Customization
+        collab_cta_trust_note: profile?.collab_cta_trust_note || '',
+        collab_cta_dm_note: profile?.collab_cta_dm_note || '',
+        collab_cta_platform_note: profile?.collab_cta_platform_note || '',
     };
 };
 
@@ -1087,6 +1110,29 @@ const MobileDashboardDemo = ({
                 deal_templates: profileFormData.deal_templates,
                 bank_account_name: profileFormData.bank_account_name?.trim() || null,
                 bank_upi: profileFormData.bank_upi?.trim() || null,
+                // NEW: Audience & Demographics
+                audience_gender_split: profileFormData.audience_gender_split || null,
+                top_cities: profileFormData.top_cities || [],
+                audience_age_range: profileFormData.audience_age_range || null,
+                primary_audience_language: profileFormData.primary_audience_language || null,
+                // NEW: Stats & Availability
+                posting_frequency: profileFormData.posting_frequency || null,
+                active_brand_collabs_month: Number(profileFormData.active_brand_collabs_month) || null,
+                past_brand_count: Number(profileFormData.past_brand_count) || null,
+                avg_reel_views_manual: Number(profileFormData.avg_reel_views_manual) || null,
+                avg_likes_manual: Number(profileFormData.avg_likes_manual) || null,
+                // NEW: Collab Professional Notes
+                collab_region_label: profileFormData.collab_region_label || null,
+                collab_audience_fit_note: profileFormData.collab_audience_fit_note || null,
+                collab_recent_activity_note: profileFormData.collab_recent_activity_note || null,
+                collab_audience_relevance_note: profileFormData.collab_audience_relevance_note || null,
+                collab_delivery_reliability_note: profileFormData.collab_delivery_reliability_note || null,
+                collab_response_behavior_note: profileFormData.collab_response_behavior_note || null,
+                campaign_slot_note: profileFormData.campaign_slot_note || null,
+                // NEW: CTA Customization
+                collab_cta_trust_note: profileFormData.collab_cta_trust_note || null,
+                collab_cta_dm_note: profileFormData.collab_cta_dm_note || null,
+                collab_cta_platform_note: profileFormData.collab_cta_platform_note || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -1873,6 +1919,191 @@ const MobileDashboardDemo = ({
                                                 + ADD
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+
+                            {/* Audience Demographics */}
+                            <SettingsGroup title="Audience Demographics" icon={<Target className="w-5 h-5 text-purple-500" />} isDark={isDark}>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Gender Split</p>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. 70% Women"
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                value={profileFormData.audience_gender_split}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, audience_gender_split: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Age Range</p>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. 18-24"
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                value={profileFormData.audience_age_range}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, audience_age_range: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Top Cities</p>
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {(profileFormData.top_cities || []).map((city: string, idx: number) => (
+                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-black uppercase", isDark ? "bg-purple-500/10 border-purple-500/20 text-purple-400" : "bg-purple-50 border-purple-100 text-purple-600")}>
+                                                    {city}
+                                                    <X className="w-3 h-3 cursor-pointer" onClick={() => {
+                                                        const newCities = [...profileFormData.top_cities];
+                                                        newCities.splice(idx, 1);
+                                                        setProfileFormData({ ...profileFormData, top_cities: newCities });
+                                                    }} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Add city..."
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold pr-12", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        const target = e.target as HTMLInputElement;
+                                                        if (target.value.trim()) {
+                                                            setProfileFormData({ ...profileFormData, top_cities: [...(profileFormData.top_cities || []), target.value.trim()] });
+                                                            target.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <Plus className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Primary Language</p>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Hindi, English"
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.primary_audience_language}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, primary_audience_language: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+
+                            {/* Performance & Availability */}
+                            <SettingsGroup title="Performance & Availability" icon={<Zap className="w-5 h-5 text-amber-500" />} isDark={isDark}>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Monthly Slots</p>
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 5"
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                value={profileFormData.active_brand_collabs_month}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, active_brand_collabs_month: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Past Campaigns</p>
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 12"
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                value={profileFormData.past_brand_count}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, past_brand_count: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Posting Frequency</p>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. 3-4 times / week"
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.posting_frequency}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, posting_frequency: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Self-Reported Views</p>
+                                            <input
+                                                type="number"
+                                                placeholder="Avg Views"
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                value={profileFormData.avg_reel_views_manual}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, avg_reel_views_manual: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Self-Reported Likes</p>
+                                            <input
+                                                type="number"
+                                                placeholder="Avg Likes"
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                value={profileFormData.avg_likes_manual}
+                                                onChange={(e) => setProfileFormData({ ...profileFormData, avg_likes_manual: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+
+                            {/* Trust & Professional Notes */}
+                            <SettingsGroup title="Professional Collab Notes" icon={<ShieldCheck className="w-5 h-5 text-emerald-500" />} isDark={isDark}>
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Relevance Note</p>
+                                        <textarea
+                                            placeholder="e.g. Strong relevance for North India beauty enthusiasts."
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold min-h-[80px]", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.collab_audience_relevance_note}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_audience_relevance_note: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Response Policy</p>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Brands receive response same day"
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.collab_response_behavior_note}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_response_behavior_note: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>DM Policy</p>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. No DMs required — I reply here."
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.collab_cta_dm_note}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_dm_note: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Notification Policy</p>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Creator notified instantly."
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.collab_cta_trust_note}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_trust_note: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Platform Model</p>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Direct collaboration — no middle agency."
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            value={profileFormData.collab_cta_platform_note}
+                                            onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_platform_note: e.target.value })}
+                                        />
                                     </div>
                                 </div>
                             </SettingsGroup>
