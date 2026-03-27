@@ -523,6 +523,14 @@ const MobileDashboardDemo = ({
     onLogout,
     showDemoOffer = false,
 }: MobileDashboardProps) => {
+    const APP_TAB_STORAGE_KEY = 'creatorarmour.creator.active-tab';
+    const APP_COLLAB_SUBTAB_STORAGE_KEY = 'creatorarmour.creator.collabs.subtab';
+    const APP_STOREFRONT_SECTION_STORAGE_KEY = 'creatorarmour.creator.storefront.section';
+    const APP_THEME_STORAGE_KEY = 'creatorarmour.creator.theme';
+    const APP_SCROLL_POSITIONS_STORAGE_KEY = 'creatorarmour.creator.scroll.positions';
+    const APP_PROFILE_DRAFT_STORAGE_KEY = 'creatorarmour.creator.profile.draft';
+    const APP_DELIVER_DRAFT_STORAGE_KEY = 'creatorarmour.creator.deliver.draft';
+    const APP_NOTIFICATIONS_LAST_READ_STORAGE_KEY = 'creatorarmour.creator.notifications.last-read-at';
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const signOutMutation = useSignOut();
@@ -543,10 +551,16 @@ const MobileDashboardDemo = ({
     const [searchParams, setSearchParams] = useSearchParams();
     const isDemoParamEnabled = ['1', 'true', 'yes'].includes(String(searchParams.get('demo') || '').toLowerCase());
     const isDemoOfferEnabled = Boolean(showDemoOffer || isDemoParamEnabled);
-    const activeTab = (searchParams.get('tab') as 'dashboard' | 'collabs' | 'payments' | 'profile') || 'dashboard';
+    const persistedTab = typeof window !== 'undefined'
+        ? (window.localStorage.getItem(APP_TAB_STORAGE_KEY) as 'dashboard' | 'collabs' | 'payments' | 'profile' | null)
+        : null;
+    const activeTab = (searchParams.get('tab') as 'dashboard' | 'collabs' | 'payments' | 'profile') || persistedTab || 'dashboard';
     const setActiveTab = (tab: string) => {
         const next = new URLSearchParams(searchParams);
         next.set('tab', tab);
+        if (typeof window !== 'undefined') {
+            window.localStorage.setItem(APP_TAB_STORAGE_KEY, tab);
+        }
         setSearchParams(next, { replace: true });
     };
 
@@ -554,7 +568,10 @@ const MobileDashboardDemo = ({
     const dealIdParam = (searchParams.get('dealId') || '').trim() || null;
     const subtabParam = (searchParams.get('subtab') as 'active' | 'pending' | 'completed' | null) || null;
 
-    const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>('active');
+    const [collabSubTab, setCollabSubTab] = useState<'active' | 'pending' | 'completed'>(() => {
+        if (typeof window === 'undefined') return 'active';
+        return (window.localStorage.getItem(APP_COLLAB_SUBTAB_STORAGE_KEY) as 'active' | 'pending' | 'completed' | null) || 'active';
+    });
     const hasHandledDeepLinkRef = useRef(false);
     useEffect(() => {
         if (activeTab !== 'collabs') return;
@@ -605,7 +622,29 @@ const MobileDashboardDemo = ({
         else if (subtabParam === 'completed') setCollabSubTab('completed');
         else if (subtabParam === 'active') setCollabSubTab('active');
     }, [activeTab, requestIdParam, dealIdParam, subtabParam, collabRequests, brandDeals, searchParams, setSearchParams]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (!searchParams.get('tab') && persistedTab) {
+            const next = new URLSearchParams(searchParams);
+            next.set('tab', persistedTab);
+            if (persistedTab === 'collabs') {
+                const savedSubtab = window.localStorage.getItem(APP_COLLAB_SUBTAB_STORAGE_KEY);
+                if (savedSubtab) next.set('subtab', savedSubtab);
+            }
+            setSearchParams(next, { replace: true });
+        }
+    }, [persistedTab, searchParams, setSearchParams]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(APP_COLLAB_SUBTAB_STORAGE_KEY, collabSubTab);
+    }, [collabSubTab]);
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        if (typeof window !== 'undefined') {
+            const storedTheme = window.localStorage.getItem(APP_THEME_STORAGE_KEY);
+            if (storedTheme === 'light' || storedTheme === 'dark') {
+                return storedTheme;
+            }
+        }
         if (typeof window !== 'undefined' && window.matchMedia) {
             return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
@@ -680,6 +719,10 @@ const MobileDashboardDemo = ({
             document.documentElement.classList.remove('dark');
             document.documentElement.classList.remove('light');
         };
+    }, [theme]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(APP_THEME_STORAGE_KEY, theme);
     }, [theme]);
 
 
@@ -996,6 +1039,9 @@ const MobileDashboardDemo = ({
             setDeliverAdditionalLinksDraft('');
             setDeliverMessageDraft('');
             setDeliverContentStatusDraft('draft');
+            if (typeof window !== 'undefined') {
+                window.localStorage.removeItem(APP_DELIVER_DRAFT_STORAGE_KEY);
+            }
             await onRefresh?.();
         } catch (e: any) {
             toast.error(e?.message || 'Failed to submit content');
@@ -1013,6 +1059,7 @@ const MobileDashboardDemo = ({
 
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [profileFormData, setProfileFormData] = useState<any>(buildProfileFormData(profile, user?.email || null));
+    const [profileSaveState, setProfileSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     // Signing states
     const [showCreatorSigningModal, setShowCreatorSigningModal] = useState(false);
@@ -1090,7 +1137,114 @@ const MobileDashboardDemo = ({
             return sum + (isCurrentMonth ? (deal.deal_amount || 0) : 0);
         }, 0);
     }, [stats?.earnings, brandDeals]);
+    const pendingPaymentsAmount = React.useMemo(() => {
+        return activeDealsList.reduce((sum, deal: any) => {
+            const ux = getCreatorPaymentListUX(deal);
+            if (ux.label === 'PAID' || ux.label === 'PAYMENT RELEASED') return sum;
+            return sum + Number(deal?.deal_amount || 0);
+        }, 0);
+    }, [activeDealsList]);
+    const completedPaymentsAmount = React.useMemo(() => {
+        return completedDealsList.reduce((sum, deal: any) => sum + Number(deal?.deal_amount || 0), 0);
+    }, [completedDealsList]);
+    const isDashboardRefreshing = Boolean(isRefreshingProp && activeTab === 'dashboard');
+    const isPaymentsRefreshing = Boolean(isRefreshingProp && activeTab === 'payments');
+    const bookingReadinessChecks = React.useMemo(() => ([
+        Boolean((profile?.collab_intro_line || '').trim()),
+        Array.isArray(packageTemplates) && packageTemplates.some((pkg: any) => Number(pkg?.rate || 0) > 0),
+        Boolean((profile?.media_kit_url || '').trim()),
+        Boolean((profile?.bank_upi || profileFormData?.bank_upi || '').trim()),
+        Boolean((profile?.collab_brands_count_override || 0) > 0 || (profile?.collab_past_work_items || []).length > 0),
+    ]), [packageTemplates, profile?.bank_upi, profile?.collab_brands_count_override, profile?.collab_intro_line, profile?.collab_past_work_items, profile?.media_kit_url, profileFormData?.bank_upi]);
+    const bookingReadinessScore = Math.round((bookingReadinessChecks.filter(Boolean).length / bookingReadinessChecks.length) * 100);
+    const dashboardActionItems = React.useMemo(() => {
+        const items: Array<{ id: string; title: string; subtitle: string; cta: string; tone: 'amber' | 'blue' | 'red' | 'emerald'; onClick: () => void }> = [];
 
+        collabRequests.slice(0, 3).forEach((req: any, index: number) => {
+            items.push({
+                id: `offer-${req?.id || index}`,
+                title: 'Review Offer',
+                subtitle: `${req?.brand_name || 'Brand'} sent a new collaboration request`,
+                cta: 'Review Offer',
+                tone: 'blue',
+                onClick: () => {
+                    triggerHaptic();
+                    setSelectedItem(req);
+                    setSelectedType('offer');
+                },
+            });
+        });
+
+        actionRequiredDealsList.slice(0, 4).forEach((deal: any, index: number) => {
+            const ux = getCreatorDealCardUX(deal);
+            let title = 'Open Deal';
+            if (ux.needsSignature) title = 'Sign Contract';
+            else if (ux.isRevisionRequested) title = 'Fix Revision';
+            else if (ux.isMaking) title = 'Deliver Content';
+            else if (ux.isApproved && !ux.isPaymentReleased) title = 'Confirm Payment';
+
+            items.push({
+                id: `deal-${deal?.id || index}`,
+                title,
+                subtitle: `${deal?.brand_name || 'Brand'} • ${ux.nextStep}`,
+                cta: title,
+                tone: ux.isRevisionRequested ? 'red' : ux.needsSignature ? 'amber' : ux.isApproved ? 'emerald' : 'blue',
+                onClick: () => {
+                    triggerHaptic();
+                    setSelectedItem(deal);
+                    setSelectedType('deal');
+                },
+            });
+        });
+
+        if (creatorHasPaidDealsWithoutUpi) {
+            items.push({
+                id: 'upi-required',
+                title: 'Payment Pending Confirmation',
+                subtitle: 'Add your UPI ID before brands release money',
+                cta: 'Confirm Payment',
+                tone: 'amber',
+                onClick: () => {
+                    triggerHaptic();
+                    setActiveTab('profile');
+                    setActiveSettingsPage('payouts');
+                },
+            });
+        }
+
+        return items.slice(0, 5);
+    }, [actionRequiredDealsList, collabRequests, creatorHasPaidDealsWithoutUpi]);
+    const recentActivityItems = React.useMemo(() => {
+        const items: Array<{ id: string; title: string; meta: string; date: number }> = [];
+
+        collabRequests.slice(0, 4).forEach((req: any, index: number) => {
+            items.push({
+                id: `activity-offer-${req?.id || index}`,
+                title: `Offer received from ${req?.brand_name || 'Brand'}`,
+                meta: `${req?.collab_type || 'paid'} collaboration`,
+                date: new Date(req?.created_at || Date.now()).getTime(),
+            });
+        });
+
+        brandDeals.slice(0, 12).forEach((deal: any, index: number) => {
+            const ux = getCreatorDealCardUX(deal);
+            let title = `${deal?.brand_name || 'Brand'} collaboration updated`;
+            if (ux.needsSignature) title = `Contract ready for ${deal?.brand_name || 'Brand'}`;
+            else if (ux.isRevisionRequested) title = `Revision requested by ${deal?.brand_name || 'Brand'}`;
+            else if (ux.isApproved) title = `Content approved by ${deal?.brand_name || 'Brand'}`;
+            else if (ux.isPaymentReleased || normalizeDealStatus(deal).includes('paid')) title = `Payment received from ${deal?.brand_name || 'Brand'}`;
+            else if (normalizeDealStatus(deal).includes('completed')) title = `${deal?.brand_name || 'Brand'} deal completed`;
+
+            items.push({
+                id: `activity-deal-${deal?.id || index}`,
+                title,
+                meta: ux.stagePill,
+                date: new Date(deal?.updated_at || deal?.created_at || Date.now()).getTime(),
+            });
+        });
+
+        return items.sort((a, b) => b.date - a.date).slice(0, 5);
+    }, [brandDeals, collabRequests]);
     useEffect(() => {
         const handle = (instagramHandle || '').trim();
         if (!handle) {
@@ -1153,6 +1307,7 @@ const MobileDashboardDemo = ({
     const [pullDistance, setPullDistance] = useState(0);
     const [startY, setStartY] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const lastListScrollTopRef = useRef(0);
 
     const isDark = theme === 'dark';
     // Brand-like background base (gradient overlays applied in JSX below)
@@ -1185,6 +1340,44 @@ const MobileDashboardDemo = ({
         else setPullDistance(0);
         setStartY(0);
     };
+    useEffect(() => {
+        if (typeof window === 'undefined' || !scrollRef.current) return;
+        const viewKey = activeSettingsPage ? `settings:${activeSettingsPage}` : `tab:${activeTab}`;
+        try {
+            const raw = window.localStorage.getItem(APP_SCROLL_POSITIONS_STORAGE_KEY);
+            const saved = raw ? JSON.parse(raw) : {};
+            const top = Number(saved?.[viewKey] || 0);
+            requestAnimationFrame(() => {
+                if (scrollRef.current) {
+                    scrollRef.current.scrollTop = top;
+                }
+            });
+        } catch {
+            // ignore malformed saved positions
+        }
+    }, [activeSettingsPage, activeTab]);
+    useEffect(() => {
+        if (typeof window === 'undefined' || !scrollRef.current) return;
+        const node = scrollRef.current;
+        const handleScroll = () => {
+            lastListScrollTopRef.current = node.scrollTop;
+            const viewKey = activeSettingsPage ? `settings:${activeSettingsPage}` : `tab:${activeTab}`;
+            try {
+                const raw = window.localStorage.getItem(APP_SCROLL_POSITIONS_STORAGE_KEY);
+                const saved = raw ? JSON.parse(raw) : {};
+                saved[viewKey] = node.scrollTop;
+                window.localStorage.setItem(APP_SCROLL_POSITIONS_STORAGE_KEY, JSON.stringify(saved));
+            } catch {
+                // ignore storage issues
+            }
+        };
+        node.addEventListener('scroll', handleScroll, { passive: true });
+        return () => node.removeEventListener('scroll', handleScroll);
+    }, [activeSettingsPage, activeTab]);
+    useEffect(() => {
+        if (!selectedItem || !scrollRef.current) return;
+        lastListScrollTopRef.current = scrollRef.current.scrollTop;
+    }, [selectedItem]);
 
     React.useEffect(() => { if (!isRefreshingProp) setPullDistance(0); }, [isRefreshingProp]);
     React.useEffect(() => {
@@ -1275,6 +1468,54 @@ const MobileDashboardDemo = ({
             );
         }
     }, [profile, user?.email]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const rawDraft = window.localStorage.getItem(APP_PROFILE_DRAFT_STORAGE_KEY);
+        if (!rawDraft) return;
+        try {
+            const draft = JSON.parse(rawDraft);
+            if (draft && typeof draft === 'object') {
+                setProfileFormData((prev: any) => ({ ...prev, ...draft }));
+            }
+        } catch {
+            // ignore corrupt draft
+        }
+    }, []);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const timeout = window.setTimeout(() => {
+            window.localStorage.setItem(APP_PROFILE_DRAFT_STORAGE_KEY, JSON.stringify(profileFormData));
+        }, 300);
+        return () => window.clearTimeout(timeout);
+    }, [profileFormData]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const rawDraft = window.localStorage.getItem(APP_DELIVER_DRAFT_STORAGE_KEY);
+        if (!rawDraft) return;
+        try {
+            const draft = JSON.parse(rawDraft);
+            if (draft?.url) setDeliverContentUrlDraft(String(draft.url));
+            if (draft?.caption) setDeliverCaptionDraft(String(draft.caption));
+            if (draft?.additionalLinks) setDeliverAdditionalLinksDraft(String(draft.additionalLinks));
+            if (draft?.message) setDeliverMessageDraft(String(draft.message));
+            if (draft?.status === 'posted' || draft?.status === 'draft') setDeliverContentStatusDraft(draft.status);
+        } catch {
+            // ignore corrupt draft
+        }
+    }, []);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const timeout = window.setTimeout(() => {
+            window.localStorage.setItem(APP_DELIVER_DRAFT_STORAGE_KEY, JSON.stringify({
+                url: deliverContentUrlDraft,
+                caption: deliverCaptionDraft,
+                additionalLinks: deliverAdditionalLinksDraft,
+                message: deliverMessageDraft,
+                status: deliverContentStatusDraft,
+            }));
+        }, 250);
+        return () => window.clearTimeout(timeout);
+    }, [deliverAdditionalLinksDraft, deliverCaptionDraft, deliverContentStatusDraft, deliverContentUrlDraft, deliverMessageDraft]);
 
     const handleSaveProfile = async () => {
         if (!session?.user?.id) return;
@@ -1284,6 +1525,7 @@ const MobileDashboardDemo = ({
             return;
         }
         setIsSavingProfile(true);
+        setProfileSaveState('saving');
         triggerHaptic(HapticPatterns.light);
         try {
             const nameParts = (profileFormData.full_name || '').trim().split(/\s+/);
@@ -1432,6 +1674,11 @@ const MobileDashboardDemo = ({
 
             toast.success('Profile saved!');
             triggerHaptic(HapticPatterns.success);
+            setProfileSaveState('saved');
+            if (typeof window !== 'undefined') {
+                window.localStorage.removeItem(APP_PROFILE_DRAFT_STORAGE_KEY);
+            }
+            window.setTimeout(() => setProfileSaveState('idle'), 1800);
             // Refetch the global profile so all UI sections update immediately
             refetchProfile();
             if (onRefresh) onRefresh();
@@ -1439,6 +1686,7 @@ const MobileDashboardDemo = ({
             console.error('[handleSaveProfile] Unexpected error:', error);
             toast.error(error?.message || 'Failed to save profile');
             triggerHaptic(HapticPatterns.error);
+            setProfileSaveState('idle');
         } finally {
             setIsSavingProfile(false);
         }
@@ -1659,14 +1907,132 @@ const MobileDashboardDemo = ({
 
     const [showMenu, setShowMenu] = useState(false);
     const [showBrandDetails, setShowBrandDetails] = useState(false);
-    const [storefrontSection, setStorefrontSection] = useState<'profile' | 'packages' | 'audience' | 'proof' | 'settings' | 'analytics'>('profile');
+    const [notificationsView, setNotificationsView] = useState<'inbox' | 'preferences'>('inbox');
+    const [notificationsLastReadAt, setNotificationsLastReadAt] = useState<number>(() => {
+        if (typeof window === 'undefined') return 0;
+        return Number(window.localStorage.getItem(APP_NOTIFICATIONS_LAST_READ_STORAGE_KEY) || '0') || 0;
+    });
+    const [storefrontSection, setStorefrontSection] = useState<'profile' | 'packages' | 'audience' | 'proof' | 'settings' | 'analytics'>(() => {
+        if (typeof window === 'undefined') return 'profile';
+        return (window.localStorage.getItem(APP_STOREFRONT_SECTION_STORAGE_KEY) as 'profile' | 'packages' | 'audience' | 'proof' | 'settings' | 'analytics' | null) || 'profile';
+    });
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(APP_STOREFRONT_SECTION_STORAGE_KEY, storefrontSection);
+    }, [storefrontSection]);
 
     const handleAction = (action: string) => {
         triggerHaptic();
-        if (action === 'notifications') navigate('/notifications');
+        if (action === 'notifications') {
+            setActiveTab('profile');
+            setActiveSettingsPage('notifications');
+            setNotificationsView('inbox');
+        }
         else if (action === 'menu') { setShowMenu(true); if (onOpenMenu) onOpenMenu(); }
         else if (action === 'view_all') setActiveTab('collabs');
     };
+    const notificationInboxItems = React.useMemo(() => {
+        const offerItems = collabRequests.slice(0, 8).map((req: any, index: number) => {
+            const timestamp = new Date(req?.updated_at || req?.created_at || Date.now()).getTime();
+            return {
+                id: `notif-offer-${req?.id || index}`,
+                type: 'offer' as const,
+                title: `Offer from ${req?.brand_name || 'Brand'}`,
+                message: `${req?.collab_type || 'Paid'} collaboration needs your review.`,
+                cta: 'Review Offer',
+                date: timestamp,
+                isUnread: timestamp > notificationsLastReadAt,
+                onClick: () => {
+                    triggerHaptic();
+                    setSelectedItem(req);
+                    setSelectedType('offer');
+                    setActiveSettingsPage(null);
+                    setActiveTab('collabs');
+                },
+            };
+        });
+
+        const dealItems = brandDeals.slice(0, 20).map((deal: any, index: number) => {
+            const ux = getCreatorDealCardUX(deal);
+            let title = `${deal?.brand_name || 'Brand'} updated`;
+            let message = ux.nextStep;
+            let cta = 'Open Deal';
+
+            if (ux.needsSignature) {
+                title = `Sign contract for ${deal?.brand_name || 'Brand'}`;
+                message = 'Contract is ready for your signature.';
+                cta = 'Sign Contract';
+            } else if (ux.isRevisionRequested) {
+                title = `Revision requested by ${deal?.brand_name || 'Brand'}`;
+                message = 'Brand asked for changes before approval.';
+                cta = 'Submit Revision';
+            } else if (ux.isMaking) {
+                title = `Deliver content to ${deal?.brand_name || 'Brand'}`;
+                message = 'Upload your draft or final content to keep this deal moving.';
+                cta = 'Upload Content';
+            } else if (ux.isApproved && !ux.isPaymentReleased) {
+                title = `Payment pending for ${deal?.brand_name || 'Brand'}`;
+                message = 'Content is approved. Confirm payout readiness.';
+                cta = 'Confirm Payment';
+            } else if (ux.isPaymentReleased || normalizeDealStatus(deal).includes('paid')) {
+                title = `Payment received from ${deal?.brand_name || 'Brand'}`;
+                message = 'Funds have been released on this collaboration.';
+                cta = 'View Payment';
+            } else if (normalizeDealStatus(deal).includes('completed')) {
+                title = `${deal?.brand_name || 'Brand'} deal completed`;
+                message = 'This collaboration is now fully closed.';
+                cta = 'View Deal';
+            }
+
+            const timestamp = new Date(deal?.updated_at || deal?.created_at || Date.now()).getTime();
+            const needsAttention = Boolean(ux.needsCreatorAction) || (ux.isApproved && !ux.isPaymentReleased);
+
+            return {
+                id: `notif-deal-${deal?.id || index}`,
+                type: needsAttention ? 'action' as const : 'update' as const,
+                title,
+                message,
+                cta,
+                date: timestamp,
+                isUnread: timestamp > notificationsLastReadAt,
+                onClick: () => {
+                    triggerHaptic();
+                    setSelectedItem(deal);
+                    setSelectedType('deal');
+                    setActiveSettingsPage(null);
+                    setActiveTab('collabs');
+                },
+            };
+        });
+
+        return [...offerItems, ...dealItems]
+            .sort((a, b) => b.date - a.date)
+            .slice(0, 16);
+    }, [brandDeals, collabRequests, notificationsLastReadAt]);
+    const unreadNotificationCount = React.useMemo(
+        () => notificationInboxItems.filter((item) => item.isUnread).length,
+        [notificationInboxItems]
+    );
+    const actionNotificationCount = React.useMemo(
+        () => notificationInboxItems.filter((item) => item.type === 'offer' || item.type === 'action').length,
+        [notificationInboxItems]
+    );
+    const collabsAttentionCount = actionRequiredTotalCount;
+    const paymentsAttentionCount = React.useMemo(() => {
+        return activeDealsList.filter((deal: any) => {
+            const ux = getCreatorDealCardUX(deal);
+            return (ux.isApproved && !ux.isPaymentReleased) || (inferCreatorRequiresPayment(deal) && !creatorUpiOnFile);
+        }).length + (creatorHasPaidDealsWithoutUpi ? 1 : 0);
+    }, [activeDealsList, creatorHasPaidDealsWithoutUpi, creatorUpiOnFile]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(APP_NOTIFICATIONS_LAST_READ_STORAGE_KEY, String(notificationsLastReadAt || 0));
+    }, [notificationsLastReadAt]);
+    useEffect(() => {
+        if (activeSettingsPage !== 'notifications') return;
+        const now = Date.now();
+        setNotificationsLastReadAt((prev) => (prev >= now ? prev : now));
+    }, [activeSettingsPage]);
 
     const getBrandIcon = (logo?: string, category?: string, name?: string) => {
         const fallback = (cat: string, bName?: string) => {
@@ -1841,6 +2207,16 @@ const MobileDashboardDemo = ({
                                 Brands use this section to understand your niche, profile quality, and public-facing identity.
                             </p>
                             <div className="px-4 pt-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <p className={cn("text-[11px] font-medium", secondaryTextColor)}>
+                                        {profileSaveState === 'saving' ? 'Saving your changes…' : profileSaveState === 'saved' ? 'Saved just now' : 'Draft changes stay on this device until you save'}
+                                    </p>
+                                    {profileSaveState === 'saved' && (
+                                        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                            Saved
+                                        </span>
+                                    )}
+                                </div>
                                 <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Creator Info'}
                                 </button>
@@ -1964,6 +2340,16 @@ const MobileDashboardDemo = ({
                             </p>
 
                             <div className="px-4 pt-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <p className={cn("text-[11px] font-medium", secondaryTextColor)}>
+                                        {profileSaveState === 'saving' ? 'Saving your changes…' : profileSaveState === 'saved' ? 'Saved just now' : 'Draft changes stay on this device until you save'}
+                                    </p>
+                                    {profileSaveState === 'saved' && (
+                                        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                            Saved
+                                        </span>
+                                    )}
+                                </div>
                                 <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Update Preferences'}
                                 </button>
@@ -2142,6 +2528,16 @@ const MobileDashboardDemo = ({
                                 Use clear package names, pricing, deliverables, turnaround, revisions, and terms so a brand can decide quickly.
                             </p>
                             <div className="px-4 pt-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <p className={cn("text-[11px] font-medium", secondaryTextColor)}>
+                                        {profileSaveState === 'saving' ? 'Saving your changes…' : profileSaveState === 'saved' ? 'Saved just now' : 'Draft changes stay on this device until you save'}
+                                    </p>
+                                    {profileSaveState === 'saved' && (
+                                        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                            Saved
+                                        </span>
+                                    )}
+                                </div>
                                 <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Packages'}
                                 </button>
@@ -2201,6 +2597,16 @@ const MobileDashboardDemo = ({
                                 This is where collaboration money goes. Keep it updated so approved deals can be paid without delays.
                             </p>
                             <div className="px-4 pt-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <p className={cn("text-[11px] font-medium", secondaryTextColor)}>
+                                        {profileSaveState === 'saving' ? 'Saving your changes…' : profileSaveState === 'saved' ? 'Saved just now' : 'Draft changes stay on this device until you save'}
+                                    </p>
+                                    {profileSaveState === 'saved' && (
+                                        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                            Saved
+                                        </span>
+                                    )}
+                                </div>
                                 <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Payout Details'}
                                 </button>
@@ -2564,20 +2970,31 @@ const MobileDashboardDemo = ({
                                         </p>
                                     </div>
                                     <div className={cn("p-5 rounded-[2rem] border space-y-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Views</p>
-                                                <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabViews}</p>
+                                        {isLoadingCollabAnalytics ? (
+                                            <div className="grid grid-cols-3 gap-3">
+                                                {[0, 1, 2].map((item) => (
+                                                    <div key={item} className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                        <div className="skeleton h-3 w-12 rounded-full" />
+                                                        <div className="skeleton mt-3 h-5 w-14 rounded-lg" />
+                                                    </div>
+                                                ))}
                                             </div>
-                                            <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Offers</p>
-                                                <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabRequestCount}</p>
+                                        ) : (
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Views</p>
+                                                    <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabViews}</p>
+                                                </div>
+                                                <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Offers</p>
+                                                    <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabRequestCount}</p>
+                                                </div>
+                                                <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Conversion</p>
+                                                    <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabConversion.toFixed(1)}%</p>
+                                                </div>
                                             </div>
-                                            <div className={cn("rounded-xl border px-3 py-3", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
-                                                <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Conversion</p>
-                                                <p className={cn("text-[16px] font-black mt-1", textColor)}>{collabConversion.toFixed(1)}%</p>
-                                            </div>
-                                        </div>
+                                        )}
                                         <p className={cn("text-[12px] font-medium leading-relaxed", secondaryTextColor)}>
                                             Analytics stays separate from editing so the storefront editor stays focused and lighter.
                                         </p>
@@ -2586,6 +3003,16 @@ const MobileDashboardDemo = ({
                             )}
 
                             <div className="px-4 pt-2">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <p className={cn("text-[11px] font-medium", secondaryTextColor)}>
+                                        {profileSaveState === 'saving' ? 'Saving your changes…' : profileSaveState === 'saved' ? 'Saved just now' : 'Draft changes stay on this device until you save'}
+                                    </p>
+                                    {profileSaveState === 'saved' && (
+                                        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-emerald-500/15 text-emerald-300" : "bg-emerald-50 text-emerald-700")}>
+                                            Saved
+                                        </span>
+                                    )}
+                                </div>
                                 <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Storefront'}
                                 </button>
@@ -2618,115 +3045,214 @@ const MobileDashboardDemo = ({
                         <PageHeader title="Notifications" />
                         <div className="px-4 space-y-6">
                             <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
-                                <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Stay Updated</p>
-                                <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
-                                    Get notified when new deals, signatures, approvals, and payment updates require your attention.
-                                </p>
-                            </div>
-                            <SectionHeader title="Deal Alerts" isDark={isDark} />
-                            <SettingsGroup isDark={isDark}>
-                                <SettingsRow
-                                    icon={<Bell />} iconBg="bg-blue-500"
-                                    label="Push Notifications"
-                                    subtext={isPushSubscribed ? "Active on this device" : "Receive instant deal alerts"}
-                                    isDark={isDark} textColor={textColor}
-                                    rightElement={
-                                        <ToggleSwitch
-                                            active={isPushSubscribed}
-                                            onToggle={async () => {
-                                                triggerHaptic();
-                                                if (isPushSubscribed) {
-                                                    toast.info("To disable, please use your browser settings.");
-                                                } else {
-                                                    if (!isPushSupported) {
-                                                        toast.error("Push notifications aren't supported on this browser.");
-                                                        return;
-                                                    }
-                                                    if (!hasVapidKey) {
-                                                        toast.error("Notifications aren't configured yet.");
-                                                        return;
-                                                    }
-                                                    if (pushPermission === 'denied') {
-                                                        toast.error("Notifications are blocked. Enable them in browser settings.");
-                                                        return;
-                                                    }
-                                                    if (isIOSNeedsInstall) {
-                                                        setShowPushInstallGuide(true);
-                                                        return;
-                                                    }
-
-                                                    const res = await enableNotifications();
-                                                    if (res.success) {
-                                                        toast.success("Push notifications enabled!");
-                                                    } else {
-                                                        const reason = String(res.reason || '');
-                                                        const r = reason.toLowerCase();
-                                                        if (r === 'default') toast.error("Permission not granted.");
-                                                        else if (r === 'denied') toast.error("Permission denied in browser settings.");
-                                                        else if (r.includes('missing_vapid_key')) toast.error("Notifications aren't configured yet.");
-                                                        else toast.error("Failed to enable push alerts.", { description: reason || undefined });
-                                                    }
-                                                }
-                                            }}
-                                            isDark={isDark}
-                                        />
-                                    }
-                                />
-                                {isPushSubscribed && (
-                                    <button
-                                        onClick={async () => {
-                                            triggerHaptic();
-                                            const res = await sendTestPush();
-                                            if (res.success) toast.success("Test notification sent!");
-                                            else toast.error("Test push failed.", { description: res.reason || 'Unknown reason' });
-                                        }}
-                                        className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-blue-500 text-center", isPushBusy && "opacity-50")}
-                                        disabled={isPushBusy}
-                                    >
-                                        {isPushBusy ? "Sending..." : "Send Test Notification"}
-                                    </button>
-                                )}
-                            </SettingsGroup>
-                            <div className={cn("p-4 rounded-2xl border flex items-start justify-between gap-3", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
-                                <div className="min-w-0">
-                                    <p className={cn("text-[12px] font-black uppercase tracking-widest opacity-60", textColor)}>Status</p>
-                                    <p className={cn("text-[12px] mt-1 opacity-70", textColor)}>
-                                        Supported: <span className={cn("font-semibold", textColor)}>{isPushSupported ? 'Yes' : 'No'}</span>
-                                        {'  '}• Permission: <span className={cn("font-semibold", textColor)}>{pushPermission}</span>
-                                        {'  '}• Subscribed: <span className={cn("font-semibold", textColor)}>{isPushSubscribed ? 'Yes' : 'No'}</span>
-                                    </p>
-                                    {isIOSNeedsInstall && (
-                                        <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
-                                            iOS requires “Add to Home Screen” for push.
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40 mb-2", textColor)}>Notification Center</p>
+                                        <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
+                                            Track new offers, contract actions, approvals, and payout updates without leaving the app.
                                         </p>
-                                    )}
-                                    {!hasVapidKey && (
-                                        <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
-                                            Missing VAPID public key in frontend env.
-                                        </p>
-                                    )}
+                                    </div>
+                                    <div className={cn("rounded-2xl px-3 py-2 text-right border shrink-0", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>Unread</p>
+                                        <p className={cn("text-[18px] font-black mt-1", textColor)}>{unreadNotificationCount}</p>
+                                    </div>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        triggerHaptic();
-                                        await refreshPushStatus();
-                                        toast.success("Notification status refreshed");
-                                    }}
-                                    className={cn(
-                                        "h-10 px-4 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.99] shrink-0",
-                                        isDark ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                                    )}
-                                >
-                                    Refresh
-                                </button>
+                                <div className={cn("mt-4 flex p-1 rounded-2xl", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                    {[
+                                        { key: 'inbox', label: `Inbox ${actionNotificationCount > 0 ? `(${actionNotificationCount})` : ''}` },
+                                        { key: 'preferences', label: 'Preferences' },
+                                    ].map((item) => (
+                                        <button
+                                            key={item.key}
+                                            type="button"
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                setNotificationsView(item.key as 'inbox' | 'preferences');
+                                            }}
+                                            className={cn(
+                                                "flex-1 rounded-xl py-3 text-[11px] font-black uppercase tracking-widest transition-all",
+                                                notificationsView === item.key
+                                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                                    : cn("opacity-65", textColor)
+                                            )}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-amber-500/5 text-amber-500/80" : "bg-amber-50 text-amber-600")}>
-                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                                <p className="text-[11px] leading-relaxed font-medium">
-                                    We use push notifications to alert you about new contracts and emergency payment updates.
-                                </p>
-                            </div>
+                            {notificationsView === 'inbox' ? (
+                                <>
+                                    <div className="flex items-center justify-between">
+                                        <SectionHeader title="Inbox" isDark={isDark} />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                setNotificationsLastReadAt(Date.now());
+                                                toast.success('All notifications marked as read');
+                                            }}
+                                            className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-blue-300" : "text-blue-600")}
+                                        >
+                                            Mark all read
+                                        </button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {notificationInboxItems.length > 0 ? notificationInboxItems.map((item) => (
+                                            <button
+                                                key={item.id}
+                                                type="button"
+                                                onClick={item.onClick}
+                                                className={cn(
+                                                    "w-full rounded-[1.6rem] border p-4 text-left transition-all active:scale-[0.99]",
+                                                    isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm"
+                                                )}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className={cn(
+                                                        "mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
+                                                        item.type === 'offer'
+                                                            ? "bg-blue-500/15 text-blue-500"
+                                                            : item.type === 'action'
+                                                                ? "bg-amber-500/15 text-amber-500"
+                                                                : "bg-emerald-500/15 text-emerald-500"
+                                                    )}>
+                                                        {item.type === 'offer' ? <Mail className="h-4 w-4" /> : item.type === 'action' ? <Bell className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <p className={cn("text-[13px] font-bold leading-snug", textColor)}>{item.title}</p>
+                                                            {item.isUnread && <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-blue-500" />}
+                                                        </div>
+                                                        <p className={cn("mt-1 text-[12px] leading-relaxed", secondaryTextColor)}>{item.message}</p>
+                                                        <div className="mt-3 flex items-center justify-between gap-3">
+                                                            <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>
+                                                                {new Date(item.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                                            </p>
+                                                            <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-white/5 text-white/80" : "bg-slate-100 text-slate-700")}>
+                                                                {item.cta}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        )) : (
+                                            <div className={cn("rounded-[1.6rem] border p-6 text-center", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                                <Bell className={cn("mx-auto h-8 w-8 opacity-25", textColor)} />
+                                                <p className={cn("mt-3 text-[13px] font-semibold", textColor)}>No notifications yet</p>
+                                                <p className={cn("mt-1 text-[12px]", secondaryTextColor)}>New offers and deal updates will appear here.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <SectionHeader title="Deal Alerts" isDark={isDark} />
+                                    <SettingsGroup isDark={isDark}>
+                                        <SettingsRow
+                                            icon={<Bell />} iconBg="bg-blue-500"
+                                            label="Push Notifications"
+                                            subtext={isPushSubscribed ? "Active on this device" : "Receive instant deal alerts"}
+                                            isDark={isDark} textColor={textColor}
+                                            rightElement={
+                                                <ToggleSwitch
+                                                    active={isPushSubscribed}
+                                                    onToggle={async () => {
+                                                        triggerHaptic();
+                                                        if (isPushSubscribed) {
+                                                            toast.info("To disable, please use your browser settings.");
+                                                        } else {
+                                                            if (!isPushSupported) {
+                                                                toast.error("Push notifications aren't supported on this browser.");
+                                                                return;
+                                                            }
+                                                            if (!hasVapidKey) {
+                                                                toast.error("Notifications aren't configured yet.");
+                                                                return;
+                                                            }
+                                                            if (pushPermission === 'denied') {
+                                                                toast.error("Notifications are blocked. Enable them in browser settings.");
+                                                                return;
+                                                            }
+                                                            if (isIOSNeedsInstall) {
+                                                                setShowPushInstallGuide(true);
+                                                                return;
+                                                            }
+
+                                                            const res = await enableNotifications();
+                                                            if (res.success) {
+                                                                toast.success("Push notifications enabled!");
+                                                            } else {
+                                                                const reason = String(res.reason || '');
+                                                                const r = reason.toLowerCase();
+                                                                if (r === 'default') toast.error("Permission not granted.");
+                                                                else if (r === 'denied') toast.error("Permission denied in browser settings.");
+                                                                else if (r.includes('missing_vapid_key')) toast.error("Notifications aren't configured yet.");
+                                                                else toast.error("Failed to enable push alerts.", { description: reason || undefined });
+                                                            }
+                                                        }
+                                                    }}
+                                                    isDark={isDark}
+                                                />
+                                            }
+                                        />
+                                        {isPushSubscribed && (
+                                            <button
+                                                onClick={async () => {
+                                                    triggerHaptic();
+                                                    const res = await sendTestPush();
+                                                    if (res.success) toast.success("Test notification sent!");
+                                                    else toast.error("Test push failed.", { description: res.reason || 'Unknown reason' });
+                                                }}
+                                                className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-blue-500 text-center", isPushBusy && "opacity-50")}
+                                                disabled={isPushBusy}
+                                            >
+                                                {isPushBusy ? "Sending..." : "Send Test Notification"}
+                                            </button>
+                                        )}
+                                    </SettingsGroup>
+                                    <div className={cn("p-4 rounded-2xl border flex items-start justify-between gap-3", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                        <div className="min-w-0">
+                                            <p className={cn("text-[12px] font-black uppercase tracking-widest opacity-60", textColor)}>Status</p>
+                                            <p className={cn("text-[12px] mt-1 opacity-70", textColor)}>
+                                                Supported: <span className={cn("font-semibold", textColor)}>{isPushSupported ? 'Yes' : 'No'}</span>
+                                                {'  '}• Permission: <span className={cn("font-semibold", textColor)}>{pushPermission}</span>
+                                                {'  '}• Subscribed: <span className={cn("font-semibold", textColor)}>{isPushSubscribed ? 'Yes' : 'No'}</span>
+                                            </p>
+                                            {isIOSNeedsInstall && (
+                                                <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                                    iOS requires “Add to Home Screen” for push.
+                                                </p>
+                                            )}
+                                            {!hasVapidKey && (
+                                                <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                                    Missing VAPID public key in frontend env.
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                triggerHaptic();
+                                                await refreshPushStatus();
+                                                toast.success("Notification status refreshed");
+                                            }}
+                                            className={cn(
+                                                "h-10 px-4 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.99] shrink-0",
+                                                isDark ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                            )}
+                                        >
+                                            Refresh
+                                        </button>
+                                    </div>
+                                    <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-amber-500/5 text-amber-500/80" : "bg-amber-50 text-amber-600")}>
+                                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                        <p className="text-[11px] leading-relaxed font-medium">
+                                            We use push notifications to alert you about new contracts and emergency payment updates.
+                                        </p>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 );
@@ -2771,6 +3297,11 @@ const MobileDashboardDemo = ({
         setShowItemMenu(false);
         setSelectedItem(null);
         setSelectedType(null);
+        requestAnimationFrame(() => {
+            if (scrollRef.current) {
+                scrollRef.current.scrollTop = lastListScrollTopRef.current;
+            }
+        });
     };
 
     return (
@@ -2878,9 +3409,9 @@ const MobileDashboardDemo = ({
                                         {/* Bell */}
                                         <button onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
-                                            {collabRequests.length > 0 && (
+                                            {unreadNotificationCount > 0 && (
                                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white" style={{ borderColor: bgColor }}>
-                                                    {collabRequests.length}
+                                                    {Math.min(unreadNotificationCount, 9)}
                                                 </span>
                                             )}
                                         </button>
@@ -3058,383 +3589,255 @@ const MobileDashboardDemo = ({
                                 </>
                             ) : (
                                 <>
-
-
-                                    {/* Metrics Strip */}
-                                    <div className="px-5 mb-8">
-                                        {/* Premium Earnings Card */}
+                                    <div className="px-5 mb-8 space-y-6">
                                         <motion.div
-                                            initial={{ scale: 0.95, opacity: 0 }}
+                                            initial={{ scale: 0.97, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
                                             transition={{ delay: 0.1 }}
                                             className={cn(
-                                                "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/20 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-                                                isDark
-                                                    ? "from-emerald-400 via-cyan-500 to-blue-600"
-                                                    : "bg-emerald-600 from-emerald-600 via-teal-500 to-blue-700"
+                                                "py-7 px-6 rounded-[2rem] shadow-xl border border-white/10 bg-gradient-to-br relative overflow-hidden",
+                                                isDark ? "from-[#18c8d8] via-[#1fb4d9] to-[#2563eb] shadow-cyan-500/20" : "from-emerald-500 via-cyan-500 to-blue-700 shadow-emerald-500/10"
                                             )}
                                         >
-                                            {/* Decorative elements */}
+                                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.12),transparent_28%)]" />
                                             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-                                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-400/20 rounded-full blur-3xl home-card-glow" />
-
                                             <div className="relative z-10">
-                                                <div className="flex items-center justify-between text-white/90 mb-3">
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Monthly Revenue</span>
-                                                    <Zap className="w-4 h-4 fill-white text-white opacity-80" />
-                                                </div>
-                                                <div className="text-4xl font-black text-white mb-6 flex items-baseline gap-1 font-outfit">
-                                                    <span className="text-2xl font-bold opacity-70">₹</span>
-                                                    <AnimatedCounter value={monthlyRevenue} />
-                                                </div>
-                                                <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/10 w-fit">
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-400/20 flex items-center justify-center border border-emerald-400/30">
-                                                        <CheckCircle2 className="w-3 h-3 text-emerald-300" />
-                                                    </div>
-                                                    <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Secured by Armour</span>
-                                                </div>
+                                                {isDashboardRefreshing ? (
+                                                    <>
+                                                        <div className="skeleton h-3 w-28 rounded-full bg-white/20" />
+                                                        <div className="skeleton mt-3 h-10 w-40 rounded-2xl bg-white/20" />
+                                                        <div className="mt-5 grid grid-cols-2 gap-3">
+                                                            <div className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3">
+                                                                <div className="skeleton h-3 w-20 rounded-full bg-white/20" />
+                                                                <div className="skeleton mt-3 h-6 w-24 rounded-xl bg-white/20" />
+                                                            </div>
+                                                            <div className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3">
+                                                                <div className="skeleton h-3 w-24 rounded-full bg-white/20" />
+                                                                <div className="skeleton mt-3 h-6 w-24 rounded-xl bg-white/20" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="skeleton mt-4 h-3 w-36 rounded-full bg-white/20" />
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/75">This Month Earnings</p>
+                                                        <div className="mt-3 text-[44px] leading-none font-black text-white font-outfit">₹<AnimatedCounter value={monthlyRevenue} /></div>
+                                                        <div className="mt-5 grid grid-cols-2 gap-3">
+                                                            <div className="rounded-[1.35rem] border border-white/10 bg-black/12 backdrop-blur-md px-4 py-3.5">
+                                                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Pending Payments</p>
+                                                                <p className="mt-1.5 text-[20px] font-black text-white">₹{pendingPaymentsAmount.toLocaleString('en-IN')}</p>
+                                                            </div>
+                                                            <div className="rounded-[1.35rem] border border-white/10 bg-black/12 backdrop-blur-md px-4 py-3.5">
+                                                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Completed Payments</p>
+                                                                <p className="mt-1.5 text-[20px] font-black text-white">₹{completedPaymentsAmount.toLocaleString('en-IN')}</p>
+                                                            </div>
+                                                        </div>
+                                                        <p className="mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-white/85">Secured by Creator Armour</p>
+                                                    </>
+                                                )}
                                             </div>
                                         </motion.div>
 
-                                        {/* Row 2: Active & Pending Deals (Side by side) */}
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('collabs');
-                                                    setCollabSubTab('active');
-                                                }}
-                                                className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
-                                            >
-                                                <div className="flex items-center gap-2 mb-2.5">
-                                                    <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
-                                                    <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Active Deals</span>
-                                                </div>
-                                                <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{activeDealsCount}</p>
-                                            </motion.div>
-
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    setActiveTab('collabs');
-                                                    setCollabSubTab('pending');
-                                                }}
-                                                className={cn('p-5 rounded-[16px] border shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95', cardBgColor, borderColor)}
-                                            >
-                                                <div className="flex items-center gap-2 mb-2.5">
-                                                    <Handshake className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
-                                                    <span className={cn('text-[12px] uppercase tracking-[0.06em] font-medium', secondaryTextColor)}>Pending Offers</span>
-                                                </div>
-                                                <p className={cn('text-[28px] font-semibold tracking-tight', textColor)}>{pendingOffersCount}</p>
-                                            </motion.div>
-                                        </div>
-                                    </div>
-
-                                    {/* Intake Link Promoters / Quick Share */}
-                                    <div className="px-5 mb-8">
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 15 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.15 }}
-                                            className={cn(
-                                                "p-6 rounded-[2.5rem] border relative overflow-hidden group",
-                                                isDark ? "bg-slate-900 border-white/5" : "bg-white border-slate-100 shadow-sm"
-                                            )}
-                                        >
-                                            {/* Simple animated background element */}
-                                            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
-                                                <Link2 size={120} />
-                                            </div>
-
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                                                    <Link2 className="w-5 h-5 text-blue-500" />
-                                                </div>
+                                        <div className={cn("rounded-[2rem] border p-5 shadow-sm", cardBgColor, borderColor)}>
+                                            <div className="flex items-start justify-between gap-4 mb-5">
                                                 <div>
-                                                    <h3 className={cn("text-[15px] font-bold tracking-tight", textColor)}>Promote Collab Link</h3>
-                                                    <p className={cn("text-[11px] opacity-40 uppercase font-black tracking-widest", textColor)}>Quick Share Tools</p>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Action Required</p>
+                                                    <h2 className={cn("text-[22px] leading-[1.05] font-black tracking-tight mt-1", textColor)}>Deals waiting on you</h2>
                                                 </div>
-                                            </div>
-
-                                            <div className="flex gap-2.5">
                                                 <button
-                                                    onClick={handleCopyStorefront}
-                                                    className={cn(
-                                                        "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
-                                                        isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm"
-                                                    )}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        triggerHaptic();
+                                                        setActiveTab('collabs');
+                                                        setCollabSubTab('pending');
+                                                    }}
+                                                    className="shrink-0 rounded-xl bg-blue-600 px-3.5 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] text-white active:scale-95 transition-all"
                                                 >
-                                                    <Copy className="w-4 h-4 mb-2 opacity-60" />
-                                                    <span className={cn("text-[11px] font-bold font-outfit", textColor)}>Copy Bio Link</span>
-                                                </button>
-                                                <button
-                                                    onClick={handleCopyDMReply}
-                                                    className={cn(
-                                                        "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
-                                                        isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm"
-                                                    )}
-                                                >
-                                                    <MessageSquare className="w-4 h-4 mb-2 opacity-60" />
-                                                    <span className={cn("text-[11px] font-bold font-outfit", textColor)}>Copy DM Reply</span>
+                                                    Open Inbox {collabsAttentionCount > 0 ? `(${collabsAttentionCount})` : ''}
                                                 </button>
                                             </div>
+                                            <div className="space-y-3">
+                                                {isDashboardRefreshing ? Array.from({ length: 3 }).map((_, index) => (
+                                                    <div key={`action-skeleton-${index}`} className={cn("w-full rounded-[1.5rem] border px-4 py-4", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="skeleton h-4 w-32 rounded-xl" />
+                                                                <div className="skeleton mt-2 h-3 w-44 rounded-full" />
+                                                            </div>
+                                                            <div className="skeleton h-9 w-24 rounded-xl" />
+                                                        </div>
+                                                    </div>
+                                                )) : dashboardActionItems.length > 0 ? dashboardActionItems.map((item) => (
+                                                    <button
+                                                        key={item.id}
+                                                        type="button"
+                                                        onClick={item.onClick}
+                                                        className={cn("w-full rounded-[1.55rem] border px-4 py-4 text-left transition-all active:scale-[0.99] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", isDark ? "border-white/10 bg-white/[0.035]" : "border-slate-200 bg-slate-50")}
+                                                    >
+                                                        <div className="flex items-center justify-between gap-3">
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={cn(
+                                                                        "h-2.5 w-2.5 rounded-full shrink-0",
+                                                                        item.tone === 'red' ? "bg-red-500" :
+                                                                        item.tone === 'amber' ? "bg-amber-400" :
+                                                                        item.tone === 'emerald' ? "bg-emerald-500" :
+                                                                        "bg-blue-500"
+                                                                    )} />
+                                                                    <p className={cn("text-[15px] font-black tracking-tight", textColor)}>{item.title}</p>
+                                                                </div>
+                                                                <p className={cn("mt-2 text-[12px] leading-relaxed", secondaryTextColor)}>{item.subtitle}</p>
+                                                            </div>
+                                                            <span className={cn(
+                                                                "shrink-0 rounded-full px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em]",
+                                                                item.tone === 'red' ? "bg-red-600 text-white" :
+                                                                item.tone === 'amber' ? "bg-amber-500 text-white" :
+                                                                item.tone === 'emerald' ? "bg-emerald-600 text-white" :
+                                                                "bg-blue-600 text-white"
+                                                            )}>
+                                                                {item.cta}
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                )) : (
+                                                    <div className={cn("rounded-[1.5rem] border px-4 py-5 text-center", isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")}>
+                                                        <p className={cn("text-[14px] font-semibold", textColor)}>No urgent actions right now.</p>
+                                                        <p className={cn("mt-1 text-[12px]", secondaryTextColor)}>New offers and deal tasks will appear here first.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                            <p className={cn("text-[10px] text-center mt-3 opacity-40 font-medium italic", textColor)}>
-                                                Pro tip: Direct brands to your intake storefront
-                                            </p>
-                                        </motion.div>
-                                    </div>
-                                </>
-                            )}
-
-                            {/* Brand Offers Section */}
-                            <div className="px-5 mb-8">
-                                <div className="flex items-center justify-between mb-5">
-                                    <h2 className={cn('text-[16px] font-medium tracking-tight', textColor)}>Active Brand Offers</h2>
-                                </div>
-
-                                <AnimatePresence mode="popLayout">
-	                                    {(() => {
-	                                        const fakeDemoOffer = {
-	                                            id: 'demo-offer',
-	                                            brand_name: 'Zepto (Demo)',
-	                                            brand_logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Zepto_logo.svg/100px-Zepto_logo.svg.png',
-	                                            category: 'Quick Commerce',
-	                                            collab_type: 'paid',
-	                                            exact_budget: 35000,
-	                                            deliverables: ['1 Reel', '2 Stories'],
-	                                            deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-	                                            status: 'new',
-	                                            isDemo: true
-	                                        };
-	                                        const displayOffers =
-	                                            collabRequests.length > 0
-	                                                ? collabRequests
-	                                                : (isDemoOfferEnabled ? [fakeDemoOffer] : []);
-	                                        return (
-	                                            <div className="space-y-10">
-	                                                {displayOffers.length === 0 ? (
-	                                                    <div
-	                                                        className={cn(
-	                                                            "p-6 rounded-[20px] border text-center",
-	                                                            isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm"
-	                                                        )}
-	                                                    >
-	                                                        <p className={cn("text-[13px] font-semibold", textColor)}>No offers yet</p>
-	                                                        <p className={cn("text-[12px] mt-1 opacity-60", textColor)}>
-	                                                            Share your collab link to start receiving protected offers.
-	                                                        </p>
-	                                                    </div>
-	                                                ) : null}
-	                                                {displayOffers.map((req: any, idx) => {
-	                                                    // Format deliverables accurately
-	                                                    let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
-	                                                    const rawDeliv = req.raw?.deliverables || req.deliverables;
-
-                                                    const processDeliverableItems = (items: any[]) => {
-                                                        return items.map((d: any) => {
-                                                            if (typeof d === 'string') return d;
-                                                            if (d && typeof d === 'object') {
-                                                                if (d.contentType && d.count) return `${d.count} ${d.contentType}`;
-                                                                return JSON.stringify(d); // fallback
-                                                            }
-                                                            return String(d);
-                                                        });
-                                                    };
-
-                                                    if (rawDeliv) {
-                                                        if (Array.isArray(rawDeliv)) {
-                                                            deliverablesArr = processDeliverableItems(rawDeliv);
-                                                        } else if (typeof rawDeliv === 'string') {
-                                                            try {
-                                                                const parsed = JSON.parse(rawDeliv);
-                                                                deliverablesArr = Array.isArray(parsed) ? processDeliverableItems(parsed) : [parsed.toString()];
-                                                            } catch (e) {
-                                                                deliverablesArr = [rawDeliv];
-                                                            }
-                                                        }
-                                                    }
-
-                                                    // Clean up deliverables (remove any stray brackets/quotes if they slipped through)
-                                                    deliverablesArr = deliverablesArr.map(d => d.replace(/[\[\]"'{}]/g, ''));
-
-                                                    // Determine Deadline text
-                                                    let deadlineText = '';
-                                                    if (req.deadline) {
-                                                        const dDate = new Date(req.deadline);
-                                                        const diffDays = Math.ceil((dDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                                                        deadlineText = diffDays > 0 ? `${diffDays}d left` : 'Past Due';
-                                                    }
-
-                                                    // Mock/Get ID and time
-
+                                        <div className={cn("rounded-[2rem] border p-5 shadow-sm", cardBgColor, borderColor)}>
+                                            <div className="flex items-start justify-between gap-4 mb-5">
+                                                <div>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Active Deals</p>
+                                                    <h2 className={cn("text-[22px] leading-[1.05] font-black tracking-tight mt-1", textColor)}>Current collaborations</h2>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        triggerHaptic();
+                                                        setActiveTab('collabs');
+                                                        setCollabSubTab('active');
+                                                    }}
+                                                    className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-blue-300" : "text-blue-600")}
+                                                >
+                                                    View All {activeDealsCount > 0 ? `(${activeDealsCount})` : ''}
+                                                </button>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {activeDealsList.slice(0, 4).map((deal: any, idx: number) => {
+                                                    const ux = getCreatorDealCardUX(deal);
+                                                    const stages = ['Contract', 'Signed', 'Create', 'Deliver', 'Review', 'Done'];
+                                                    const progressPercent = Math.min(100, Math.max(12, Math.round((ux.progressStep / stages.length) * 100)));
                                                     return (
-                                                        <motion.div
-                                                            key={req.id || idx}
-                                                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                            onTap={() => {
-                                                                console.log("Card tapped: pending offer (main block)", req);
+                                                        <button
+                                                            key={deal?.id || idx}
+                                                            type="button"
+                                                            onClick={() => {
                                                                 triggerHaptic();
-                                                                setSelectedItem(req);
-                                                                setSelectedType('offer');
+                                                                setSelectedItem(deal);
+                                                                setSelectedType('deal');
                                                             }}
-                                                            className={cn(
-                                                                'rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.99] relative',
-                                                                isDark
-                                                                    ? 'bg-[#0F172A]/80 backdrop-blur-sm border border-slate-700/50 hover:border-slate-600'
-                                                                    : 'bg-white border-slate-200 shadow-lg hover:shadow-xl hover:border-slate-300'
-                                                            )}
+                                                            className={cn("w-full rounded-[1.55rem] border px-4 py-4 text-left transition-all active:scale-[0.99] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]", isDark ? "border-white/10 bg-white/[0.035]" : "border-slate-200 bg-white")}
                                                         >
-                                                            {/* Collab type accent strip */}
-                                                            <div className={cn("h-[4px] w-full", req.collab_type === 'barter' ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500' : 'bg-gradient-to-r from-blue-500 via-violet-500 to-indigo-600')} />
-
-                                                            {req.isDemo && (
-                                                                <div className="bg-blue-500/10 border-b border-blue-500/20 px-4 py-2.5 flex flex-col items-center justify-center gap-1">
-                                                                    <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-1.5"><Zap className="w-3 h-3 fill-blue-500" /> Interactive Demo Offer</span>
-                                                                    <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium text-center">This is a sample deal so you can understand how Creator Armour works.</span>
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="min-w-0">
+                                                                    <p className={cn("text-[15px] font-black tracking-tight", textColor)}>{deal?.brand_name || 'Brand collaboration'}</p>
+                                                                    <p className={cn("mt-1.5 text-[12px]", secondaryTextColor)}>
+                                                                        ₹{Number(deal?.deal_amount || 0).toLocaleString('en-IN')} • {Array.isArray(deal?.deliverables) ? deal.deliverables.join(', ') : (deal?.deliverables || 'Deliverables pending')}
+                                                                    </p>
+                                                                    <p className={cn("mt-1 text-[12px]", secondaryTextColor)}>
+                                                                        Deadline: {deal?.due_date || deal?.deadline ? new Date(deal?.due_date || deal?.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'Not set'}
+                                                                    </p>
                                                                 </div>
-                                                            )}
-
-                                                            <div className="px-5 py-4">
-                                                                {/* Row 1: Logo + Brand name + type tag + Budget */}
-                                                                <div className="flex items-start gap-3 mb-3">
-                                                                    {/* Logo with gradient border based on type */}
-                                                                    <div className={cn(
-                                                                        "w-12 h-12 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 transition-all duration-300 hover:scale-105",
-                                                                        req.collab_type === 'barter'
-                                                                            ? (isDark ? "bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30" : "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200")
-                                                                            : (isDark ? "bg-gradient-to-br from-blue-500/10 to-violet-500/10 border-violet-500/30" : "bg-gradient-to-br from-blue-50 to-violet-50 border-violet-200")
-                                                                    )}>
-                                                                        {getBrandIcon(req.brand_logo || req.brand_logo_url || req.logo_url || req.raw?.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)}
-                                                                    </div>
-
-                                                                    <div className="flex-1 min-w-0">
-                                                                        {/* Brand name + type badge */}
-                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                            <p className={cn("text-[15px] font-bold leading-tight truncate", isDark ? "text-white" : "text-slate-900")}>
-                                                                                {(req.brand_name || 'Brand').replace(/\s*\(Barter Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
-                                                                            </p>
-                                                                            {req.collab_type === 'barter' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-500 border border-amber-500/20">
-                                                                                    🎁 Barter
-                                                                                </span>
-                                                                            ) : req.collab_type === 'hybrid' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-violet-500/10 to-purple-500/10 text-violet-500 border border-violet-500/15">
-                                                                                    🤝 Hybrid
-                                                                                </span>
-                                                                            ) : req.collab_type === 'affiliate' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-500 border border-emerald-500/15">
-                                                                                    📈 Affiliate
-                                                                                </span>
-                                                                            ) : (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-violet-500/10 text-blue-500 border border-blue-500/15">
-                                                                                    💳 Paid
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                        {/* Category + Verified */}
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <span className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</span>
-                                                                            <span className="text-slate-500 text-[9px]">•</span>
-                                                                            <div className="flex items-center gap-0.5">
-                                                                                <ShieldCheck className="w-3 h-3 text-blue-500" strokeWidth={2.5} />
-                                                                                <span className={cn("text-[11px] font-semibold text-blue-500", isDark ? "text-blue-400" : "text-blue-600")}>Verified</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    {/* Budget — more prominent */}
-                                                                    <div className="shrink-0 text-right">
-                                                                        <p className={cn("text-[20px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
-                                                                            {req.exact_budget ? formatCurrency(req.exact_budget)
-                                                                                : req.barter_value ? `₹${(req.barter_value / 1000).toFixed(0)}K`
-                                                                                    : (req.budget_range || '₹75K')}
-                                                                        </p>
-                                                                        <p className={cn("text-[9px] font-bold uppercase tracking-widest", req.collab_type === 'barter' ? "text-amber-500" : (isDark ? "text-slate-500" : "text-slate-400"))}>
-                                                                            {req.collab_type === 'barter' ? 'Product Val.' : 'Cash'}
-                                                                        </p>
-                                                                    </div>
+                                                                <span className={cn("shrink-0 rounded-full px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em]", isDark ? "bg-white/10 text-white" : "bg-slate-100 text-slate-700")}>
+                                                                    {ux.cta}
+                                                                </span>
+                                                            </div>
+                                                            <div className="mt-4">
+                                                                <div className={cn("h-2.5 w-full rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-slate-100")}>
+                                                                    <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-600" style={{ width: `${progressPercent}%` }} />
                                                                 </div>
-
-                                                                {/* Row 2: Deliverables + Deadline */}
-                                                                <div className="flex items-center gap-2 mb-4 flex-wrap">
-                                                                    {deliverablesArr.map((d, i) => (
-                                                                        <span key={i} className={cn(
-                                                                            "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all",
-                                                                            isDark ? "bg-slate-800/50 border-slate-700/50 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600"
-                                                                        )}>
-                                                                            {d}
+                                                                <div className="mt-2.5 flex items-center justify-between gap-1">
+                                                                    {stages.map((stage, stageIndex) => (
+                                                                        <span key={stage} className={cn("text-[8px] font-black uppercase tracking-[0.14em]", stageIndex + 1 <= ux.progressStep ? (isDark ? "text-white/85" : "text-slate-800") : secondaryTextColor)}>
+                                                                            {stage}
                                                                         </span>
                                                                     ))}
-                                                                    <span className={cn(
-                                                                        "px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all",
-                                                                        isDark ? "bg-slate-800/50 border-slate-700/50 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"
-                                                                    )}>
-                                                                        📅 {req.deadline ? new Date(req.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
-                                                                    </span>
-                                                                    {deadlineText && (
-                                                                        <span className={cn(
-                                                                            "px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all animate-pulse",
-                                                                            isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 text-amber-400" : "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-amber-600"
-                                                                        )}>
-                                                                            ⚡{deadlineText}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-
-                                                                {/* Row 3: Action buttons */}
-                                                                <div className="flex gap-2">
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
-                                                                        className={cn(
-                                                                            "flex-1 h-11 rounded-xl font-semibold text-[12px] border transition-all active:scale-[0.96]",
-                                                                            isDark
-                                                                                ? "border-slate-600/50 text-slate-300 hover:bg-white/5 hover:border-slate-500 bg-slate-800/30"
-                                                                                : "border-slate-200 text-slate-700 hover:bg-slate-50 bg-white"
-                                                                        )}
-                                                                    >
-                                                                        Details
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            if (req.isDemo) {
-                                                                                toast.success("This is a demo offer! Complete your profile to get real brand deals.");
-                                                                                triggerHaptic(HapticPatterns.success);
-                                                                                return;
-                                                                            }
-                                                                            handleAccept(req);
-                                                                        }}
-                                                                        disabled={processingDeal === req.id}
-                                                                        className={cn(
-                                                                            "flex-1 h-11 rounded-xl font-bold text-[12px] text-white transition-all flex items-center justify-center gap-1.5 active:scale-[0.96] disabled:opacity-50 shadow-lg",
-                                                                            req.collab_type === 'barter'
-                                                                                ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/25"
-                                                                                : "bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-blue-500/25"
-                                                                        )}
-                                                                    >
-                                                                        {processingDeal === req.id ? (
-                                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                                        ) : (
-                                                                            <>
-                                                                                {req.collab_type === 'barter' ? '🎁 Accept Product Collab' : req.collab_type === 'hybrid' ? '🤝 Accept Hybrid Deal' : 'Accept Deal'}
-                                                                                <ArrowRight className="w-3.5 h-3.5" />
-                                                                            </>
-                                                                        )}
-                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                        </motion.div>
+                                                        </button>
                                                     );
                                                 })}
                                             </div>
-                                        );
-                                    })()}
-                                </AnimatePresence>
-                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-6">
+                                            <div className={cn("rounded-[2rem] border p-5 shadow-sm", cardBgColor, borderColor)}>
+                                                <div className="flex items-start justify-between gap-4 mb-5">
+                                                    <div>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Storefront</p>
+                                                        <h2 className={cn("text-[20px] font-black tracking-tight mt-1", textColor)}>Collab link performance</h2>
+                                                    </div>
+                                                    <button type="button" onClick={handleCopyStorefront} className="rounded-xl bg-blue-600 px-3.5 py-2.5 text-[10px] font-black uppercase tracking-[0.16em] text-white active:scale-95 transition-all">
+                                                        Share Collab Link
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className={cn("rounded-[1.35rem] border px-3 py-3.5", isDark ? "border-white/10 bg-white/[0.035]" : "border-slate-200 bg-slate-50")}>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>Views</p>
+                                                        <p className={cn("mt-1.5 text-[20px] font-black", textColor)}>{collabViews}</p>
+                                                        <p className={cn("text-[10px]", secondaryTextColor)}>This week</p>
+                                                    </div>
+                                                    <div className={cn("rounded-[1.35rem] border px-3 py-3.5", isDark ? "border-white/10 bg-white/[0.035]" : "border-slate-200 bg-slate-50")}>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>Offers</p>
+                                                        <p className={cn("mt-1.5 text-[20px] font-black", textColor)}>{collabRequestCount}</p>
+                                                        <p className={cn("text-[10px]", secondaryTextColor)}>Received</p>
+                                                    </div>
+                                                    <div className={cn("rounded-[1.35rem] border px-3 py-3.5", isDark ? "border-white/10 bg-white/[0.035]" : "border-slate-200 bg-slate-50")}>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>Conversion</p>
+                                                        <p className={cn("mt-1.5 text-[20px] font-black", textColor)}>{collabConversion.toFixed(1)}%</p>
+                                                        <p className={cn("text-[10px]", secondaryTextColor)}>Offer rate</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className={cn("rounded-[2rem] border p-5 shadow-sm", cardBgColor, borderColor)}>
+                                                <div className="flex items-start justify-between gap-4 mb-5">
+                                                    <div>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Recent Activity</p>
+                                                        <h2 className={cn("text-[20px] font-black tracking-tight mt-1", textColor)}>Latest timeline</h2>
+                                                    </div>
+                                                    <div className={cn("rounded-full px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em]", bookingReadinessScore >= 80 ? "bg-emerald-500/15 text-emerald-500" : "bg-amber-500/15 text-amber-500")}>
+                                                        {bookingReadinessScore}% ready
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    {isDashboardRefreshing ? Array.from({ length: 4 }).map((_, index) => (
+                                                        <div key={`activity-skeleton-${index}`} className="flex items-start gap-3">
+                                                            <div className="mt-0.5 h-2.5 w-2.5 rounded-full bg-blue-600/30 shrink-0" />
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="skeleton h-4 w-40 rounded-xl" />
+                                                                <div className="skeleton mt-2 h-3 w-24 rounded-full" />
+                                                            </div>
+                                                        </div>
+                                                    )) : recentActivityItems.map((item) => (
+                                                        <div key={item.id} className="flex items-start gap-3">
+                                                            <div className="mt-1.5 h-2.5 w-2.5 rounded-full bg-blue-600 shrink-0 shadow-[0_0_0_4px_rgba(37,99,235,0.12)]" />
+                                                            <div className="min-w-0">
+                                                                <p className={cn("text-[13px] font-semibold leading-snug", textColor)}>{item.title}</p>
+                                                                <p className={cn("text-[11px] mt-1 uppercase tracking-[0.14em]", secondaryTextColor)}>{item.meta}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </>
                     )}
 
@@ -3464,7 +3867,7 @@ const MobileDashboardDemo = ({
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
-                                        Action required ({actionRequiredTotalCount})
+                                        Awaiting You ({actionRequiredTotalCount})
                                     </button>
                                     <button
                                         onClick={() => {
@@ -3483,7 +3886,7 @@ const MobileDashboardDemo = ({
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
-                                        Active ({activeDealsCount})
+                                        In Progress ({activeDealsCount})
                                     </button>
                                     <button
                                         onClick={() => {
@@ -3502,7 +3905,7 @@ const MobileDashboardDemo = ({
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
-                                        Completed ({completedDealsCount})
+                                        Closed ({completedDealsCount})
                                     </button>
                                 </div>
                             </div>
@@ -4361,63 +4764,114 @@ const MobileDashboardDemo = ({
                                     <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>Payments</h1>
                                     <p className={cn("text-[11px] font-medium opacity-60", textColor)}>Track pending payments and completed payouts</p>
                                 </div>
-                                <button className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
-                                    <Download className={cn("w-5 h-5", secondaryTextColor)} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    {paymentsAttentionCount > 0 && (
+                                        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest", isDark ? "bg-amber-500/15 text-amber-200" : "bg-amber-100 text-amber-800")}>
+                                            {paymentsAttentionCount} action{paymentsAttentionCount === 1 ? '' : 's'}
+                                        </span>
+                                    )}
+                                    <button className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
+                                        <Download className={cn("w-5 h-5", secondaryTextColor)} />
+                                    </button>
+                                </div>
                             </div>
 
 	                            {/* Main Highlight: Pending Amount */}
-	                            <motion.div
-	                                initial={{ scale: 0.95, opacity: 0 }}
-	                                animate={{ scale: 1, opacity: 1 }}
-	                                transition={{ delay: 0.1 }}
-	                                className={cn(
-	                                    "py-7 px-7 rounded-[2.25rem] shadow-xl border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-	                                    isDark
-	                                        ? "from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
-	                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
-	                                )}
-	                            >
-	                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-	                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-	                                <div className="relative z-10">
-	                                    <div className="flex items-center justify-between text-white/90 mb-3">
-	                                        <div className="space-y-0.5">
-	                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-white">Pending Amount</span>
-	                                            <span className="block text-[11px] font-semibold text-white/70">Released after content approval</span>
-	                                        </div>
-	                                        <div className="p-2 rounded-xl bg-white/12 backdrop-blur-md border border-white/20">
-	                                            <Clock className="w-4 h-4 text-white" />
-	                                        </div>
-	                                    </div>
-	                                    <div className="text-4xl font-black text-white mb-5 flex items-baseline gap-1 font-outfit">
-	                                        <span className="text-2xl font-bold opacity-75">₹</span>
-	                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
-	                                    </div>
-	                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/15 w-fit">
-	                                        <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
-	                                            <ShieldCheck className="w-3 h-3 text-white/90" />
-	                                        </div>
-	                                        <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Creator Armour protection active</span>
-	                                    </div>
-	                                </div>
-	                            </motion.div>
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.1 }}
+                                className={cn(
+                                    "py-7 px-7 rounded-[2.25rem] shadow-xl border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
+                                    isDark
+                                        ? "from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
+                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
+                                )}
+                            >
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+                                <div className="relative z-10">
+                                    {isPaymentsRefreshing ? (
+                                        <>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div>
+                                                    <div className="skeleton h-3 w-24 rounded-full bg-white/20" />
+                                                    <div className="skeleton mt-2 h-3 w-36 rounded-full bg-white/20" />
+                                                </div>
+                                                <div className="skeleton h-10 w-10 rounded-xl bg-white/20" />
+                                            </div>
+                                            <div className="skeleton h-10 w-44 rounded-2xl bg-white/20" />
+                                            <div className="skeleton mt-5 h-10 w-44 rounded-xl bg-white/20" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center justify-between text-white/90 mb-3">
+                                                <div className="space-y-0.5">
+                                                    <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-white">Pending Amount</span>
+                                                    <span className="block text-[11px] font-semibold text-white/70">Released after content approval</span>
+                                                </div>
+                                                <div className="p-2 rounded-xl bg-white/12 backdrop-blur-md border border-white/20">
+                                                    <Clock className="w-4 h-4 text-white" />
+                                                </div>
+                                            </div>
+                                            <div className="text-4xl font-black text-white mb-5 flex items-baseline gap-1 font-outfit">
+                                                <span className="text-2xl font-bold opacity-75">₹</span>
+                                                <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
+                                            </div>
+                                            <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/15 w-fit">
+                                                <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
+                                                    <ShieldCheck className="w-3 h-3 text-white/90" />
+                                                </div>
+                                                <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Creator Armour protection active</span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </motion.div>
 
                             {/* Secondary Stats Row */}
                             <div className="grid grid-cols-2 gap-3 mb-6">
-                                <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
-                                    <div className={cn("text-lg font-bold font-outfit", isDark ? "text-emerald-400" : "text-emerald-600")}>₹{monthlyRevenue.toLocaleString()}</div>
-                                </div>
-                                <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
-                                    <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
-                                    <div className={cn("text-lg font-bold font-outfit", textColor)}>₹{allTimeRevenue.toLocaleString()}</div>
-                                </div>
+                                {isPaymentsRefreshing ? (
+                                    <>
+                                        <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
+                                            <div className="skeleton h-3 w-20 rounded-full" />
+                                            <div className="skeleton mt-3 h-6 w-24 rounded-xl" />
+                                        </div>
+                                        <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
+                                            <div className="skeleton h-3 w-20 rounded-full" />
+                                            <div className="skeleton mt-3 h-6 w-24 rounded-xl" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
+                                            <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
+                                            <div className={cn("text-lg font-bold font-outfit", isDark ? "text-emerald-400" : "text-emerald-600")}>₹{monthlyRevenue.toLocaleString()}</div>
+                                        </div>
+                                        <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
+                                            <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
+                                            <div className={cn("text-lg font-bold font-outfit", textColor)}>₹{allTimeRevenue.toLocaleString()}</div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
 	                            {/* Transaction List */}
 	                            <div className="space-y-3">
-	                                {brandDeals.length > 0 ? (
+	                                {isPaymentsRefreshing ? (
+                                        Array.from({ length: 4 }).map((_, idx) => (
+                                            <div key={`payment-skeleton-${idx}`} className={cn("p-5 rounded-2xl border flex items-center justify-between", cardBgColor, borderColor)}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="skeleton h-10 w-10 rounded-xl" />
+                                                    <div>
+                                                        <div className="skeleton h-4 w-28 rounded-xl" />
+                                                        <div className="skeleton mt-2 h-3 w-32 rounded-full" />
+                                                    </div>
+                                                </div>
+                                                <div className="skeleton h-5 w-20 rounded-xl" />
+                                            </div>
+                                        ))
+                                    ) : brandDeals.length > 0 ? (
 	                                    brandDeals.map((deal: any, idx: number) => (
 	                                        (() => {
 	                                            const payUx = getCreatorPaymentListUX(deal);
@@ -4481,15 +4935,23 @@ const MobileDashboardDemo = ({
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
                             <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Dashboard</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14 relative">
                             <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
                             <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+                            {collabsAttentionCount > 0 && (
+                                <span className={cn(
+                                    "absolute -top-1 right-0 min-w-[18px] h-[18px] px-1 rounded-full border text-[9px] font-black flex items-center justify-center",
+                                    isDark ? "bg-amber-500 text-white border-[#0B0F14]" : "bg-amber-500 text-white border-white"
+                                )}>
+                                    {Math.min(collabsAttentionCount, 9)}
+                                </span>
+                            )}
                         </motion.button>
 
-                        {/* Middle Action: + Collab Link */}
+                        {/* Middle Action: Storefront */}
                         <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                             onClick={() => { triggerHaptic(); setShowActionSheet(true); }}
                             className="relative flex flex-col items-center -mt-8"
@@ -4498,15 +4960,23 @@ const MobileDashboardDemo = ({
                                 "w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110",
                                 isDark ? "bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#0B0F14] text-white shadow-[0_4px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.35)] ring-1 ring-emerald-400/30"
                                     : "bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-emerald-200"
-                            )}>
+                                )}>
                                 <Link2 className="w-7 h-7" />
                             </div>
-                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>Create</span>
+                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>Storefront</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14 relative">
                             <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
                             <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
+                            {paymentsAttentionCount > 0 && (
+                                <span className={cn(
+                                    "absolute -top-1 right-0 min-w-[18px] h-[18px] px-1 rounded-full border text-[9px] font-black flex items-center justify-center",
+                                    isDark ? "bg-rose-500 text-white border-[#0B0F14]" : "bg-rose-500 text-white border-white"
+                                )}>
+                                    {Math.min(paymentsAttentionCount, 9)}
+                                </span>
+                            )}
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
@@ -4541,8 +5011,8 @@ const MobileDashboardDemo = ({
                                 <div className="max-w-md mx-auto">
                                     <div className="flex items-start justify-between mb-6">
                                         <div>
-                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Manage your collab link</h2>
-                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-white" : "text-slate-900")}>Share your profile, review offers, and keep your page current.</p>
+                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Manage your storefront</h2>
+                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-white" : "text-slate-900")}>Share your booking page, review offers, and update what brands see.</p>
                                         </div>
                                         <motion.button
                                             whileTap={{ scale: 0.9 }}
@@ -4568,10 +5038,22 @@ const MobileDashboardDemo = ({
                                                     <Share2 className="w-5 h-5" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-[13px] font-black uppercase tracking-widest">Share collab link</p>
-                                                    <p className="text-[12px] opacity-75 mt-1">Send your profile page to brands in one tap</p>
+                                                    <p className="text-[13px] font-black uppercase tracking-widest">Share storefront</p>
+                                                    <p className="text-[12px] opacity-75 mt-1">Send your booking page to brands in one tap</p>
                                                 </div>
                                             </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setShowActionSheet(false);
+                                                setActiveTab('profile');
+                                                setActiveSettingsPage('collab-link');
+                                            }}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                                        >
+                                            <p className={cn('text-[13px] font-bold', textColor)}>Edit storefront</p>
+                                            <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Update packages, proof, audience, and display settings</p>
                                         </button>
 
                                         <button
@@ -4581,7 +5063,7 @@ const MobileDashboardDemo = ({
                                             }}
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
-                                            <p className={cn('text-[13px] font-bold', textColor)}>Copy collab link</p>
+                                            <p className={cn('text-[13px] font-bold', textColor)}>Copy storefront link</p>
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
                                         </button>
 
