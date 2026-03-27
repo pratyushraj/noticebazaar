@@ -1,89 +1,306 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingDown, AlertCircle, Users, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingDown, AlertCircle, Users, FileText, ChevronDown, X, Zap } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Recommendation {
   id: string;
   text: string;
   type: 'improvement' | 'warning' | 'action' | 'info';
   icon?: React.ReactNode;
+  actionLabel?: string;
+  relatedActions?: string[];
 }
 
 const RecommendationsPills: React.FC = () => {
+  const [selectedType, setSelectedType] = useState<'all' | 'improvement' | 'warning' | 'action' | 'info'>('all');
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showMore, setShowMore] = useState(false);
+
   const recommendations: Recommendation[] = [
     {
       id: '1',
-      text: 'Improve onboarding',
+      text: 'Improve profile completeness',
       type: 'improvement',
       icon: <TrendingDown className="h-3 w-3" />,
+      actionLabel: 'Complete Profile',
+      relatedActions: ['Add profile photo', 'Update bio', 'Add portfolio link'],
     },
     {
       id: '2',
-      text: 'Client average ticket ↓',
+      text: 'Client average ticket decreased',
       type: 'warning',
       icon: <TrendingDown className="h-3 w-3" />,
+      actionLabel: 'Analyze Trend',
+      relatedActions: ['Review deal history', 'Adjust pricing', 'Target premium brands'],
     },
     {
       id: '3',
-      text: 'Add missing KYC',
+      text: 'Missing KYC verification',
       type: 'action',
       icon: <FileText className="h-3 w-3" />,
+      actionLabel: 'Complete KYC',
+      relatedActions: ['Upload Aadhaar', 'Bank details', 'Tax documents'],
     },
     {
       id: '4',
-      text: '3 clients waiting for update',
+      text: '3 clients waiting for updates',
       type: 'info',
       icon: <Users className="h-3 w-3" />,
+      actionLabel: 'Send Updates',
+      relatedActions: ['Brand A', 'Brand B', 'Brand C'],
     },
     {
       id: '5',
       text: 'Review contract terms',
       type: 'action',
       icon: <AlertCircle className="h-3 w-3" />,
+      actionLabel: 'Review Contracts',
+      relatedActions: ['Update rates', 'Add terms', 'Set availability'],
+    },
+    {
+      id: '6',
+      text: 'Engagement rate trending up',
+      type: 'info',
+      icon: <Zap className="h-3 w-3" />,
+      actionLabel: 'View Analytics',
+      relatedActions: ['Share milestone', 'Update portfolio'],
     },
   ];
 
-  const getBadgeVariant = (type: Recommendation['type']) => {
-    switch (type) {
-      case 'improvement':
-        return 'default';
-      case 'warning':
-        return 'destructive';
-      case 'action':
-        return 'secondary';
-      case 'info':
-        return 'outline';
-    }
+  const typeConfig = {
+    improvement: {
+      label: 'Improvements',
+      badge: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
+      icon: 'text-blue-500',
+      description: 'Enhance your profile and offerings',
+    },
+    warning: {
+      label: 'Warnings',
+      badge: 'bg-red-500/20 text-red-600 border-red-500/30',
+      icon: 'text-red-500',
+      description: 'Issues that need attention',
+    },
+    action: {
+      label: 'Actions Required',
+      badge: 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30',
+      icon: 'text-yellow-500',
+      description: 'Complete to unlock features',
+    },
+    info: {
+      label: 'Insights',
+      badge: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
+      icon: 'text-purple-500',
+      description: 'Positive trends and opportunities',
+    },
   };
 
+  const filteredRecs = recommendations.filter(rec => {
+    if (dismissedIds.has(rec.id)) return false;
+    return selectedType === 'all' || rec.type === selectedType;
+  });
+
+  const displayedRecs = showMore ? filteredRecs : filteredRecs.slice(0, 4);
+
+  const typeCounts = {
+    all: recommendations.filter(r => !dismissedIds.has(r.id)).length,
+    improvement: recommendations.filter(r => r.type === 'improvement' && !dismissedIds.has(r.id)).length,
+    warning: recommendations.filter(r => r.type === 'warning' && !dismissedIds.has(r.id)).length,
+    action: recommendations.filter(r => r.type === 'action' && !dismissedIds.has(r.id)).length,
+    info: recommendations.filter(r => r.type === 'info' && !dismissedIds.has(r.id)).length,
+  };
+
+  const handleDismiss = (id: string) => {
+    setDismissedIds(new Set([...dismissedIds, id]));
+  };
+
+  if (typeCounts.all === 0) {
+    return null;
+  }
+
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
-      <CardContent className="p-4">
-        <div className="mb-3">
-          <h3 className="text-sm font-semibold text-white mb-1">Recommendations</h3>
-          <p className="text-xs text-white/50">Quick insights and learnings</p>
-        </div>
-        
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-2 pb-2">
-            {recommendations.map((rec) => (
-              <Badge
-                key={rec.id}
-                variant={getBadgeVariant(rec.type)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity bg-white/10 text-white border border-white/20"
-              >
-                {rec.icon}
-                {rec.text}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className="bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-xl border border-slate-700/30 rounded-2xl shadow-lg">
+        <CardContent className="p-4 sm:p-6">
+          {/* Header */}
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-bold text-white">Recommendations</h3>
+              <Badge variant="outline" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/30 text-xs">
+                {typeCounts.all} active
               </Badge>
-            ))}
+            </div>
+            <p className="text-xs text-slate-400 mb-4">Personalized insights to grow your creator business</p>
+
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2">
+              {(['all', 'improvement', 'warning', 'action', 'info'] as const).map((type) => (
+                <motion.button
+                  key={type}
+                  onClick={() => {
+                    setSelectedType(type);
+                    setShowMore(false);
+                  }}
+                  variants={{
+                    initial: { scale: 0.95, opacity: 0 },
+                    animate: { scale: 1, opacity: 1 },
+                  }}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5',
+                    selectedType === type
+                      ? type === 'warning'
+                        ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
+                        : type === 'action'
+                        ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/30'
+                        : type === 'improvement'
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                        : type === 'info'
+                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                        : 'bg-slate-600 text-white shadow-lg shadow-slate-600/30'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                  )}
+                >
+                  {type === 'all' ? 'All' : typeConfig[type]?.label}
+                  <span className="text-xs font-bold">({typeCounts[type]})</span>
+                </motion.button>
+              ))}
+            </div>
           </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+
+          {/* Recommendations List */}
+          <motion.div className="space-y-2">
+            <AnimatePresence mode="popLayout">
+              {displayedRecs.map((rec, idx) => (
+                <motion.div
+                  key={rec.id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
+                  className={cn(
+                    'group p-3 rounded-xl border transition-all duration-200 overflow-hidden',
+                    expandedId === rec.id
+                      ? 'bg-white/10 border-white/20'
+                      : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/15'
+                  )}
+                >
+                  {/* Collapsed State */}
+                  <div
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <div className={cn("flex-shrink-0 p-1.5 rounded-lg bg-white/5 border border-white/10", typeConfig[rec.type].icon)}>
+                        {rec.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{rec.text}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{typeConfig[rec.type].description}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={cn("text-xs font-semibold border", typeConfig[rec.type].badge)}
+                      >
+                        {typeConfig[rec.type].label}
+                      </Badge>
+                      <button
+                        onClick={() => setExpandedId(expandedId === rec.id ? null : rec.id)}
+                        className="p-1 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white"
+                      >
+                        <ChevronDown
+                          className={cn('w-4 h-4 transition-transform', expandedId === rec.id && 'rotate-180')}
+                        />
+                      </button>
+                      <button
+                        onClick={() => handleDismiss(rec.id)}
+                        className="p-1 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Expanded State */}
+                  <AnimatePresence>
+                    {expandedId === rec.id && rec.relatedActions && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="mt-3 pt-3 border-t border-white/10"
+                      >
+                        <p className="text-xs font-semibold text-slate-300 mb-2">Related actions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {rec.relatedActions.map((action, idx) => (
+                            <motion.button
+                              key={idx}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: idx * 0.05 }}
+                              className="px-2.5 py-1 text-xs rounded-full bg-white/10 hover:bg-white/15 text-slate-300 hover:text-white transition-colors border border-white/10 hover:border-white/20"
+                            >
+                              {action}
+                            </motion.button>
+                          ))}
+                        </div>
+                        <Button
+                          size="sm"
+                          className={cn(
+                            "w-full mt-3 font-semibold text-white transition-all",
+                            rec.type === 'warning'
+                              ? 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20'
+                              : rec.type === 'action'
+                              ? 'bg-yellow-600 hover:bg-yellow-700 shadow-lg shadow-yellow-600/20'
+                              : rec.type === 'improvement'
+                              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20'
+                              : 'bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-600/20'
+                          )}
+                        >
+                          {rec.actionLabel || 'Take Action'}
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Show More / Load More */}
+          {filteredRecs.length > 4 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-3 pt-3 border-t border-white/10"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMore(!showMore)}
+                className="w-full text-xs font-semibold border-white/20 hover:bg-white/10"
+              >
+                {showMore ? '− Show Less' : `+ Show ${filteredRecs.length - 4} More`}
+              </Button>
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
