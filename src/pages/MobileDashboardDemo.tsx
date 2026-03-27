@@ -374,6 +374,9 @@ const buildProfileFormData = (profile: any, userEmail?: string | null) => {
         collab_delivery_reliability_note: profile?.collab_delivery_reliability_note || '',
         collab_response_behavior_note: profile?.collab_response_behavior_note || '',
         campaign_slot_note: profile?.campaign_slot_note || '',
+        // NEW: Public Portfolio
+        portfolio_links: Array.isArray(profile?.portfolio_links) ? profile.portfolio_links : [],
+        past_brands: Array.isArray(profile?.past_brands) ? profile.past_brands : [],
         // NEW: CTA & Social Customization
         collab_cta_trust_note: profile?.collab_cta_trust_note || '',
         collab_cta_dm_note: profile?.collab_cta_dm_note || '',
@@ -1133,6 +1136,9 @@ const MobileDashboardDemo = ({
                 collab_cta_trust_note: profileFormData.collab_cta_trust_note || null,
                 collab_cta_dm_note: profileFormData.collab_cta_dm_note || null,
                 collab_cta_platform_note: profileFormData.collab_cta_platform_note || null,
+                // NEW: Public Portfolio
+                portfolio_links: profileFormData.portfolio_links || [],
+                past_brands: profileFormData.past_brands || [],
                 updated_at: new Date().toISOString(),
             };
 
@@ -1989,6 +1995,79 @@ const MobileDashboardDemo = ({
                                             value={profileFormData.primary_audience_language}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, primary_audience_language: e.target.value })}
                                         />
+                                    </div>
+                                </div>
+                            </SettingsGroup>
+
+                            {/* Public Portfolio */}
+                            <SettingsGroup title="Public Portfolio" icon={<Search className="w-5 h-5 text-blue-500" />} isDark={isDark}>
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Featured Work Gallery</p>
+                                        <p className={cn("text-[10px] font-semibold opacity-60 mb-2", textColor)}>Add links to your top-performing Reels or Posts</p>
+                                        <div className="flex flex-col gap-2 mb-2">
+                                            {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
+                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[11px] font-black w-full truncate", isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-600")}>
+                                                    <Link2 className="w-3.5 h-3.5 shrink-0" />
+                                                    <span className="truncate flex-1">{link}</span>
+                                                    <X className="w-4 h-4 cursor-pointer shrink-0" onClick={() => {
+                                                        const newLinks = [...profileFormData.portfolio_links];
+                                                        newLinks.splice(idx, 1);
+                                                        setProfileFormData({ ...profileFormData, portfolio_links: newLinks });
+                                                    }} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="url"
+                                                placeholder="https://instagram.com/reel/..."
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold pr-12", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        const target = e.target as HTMLInputElement;
+                                                        if (target.value.trim()) {
+                                                            setProfileFormData({ ...profileFormData, portfolio_links: [...(profileFormData.portfolio_links || []), target.value.trim()] });
+                                                            target.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <Plus className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-1.5 pt-2">
+                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Past Brands</p>
+                                        <div className="flex flex-wrap gap-2 mb-2">
+                                            {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
+                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-black uppercase", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-100 border-slate-200 text-slate-800")}>
+                                                    {brand}
+                                                    <X className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100" onClick={() => {
+                                                        const newBrands = [...profileFormData.past_brands];
+                                                        newBrands.splice(idx, 1);
+                                                        setProfileFormData({ ...profileFormData, past_brands: newBrands });
+                                                    }} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Add past brand..."
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold pr-12", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        const target = e.target as HTMLInputElement;
+                                                        if (target.value.trim()) {
+                                                            setProfileFormData({ ...profileFormData, past_brands: [...(profileFormData.past_brands || []), target.value.trim()] });
+                                                            target.value = '';
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <Plus className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" />
+                                        </div>
                                     </div>
                                 </div>
                             </SettingsGroup>
