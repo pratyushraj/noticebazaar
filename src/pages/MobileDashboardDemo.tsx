@@ -3812,7 +3812,7 @@ const MobileDashboardDemo = ({
 
                     {/* ─── OTHER TABS (Simplified for UI flow) ─── */}
                     {activeTab === 'profile' && (
-                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative overflow-hidden bg-transparent")}>
+                        <div className={cn("animate-in fade-in slide-in-from-bottom-4 duration-500 pb-32 min-h-screen relative bg-transparent")}>
                             <AnimatePresence mode="wait">
                                 {!activeSettingsPage ? (
                                     <motion.div
