@@ -25,6 +25,10 @@ import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, 
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { DealTemplate } from '@/types';
+import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
+import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
+import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
+import SkeletonLoader from '@/components/dashboard/SkeletonLoader';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -574,6 +578,9 @@ const MobileDashboardDemo = ({
     const [reportIssueReason, setReportIssueReason] = useState('');
     const [isConfirmingReceived, setIsConfirmingReceived] = useState(false);
     const [isReportingIssue, setIsReportingIssue] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [dealFilters, setDealFilters] = useState({ status: 'all', sortBy: 'newest' });
+    const [isLoadingDeals, setIsLoadingDeals] = useState(false);
     const contractSectionRef = useRef<HTMLDivElement | null>(null);
 
     // Prevent double scrollbar when item detail modal is open
@@ -2943,6 +2950,38 @@ const MobileDashboardDemo = ({
                                 </>
                             )}
 
+                            {/* Dashboard Metrics Cards */}
+                            <div className="px-5 mb-8">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="mb-4"
+                                >
+                                    <h3 className={cn('text-sm font-bold tracking-tight mb-3', textColor)}>Your Performance</h3>
+                                </motion.div>
+                                <DashboardMetricsCards
+                                    totalDealValue={brandDeals?.reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
+                                    activeDealCount={activeDealsCount}
+                                    outstandingPayments={brandDeals?.filter((d: any) => {
+                                        const s = (d.status || '').toLowerCase();
+                                        return s.includes('payment_pending') || s.includes('payment_awaiting');
+                                    }).reduce((sum: number, deal: any) => sum + (deal.deal_amount || 0), 0) || 0}
+                                    avgDealDuration={30}
+                                    isDark={isDark}
+                                />
+                            </div>
+
+                            {/* Deal Search & Filter */}
+                            <div className="px-5 mb-8">
+                                <DealSearchFilter
+                                    onSearch={(query) => setSearchQuery(query)}
+                                    onFilterChange={(filters) => setDealFilters(filters)}
+                                    isDark={isDark}
+                                    totalDeals={brandDeals?.length || 0}
+                                />
+                            </div>
+
                             {/* Brand Offers Section */}
                              <div className="px-5 mb-8">
                                 <div className="flex items-center justify-between mb-5">
@@ -2980,17 +3019,14 @@ const MobileDashboardDemo = ({
 	                                        return (
 	                                            <div className="space-y-10">
 	                                                {displayOffers.length === 0 ? (
-	                                                    <div
-	                                                        className={cn(
-	                                                            "p-6 rounded-[20px] border text-center",
-	                                                            isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm"
-	                                                        )}
-	                                                    >
-	                                                        <p className={cn("text-[13px] font-semibold", textColor)}>No offers yet</p>
-	                                                        <p className={cn("text-[12px] mt-1 opacity-60", textColor)}>
-	                                                            Share your collab link to start receiving protected offers.
-	                                                        </p>
-	                                                    </div>
+	                                                    <EnhancedEmptyStates
+	                                                        type="no-deals"
+	                                                        isDark={isDark}
+	                                                        onAction={() => {
+	                                                            triggerHaptic();
+	                                                            handleCopyStorefront();
+	                                                        }}
+	                                                    />
 	                                                ) : null}
 	                                                {displayOffers.map((req: any, idx) => {
 	                                                    // Format deliverables accurately
@@ -3545,10 +3581,14 @@ const MobileDashboardDemo = ({
                                                 })}
                                             </div>
                                         ) : (
-                                            <div className="text-center py-8">
-                                                <Briefcase className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
-                                                <p className={cn("text-sm", secondaryTextColor)}>No active deals yet.</p>
-                                            </div>
+                                            <EnhancedEmptyStates
+                                                type="no-active-deals"
+                                                isDark={isDark}
+                                                onAction={() => {
+                                                    triggerHaptic();
+                                                    setActiveTab('home');
+                                                }}
+                                            />
                                         )}
                                     </motion.div>
                                 ) : collabSubTab === 'completed' ? (
