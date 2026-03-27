@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity, Heart, AlertCircle, Sparkles, X, Check } from 'lucide-react';
+import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity, Heart, AlertCircle, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -64,6 +64,7 @@ interface Creator {
   content_niches?: string[];
   media_kit_url?: string | null;
   past_brands?: string[];
+  portfolio_links?: string[];
   recent_campaign_types?: string[];
   avg_reel_views?: number | null;
   avg_likes?: number | null;
@@ -3018,6 +3019,57 @@ const CollabLinkLanding = () => {
                     )}
 	                  </div>
 	                )}
+
+                  {/* NEW: Public Portfolio & Past Brands */}
+                  {(!editMode && ((creator.portfolio_links && creator.portfolio_links.length > 0) || (creator.past_brands && creator.past_brands.length > 0))) && (
+                    <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
+                      {creator.portfolio_links && creator.portfolio_links.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                            <Link2 className="h-4 w-4 text-emerald-600" />
+                            Featured Portfolio
+                          </h3>
+                          <div className="flex flex-col gap-2">
+                            {creator.portfolio_links.map((link, idx) => (
+                              <a
+                                key={idx}
+                                href={link.startsWith('http') ? link : `https://${link}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all group"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                  {link.includes('instagram.com') ? <Instagram className="w-4 h-4 text-pink-600" /> : <ExternalLink className="w-4 h-4 text-slate-400" />}
+                                </div>
+                                <span className="text-[13px] font-semibold text-slate-700 truncate flex-1 leading-snug">
+                                  {link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+                                </span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {creator.past_brands && creator.past_brands.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                            <Briefcase className="h-4 w-4 text-emerald-600" />
+                            Trusted By Brands
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {creator.past_brands.map((brand, idx) => (
+                              <div
+                                key={idx}
+                                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white shadow-sm text-[12px] font-black uppercase tracking-wider text-slate-700"
+                              >
+                                {brand}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   </div>
 	              </div>
