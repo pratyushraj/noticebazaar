@@ -29,6 +29,10 @@ import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards'
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
 import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
 import SkeletonLoader from '@/components/dashboard/SkeletonLoader';
+import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import AchievementBadges from '@/components/dashboard/AchievementBadges';
+import PaymentTimeline from '@/components/dashboard/PaymentTimeline';
+import EnhancedInsights from '@/components/dashboard/EnhancedInsights';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -2980,6 +2984,26 @@ const MobileDashboardDemo = ({
                                     isDark={isDark}
                                     totalDeals={brandDeals?.length || 0}
                                 />
+                            </div>
+
+                            {/* Enhanced Insights */}
+                            <div className="px-5 mb-8">
+                                <EnhancedInsights isDark={isDark} />
+                            </div>
+
+                            {/* Activity Feed */}
+                            <div className="px-5 mb-8">
+                                <ActivityFeed isDark={isDark} maxItems={4} />
+                            </div>
+
+                            {/* Payment Timeline */}
+                            <div className="px-5 mb-8">
+                                <PaymentTimeline isDark={isDark} maxItems={5} />
+                            </div>
+
+                            {/* Achievement Badges */}
+                            <div className="px-5 mb-8">
+                                <AchievementBadges isDark={isDark} showUnlocked={true} />
                             </div>
 
                             {/* Brand Offers Section */}
