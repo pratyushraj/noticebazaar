@@ -234,7 +234,7 @@ const getCreatorObligationBadges = (deal: any) => {
 const getCreatorDealCardUX = (deal: any) => {
     const rawStatus = normalizeDealStatus(deal);
 
-    const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid';
+    const isCompleted = rawStatus.includes('completed') || rawStatus === 'paid' || rawStatus.includes('payment_received');
     const isRevisionRequested = rawStatus.includes('revision_requested') || rawStatus.includes('changes_requested') || rawStatus.includes('brand_revision_requested');
     const isRevisionDone = rawStatus.includes('revision_done') || rawStatus.includes('revision_submitted');
     const isDelivered =
@@ -250,25 +250,38 @@ const getCreatorDealCardUX = (deal: any) => {
     const isMaking = rawStatus.includes('content_making') || rawStatus.includes('drafting') || rawStatus.includes('awaiting_product_shipment') || rawStatus.includes('awaiting product shipment');
     const isFullyExecuted = rawStatus.includes('fully_executed') || rawStatus === 'signed';
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('signed_pending_creator') || rawStatus.includes('signed_by_brand') || rawStatus.includes('needs signature');
+    const isOfferStage = !isCompleted && !isPaymentReleased && !isApproved && !isDelivered && !isRevisionRequested && !isMaking && !isFullyExecuted && !isContractPending;
 
     const dueDate = parseDealDate(deal?.due_date || deal?.deadline || deal?.raw?.deadline || deal?.raw?.due_date);
     const daysUntilDue = getDaysUntil(dueDate);
 
-    let progressStep = 1;
-    if (isCompleted) progressStep = 7;
-    else if (isPaymentReleased) progressStep = 6;
-    else if (isApproved) progressStep = 5;
-    else if (isDelivered || isRevisionRequested) progressStep = 4;
-    else if (isMaking) progressStep = 3;
-    else if (isFullyExecuted) progressStep = 2;
-    else if (isContractPending) progressStep = 1;
+    let stageKey: 'offer' | 'contract' | 'create' | 'deliver' | 'review' | 'paid' = 'offer';
+    if (isCompleted || isPaymentReleased) stageKey = 'paid';
+    else if (isApproved || isRevisionRequested) stageKey = 'review';
+    else if (isDelivered) stageKey = 'deliver';
+    else if (isMaking || isFullyExecuted) stageKey = 'create';
+    else if (isContractPending) stageKey = 'contract';
+    else if (isOfferStage) stageKey = 'offer';
+
+    const progressStepMap = {
+        offer: 1,
+        contract: 2,
+        create: 3,
+        deliver: 4,
+        review: 5,
+        paid: 6,
+    } as const;
+    const progressStep = progressStepMap[stageKey];
 
     const contractLabel = isContractPending
         ? (rawStatus.includes('signed_by_brand') ? 'Contract: waiting for your signature' : 'Contract: pending signature')
         : (isFullyExecuted || isMaking || isDelivered || isApproved || isPaymentReleased || isCompleted ? 'Contract: signed' : null);
 
-    const needsSignature = isContractPending;
-    const needsCreatorAction = !isCompleted && !isApproved && !isPaymentReleased && (needsSignature || isRevisionRequested || isMaking);
+    const needsSignature = stageKey === 'contract';
+    const needsOfferReview = stageKey === 'offer';
+    const needsUpload = stageKey === 'create';
+    const needsPaymentConfirmation = stageKey === 'review' && isApproved && !isPaymentReleased;
+    const needsCreatorAction = needsOfferReview || needsSignature || needsUpload || isRevisionRequested || needsPaymentConfirmation;
 
     const urgencyLevel: 'critical' | 'warning' | 'normal' = daysUntilDue !== null && daysUntilDue <= 2
         ? 'critical'
@@ -276,46 +289,38 @@ const getCreatorDealCardUX = (deal: any) => {
             ? 'warning'
             : 'normal';
 
-    let stagePill = 'IN PROGRESS';
-    let nextStep = 'Open deal';
-    let cta = 'Open';
+    let stagePill = 'OFFER';
+    let nextStep = 'Review the incoming collaboration offer';
+    let cta = 'Review Offer';
 
-    if (isCompleted) {
-        stagePill = 'COMPLETED';
-        nextStep = 'View summary';
-        cta = 'View Summary';
-    } else if (isPaymentReleased) {
-        stagePill = 'PAYMENT RELEASED';
-        nextStep = 'Confirm completion and close the deal';
-        cta = 'View Deal';
-    } else if (isApproved) {
-        stagePill = 'APPROVED';
-        nextStep = 'Waiting for payment release';
-        cta = 'Payment Pending';
-    } else if (needsSignature) {
-        stagePill = 'SIGN CONTRACT';
+    if (stageKey === 'paid') {
+        stagePill = 'PAID';
+        nextStep = 'Payment completed';
+        cta = 'Completed';
+    } else if (stageKey === 'review') {
+        stagePill = 'REVIEW';
+        if (isRevisionRequested) {
+            nextStep = 'Revision requested by the brand';
+            cta = 'Submit Revision';
+        } else if (needsPaymentConfirmation) {
+            nextStep = 'Confirm payment received';
+            cta = 'Waiting Payment';
+        } else {
+            nextStep = 'Waiting for final review';
+            cta = 'Waiting Review';
+        }
+    } else if (stageKey === 'deliver') {
+        stagePill = 'DELIVER';
+        nextStep = 'Content delivered, waiting for review';
+        cta = 'Waiting Review';
+    } else if (stageKey === 'create') {
+        stagePill = 'CREATE';
+        nextStep = 'Create and upload your content';
+        cta = 'Upload Content';
+    } else if (stageKey === 'contract') {
+        stagePill = 'CONTRACT';
         nextStep = 'Review and sign the agreement';
-        cta = rawStatus.includes('signed_by_brand') ? 'Sign Now' : 'View Contract';
-    } else if (isRevisionRequested) {
-        stagePill = 'REVISION REQUESTED';
-        nextStep = 'Update content and resubmit';
-        cta = 'Upload Revision';
-    } else if (isDelivered) {
-        stagePill = 'AWAITING REVIEW';
-        nextStep = 'Wait for brand approval';
-        cta = 'Waiting for Review';
-    } else if (isFullyExecuted) {
-        stagePill = 'COLLAB STARTED';
-        nextStep = 'Start creating content';
-        cta = 'View Deal';
-    } else if (isMaking) {
-        stagePill = 'MAKE CONTENT';
-        nextStep = 'Deliver your Instagram link for review';
-        cta = 'Deliver Content';
-    } else {
-        stagePill = 'WAITING';
-        nextStep = 'Open deal';
-        cta = 'View Deal';
+        cta = 'Sign Contract';
     }
 
     return {
@@ -323,10 +328,14 @@ const getCreatorDealCardUX = (deal: any) => {
         dueDate,
         daysUntilDue,
         urgencyLevel,
+        stageKey,
         progressStep,
         contractLabel,
         needsCreatorAction,
+        needsOfferReview,
         needsSignature,
+        needsUpload,
+        needsPaymentConfirmation,
         isRevisionRequested,
         isRevisionDone,
         isApproved,
@@ -347,13 +356,13 @@ const getCreatorPaymentListUX = (deal: any) => {
     const isAwaitingApproval = rawStatus.includes('content_delivered') || rawStatus.includes('revision_done') || rawStatus.includes('draft_review') || rawStatus.includes('content_pending');
     const isContractPending = rawStatus.includes('contract_ready') || rawStatus === 'sent' || rawStatus.includes('needs signature');
 
-    if (isPaid) return { label: 'PAID', sublabel: 'Payment released', tone: 'success' as const };
-    if (isPaymentReleased) return { label: 'PAYMENT RELEASED', sublabel: 'Waiting to close the deal', tone: 'success' as const };
-    if (isApproved) return { label: 'APPROVED', sublabel: 'Payment pending', tone: 'warning' as const };
-    if (isAwaitingApproval) return { label: 'PENDING APPROVAL', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
-    if (isContractPending) return { label: 'CONTRACT PENDING', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
+    if (isPaid) return { label: 'PAID', sublabel: 'Payment completed', tone: 'success' as const };
+    if (isPaymentReleased) return { label: 'PAID', sublabel: 'Payment completed', tone: 'success' as const };
+    if (isApproved) return { label: 'PAYMENT PENDING', sublabel: 'Waiting for payment release', tone: 'warning' as const };
+    if (isAwaitingApproval) return { label: 'UNDER REVIEW', sublabel: 'Waiting for brand approval', tone: 'warning' as const };
+    if (isContractPending) return { label: 'CONTRACT', sublabel: 'Sign to start collaboration', tone: 'neutral' as const };
     if (ux.isRevisionRequested) return { label: 'REVISION', sublabel: 'Fix requested before approval', tone: 'warning' as const };
-    return { label: 'PENDING', sublabel: 'Released after approval', tone: 'info' as const };
+    return { label: 'IN PROGRESS', sublabel: ux.nextStep, tone: 'info' as const };
 };
 
 // Animated Number Counter
@@ -1140,7 +1149,7 @@ const MobileDashboardDemo = ({
     const pendingPaymentsAmount = React.useMemo(() => {
         return activeDealsList.reduce((sum, deal: any) => {
             const ux = getCreatorPaymentListUX(deal);
-            if (ux.label === 'PAID' || ux.label === 'PAYMENT RELEASED') return sum;
+            if (ux.label === 'PAID') return sum;
             return sum + Number(deal?.deal_amount || 0);
         }, 0);
     }, [activeDealsList]);
@@ -1158,11 +1167,12 @@ const MobileDashboardDemo = ({
     ]), [packageTemplates, profile?.bank_upi, profile?.collab_brands_count_override, profile?.collab_intro_line, profile?.collab_past_work_items, profile?.media_kit_url, profileFormData?.bank_upi]);
     const bookingReadinessScore = Math.round((bookingReadinessChecks.filter(Boolean).length / bookingReadinessChecks.length) * 100);
     const dashboardActionItems = React.useMemo(() => {
-        const items: Array<{ id: string; title: string; subtitle: string; cta: string; tone: 'amber' | 'blue' | 'red' | 'emerald'; onClick: () => void }> = [];
+        const items: Array<{ id: string; priority: number; title: string; subtitle: string; cta: string; tone: 'amber' | 'blue' | 'red' | 'emerald'; onClick: () => void }> = [];
 
         collabRequests.slice(0, 3).forEach((req: any, index: number) => {
             items.push({
                 id: `offer-${req?.id || index}`,
+                priority: 1,
                 title: 'Review Offer',
                 subtitle: `${req?.brand_name || 'Brand'} sent a new collaboration request`,
                 cta: 'Review Offer',
@@ -1178,17 +1188,31 @@ const MobileDashboardDemo = ({
         actionRequiredDealsList.slice(0, 4).forEach((deal: any, index: number) => {
             const ux = getCreatorDealCardUX(deal);
             let title = 'Open Deal';
-            if (ux.needsSignature) title = 'Sign Contract';
-            else if (ux.isRevisionRequested) title = 'Fix Revision';
-            else if (ux.isMaking) title = 'Deliver Content';
-            else if (ux.isApproved && !ux.isPaymentReleased) title = 'Confirm Payment';
+            let priority = 99;
+            if (ux.needsOfferReview) {
+                title = 'Review Offer';
+                priority = 1;
+            } else if (ux.needsSignature) {
+                title = 'Sign Contract';
+                priority = 2;
+            } else if (ux.needsUpload) {
+                title = 'Upload Content';
+                priority = 3;
+            } else if (ux.isRevisionRequested) {
+                title = 'Revision Requested';
+                priority = 4;
+            } else if (ux.needsPaymentConfirmation) {
+                title = 'Confirm Payment Received';
+                priority = 5;
+            }
 
             items.push({
                 id: `deal-${deal?.id || index}`,
+                priority,
                 title,
                 subtitle: `${deal?.brand_name || 'Brand'} • ${ux.nextStep}`,
                 cta: title,
-                tone: ux.isRevisionRequested ? 'red' : ux.needsSignature ? 'amber' : ux.isApproved ? 'emerald' : 'blue',
+                tone: ux.isRevisionRequested ? 'red' : ux.needsSignature ? 'amber' : ux.needsPaymentConfirmation ? 'emerald' : 'blue',
                 onClick: () => {
                     triggerHaptic();
                     setSelectedItem(deal);
@@ -1200,6 +1224,7 @@ const MobileDashboardDemo = ({
         if (creatorHasPaidDealsWithoutUpi) {
             items.push({
                 id: 'upi-required',
+                priority: 5,
                 title: 'Payment Pending Confirmation',
                 subtitle: 'Add your UPI ID before brands release money',
                 cta: 'Confirm Payment',
@@ -1212,7 +1237,7 @@ const MobileDashboardDemo = ({
             });
         }
 
-        return items.slice(0, 5);
+        return items.sort((a, b) => a.priority - b.priority).slice(0, 5);
     }, [actionRequiredDealsList, collabRequests, creatorHasPaidDealsWithoutUpi]);
     const recentActivityItems = React.useMemo(() => {
         const items: Array<{ id: string; title: string; meta: string; date: number }> = [];
@@ -1228,12 +1253,14 @@ const MobileDashboardDemo = ({
 
         brandDeals.slice(0, 12).forEach((deal: any, index: number) => {
             const ux = getCreatorDealCardUX(deal);
-            let title = `${deal?.brand_name || 'Brand'} collaboration updated`;
-            if (ux.needsSignature) title = `Contract ready for ${deal?.brand_name || 'Brand'}`;
+            let title = `Offer received from ${deal?.brand_name || 'Brand'}`;
+            if (normalizeDealStatus(deal).includes('completed')) title = `Deal completed with ${deal?.brand_name || 'Brand'}`;
+            else if (ux.isPaymentReleased || normalizeDealStatus(deal).includes('paid') || normalizeDealStatus(deal).includes('payment_received')) title = `Payment marked as paid by ${deal?.brand_name || 'Brand'}`;
+            else if (ux.needsSignature) title = `Contract signed by brand for ${deal?.brand_name || 'Brand'}`;
+            else if (ux.needsUpload) title = `Content creation started for ${deal?.brand_name || 'Brand'}`;
+            else if (ux.stageKey === 'deliver') title = `Content delivered to ${deal?.brand_name || 'Brand'}`;
             else if (ux.isRevisionRequested) title = `Revision requested by ${deal?.brand_name || 'Brand'}`;
             else if (ux.isApproved) title = `Content approved by ${deal?.brand_name || 'Brand'}`;
-            else if (ux.isPaymentReleased || normalizeDealStatus(deal).includes('paid')) title = `Payment received from ${deal?.brand_name || 'Brand'}`;
-            else if (normalizeDealStatus(deal).includes('completed')) title = `${deal?.brand_name || 'Brand'} deal completed`;
 
             items.push({
                 id: `activity-deal-${deal?.id || index}`,
@@ -3729,7 +3756,7 @@ const MobileDashboardDemo = ({
                                             <div className="space-y-3">
                                                 {activeDealsList.slice(0, 4).map((deal: any, idx: number) => {
                                                     const ux = getCreatorDealCardUX(deal);
-                                                    const stages = ['Contract', 'Signed', 'Create', 'Deliver', 'Review', 'Done'];
+                                                    const stages = ['Offer', 'Contract', 'Create', 'Deliver', 'Review', 'Paid'];
                                                     const progressPercent = Math.min(100, Math.max(12, Math.round((ux.progressStep / stages.length) * 100)));
                                                     return (
                                                         <button
@@ -3934,17 +3961,19 @@ const MobileDashboardDemo = ({
                                                             const ux = getCreatorDealCardUX(deal);
                                                             if (ux.needsSignature) acc.signature += 1;
                                                             if (ux.isRevisionRequested) acc.revision += 1;
-                                                            if (ux.isMaking) acc.drafts += 1;
+                                                            if (ux.needsUpload) acc.upload += 1;
+                                                            if (ux.needsPaymentConfirmation) acc.payment += 1;
                                                             if (ux.urgencyLevel === 'critical' && !String(deal?.status || '').toLowerCase().includes('completed')) acc.risk += 1;
                                                             return acc;
                                                         },
-                                                        { signature: 0, revision: 0, drafts: 0, risk: 0 }
+                                                        { signature: 0, revision: 0, upload: 0, payment: 0, risk: 0 }
                                                     );
 
-                                                    const items: Array<{ label: string; count: number; tone: 'amber' | 'red' | 'blue' }> = [
-                                                        { label: 'Signature pending', count: insights.signature, tone: 'amber' },
-                                                        { label: 'Revision requested', count: insights.revision, tone: 'red' },
-                                                        { label: 'Drafts to submit', count: insights.drafts, tone: 'blue' },
+                                                    const items: Array<{ label: string; count: number; tone: 'amber' | 'red' | 'blue' | 'emerald' }> = [
+                                                        { label: 'Signatures pending', count: insights.signature, tone: 'amber' },
+                                                        { label: 'Revisions requested', count: insights.revision, tone: 'red' },
+                                                        { label: 'Uploads pending', count: insights.upload, tone: 'blue' },
+                                                        { label: 'Payment confirmations', count: insights.payment, tone: 'emerald' },
                                                     ].filter((x) => x.count > 0);
 
                                                     if (items.length === 0) return null;
@@ -3968,75 +3997,37 @@ const MobileDashboardDemo = ({
                                                                     setSelectedType('deal');
                                                                 }
                                                             }}
-                                                            className={cn(
-                                                                "p-4 rounded-2xl border mb-1 transition-all active:scale-[0.99]",
-                                                                isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-white",
-                                                                borderColor
-                                                            )}
+                                                            className={cn("mb-1 rounded-[1.6rem] border px-4 py-4 transition-all active:scale-[0.99]", cardBgColor, borderColor)}
                                                         >
-                                                            <div className="flex items-center justify-between gap-3 mb-2">
-                                                                <div className="flex items-center gap-2 min-w-0">
-                                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-60 truncate", textColor)}>Needs attention</p>
-                                                                </div>
-                                                                {insights.risk > 0 && (
-                                                                    <span
-                                                                        className={cn(
-                                                                            "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border shrink-0",
-                                                                            isDark ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-red-50 text-red-700 border-red-200"
-                                                                        )}
-                                                                    >
-                                                                        {insights.risk} AT RISK
-                                                                    </span>
-                                                                )}
-                                                            </div>
-
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {items.map((it) => {
-                                                                    const pluralize = (singular: string, plural: string) => (it.count === 1 ? singular : plural);
-                                                                    const label =
-                                                                        it.label === 'Signature pending'
-                                                                            ? pluralize('Signature pending', 'Signatures pending')
-                                                                            : it.label === 'Revision requested'
-                                                                                ? pluralize('Revision requested', 'Revisions requested')
-                                                                                : it.label === 'Drafts to submit'
-                                                                                    ? pluralize('Draft to submit', 'Drafts to submit')
-                                                                                    : it.label;
-
-                                                                    const toneCls =
-                                                                        it.tone === 'amber'
-                                                                            ? (isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200")
-                                                                            : it.tone === 'red'
-                                                                                ? (isDark ? "bg-red-500/10 text-red-200 border-red-500/20" : "bg-red-50 text-red-800 border-red-200")
-                                                                                : (isDark ? "bg-blue-500/10 text-blue-200 border-blue-500/20" : "bg-blue-50 text-blue-800 border-blue-200");
-
-                                                                    const onChip = () => {
-                                                                        triggerHaptic();
-                                                                        const target =
-                                                                            it.label === 'Signature pending'
-                                                                                ? activeDealsList.find((d: any) => getCreatorDealCardUX(d).needsSignature)
-                                                                                : it.label === 'Revision requested'
-                                                                                    ? activeDealsList.find((d: any) => getCreatorDealCardUX(d).isRevisionRequested)
-                                                                                    : activeDealsList.find((d: any) => getCreatorDealCardUX(d).isMaking);
-                                                                        if (target) {
-                                                                            setSelectedItem(target);
-                                                                            setSelectedType('deal');
-                                                                        }
-                                                                    };
-
-                                                                    return (
-                                                                        <button
-                                                                            key={it.label}
-                                                                            type="button"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                onChip();
-                                                                            }}
-                                                                            className={cn("px-3 py-1.5 rounded-full text-[11px] font-bold border", toneCls)}
+                                                            <div className="mb-3 flex items-center justify-between gap-3">
+                                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.24em] opacity-60", textColor)}>Needs Attention</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    {items.slice(0, 2).map((it) => {
+                                                                        const toneCls =
+                                                                            it.tone === 'amber'
+                                                                                ? (isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200")
+                                                                                : it.tone === 'red'
+                                                                                    ? (isDark ? "bg-red-500/10 text-red-200 border-red-500/20" : "bg-red-50 text-red-800 border-red-200")
+                                                                                    : it.tone === 'emerald'
+                                                                                        ? (isDark ? "bg-emerald-500/10 text-emerald-200 border-emerald-500/20" : "bg-emerald-50 text-emerald-800 border-emerald-200")
+                                                                                        : (isDark ? "bg-blue-500/10 text-blue-200 border-blue-500/20" : "bg-blue-50 text-blue-800 border-blue-200");
+                                                                        return (
+                                                                            <span key={it.label} className={cn("rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em]", toneCls)}>
+                                                                                {it.count} {it.label}
+                                                                            </span>
+                                                                        );
+                                                                    })}
+                                                                    {insights.risk > 0 && (
+                                                                        <span
+                                                                            className={cn(
+                                                                                "rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em]",
+                                                                                isDark ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-red-50 text-red-700 border-red-200"
+                                                                            )}
                                                                         >
-                                                                            {it.count} {label}
-                                                                        </button>
-                                                                    );
-                                                                })}
+                                                                            {insights.risk} At Risk
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     );
@@ -4049,18 +4040,15 @@ const MobileDashboardDemo = ({
                                                             setActiveTab('profile');
                                                             setActiveSettingsPage('payouts');
                                                         }}
-                                                        className={cn(
-                                                            "w-full rounded-2xl border p-4 text-left transition-all active:scale-[0.99]",
-                                                            isDark ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50"
-                                                        )}
+                                                        className={cn("w-full rounded-[1.4rem] border px-4 py-3 text-left transition-all active:scale-[0.99]", isDark ? "border-amber-400/20 bg-amber-500/10" : "border-amber-200 bg-amber-50")}
                                                     >
                                                         <div className="flex items-start gap-3">
-                                                            <AlertTriangle className={cn("mt-0.5 h-5 w-5 shrink-0", isDark ? "text-amber-200" : "text-amber-700")} />
+                                                            <AlertTriangle className={cn("mt-0.5 h-4 w-4 shrink-0", isDark ? "text-amber-200" : "text-amber-700")} />
                                                             <div>
-                                                                <p className={cn("text-[13px] font-black uppercase tracking-widest", isDark ? "text-amber-100" : "text-amber-800")}>
+                                                                <p className={cn("text-[12px] font-black uppercase tracking-[0.18em]", isDark ? "text-amber-100" : "text-amber-800")}>
                                                                     Add UPI To Get Paid
                                                                 </p>
-                                                                <p className={cn("mt-1 text-[13px] font-semibold", isDark ? "text-amber-100/85" : "text-amber-900/80")}>
+                                                                <p className={cn("mt-1 text-[12px] font-semibold leading-relaxed", isDark ? "text-amber-100/85" : "text-amber-900/80")}>
                                                                     You have paid collaborations. Add your UPI ID before brands release payment.
                                                                 </p>
                                                             </div>
@@ -4082,7 +4070,7 @@ const MobileDashboardDemo = ({
                                                                 setSelectedType('deal');
                                                             }}
                                                             className={cn(
-                                                                "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative cursor-pointer",
+                                                                "rounded-[1.8rem] border px-4 py-4 transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative cursor-pointer",
                                                                 borderColor,
                                                                 isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
                                                             )}
@@ -4100,9 +4088,22 @@ const MobileDashboardDemo = ({
                                                                         : ux.urgencyLevel === 'warning'
                                                                             ? (isDark ? "text-amber-200" : "text-amber-700")
                                                                             : (isDark ? "text-orange-200" : "text-orange-700");
-
                                                                 const cta = getDealPrimaryCta({ role: 'creator', deal });
-                                                                const ctaLabel = cta.label;
+
+                                                                const statusSentence =
+                                                                    ux.needsSignature
+                                                                        ? 'Signature required to start'
+                                                                        : ux.isRevisionRequested
+                                                                            ? 'Revision requested by brand'
+                                                                            : ux.needsUpload
+                                                                                ? 'Creator can upload content now'
+                                                                                : ux.stageKey === 'deliver'
+                                                                                    ? 'Content delivered and under review'
+                                                                                    : ux.needsPaymentConfirmation
+                                                                                        ? 'Payment confirmation pending'
+                                                                                        : ux.stageKey === 'paid'
+                                                                                            ? 'Payment completed'
+                                                                                            : 'Contract signed — creator can start work';
                                                                 const contractSigned =
                                                                     !ux.needsSignature &&
                                                                     (ux.rawStatus.includes('fully_executed') ||
@@ -4113,7 +4114,7 @@ const MobileDashboardDemo = ({
 
                                                                 return (
                                                                     <>
-                                                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                                                        <div className="mb-3 flex items-start justify-between gap-3">
                                                                             <div className="flex items-center gap-3 min-w-0">
                                                                                 <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
                                                                                     {getBrandIcon(
@@ -4144,14 +4145,37 @@ const MobileDashboardDemo = ({
                                                                             <p className={cn("text-[12px] font-semibold truncate", secondaryTextColor)}>
                                                                                 {String(deal.collab_type || 'Collaboration')}
                                                                             </p>
+                                                                            <span className={cn(
+                                                                                "shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em]",
+                                                                                ux.stageKey === 'paid'
+                                                                                    ? (isDark ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-200" : "border-emerald-200 bg-emerald-50 text-emerald-800")
+                                                                                    : ux.needsCreatorAction
+                                                                                        ? (isDark ? "border-amber-500/25 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-800")
+                                                                                        : (isDark ? "border-white/10 bg-white/5 text-white/70" : "border-slate-200 bg-slate-50 text-slate-700")
+                                                                            )}>
+                                                                                {ux.stagePill}
+                                                                            </span>
                                                                         </div>
 
+                                                                        <p className={cn(
+                                                                            "mb-3 text-[14px] font-bold leading-snug",
+                                                                            ux.needsSignature
+                                                                                ? (isDark ? "text-amber-200" : "text-amber-700")
+                                                                                : ux.isRevisionRequested
+                                                                                    ? (isDark ? "text-red-200" : "text-red-700")
+                                                                                    : contractSigned
+                                                                                    ? (isDark ? "text-emerald-200" : "text-emerald-700")
+                                                                                    : (isDark ? "text-white/70" : "text-slate-600")
+                                                                        )}>
+                                                                            {statusSentence}
+                                                                        </p>
+
                                                                         <div className="mb-3 flex flex-wrap gap-2">
-                                                                            {obligationBadges.map((badge) => (
+                                                                            {obligationBadges.slice(0, 2).map((badge) => (
                                                                                 <span
                                                                                     key={badge}
                                                                                     className={cn(
-                                                                                        "rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em]",
+                                                                                        "rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em]",
                                                                                         isDark ? "border-white/10 bg-white/5 text-white/80" : "border-slate-200 bg-slate-50 text-slate-700"
                                                                                     )}
                                                                                 >
@@ -4160,24 +4184,13 @@ const MobileDashboardDemo = ({
                                                                             ))}
                                                                         </div>
 
-                                                                        <p className={cn(
-                                                                            "text-[12px] font-bold mb-3",
-                                                                            ux.needsSignature
-                                                                                ? (isDark ? "text-amber-200" : "text-amber-700")
-                                                                                : contractSigned
-                                                                                    ? (isDark ? "text-emerald-200" : "text-emerald-700")
-                                                                                    : (isDark ? "text-white/70" : "text-slate-600")
-                                                                        )}>
-                                                                            {ux.needsSignature ? '⚠️ Signature required' : contractSigned ? '✅ Contract signed' : (ux.contractLabel || 'In progress')}
-                                                                        </p>
-
-                                                                        <div className="flex items-center justify-between">
-                                                                            <div className="flex items-center gap-1.5">
-                                                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                                        <div className="flex items-center justify-between gap-3">
+                                                                            <div className="flex flex-1 items-center gap-1.5">
+                                                                                {Array.from({ length: 6 }).map((_, i) => (
                                                                                     <span
                                                                                         key={i}
                                                                                         className={cn(
-                                                                                            "h-1.5 w-6 rounded-full",
+                                                                                            "h-1.5 flex-1 rounded-full",
                                                                                             i < ux.progressStep
                                                                                                 ? (isDark ? "bg-emerald-400/80" : "bg-emerald-500")
                                                                                                 : (isDark ? "bg-white/10" : "bg-slate-200")
@@ -4185,12 +4198,7 @@ const MobileDashboardDemo = ({
                                                                                     />
                                                                                 ))}
                                                                             </div>
-                                                                            <span className={cn(
-                                                                                "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border",
-                                                                                ux.needsCreatorAction
-                                                                                    ? (isDark ? "border-amber-500/25 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-800")
-                                                                                    : (isDark ? "border-white/10 bg-white/5 text-white/60" : "border-slate-200 bg-slate-50 text-slate-600")
-                                                                            )}>
+                                                                            <span className={cn("text-[10px] font-black uppercase tracking-[0.16em]", secondaryTextColor)}>
                                                                                 {ux.stagePill}
                                                                             </span>
                                                                         </div>
@@ -4206,12 +4214,18 @@ const MobileDashboardDemo = ({
 	                                                                            }}
 	                                                                            disabled={cta.disabled}
 	                                                                            className={cn(
-	                                                                                "mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]",
-	                                                                                dealPrimaryCtaButtonClass(cta.tone),
+	                                                                                "mt-4 h-12 w-full rounded-[1.2rem] text-[14px] font-black transition active:scale-[0.98]",
+	                                                                                ux.stageKey === 'paid'
+	                                                                                    ? (isDark ? "bg-white/10 text-white/60" : "bg-slate-100 text-slate-500")
+	                                                                                    : ux.needsSignature
+	                                                                                        ? "bg-gradient-to-r from-emerald-500 to-blue-500 text-white"
+	                                                                                        : ux.isRevisionRequested
+	                                                                                            ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+	                                                                                            : "bg-gradient-to-r from-emerald-500 to-blue-500 text-white",
 	                                                                                cta.disabled && "opacity-60 cursor-not-allowed active:scale-100"
 	                                                                            )}
 	                                                                        >
-	                                                                            {ctaLabel}
+	                                                                            {ux.cta}
 	                                                                        </button>
                                                                     </>
                                                                 );
