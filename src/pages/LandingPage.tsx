@@ -6,7 +6,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
 import {
   ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter
+  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X
 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,29 +83,49 @@ const LandingPage = () => {
             <a href="#social-proof" className="text-[13px] font-bold text-slate-600 hover:text-emerald-600 transition-colors">Creators</a>
           </div>
 
-	          <div className="flex items-center gap-4">
-	            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-colors rounded-full hover:bg-slate-100">
-	              Log In
-	            </Link>
-              <Link
-                to="/signup?mode=brand"
-                onClick={() => triggerHaptic(HapticPatterns.light)}
-                className="hidden md:inline-flex items-center px-4 py-2 text-[14px] font-black text-slate-700 hover:text-slate-900 transition-colors rounded-full bg-white/70 hover:bg-white border border-slate-200 shadow-sm"
-              >
-                Brand Console
-              </Link>
-	            <Link
-                to="/signup?mode=creator"
-                onClick={() => triggerHaptic(HapticPatterns.success)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
-              >
-	              Create Collab Link
-	            </Link>
-	          </div>
-	        </div>
-	      </nav>
+          <div className="flex items-center gap-3">
+            <Link to="/login" className="hidden md:block px-4 py-2 text-[14px] font-bold text-slate-600 hover:text-slate-900 transition-colors rounded-full hover:bg-slate-100">
+              Log In
+            </Link>
+            <Link
+              to="/signup?mode=brand"
+              onClick={() => triggerHaptic(HapticPatterns.light)}
+              className="hidden md:inline-flex items-center px-4 py-2 text-[14px] font-black text-slate-700 hover:text-slate-900 transition-colors rounded-full bg-white/70 hover:bg-white border border-slate-200 shadow-sm"
+            >
+              Brand Console
+            </Link>
+            <Link
+              to="/signup?mode=creator"
+              onClick={() => triggerHaptic(HapticPatterns.success)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
+            >
+              Create Collab Link
+            </Link>
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden p-2 rounded-xl hover:bg-slate-100 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-slate-700" /> : <Menu className="w-5 h-5 text-slate-700" />}
+            </button>
+          </div>
+        </div>
 
-      <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-16 lg:space-y-28">
+        {/* Mobile menu panel */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t border-slate-100 px-4 py-4 space-y-1 shadow-lg">
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">How it Works</a>
+            <a href="#marketplace" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Packages</a>
+            <a href="#social-proof" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Creators</a>
+            <div className="pt-2 border-t border-slate-100 space-y-1">
+              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Log In</Link>
+              <Link to="/signup?mode=brand" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-[15px] font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">Brand Console</Link>
+            </div>
+          </div>
+        )}
+
+      <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-12 lg:space-y-20">
         {/* 1. HERO SECTION */}
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-emerald-100/40 via-blue-50/40 to-transparent blur-[100px] rounded-full -z-10" />
@@ -140,9 +161,6 @@ const LandingPage = () => {
                   >
                     I'm a Brand <ArrowRight className="w-5 h-5" />
                   </Link>
-	                <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white hover:bg-slate-50 border shadow-sm border-slate-200 text-slate-700 px-8 py-4 rounded-full font-black text-[16px] transition-all flex items-center justify-center gap-2">
-	                  View Demo Creator Page
-	                </button>
 	              </div>
             </div>
 
@@ -246,12 +264,27 @@ const LandingPage = () => {
         <section className="border-y border-slate-200 bg-white py-10 md:py-12">
           <div className="max-w-[1200px] mx-auto px-6 text-center">
             <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-8">Example brands creators collaborate with</p>
-            <div className="flex justify-center items-center gap-8 sm:gap-12 md:gap-20 opacity-60 grayscale hover:grayscale-0 transition-all duration-500 overflow-hidden flex-wrap">
-              <span className="text-2xl md:text-3xl font-black tracking-tighter shrink-0">NYKAA</span>
-              <span className="text-2xl md:text-3xl font-black tracking-tight shrink-0" style={{ fontFamily: "Impact, sans-serif" }}>boAt</span>
-              <span className="text-2xl md:text-3xl font-bold tracking-tight shrink-0">mamaearth</span>
-              <span className="text-2xl md:text-3xl font-black tracking-tight shrink-0" style={{ fontFamily: "Georgia, serif" }}>Myntra</span>
-              <span className="text-2xl md:text-3xl font-black tracking-widest text-pink-600 shrink-0">SUGAR</span>
+            <div className="flex justify-center items-center gap-10 sm:gap-14 md:gap-20 opacity-50 hover:opacity-80 transition-all duration-500 overflow-hidden flex-wrap">
+              {/* NYKAA */}
+              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 120 28" fill="none">
+                <text x="0" y="22" fontFamily="system-ui, sans-serif" fontSize="22" fontWeight="800" fill="#fc2779" letterSpacing="-0.5">NYKAA</text>
+              </svg>
+              {/* boAt */}
+              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 70 28" fill="none">
+                <text x="0" y="22" fontFamily="Impact, sans-serif" fontSize="24" fontWeight="400" fill="#1a1a1a" letterSpacing="1">boAt</text>
+              </svg>
+              {/* mamaearth */}
+              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 140 28" fill="none">
+                <text x="0" y="21" fontFamily="Georgia, serif" fontSize="18" fontWeight="400" fill="#2d6a4f" letterSpacing="0.5">mamaearth</text>
+              </svg>
+              {/* Myntra */}
+              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 90 28" fill="none">
+                <text x="0" y="22" fontFamily="Georgia, serif" fontSize="22" fontWeight="700" fill="#ff3f6c" letterSpacing="-0.5">Myntra</text>
+              </svg>
+              {/* SUGAR */}
+              <svg className="h-6 md:h-8 shrink-0" viewBox="0 0 90 28" fill="none">
+                <text x="0" y="22" fontFamily="system-ui, sans-serif" fontSize="22" fontWeight="800" fill="#e91e8c" letterSpacing="4">SUGAR</text>
+              </svg>
             </div>
           </div>
         </section>
