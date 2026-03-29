@@ -566,12 +566,19 @@ const CollabLinkLanding = () => {
         const suggestedRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
         const reelRate = suggestedRate;
 
+        const roundToCleanPrice = (n: number): number => {
+          if (n >= 10000) return Math.round(n / 1000) * 1000;
+          if (n >= 5000) return Math.round(n / 500) * 500;
+          if (n >= 1000) return Math.round(n / 100) * 100;
+          return Math.round(n / 50) * 50;
+        };
+
         const defaultTemplates: DealTemplate[] = [
           {
             id: 'starter_package',
             label: 'Starter Creator Package',
             icon: '🎬',
-            budget: Math.max(reelRate - 1, 999),
+            budget: roundToCleanPrice(Math.max(reelRate, 1000)),
             type: 'paid',
             category: creator.category || 'Lifestyle',
             description: '1 High-quality Instagram Reel with professional hooks and brand tagging.',
@@ -588,7 +595,7 @@ const CollabLinkLanding = () => {
             id: 'engagement_package',
             label: 'Engagement Package',
             icon: '🔥',
-            budget: Math.max(Math.round(reelRate * 1.5) - 1, 1499),
+            budget: roundToCleanPrice(Math.max(reelRate * 1.5, 1500)),
             type: 'paid',
             category: creator.category || 'Lifestyle',
             description: '1 Reel + 2 Engagement Stories to maximize reach and drive action.',
@@ -602,7 +609,7 @@ const CollabLinkLanding = () => {
             id: 'product_review',
             label: 'Product Review',
             icon: '📦',
-            budget: Math.max(1999, Math.round(reelRate * 0.5) - 1),
+            budget: roundToCleanPrice(Math.max(reelRate * 0.5, 2000)),
             type: 'barter',
             category: creator.category || 'Lifestyle',
             description: 'In-depth product unboxing and review with 1 story mention.',
