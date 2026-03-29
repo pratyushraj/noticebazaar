@@ -305,7 +305,7 @@ const LandingPage = () => {
             ].map((c, i) => (
               <div key={i} className="bg-white border border-slate-200 p-5 md:p-6 rounded-[24px] md:rounded-[28px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 <div className="flex items-start gap-4 mb-4">
-                  <img src={c.img} alt={c.name} className="w-16 h-16 rounded-2xl object-cover shadow-sm" />
+                  <img src={c.img} alt={c.name} className="w-16 h-16 rounded-2xl object-cover shadow-sm" loading="lazy" />
                   <div>
                     <h3 className="font-black text-slate-900 text-lg">{c.name}</h3>
                     <p className="text-[13px] font-medium text-slate-500">{c.category} • {c.loc}</p>
@@ -350,7 +350,7 @@ const LandingPage = () => {
                     <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-blue-50 to-transparent" />
 
                     <div className="relative z-10 text-center mb-6">
-                      <img src={PRIYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Priya Sharma" />
+                      <img src={PRIYA_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Priya Sharma" loading="lazy" />
                       <h3 className="font-black text-lg text-slate-900 flex items-center justify-center gap-1">Priya Sharma <CheckCircle2 className="w-4 h-4 text-blue-500 fill-blue-50" /></h3>
                       <p className="text-[12px] font-bold text-slate-500 mb-3">36K Followers</p>
 
@@ -389,7 +389,7 @@ const LandingPage = () => {
             <div className="p-5 md:p-16 bg-white">
               <div className="max-w-[1000px] mx-auto">
                 <div className="flex flex-col md:flex-row items-center gap-6 mb-12 pb-12 border-b border-slate-100">
-                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-slate-100" />
+                  <img src={ROHAN_IMG} alt="Rohan Mehta" className="w-24 h-24 rounded-full object-cover shadow-md border border-slate-100" loading="lazy" />
                   <div className="text-center md:text-left">
                     <h3 className="text-3xl font-black text-slate-900 mb-1">Rohan Mehta</h3>
                     <p className="text-base font-bold text-slate-500 flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> 58K followers</p>
@@ -429,7 +429,7 @@ const LandingPage = () => {
               <div key={i} className="bg-white border border-slate-200 p-6 md:p-8 rounded-[28px] md:rounded-[32px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all min-w-[280px] sm:min-w-[320px] md:min-w-0 snap-start">
                 <div className="flex items-start justify-between gap-3 mb-6 pb-6 border-b border-slate-100">
                   <div className="flex items-center gap-3 min-w-0">
-                    <img src={d.img} alt={d.name} className="w-12 h-12 rounded-full border border-slate-200 object-cover shrink-0" />
+                    <img src={d.img} alt={d.name} className="w-12 h-12 rounded-full border border-slate-200 object-cover shrink-0" loading="lazy" />
                     <span className="font-black text-base text-slate-900 leading-tight">{d.name}</span>
                   </div>
                   <div className="shrink-0 text-[11px] font-black uppercase tracking-wider px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">Closed</div>
