@@ -1,7 +1,45 @@
 import { cloneElement, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sun, User } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  Bookmark,
+  Briefcase,
+  Camera,
+  Check,
+  Clock,
+  Cpu,
+  ChevronRight,
+  CreditCard,
+  Dumbbell,
+  FileText,
+  Handshake,
+  Landmark,
+  LayoutDashboard,
+  Loader2,
+  Lock,
+  LogOut,
+  Mail,
+  MessageCircle,
+  Menu,
+  Moon,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Search,
+  Send,
+  Settings,
+  Shirt,
+  Shield,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Sun,
+  UtensilsCrossed,
+  User,
+  Users,
+} from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -136,6 +174,19 @@ const startOfLocalMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1
 const sameLocalMonth = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 
 const normalizeStatus = (status: string | null | undefined) => String(status || '').trim().toLowerCase();
+const isGeneratedCreatorHandle = (value?: string | null) => Boolean(value && /^creator-[a-z0-9]{6,}$/i.test(String(value).trim()));
+const getPreferredCreatorHandle = (creator: any) => {
+  const instagramPlatformHandle = Array.isArray(creator?.platforms)
+    ? creator.platforms.find((platform: any) => String(platform?.name || '').toLowerCase() === 'instagram')?.handle
+    : null;
+  const normalizedInstagramHandle = String(instagramPlatformHandle || creator?.instagram_handle || creator?.handle || '').trim().replace(/^@+/, '');
+  if (normalizedInstagramHandle && !isGeneratedCreatorHandle(normalizedInstagramHandle)) return normalizedInstagramHandle;
+
+  const normalizedUsername = String(creator?.username || '').trim().replace(/^@+/, '');
+  if (normalizedUsername && !isGeneratedCreatorHandle(normalizedUsername)) return normalizedUsername;
+
+  return normalizedInstagramHandle || normalizedUsername;
+};
 
 const firstNameish = (profile: Profile | null | undefined) => {
   const label = profile?.business_name || profile?.first_name || profile?.username || 'Creator';
@@ -150,6 +201,25 @@ type SuggestedCreator = {
   bio?: string | null;
   profile_photo?: string | null;
   followers?: number | null;
+  avg_views?: number | null;
+  engagement_rate?: number | null;
+  starting_price?: number | null;
+  completed_deals?: number | null;
+  reliability_score?: number | null;
+  response_hours?: number | null;
+  profile_completion?: number | null;
+  availability_status?: 'available' | 'busy' | 'next_week' | 'unavailable' | string | null;
+  last_active_at?: string | null;
+  is_verified?: boolean | null;
+  is_featured?: boolean | null;
+  is_budget_friendly?: boolean | null;
+  manual_badge?: string | null;
+  conversion_rate?: number | null;
+  repeat_brands?: number | null;
+  on_time_delivery_rate?: number | null;
+  badges?: string[] | null;
+  media_kit_url?: string | null;
+  location?: string | null;
   pricing?: {
     min?: number | null;
     avg?: number | null;
@@ -162,6 +232,85 @@ type SuggestedCreator = {
     completion_rate?: number;
     avg_response_hours?: number | null;
   } | null;
+};
+
+const getCreatorStartingPrice = (creator: SuggestedCreator | any) =>
+  Number(creator?.starting_price ?? creator?.pricing?.min ?? creator?.pricing?.avg ?? creator?.pricing?.reel ?? 0) || 0;
+
+const getCreatorAvgViews = (creator: SuggestedCreator | any) => {
+  const explicit = Number(creator?.avg_views ?? creator?.avgViews ?? creator?.metrics?.avg_views ?? 0);
+  if (explicit > 0) return explicit;
+  const followers = Number(creator?.followers ?? 0);
+  if (followers <= 0) return 0;
+  const inferred = Math.round(Math.max(1200, followers * 0.22));
+  return inferred;
+};
+
+const getCreatorReliability = (creator: SuggestedCreator | any) =>
+  Math.max(0, Math.min(100, Number(creator?.reliability_score ?? creator?.trust?.completion_rate ?? 96) || 96));
+
+const getCreatorCompletedDeals = (creator: SuggestedCreator | any) =>
+  Math.max(0, Number(creator?.completed_deals ?? creator?.trust?.completed_deals ?? 0) || 0);
+
+const getCreatorResponseHours = (creator: SuggestedCreator | any) =>
+  Math.max(0, Number(creator?.response_hours ?? creator?.trust?.avg_response_hours ?? 0) || 0);
+
+const getCreatorProfileCompletion = (creator: SuggestedCreator | any) => {
+  const explicit = Number(creator?.profile_completion ?? 0);
+  if (explicit > 0) return Math.max(0, Math.min(100, Math.round(explicit)));
+  const checks = [
+    Boolean(creator?.name),
+    Boolean(creator?.category),
+    Boolean(creator?.bio),
+    Boolean(creator?.followers),
+    Boolean(getCreatorStartingPrice(creator)),
+    Boolean(getPreferredCreatorHandle(creator)),
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+};
+
+const getCreatorLocationLabel = (creator: SuggestedCreator | any) =>
+  String(creator?.location || creator?.city || creator?.region || 'India').trim() || 'India';
+
+const getCreatorAvatarSrc = (creator: SuggestedCreator | any) => {
+  const primary = safeImageSrc(creator?.profile_photo || creator?.avatar_url || creator?.avatar);
+  if (primary) return primary;
+  const seed = encodeURIComponent(String(creator?.username || creator?.name || 'creator'));
+  return `https://api.dicebear.com/9.x/personas/svg?seed=${seed}&backgroundType=gradientLinear`;
+};
+
+const getCreatorCategoryIcon = (creator: SuggestedCreator | any) => {
+  const category = String(creator?.category || creator?.niche || '').toLowerCase();
+  if (category.includes('fitness')) return Dumbbell;
+  if (category.includes('fashion')) return Shirt;
+  if (category.includes('food')) return UtensilsCrossed;
+  if (category.includes('tech')) return Cpu;
+  if (category.includes('beauty')) return Sparkles;
+  return User;
+};
+
+const getCreatorLastActiveTimestamp = (creator: SuggestedCreator | any) => {
+  const raw = creator?.last_active_at ?? creator?.updated_at ?? creator?.last_instagram_sync ?? null;
+  if (!raw) return 0;
+  const ts = new Date(raw).getTime();
+  return Number.isFinite(ts) ? ts : 0;
+};
+
+const getCreatorBadges = (creator: SuggestedCreator | any) => {
+  const explicit = Array.isArray(creator?.badges)
+    ? creator.badges.map((badge: unknown) => String(badge || '').trim()).filter(Boolean)
+    : [];
+  if (explicit.length > 0) return explicit.slice(0, 2);
+
+  const badges: string[] = [];
+  if (creator?.is_verified) badges.push('Verified');
+  if (getCreatorResponseHours(creator) > 0 && getCreatorResponseHours(creator) <= 6) badges.push('Fast Responder');
+  if (getCreatorReliability(creator) >= 95) badges.push('High Reliability');
+  if (creator?.is_budget_friendly || (getCreatorStartingPrice(creator) > 0 && getCreatorStartingPrice(creator) <= 12000)) badges.push('Budget Friendly');
+  if (getCreatorCompletedDeals(creator) === 0) badges.push('New Creator');
+  if (String(creator?.availability_status || '').toLowerCase() === 'available') badges.push('Available Now');
+  if (creator?.manual_badge) badges.unshift(String(creator.manual_badge));
+  return Array.from(new Set(badges)).slice(0, 2);
 };
 
 function formatDeliverables(row: BrandDeal | null | undefined) {
@@ -551,6 +700,17 @@ const BrandMobileDashboard = ({
     return () => {
       document.documentElement.classList.remove('dark');
       document.documentElement.classList.remove('light');
+    };
+  }, [theme]);
+
+  useEffect(() => {
+    const meta = document.querySelector('meta[name=theme-color]');
+    const previous = meta?.getAttribute('content');
+    const next = theme === 'dark' ? '#061318' : '#f7fbff';
+    meta?.setAttribute('content', next);
+    document.body.style.backgroundColor = next;
+    return () => {
+      if (meta && previous) meta.setAttribute('content', previous);
     };
   }, [theme]);
 
@@ -958,6 +1118,35 @@ const BrandMobileDashboard = ({
   const [creatorSearch, setCreatorSearch] = useState('');
   const [creatorSearchResults, setCreatorSearchResults] = useState<SuggestedCreator[]>([]);
   const [isSearchingCreators, setIsSearchingCreators] = useState(false);
+  const [selectedCreatorPreview, setSelectedCreatorPreview] = useState<SuggestedCreator | null>(null);
+  const [selectedCreatorCategory, setSelectedCreatorCategory] = useState<string>('all');
+  const [creatorSortBy, setCreatorSortBy] = useState<'recommended' | 'price_low' | 'price_high' | 'followers' | 'avg_views' | 'response' | 'reliability'>('recommended');
+  const [creatorPriceFilter, setCreatorPriceFilter] = useState<'all' | 'budget' | 'mid' | 'premium'>('all');
+  const [creatorFollowerFilter, setCreatorFollowerFilter] = useState<'all' | 'micro' | 'mid' | 'large'>('all');
+  const [creatorViewsFilter, setCreatorViewsFilter] = useState<'all' | '10k' | '25k' | '50k'>('all');
+  const [creatorResponseFilter, setCreatorResponseFilter] = useState<'all' | '3' | '6' | '12'>('all');
+  const [creatorReliabilityFilter, setCreatorReliabilityFilter] = useState<'all' | '90' | '95' | '98'>('all');
+  const [creatorLocationFilter, setCreatorLocationFilter] = useState<string>('all');
+  const [creatorVerifiedOnly, setCreatorVerifiedOnly] = useState(false);
+  const [showAdvancedCreatorFilters, setShowAdvancedCreatorFilters] = useState(false);
+  const [shortlistedCreatorIds, setShortlistedCreatorIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem('creatorarmour.brand.shortlisted-creators');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setShortlistedCreatorIds(parsed.map((id) => String(id)));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem('creatorarmour.brand.shortlisted-creators', JSON.stringify(shortlistedCreatorIds));
+    } catch {}
+  }, [shortlistedCreatorIds]);
 
   useEffect(() => {
     const raw = String(creatorSearch || '').trim();
@@ -972,7 +1161,7 @@ const BrandMobileDashboard = ({
       try {
         setIsSearchingCreators(true);
         const apiBase = getApiBaseUrl();
-        const res = await fetch(`${apiBase}/api/creators?username=${encodeURIComponent(term)}&limit=8`, {
+        const res = await fetch(`${apiBase}/api/creators?q=${encodeURIComponent(term)}&limit=8`, {
           signal: controller.signal,
         });
         const data: any = await res.json().catch(() => ({}));
@@ -993,6 +1182,149 @@ const BrandMobileDashboard = ({
       clearTimeout(timer);
     };
   }, [creatorSearch]);
+
+  const creatorCategories = useMemo(() => {
+    const base = (suggestedCreators || [])
+      .map((creator) => String(creator?.category || '').trim())
+      .filter((category) => category && category.toLowerCase() !== 'creator');
+    return ['all', ...Array.from(new Set(base)).slice(0, 6)];
+  }, [suggestedCreators]);
+
+  const visibleSuggestedCreators = useMemo(() => {
+    const normalizedSearch = creatorSearch.trim().replace(/^@+/, '').toLowerCase();
+
+    let base = [...(suggestedCreators || [])];
+
+    if (normalizedSearch) {
+      base = base.filter((creator) => {
+        const haystack = [
+          creator?.name,
+          creator?.username,
+          creator?.category,
+          creator?.bio,
+        ]
+          .map((value) => String(value || '').toLowerCase())
+          .join(' ');
+        return haystack.includes(normalizedSearch);
+      });
+    }
+
+    if (selectedCreatorCategory !== 'all') {
+      base = base.filter((creator) => String(creator?.category || '').trim().toLowerCase() === selectedCreatorCategory.toLowerCase());
+    }
+
+    if (creatorVerifiedOnly) {
+      base = base.filter((creator) => Boolean(creator?.is_verified));
+    }
+
+    if (creatorPriceFilter !== 'all') {
+      base = base.filter((creator) => {
+        const price = getCreatorStartingPrice(creator);
+        if (creatorPriceFilter === 'budget') return price > 0 && price <= 10000;
+        if (creatorPriceFilter === 'mid') return price > 10000 && price <= 25000;
+        return price > 25000;
+      });
+    }
+
+    if (creatorFollowerFilter !== 'all') {
+      base = base.filter((creator) => {
+        const followers = Number(creator?.followers ?? 0);
+        if (creatorFollowerFilter === 'micro') return followers > 0 && followers < 50000;
+        if (creatorFollowerFilter === 'mid') return followers >= 50000 && followers < 150000;
+        return followers >= 150000;
+      });
+    }
+
+    if (creatorViewsFilter !== 'all') {
+      const minViews = Number(creatorViewsFilter) * 1000;
+      base = base.filter((creator) => getCreatorAvgViews(creator) >= minViews);
+    }
+
+    if (creatorResponseFilter !== 'all') {
+      const maxHours = Number(creatorResponseFilter);
+      base = base.filter((creator) => {
+        const hours = getCreatorResponseHours(creator);
+        return hours > 0 && hours <= maxHours;
+      });
+    }
+
+    if (creatorReliabilityFilter !== 'all') {
+      const minReliability = Number(creatorReliabilityFilter);
+      base = base.filter((creator) => getCreatorReliability(creator) >= minReliability);
+    }
+
+    if (creatorLocationFilter !== 'all') {
+      base = base.filter((creator) => getCreatorLocationLabel(creator).toLowerCase() === creatorLocationFilter.toLowerCase());
+    }
+
+    const ranked = base.sort((a, b) => {
+      const aPrice = getCreatorStartingPrice(a);
+      const bPrice = getCreatorStartingPrice(b);
+      const aFollowers = Number(a?.followers ?? 0);
+      const bFollowers = Number(b?.followers ?? 0);
+      const aViews = getCreatorAvgViews(a);
+      const bViews = getCreatorAvgViews(b);
+      const aResponse = getCreatorResponseHours(a) || 999;
+      const bResponse = getCreatorResponseHours(b) || 999;
+      const aReliability = getCreatorReliability(a);
+      const bReliability = getCreatorReliability(b);
+      const aRecommended = (aReliability * 3) + Math.min(25, getCreatorCompletedDeals(a) * 2) + Math.max(0, 20 - Math.min(20, aResponse));
+      const bRecommended = (bReliability * 3) + Math.min(25, getCreatorCompletedDeals(b) * 2) + Math.max(0, 20 - Math.min(20, bResponse));
+
+      switch (creatorSortBy) {
+        case 'price_low':
+          return aPrice - bPrice;
+        case 'price_high':
+          return bPrice - aPrice;
+        case 'followers':
+          return bFollowers - aFollowers;
+        case 'avg_views':
+          return bViews - aViews;
+        case 'response':
+          return aResponse - bResponse;
+        case 'reliability':
+          return bReliability - aReliability;
+        default:
+          return bRecommended - aRecommended;
+      }
+    });
+
+    return ranked;
+  }, [creatorFollowerFilter, creatorLocationFilter, creatorPriceFilter, creatorReliabilityFilter, creatorResponseFilter, creatorSearch, creatorSortBy, creatorVerifiedOnly, creatorViewsFilter, selectedCreatorCategory, suggestedCreators]);
+
+  const creatorLocationOptions = useMemo(() => {
+    const options = Array.from(new Set((suggestedCreators || []).map((creator) => getCreatorLocationLabel(creator)).filter(Boolean)));
+    return ['all', ...options.slice(0, 8)];
+  }, [suggestedCreators]);
+
+  const creatorDiscoverySections = useMemo(() => {
+    const base = visibleSuggestedCreators;
+    const recommended = base.slice(0, 10);
+    const recentlyActive = [...base]
+      .sort((a, b) => getCreatorLastActiveTimestamp(b) - getCreatorLastActiveTimestamp(a))
+      .slice(0, 10);
+    const quickResponders = [...base]
+      .filter((creator) => getCreatorResponseHours(creator) > 0)
+      .sort((a, b) => getCreatorResponseHours(a) - getCreatorResponseHours(b))
+      .slice(0, 10);
+    const bestValue = [...base]
+      .sort((a, b) => {
+        const aViews = Math.max(1, getCreatorAvgViews(a));
+        const bViews = Math.max(1, getCreatorAvgViews(b));
+        const aValueRatio = getCreatorStartingPrice(a) / aViews;
+        const bValueRatio = getCreatorStartingPrice(b) / bViews;
+        const aScore = getCreatorReliability(a) + Math.min(20, getCreatorCompletedDeals(a)) - (aValueRatio * 100);
+        const bScore = getCreatorReliability(b) + Math.min(20, getCreatorCompletedDeals(b)) - (bValueRatio * 100);
+        return bScore - aScore;
+      })
+      .slice(0, 10);
+    return [
+      { id: 'recommended', title: 'Recommended creators', subtitle: 'Best mix of trust, response speed, and pricing.', items: recommended },
+      { id: 'recently-active', title: 'Recently active creators', subtitle: 'Creators with recent collaboration movement.', items: recentlyActive },
+      { id: 'quick-responders', title: 'Quick responders', subtitle: 'Best for urgent campaign timelines.', items: quickResponders },
+      { id: 'best-value', title: 'Best value creators', subtitle: 'Strong reliability with efficient starting rates.', items: bestValue },
+    ].filter((section) => section.items.length > 0);
+  }, [visibleSuggestedCreators]);
 
 	  // Pending offers = requests that haven't been accepted/declined yet
 		  const pendingOffersList = useMemo(() => {
@@ -1076,23 +1408,14 @@ const BrandMobileDashboard = ({
   ]);
 
   const getSmartTags = (c: SuggestedCreator) => {
-    const tags: string[] = [];
-    const completion = Number(c?.trust?.completion_rate ?? 0);
-    const completed = Number(c?.trust?.completed_deals ?? 0);
-    const avgHrs = c?.trust?.avg_response_hours ?? null;
-    const rate = Number(c?.pricing?.avg ?? c?.pricing?.reel ?? 0);
-
-    if (completion >= 95 && completed >= 5) tags.push('🔥 High reliability');
-    if (avgHrs !== null && avgHrs <= 6) tags.push('⚡ Fast responder');
-    if (rate > 0 && rate <= 6000) tags.push('💰 Budget friendly');
-    return tags.slice(0, 2);
+    return getCreatorBadges(c);
   };
 
   const getReliabilityLines = (c: SuggestedCreator) => {
     const lines: string[] = [];
-    const completion = Number(c?.trust?.completion_rate ?? 0);
-    const completed = Number(c?.trust?.completed_deals ?? 0);
-    const avgHrs = c?.trust?.avg_response_hours ?? null;
+    const completion = getCreatorReliability(c);
+    const completed = getCreatorCompletedDeals(c);
+    const avgHrs = getCreatorResponseHours(c) || null;
 
     if (completion > 0) lines.push(`✔ ${completion}% completion`);
     if (avgHrs !== null && avgHrs > 0) lines.push(`⚡ Responds in ~${avgHrs}h`);
@@ -1175,7 +1498,7 @@ const BrandMobileDashboard = ({
 
   const PageHeader = ({ title }: { title: string }) => (
     <div className="flex items-center gap-4 px-5 py-4 mb-4">
-      <button type="button"
+      <button
         onClick={() => {
           triggerHaptic(HapticPatterns.light);
           setActiveSettingsPage(null);
@@ -1369,14 +1692,14 @@ const BrandMobileDashboard = ({
 	                <div className="grid grid-cols-3 gap-2">
 	                  {isCounteredRequest ? (
 	                    <>
-	                      <button type="button"
+	                      <button
 	                        onClick={acceptCounter}
 	                        disabled={isRequestBusy}
 	                        className="h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60 bg-gradient-to-r from-blue-600 to-sky-600 text-white border-transparent"
 	                      >
 	                        Accept Counter
 	                      </button>
-	                      <button type="button"
+	                      <button
 	                        onClick={() => setShowCounterEditor(true)}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1386,7 +1709,7 @@ const BrandMobileDashboard = ({
 	                      >
 	                        Revise Terms
 	                      </button>
-	                      <button type="button"
+	                      <button
 	                        onClick={declineOffer}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1399,7 +1722,7 @@ const BrandMobileDashboard = ({
 	                    </>
 	                  ) : (
 	                    <>
-	                      <button type="button"
+	                      <button
 	                        onClick={() => setShowCounterEditor(true)}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1409,7 +1732,7 @@ const BrandMobileDashboard = ({
 	                      >
 	                        Edit Offer
 	                      </button>
-	                      <button type="button"
+	                      <button
 	                        onClick={declineOffer}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1448,7 +1771,7 @@ const BrandMobileDashboard = ({
 	                          <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Counter offer</p>
 	                          <p className={cn('text-[16px] font-black tracking-tight', textColor)}>Update terms</p>
 	                        </div>
-	                        <button type="button"
+	                        <button
 	                          onClick={() => setShowCounterEditor(false)}
 	                          className={cn('w-10 h-10 rounded-full border flex items-center justify-center', borderColor, isDark ? 'bg-white/5' : 'bg-slate-50')}
 	                        >
@@ -1480,14 +1803,14 @@ const BrandMobileDashboard = ({
 	                        </div>
 
 	                        <div className="grid grid-cols-2 gap-2 mt-4">
-	                          <button type="button"
+	                          <button
 	                            onClick={() => setShowCounterEditor(false)}
 	                            disabled={isRequestBusy}
 	                            className={cn('h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
 	                          >
 	                            Cancel
 	                          </button>
-	                          <button type="button"
+	                          <button
 	                            onClick={submitCounter}
 	                            disabled={isRequestBusy}
 	                            className={cn('h-12 rounded-2xl text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-blue-600 to-sky-600 text-white')}
@@ -1524,7 +1847,7 @@ const BrandMobileDashboard = ({
 	                </div>
 
 	                <div className="grid grid-cols-1 gap-2">
-		                  <button type="button"
+		                  <button
 		                    onClick={async () => {
 		                      triggerHaptic(HapticPatterns.light);
 			                      if (!offer?.id) {
@@ -1556,12 +1879,12 @@ const BrandMobileDashboard = ({
 	                    </p>
 	                  </button>
 		                  {!contractUrl && (
-		                    <button type="button"
+		                    <button
 		                      onClick={async () => {
 		                        // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
 		                        let popup: Window | null = null;
 		                        try {
-		                          popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+		                          popup = window.open('about:blank', '_blank');
 		                          if (popup) popup.opener = null;
 		                        } catch {
 		                          popup = null;
@@ -1637,7 +1960,7 @@ const BrandMobileDashboard = ({
 		            )}
 		            <div className="grid grid-cols-1 gap-2 mt-2">
 		              {canMarkComplete && (
-		                <button type="button"
+		                <button
 		                  onClick={async () => {
                     if (!canSubmitCompletion) {
                       toast.message(`Cannot complete yet: ${completionBlockers.join(', ')}`);
@@ -1693,7 +2016,7 @@ const BrandMobileDashboard = ({
                   </p>
 		                </button>
 		              )}
-              <button type="button"
+              <button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
                   setSelectedOffer(null);
@@ -1708,7 +2031,7 @@ const BrandMobileDashboard = ({
                 <p className={cn('text-[13px] font-bold', textColor)}>View creator profile</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Open the creator page in the same app</p>
               </button>
-              <button type="button"
+              <button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
                   setSelectedOffer(null);
@@ -1719,7 +2042,7 @@ const BrandMobileDashboard = ({
                 <p className={cn('text-[13px] font-bold', textColor)}>Back to {activeCollabTab} list</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep reviewing offers without leaving this screen</p>
               </button>
-	              <button type="button"
+	              <button
 	                onClick={() => setSelectedOffer(null)}
 	                className={cn('h-12 rounded-2xl font-bold text-[13px] transition-all active:scale-[0.99]', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
 	              >
@@ -1883,7 +2206,7 @@ const BrandMobileDashboard = ({
     const openUrlFromUserGesture = async (resolveUrl: () => Promise<string | null>) => {
       let popup: Window | null = null;
       try {
-        popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+        popup = window.open('about:blank', '_blank');
         // Best-effort hardening; safe even if browser ignores it.
         if (popup) popup.opener = null;
       } catch {
@@ -1924,7 +2247,7 @@ const BrandMobileDashboard = ({
       // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
       let popup: Window | null = null;
       try {
-        popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+        popup = window.open('about:blank', '_blank');
         if (popup) popup.opener = null;
       } catch {
         popup = null;
@@ -2272,7 +2595,7 @@ const BrandMobileDashboard = ({
       >
         <div className={cn('px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-white/10' : 'bg-white border-slate-100')}>
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50')}>
+            <button onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50')}>
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
             <div>
@@ -2280,7 +2603,7 @@ const BrandMobileDashboard = ({
               <p className={cn('text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight', textColor)}>{creatorName || 'Creator'}</p>
             </div>
           </div>
-          <button type="button"
+          <button
             onClick={() => {
               triggerHaptic(HapticPatterns.light);
               toast.message('More actions coming next.');
@@ -2473,7 +2796,7 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button"
+                  <button
                     onClick={openContract}
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
@@ -2483,7 +2806,7 @@ const BrandMobileDashboard = ({
                   >
                     Open
                   </button>
-                  <button type="button"
+                  <button
                     onClick={copyDealLink}
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
@@ -2496,7 +2819,7 @@ const BrandMobileDashboard = ({
                 </div>
 
                 {!contractUrl && (
-                  <button type="button"
+                  <button
                     onClick={generateContract}
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
@@ -2561,7 +2884,7 @@ const BrandMobileDashboard = ({
                         <div>
                           <div className="flex items-center justify-between gap-3 mb-1">
                             <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>Tracking</p>
-                            <button type="button"
+                            <button
                               onClick={() => { void copyText(trackingNumber, 'Tracking number'); }}
                               className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
                             >
@@ -2590,7 +2913,7 @@ const BrandMobileDashboard = ({
 
                   {!shippingDelivered && (
                     !showShippingBox ? (
-                      <button type="button"
+                      <button
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           setCourierNameDraft(courierName);
@@ -2642,7 +2965,7 @@ const BrandMobileDashboard = ({
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                          <button type="button"
+                          <button
                             onClick={() => {
                               triggerHaptic(HapticPatterns.light);
                               setShowShippingBox(false);
@@ -2651,7 +2974,7 @@ const BrandMobileDashboard = ({
                           >
                             Cancel
                           </button>
-                          <button type="button"
+                          <button
                             onClick={updateShipping}
                             disabled={isUpdatingShipping}
                             className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
@@ -2842,7 +3165,7 @@ const BrandMobileDashboard = ({
                                   <div className="flex items-center justify-between gap-3 mb-1">
                                     <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>UPI ID</p>
                                     {creatorUpiId && (
-                                      <button type="button"
+                                      <button
                                         onClick={() => { void copyText(creatorUpiId, 'UPI ID'); }}
                                         className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
                                       >
@@ -2894,7 +3217,7 @@ const BrandMobileDashboard = ({
                             {canReleasePayment && (
                               <>
                                 {!showPaymentProofBox ? (
-                                  <button type="button"
+                                  <button
                                     onClick={() => {
                                       triggerHaptic(HapticPatterns.light);
                                       if (!creatorUpiId) {
@@ -2949,7 +3272,7 @@ const BrandMobileDashboard = ({
                                       />
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
-                                      <button type="button"
+                                      <button
                                         onClick={() => {
                                           triggerHaptic(HapticPatterns.light);
                                           setShowPaymentProofBox(false);
@@ -2958,7 +3281,7 @@ const BrandMobileDashboard = ({
                                       >
                                         Cancel
                                       </button>
-                                      <button type="button"
+                                      <button
                                         onClick={releasePayment}
                                         disabled={isReleasingPayment}
                                         className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
@@ -2975,7 +3298,7 @@ const BrandMobileDashboard = ({
 
                         {canReview && (
                           <div className="space-y-2">
-                            <button type="button"
+                            <button
                               onClick={approveContent}
                               disabled={isReviewingContent}
                               className={cn(
@@ -2986,7 +3309,7 @@ const BrandMobileDashboard = ({
                               {isReviewingContent ? 'Saving…' : 'Approve content'}
                             </button>
                             <div className="grid grid-cols-2 gap-2">
-                              <button type="button"
+                              <button
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowRevisionBox((v) => !v);
@@ -3000,7 +3323,7 @@ const BrandMobileDashboard = ({
                               >
                                 Request revision
                               </button>
-                              <button type="button"
+                              <button
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowDisputeBox((v) => !v);
@@ -3031,7 +3354,7 @@ const BrandMobileDashboard = ({
                               )}
                             />
                             <div className="grid grid-cols-2 gap-2">
-                              <button type="button"
+                              <button
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowRevisionBox(false);
@@ -3043,7 +3366,7 @@ const BrandMobileDashboard = ({
                               >
                                 Cancel
                               </button>
-                              <button type="button"
+                              <button
                                 onClick={requestRevision}
                                 disabled={isReviewingContent}
                                 className={cn(
@@ -3070,7 +3393,7 @@ const BrandMobileDashboard = ({
                               )}
                             />
                             <div className="grid grid-cols-2 gap-2">
-                              <button type="button"
+                              <button
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowDisputeBox(false);
@@ -3082,7 +3405,7 @@ const BrandMobileDashboard = ({
                               >
                                 Cancel
                               </button>
-                              <button type="button"
+                              <button
                                 onClick={raiseDispute}
                                 disabled={isReviewingContent}
                                 className={cn(
@@ -3183,7 +3506,7 @@ const BrandMobileDashboard = ({
                 <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isPushSubscribed ? 'Active on this device' : 'Receive deal updates'}</p>
               </div>
             </div>
-            <button type="button"
+            <button
               onClick={async (e) => {
                 e.stopPropagation();
                 if (isPushSubscribed) {
@@ -3205,7 +3528,7 @@ const BrandMobileDashboard = ({
           </div>
 
           {isPushSubscribed && (
-            <button type="button"
+            <button
               disabled={isPushBusy}
               onClick={async () => {
                 triggerHaptic(HapticPatterns.light);
@@ -3233,7 +3556,7 @@ const BrandMobileDashboard = ({
                 </p>
               </div>
             </div>
-            <button type="button"
+            <button
               onClick={async () => {
                 triggerHaptic(HapticPatterns.light);
                 await refreshPushStatus();
@@ -3302,7 +3625,7 @@ const BrandMobileDashboard = ({
                         : 'Enter the 6-digit code sent to your email to complete signing.'}
                     </p>
                   </div>
-                  <button type="button"
+                  <button
                     onClick={closeBrandSigningModal}
                     className="w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center"
                     aria-label="Close"
@@ -3403,7 +3726,7 @@ const BrandMobileDashboard = ({
                       )}
                     </motion.button>
 
-                    <button type="button"
+                    <button
                       onClick={() => {
                         setBrandSigningStep('send');
                         setBrandSigningOtp('');
@@ -3513,7 +3836,7 @@ const BrandMobileDashboard = ({
           >
             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
               <div className="flex items-center justify-between mb-6">
-                <button type="button"
+                <button
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setShowActionSheet(true);
@@ -3567,7 +3890,7 @@ const BrandMobileDashboard = ({
                   </motion.button>
 
                   <div className="relative">
-                    <button type="button"
+                    <button
                       onClick={() => setNotificationsOpen((v) => !v)}
                       className={cn('relative w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white/80 text-slate-600 shadow-sm')}
                     >
@@ -3598,7 +3921,7 @@ const BrandMobileDashboard = ({
                         </div>
                         <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 -mr-1 custom-scrollbar">
                           {notifications.map((n: any) => (
-                            <button type="button"
+                            <button
                               key={n.id}
                               onClick={() => {
                                 setNotificationsOpen(false);
@@ -3623,14 +3946,14 @@ const BrandMobileDashboard = ({
                     )}
                   </div>
 
-                  <button type="button"
+                  <button
                     onClick={() => {
                       triggerHaptic(HapticPatterns.light);
                       setActiveTab('profile');
                     }}
                     className={cn('w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95', borderColor, isDark ? 'bg-white/5' : 'bg-white/80 shadow-sm')}
                   >
-                    <img alt={brandName} src={brandLogo} loading="lazy" className="w-full h-full object-cover" />
+                    <img alt={brandName} src={brandLogo} className="w-full h-full object-cover" />
                   </button>
                 </div>
               </div>
@@ -3678,7 +4001,7 @@ const BrandMobileDashboard = ({
                             </p>
                           )}
                           <div className="flex gap-2 mt-3">
-                            <button type="button"
+                            <button
                               type="button"
                               disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
                               onClick={handleEnablePush}
@@ -3686,7 +4009,7 @@ const BrandMobileDashboard = ({
                             >
                               Enable
                             </button>
-                            <button type="button"
+                            <button
                               type="button"
                               onClick={() => dismissPushPromptPersisted()}
                               className={secondaryButtonClass}
@@ -3718,7 +4041,7 @@ const BrandMobileDashboard = ({
                             Required before sending offers—creators respond faster when they recognize you.
                           </p>
                           <div className="flex gap-2 mt-3">
-                            <button type="button"
+                            <button
                               type="button"
                               onClick={() => navigate('/brand-settings')}
                               className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-slate-900 border border-amber-200')}
@@ -3833,7 +4156,7 @@ const BrandMobileDashboard = ({
 	                                </div>
 	                              </div>
 	                              <div className="flex items-center gap-3">
-	                              <button type="button"
+	                              <button
 	                                type="button"
 	                                onClick={() => {
 	                                  triggerHaptic(HapticPatterns.light);
@@ -3905,7 +4228,7 @@ const BrandMobileDashboard = ({
 	                                    : 'See completed work and closed deals.'}
 	                              </p>
 	                            </div>
-	                            <button type="button"
+	                            <button
 	                              type="button"
 	                              onClick={() => setActiveTab('collabs', activeCollabTab)}
 	                              className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}
@@ -3921,7 +4244,7 @@ const BrandMobileDashboard = ({
 	                            ].map((item) => {
 	                              const isSelected = activeCollabTab === item.key;
 	                              return (
-	                                <button type="button"
+	                                <button
 	                                  key={item.key}
 	                                  type="button"
 	                                  onClick={() => {
@@ -4073,7 +4396,7 @@ const BrandMobileDashboard = ({
 	                                          Payment released after content approval
 	                                        </div>
 
-	                                        <button type="button"
+	                                        <button
 	                                          type="button"
 	                                          onClick={(e) => {
 	                                            e.stopPropagation();
@@ -4178,7 +4501,7 @@ const BrandMobileDashboard = ({
 		                                        </div>
 		                                      </div>
 
-				                              <button type="button"
+				                              <button
 				                                type="button"
 				                                onClick={() => {
 				                                  triggerHaptic(HapticPatterns.light);
@@ -4211,16 +4534,20 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested creators</p>
                         <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
                       </div>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-	                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 6)).map((c: any) => (
-	                        <div key={c.id} className={cn('min-w-[290px] p-4 rounded-[24px] border', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
-	                          <div className="flex items-center gap-3">
-	                            <Avatar className="w-11 h-11">
-	                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
+		                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 6)).map((c: any) => (
+		                        <div key={c.id} className={cn('min-w-[290px] p-4 rounded-[24px] border', cardBgColor, borderColor, isDark ? '' : 'shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
+	                          {(() => {
+	                            const handle = getPreferredCreatorHandle(c);
+	                            return (
+                              <>
+		                          <div className="flex items-center gap-3">
+		                            <Avatar className="w-11 h-11">
+		                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
@@ -4255,9 +4582,8 @@ const BrandMobileDashboard = ({
                           </div>
 
                           <div className="flex gap-2 mt-4">
-                            <button type="button"
+                            <button
                               onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
                                 if (!handle) {
                                   triggerHaptic(HapticPatterns.light);
                                   setActiveTab('creators');
@@ -4270,9 +4596,9 @@ const BrandMobileDashboard = ({
                             >
                               View profile
                             </button>
-                            <button type="button"
+                            <button
                               onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
+                                const handle = getPreferredCreatorHandle(c);
                                 if (!handle) {
                                   triggerHaptic(HapticPatterns.light);
                                   toast.error('Creator username missing', { description: 'Please try another creator.' });
@@ -4282,12 +4608,15 @@ const BrandMobileDashboard = ({
                                 navigate(`/${handle}?offer=true`);
                               }}
                               className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white')}
-                            >
-                              Send offer
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+		                            >
+			                              Send offer
+			                            </button>
+			                          </div>
+                              </>
+                            );
+                          })()}
+	                        </div>
+	                      ))}
                     </div>
                   </div>
 
@@ -4305,7 +4634,7 @@ const BrandMobileDashboard = ({
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
-                      <button type="button"
+                      <button
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           setActiveTab('creators');
@@ -4315,7 +4644,7 @@ const BrandMobileDashboard = ({
                         <User className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Find creators</span>
                       </button>
-                      <button type="button"
+                      <button
                         onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }}
                         className={cn(
                           'flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]',
@@ -4325,11 +4654,11 @@ const BrandMobileDashboard = ({
                         <Send className="w-4 h-4 mb-2 opacity-90" />
                         <span className="text-[11px] font-black uppercase tracking-widest">Send offer</span>
                       </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
                         <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
                       </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
                         <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
                       </button>
@@ -4342,12 +4671,12 @@ const BrandMobileDashboard = ({
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
                       </div>
-                      <button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
 	                    <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
@@ -4358,7 +4687,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[12px] font-bold', textColor)}>Action Required</p>
 	                        <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
                       </button>
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
@@ -4369,7 +4698,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[12px] font-bold', textColor)}>Active</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{activeDealsList.length}</p>
                       </button>
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
@@ -4401,7 +4730,7 @@ const BrandMobileDashboard = ({
 	                          {needsActionTotal} need action
 	                        </div>
 	                      )}
-	                      <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+	                      <button onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
 	                      Back
 	                      </button>
 	                    </div>
@@ -4417,7 +4746,7 @@ const BrandMobileDashboard = ({
 		                    ].map((item) => {
 		                      const isSelected = activeCollabTab === item.key;
 		                      return (
-		                        <button type="button"
+		                        <button
 		                          key={item.key}
 		                          type="button"
 		                          onClick={() => {
@@ -4593,7 +4922,7 @@ const BrandMobileDashboard = ({
 	                                  Payment released after content approval
 	                                </div>
 
-	                                <button type="button"
+	                                <button
 	                                  type="button"
 	                                  onClick={() => {
 	                                    triggerHaptic(HapticPatterns.light);
@@ -4612,7 +4941,7 @@ const BrandMobileDashboard = ({
                                       <p className={cn('text-[11px] font-semibold', secondaryTextColor)}>
                                         {isNoResponse ? 'Tip: Follow up after 24h for faster replies.' : 'Tip: Creators respond faster when offers are reviewed quickly.'}
                                       </p>
-                                      <button type="button"
+                                      <button
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -4707,7 +5036,7 @@ const BrandMobileDashboard = ({
 		                                </div>
 		                              </div>
 
-				                              <button type="button"
+				                              <button
 				                                type="button"
 				                                onClick={(e) => {
 			                                  triggerHaptic(HapticPatterns.light);
@@ -4739,12 +5068,12 @@ const BrandMobileDashboard = ({
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Creators</h2>
-                    <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
-                      Browse
+                    <button onClick={() => { triggerHaptic(HapticPatterns.light); setCreatorSearch(''); setSelectedCreatorCategory('all'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      Reset
                     </button>
                   </div>
 
-                  <div className={cn('mb-5 rounded-[22px] border px-4 py-3', borderColor, isDark ? 'bg-white/[0.04]' : 'bg-white')}>
+                  <div className={cn('mb-4 rounded-[24px] border px-4 py-3.5 backdrop-blur-xl', borderColor, isDark ? 'bg-white/[0.04]' : 'bg-white/90 shadow-[0_18px_45px_rgba(15,23,42,0.08)]')}>
                     <div className="flex items-center gap-3">
                       <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-slate-100')}>
                         <Search className={cn('h-4 w-4', isDark ? 'text-white/70' : 'text-slate-600')} />
@@ -4754,12 +5083,12 @@ const BrandMobileDashboard = ({
                         onChange={(e) => setCreatorSearch(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key !== 'Enter') return;
-                          const handle = String(creatorSearch || '').trim().replace(/^@+/, '').trim();
-                          if (!handle) return;
+                          const firstResult = creatorSearchResults[0];
+                          if (!firstResult) return;
                           triggerHaptic(HapticPatterns.light);
-                          navigate(`/${handle}`);
+                          setSelectedCreatorPreview(firstResult);
                         }}
-                        placeholder="Search by @username"
+                        placeholder="Search creators by name, username, or niche"
                         className={cn(
                           'flex-1 bg-transparent outline-none text-[13px] font-semibold placeholder:font-medium',
                           isDark ? 'text-white placeholder:text-white/35' : 'text-slate-900 placeholder:text-slate-400'
@@ -4771,17 +5100,146 @@ const BrandMobileDashboard = ({
                       />
                       {isSearchingCreators && <Loader2 className={cn('h-4 w-4 animate-spin', isDark ? 'text-white/60' : 'text-slate-500')} />}
                     </div>
+                    <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                      {creatorCategories.map((category) => (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic(HapticPatterns.light);
+                            setSelectedCreatorCategory(category);
+                          }}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all',
+                            selectedCreatorCategory === category
+                              ? (isDark ? 'bg-emerald-500/15 border-emerald-400/30 text-emerald-200' : 'bg-emerald-600 border-emerald-600 text-white')
+                              : (isDark ? 'bg-white/5 border-white/10 text-white/70' : 'bg-white border-slate-200 text-slate-600')
+                          )}
+                        >
+                          {category === 'all' ? 'All creators' : category}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          triggerHaptic(HapticPatterns.light);
+                          setShowAdvancedCreatorFilters((value) => !value);
+                        }}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-black uppercase tracking-[0.16em] transition-all',
+                          showAdvancedCreatorFilters
+                            ? (isDark ? 'border-blue-400/30 bg-blue-500/15 text-blue-200' : 'border-blue-200 bg-blue-50 text-blue-700')
+                            : (isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-600')
+                        )}
+                      >
+                        <SlidersHorizontal className="h-3.5 w-3.5" />
+                        Filters
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-50', textColor)}>Sort</span>
+                        <select
+                          value={creatorSortBy}
+                          onChange={(e) => setCreatorSortBy(e.target.value as typeof creatorSortBy)}
+                          className={cn(
+                            'rounded-full border px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em] outline-none',
+                            isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700'
+                          )}
+                        >
+                          <option value="recommended">Recommended</option>
+                          <option value="price_low">Price low to high</option>
+                          <option value="price_high">Price high to low</option>
+                          <option value="followers">Followers</option>
+                          <option value="avg_views">Avg views</option>
+                          <option value="response">Response time</option>
+                          <option value="reliability">Reliability</option>
+                        </select>
+                      </div>
+                    </div>
+                    {showAdvancedCreatorFilters && (
+                      <div className={cn('mt-3 rounded-[24px] border p-4', isDark ? 'border-white/10 bg-white/[0.04]' : 'border-slate-200 bg-slate-50')}>
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className="space-y-1">
+                            <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-60', textColor)}>Price range</span>
+                            <select value={creatorPriceFilter} onChange={(e) => setCreatorPriceFilter(e.target.value as typeof creatorPriceFilter)} className={cn('w-full rounded-2xl border px-3 py-2 text-[12px] font-semibold outline-none', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700')}>
+                              <option value="all">All</option>
+                              <option value="budget">Up to ₹10k</option>
+                              <option value="mid">₹10k to ₹25k</option>
+                              <option value="premium">₹25k+</option>
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-60', textColor)}>Followers</span>
+                            <select value={creatorFollowerFilter} onChange={(e) => setCreatorFollowerFilter(e.target.value as typeof creatorFollowerFilter)} className={cn('w-full rounded-2xl border px-3 py-2 text-[12px] font-semibold outline-none', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700')}>
+                              <option value="all">All</option>
+                              <option value="micro">Under 50k</option>
+                              <option value="mid">50k to 150k</option>
+                              <option value="large">150k+</option>
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-60', textColor)}>Avg views</span>
+                            <select value={creatorViewsFilter} onChange={(e) => setCreatorViewsFilter(e.target.value as typeof creatorViewsFilter)} className={cn('w-full rounded-2xl border px-3 py-2 text-[12px] font-semibold outline-none', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700')}>
+                              <option value="all">All</option>
+                              <option value="10">10k+</option>
+                              <option value="25">25k+</option>
+                              <option value="50">50k+</option>
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-60', textColor)}>Location</span>
+                            <select value={creatorLocationFilter} onChange={(e) => setCreatorLocationFilter(e.target.value)} className={cn('w-full rounded-2xl border px-3 py-2 text-[12px] font-semibold outline-none', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700')}>
+                              {creatorLocationOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {option === 'all' ? 'All' : option}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-60', textColor)}>Response time</span>
+                            <select value={creatorResponseFilter} onChange={(e) => setCreatorResponseFilter(e.target.value as typeof creatorResponseFilter)} className={cn('w-full rounded-2xl border px-3 py-2 text-[12px] font-semibold outline-none', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700')}>
+                              <option value="all">All</option>
+                              <option value="3">Replies in 3h</option>
+                              <option value="6">Replies in 6h</option>
+                              <option value="12">Replies in 12h</option>
+                            </select>
+                          </label>
+                          <label className="space-y-1">
+                            <span className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-60', textColor)}>Reliability</span>
+                            <select value={creatorReliabilityFilter} onChange={(e) => setCreatorReliabilityFilter(e.target.value as typeof creatorReliabilityFilter)} className={cn('w-full rounded-2xl border px-3 py-2 text-[12px] font-semibold outline-none', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-700')}>
+                              <option value="all">All</option>
+                              <option value="90">90%+</option>
+                              <option value="95">95%+</option>
+                              <option value="98">98%+</option>
+                            </select>
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCreatorVerifiedOnly((value) => !value)}
+                          className={cn(
+                            'mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-black uppercase tracking-[0.14em]',
+                            creatorVerifiedOnly
+                              ? (isDark ? 'border-emerald-400/30 bg-emerald-500/15 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-700')
+                              : (isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-600')
+                          )}
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          Verified only
+                        </button>
+                      </div>
+                    )}
                     {creatorSearchResults.length > 0 && (
                       <div className="mt-3 grid gap-2">
                         {creatorSearchResults.slice(0, 4).map((c: any) => (
-                          <button type="button"
+                          <button
                             key={c.id}
                             type="button"
                             onClick={() => {
-                              const handle = String(c.username || '').trim().replace(/^@+/, '');
-                              if (!handle) return;
                               triggerHaptic(HapticPatterns.light);
-                              navigate(`/${handle}`);
+                              setSelectedCreatorPreview(c);
                             }}
                             className={cn(
                               'w-full text-left flex items-center gap-3 rounded-2xl px-3 py-2 border transition active:scale-[0.99]',
@@ -4794,7 +5252,7 @@ const BrandMobileDashboard = ({
                             </Avatar>
                             <div className="min-w-0 flex-1">
                               <p className={cn('text-[13px] font-black truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] truncate', secondaryTextColor)}>@{String(c.username || '').replace(/^@+/, '')}</p>
+                              <p className={cn('text-[12px] truncate', secondaryTextColor)}>@{getPreferredCreatorHandle(c)}</p>
                             </div>
                             <ChevronRight className={cn('h-4 w-4', isDark ? 'text-white/40' : 'text-slate-400')} />
                           </button>
@@ -4803,99 +5261,154 @@ const BrandMobileDashboard = ({
                     )}
                   </div>
 
-                  {/* Discovery cards (makes the platform feel real immediately) */}
-                  <div className="mb-5">
-                    <div className="flex items-end justify-between mb-3">
-                      <div>
-                        <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested</p>
-                        <p className={cn('text-[12px] mt-1', secondaryTextColor)}>Shortlist reliable creators with clear pricing.</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                      {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 10)).map((c: any) => (
-                        <div key={c.id} className={cn('min-w-[292px] p-4 rounded-[28px] border', isDark ? 'bg-white/5 border-white/10' : 'bg-white/90 border-emerald-100 shadow-[0_14px_40px_rgba(15,23,42,0.08)]')}>
-                          <div className="flex items-start gap-3 mb-4">
-                            <Avatar className="w-12 h-12">
-                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
-                              <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className={cn('text-[14px] font-black truncate', textColor)}>{c.name}</p>
-                              <p className={cn('text-[12px] mt-1 opacity-60 truncate', textColor)}>
-                                {(c.category || c.niche || 'Creator')}{c.followers ? ` • ${formatFollowers(c.followers)}` : ''}
-                              </p>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-45', textColor)}>From</p>
-                              <p className={cn('text-[13px] font-black mt-1', textColor)}>{formatCompactINR(c?.pricing?.avg ?? c?.pricing?.reel ?? c.rate ?? 0)}</p>
-                              <p className={cn('text-[10px] mt-0.5', secondaryTextColor)}>/ reel</p>
-                            </div>
+                  <div className="mb-5 space-y-5">
+                    {creatorDiscoverySections.map((section) => (
+                      <div key={section.id}>
+                        <div className="mb-3 flex items-end justify-between">
+                          <div>
+                            <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>{section.title}</p>
+                            <p className={cn('mt-1 text-[12px]', secondaryTextColor)}>{section.subtitle}</p>
                           </div>
-
-                          <div className={cn('rounded-2xl border px-3 py-3 space-y-1.5', isDark ? 'border-white/10 bg-white/[0.04]' : 'border-slate-200 bg-slate-50/90')}>
-                            {getReliabilityLines(c).map((line) => (
-                              <p key={line} className={cn('text-[12px] font-medium', textColor)}>{line}</p>
-                            ))}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {getSmartTags(c).map((t) => (
-                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
-                                {t}
-                              </span>
-                            ))}
-                            {getSmartTags(c).length === 0 && (
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
-                                ✔ Verified profile
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <button type="button"
-                              onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                                if (!handle) {
-                                  triggerHaptic(HapticPatterns.light);
-                                  setActiveTab('creators');
-                                  return;
-                                }
-                                triggerHaptic(HapticPatterns.light);
-                                navigate(`/${handle}`);
-                              }}
-                              className={cn('flex-1 py-3 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}
-                            >
-                              View profile
-                            </button>
-                            <button type="button"
-                              onClick={() => {
-                                const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
-                                if (!handle) {
-                                  triggerHaptic(HapticPatterns.light);
-                                  toast.error('Creator username missing', { description: 'Please try another creator.' });
-                                  return;
-                                }
-                                triggerHaptic(HapticPatterns.success);
-                                // Go straight to the creator link page and open the offer flow.
-                                navigate(`/${handle}?offer=true`);
-                              }}
-	                              className={cn('flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 hover:from-blue-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white')}
-                            >
-                              Send offer
-                            </button>
-                          </div>
+                          <span className={cn('text-[11px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                            {section.items.length} creators
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                          {section.items.slice(0, 10).map((c: any) => {
+                            const handle = getPreferredCreatorHandle(c);
+                            const CategoryIcon = getCreatorCategoryIcon(c);
+                            const startPrice = getCreatorStartingPrice(c);
+                            const avgViews = getCreatorAvgViews(c);
+                            const reliability = getCreatorReliability(c);
+                            const responseHours = getCreatorResponseHours(c);
+                            const completedDeals = getCreatorCompletedDeals(c);
+                            const isShortlisted = shortlistedCreatorIds.includes(String(c.id));
+                            const badges = getCreatorBadges(c).slice(0, 1);
+                            return (
+                              <div key={`${section.id}-${c.id}`} className={cn('min-w-[296px] rounded-[26px] border p-4', isDark ? 'bg-white/5 border-white/10' : 'bg-white/95 border-slate-200 shadow-[0_14px_24px_rgba(15,23,42,0.05)]')}>
+                                <div className="mb-3 flex items-start gap-3">
+                                  <div className="relative">
+                                    <Avatar className="h-12 w-12 ring-1 ring-black/5">
+                                      <AvatarImage src={getCreatorAvatarSrc(c)} alt={c.name} />
+                                      <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <div className={cn('absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border shadow-sm', isDark ? 'border-slate-900 bg-slate-800 text-white' : 'border-white bg-slate-900 text-white')}>
+                                      <CategoryIcon className="h-3 w-3" />
+                                    </div>
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <p className={cn('truncate text-[16px] font-black tracking-tight', textColor)}>{c.name}</p>
+                                      {c?.is_verified && (
+                                        <ShieldCheck className={cn('h-3.5 w-3.5', isDark ? 'text-emerald-300' : 'text-emerald-600')} />
+                                      )}
+                                    </div>
+                                    <p className={cn('mt-0.5 text-[12px] font-medium opacity-75', textColor)}>{c.category || c.niche || 'Creator'}</p>
+                                    <p className={cn('mt-0.5 text-[11px]', secondaryTextColor)}>{formatFollowers(c.followers) || 'Audience growing'}</p>
+                                  </div>
+                                  <div className="flex flex-col items-end gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        triggerHaptic(HapticPatterns.light);
+                                        setShortlistedCreatorIds((current) =>
+                                          current.includes(String(c.id))
+                                            ? current.filter((id) => id !== String(c.id))
+                                            : [...current, String(c.id)]
+                                        );
+                                      }}
+                                      className={cn(
+                                        'rounded-full border p-2 transition-all active:scale-[0.96]',
+                                        isShortlisted
+                                          ? (isDark ? 'border-blue-400/30 bg-blue-500/15 text-blue-200' : 'border-blue-200 bg-blue-50 text-blue-700')
+                                          : (isDark ? 'border-white/10 bg-white/5 text-white/60' : 'border-slate-200 bg-white text-slate-500')
+                                      )}
+                                    >
+                                      <Bookmark className={cn('h-4 w-4', isShortlisted && 'fill-current')} />
+                                    </button>
+                                    <div className="text-right">
+                                      <p className={cn('text-[9px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>From</p>
+                                      <p className={cn('mt-0.5 text-[18px] font-black tracking-tight leading-none', textColor)}>{formatCompactINR(startPrice)}</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className={cn('mt-2 grid grid-cols-3 gap-2 rounded-[20px] border p-2.5', isDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50/80')}>
+                                  <div>
+                                    <p className={cn('text-[9px] font-black uppercase tracking-[0.14em] opacity-45', textColor)}>Views</p>
+                                    <p className={cn('mt-1 text-[14px] font-black leading-none', textColor)}>{formatCompactCount(avgViews)}</p>
+                                  </div>
+                                  <div>
+                                    <p className={cn('text-[9px] font-black uppercase tracking-[0.14em] opacity-45', textColor)}>Reply</p>
+                                    <p className={cn('mt-1 text-[14px] font-black leading-none', textColor)}>{responseHours > 0 ? `${responseHours}h` : '1d'}</p>
+                                  </div>
+                                  <div>
+                                    <p className={cn('text-[9px] font-black uppercase tracking-[0.14em] opacity-45', textColor)}>Trust</p>
+                                    <p className={cn('mt-1 text-[14px] font-black leading-none', textColor)}>{reliability}%</p>
+                                  </div>
+                                </div>
+
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                  <span className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em]', isDark ? 'border-white/10 text-white/70 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                                    {getCreatorLocationLabel(c)}
+                                  </span>
+                                  {badges.map((tag) => (
+                                    <span key={tag} className={cn('rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em]', isDark ? 'border-white/10 text-white/70 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                                      {tag}
+                                    </span>
+                                  ))}
+                                  {completedDeals > 0 && (
+                                    <span className={cn('text-[11px] font-medium', secondaryTextColor)}>
+                                      {completedDeals} deals
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                  <button
+                                    onClick={() => {
+                                      if (!handle) {
+                                        toast.error('Creator username missing', { description: 'Please try another creator.' });
+                                        return;
+                                      }
+                                      triggerHaptic(HapticPatterns.light);
+                                      navigate(`/${handle}`);
+                                    }}
+                                    className={cn('rounded-2xl border py-2.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-white text-slate-900')}
+                                  >
+                                    Store
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (!handle) {
+                                        triggerHaptic(HapticPatterns.light);
+                                        toast.error('Creator username missing', { description: 'Please try another creator.' });
+                                        return;
+                                      }
+                                      triggerHaptic(HapticPatterns.success);
+                                      navigate(`/${handle}?offer=true`);
+                                    }}
+                                    className={cn('rounded-2xl py-2.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 text-white' : 'bg-gradient-to-br from-blue-600 to-sky-600 text-white')}
+                                  >
+                                    Send Offer
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
 	                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
                     {creatorFeed.length === 0 ? (
                       <div className="p-8 text-center">
                         <p className={cn('text-[13px] font-bold', textColor)}>Find creators to collaborate with.</p>
-                        <p className={cn('text-[12px] opacity-60 mt-2', textColor)}>Browse our creator database and send your first offer.</p>
+                        <p className={cn('text-[12px] opacity-60 mt-2', textColor)}>Use in-app discovery to preview creators and send your first offer.</p>
                         <div className="flex flex-col gap-2 mt-5">
-                          <Button type="button" onClick={() => navigate('/creators')} className={cn('rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
-                            <User className="w-4 h-4 mr-2" /> Browse creators
+                          <Button type="button" onClick={() => setActiveTab('creators')} className={cn('rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
+                            <User className="w-4 h-4 mr-2" /> Discover creators
                           </Button>
                           <Button
                             type="button"
@@ -4910,7 +5423,7 @@ const BrandMobileDashboard = ({
                     ) : (
                       <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
                         {creatorFeed.map((c) => (
-                          <button type="button" key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white/60')}>
+                          <button key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white/60')}>
                             <Avatar className="w-10 h-10">
                               <AvatarImage src={safeImageSrc(c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -4934,6 +5447,107 @@ const BrandMobileDashboard = ({
                   </div>
                 </motion.div>
               )}
+
+              <AnimatePresence>
+                {activeTab === 'creators' && selectedCreatorPreview && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setSelectedCreatorPreview(null)}
+                      className="fixed inset-0 z-[90] bg-black/45 backdrop-blur-sm"
+                    />
+                    <motion.div
+                      initial={{ y: '100%' }}
+                      animate={{ y: 0 }}
+                      exit={{ y: '100%' }}
+                      transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+                      className={cn('fixed bottom-0 inset-x-0 z-[100] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl', isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200')}
+                    >
+                      <div className="max-w-md mx-auto">
+                        <div className="w-12 h-1 rounded-full mx-auto mb-5 bg-slate-400/30" />
+                        <div className="flex items-start gap-4">
+                          <Avatar className="w-16 h-16 border border-white/10">
+                            <AvatarImage src={safeImageSrc(selectedCreatorPreview.profile_photo)} alt={selectedCreatorPreview.name} />
+                            <AvatarFallback>{String(selectedCreatorPreview.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0 flex-1">
+                            <p className={cn('text-[20px] font-black tracking-tight', textColor)}>{selectedCreatorPreview.name}</p>
+                            <p className={cn('text-[13px] mt-1', secondaryTextColor)}>
+                              @{getPreferredCreatorHandle(selectedCreatorPreview)}{selectedCreatorPreview.followers ? ` • ${formatFollowers(selectedCreatorPreview.followers)}` : ''}
+                            </p>
+                            <p className={cn('text-[12px] mt-2', secondaryTextColor)}>
+                              {selectedCreatorPreview.category || 'Creator'} • {formatCompactINR(selectedCreatorPreview?.pricing?.avg ?? selectedCreatorPreview?.pricing?.reel ?? 0)} / reel
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className={cn('mt-5 rounded-[24px] border p-4', isDark ? 'bg-white/[0.04] border-white/10' : 'bg-slate-50 border-slate-200')}>
+                          <div className="space-y-2">
+                            {getReliabilityLines(selectedCreatorPreview).map((line) => (
+                              <p key={line} className={cn('text-[13px] font-medium', textColor)}>{line}</p>
+                            ))}
+                          </div>
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {getCreatorBadges(selectedCreatorPreview).map((tag) => (
+                              <span key={tag} className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-white/10 text-white/70 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3 mt-5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const handle = getPreferredCreatorHandle(selectedCreatorPreview);
+                              if (!handle) {
+                                toast.error('Creator username missing', { description: 'Please try another creator.' });
+                                return;
+                              }
+                              triggerHaptic(HapticPatterns.light);
+                              setSelectedCreatorPreview(null);
+                              navigate(`/${handle}`);
+                            }}
+                            className={cn('h-12 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-slate-50 text-slate-900')}
+                          >
+                            Storefront
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const id = String(selectedCreatorPreview.id);
+                              triggerHaptic(HapticPatterns.light);
+                              setShortlistedCreatorIds((current) => (current.includes(id) ? current.filter((value) => value !== id) : [...current, id]));
+                            }}
+                            className={cn('h-12 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', shortlistedCreatorIds.includes(String(selectedCreatorPreview.id)) ? (isDark ? 'border-blue-400/30 bg-blue-500/15 text-blue-200' : 'border-blue-200 bg-blue-50 text-blue-700') : (isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-slate-50 text-slate-900'))}
+                          >
+                            {shortlistedCreatorIds.includes(String(selectedCreatorPreview.id)) ? 'Saved' : 'Shortlist'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const handle = getPreferredCreatorHandle(selectedCreatorPreview);
+                              if (!handle) {
+                                toast.error('Creator username missing', { description: 'Please try another creator.' });
+                                return;
+                              }
+                              triggerHaptic(HapticPatterns.success);
+                              setSelectedCreatorPreview(null);
+                              navigate(`/${handle}?offer=true`);
+                            }}
+                            className={cn('h-12 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 text-white' : 'bg-gradient-to-br from-blue-600 to-sky-600 text-white')}
+                          >
+                            Send offer
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
 
 
               {activeTab === 'profile' && (
@@ -4976,7 +5590,7 @@ const BrandMobileDashboard = ({
                           <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
                           <p className={cn('text-[11px] mt-0.5 opacity-70', textColor)}>Creators respond faster when they recognize you.</p>
                         </div>
-                        <button type="button"
+                        <button
                           type="button"
                           onClick={() => navigate('/brand-settings')}
                           className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-slate-900 border border-amber-200')}
@@ -5083,7 +5697,7 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-3">
-	                  <button type="button"
+	                  <button
 	                    onClick={() => {
 	                      if (!hasUploadedBrandLogo) {
 	                        toast.error('Upload your brand logo first', {
@@ -5113,7 +5727,7 @@ const BrandMobileDashboard = ({
                     </div>
                   </button>
 
-                  <button type="button"
+                  <button
                     onClick={() => {
                       setShowActionSheet(false);
                       setActiveTab('creators');
@@ -5124,7 +5738,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Search and shortlist profiles</p>
                   </button>
 
-                  <button type="button" onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
+                  <button onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
                     <p className={cn('text-[13px] font-bold', textColor)}>Import creator profile</p>
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Paste a link to add quickly</p>
                   </button>
@@ -5133,7 +5747,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] mb-2 opacity-50', textColor)}>Notifications</p>
                   </div>
                   {!isPushSubscribed && isPushSupported && (
-                    <button type="button"
+                    <button
                       disabled={isPushBusy}
                       onClick={async () => {
                         await handleEnablePush();
@@ -5198,13 +5812,13 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button type="button"
+                  <button
                     onClick={() => setShowBudgetModal(false)}
                     className={cn('flex-1 h-12 rounded-xl font-bold text-sm', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
                   >
                     Cancel
                   </button>
-	                  <button type="button"
+	                  <button
 	                    onClick={() => {
 	                      const parsed = Number(budgetDraft);
 	                      if (!Number.isFinite(parsed) || parsed <= 0) {
