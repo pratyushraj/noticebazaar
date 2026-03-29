@@ -3,7 +3,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'; // Import CardFooter
 import { Button } from '@/components/ui/button';
-import { IndianRupee, Calculator, ArrowRight } from 'lucide-react'; // Changed AlertTriangle to Calculator
+import { Calculator, ArrowRight } from 'lucide-react';
+ // Changed AlertTriangle to Calculator
 import { MOCK_TAX_COMPLIANCE_STATUS } from '@/data/creatorDashboardData';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom'; // Import Link

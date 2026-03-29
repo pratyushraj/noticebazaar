@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Send, Copy, Share2, DollarSign } from 'lucide-react';
+import {  } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { useNativeShare } from '@/hooks/useNativeShare';
 import { toast } from 'sonner';
@@ -111,7 +111,7 @@ const LongPressMenu: React.FC<LongPressMenuProps> = ({
               {items.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <button
+                  <button type="button"
                     key={index}
                     onClick={() => handleItemClick(item)}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"

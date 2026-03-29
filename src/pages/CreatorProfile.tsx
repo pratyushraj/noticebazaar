@@ -1504,7 +1504,7 @@ const ProfileSettings = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="flex items-center justify-between p-4">
-          <button
+          <button type="button"
             type="button"
             onClick={() => {
               if (dealSettingsRequired) {
@@ -1521,7 +1521,7 @@ const ProfileSettings = () => {
 
           <div className="text-lg font-semibold">Profile & Settings</div>
 
-          <button
+          <button type="button"
             type="button"
             onClick={() => {
               handleSave();
@@ -1551,7 +1551,7 @@ const ProfileSettings = () => {
           aria-label="Profile sections"
           className="grid grid-cols-2 sm:flex gap-1 bg-secondary rounded-lg p-1 border border-border max-w-2xl mx-auto"
         >
-          <button
+          <button type="button"
             role="tab"
             aria-selected={activeSection === 'profile'}
             aria-label="Profile"
@@ -1566,7 +1566,7 @@ const ProfileSettings = () => {
             <User className="w-4 h-4" />
             <span>Profile</span>
           </button>
-          <button
+          <button type="button"
             role="tab"
             aria-selected={activeSection === 'account'}
             aria-label="Account"
@@ -1581,7 +1581,7 @@ const ProfileSettings = () => {
             <Lock className="w-4 h-4" />
             <span>Account</span>
           </button>
-          <button
+          <button type="button"
             role="tab"
             aria-selected={activeSection === 'collab'}
             aria-label="Your Collab"
@@ -1596,7 +1596,7 @@ const ProfileSettings = () => {
             <SlidersHorizontal className="w-4 h-4" />
             <span>Your Collab</span>
           </button>
-          <button
+          <button type="button"
             role="tab"
             aria-selected={activeSection === 'support'}
             aria-label="Support"
@@ -1732,7 +1732,7 @@ const ProfileSettings = () => {
             </div>
 
             {/* View Stats Button - Full width on mobile */}
-            <button
+            <button type="button"
               onClick={() => setShowStats(!showStats)}
               className="w-full sm:w-auto px-4 py-2 sm:px-3 sm:py-1.5 bg-muted hover:bg-muted/80 border border-border rounded-lg text-xs font-medium text-foreground/80 transition-colors"
             >
@@ -2057,7 +2057,7 @@ const ProfileSettings = () => {
                             size="sm"
                             onClick={() => {
                               const message = encodeURIComponent(`For collaborations, submit here:\n\n${collabLink}`);
-                              window.open(`https://wa.me/?text=${message}`, '_blank');
+                              window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
                               toast.success('Opening WhatsApp…');
                             }}
                             className="h-9 text-xs bg-muted border-border text-foreground/80 hover:bg-muted/80"
@@ -2109,7 +2109,7 @@ const ProfileSettings = () => {
                           className="w-full h-11 bg-muted/40 border-border text-foreground font-medium hover:bg-muted/60"
                           onClick={() => {
                             if (usernameForLink) {
-                              window.open(`/${usernameForLink}`, '_blank');
+                              window.open(`/${usernameForLink}`, '_blank', 'noopener,noreferrer');
                             } else {
                               toast.error('Please set your Instagram username first');
                             }
@@ -2193,7 +2193,7 @@ const ProfileSettings = () => {
             {/* Logout Button - At Bottom of Profile Section */}
             <div className="mt-6 mb-4">
               <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
-                <button
+                <button type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -2229,7 +2229,7 @@ const ProfileSettings = () => {
             </div>
 
             <div className="mb-4">
-              <button
+              <button type="button"
                 type="button"
                 onClick={() => handleSave()}
                 disabled={isSaving}
@@ -2298,7 +2298,7 @@ const ProfileSettings = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => window.open(`/${usernameForLink}`, '_blank')}
+                        onClick={() => window.open(`/${usernameForLink}`, '_blank', 'noopener,noreferrer')}
                         className="h-10 bg-muted/60 border-border text-foreground/90 hover:bg-muted/80"
                         aria-label="Preview collaboration link"
                       >
@@ -2425,7 +2425,7 @@ const ProfileSettings = () => {
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">Allow our engine to automatically recommend rates to brands based on your content stats.</p>
                   </div>
-                  <button
+                  <button type="button"
                     type="button"
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(50);
@@ -2479,7 +2479,7 @@ const ProfileSettings = () => {
                     {TYPICAL_DEAL_SIZE_OPTIONS.map((option) => {
                       const selected = formData.typicalDealSize === option.key;
                       return (
-                        <button
+                        <button type="button"
                           key={option.key}
                           type="button"
                           onClick={() => {
@@ -2522,7 +2522,7 @@ const ProfileSettings = () => {
                     {COLLAB_PREFERENCE_OPTIONS.map((option) => {
                       const isSelected = formData.collaborationPreference === option;
                       return (
-                        <button
+                        <button type="button"
                           key={option}
                           type="button"
                           disabled={!editMode}
@@ -2552,7 +2552,7 @@ const ProfileSettings = () => {
                     {CONTENT_NICHE_OPTIONS.map((niche) => {
                       const selected = formData.contentNiches.includes(niche);
                       return (
-                        <button
+                        <button type="button"
                           key={niche}
                           type="button"
                           disabled={!editMode}
@@ -2642,7 +2642,7 @@ const ProfileSettings = () => {
                         {topCities.map((city) => (
                           <span key={city} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-border bg-muted/60 text-foreground/90 font-medium">
                             {city}
-                            <button type="button" onClick={() => removeCity(city)} disabled={!editMode} className="text-muted-foreground hover:text-foreground">×</button>
+                            <button type="button" type="button" onClick={() => removeCity(city)} disabled={!editMode} className="text-muted-foreground hover:text-foreground">×</button>
                           </span>
                         ))}
                       </div>
@@ -2662,7 +2662,7 @@ const ProfileSettings = () => {
                           disabled={!editMode}
                           className={`flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
                         />
-                        <button type="button" onClick={addCity} disabled={!editMode} className={`px-3 py-2 rounded-lg text-sm border border-border ${editMode ? 'bg-muted hover:bg-muted/80 text-foreground font-medium' : 'opacity-70 cursor-not-allowed text-muted-foreground bg-muted/30'}`}>
+                        <button type="button" type="button" onClick={addCity} disabled={!editMode} className={`px-3 py-2 rounded-lg text-sm border border-border ${editMode ? 'bg-muted hover:bg-muted/80 text-foreground font-medium' : 'opacity-70 cursor-not-allowed text-muted-foreground bg-muted/30'}`}>
                           Add
                         </button>
                       </div>
@@ -2780,7 +2780,7 @@ const ProfileSettings = () => {
                     { key: 'five-to-twenty', label: '5-20 brands', value: '12' },
                     { key: 'twenty-plus', label: '20+ brands', value: '25' },
                   ].map((option) => (
-                    <button
+                    <button type="button"
                       key={option.key}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, collabBrandsCountOverride: option.value }))}
@@ -2865,7 +2865,7 @@ const ProfileSettings = () => {
               {positioningNudge && (
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mb-2 text-center transition-opacity duration-200">{positioningNudge}</p>
               )}
-              <button
+              <button type="button"
                 type="button"
                 onClick={() => {
                   setCtaPressed(true);
@@ -2900,7 +2900,7 @@ const ProfileSettings = () => {
                 Get notified as soon as a brand sends a collaboration request.
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <button
+                <button type="button"
                   type="button"
                   onClick={handleEnablePushFromAccount}
                   disabled={
@@ -2920,7 +2920,7 @@ const ProfileSettings = () => {
                 </button>
                 {isPushSubscribed && (
                   <>
-                    <button
+                    <button type="button"
                       type="button"
                       onClick={handleTestPushFromAccount}
                       disabled={isPushBusy}
@@ -2956,10 +2956,10 @@ const ProfileSettings = () => {
                 Next billing: {userData.subscription.nextBilling}
               </div>
               <div className="flex gap-2">
-                <button className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-2 rounded-lg transition-all text-sm border border-border">
+                <button type="button" className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium py-2 rounded-lg transition-all text-sm border border-border">
                   Manage Plan
                 </button>
-                <button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold py-2 rounded-lg transition-all text-sm shadow-md">
+                <button type="button" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold py-2 rounded-lg transition-all text-sm shadow-md">
                   Upgrade
                 </button>
               </div>
@@ -2972,7 +2972,7 @@ const ProfileSettings = () => {
                 Security & Privacy
               </h2>
               <div className="space-y-2">
-                <button className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
+                <button type="button" className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
                   <div className="flex items-center gap-2.5">
                     <Lock className="w-4 h-4 text-muted-foreground" />
                     <div className="text-left">
@@ -2983,7 +2983,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
+                <button type="button" className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
                   <div className="flex items-center gap-2.5">
                     <Shield className="w-4 h-4 text-muted-foreground" />
                     <div className="text-left">
@@ -2994,7 +2994,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
+                <button type="button" className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
                   <div className="flex items-center gap-2.5">
                     <Download className="w-4 h-4 text-muted-foreground" />
                     <div className="text-left">
@@ -3005,7 +3005,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </button>
 
-                <button className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-red-500/10 transition-all group">
+                <button type="button" className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-red-500/10 transition-all group">
                   <div className="flex items-center gap-2.5">
                     <Trash2 className="w-4 h-4 text-red-500/70 group-hover:text-red-500" />
                     <div className="text-left">
@@ -3027,7 +3027,7 @@ const ProfileSettings = () => {
               <h2 className="font-semibold text-base mb-3">Help & Support</h2>
               <div className="space-y-2">
                 {/* Contact Support - Primary */}
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2.5 bg-primary/5 border border-primary/20 rounded-lg hover:bg-primary/10 transition-all font-medium">
+                <button type="button" className="w-full flex items-center justify-between min-h-[44px] p-2.5 bg-primary/5 border border-primary/20 rounded-lg hover:bg-primary/10 transition-all font-medium">
                   <div className="flex items-center gap-2.5">
                     <MessageCircle className="w-4 h-4 text-primary" />
                     <div className="text-left">
@@ -3039,7 +3039,7 @@ const ProfileSettings = () => {
                 </button>
 
                 {/* Help Center - Secondary */}
-                <button className="w-full flex items-center justify-between min-h-[44px] p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
+                <button type="button" className="w-full flex items-center justify-between min-h-[44px] p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
                   <div className="flex items-center gap-2.5">
                     <HelpCircle className="w-4 h-4 text-muted-foreground/70" />
                     <div className="text-left">
@@ -3051,7 +3051,7 @@ const ProfileSettings = () => {
                 </button>
 
                 {/* Restart Tutorial - Secondary */}
-                <button
+                <button type="button"
                   onClick={() => {
                     if (profile?.id) {
                       localStorage.removeItem(`dashboard-tutorial-completed-${profile.id}`);
@@ -3080,7 +3080,7 @@ const ProfileSettings = () => {
             <div className="bg-muted/20 rounded-lg p-3 border border-border">
               <h3 className="text-[10px] font-bold text-muted-foreground/70 mb-2 uppercase tracking-widest pl-1">Legal</h3>
               <div className="space-y-1">
-                <button className="w-full flex items-center justify-between min-h-[40px] px-2.5 py-2 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
+                <button type="button" className="w-full flex items-center justify-between min-h-[40px] px-2.5 py-2 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
                   <div className="flex items-center gap-2.5">
                     <FileText className="w-4 h-4 text-muted-foreground/60" />
                     <div className="text-left">
@@ -3090,7 +3090,7 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
                 </button>
 
-                <button className="w-full flex items-center justify-between min-h-[40px] px-2.5 py-2 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
+                <button type="button" className="w-full flex items-center justify-between min-h-[40px] px-2.5 py-2 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all">
                   <div className="flex items-center gap-2.5">
                     <Shield className="w-4 h-4 text-muted-foreground/60" />
                     <div className="text-left">
@@ -3118,7 +3118,7 @@ const ProfileSettings = () => {
             {/* Logout Button - At Bottom */}
             <div className="mt-6 mb-4">
               <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
-                <button
+                <button type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

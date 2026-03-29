@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, Settings, DollarSign, MessageSquare, AlertCircle, CheckCircle2, Info } from 'lucide-react';
+import { Bell, X, Settings, DollarSign, MessageSquare, AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -184,7 +184,7 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
               <Badge className="bg-red-600 text-white text-xs">{unreadCount}</Badge>
             )}
           </div>
-          <button
+          <button type="button"
             onClick={() => setShowPreferences(!showPreferences)}
             className={cn(
               'p-2 rounded-lg transition-colors',

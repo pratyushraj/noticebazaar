@@ -321,7 +321,7 @@ const PaymentDetailPage = () => {
           <AlertCircle className="w-16 h-16 text-white/80 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Payment Not Found</h2>
           <p className="text-white/60 mb-4">The payment you're looking for doesn't exist.</p>
-          <button
+          <button type="button"
             onClick={() => navigate('/creator-payments')}
             className="bg-gradient-to-r from-[#A06BFF] to-[#7C3AED] hover:from-[#8F5AFF] hover:to-[#6D28D9] px-6 py-3 rounded-xl transition-all active:scale-[0.97] shadow-lg shadow-purple-900/40"
           >
@@ -449,7 +449,7 @@ const PaymentDetailPage = () => {
       {/* Page Header */}
       <div className="sticky top-0 z-50 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4 max-w-4xl mx-auto">
-          <button
+          <button type="button"
             onClick={() => navigate('/creator-payments')}
             className="p-2 hover:bg-white/10 rounded-xl transition-colors active:scale-95"
             aria-label="Back"
@@ -871,7 +871,7 @@ const PaymentDetailPage = () => {
                   </div>
                 )}
                 {proofOfPaymentFile && (
-                  <button
+                  <button type="button"
                     onClick={handleUploadProof}
                     disabled={isUploadingProof}
                     className={cn(
@@ -921,7 +921,7 @@ const PaymentDetailPage = () => {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 resize-none"
             />
 
-            <button
+            <button type="button"
               onClick={handleSaveNotes}
               disabled={isSavingNotes}
               className={cn(
@@ -951,7 +951,7 @@ const PaymentDetailPage = () => {
         >
           <div className="text-xs text-white/50 mb-3">Danger Zone</div>
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <button type="button"
               onClick={() => {
                 toast.info('Edit Payment feature coming soon');
               }}
@@ -965,7 +965,7 @@ const PaymentDetailPage = () => {
               <Edit className="w-4 h-4" />
               Edit
             </button>
-            <button
+            <button type="button"
               onClick={() => {
                 if (window.confirm('Are you sure you want to delete this payment record? This action cannot be undone.')) {
                   toast.info('Delete Payment feature coming soon');
@@ -997,7 +997,7 @@ const PaymentDetailPage = () => {
           >
             <div className="flex items-center justify-between p-4 border-b border-white/10">
               <h3 className="text-lg font-semibold text-white">Proof of Payment</h3>
-              <button
+              <button type="button"
                 onClick={() => setShowPreviewModal(false)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 aria-label="Close preview"
@@ -1048,7 +1048,7 @@ const PaymentDetailPage = () => {
             </p>
             
             <div className="flex gap-3">
-              <button
+              <button type="button"
                 onClick={() => {
                   setShowConfirmModal(false);
                 }}

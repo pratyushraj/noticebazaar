@@ -83,7 +83,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               <Settings className="h-4 w-4" />
               <span>Settings</span>
             </Link>
-            <button
+            <button type="button"
               onClick={handleLogout}
               disabled={signOutMutation.isPending}
               className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 w-full text-left transition-all"

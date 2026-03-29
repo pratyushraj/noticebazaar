@@ -224,7 +224,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
               {steps[currentStepIndex]?.description}
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardTitle } from '@/components/ui/card';
-import { FolderOpen, Paperclip, MessageSquare, CalendarDays, Plus, CheckCircle, Bot, LogOut, Loader2 } from 'lucide-react'; // Changed FileUp to Paperclip
+import { Paperclip, Bot, LogOut, Loader2 } from 'lucide-react';
+ // Changed FileUp to Paperclip
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { useCases } from '@/lib/hooks/useCases';

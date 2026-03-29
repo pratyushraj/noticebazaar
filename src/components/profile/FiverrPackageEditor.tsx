@@ -5,21 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Check, 
-  Plus, 
-  Trash2, 
-  Clock, 
-  RotateCcw, 
-  Sparkles,
-  Zap,
-  Package,
-  Layers,
-  Layout,
-  ChevronDown,
-  ChevronUp,
-  Settings2
-} from 'lucide-react';
+import { Check, Trash2, Clock, RotateCcw, Sparkles, Layout, Settings2 } from 'lucide-react';
 import { DealTemplate } from '@/types';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -150,7 +136,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   )}>
                     {template.id}
                   </span>
-                  <button 
+                  <button type="button" 
                     onClick={() => setExpandedId(isExpanded ? null : template.id)}
                     className="p-1 hover:bg-white/10 rounded-full transition-colors"
                   >
@@ -190,7 +176,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Deliverables</span>
-                    <button 
+                    <button type="button" 
                       onClick={() => addDeliverable(template.id)}
                       className="text-[11px] text-primary hover:underline font-bold"
                     >
@@ -208,7 +194,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                           disabled={disabled}
                           className="text-[11px] bg-transparent border-none p-0 h-auto shadow-none focus-visible:ring-0 flex-1 truncate"
                         />
-                        <button 
+                        <button type="button" 
                           onClick={() => removeDeliverable(template.id, idx)}
                           className="opacity-0 group-hover:opacity-100 p-0.5 text-red-500 hover:bg-red-500/10 rounded transition-all"
                         >

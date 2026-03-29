@@ -189,7 +189,7 @@ const CollabLinkAnalytics: React.FC = () => {
             </h3>
           </div>
           <div className="flex gap-1">
-            <button
+            <button type="button"
               onClick={() => setPeriod('7')}
               aria-label="Last 7 days"
               className={`px-2 py-0.5 text-[10px] rounded border transition-colors ${
@@ -200,7 +200,7 @@ const CollabLinkAnalytics: React.FC = () => {
             >
               7d
             </button>
-            <button
+            <button type="button"
               onClick={() => setPeriod('30')}
               aria-label="Last 30 days"
               className={`px-2 py-0.5 text-[10px] rounded border transition-colors ${

@@ -173,7 +173,7 @@ export function DateRangePicker({
               const inRange = isDateInRange(day);
 
               return (
-                <button
+                <button type="button"
                   key={index}
                   onClick={() => handleDateClick(day)}
                   className={cn(

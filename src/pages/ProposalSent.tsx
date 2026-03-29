@@ -217,7 +217,7 @@ const ProposalSent = () => {
           </div>
 
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-1 py-1">
-            <button
+            <button type="button"
               type="button"
               onClick={() => setThemePreference('system')}
               className={cn(
@@ -228,7 +228,7 @@ const ProposalSent = () => {
             >
               <Laptop className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               type="button"
               onClick={() => setThemePreference('light')}
               className={cn(
@@ -239,7 +239,7 @@ const ProposalSent = () => {
             >
               <Sun className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               type="button"
               onClick={() => setThemePreference('dark')}
               className={cn(

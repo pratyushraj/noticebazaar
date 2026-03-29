@@ -39,7 +39,7 @@ const BrandMoodBoard: React.FC<BrandMoodBoardProps> = ({
             <Instagram className="w-4 h-4 text-pink-400" />
             <span className="text-sm font-semibold text-white">{brandName}</span>
           </div>
-          <button
+          <button type="button"
             onClick={onClose}
             className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
             aria-label="Close mood board"

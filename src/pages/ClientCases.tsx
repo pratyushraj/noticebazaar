@@ -4,7 +4,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, FolderOpen, Eye, Briefcase, FileText } from 'lucide-react'; // Added FileText icon
+import { Loader2, Eye, FileText } from 'lucide-react';
+ // Added FileText icon
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useCases } from '@/lib/hooks/useCases';

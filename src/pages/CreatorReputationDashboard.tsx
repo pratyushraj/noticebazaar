@@ -226,7 +226,7 @@ const CreatorReputationDashboard = () => {
                                 <Calendar size={12} />
                                 Last verified: {performance?.captured_at ? new Date(performance.captured_at).toLocaleDateString() : 'Never'}
                             </div>
-                            <button className="text-[10px] font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2 hover:text-purple-300">
+                            <button type="button" className="text-[10px] font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2 hover:text-purple-300">
                                 Request Fresh Audit
                                 <ExternalLink size={10} />
                             </button>

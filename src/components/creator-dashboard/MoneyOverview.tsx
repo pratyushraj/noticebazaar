@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { IndianRupee, Clock, Briefcase, CheckCircle, ArrowRight, AlertCircle, TrendingUp, MoreHorizontal, ChevronRight, PlusCircle, Send } from 'lucide-react';
+import { CheckCircle, ArrowRight, TrendingUp, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -273,7 +273,7 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
           </CardContent>
 
           <div className="relative z-10 pt-3 border-t border-white/10">
-            <button className="w-full px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
+            <button type="button" className="w-full px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
               <span>View History</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>

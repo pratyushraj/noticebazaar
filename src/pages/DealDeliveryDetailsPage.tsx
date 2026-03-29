@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Package, Lock } from "lucide-react";
+import { Package, Lock } from 'lucide-react';
 import { useSession } from "@/contexts/SessionContext";
 import { useBrandDealById } from "@/lib/hooks/useBrandDeals";
 import { getApiBaseUrl } from "@/lib/utils/api";
@@ -390,7 +390,7 @@ export default function DealDeliveryDetailsPage() {
                 {submitError}
               </div>
             )}
-            <button
+            <button type="button"
               type="submit"
               className={cn(buttons.primary, "w-full h-14 text-base font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed")}
               disabled={!canSubmit}

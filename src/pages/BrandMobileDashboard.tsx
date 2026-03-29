@@ -1,38 +1,7 @@
 import { cloneElement, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  AlertTriangle,
-  Bell,
-  Briefcase,
-  Camera,
-  Check,
-  Clock,
-  ChevronRight,
-  CreditCard,
-  FileText,
-  Handshake,
-  Landmark,
-  LayoutDashboard,
-  Loader2,
-  Lock,
-  LogOut,
-  Mail,
-  MessageCircle,
-  Menu,
-  Moon,
-  MoreHorizontal,
-  Plus,
-  RefreshCw,
-  Search,
-  Send,
-  Settings,
-  Shield,
-  ShieldCheck,
-  Sun,
-  User,
-  Users,
-} from 'lucide-react';
+import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sun, User } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -1206,7 +1175,7 @@ const BrandMobileDashboard = ({
 
   const PageHeader = ({ title }: { title: string }) => (
     <div className="flex items-center gap-4 px-5 py-4 mb-4">
-      <button
+      <button type="button"
         onClick={() => {
           triggerHaptic(HapticPatterns.light);
           setActiveSettingsPage(null);
@@ -1400,14 +1369,14 @@ const BrandMobileDashboard = ({
 	                <div className="grid grid-cols-3 gap-2">
 	                  {isCounteredRequest ? (
 	                    <>
-	                      <button
+	                      <button type="button"
 	                        onClick={acceptCounter}
 	                        disabled={isRequestBusy}
 	                        className="h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60 bg-gradient-to-r from-blue-600 to-sky-600 text-white border-transparent"
 	                      >
 	                        Accept Counter
 	                      </button>
-	                      <button
+	                      <button type="button"
 	                        onClick={() => setShowCounterEditor(true)}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1417,7 +1386,7 @@ const BrandMobileDashboard = ({
 	                      >
 	                        Revise Terms
 	                      </button>
-	                      <button
+	                      <button type="button"
 	                        onClick={declineOffer}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1430,7 +1399,7 @@ const BrandMobileDashboard = ({
 	                    </>
 	                  ) : (
 	                    <>
-	                      <button
+	                      <button type="button"
 	                        onClick={() => setShowCounterEditor(true)}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1440,7 +1409,7 @@ const BrandMobileDashboard = ({
 	                      >
 	                        Edit Offer
 	                      </button>
-	                      <button
+	                      <button type="button"
 	                        onClick={declineOffer}
 	                        disabled={isRequestBusy}
 	                        className={cn(
@@ -1479,7 +1448,7 @@ const BrandMobileDashboard = ({
 	                          <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Counter offer</p>
 	                          <p className={cn('text-[16px] font-black tracking-tight', textColor)}>Update terms</p>
 	                        </div>
-	                        <button
+	                        <button type="button"
 	                          onClick={() => setShowCounterEditor(false)}
 	                          className={cn('w-10 h-10 rounded-full border flex items-center justify-center', borderColor, isDark ? 'bg-white/5' : 'bg-slate-50')}
 	                        >
@@ -1511,14 +1480,14 @@ const BrandMobileDashboard = ({
 	                        </div>
 
 	                        <div className="grid grid-cols-2 gap-2 mt-4">
-	                          <button
+	                          <button type="button"
 	                            onClick={() => setShowCounterEditor(false)}
 	                            disabled={isRequestBusy}
 	                            className={cn('h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
 	                          >
 	                            Cancel
 	                          </button>
-	                          <button
+	                          <button type="button"
 	                            onClick={submitCounter}
 	                            disabled={isRequestBusy}
 	                            className={cn('h-12 rounded-2xl text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-blue-600 to-sky-600 text-white')}
@@ -1555,7 +1524,7 @@ const BrandMobileDashboard = ({
 	                </div>
 
 	                <div className="grid grid-cols-1 gap-2">
-		                  <button
+		                  <button type="button"
 		                    onClick={async () => {
 		                      triggerHaptic(HapticPatterns.light);
 			                      if (!offer?.id) {
@@ -1587,12 +1556,12 @@ const BrandMobileDashboard = ({
 	                    </p>
 	                  </button>
 		                  {!contractUrl && (
-		                    <button
+		                    <button type="button"
 		                      onClick={async () => {
 		                        // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
 		                        let popup: Window | null = null;
 		                        try {
-		                          popup = window.open('about:blank', '_blank');
+		                          popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
 		                          if (popup) popup.opener = null;
 		                        } catch {
 		                          popup = null;
@@ -1668,7 +1637,7 @@ const BrandMobileDashboard = ({
 		            )}
 		            <div className="grid grid-cols-1 gap-2 mt-2">
 		              {canMarkComplete && (
-		                <button
+		                <button type="button"
 		                  onClick={async () => {
                     if (!canSubmitCompletion) {
                       toast.message(`Cannot complete yet: ${completionBlockers.join(', ')}`);
@@ -1724,7 +1693,7 @@ const BrandMobileDashboard = ({
                   </p>
 		                </button>
 		              )}
-              <button
+              <button type="button"
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
                   setSelectedOffer(null);
@@ -1739,7 +1708,7 @@ const BrandMobileDashboard = ({
                 <p className={cn('text-[13px] font-bold', textColor)}>View creator profile</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Open the creator page in the same app</p>
               </button>
-              <button
+              <button type="button"
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
                   setSelectedOffer(null);
@@ -1750,7 +1719,7 @@ const BrandMobileDashboard = ({
                 <p className={cn('text-[13px] font-bold', textColor)}>Back to {activeCollabTab} list</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep reviewing offers without leaving this screen</p>
               </button>
-	              <button
+	              <button type="button"
 	                onClick={() => setSelectedOffer(null)}
 	                className={cn('h-12 rounded-2xl font-bold text-[13px] transition-all active:scale-[0.99]', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
 	              >
@@ -1914,7 +1883,7 @@ const BrandMobileDashboard = ({
     const openUrlFromUserGesture = async (resolveUrl: () => Promise<string | null>) => {
       let popup: Window | null = null;
       try {
-        popup = window.open('about:blank', '_blank');
+        popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
         // Best-effort hardening; safe even if browser ignores it.
         if (popup) popup.opener = null;
       } catch {
@@ -1955,7 +1924,7 @@ const BrandMobileDashboard = ({
       // Pre-open a tab synchronously to avoid iOS popup blocking after async work.
       let popup: Window | null = null;
       try {
-        popup = window.open('about:blank', '_blank');
+        popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
         if (popup) popup.opener = null;
       } catch {
         popup = null;
@@ -2303,7 +2272,7 @@ const BrandMobileDashboard = ({
       >
         <div className={cn('px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-white/10' : 'bg-white border-slate-100')}>
           <div className="flex items-center gap-3">
-            <button onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50')}>
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50')}>
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
             <div>
@@ -2311,7 +2280,7 @@ const BrandMobileDashboard = ({
               <p className={cn('text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight', textColor)}>{creatorName || 'Creator'}</p>
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={() => {
               triggerHaptic(HapticPatterns.light);
               toast.message('More actions coming next.');
@@ -2504,7 +2473,7 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  <button
+                  <button type="button"
                     onClick={openContract}
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
@@ -2514,7 +2483,7 @@ const BrandMobileDashboard = ({
                   >
                     Open
                   </button>
-                  <button
+                  <button type="button"
                     onClick={copyDealLink}
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
@@ -2527,7 +2496,7 @@ const BrandMobileDashboard = ({
                 </div>
 
                 {!contractUrl && (
-                  <button
+                  <button type="button"
                     onClick={generateContract}
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
@@ -2592,7 +2561,7 @@ const BrandMobileDashboard = ({
                         <div>
                           <div className="flex items-center justify-between gap-3 mb-1">
                             <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>Tracking</p>
-                            <button
+                            <button type="button"
                               onClick={() => { void copyText(trackingNumber, 'Tracking number'); }}
                               className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
                             >
@@ -2621,7 +2590,7 @@ const BrandMobileDashboard = ({
 
                   {!shippingDelivered && (
                     !showShippingBox ? (
-                      <button
+                      <button type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           setCourierNameDraft(courierName);
@@ -2673,7 +2642,7 @@ const BrandMobileDashboard = ({
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                          <button
+                          <button type="button"
                             onClick={() => {
                               triggerHaptic(HapticPatterns.light);
                               setShowShippingBox(false);
@@ -2682,7 +2651,7 @@ const BrandMobileDashboard = ({
                           >
                             Cancel
                           </button>
-                          <button
+                          <button type="button"
                             onClick={updateShipping}
                             disabled={isUpdatingShipping}
                             className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
@@ -2873,7 +2842,7 @@ const BrandMobileDashboard = ({
                                   <div className="flex items-center justify-between gap-3 mb-1">
                                     <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>UPI ID</p>
                                     {creatorUpiId && (
-                                      <button
+                                      <button type="button"
                                         onClick={() => { void copyText(creatorUpiId, 'UPI ID'); }}
                                         className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
                                       >
@@ -2925,7 +2894,7 @@ const BrandMobileDashboard = ({
                             {canReleasePayment && (
                               <>
                                 {!showPaymentProofBox ? (
-                                  <button
+                                  <button type="button"
                                     onClick={() => {
                                       triggerHaptic(HapticPatterns.light);
                                       if (!creatorUpiId) {
@@ -2980,7 +2949,7 @@ const BrandMobileDashboard = ({
                                       />
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
-                                      <button
+                                      <button type="button"
                                         onClick={() => {
                                           triggerHaptic(HapticPatterns.light);
                                           setShowPaymentProofBox(false);
@@ -2989,7 +2958,7 @@ const BrandMobileDashboard = ({
                                       >
                                         Cancel
                                       </button>
-                                      <button
+                                      <button type="button"
                                         onClick={releasePayment}
                                         disabled={isReleasingPayment}
                                         className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
@@ -3006,7 +2975,7 @@ const BrandMobileDashboard = ({
 
                         {canReview && (
                           <div className="space-y-2">
-                            <button
+                            <button type="button"
                               onClick={approveContent}
                               disabled={isReviewingContent}
                               className={cn(
@@ -3017,7 +2986,7 @@ const BrandMobileDashboard = ({
                               {isReviewingContent ? 'Saving…' : 'Approve content'}
                             </button>
                             <div className="grid grid-cols-2 gap-2">
-                              <button
+                              <button type="button"
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowRevisionBox((v) => !v);
@@ -3031,7 +3000,7 @@ const BrandMobileDashboard = ({
                               >
                                 Request revision
                               </button>
-                              <button
+                              <button type="button"
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowDisputeBox((v) => !v);
@@ -3062,7 +3031,7 @@ const BrandMobileDashboard = ({
                               )}
                             />
                             <div className="grid grid-cols-2 gap-2">
-                              <button
+                              <button type="button"
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowRevisionBox(false);
@@ -3074,7 +3043,7 @@ const BrandMobileDashboard = ({
                               >
                                 Cancel
                               </button>
-                              <button
+                              <button type="button"
                                 onClick={requestRevision}
                                 disabled={isReviewingContent}
                                 className={cn(
@@ -3101,7 +3070,7 @@ const BrandMobileDashboard = ({
                               )}
                             />
                             <div className="grid grid-cols-2 gap-2">
-                              <button
+                              <button type="button"
                                 onClick={() => {
                                   triggerHaptic(HapticPatterns.light);
                                   setShowDisputeBox(false);
@@ -3113,7 +3082,7 @@ const BrandMobileDashboard = ({
                               >
                                 Cancel
                               </button>
-                              <button
+                              <button type="button"
                                 onClick={raiseDispute}
                                 disabled={isReviewingContent}
                                 className={cn(
@@ -3214,7 +3183,7 @@ const BrandMobileDashboard = ({
                 <p className={cn('text-[13px] opacity-50 mt-0.5', textColor)}>{isPushSubscribed ? 'Active on this device' : 'Receive deal updates'}</p>
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={async (e) => {
                 e.stopPropagation();
                 if (isPushSubscribed) {
@@ -3236,7 +3205,7 @@ const BrandMobileDashboard = ({
           </div>
 
           {isPushSubscribed && (
-            <button
+            <button type="button"
               disabled={isPushBusy}
               onClick={async () => {
                 triggerHaptic(HapticPatterns.light);
@@ -3264,7 +3233,7 @@ const BrandMobileDashboard = ({
                 </p>
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={async () => {
                 triggerHaptic(HapticPatterns.light);
                 await refreshPushStatus();
@@ -3333,7 +3302,7 @@ const BrandMobileDashboard = ({
                         : 'Enter the 6-digit code sent to your email to complete signing.'}
                     </p>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={closeBrandSigningModal}
                     className="w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center"
                     aria-label="Close"
@@ -3434,7 +3403,7 @@ const BrandMobileDashboard = ({
                       )}
                     </motion.button>
 
-                    <button
+                    <button type="button"
                       onClick={() => {
                         setBrandSigningStep('send');
                         setBrandSigningOtp('');
@@ -3544,7 +3513,7 @@ const BrandMobileDashboard = ({
           >
             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
               <div className="flex items-center justify-between mb-6">
-                <button
+                <button type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setShowActionSheet(true);
@@ -3598,7 +3567,7 @@ const BrandMobileDashboard = ({
                   </motion.button>
 
                   <div className="relative">
-                    <button
+                    <button type="button"
                       onClick={() => setNotificationsOpen((v) => !v)}
                       className={cn('relative w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white/80 text-slate-600 shadow-sm')}
                     >
@@ -3629,7 +3598,7 @@ const BrandMobileDashboard = ({
                         </div>
                         <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 -mr-1 custom-scrollbar">
                           {notifications.map((n: any) => (
-                            <button
+                            <button type="button"
                               key={n.id}
                               onClick={() => {
                                 setNotificationsOpen(false);
@@ -3654,7 +3623,7 @@ const BrandMobileDashboard = ({
                     )}
                   </div>
 
-                  <button
+                  <button type="button"
                     onClick={() => {
                       triggerHaptic(HapticPatterns.light);
                       setActiveTab('profile');
@@ -3709,7 +3678,7 @@ const BrandMobileDashboard = ({
                             </p>
                           )}
                           <div className="flex gap-2 mt-3">
-                            <button
+                            <button type="button"
                               type="button"
                               disabled={isPushBusy || pushPermission === 'denied' || isIOSNeedsInstall}
                               onClick={handleEnablePush}
@@ -3717,7 +3686,7 @@ const BrandMobileDashboard = ({
                             >
                               Enable
                             </button>
-                            <button
+                            <button type="button"
                               type="button"
                               onClick={() => dismissPushPromptPersisted()}
                               className={secondaryButtonClass}
@@ -3749,7 +3718,7 @@ const BrandMobileDashboard = ({
                             Required before sending offers—creators respond faster when they recognize you.
                           </p>
                           <div className="flex gap-2 mt-3">
-                            <button
+                            <button type="button"
                               type="button"
                               onClick={() => navigate('/brand-settings')}
                               className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-slate-900 border border-amber-200')}
@@ -3864,7 +3833,7 @@ const BrandMobileDashboard = ({
 	                                </div>
 	                              </div>
 	                              <div className="flex items-center gap-3">
-	                              <button
+	                              <button type="button"
 	                                type="button"
 	                                onClick={() => {
 	                                  triggerHaptic(HapticPatterns.light);
@@ -3936,7 +3905,7 @@ const BrandMobileDashboard = ({
 	                                    : 'See completed work and closed deals.'}
 	                              </p>
 	                            </div>
-	                            <button
+	                            <button type="button"
 	                              type="button"
 	                              onClick={() => setActiveTab('collabs', activeCollabTab)}
 	                              className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}
@@ -3952,7 +3921,7 @@ const BrandMobileDashboard = ({
 	                            ].map((item) => {
 	                              const isSelected = activeCollabTab === item.key;
 	                              return (
-	                                <button
+	                                <button type="button"
 	                                  key={item.key}
 	                                  type="button"
 	                                  onClick={() => {
@@ -4104,7 +4073,7 @@ const BrandMobileDashboard = ({
 	                                          Payment released after content approval
 	                                        </div>
 
-	                                        <button
+	                                        <button type="button"
 	                                          type="button"
 	                                          onClick={(e) => {
 	                                            e.stopPropagation();
@@ -4209,7 +4178,7 @@ const BrandMobileDashboard = ({
 		                                        </div>
 		                                      </div>
 
-				                              <button
+				                              <button type="button"
 				                                type="button"
 				                                onClick={() => {
 				                                  triggerHaptic(HapticPatterns.light);
@@ -4242,7 +4211,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested creators</p>
                         <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
                       </div>
-                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
@@ -4286,7 +4255,7 @@ const BrandMobileDashboard = ({
                           </div>
 
                           <div className="flex gap-2 mt-4">
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
                                 if (!handle) {
@@ -4301,7 +4270,7 @@ const BrandMobileDashboard = ({
                             >
                               View profile
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
                                 if (!handle) {
@@ -4336,7 +4305,7 @@ const BrandMobileDashboard = ({
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
-                      <button
+                      <button type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           setActiveTab('creators');
@@ -4346,7 +4315,7 @@ const BrandMobileDashboard = ({
                         <User className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Find creators</span>
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }}
                         className={cn(
                           'flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]',
@@ -4356,11 +4325,11 @@ const BrandMobileDashboard = ({
                         <Send className="w-4 h-4 mb-2 opacity-90" />
                         <span className="text-[11px] font-black uppercase tracking-widest">Send offer</span>
                       </button>
-                      <button onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
                         <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
                       </button>
-                      <button onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
                         <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
                       </button>
@@ -4373,12 +4342,12 @@ const BrandMobileDashboard = ({
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
                       </div>
-                      <button onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                         View all
                       </button>
                     </div>
 	                    <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
@@ -4389,7 +4358,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[12px] font-bold', textColor)}>Action Required</p>
 	                        <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
                       </button>
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
@@ -4400,7 +4369,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[12px] font-bold', textColor)}>Active</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{activeDealsList.length}</p>
                       </button>
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
@@ -4432,7 +4401,7 @@ const BrandMobileDashboard = ({
 	                          {needsActionTotal} need action
 	                        </div>
 	                      )}
-	                      <button onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+	                      <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
 	                      Back
 	                      </button>
 	                    </div>
@@ -4448,7 +4417,7 @@ const BrandMobileDashboard = ({
 		                    ].map((item) => {
 		                      const isSelected = activeCollabTab === item.key;
 		                      return (
-		                        <button
+		                        <button type="button"
 		                          key={item.key}
 		                          type="button"
 		                          onClick={() => {
@@ -4624,7 +4593,7 @@ const BrandMobileDashboard = ({
 	                                  Payment released after content approval
 	                                </div>
 
-	                                <button
+	                                <button type="button"
 	                                  type="button"
 	                                  onClick={() => {
 	                                    triggerHaptic(HapticPatterns.light);
@@ -4643,7 +4612,7 @@ const BrandMobileDashboard = ({
                                       <p className={cn('text-[11px] font-semibold', secondaryTextColor)}>
                                         {isNoResponse ? 'Tip: Follow up after 24h for faster replies.' : 'Tip: Creators respond faster when offers are reviewed quickly.'}
                                       </p>
-                                      <button
+                                      <button type="button"
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -4738,7 +4707,7 @@ const BrandMobileDashboard = ({
 		                                </div>
 		                              </div>
 
-				                              <button
+				                              <button type="button"
 				                                type="button"
 				                                onClick={(e) => {
 			                                  triggerHaptic(HapticPatterns.light);
@@ -4770,7 +4739,7 @@ const BrandMobileDashboard = ({
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Creators</h2>
-                    <button onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                    <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
                       Browse
                     </button>
                   </div>
@@ -4805,7 +4774,7 @@ const BrandMobileDashboard = ({
                     {creatorSearchResults.length > 0 && (
                       <div className="mt-3 grid gap-2">
                         {creatorSearchResults.slice(0, 4).map((c: any) => (
-                          <button
+                          <button type="button"
                             key={c.id}
                             type="button"
                             onClick={() => {
@@ -4882,7 +4851,7 @@ const BrandMobileDashboard = ({
                             )}
                           </div>
                           <div className="flex gap-2 mt-4">
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
                                 if (!handle) {
@@ -4897,7 +4866,7 @@ const BrandMobileDashboard = ({
                             >
                               View profile
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 const handle = String(c?.username || c?.handle || '').trim().replace(/^@+/, '');
                                 if (!handle) {
@@ -4941,7 +4910,7 @@ const BrandMobileDashboard = ({
                     ) : (
                       <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
                         {creatorFeed.map((c) => (
-                          <button key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white/60')}>
+                          <button type="button" key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white/60')}>
                             <Avatar className="w-10 h-10">
                               <AvatarImage src={safeImageSrc(c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -5007,7 +4976,7 @@ const BrandMobileDashboard = ({
                           <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
                           <p className={cn('text-[11px] mt-0.5 opacity-70', textColor)}>Creators respond faster when they recognize you.</p>
                         </div>
-                        <button
+                        <button type="button"
                           type="button"
                           onClick={() => navigate('/brand-settings')}
                           className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-slate-900 border border-amber-200')}
@@ -5114,7 +5083,7 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-3">
-	                  <button
+	                  <button type="button"
 	                    onClick={() => {
 	                      if (!hasUploadedBrandLogo) {
 	                        toast.error('Upload your brand logo first', {
@@ -5144,7 +5113,7 @@ const BrandMobileDashboard = ({
                     </div>
                   </button>
 
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setShowActionSheet(false);
                       setActiveTab('creators');
@@ -5155,7 +5124,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Search and shortlist profiles</p>
                   </button>
 
-                  <button onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
+                  <button type="button" onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
                     <p className={cn('text-[13px] font-bold', textColor)}>Import creator profile</p>
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Paste a link to add quickly</p>
                   </button>
@@ -5164,7 +5133,7 @@ const BrandMobileDashboard = ({
                     <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] mb-2 opacity-50', textColor)}>Notifications</p>
                   </div>
                   {!isPushSubscribed && isPushSupported && (
-                    <button
+                    <button type="button"
                       disabled={isPushBusy}
                       onClick={async () => {
                         await handleEnablePush();
@@ -5229,13 +5198,13 @@ const BrandMobileDashboard = ({
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
+                  <button type="button"
                     onClick={() => setShowBudgetModal(false)}
                     className={cn('flex-1 h-12 rounded-xl font-bold text-sm', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
                   >
                     Cancel
                   </button>
-	                  <button
+	                  <button type="button"
 	                    onClick={() => {
 	                      const parsed = Number(budgetDraft);
 	                      if (!Number.isFinite(parsed) || parsed <= 0) {

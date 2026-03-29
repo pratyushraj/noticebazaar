@@ -146,7 +146,7 @@ const CreatorsDirectory = () => {
             {/* Signed-in navigation affordance (mobile-first) */}
             {session && (
               <div className="sticky top-0 z-40 -mx-4 px-4 pt-[max(0px,env(safe-area-inset-top,0px))] pb-3 mb-4 bg-gradient-to-b from-white/80 via-white/60 to-transparent backdrop-blur-md">
-                <button
+                <button type="button"
                   type="button"
                   onClick={() => navigate(dashboardPath)}
                   className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/70 border border-slate-200 hover:bg-white active:scale-[0.99] transition-all text-[12px] font-bold text-slate-900 shadow-sm"

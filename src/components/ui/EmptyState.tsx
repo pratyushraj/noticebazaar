@@ -58,7 +58,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
       
       {action && (
-        <button
+        <button type="button"
           onClick={action.onClick}
           className={cn(buttons.primary, "min-w-[120px]")}
         >

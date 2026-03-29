@@ -54,7 +54,7 @@ const IOSSheet: React.FC<IOSSheetProps> = ({
             {title && (
               <div className="flex items-center justify-between px-6 pb-4 border-b border-white/10">
                 <h2 className="text-lg font-semibold text-white">{title}</h2>
-                <button
+                <button type="button"
                   onClick={onClose}
                   className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
                 >

@@ -20,7 +20,7 @@ export const GlassButton = ({
   ...props
 }: GlassButtonProps) => {
   return (
-    <button
+    <button type="button"
       className={cn(
         'px-4 py-2.5 rounded-xl font-semibold transition-all duration-200',
         'hover:scale-[1.02] active:scale-[0.98]',

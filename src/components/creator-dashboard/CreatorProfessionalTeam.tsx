@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, MessageSquare, Calculator, Scale, Star, Phone } from 'lucide-react';
+import { Loader2, MessageSquare, Calculator, Scale, Star } from 'lucide-react';
 import { useProfiles } from '@/lib/hooks/useProfiles';
 import { generateAvatarUrl } from '@/lib/utils/avatar';
 import { useSession } from '@/contexts/SessionContext';

@@ -47,7 +47,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
   const handleShareWhatsApp = () => {
     if (!collabLink) return;
     const message = encodeURIComponent(`For collaborations, submit here:\n\n${collabLink}`);
-    window.open(`https://wa.me/?text=${message}`, '_blank');
+    window.open(`https://wa.me/?text=${message}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleShareInstagram = async () => {
@@ -143,7 +143,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
               <code className="flex-1 min-w-0 truncate text-xs text-slate-900 dark:text-white/90 bg-slate-50 dark:bg-white/10 px-2 py-1.5 rounded border border-slate-200 dark:border-white/10">
                 {collabShortLabel}
               </code>
-              <button
+              <button type="button"
                 type="button"
                 onClick={handleCopy}
                 className="flex-shrink-0 h-8 px-3 rounded bg-slate-100 dark:bg-white/20 hover:bg-slate-200 dark:hover:bg-white/30 border border-slate-200 dark:border-white/20 text-slate-700 dark:text-white text-xs font-medium flex items-center gap-1.5"
@@ -153,7 +153,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
               </button>
             </div>
             <div className="flex gap-2">
-              <button
+              <button type="button"
                 type="button"
                 onClick={handleShareWhatsApp}
                 className="flex-1 h-9 rounded border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white text-xs font-medium flex items-center justify-center gap-1.5"
@@ -161,7 +161,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
               >
                 <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
               </button>
-              <button
+              <button type="button"
                 type="button"
                 onClick={handleShareInstagram}
                 className="flex-1 h-9 rounded border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white text-xs font-medium flex items-center justify-center gap-1.5"
@@ -206,7 +206,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
             <p className="text-xs text-green-600 dark:text-emerald-300/90 mb-3">Your page now communicates clearly with brands.</p>
           )}
           {!readinessComplete && onCompleteCollabProfile && (
-            <button
+            <button type="button"
               type="button"
               onClick={onCompleteCollabProfile}
               className="w-full h-10 rounded-lg border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white text-sm font-medium"

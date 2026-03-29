@@ -353,7 +353,7 @@ const CreatorAnalytics = () => {
       <div className="sticky top-0 z-50 bg-blue-900/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <button
+            <button type="button"
               onClick={() => navigate('/creator-dashboard')}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               aria-label="Back to dashboard"
@@ -367,14 +367,14 @@ const CreatorAnalytics = () => {
           </div>
 
           <div className="flex gap-2">
-            <button
+            <button type="button"
               onClick={() => handleExport('pdf')}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               aria-label="Share analytics"
             >
               <Share2 className="w-5 h-5" />
             </button>
-            <button
+            <button type="button"
               onClick={() => handleExport('excel')}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               aria-label="Download analytics"
@@ -389,7 +389,7 @@ const CreatorAnalytics = () => {
         {/* Timeframe Selector */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
           {timeframes.map((tf) => (
-            <button
+            <button type="button"
               key={tf.id}
               onClick={() => setTimeframe(tf.id)}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${timeframe === tf.id
@@ -445,7 +445,7 @@ const CreatorAnalytics = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-lg">Earnings Trend</h2>
-            <button
+            <button type="button"
               className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1"
               aria-label="Earnings trend info"
             >
@@ -529,7 +529,7 @@ const CreatorAnalytics = () => {
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-lg">Top Deals</h2>
-              <button
+              <button type="button"
                 onClick={() => navigate('/creator-contracts')}
                 className="text-sm text-slate-400 hover:text-white transition-colors"
               >
@@ -679,14 +679,14 @@ const CreatorAnalytics = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <button type="button"
               onClick={() => handleExport('pdf')}
               className="bg-white/10 hover:bg-white/15 font-medium py-3 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
             >
               <FileText className="w-4 h-4" />
               PDF Report
             </button>
-            <button
+            <button type="button"
               onClick={() => handleExport('excel')}
               className="bg-white/10 hover:bg-white/15 font-medium py-3 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
             >

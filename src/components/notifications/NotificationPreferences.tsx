@@ -185,7 +185,7 @@ export const NotificationPreferences: React.FC = () => {
         
         {/* Segmented Control */}
         <div className="flex gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
-          <button
+          <button type="button"
             onClick={() => handleModeChange('all')}
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
@@ -196,7 +196,7 @@ export const NotificationPreferences: React.FC = () => {
           >
             All
           </button>
-          <button
+          <button type="button"
             onClick={() => handleModeChange('important')}
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
@@ -207,7 +207,7 @@ export const NotificationPreferences: React.FC = () => {
           >
             Important
           </button>
-          <button
+          <button type="button"
             onClick={() => handleModeChange('minimal')}
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
@@ -218,7 +218,7 @@ export const NotificationPreferences: React.FC = () => {
           >
             Minimal
           </button>
-          <button
+          <button type="button"
             onClick={() => handleModeChange('dnd')}
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
@@ -301,7 +301,7 @@ export const NotificationPreferences: React.FC = () => {
 
       {/* Customize Advanced Notifications - Secondary Emphasis, Collapsed by default */}
       <Card className="bg-white/3 rounded-lg p-3 border border-white/8">
-        <button
+        <button type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="w-full flex items-center justify-between min-h-[44px]"
         >
@@ -333,7 +333,7 @@ export const NotificationPreferences: React.FC = () => {
                       <Mail className="w-4 h-4 text-white/60" />
                       <span className="text-sm text-white/80">Email</span>
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => handleToggleGlobal('email_enabled')}
                       disabled={isUpdating}
                       className={cn(
@@ -353,7 +353,7 @@ export const NotificationPreferences: React.FC = () => {
                       <Smartphone className="w-4 h-4 text-white/60" />
                       <span className="text-sm text-white/80">Push</span>
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => handleToggleGlobal('push_enabled')}
                       disabled={isUpdating}
                       className={cn(
@@ -373,7 +373,7 @@ export const NotificationPreferences: React.FC = () => {
                       <Monitor className="w-4 h-4 text-white/60" />
                       <span className="text-sm text-white/80">In-App</span>
                     </div>
-                    <button
+                    <button type="button"
                       onClick={() => handleToggleGlobal('in_app_enabled')}
                       disabled={isUpdating}
                       className={cn(
@@ -391,7 +391,7 @@ export const NotificationPreferences: React.FC = () => {
 
                 {/* Category Preferences - Collapsed by default */}
                 <div className="pt-2 border-t border-white/10">
-                  <button
+                  <button type="button"
                     onClick={() => setShowCategories(!showCategories)}
                     className="w-full flex items-center justify-between mb-2 min-h-[44px]"
                   >
@@ -432,7 +432,7 @@ export const NotificationPreferences: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="flex gap-1.5">
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'email')}
                                       disabled={isUpdating || !preferences.email_enabled}
                                       className={cn(
@@ -444,7 +444,7 @@ export const NotificationPreferences: React.FC = () => {
                                     >
                                       Email
                                     </button>
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'push')}
                                       disabled={isUpdating || !preferences.push_enabled}
                                       className={cn(
@@ -456,7 +456,7 @@ export const NotificationPreferences: React.FC = () => {
                                     >
                                       Push
                                     </button>
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'in_app')}
                                       disabled={isUpdating || !preferences.in_app_enabled}
                                       className={cn(
@@ -495,7 +495,7 @@ export const NotificationPreferences: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="flex gap-1.5">
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'email')}
                                       disabled={isUpdating || !preferences.email_enabled}
                                       className={cn(
@@ -507,7 +507,7 @@ export const NotificationPreferences: React.FC = () => {
                                     >
                                       Email
                                     </button>
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'push')}
                                       disabled={isUpdating || !preferences.push_enabled}
                                       className={cn(
@@ -519,7 +519,7 @@ export const NotificationPreferences: React.FC = () => {
                                     >
                                       Push
                                     </button>
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'in_app')}
                                       disabled={isUpdating || !preferences.in_app_enabled}
                                       className={cn(
@@ -558,7 +558,7 @@ export const NotificationPreferences: React.FC = () => {
                                     </div>
                                   </div>
                                   <div className="flex gap-1.5">
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'email')}
                                       disabled={isUpdating || !preferences.email_enabled}
                                       className={cn(
@@ -570,7 +570,7 @@ export const NotificationPreferences: React.FC = () => {
                                     >
                                       Email
                                     </button>
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'push')}
                                       disabled={isUpdating || !preferences.push_enabled}
                                       className={cn(
@@ -582,7 +582,7 @@ export const NotificationPreferences: React.FC = () => {
                                     >
                                       Push
                                     </button>
-                                    <button
+                                    <button type="button"
                                       onClick={() => handleToggleCategory(category.id, 'in_app')}
                                       disabled={isUpdating || !preferences.in_app_enabled}
                                       className={cn(

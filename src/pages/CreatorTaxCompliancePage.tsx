@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CalendarDays, FileText, IndianRupee, Calculator, CheckCircle, AlertTriangle, Settings, Eye } from 'lucide-react';
+import { Loader2, FileText, IndianRupee, Calculator, CheckCircle, AlertTriangle, Settings, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals'; // To get income data

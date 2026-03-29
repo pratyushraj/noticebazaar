@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CalendarDays, XCircle, Eye } from 'lucide-react'; // Added Eye icon
+import { Loader2, XCircle, Eye } from 'lucide-react';
+ // Added Eye icon
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useConsultations, useUpdateConsultationStatus } from '@/lib/hooks/useConsultations';

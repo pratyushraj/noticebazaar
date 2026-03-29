@@ -358,14 +358,14 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
 
                     {/* Actions - Full width on mobile, side-by-side on desktop */}
                     <div className="flex flex-col sm:flex-row gap-2 relative z-10">
-                      <button
+                      <button type="button"
                         onClick={() => onSendReminder?.(action.dealId!)}
                         className="flex-1 min-h-[48px] py-3 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-sm md:text-base transition-all"
                         aria-label="Send payment reminder"
                       >
                         Send Reminder
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => onEscalate?.(action.dealId!)}
                         className="flex-1 min-h-[48px] py-3 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-sm md:text-base transition-all border border-white/20"
                         aria-label="Escalate payment issue"
@@ -417,7 +417,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                         {action.type === 'content_stolen' && `@${action.topThief || 'fakepage'} • ${action.views ? `${(action.views / 1000).toFixed(1)}K` : '12.5K'} views`}
                       </p>
                       {action.type === 'contract_review' && action.dealId && (
-                        <button
+                        <button type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onAnalyzeContract?.(action.dealId!);
@@ -487,7 +487,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className="flex-1 min-w-0 relative z-10">
                   <p className="text-sm font-semibold text-white">{suggestion.title}</p>
                   <p className="text-xs text-white/50 mt-1">{suggestion.description}</p>
-                  <button className="text-sm text-[#FF4DAA] hover:text-[#FF84C5] mt-2 font-medium transition-all rounded px-2 py-1">
+                  <button type="button" className="text-sm text-[#FF4DAA] hover:text-[#FF84C5] mt-2 font-medium transition-all rounded px-2 py-1">
                     {suggestion.action} →
                   </button>
                 </div>

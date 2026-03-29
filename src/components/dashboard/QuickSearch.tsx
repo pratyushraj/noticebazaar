@@ -148,7 +148,7 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                   <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-white/20 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-white/60">
                     <Command className="h-3 w-3" />K
                   </kbd>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (controlledOpen === undefined) setInternalOpen(false);
                       onClose?.();
@@ -165,7 +165,7 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                   {results.map((result) => {
                     const Icon = typeIcons[result.type] || Search;
                     return (
-                      <button
+                      <button type="button"
                         key={`${result.type}-${result.id}`}
                         onClick={() => handleResultClick(result)}
                         className="w-full p-4 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 flex items-center gap-3 group"
@@ -192,7 +192,7 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                     );
                   })}
                   {query.trim().length > 0 && (
-                    <button
+                    <button type="button"
                       onClick={handleViewAll}
                       className="w-full p-3 text-center text-[13px] text-white/60 hover:text-white hover:bg-white/5 transition-colors border-t border-white/5"
                     >
@@ -218,7 +218,7 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                       <p className="text-[12px] text-white/40 mb-2 px-2">Recent Searches</p>
                       <div className="space-y-1">
                         {suggestions.map((suggestion, idx) => (
-                          <button
+                          <button type="button"
                             key={idx}
                             onClick={() => handleSuggestionClick(suggestion)}
                             className="w-full p-2 text-left text-[13px] text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors flex items-center gap-2"

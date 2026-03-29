@@ -195,7 +195,7 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
               const isSelected = selectedPlatforms.includes(platform.id);
               
               return (
-                <button
+                <button type="button"
                   key={platform.id}
                   onClick={() => togglePlatform(platform.id)}
                   disabled={isScanning}

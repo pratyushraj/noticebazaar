@@ -7,25 +7,7 @@ import DealStatusBadge, { DealStage } from './DealStatusBadge';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { 
-  IndianRupee, 
-  Calendar, 
-  Package, 
-  CheckCircle, 
-  Clock, 
-  XCircle, 
-  AlertCircle,
-  Send,
-  FileText,
-  MessageSquare,
-  ChevronRight,
-  Instagram,
-  Youtube,
-  Music,
-  ChevronDown,
-  Zap,
-  TrendingUp
-} from 'lucide-react';
+import { IndianRupee, Calendar, Package, CheckCircle, Clock, XCircle, AlertCircle, Send, FileText, MessageSquare, ChevronRight, Instagram, Youtube, Music, ChevronDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -327,7 +309,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 );
               })}
               {formattedDeliverables.length > 2 && !isExpanded && (
-                <button
+                <button type="button"
                   onClick={() => setIsExpanded(true)}
                   className="text-xs text-slate-400 hover:text-white transition-colors font-medium mt-1"
                 >

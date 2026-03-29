@@ -123,7 +123,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({ issues }) => {
                   </div>
                   <p className="text-sm text-white/80 mb-3 line-clamp-3">{issue.description}</p>
                   
-                  <button
+                  <button type="button"
                     onClick={() => toggleExpanded(issue.id)}
                     className="flex items-center gap-1 text-xs text-white/60 hover:text-white/80 transition-colors mb-2"
                   >

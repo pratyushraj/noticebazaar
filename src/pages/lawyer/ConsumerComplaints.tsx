@@ -296,7 +296,7 @@ export default function ConsumerComplaints() {
         {/* Status Filter Bar */}
         <div className="mb-6 flex flex-wrap gap-2">
           <Filter className="w-5 h-5 text-white/60 mt-1.5" />
-          <button
+          <button type="button"
             onClick={() => setStatusFilter('all')}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
@@ -307,7 +307,7 @@ export default function ConsumerComplaints() {
           >
             All
           </button>
-          <button
+          <button type="button"
             onClick={() => setStatusFilter('lawyer_review_requested')}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
@@ -318,7 +318,7 @@ export default function ConsumerComplaints() {
           >
             Review Requested
           </button>
-          <button
+          <button type="button"
             onClick={() => setStatusFilter('notice_generated')}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
@@ -329,7 +329,7 @@ export default function ConsumerComplaints() {
           >
             Notice Drafted
           </button>
-          <button
+          <button type="button"
             onClick={() => setStatusFilter('ready_to_file')}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",

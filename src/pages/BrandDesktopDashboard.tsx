@@ -58,7 +58,7 @@ const BrandDesktopDashboard = () => {
                             { id: 'payments', label: 'Payments', icon: CreditCard },
                             { id: 'analytics', label: 'Analytics', icon: TrendingUp }
                         ].map((item) => (
-                            <button
+                            <button type="button"
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
                                 className={cn(
@@ -100,7 +100,7 @@ const BrandDesktopDashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button className={cn(
+                        <button type="button" className={cn(
                             "w-11 h-11 rounded-2xl flex items-center justify-center transition-all relative ring-inset",
                             isDark ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                         )}>
@@ -108,7 +108,7 @@ const BrandDesktopDashboard = () => {
                             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-black" />
                         </button>
 
-                        <button className={cn(
+                        <button type="button" className={cn(
                             "w-11 h-11 rounded-2xl flex items-center justify-center transition-all",
                             isDark ? "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                         )}>
@@ -122,7 +122,7 @@ const BrandDesktopDashboard = () => {
                                 <p className={cn("text-[12px] font-black font-outfit", textColor)}>Priya S.</p>
                                 <p className={cn("text-[10px] opacity-40 uppercase font-black tracking-widest", textColor)}>Admin</p>
                             </div>
-                            <button className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-[2px] shadow-lg shadow-blue-500/20">
+                            <button type="button" className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 p-[2px] shadow-lg shadow-blue-500/20">
                                 <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center overflow-hidden">
                                     <img
                                         src="https://i.pravatar.cc/150?img=32"
@@ -181,7 +181,7 @@ const BrandDesktopDashboard = () => {
                                 { id: 'active', label: 'Active', count: 8, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                                 { id: 'completed', label: 'Completed', count: 42, color: 'text-emerald-500', bg: 'bg-emerald-500/10' }
                             ].map((filter) => (
-                                <button
+                                <button type="button"
                                     key={filter.id}
                                     className={cn(
                                         "px-5 py-2.5 rounded-2xl text-[13px] font-black border transition-all flex items-center gap-3 whitespace-nowrap",
@@ -257,7 +257,7 @@ const BrandDesktopDashboard = () => {
                                                 <div className={cn("text-[10px] font-bold opacity-40 uppercase tracking-widest mt-0.5")}>Offer Sent</div>
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <button className={cn(
+                                                <button type="button" className={cn(
                                                     "px-6 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all",
                                                     isDark ? "bg-white text-black hover:bg-slate-200" : "bg-slate-900 text-white hover:bg-black shadow-lg shadow-slate-900/10"
                                                 )}>
@@ -294,7 +294,7 @@ const BrandDesktopDashboard = () => {
                                                 <div className={cn("text-[10px] font-bold opacity-40 uppercase tracking-widest mt-0.5")}>Escrow Ready</div>
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <button className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
+                                                <button type="button" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
                                                     Fund Now
                                                 </button>
                                             </td>
@@ -335,7 +335,7 @@ const BrandDesktopDashboard = () => {
                                                 <div className={cn("text-[10px] text-orange-500 font-bold uppercase tracking-widest mt-0.5")}>+ ₹15k Adjusted</div>
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <button className={cn(
+                                                <button type="button" className={cn(
                                                     "w-10 h-10 rounded-xl flex items-center justify-center transition-all ml-auto",
                                                     isDark ? "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                                                 )}>
@@ -356,7 +356,7 @@ const BrandDesktopDashboard = () => {
                                 <span className={cn("text-[12px] font-black opacity-30 uppercase tracking-[0.15em]", textColor)}>
                                     Showing 3 of 12 active partnerships
                                 </span>
-                                <button className={cn("text-[12px] font-black uppercase tracking-widest text-blue-500 hover:opacity-70 transition-opacity")}>
+                                <button type="button" className={cn("text-[12px] font-black uppercase tracking-widest text-blue-500 hover:opacity-70 transition-opacity")}>
                                     View Full Pipeline <ArrowRight className="inline w-3.5 h-3.5 ml-1" />
                                 </button>
                             </div>
@@ -393,7 +393,7 @@ const BrandDesktopDashboard = () => {
                                 variant="tertiary"
                                 className="p-8 h-auto"
                             />
-                            <button className={cn(
+                            <button type="button" className={cn(
                                 "w-full mt-10 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest border transition-all active:scale-[0.97]",
                                 isDark ? "bg-white/5 border-white/10 hover:bg-white/10 text-white" : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700 shadow-sm"
                             )}>
@@ -436,7 +436,7 @@ const BrandDesktopDashboard = () => {
                                     ))}
                                 </div>
 
-                                <button className={cn(
+                                <button type="button" className={cn(
                                     "w-full mt-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all",
                                     isDark ? "text-white/30 hover:text-white" : "text-slate-400 hover:text-slate-900"
                                 )}>

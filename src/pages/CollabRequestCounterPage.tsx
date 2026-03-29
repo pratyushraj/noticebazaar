@@ -250,11 +250,11 @@ const CollabRequestCounterPage = () => {
                   <div key={d.id} className="p-2.5 rounded-lg bg-white/[0.06] border border-white/10 flex items-center gap-2 flex-wrap">
                     <Input value={d.name} onChange={(e) => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, name: e.target.value } : x)))} placeholder="Deliverable type" className="flex-1 min-w-0 bg-white/10 border-white/20 text-white text-sm min-h-[40px]" />
                     <div className="flex items-center rounded-lg border border-white/20 bg-white/10 overflow-hidden">
-                      <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: String(Math.max(0, qty - 1)) } : x)))} className="p-2 text-white/80 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center" aria-label="Decrease"><Minus className="h-4 w-4" /></button>
+                      <button type="button" type="button" onClick={() => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: String(Math.max(0, qty - 1)) } : x)))} className="p-2 text-white/80 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center" aria-label="Decrease"><Minus className="h-4 w-4" /></button>
                       <span className="min-w-[2rem] text-center text-sm text-white tabular-nums">{qty}</span>
-                      <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: String(qty + 1) } : x)))} className="p-2 text-white/80 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center" aria-label="Increase"><Plus className="h-4 w-4" /></button>
+                      <button type="button" type="button" onClick={() => setCounterDeliverablesList((prev) => prev.map((x) => (x.id === d.id ? { ...x, quantity: String(qty + 1) } : x)))} className="p-2 text-white/80 hover:text-white min-h-[40px] min-w-[40px] flex items-center justify-center" aria-label="Increase"><Plus className="h-4 w-4" /></button>
                     </div>
-                    <button type="button" onClick={() => setCounterDeliverablesList((prev) => prev.filter((x) => x.id !== d.id))} className="p-1 rounded text-red-300/80 hover:text-red-300 hover:bg-red-500/15" aria-label="Remove"><X className="h-3.5 w-3.5" /></button>
+                    <button type="button" type="button" onClick={() => setCounterDeliverablesList((prev) => prev.filter((x) => x.id !== d.id))} className="p-1 rounded text-red-300/80 hover:text-red-300 hover:bg-red-500/15" aria-label="Remove"><X className="h-3.5 w-3.5" /></button>
                   </div>
                 );
               })}

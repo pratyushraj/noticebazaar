@@ -4,10 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
-import {
-  ArrowRight, ShieldCheck, CheckCircle2, Check,
-  Sparkles, MessageCircle, XCircle, Briefcase, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X
-} from 'lucide-react';
+import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
@@ -102,7 +99,7 @@ const LandingPage = () => {
               Create Collab Link
             </Link>
             {/* Mobile menu button */}
-            <button
+            <button type="button"
               className="md:hidden p-2 rounded-xl hover:bg-slate-100 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
@@ -395,14 +392,14 @@ const LandingPage = () => {
                     <p className="text-base font-bold text-slate-500 flex items-center justify-center md:justify-start gap-2">Travel Creator <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span> 58K followers</p>
                   </div>
                   <div className="md:ml-auto mt-4 md:mt-0">
-                    <button className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all">Collab With Rohan</button>
+                    <button type="button" className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all">Collab With Rohan</button>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6 md:p-8 text-center">
                   <p className="text-sm font-bold text-slate-500 mb-1">Interactive package catalog</p>
                   <p className="text-sm text-slate-600 mb-4">See how brands browse creator packages, compare deliverables, and send structured offers.</p>
-                  <button
+                  <button type="button"
                     onClick={() => navigate('/pratyush')}
                     className="bg-slate-900 text-white font-black px-6 py-3 rounded-xl shadow-lg hover:bg-black transition-all"
                   >
@@ -474,7 +471,7 @@ const LandingPage = () => {
                 <Link to="/signup" className="w-full sm:w-auto bg-white text-emerald-800 hover:bg-emerald-50 px-8 py-4 rounded-full font-black text-[15px] shadow-xl transition-all flex items-center justify-center gap-2">
                   Create your collab link <ArrowRight className="w-4.5 h-4.5" />
                 </Link>
-                <button onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/35 text-white px-8 py-4 rounded-full font-black text-[15px] transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
+                <button type="button" onClick={() => navigate('/pratyush')} className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border border-white/35 text-white px-8 py-4 rounded-full font-black text-[15px] transition-all flex items-center justify-center gap-2 backdrop-blur-sm">
                   View demo creator page <ExternalLink className="w-4 h-4" />
                 </button>
               </div>
@@ -526,7 +523,7 @@ const LandingPage = () => {
                 <div className="space-y-2.5 text-sm font-medium text-slate-600">
                   <a href="#how-it-works" className="block hover:text-emerald-700">How it works</a>
                   <a href="#marketplace" className="block hover:text-emerald-700">Creator packages</a>
-                  <button onClick={() => navigate('/pratyush')} className="block text-left hover:text-emerald-700">Examples</button>
+                  <button type="button" onClick={() => navigate('/pratyush')} className="block text-left hover:text-emerald-700">Examples</button>
                   <Link to="/creator-dashboard" className="block hover:text-emerald-700">Creator dashboard</Link>
                 </div>
               </div>
@@ -566,7 +563,7 @@ const LandingPage = () => {
               <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
                 <a href="#how-it-works" className="block">How it works</a>
                 <a href="#marketplace" className="block">Creator packages</a>
-                <button onClick={() => navigate('/pratyush')} className="block text-left">Examples</button>
+                <button type="button" onClick={() => navigate('/pratyush')} className="block text-left">Examples</button>
                 <Link to="/creator-dashboard" className="block">Creator dashboard</Link>
               </div>
             </details>

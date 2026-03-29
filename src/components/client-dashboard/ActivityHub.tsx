@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, ArrowRight, Briefcase, File, MessageSquare, CalendarDays, Activity as ActivityIcon, Eye, Star } from 'lucide-react';
+import { Loader2, Briefcase, File, Eye, Star } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useActivityLog } from '@/lib/hooks/useActivityLog';
 import { useCases } from '@/lib/hooks/useCases';

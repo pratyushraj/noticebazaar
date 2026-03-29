@@ -22,7 +22,7 @@ function OldComponent() {
     }
   };
 
-  return <button onClick={handleSave}>Save</button>;
+  return <button type="button" onClick={handleSave}>Save</button>;
 }
 
 // ============================================
@@ -66,9 +66,9 @@ function NewComponent() {
 
   return (
     <>
-      <button onClick={handleSave}>Save</button>
-      <button onClick={() => handleDelete(123)}>Delete</button>
-      <button onClick={handleCopy}>Copy</button>
+      <button type="button" onClick={handleSave}>Save</button>
+      <button type="button" onClick={() => handleDelete(123)}>Delete</button>
+      <button type="button" onClick={handleCopy}>Copy</button>
     </>
   );
 }
@@ -88,7 +88,7 @@ function UtilityExample() {
     showInfo("Info message", "With details");
   };
 
-  return <button onClick={handleClick}>Test Utilities</button>;
+  return <button type="button" onClick={handleClick}>Test Utilities</button>;
 }
 
 // ============================================
@@ -221,9 +221,9 @@ function ActionButtonsExample() {
 
   return (
     <>
-      <button onClick={handleDelete}>Delete Item</button>
-      <button onClick={handleFailedUpload}>Upload File</button>
-      <button onClick={handleNetworkError}>Test Network</button>
+      <button type="button" onClick={handleDelete}>Delete Item</button>
+      <button type="button" onClick={handleFailedUpload}>Upload File</button>
+      <button type="button" onClick={handleNetworkError}>Test Network</button>
     </>
   );
 }

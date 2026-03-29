@@ -2,23 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
-  Check, 
-  X, 
-  Filter, 
-  Search, 
-  Trash2,
-  ArrowLeft,
-  CheckCircle2,
-  DollarSign,
-  FileText,
-  Calendar,
-  MessageCircle,
-  AlertCircle,
-  Clock,
-  Settings
-} from 'lucide-react';
+import { Bell, Check, X, Filter, Search, ArrowLeft, CheckCircle2, DollarSign, FileText, Calendar, MessageCircle, Clock, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SegmentedControl } from '@/components/ui/segmented-control';

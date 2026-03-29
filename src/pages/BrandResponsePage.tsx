@@ -666,7 +666,7 @@ const BrandResponsePage = () => {
         className="w-full max-w-2xl mx-auto mb-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg text-white space-y-4"
       >
         {/* Title Row with Chevron */}
-        <button
+        <button type="button"
           onClick={() => setIsContractSummaryExpanded(!isContractSummaryExpanded)}
           className="w-full flex items-center justify-between text-left"
         >
@@ -774,7 +774,7 @@ const BrandResponsePage = () => {
 
                 {/* Download PDF Button */}
                 <div className="pt-4 mt-4 border-t border-white/10 flex justify-end">
-                  <button
+                  <button type="button"
                     onClick={downloadFullSummaryPDF}
                     className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm font-medium text-white active:scale-[0.98]"
                   >
@@ -2010,7 +2010,7 @@ const BrandResponsePage = () => {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold">What would you like to negotiate?</h4>
-                  <button
+                  <button type="button"
                     onClick={() => setShowNegotiateModal(false)}
                     className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                   >
@@ -2055,7 +2055,7 @@ const BrandResponsePage = () => {
                   </div>
                 </div>
 
-                <button
+                <button type="button"
                   onClick={() => setShowNegotiateModal(false)}
                   className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-medium transition-all duration-200 text-white"
                 >
@@ -2091,7 +2091,7 @@ const BrandResponsePage = () => {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold">Request Changes</h4>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setShowRequestChangesModal(false);
                       setRequestChangesText('');
@@ -2121,7 +2121,7 @@ const BrandResponsePage = () => {
                 </div>
 
                 <div className="flex gap-3 mt-6">
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setShowRequestChangesModal(false);
                       setRequestChangesText('');
@@ -2130,7 +2130,7 @@ const BrandResponsePage = () => {
                   >
                     Cancel
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (!requestChangesText.trim()) {
                         toast.error('Please describe the changes you\'d like to request');
@@ -2203,7 +2203,7 @@ const BrandResponsePage = () => {
 
                 {/* Resend OTP Button */}
                 <div className="text-center mb-4">
-                  <button
+                  <button type="button"
                     onClick={sendOTP}
                     disabled={isSendingOTP || otpResendCooldown > 0}
                     className={cn(
@@ -2223,7 +2223,7 @@ const BrandResponsePage = () => {
 
                 {/* Verify Button */}
                 <div className="flex gap-3">
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setShowOTPModal(false);
                       setOtp(['', '', '', '', '', '']);
@@ -2233,7 +2233,7 @@ const BrandResponsePage = () => {
                   >
                     Cancel
                   </button>
-                  <button
+                  <button type="button"
                     onClick={verifyOTP}
                     disabled={isVerifyingOTP || isSendingOTP || otp.join('').length !== 6}
                     className={cn(

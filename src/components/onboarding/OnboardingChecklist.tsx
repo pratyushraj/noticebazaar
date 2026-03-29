@@ -109,7 +109,7 @@ const OnboardingChecklist = () => {
               </p>
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={() => setIsVisible(false)}
             className="p-1 hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Dismiss checklist"

@@ -35,7 +35,7 @@ const IOSNavigationBar: React.FC<IOSNavigationBarProps> = ({
         {/* Left: Back Button */}
         <div className="flex items-center min-w-[80px]">
           {shouldShowBack && (
-            <button
+            <button type="button"
               onClick={() => navigate(-1)}
               className="flex items-center gap-1 text-white active:opacity-50 transition-opacity"
             >

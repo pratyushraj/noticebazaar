@@ -177,13 +177,13 @@ const AddToHomeScreen: React.FC = () => {
                 </div>
               )}
             </div>
-            <button
+            <button type="button"
               onClick={handleInstall}
               className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-full text-[13px] leading-none shadow-sm"
             >
               OPEN
             </button>
-            <button
+            <button type="button"
               onClick={handleDismiss}
               className="shrink-0 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center"
               aria-label="Dismiss app banner"

@@ -164,7 +164,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   const handleOpenWhatsApp = async () => {
     const encodedMessage = encodeURIComponent(sanitizedMessage);
     const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     await logShare('whatsapp', dealId);
     onShareComplete?.('whatsapp');
     triggerHaptic(HapticPatterns.medium);
@@ -234,7 +234,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
             <p className="text-red-200 text-sm">
               Please wait a moment while we save your deal, then try sharing again.
             </p>
-            <button
+            <button type="button"
               onClick={onClose}
               className="mt-3 px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg font-semibold transition-all"
             >
@@ -347,7 +347,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
             </div>
 
             {/* Close Button */}
-            <button
+            <button type="button"
               onClick={onClose}
               className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2"
             >

@@ -796,14 +796,14 @@ const CreatorContracts = () => {
                     <h3 className="text-lg font-semibold text-white">Advanced Filters</h3>
                     <div className="flex items-center gap-2">
                       {hasActiveAdvancedFilters && (
-                        <button
+                        <button type="button"
                           onClick={clearAdvancedFilters}
                           className="text-sm text-blue-300 hover:text-blue-200 underline"
                         >
                           Clear All
                         </button>
                       )}
-                      <button
+                      <button type="button"
                         onClick={() => setShowAdvancedFilters(false)}
                         className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                       >
@@ -968,7 +968,7 @@ const CreatorContracts = () => {
 	                          </div>
 	                        </div>
 
-	                        <button
+	                        <button type="button"
 	                          type="button"
 	                          onClick={(e) => {
 	                            e.stopPropagation();
@@ -1007,7 +1007,7 @@ const CreatorContracts = () => {
                       <div className="space-y-3">
                         <p className="text-base font-semibold text-white">No deals need action right now</p>
                         <p className="text-sm text-white/60">When a deal needs your attention, it will show up here.</p>
-                        <button
+                        <button type="button"
                           type="button"
                           onClick={() => {
                             triggerHaptic(HapticPatterns.light);

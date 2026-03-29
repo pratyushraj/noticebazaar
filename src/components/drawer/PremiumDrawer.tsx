@@ -2,24 +2,7 @@
 
 import React, { createContext, useContext, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
-import {
-  Briefcase,
-  Wallet,
-  Shield,
-  Link2,
-  Calendar,
-  Plus,
-  Upload,
-  Settings,
-  LogOut,
-  Bell,
-  HelpCircle,
-  BarChart3,
-  ChevronRight,
-  CalendarCheck,
-  FileText,
-  LayoutDashboard,
-} from "lucide-react";
+import { Briefcase, Wallet, Shield, Link2, Calendar, Plus, Upload, Settings, LogOut, Bell, HelpCircle, BarChart3, ChevronRight, CalendarCheck, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";

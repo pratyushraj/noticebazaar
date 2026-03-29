@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Briefcase, Wallet, FileText, Calendar, IndianRupee, ExternalLink, AlertCircle } from 'lucide-react';
+import { Briefcase, Wallet, FileText, Calendar, IndianRupee, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { CalendarEvent } from './CalendarView';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';

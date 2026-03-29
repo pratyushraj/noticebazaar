@@ -126,7 +126,7 @@ export default function DashboardPreview() {
             {/* Header */}
             <div className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <button
+                    <button type="button"
                         onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
                     >
@@ -134,7 +134,7 @@ export default function DashboardPreview() {
                         Back
                     </button>
                     <h1 className="text-xl font-bold text-white">Dashboard Components Preview</h1>
-                    <button
+                    <button type="button"
                         onClick={() => setShowCode(!showCode)}
                         className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm"
                     >
@@ -275,7 +275,7 @@ const recentActivity = generateRecentActivity(brandDeals);
                 {/* CTA */}
                 <div className="text-center py-8">
                     <p className="text-white/60 mb-4">Ready to integrate these components into your dashboard?</p>
-                    <button
+                    <button type="button"
                         onClick={() => navigate('/creator-dashboard')}
                         className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105"
                     >

@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Clock, Trash2 } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import {
   Select,
   SelectContent,

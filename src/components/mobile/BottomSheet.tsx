@@ -79,7 +79,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             {title && (
               <div className="flex items-center justify-between px-6 pb-4">
                 <h2 className="text-xl font-semibold text-white">{title}</h2>
-                <button
+                <button type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     onClose();

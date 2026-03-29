@@ -224,7 +224,7 @@ const ContractComparison = () => {
 
     return (
       <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden">
-        <button
+        <button type="button"
           onClick={() => toggleSection(section)}
           className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
         >
@@ -360,7 +360,7 @@ const ContractComparison = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
         <div className="flex items-center justify-between p-4">
-          <button 
+          <button type="button" 
             onClick={() => navigate('/creator-dashboard')}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
@@ -369,7 +369,7 @@ const ContractComparison = () => {
           
           <div className="text-lg font-semibold">Compare Contracts</div>
           
-          <button 
+          <button type="button" 
             onClick={handleShare}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
           >
@@ -565,14 +565,14 @@ const ContractComparison = () => {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
-          <button 
+          <button type="button" 
             onClick={handleDownloadReport}
             className="bg-white/10 hover:bg-white/15 font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <Download className="w-5 h-5" />
             Download Report
           </button>
-          <button 
+          <button type="button" 
             onClick={handleChooseContract}
             className="bg-green-600 hover:bg-green-700 font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2"
           >

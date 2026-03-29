@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, FileText, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';

@@ -46,7 +46,7 @@ export const ExpenseModalWrapper: React.FC<ExpenseModalWrapperProps> = ({
         )}
       >
         {/* Custom close icon - top right */}
-        <button
+        <button type="button"
           onClick={onClose}
           className={cn(
             "absolute right-4 top-4 z-10",

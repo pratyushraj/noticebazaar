@@ -3,16 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { 
-  Search, 
-  Briefcase,
-  CheckCircle,
-  DollarSign,
-  Calendar,
-  AlertTriangle,
-  FileText,
-  TrendingUp as TrendingUpIcon,
-} from 'lucide-react';
+import { Search, Briefcase, CheckCircle, DollarSign, Calendar, AlertTriangle, FileText } from 'lucide-react';
 import ActionCenter from '@/components/creator-dashboard/ActionCenter';
 import QuickActionsFAB from '@/components/creator-dashboard/QuickActionsFAB';
 import { Card, CardContent } from '@/components/ui/card';
@@ -82,7 +73,7 @@ const PillTabButton = ({
   count?: number;
 }) => {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={cn(
         "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",

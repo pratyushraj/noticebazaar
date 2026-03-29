@@ -64,7 +64,7 @@ const PaymentQuickFilters: React.FC<PaymentQuickFiltersProps> = ({
     <div className="mt-3 md:mt-4">
       <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl backdrop-blur-lg px-2 md:px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
         {filters.map((filter) => (
-          <button
+          <button type="button"
             key={filter.id}
             onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
             className={cn(

@@ -15,8 +15,12 @@ export function getApiBaseUrl(): string {
     // Check for local testing mode via localStorage or URL parameters
     // This allows developers to test with a local API via tunnel even on production domains
     const urlParams = new URLSearchParams(window.location.search);
-    const useLocalApi = localStorage.getItem('useLocalApi') === 'true' || urlParams.get('localApi') === 'true';
-    const tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
+    let useLocalApi = false;
+    let tunnelUrl: string | null = null;
+    try {
+      useLocalApi = localStorage.getItem('useLocalApi') === 'true' || urlParams.get('localApi') === 'true';
+      tunnelUrl = urlParams.get('tunnelUrl') || localStorage.getItem('tunnelUrl');
+    } catch { /* private browsing / storage disabled */ }
 
     if (useLocalApi && tunnelUrl) {
       apiUrl = tunnelUrl.replace(/\/$/, '');
@@ -52,7 +56,9 @@ export function getApiBaseUrl(): string {
       } else if (isLocalhost) {
         // Localhost default: prefer local API for developer experience.
         // To force production API, set localStorage.useProdApi = 'true' (or ?prodApi=true).
-        const useProdApi = localStorage.getItem('useProdApi') === 'true' || urlParams.get('prodApi') === 'true';
+        let useProdApi = false;
+        try { useProdApi = localStorage.getItem('useProdApi') === 'true'; } catch { /* ignore */ }
+        useProdApi = useProdApi || urlParams.get('prodApi') === 'true';
         apiUrl = useProdApi ? 'https://noticebazaar-api.onrender.com' : 'http://localhost:3001';
       } else if (isLocalNetwork) {
         // Use the same IP but port 3001 for the API

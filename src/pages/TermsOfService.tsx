@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Gavel } from 'lucide-react';
+import { ArrowLeft, Gavel } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 const TermsOfService = () => {

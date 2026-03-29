@@ -156,7 +156,7 @@ export const AchievementBadge = ({ achievementId, showNotification = false, onCl
                 <p className="text-[13px] text-purple-200">{achievement.description}</p>
               </div>
               {onClose && (
-                <button
+                <button type="button"
                   onClick={onClose}
                   className="p-1 hover:bg-white/10 rounded-lg transition-colors"
                 >

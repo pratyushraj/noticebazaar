@@ -195,7 +195,7 @@ export function CalendarView({
               const isActive = viewMode === mode.value;
               
               return (
-                <button
+                <button type="button"
                   key={mode.value}
                   onClick={() => setViewMode(mode.value)}
                   className={cn(

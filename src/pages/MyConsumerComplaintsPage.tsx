@@ -117,7 +117,7 @@ const MyConsumerComplaintsPage: React.FC = () => {
   };
 
   const handleDownloadNotice = (url: string) => {
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const formatDate = (dateString: string) => {

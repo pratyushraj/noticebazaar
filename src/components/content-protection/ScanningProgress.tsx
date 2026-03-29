@@ -42,7 +42,7 @@ const ScanningProgress: React.FC<ScanningProgressProps> = ({
             </div>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             {onRetry && (
-              <button
+              <button type="button"
                 onClick={onRetry}
                 className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
               >

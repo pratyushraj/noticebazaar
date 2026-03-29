@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Loader2, CheckCircle, AlertCircle, TrendingUp, Edit, ArrowLeft } from 'lucide-react';
+import { Sparkles, Loader2, CheckCircle, TrendingUp, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -137,7 +137,7 @@ export function AICounterProposal({
             <Sparkles className="w-5 h-5 text-purple-400" />
             <h3 className="text-lg font-semibold text-white">AI Generated Counter-Proposal</h3>
           </div>
-          <button
+          <button type="button"
             onClick={() => setShowProposal(false)}
             className="text-white/60 hover:text-white transition-colors"
           >

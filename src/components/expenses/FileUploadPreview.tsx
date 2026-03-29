@@ -52,7 +52,7 @@ export const FileUploadPreview: React.FC<FileUploadPreviewProps> = ({
         </p>
       </div>
       
-      <button
+      <button type="button"
         onClick={onRemove}
         className={cn(
           "p-1.5 rounded-lg",

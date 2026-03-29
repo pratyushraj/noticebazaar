@@ -214,7 +214,7 @@ const PushTestLab = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <button
+          <button type="button"
             onClick={handleEnable}
             disabled={isBusy}
             className="rounded-xl px-4 py-3 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -222,7 +222,7 @@ const PushTestLab = () => {
             <Bell className="h-4 w-4" />
             {isBusy ? 'Enabling...' : 'Enable / Refresh'}
           </button>
-          <button
+          <button type="button"
             onClick={fetchDebugStatus}
             disabled={loadingDebug}
             className="rounded-xl px-4 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -230,7 +230,7 @@ const PushTestLab = () => {
             <Bug className="h-4 w-4" />
             {loadingDebug ? 'Checking...' : 'Fetch Debug Status'}
           </button>
-          <button
+          <button type="button"
             onClick={sendTestPush}
             disabled={loadingTest}
             className="rounded-xl px-4 py-3 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -238,7 +238,7 @@ const PushTestLab = () => {
             <Send className="h-4 w-4" />
             {loadingTest ? 'Sending...' : 'Send Test Push'}
           </button>
-          <button
+          <button type="button"
             onClick={sendDirectPush}
             disabled={loadingDirect}
             className="rounded-xl px-4 py-3 bg-amber-700 hover:bg-amber-600 disabled:opacity-50 flex items-center justify-center gap-2"
@@ -246,7 +246,7 @@ const PushTestLab = () => {
             <Zap className="h-4 w-4" />
             {loadingDirect ? 'Sending...' : 'Send Direct Push'}
           </button>
-          <button
+          <button type="button"
             onClick={copyAuthCurl}
             disabled={loadingCopyCurl}
             className="rounded-xl px-4 py-3 bg-cyan-700 hover:bg-cyan-600 disabled:opacity-50 flex items-center justify-center gap-2"

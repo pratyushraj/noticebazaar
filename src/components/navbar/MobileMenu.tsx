@@ -4,7 +4,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Home, Briefcase, Wallet, Shield, Sparkles, Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut } from 'lucide-react';
 import AppsGridIcon from '@/components/icons/AppsGridIcon';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
@@ -185,7 +185,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
           {/* Divider before Logout */}
           <div className="h-[1px] bg-[#1A2333] my-3" />
 
-          <button
+          <button type="button"
             onClick={handleLogout}
             disabled={signOutMutation.isPending}
             className="group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium text-red-400 hover:bg-red-500/10 active:scale-[0.98] w-full text-left transition-all duration-150 disabled:opacity-50"

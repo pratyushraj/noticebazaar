@@ -217,7 +217,7 @@ const RecommendationsPills: React.FC = () => {
                       >
                         {typeConfig[rec.type].label}
                       </Badge>
-                      <button
+                      <button type="button"
                         onClick={() => setExpandedId(expandedId === rec.id ? null : rec.id)}
                         className="p-1 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white"
                       >
@@ -225,7 +225,7 @@ const RecommendationsPills: React.FC = () => {
                           className={cn('w-4 h-4 transition-transform', expandedId === rec.id && 'rotate-180')}
                         />
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => handleDismiss(rec.id)}
                         className="p-1 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white"
                       >

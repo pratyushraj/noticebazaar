@@ -5,10 +5,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  MessageSquare, Search, Filter, FileText, CheckCircle, 
-  AlertTriangle, Clock, Send, X, Eye, Download, ChevronLeft, LogOut, Loader2
-} from 'lucide-react';
+import { MessageSquare, Search, FileText, Send, Download, ChevronLeft, LogOut, Loader2 } from 'lucide-react';
 import { spacing, typography, iconSizes, radius, glass, shadows, animations } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
@@ -325,7 +322,7 @@ export default function AdvisorDashboard() {
             {/* Filters */}
             <div className="flex gap-2 flex-wrap">
               {(['all', 'high_risk', 'payment', 'tax'] as const).map((f) => (
-                <button
+                <button type="button"
                   key={f}
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
@@ -529,7 +526,7 @@ function ConversationView({
           <div className="flex items-center gap-3">
             {/* Back button for mobile */}
             {onBack && (
-              <button
+              <button type="button"
                 onClick={onBack}
                 className="md:hidden p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors"
                 aria-label="Back to conversations"
@@ -551,7 +548,7 @@ function ConversationView({
           </div>
           <div className="flex gap-2">
             {QUICK_REPLIES.slice(0, 2).map((reply, i) => (
-              <button
+              <button type="button"
                 key={i}
                 onClick={() => setNewMessage(reply)}
                 className={cn(

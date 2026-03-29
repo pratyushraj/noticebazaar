@@ -655,7 +655,7 @@ const AIPitchGenerator = () => {
 
                   <div className="flex flex-wrap gap-2">
                     {(mode === 'pitch' ? quickPrompts.pitch : quickPrompts.notice).map((prompt) => (
-                      <button
+                      <button type="button"
                         key={prompt}
                         type="button"
                         onClick={() => setInput((prev) => prev ? `${prev}\n${prompt}` : prompt)}

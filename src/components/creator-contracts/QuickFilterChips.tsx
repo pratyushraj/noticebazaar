@@ -66,7 +66,7 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {filters.map((filter) => (
-        <button
+        <button type="button"
           key={filter.id}
           onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
           className={cn(

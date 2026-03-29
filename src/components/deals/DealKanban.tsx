@@ -127,7 +127,7 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
                     onContactBrand={() => navigate('/messages')}
                     onViewContract={async (d) => {
                       if (d.contract_file_url) {
-                        window.open(d.contract_file_url, '_blank');
+                        window.open(d.contract_file_url, '_blank', 'noopener,noreferrer');
                       } else {
                         toast.info('No contract file available');
                       }

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Flame, AlertCircle } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { getTrialStatus } from '@/lib/trial';
 

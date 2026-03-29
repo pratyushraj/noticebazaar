@@ -326,7 +326,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
           <p className="text-sm text-slate-600 text-center max-w-md mb-6">
             You can continue to your dashboard. Your profile will finish loading there.
           </p>
-          <button
+          <button type="button"
             type="button"
             onClick={() => window.location.replace('/creator-dashboard')}
             className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
@@ -357,7 +357,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
           <p className="text-slate-600 mb-6">
             We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.
           </p>
-          <button
+          <button type="button"
             onClick={() => {
               window.location.reload();
             }}

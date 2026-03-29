@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Button } from '@/components/ui/button';
-import { Loader2, Plus, Tag, FileUp, XCircle, FileWarning } from 'lucide-react';
+import { Loader2, Plus, Tag, FileUp } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,

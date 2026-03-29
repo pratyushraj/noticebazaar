@@ -4,22 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Briefcase,
-  Check,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  Copy,
-  Lock,
-  FileCheck,
-  Image as ImageIcon,
-  Gift,
-  ShoppingBag,
-  FileEdit,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { Briefcase, Loader2, Copy, Image as ImageIcon, Gift, ShoppingBag, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -412,7 +397,7 @@ const CollabRequestsPage = () => {
                           {request.campaign_description}
                         </p>
                         {request.campaign_description.length > 170 && (
-                          <button
+                          <button type="button"
                             type="button"
                             onClick={() => setExpandedDescriptions((prev) => ({ ...prev, [request.id]: !prev[request.id] }))}
                             className="mt-1.5 inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white"
@@ -452,7 +437,7 @@ const CollabRequestsPage = () => {
                         </p>
                       </div>
                       <div className="flex items-center justify-center gap-3 py-0.5">
-                        <button
+                        <button type="button"
                           type="button"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
                           className="text-sm font-medium text-indigo-200 hover:text-white min-h-[40px] px-1.5"
@@ -460,7 +445,7 @@ const CollabRequestsPage = () => {
                           Counter
                         </button>
                         <span className="w-px h-4 bg-white/30" />
-                        <button
+                        <button type="button"
                           type="button"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
                           className="text-sm font-medium text-[#FCA5A5] hover:text-white min-h-[40px] px-1.5"

@@ -3,7 +3,7 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Eye, Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, MessageSquare, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
+import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -1538,7 +1538,7 @@ Best regards`;
           <FileText className="w-16 h-16 mx-auto mb-4 text-white/60" />
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
           <p className="text-white/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
-          <button
+          <button type="button"
             onClick={() => navigate('/creator-contracts')}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
           >
@@ -1557,7 +1557,7 @@ Best regards`;
       subtitle="Everything about this collaboration, organized and protected in one place."
       showBackButton
       rightActions={
-        <button
+        <button type="button"
           onClick={() => {
             triggerHaptic(HapticPatterns.light);
             setShowDeleteConfirm(true);
@@ -1593,7 +1593,7 @@ Best regards`;
                 <p className="text-white/60 text-xs mb-4">
                   You can review, sign or request updates anytime.
                 </p>
-                <button
+                <button type="button"
                   onClick={handlePreviewContract}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-xl text-sm font-medium transition-all duration-200 text-white active:scale-[0.98]"
                 >
@@ -2081,7 +2081,7 @@ ${link}`;
                         return;
                       }
 
-                      window.open(finalLink, '_blank');
+                      window.open(finalLink, '_blank', 'noopener,noreferrer');
                       toast.success('✅ Opening brand reply link');
                     };
 
@@ -2386,7 +2386,7 @@ ${link}`;
                               toast.success('Brand signing link copied! Sharing it now...');
                             }
                             // Then open
-                            window.open(link, '_blank');
+                            window.open(link, '_blank', 'noopener,noreferrer');
                           }
                         }}
                         whileHover={{ scale: 1.01, y: -2 }}
@@ -2433,7 +2433,7 @@ ${link}`;
                               <p className="text-sm font-mono text-white/80">CA-{deal?.id?.slice(0, 8).toUpperCase()}</p>
                             </div>
                           </div>
-                          <button
+                          <button type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               copyToClipboard(`CA-${deal?.id?.toUpperCase() || ''}`);
@@ -2464,7 +2464,7 @@ ${link}`;
                           )}
                         </motion.button>
 
-                        <button
+                        <button type="button"
                           onClick={() => setShowAuditTrail(true)}
                           className="w-full text-sm text-white/50 hover:text-white transition-colors underline text-center py-2"
                         >
@@ -2531,7 +2531,7 @@ ${link}`;
               {/* Calendar sync button */}
               {deal.due_date && deliverables.length > 0 && (
                 <div className="mb-4">
-                  <button
+                  <button type="button"
                     onClick={() => handleAddToCalendar('deliverable')}
                     disabled={!bothSigned}
                     title={!bothSigned ? "Unlocks after both parties sign." : "Add to Calendar"}
@@ -2605,7 +2605,7 @@ ${link}`;
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 overflow-hidden relative">
               <Collapsible open={showAuditTrail} onOpenChange={setShowAuditTrail}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between group">
+                  <button type="button" className="w-full flex items-center justify-between group">
                     <div className="text-left">
                       <h3 className="font-semibold text-lg flex items-center gap-2">
                         <Lock className="w-4 h-4 text-blue-400" />
@@ -2693,7 +2693,7 @@ ${link}`;
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
               <Collapsible open={showBrandContact} onOpenChange={setShowBrandContact}>
                 <CollapsibleTrigger asChild>
-                  <button className="w-full flex items-center justify-between mb-2 group">
+                  <button type="button" className="w-full flex items-center justify-between mb-2 group">
                     <div className="text-left">
                       <h2 className="font-semibold text-lg flex items-center gap-2">
                         <Building2 className="w-5 h-5" />
@@ -3078,7 +3078,7 @@ ${link}`;
               </div>
 
               <div className="flex gap-3">
-                <button
+                <button type="button"
                   onClick={async () => {
                     if (!deal?.id) return;
 
@@ -3114,7 +3114,7 @@ ${link}`;
                 >
                   Confirm
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setShowMarkSignedModal(false)}
                   className="flex-1 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-medium transition-colors"
                 >
@@ -3146,7 +3146,7 @@ ${link}`;
                 <motion.button
                   onClick={() => {
                     if ((deal as any)?.invoice_url) {
-                      window.open((deal as any).invoice_url, '_blank');
+                      window.open((deal as any).invoice_url, '_blank', 'noopener,noreferrer');
                       trackEvent('invoice_downloaded', { dealId: deal.id });
                     }
                   }}
@@ -3170,7 +3170,7 @@ ${link}`;
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                 <Collapsible open={showDealSummaryFull} onOpenChange={setShowDealSummaryFull}>
                   <CollapsibleTrigger asChild>
-                    <button className="w-full flex items-center justify-between items-center mb-4">
+                    <button type="button" className="w-full flex items-center justify-between items-center mb-4">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">📌</span>
                         <h3 className="font-semibold text-lg">Deal Summary</h3>
@@ -3442,7 +3442,7 @@ ${link}`;
                           </div>
                           {isDelayed && (
                             <div className="flex flex-wrap gap-2">
-                              <button
+                              <button type="button"
                                 onClick={() => setShowReportIssueModal(true)}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
                               >
@@ -3487,7 +3487,7 @@ ${link}`;
                                 Track package
                               </a>
                             )}
-                            <button
+                            <button type="button"
                               onClick={async () => {
                                 if (!deal?.id) return;
                                 setIsConfirmingReceived(true);
@@ -3517,7 +3517,7 @@ ${link}`;
                               {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                               Confirm Product Received
                             </button>
-                            <button
+                            <button type="button"
                               onClick={() => setShowReportIssueModal(true)}
                               disabled={isReportingIssue}
                               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
@@ -3722,7 +3722,7 @@ ${link}`;
             className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
           />
           <div className="flex gap-2 justify-end mt-4">
-            <button
+            <button type="button"
               onClick={() => {
                 setShowReportIssueModal(false);
                 setReportIssueReason('');
@@ -3731,7 +3731,7 @@ ${link}`;
             >
               Cancel
             </button>
-            <button
+            <button type="button"
               onClick={async () => {
                 if (!deal?.id || !reportIssueReason.trim()) {
                   toast.error('Please describe the issue.');
@@ -3806,7 +3806,7 @@ ${link}`;
               </p>
 
               <div className="flex gap-3">
-                <button
+                <button type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setShowDeleteConfirm(false);
@@ -3961,7 +3961,7 @@ ${link}`;
                     )}
                   </motion.button>
 
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setCreatorSigningStep('send');
                       setCreatorOTP('');

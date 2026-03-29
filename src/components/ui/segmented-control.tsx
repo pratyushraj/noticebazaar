@@ -38,7 +38,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
       {options.map((option) => {
         const isActive = value === option.id;
         return (
-          <button
+          <button type="button"
             key={option.id}
             onClick={() => onChange(option.id)}
             className={cn(

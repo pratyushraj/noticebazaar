@@ -100,7 +100,7 @@ export const IssueTypeModal: React.FC<IssueTypeModalProps> = ({
                   Choose the category that best describes your issue
                 </p>
               </div>
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 aria-label="Close"
@@ -114,7 +114,7 @@ export const IssueTypeModal: React.FC<IssueTypeModalProps> = ({
               {issueTypes.map((type) => {
                 const Icon = type.icon;
                 return (
-                  <button
+                  <button type="button"
                     key={type.id}
                     onClick={() => handleSelect(type.id)}
                     className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] text-left flex items-start gap-4 group"

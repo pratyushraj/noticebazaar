@@ -48,7 +48,7 @@ export const DangerZoneCard: React.FC<DangerZoneCardProps> = ({
         </div>
       </div>
       
-      <button
+      <button type="button"
         onClick={action.onClick}
         className={cn(
           "w-full rounded-xl transition-all duration-150",

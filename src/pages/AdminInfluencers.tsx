@@ -10,23 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Loader2, 
-  Search, 
-  ExternalLink, 
-  Mail, 
-  Globe,
-  Filter,
-  Download,
-  RefreshCw,
-  UserCheck,
-  UserX,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ArrowLeft,
-  Home
-} from 'lucide-react';
+import { Loader2, Search, ExternalLink, Mail, Globe, Filter, Download, RefreshCw, UserCheck, CheckCircle2, XCircle, Clock, ArrowLeft, Home } from 'lucide-react';
 import { useInfluencers, useUpdateInfluencerStatus, useInfluencerStats, Influencer } from '@/lib/hooks/useInfluencers';
 import { formatDate } from '@/lib/utils/date';
 

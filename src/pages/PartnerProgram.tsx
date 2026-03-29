@@ -217,15 +217,15 @@ const PartnerProgram: React.FC = () => {
       case 'instagram':
         // Instagram Stories uses a custom URL scheme
         shareUrl = `https://www.instagram.com/create/story/?url=${encodeURIComponent(link)}`;
-        window.open(shareUrl, '_blank');
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
         break;
       case 'whatsapp':
         shareUrl = `https://wa.me/?text=${caption}%20${encodeURIComponent(link)}`;
-        window.open(shareUrl, '_blank');
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
         break;
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?text=${caption}&url=${encodeURIComponent(link)}`;
-        window.open(shareUrl, '_blank');
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
         break;
     }
     
@@ -629,7 +629,7 @@ const PartnerProgram: React.FC = () => {
                               onClick={() => {
                                 const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
                                 const text = encodeURIComponent(`Join Creator Armour and get legal & CA services for creators! Use my referral link: ${link}`);
-                                window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+                                window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank', 'noopener,noreferrer');
                                 toast.success('Opening Twitter...');
                               }}
                               variant="outline"
@@ -644,7 +644,7 @@ const PartnerProgram: React.FC = () => {
                               onClick={() => {
                                 const link = useDemoData ? DEMO_DATA.referralLink.url : formatReferralLink(displayReferralLink);
                                 const text = encodeURIComponent(`Join Creator Armour - Legal & CA services for creators! ${link}`);
-                                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${text}`, '_blank');
+                                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}&quote=${text}`, '_blank', 'noopener,noreferrer');
                                 toast.success('Opening Facebook...');
                               }}
                               variant="outline"

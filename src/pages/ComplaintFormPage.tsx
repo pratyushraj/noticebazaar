@@ -291,7 +291,7 @@ const ComplaintFormPage: React.FC = () => {
 
           <div className="space-y-4">
             {/* Lawyer Review Toggle Card */}
-            <button
+            <button type="button"
               type="button"
               onClick={() => togglePreFilingAction('wants_lawyer_review')}
               className={cn(
@@ -341,7 +341,7 @@ const ComplaintFormPage: React.FC = () => {
             </button>
 
             {/* Legal Notice Drafting Toggle Card */}
-            <button
+            <button type="button"
               type="button"
               onClick={() => togglePreFilingAction('wants_notice_draft')}
               className={cn(

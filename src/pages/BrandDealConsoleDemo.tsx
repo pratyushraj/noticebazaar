@@ -1,9 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import {
-    Briefcase, Bell, User, ChevronRight, Check,
-    Clock, AlertCircle, Calendar, ArrowRight, X
-} from 'lucide-react';
+import { Briefcase, Bell, User, Check, Calendar, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const BrandDealConsoleDemo = () => {
@@ -59,14 +56,14 @@ const BrandDealConsoleDemo = () => {
                             </div>
 
                             {/* Top Right Action - Settings or Profile Image */}
-                            <button onClick={triggerHaptic} className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
+                            <button type="button" onClick={triggerHaptic} className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-colors">
                                 <User className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Primary Collab Engine CTA */}
                         <div className="mt-4">
-                            <button
+                            <button type="button"
                                 onClick={triggerHaptic}
                                 className="w-full py-3.5 bg-[#0F172A] text-white rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(15,23,42,0.15)] hover:bg-slate-800 transition-colors active:opacity-75"
                             >
@@ -82,7 +79,7 @@ const BrandDealConsoleDemo = () => {
                             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full blur-3xl opacity-5" />
                             <h3 className="text-[14px] font-bold text-slate-900 mb-1 relative z-10">Track creator responses in real-time</h3>
                             <p className="text-[12px] text-slate-500 mb-3 relative z-10">No inbox clutter. All deal updates in one place.</p>
-                            <button
+                            <button type="button"
                                 onClick={triggerHaptic}
                                 className="bg-white border border-slate-200 text-slate-700 py-2.5 rounded-xl text-[13px] font-bold shadow-sm hover:bg-slate-50 active:opacity-60 transition-all flex items-center justify-center"
                             >
@@ -133,7 +130,7 @@ const BrandDealConsoleDemo = () => {
                                 >
                                     Approve Counter <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                 </motion.button>
-                                <button onClick={triggerHaptic} className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
+                                <button type="button" onClick={triggerHaptic} className="flex-1 py-3.5 px-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
                                     Decline
                                 </button>
                             </div>
@@ -168,7 +165,7 @@ const BrandDealConsoleDemo = () => {
                                 </div>
                             </div>
 
-                            <button onClick={triggerHaptic} className="w-full mt-2 py-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
+                            <button type="button" onClick={triggerHaptic} className="w-full mt-2 py-3 rounded-xl font-bold text-[13px] border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors active:scale-95">
                                 View Timeline
                             </button>
                         </div>
@@ -180,18 +177,18 @@ const BrandDealConsoleDemo = () => {
                 <div className="absolute bottom-0 inset-x-0 w-full border-t border-slate-200/60 px-8 py-2 pb-safe z-40" style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', backgroundColor: 'rgba(255,255,255,0.75)' }}>
                     <div className="max-w-md mx-auto flex items-center justify-between pb-4 pt-2">
 
-                        <button onClick={triggerHaptic} className="flex flex-col items-center gap-1 w-20 text-slate-900 font-bold hover:opacity-70 active:opacity-50 transition-opacity shrink-0">
+                        <button type="button" onClick={triggerHaptic} className="flex flex-col items-center gap-1 w-20 text-slate-900 font-bold hover:opacity-70 active:opacity-50 transition-opacity shrink-0">
                             <Briefcase className="w-6 h-6 fill-slate-900" />
                             <span className="text-[10px]">Deals</span>
                         </button>
 
-                        <button onClick={triggerHaptic} className="flex flex-col items-center gap-1 w-20 text-slate-400 relative hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
+                        <button type="button" onClick={triggerHaptic} className="flex flex-col items-center gap-1 w-20 text-slate-400 relative hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
                             <Bell className="w-6 h-6" />
                             <span className="absolute top-0 right-4 w-4 h-4 bg-orange-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm">1</span>
                             <span className="text-[10px] font-medium">Alerts</span>
                         </button>
 
-                        <button onClick={triggerHaptic} className="flex flex-col items-center gap-1 w-20 text-slate-400 hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
+                        <button type="button" onClick={triggerHaptic} className="flex flex-col items-center gap-1 w-20 text-slate-400 hover:text-slate-900 active:opacity-50 transition-opacity shrink-0">
                             <User className="w-6 h-6" />
                             <span className="text-[10px] font-medium">Profile</span>
                         </button>
