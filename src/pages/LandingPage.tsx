@@ -125,6 +125,7 @@ const LandingPage = () => {
           </div>
         )}
 
+      </nav>
       <main className="relative z-10 pt-24 sm:pt-28 lg:pt-40 pb-24 space-y-12 lg:space-y-20">
         {/* 1. HERO SECTION */}
         <section className="px-4 sm:px-6 max-w-[1200px] mx-auto relative scroll-mt-24">
