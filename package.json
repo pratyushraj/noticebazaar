@@ -98,7 +98,8 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "use-sync-external-store": "^1.6.0",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "web-vitals": "^5.2.0"
   },
   "devDependencies": {
     "@dyad-sh/react-vite-component-tagger": "^0.8.0",

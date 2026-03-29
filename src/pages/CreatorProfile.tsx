@@ -17,6 +17,7 @@ import SocialSyncButton from '@/components/profile/SocialSyncButton';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { COPY_CONFIRM_MS } from '@/lib/constants/timing';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import {
   AlertDialog,
@@ -1017,7 +1018,7 @@ const ProfileSettings = () => {
 
     setPositioningNudge('Better brand targeting enabled');
     if (successNudgeTimeoutRef.current) window.clearTimeout(successNudgeTimeoutRef.current);
-    successNudgeTimeoutRef.current = window.setTimeout(() => setPositioningNudge(null), 2000);
+    successNudgeTimeoutRef.current = window.setTimeout(() => setPositioningNudge(null), COPY_CONFIRM_MS);
 
     return () => {
       if (successNudgeTimeoutRef.current) window.clearTimeout(successNudgeTimeoutRef.current);
@@ -2029,7 +2030,7 @@ const ProfileSettings = () => {
                                 await navigator.clipboard.writeText(collabLink);
                                 setCopiedLink(true);
                                 toast.success('Link copied');
-                                setTimeout(() => setCopiedLink(false), 2000);
+                                setTimeout(() => setCopiedLink(false), COPY_CONFIRM_MS);
                               } catch {
                                 toast.error('Failed to copy');
                               }
@@ -2280,7 +2281,7 @@ const ProfileSettings = () => {
                             await navigator.clipboard.writeText(collabLink);
                             setCopiedLink(true);
                             toast.success('Link copied');
-                            setTimeout(() => setCopiedLink(false), 2000);
+                            setTimeout(() => setCopiedLink(false), COPY_CONFIRM_MS);
                           } catch {
                             toast.error('Failed to copy');
                           }
