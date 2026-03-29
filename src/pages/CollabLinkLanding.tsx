@@ -560,7 +560,25 @@ const CollabLinkLanding = () => {
   useEffect(() => {
     if (creator) {
       if (creator.deal_templates && creator.deal_templates.length > 0) {
-        setLocalDealTemplates(creator.deal_templates.slice(0, 3));
+        // Validate saved templates have reasonable prices, regenerate any with ₹0
+        const roundToCleanPrice = (n: number): number => {
+          if (n >= 10000) return Math.round(n / 1000) * 1000;
+          if (n >= 5000) return Math.round(n / 500) * 500;
+          if (n >= 1000) return Math.round(n / 100) * 100;
+          return Math.round(n / 50) * 50;
+        };
+        const fallbackRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
+        const validatedTemplates = creator.deal_templates.slice(0, 3).map((t, i) => {
+          if (t.budget > 0) return t;
+          // Fix ₹0 templates with sensible defaults
+          const fallbackBudgets = [
+            roundToCleanPrice(Math.max(fallbackRate, 1000)),
+            roundToCleanPrice(Math.max(fallbackRate * 1.5, 1500)),
+            roundToCleanPrice(Math.max(fallbackRate * 0.5, 2000)),
+          ];
+          return { ...t, budget: fallbackBudgets[i] || roundToCleanPrice(fallbackRate) };
+        });
+        setLocalDealTemplates(validatedTemplates);
       } else {
         // Generate Default Templates based on reel rate
         const suggestedRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
@@ -4143,8 +4161,8 @@ const EditDealTemplateModal = ({
                     onChange={(e) => handleUpdateAddon(index, { price: Number(e.target.value) })}
                   />
                 </div>
-                <button onClick={() => handleRemoveAddon(index)} className="p-2 text-slate-400 hover:text-red-500 transition-colors">
-                  <X className="w-4 h-4" />
+                <button onClick={() => handleRemoveAddon(index)} className="p-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove add-on">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             ))}
