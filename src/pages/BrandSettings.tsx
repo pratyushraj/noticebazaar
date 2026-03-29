@@ -740,4 +740,5 @@ const BrandSettings = () => {
   );
 };
 
+export { default as BrandSettingsPanel } from './BrandSettings';
 export default BrandSettings;

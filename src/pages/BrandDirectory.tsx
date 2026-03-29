@@ -245,6 +245,7 @@ const BrandDirectory = () => {
                             src={brand.logo_url}
                             alt={brand.name}
                             className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
