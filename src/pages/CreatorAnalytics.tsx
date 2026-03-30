@@ -195,11 +195,20 @@ const CreatorAnalytics = () => {
     // Closing rate (completed / total)
     const closingRate = brandDeals.length > 0 ? (completedDeals.length / brandDeals.length) * 100 : 0;
 
-    // Average payment time (simulated - would need payment_received_date vs deal_date)
-    const avgPaymentTime = 18; // TODO: Calculate from actual payment dates
+    // Average payment time (days between deal creation and payment received)
+    const paidDeals = completedDeals.filter(d => d.payment_received_date && d.created_at);
+    const avgPaymentTime = paidDeals.length > 0
+      ? Math.round(paidDeals.reduce((sum, d) => {
+          const days = Math.ceil((new Date(d.payment_received_date!).getTime() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24));
+          return sum + Math.max(days, 1);
+        }, 0) / paidDeals.length)
+      : 0;
 
-    // Protection score (simulated - would calculate from contract reviews)
-    const protectionScore = 85; // TODO: Calculate from actual protection data
+    // Protection score (based on deals with contracts vs without)
+    const dealsWithContracts = brandDeals.filter(d => d.contract_file_url).length;
+    const protectionScore = brandDeals.length > 0
+      ? Math.round((dealsWithContracts / brandDeals.length) * 100)
+      : 0;
 
     return {
       avgDealValue: { value: avgDealValue, change: 15.2, trend: 'up' as const },
@@ -262,7 +271,7 @@ const CreatorAnalytics = () => {
         name: deal.brand_name || 'Unknown Brand',
         value: deal.deal_amount || 0,
         status: deal.status === 'Completed' ? ('completed' as const) : ('active' as const),
-        platform: 'YouTube', // TODO: Get from deal data
+        platform: deal.content_type || deal.collab_type || 'Instagram',
       }));
   }, [brandDeals]);
 
