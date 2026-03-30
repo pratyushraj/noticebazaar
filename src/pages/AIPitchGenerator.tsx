@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { fetchWithTimeout, getApiBaseUrl, isNetworkError } from '@/lib/utils/api';
 import { supabase } from '@/integrations/supabase/client';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface PitchHistory {
   id: string;
@@ -41,6 +42,8 @@ interface PitchHistory {
 }
 
 const AIPitchGenerator = () => {
+  const baseUrl = 'https://creatorarmour.com';
+  const canonicalUrl = `${baseUrl}/ai-pitch-generator`;
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -462,7 +465,14 @@ const AIPitchGenerator = () => {
   };
 
   return (
-    <div className="nb-screen-height text-white relative pb-24 md:pb-8 overflow-hidden font-['Space_Grotesk']">
+    <>
+      <SEOHead
+        title="AI Pitch Generator for Brand Deals | Creator Armour"
+        description="Generate creator pitch messages and legal-style responses quickly using AI, with tone control and history tracking."
+        keywords={['ai pitch generator', 'brand collaboration pitch', 'creator outreach template', 'legal notice draft']}
+        canonicalUrl={canonicalUrl}
+      />
+      <div className="nb-screen-height text-white relative pb-24 md:pb-8 overflow-hidden font-['Space_Grotesk']">
       <div className="absolute inset-0">
         <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full bg-purple-500/25 blur-[120px]" />
         <div className="absolute top-20 right-[-140px] h-[360px] w-[360px] rounded-full bg-cyan-400/20 blur-[120px]" />
@@ -795,7 +805,8 @@ const AIPitchGenerator = () => {
           )}
         </BottomSheet>
       </motion.div>
-    </div>
+      </div>
+    </>
   );
 };
 

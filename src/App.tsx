@@ -443,6 +443,7 @@ const App = () => {
                         {/* Legal Tools & Calculators */}
                         <Route path="/contract-analyzer" element={<LazyRoute><ContractAnalyzer /></LazyRoute>} />
                         <Route path="/rate-calculator" element={<LazyRoute><RateCalculator /></LazyRoute>} />
+                        <Route path="/rate-calculator/:platform/:niche" element={<LazyRoute><DynamicRateCalculator /></LazyRoute>} />
                         <Route path="/dynamic-rate-calculator" element={<LazyRoute><DynamicRateCalculator /></LazyRoute>} />
                         <Route path="/ai-pitch-generator" element={<LazyRoute><AIPitchGenerator /></LazyRoute>} />
 

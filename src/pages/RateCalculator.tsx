@@ -41,6 +41,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface RateBreakdown {
   baseRate: number;
@@ -81,6 +82,8 @@ const categoryMultipliers: Record<Category, number> = {
 
 const RateCalculator = () => {
   const navigate = useNavigate();
+  const baseUrl = 'https://creatorarmour.com';
+  const canonicalUrl = `${baseUrl}/rate-calculator`;
   const [followers, setFollowers] = useState(100000);
   const [engagementRate, setEngagementRate] = useState(5);
   const [platform, setPlatform] = useState('instagram');
@@ -347,7 +350,14 @@ const RateCalculator = () => {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+    <>
+      <SEOHead
+        title="Influencer Rate Calculator India | Creator Armour"
+        description="Calculate fair influencer and creator rates in India using followers, engagement, platform, and deliverables."
+        keywords={['influencer rate calculator', 'creator pricing India', 'instagram reel rates', 'brand deal pricing']}
+        canonicalUrl={canonicalUrl}
+      />
+      <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       {/* Header */}
       <div className="mb-6 pb-4 border-b border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
         <div className="flex items-start justify-between gap-4">
@@ -859,9 +869,9 @@ const RateCalculator = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
 export default RateCalculator;
-

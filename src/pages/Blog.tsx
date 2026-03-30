@@ -67,10 +67,11 @@ const Blog = () => {
             isPartOf: { "@id": "https://creatorarmour.com/#website" },
             mainEntity: {
               "@type": "ItemList",
-              itemListElement: [
-                { "@type": "ListItem", position: 1, url: "https://creatorarmour.com/blog/creators-getting-ghosted" },
-                { "@type": "ListItem", position: 2, url: "https://creatorarmour.com/blog/how-to-price-brand-deals" },
-              ],
+              itemListElement: blogPosts.map((post, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                url: `${baseUrl}/blog/${post.slug}`,
+              })),
             },
           })
         }}

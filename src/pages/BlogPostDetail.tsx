@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, ExternalLink, AlertCircle, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, AlertCircle, FileText, Link2 } from 'lucide-react';
 import { getBlogPostBySlug } from '@/data/blogPosts';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { ArticleSchema, FAQSchema, BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
@@ -211,7 +211,7 @@ const BlogPostDetail = () => {
                     Related Toolbox
                   </h2>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {post.internalLinks.contractTool && (
                       <Link to="/contract-analyzer" className="block group">
                         <div className="bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-white/5 hover:bg-white/[0.06] hover:border-emerald-500/30 transition-all duration-300 h-full flex flex-col justify-between shadow-xl">
@@ -241,6 +241,23 @@ const BlogPostDetail = () => {
                           </div>
                           <div className="mt-6 flex items-center text-xs font-bold text-blue-400 uppercase tracking-wider">
                             Main Site <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1" />
+                          </div>
+                        </div>
+                      </Link>
+                    )}
+
+                    {post.internalLinks.collabLink && (
+                      <Link to="/collab-action" className="block group">
+                        <div className="bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-white/5 hover:bg-white/[0.06] hover:border-fuchsia-500/30 transition-all duration-300 h-full flex flex-col justify-between shadow-xl">
+                          <div>
+                            <div className="w-10 h-10 rounded-xl bg-fuchsia-500/10 flex items-center justify-center mb-4 group-hover:bg-fuchsia-500/20 transition-colors">
+                              <Link2 className="h-5 w-5 text-fuchsia-400" />
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-fuchsia-400 transition-colors">Collab Link Funnel</h3>
+                            <p className="text-sm text-slate-400 leading-relaxed">Accept, counter, or decline offers in one flow and turn DMs into structured deals.</p>
+                          </div>
+                          <div className="mt-6 flex items-center text-xs font-bold text-fuchsia-400 uppercase tracking-wider">
+                            Open Funnel <ArrowRight className="h-3 w-3 ml-2 group-hover:translate-x-1" />
                           </div>
                         </div>
                       </Link>

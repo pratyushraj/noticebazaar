@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { PLAN_COMPARISON_FEATURES, PLAN_DETAILS, PlanName, PlanFeature } from '@/data/planDetails'; // Import data
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const plans = [
   { name: 'Essential' as PlanName, price: PLAN_DETAILS['Essential'].price, link: '/plan/essential', loginLink: PLAN_DETAILS['Essential'].link, isPopular: PLAN_DETAILS['Essential'].isPopular },
@@ -42,11 +43,20 @@ const FeatureCell = ({ value, isPopular }: { value: string | boolean, isPopular:
 };
 
 const PricingComparison = () => {
+  const baseUrl = 'https://creatorarmour.com';
+  const canonicalUrl = `${baseUrl}/pricing-comparison`;
   const whatsappMessage = encodeURIComponent("Hi Creator Armour, I need help choosing the right subscription plan for my business.");
   const whatsappLink = `https://wa.me/919205376316?text=${whatsappMessage}`;
 
   return (
-    <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
+    <>
+      <SEOHead
+        title="Creator Armour Plan Pricing Comparison"
+        description="Compare Creator Armour plans and features to choose the right legal, contract, and payment support package for your creator business."
+        keywords={['creator armour pricing', 'subscription comparison', 'creator legal plans', 'plan features']}
+        canonicalUrl={canonicalUrl}
+      />
+      <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
         <Link to="/">
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Homepage
@@ -117,7 +127,8 @@ const PricingComparison = () => {
           </TableBody>
         </Table>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

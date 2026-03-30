@@ -62,6 +62,7 @@ import {
   useProjectedEarnings,
   useRewardHistory,
 } from '@/lib/hooks/usePartnerProgram';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 // Demo data for Partner Program (used when database tables don't exist)
 const DEMO_DATA = {
@@ -139,6 +140,8 @@ const DEMO_DATA = {
 };
 
 const PartnerProgram: React.FC = () => {
+  const baseUrl = 'https://creatorarmour.com';
+  const canonicalUrl = `${baseUrl}/partner-program`;
   const { user, profile } = useSession();
   const navigate = useNavigate();
   const [showQR, setShowQR] = useState(false);
@@ -292,14 +295,29 @@ const PartnerProgram: React.FC = () => {
 
   if (!user || !profile) {
     return (
-      <div className="nb-screen-height flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <>
+        <SEOHead
+          title="Creator Armour Partner Program"
+          description="Earn rewards by referring creators to Creator Armour and tracking referral growth from one dashboard."
+          keywords={['creator referral program', 'partner program', 'creator armour affiliate']}
+          canonicalUrl={canonicalUrl}
+        />
+        <div className="nb-screen-height flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="nb-screen-height bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-x-hidden overflow-y-auto">
+    <>
+      <SEOHead
+        title="Creator Armour Partner Program"
+        description="Earn rewards by referring creators to Creator Armour and tracking referral growth from one dashboard."
+        keywords={['creator referral program', 'partner program', 'creator armour affiliate']}
+        canonicalUrl={canonicalUrl}
+      />
+      <div className="nb-screen-height bg-gradient-to-b from-[#060A12] via-[#080C14] to-[#0A0E16] text-white relative overflow-x-hidden overflow-y-auto">
       {/* Ambient background lighting */}
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(23,86,255,0.15),transparent_70%)] pointer-events-none z-0"></div>
       <div className="fixed inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-0"></div>
@@ -1334,9 +1352,9 @@ const PartnerProgram: React.FC = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
 export default PartnerProgram;
-

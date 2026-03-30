@@ -31,8 +31,11 @@ import { useToggleBrandBookmark } from '@/lib/hooks/useBrandBookmarks';
 import { useTrackBrandView } from '@/lib/hooks/useBrandInteractions';
 import { Brand } from '@/types';
 import { useEffect, useRef } from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 const BrandDirectory = () => {
+  const baseUrl = 'https://creatorarmour.com';
+  const canonicalUrl = `${baseUrl}/brand-directory`;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,7 +109,14 @@ const BrandDirectory = () => {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+    <>
+      <SEOHead
+        title="Brand Directory for Creators | Creator Armour"
+        description="Browse verified brands, compare payment reliability, and find creator collaboration opportunities."
+        keywords={['brand directory', 'creator brand deals', 'influencer opportunities', 'brand payment reliability']}
+        canonicalUrl={canonicalUrl}
+      />
+      <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
@@ -464,9 +474,9 @@ const BrandDirectory = () => {
           })()}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
 export default BrandDirectory;
-

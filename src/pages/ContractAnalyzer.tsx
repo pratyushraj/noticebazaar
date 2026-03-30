@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 interface AnalysisResult {
   overallScore: number;
@@ -38,6 +39,8 @@ interface AnalysisResult {
 }
 
 const ContractAnalyzer = () => {
+  const baseUrl = 'https://creatorarmour.com';
+  const canonicalUrl = `${baseUrl}/contract-analyzer`;
   const [contractText, setContractText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -161,7 +164,14 @@ const ContractAnalyzer = () => {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+    <>
+      <SEOHead
+        title="AI Contract Analyzer for Creators | Creator Armour"
+        description="Upload or paste a brand contract and identify risky clauses, payment issues, and negotiation points before signing."
+        keywords={['contract analyzer', 'influencer contract review', 'creator legal tool', 'brand deal contract']}
+        canonicalUrl={canonicalUrl}
+      />
+      <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
@@ -468,9 +478,9 @@ const ContractAnalyzer = () => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
 export default ContractAnalyzer;
-
