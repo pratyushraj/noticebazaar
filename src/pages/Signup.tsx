@@ -232,7 +232,7 @@ const Signup = () => {
         email: emailAtSignup,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding'}`,
+          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-dashboard'}`,
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -357,7 +357,7 @@ const Signup = () => {
                       toast.error(e?.message || 'Failed to set up brand account');
                     }
                   }
-                  navigate('/creator-onboarding', { replace: true });
+                  navigate('/creator-dashboard', { replace: true });
                 }
               }, 500);
             } else {
@@ -384,7 +384,7 @@ const Signup = () => {
                     window.location.assign('/brand-dashboard');
                     return;
                   }
-                  navigate('/creator-onboarding', { replace: true });
+                  navigate('/creator-dashboard', { replace: true });
                 }, 1000);
               } else {
                 // Signin failed - redirect to login
@@ -846,7 +846,7 @@ const Signup = () => {
 	              <Button
 	                onClick={async () => {
 	                  try {
-	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding';
+	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-dashboard';
 	                    const redirectUrl = `${window.location.origin}/${redirectPath}`;
 	                    sessionStorage.setItem('oauth_intended_route', redirectPath);
 	                    const { data, error } = await supabase.auth.signInWithOAuth({

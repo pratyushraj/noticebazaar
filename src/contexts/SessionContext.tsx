@@ -635,9 +635,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          // Use path-based routes (BrowserRouter), not hash.
-          // Default to onboarding-first for creator-like users so dashboard is never reachable before completion.
-          let targetPath = '/creator-onboarding';
+          // Dashboard-first: creators go straight to dashboard, complete profile later
+          let targetPath = '/creator-dashboard';
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -698,18 +697,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   targetPath = '/lawyer-dashboard';
                 } else {
                   targetPath = '/creator-dashboard';
-                  // Send new creators (onboarding not complete) to onboarding after Google login
-                  if (profileData.onboarding_complete === false) {
-                    targetPath = '/creator-onboarding';
-                    console.log('[SessionContext] New creator, redirecting to onboarding');
-                  }
+                  // Dashboard-first: creators land on dashboard, complete profile via banner
                 }
               } else {
-                console.log('[SessionContext] No profile data / timeout, defaulting to onboarding-first route');
+                console.log('[SessionContext] No profile data / timeout, defaulting to dashboard');
               }
             } catch (error) {
-              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to onboarding-first route:', error);
-              targetPath = '/creator-onboarding';
+              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to dashboard:', error);
+              targetPath = '/creator-dashboard';
             }
           }
 

@@ -2597,6 +2597,35 @@ const MobileDashboardDemo = ({
                     {/* ─── DASHBOARD TAB ─── */}
                     {activeTab === 'dashboard' && (
                         <>
+                            {/* Complete Your Collab Link Banner */}
+                            {profile && (!profile.onboarding_complete || !profile.instagram_handle) && (
+                                <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
+                                            <ShieldCheck className="w-5 h-5 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[14px] font-bold text-slate-900">Complete Your Collab Link</p>
+                                            <p className="text-[12px] text-slate-500">Brands can't find you yet</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {!profile.instagram_handle && (
+                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add Instagram</button>
+                                        )}
+                                        {!profile.bio && (
+                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add intro line</button>
+                                        )}
+                                        {(!profile.pricing_min && !profile.avg_rate_reel) && (
+                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Set rates</button>
+                                        )}
+                                        {!profile.bank_upi && (
+                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add payout</button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Command Header */}
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">

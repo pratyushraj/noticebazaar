@@ -132,32 +132,8 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
     // Redirect from login/root to dashboard
     if (routes.isRoot(path) || routes.isAuth(path)) {
-      // Creators: check onboarding gates
-      if (userRole === 'creator' || !userRole || userRole === 'client') {
-        if (!profile.onboarding_complete) {
-          navigate('/creator-onboarding', { replace: true });
-          return;
-        }
-        if (!isCollabProfileComplete(profile)) {
-          navigate(handle ? `/${handle}?edit=true&required=1` : '/creator-profile?required=1', { replace: true });
-          return;
-        }
-      }
       navigate(targetDashboard, { replace: true });
       return;
-    }
-
-    // Onboarding gates for creators
-    if ((userRole === 'creator' || !userRole || userRole === 'client') && !routes.isCollabBypass(path, handle)) {
-      if (!profile.onboarding_complete && !routes.isOnboarding(path)) {
-        navigate('/creator-onboarding', { replace: true });
-        return;
-      }
-      if (profile.onboarding_complete && !isCollabProfileComplete(profile)) {
-        const collabRoute = handle ? `/${handle}?edit=true&required=1` : '/creator-profile?required=1';
-        navigate(collabRoute, { replace: true });
-        return;
-      }
     }
 
     // Role-based access control
