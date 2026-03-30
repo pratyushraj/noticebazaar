@@ -30,16 +30,16 @@ const LandingPage = () => {
   }, []);
 
   const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'Creator Armour - Close Brand Deals Without Instagram DMs';
-  const seoDescription = 'Creator Armour gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
+  const seoTitle = 'Creator Armour - Get Paid Brand Deals Without DMs';
+  const seoDescription = 'Get a brand deal page where brands send you paid offers directly. No more lost DMs. Contracts, payments, and tracking — all in one place.';
   const seoKeywords = [
     'creator collab link',
     'brand deal management',
-    'influencer collaboration platform',
+    'brand deal management india',
     'creator marketplace india',
     'instagram creator brand deals',
     'creator portfolio for brands',
-    'structured brand offers for creators',
+    'brand deal page for instagram creators',
   ];
 
   useEffect(() => {
@@ -96,7 +96,7 @@ const LandingPage = () => {
               onClick={() => triggerHaptic(HapticPatterns.success)}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
             >
-              Create Collab Link
+              Get Your Brand Deal Page
             </Link>
             {/* Mobile menu button */}
             <button type="button"
@@ -132,18 +132,18 @@ const LandingPage = () => {
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-8 shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wide">The Operating System for Creators</span>
+                <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wide">Get Paid Deals Without DMs</span>
               </div>
 
               <h1 className="text-[42px] md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.05] mb-6 text-slate-900 drop-shadow-sm">
-                Close Brand Deals <br />
+                Get Paid Brand Deals <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 inline-block mt-2">
-                  Without <span className="whitespace-nowrap">Instagram DMs</span>
+                  Without <span className="whitespace-nowrap">Losing DMs</span>
                 </span>
               </h1>
 
               <p className="text-[17px] md:text-[20px] text-slate-600 font-medium mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
+                Share your deal page. Brands send you paid offers directly. Contracts and payments — all protected.
               </p>
 
 	              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
@@ -333,7 +333,7 @@ const LandingPage = () => {
                   Add your link to your Instagram bio.
                 </h2>
                 <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
-                  Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal Creator Armour page.
+                  Share your page link. Brands send you offers with budget, deliverables, and timeline — no more back-and-forth DMs.
                 </p>
                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl inline-block mt-4 backdrop-blur-sm">
                   <p className="font-mono text-emerald-400 font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
@@ -464,7 +464,7 @@ const LandingPage = () => {
                 Turn your Instagram into a deal pipeline
               </h2>
               <p className="text-base md:text-xl font-medium text-emerald-50/90 mb-8 md:mb-10 leading-relaxed">
-                Stop negotiating in DMs. Create your collab link and receive structured brand offers.
+                Share your deal page. Brands send you paid offers directly — no more lost DMs.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
@@ -512,7 +512,7 @@ const LandingPage = () => {
               <div className="space-y-3">
                 <p className="text-sm font-black text-slate-900">Product</p>
                 <div className="space-y-2.5 text-sm font-medium text-slate-600">
-                  <Link to="/signup" className="block hover:text-emerald-700">Create Collab Link</Link>
+                  <Link to="/signup" className="block hover:text-emerald-700">Get Your Brand Deal Page</Link>
                   <Link to="/discover" className="block hover:text-emerald-700">Creator Marketplace</Link>
                   <Link to="/collab-requests" className="block hover:text-emerald-700">Brand Offers</Link>
                   <Link to="/plan/growth" className="block hover:text-emerald-700">Pricing</Link>
@@ -552,7 +552,7 @@ const LandingPage = () => {
             <details className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
               <summary className="list-none cursor-pointer text-sm font-black text-slate-900 flex items-center justify-between">Product <span className="text-slate-400">▼</span></summary>
               <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
-                <Link to="/signup" className="block">Create Collab Link</Link>
+                <Link to="/signup" className="block">Get Your Brand Deal Page</Link>
                 <Link to="/discover" className="block">Creator Marketplace</Link>
                 <Link to="/collab-requests" className="block">Brand Offers</Link>
                 <Link to="/plan/growth" className="block">Pricing</Link>

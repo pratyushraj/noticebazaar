@@ -2635,7 +2635,7 @@ const MobileDashboardDemo = ({
                                                     <ShieldCheck className="w-5 h-5 text-white" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[14px] font-bold text-slate-900">Complete Your Collab Link</p>
+                                                    <p className="text-[14px] font-bold text-slate-900">Complete Your Brand Deal Page</p>
                                                     <p className="text-[12px] text-slate-500">{completed}/{tasks.length} done • {pct}%</p>
                                                 </div>
                                             </div>
@@ -2921,13 +2921,13 @@ const MobileDashboardDemo = ({
                                             <h2 className={cn("text-[22px] font-black mb-1 tracking-tight font-outfit", textColor)}>Your Collaboration Page Is Live</h2>
                                             <p className={cn("text-[13px] font-medium mb-5 leading-relaxed opacity-70", textColor)}>
                                                 Brands can now send you structured collaboration offers.<br />
-                                                Share your Collab Link to start receiving deals.
+                                                Share your page to start getting paid brand deals.
                                             </p>
 
                                             {/* Beautiful Collab Link Card */}
                                             <div className={cn("p-3.5 rounded-3xl border mb-4", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
                                                 <div className="flex items-center justify-between mb-2.5">
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Your Collab Link</p>
+                                                    <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Your Brand Deal Page</p>
                                                     <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                                                         <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Brands submit offers here</span>
@@ -2964,7 +2964,7 @@ const MobileDashboardDemo = ({
 
                                             {/* Where to Share Guide */}
                                             <div className={cn("p-3.5 rounded-3xl border mb-1", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
-                                                <p className={cn("text-[11px] font-bold mb-3", textColor)}>Where to share your Collab Link</p>
+                                                <p className={cn("text-[11px] font-bold mb-3", textColor)}>Where to share your deal page</p>
                                                 <div className="grid grid-cols-2 gap-2.5 mb-4">
                                                     <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Instagram Bio</span></div>
                                                     <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Brand DMs</span></div>
