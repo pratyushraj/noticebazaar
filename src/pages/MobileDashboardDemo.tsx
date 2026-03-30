@@ -33,6 +33,7 @@ import DealComparison from '@/components/dashboard/DealComparison';
 import DealStatusFlow from '@/components/dashboard/DealStatusFlow';
 import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
+import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -569,6 +570,7 @@ const MobileDashboardDemo = ({
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [completionDismissed, setCompletionDismissed] = useState(false);
     const { canInstall, promptInstall } = usePwaInstall();
+    useSessionTimeout();
     const sessionTracked = useRef(false);
 
     // Track first dashboard view (once per session)
@@ -2690,17 +2692,38 @@ const MobileDashboardDemo = ({
                                     <div className="flex items-center gap-2">
                                         {/* Preview collab link */}
                                         {profile?.instagram_handle && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const handle = (profile.instagram_handle || '').replace('@', '').trim();
-                                                    if (handle) window.open(`/${handle}`, '_blank');
-                                                }}
-                                                className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
-                                                title="Preview your collab page"
-                                            >
-                                                <Eye className="w-5 h-5" />
-                                            </button>
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const handle = (profile.instagram_handle || '').replace('@', '').trim();
+                                                        if (handle) window.open(`/${handle}`, '_blank');
+                                                    }}
+                                                    className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
+                                                    title="Preview your collab page"
+                                                >
+                                                    <Eye className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const handle = (profile.instagram_handle || '').replace('@', '').trim();
+                                                        const url = `${window.location.origin}/${handle}`;
+                                                        const text = `Check out my collab page on Creator Armour 👇`;
+                                                        // Show share options
+                                                        if (navigator.share) {
+                                                            navigator.share({ title: `${profile.first_name || 'My'} Collab Link`, text, url });
+                                                        } else {
+                                                            navigator.clipboard.writeText(url);
+                                                            toast.success('Collab link copied!');
+                                                        }
+                                                    }}
+                                                    className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
+                                                    title="Share your collab link"
+                                                >
+                                                    <Share2 className="w-5 h-5" />
+                                                </button>
+                                            </>
                                         )}
 
                                         {/* Dark / Light toggle */}
@@ -2828,6 +2851,26 @@ const MobileDashboardDemo = ({
                                     </div>
                                 </div>
                             )}
+
+                            {/* Discover Brands CTA */}
+                            <div className="px-5 mb-5">
+                                <button
+                                    onClick={() => navigate('/brand-directory')}
+                                    className={cn(
+                                        "w-full p-4 rounded-2xl border flex items-center gap-3 active:scale-[0.98] transition-all text-left",
+                                        isDark ? "bg-[#1C1C1E] border-[#2C2C2E] hover:border-[#3C3C3E]" : "bg-white border-slate-200 hover:border-blue-300 shadow-sm hover:shadow-md"
+                                    )}
+                                >
+                                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
+                                        <Briefcase className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={cn("text-[14px] font-bold", textColor)}>Discover Brands</p>
+                                        <p className={cn("text-[12px]", secondaryTextColor)}>Browse brands looking for creators like you</p>
+                                    </div>
+                                    <ChevronRight className={cn("w-4 h-4 shrink-0", secondaryTextColor)} />
+                                </button>
+                            </div>
 
                             {/* Empty State vs Normal Metrics */}
                             {activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (

@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Briefcase, MapPin, Clock, ExternalLink } from 'lucide-react';
@@ -93,6 +94,11 @@ const MOCK_JOBS: JobOpening[] = [
 const Careers = () => {
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
+      <SEOHead
+        title="Careers at Creator Armour — Join the Team"
+        description="Join Creator Armour and help build the future of creator-brand collaborations in India. Open positions in engineering, design, and growth."
+        canonicalUrl="https://creatorarmour.com/careers"
+      />
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
         <Link to="/">
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Homepage
