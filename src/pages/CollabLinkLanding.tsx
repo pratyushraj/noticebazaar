@@ -1587,6 +1587,13 @@ const CollabLinkLanding = () => {
       return;
     }
 
+    // Client-side cooldown: prevent rapid re-submissions
+    const lastSubmit = Number(localStorage.getItem('last_collab_submit') || 0);
+    if (Date.now() - lastSubmit < 30000) {
+      toast.error('Please wait a moment before submitting again');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -1632,6 +1639,7 @@ const CollabLinkLanding = () => {
       const data = await response.json();
 
       if (data.success) {
+        localStorage.setItem('last_collab_submit', String(Date.now()));
         trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
         // Redirect to the proposal confirmation screen (install-first conversion moment)
         const consoleToken = data.request.id;

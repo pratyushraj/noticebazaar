@@ -38,6 +38,8 @@ const AppToaster = () => {
         },
       }}
       expand={false}
+      visibleToasts={2}
+      duration={3000}
     />
   );
 };

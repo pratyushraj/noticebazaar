@@ -248,9 +248,20 @@ const DiscoverCreators = () => {
 
                 {/* Results Grid */}
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-24 gap-4">
-                        <Loader2 className="h-10 w-10 animate-spin text-blue-500" />
-                        <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30">Loading Directory Assets...</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[1, 2, 3, 4, 5, 6].map(i => (
+                            <div key={i} className="rounded-[2rem] border border-white/10 bg-white/5 p-6 animate-pulse">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-14 h-14 rounded-full bg-white/10" />
+                                    <div className="flex-1">
+                                        <div className="h-4 bg-white/10 rounded w-3/4 mb-2" />
+                                        <div className="h-3 bg-white/5 rounded w-1/2" />
+                                    </div>
+                                </div>
+                                <div className="h-3 bg-white/5 rounded w-full mb-2" />
+                                <div className="h-3 bg-white/5 rounded w-2/3" />
+                            </div>
+                        ))}
                     </div>
                 ) : filteredCreators.length === 0 ? (
                     <div className="py-24 text-center bg-white/5 border border-white/10 rounded-[2.5rem] px-6">
