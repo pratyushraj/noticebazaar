@@ -2688,6 +2688,21 @@ const MobileDashboardDemo = ({
 
                                     {/* Right: Actions & Avatar */}
                                     <div className="flex items-center gap-2">
+                                        {/* Preview collab link */}
+                                        {profile?.instagram_handle && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const handle = (profile.instagram_handle || '').replace('@', '').trim();
+                                                    if (handle) window.open(`/${handle}`, '_blank');
+                                                }}
+                                                className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
+                                                title="Preview your collab page"
+                                            >
+                                                <Eye className="w-5 h-5" />
+                                            </button>
+                                        )}
+
                                         {/* Dark / Light toggle */}
                                         <motion.button
                                             onClick={() => { triggerHaptic(); setTheme(t => t === 'dark' ? 'light' : 'dark'); }}

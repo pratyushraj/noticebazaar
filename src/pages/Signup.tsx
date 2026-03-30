@@ -101,10 +101,10 @@ const Signup = () => {
   // Password strength calculator
   const getPasswordStrength = (pwd: string) => {
     if (pwd.length === 0) return { strength: 0, label: '', color: '' };
-    if (pwd.length < 6) return { strength: 1, label: 'Too short', color: 'bg-red-500' };
-    if (pwd.length < 8) return { strength: 2, label: 'Weak', color: 'bg-yellow-500' };
-    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Fair', color: 'bg-emerald-500' };
-    return { strength: 4, label: 'Strong', color: 'bg-green-500' };
+    if (pwd.length < 6) return { strength: 1, label: 'Too short (min 6)', color: 'bg-red-500' };
+    if (pwd.length < 8) return { strength: 2, label: 'OK', color: 'bg-yellow-500' };
+    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) return { strength: 4, label: 'Strong', color: 'bg-green-500' };
+    return { strength: 3, label: 'Good', color: 'bg-emerald-500' };
   };
 
   const handleEmailChange = (value: string) => {
