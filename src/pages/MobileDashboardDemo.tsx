@@ -34,6 +34,7 @@ import DealStatusFlow from '@/components/dashboard/DealStatusFlow';
 import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
+import confetti from 'canvas-confetti';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -1439,6 +1440,9 @@ const MobileDashboardDemo = ({
         try { 
             await onAcceptRequest(req); 
             closeItemDetail();
+            // Celebration: confetti burst on first accept
+            confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
+            toast.success('🎉 Collab accepted! Check your deals tab.');
         } catch (error) {
             console.error("Accept error:", error);
         } finally { 
@@ -2780,7 +2784,12 @@ const MobileDashboardDemo = ({
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
                                         <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
-                                            Dashboard
+                                            {(() => {
+                                                const hour = new Date().getHours();
+                                                const name = (profile?.first_name || '').trim();
+                                                const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                                                return name ? `${greeting}, ${name}` : greeting;
+                                            })()}
                                         </h1>
                                         <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -2928,6 +2937,23 @@ const MobileDashboardDemo = ({
                                                     >
                                                         Preview Page
                                                     </button>
+                                                </div>
+                                            </div>
+
+                                            {/* How It Works */}
+                                            <div className={cn("p-3.5 rounded-3xl border mb-3", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                                <p className={cn("text-[11px] font-bold mb-3", textColor)}>How it works</p>
+                                                <div className="space-y-3">
+                                                    {[
+                                                        { n: 1, text: 'Share your link on Instagram bio, DMs, or email', icon: '🔗' },
+                                                        { n: 2, text: 'Brand fills a structured brief with budget & deliverables', icon: '📋' },
+                                                        { n: 3, text: 'You accept, counter, or decline — with contract protection', icon: '✅' },
+                                                    ].map(step => (
+                                                        <div key={step.n} className="flex items-start gap-3">
+                                                            <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[12px] shrink-0 mt-0.5", isDark ? "bg-white/10" : "bg-slate-100")}>{step.icon}</span>
+                                                            <p className={cn("text-[12px] font-medium leading-relaxed pt-1", textColor)}>{step.text}</p>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
 
