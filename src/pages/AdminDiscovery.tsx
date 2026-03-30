@@ -10,18 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Loader2, 
-  Play, 
-  Search,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  TrendingUp,
-  Users,
-  ArrowLeft,
-  Home
-} from 'lucide-react';
+import { Loader2, Play, Search, CheckCircle2, XCircle, TrendingUp, Users, ArrowLeft, Home } from 'lucide-react';
 import { useRunDiscoveryScan, DiscoveryScanParams } from '@/lib/hooks/useInfluencers';
 import { formatDateTime } from '@/lib/utils/date';
 

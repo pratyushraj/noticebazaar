@@ -52,7 +52,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <button
+        <button type="button"
           onClick={resetError}
           className={`${buttons.primary} flex items-center justify-center gap-2`}
         >
@@ -60,7 +60,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           Try Again
         </button>
         
-        <button
+        <button type="button"
           onClick={handleGoHome}
           className={`${buttons.secondary} flex items-center justify-center gap-2`}
         >

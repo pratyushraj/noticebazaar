@@ -15,7 +15,7 @@ interface SkipButtonProps {
  */
 export const SkipButton: React.FC<SkipButtonProps> = ({ onClick, className }) => {
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={cn(
         "absolute z-50",

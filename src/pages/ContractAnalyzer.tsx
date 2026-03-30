@@ -5,19 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import {
-  FileText,
-  Upload,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Download,
-  Copy,
-  Shield,
-  DollarSign,
-  Clock,
-} from 'lucide-react';
+import { FileText, Upload, AlertTriangle, CheckCircle, Loader2, Download, Copy, Shield, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';

@@ -144,7 +144,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
 
                     {/* Buttons - Compact Style */}
                     <div className="flex gap-2 pt-1">
-                      <button
+                      <button type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onSendReminder?.(action.dealId!);
@@ -159,7 +159,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                         Send Reminder
                       </button>
 
-        <button 
+        <button type="button" 
                         onClick={(e) => {
                           e.stopPropagation();
                           onEscalate?.(action.dealId!);
@@ -261,7 +261,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                     <div className="flex gap-2">
                       {action.type === 'contract_review' && action.dealId && (
                         <>
-                          <button
+                          <button type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               onAnalyzeContract?.(action.dealId!);
@@ -271,7 +271,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                             <Search className="w-3 h-3" />
                             Analyze Now
                           </button>
-                          <button
+                          <button type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/creator-contracts/${action.dealId}`);
@@ -285,7 +285,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
 
                       {action.type === 'content_stolen' && (
                         <>
-                          <button
+                          <button type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               onTakeDown?.();
@@ -295,7 +295,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                             <AlertTriangle className="w-3 h-3" />
                             Take Down
                           </button>
-                          <button
+                          <button type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate('/creator-contracts');

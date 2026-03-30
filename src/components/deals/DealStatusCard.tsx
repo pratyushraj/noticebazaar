@@ -157,7 +157,7 @@ export const DealStatusCard = ({
 
                         <div className="text-center space-y-2 pt-2">
                             <p className="text-xs text-white/40">Brand can only sign after creator signature is complete.</p>
-                            <button
+                            <button type="button"
                                 onClick={onDownloadContract}
                                 className="text-white/40 hover:text-white text-xs underline decoration-white/20 hover:decoration-white transition-colors flex items-center justify-center gap-1 mx-auto"
                             >
@@ -187,7 +187,7 @@ export const DealStatusCard = ({
                                 if (link) {
                                     const success = await copyToClipboard(link);
                                     if (success) toast.success('Brand signing link copied!');
-                                    // window.open(link, '_blank'); // Optional: open for them
+                                    // window.open(link, '_blank', 'noopener,noreferrer'); // Optional: open for them
                                 }
                             }}
                             whileTap={{ scale: 0.98 }}
@@ -226,12 +226,12 @@ export const DealStatusCard = ({
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 mt-4">
-                            <button onClick={onDownloadContract} className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                            <button type="button" onClick={onDownloadContract} className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
                                 <Download className="w-4 h-4" />
                                 Contract PDF
                             </button>
                             {onGenerateInvoice && (
-                                <button onClick={onGenerateInvoice} className="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                                <button type="button" onClick={onGenerateInvoice} className="w-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
                                     <FileText className="w-4 h-4" />
                                     Generate Invoice
                                 </button>
@@ -259,13 +259,13 @@ export const DealStatusCard = ({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                         <span className="text-[10px] text-white/30 uppercase font-bold px-2 py-0.5 bg-white/5 rounded border border-white/5">PDF</span>
-                        <button onClick={() => {
+                        <button type="button" onClick={() => {
                             copyToClipboard(deal?.contract_file_url || signedContractUrl || '');
                             toast.success('Contract link copied');
                         }} className="text-white/20 hover:text-white transition-colors p-1">
                             <Copy className="w-3 h-3" />
                         </button>
-                        <button onClick={onDownloadContract} className="text-white/20 hover:text-white transition-colors p-1">
+                        <button type="button" onClick={onDownloadContract} className="text-white/20 hover:text-white transition-colors p-1">
                             <Download className="w-3 h-3" />
                         </button>
                     </div>

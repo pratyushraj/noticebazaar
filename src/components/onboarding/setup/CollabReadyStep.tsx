@@ -154,7 +154,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 <FileText className="w-4 h-4" />
                 Bio for brands
               </span>
-              <button
+              <button type="button"
                 type="button"
                 onClick={onGenerateBio}
                 disabled={isGeneratingBio}
@@ -291,7 +291,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 <Package2 className="w-4 h-4" />
                 Your collaboration packages
               </p>
-              <button
+              <button type="button"
                 type="button"
                 onClick={onAutoSuggestPrices}
                 className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-white shadow-[0_8px_20px_rgba(16,185,129,0.28)] transition-all hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] whitespace-nowrap"

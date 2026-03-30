@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Bot, Send, Lightbulb, AlertTriangle, Briefcase, Clock, CreditCard, MessageSquare } from 'lucide-react';
+import { Loader2, Bot, Send, Briefcase, Clock, CreditCard, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSession } from '@/contexts/SessionContext';

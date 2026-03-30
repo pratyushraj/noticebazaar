@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Loader2, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchInstagramStats, fetchYouTubeStats, fetchTikTokStats, fetchTwitterStats, fetchFacebookStats } from '@/lib/utils/socialStats';
 import { supabase } from '@/integrations/supabase/client';

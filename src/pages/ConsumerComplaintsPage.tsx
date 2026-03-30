@@ -2,22 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ShoppingBag, 
-  UtensilsCrossed, 
-  Plane, 
-  Phone, 
-  Wallet, 
-  MoreHorizontal,
-  Shield,
-  ArrowRight,
-  Car,
-  Wrench,
-  Heart,
-  Hotel,
-  HelpCircle,
-  ArrowLeft
-} from 'lucide-react';
+import { ShoppingBag, UtensilsCrossed, Plane, Phone, Wallet, MoreHorizontal, Shield, ArrowRight, Car, Wrench, Heart, HelpCircle, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/contexts/SessionContext';
@@ -178,7 +163,7 @@ const ConsumerComplaintsPage: React.FC = () => {
             {categories.map((category) => {
               const Icon = category.icon;
               return (
-              <button
+              <button type="button"
                   key={category.id}
                 onClick={() => handleRaiseComplaint(category.id, category.name)}
                 className="w-full p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-left group"
@@ -220,7 +205,7 @@ const ConsumerComplaintsPage: React.FC = () => {
         {/* Sticky Bottom CTA */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-purple-900 via-purple-800 to-transparent border-t border-purple-500/20">
           <div className="max-w-2xl mx-auto">
-            <button
+            <button type="button"
               onClick={() => navigate('/consumer-complaints/how-it-works')}
               className="w-full p-4 rounded-xl bg-white/10 border border-white/20 hover:bg-white/15 text-white font-medium flex items-center justify-center gap-2 transition-all"
             >

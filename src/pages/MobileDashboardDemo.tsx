@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-    User, Search, ShieldCheck, Handshake, Camera, Plus,
-    LayoutDashboard, CreditCard, Briefcase, Menu, Clapperboard, Instagram,
-    Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock,
-    Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail,
-    MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages, Briefcase as BriefcaseIcon
-} from 'lucide-react';
+import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -310,7 +304,7 @@ const SectionHeader = ({ title, isDark }: any) => (
 );
 
 const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
-    <button
+    <button type="button"
         onClick={(e) => { e.stopPropagation(); onToggle(); }}
         className={cn(
             "w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out",
@@ -1499,7 +1493,7 @@ const MobileDashboardDemo = ({
                     {isSvg && (
                         <div className={cn("absolute inset-0 z-0", isDark ? "bg-white/90" : "bg-white")} />
                     )}
-                    <img
+                    <img alt=""
                         src={safeLogo}
                         className="w-full h-full object-contain absolute inset-0 z-10 p-1"
                         loading="lazy"
@@ -1607,7 +1601,7 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Profile'}
                                 </button>
                             </div>
@@ -1626,8 +1620,8 @@ const MobileDashboardDemo = ({
                                 <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
                                 <p className={cn("text-[13px] opacity-40 mb-6", textColor)}>Your public intake storefront</p>
                                 <div className="flex gap-3">
-                                    <button onClick={handleCopyStorefront} className="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
-                                    <button onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>Preview</button>
+                                    <button type="button" onClick={handleCopyStorefront} className="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
+                                    <button type="button" onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>Preview</button>
                                 </div>
                             </div>
                             <SectionHeader title="Storefront Controls" isDark={isDark} />
@@ -1682,7 +1676,7 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Payout Details'}
                                 </button>
                             </div>
@@ -1763,7 +1757,7 @@ const MobileDashboardDemo = ({
                                 </div>
                                 <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
                                 <div className="grid grid-cols-2 gap-2 mt-4">
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             const link = `${window.location.origin}/${username}`;
                                             navigator.clipboard.writeText(link);
@@ -1774,7 +1768,7 @@ const MobileDashboardDemo = ({
                                     >
                                         Copy Link
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             triggerHaptic();
                                             window.open(`/${username}`, '_blank');
@@ -1783,7 +1777,7 @@ const MobileDashboardDemo = ({
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" /> Preview
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             const link = `${window.location.origin}/${username}`;
                                             const message = encodeURIComponent(`For collaborations, submit here:\n\n${link}`);
@@ -1794,7 +1788,7 @@ const MobileDashboardDemo = ({
                                     >
                                         <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             const link = `${window.location.origin}/${username}`;
                                             navigator.clipboard.writeText(link);
@@ -1842,7 +1836,7 @@ const MobileDashboardDemo = ({
                                         Let AI analyze your bio and historical rates to boost brand appeal.
                                     </p>
                                     <div className="flex flex-wrap gap-2.5">
-                                        <button 
+                                        <button type="button" 
                                             onClick={() => {
                                                 triggerHaptic();
                                                 toast.promise(new Promise(r => setTimeout(r, 1500)), {
@@ -1855,7 +1849,7 @@ const MobileDashboardDemo = ({
                                         >
                                             Enhance Bio
                                         </button>
-                                        <button 
+                                        <button type="button" 
                                             onClick={() => {
                                                 triggerHaptic();
                                                 toast.promise(new Promise(r => setTimeout(r, 2000)), {
@@ -1888,7 +1882,7 @@ const MobileDashboardDemo = ({
                                     { key: 'standard', title: 'Professional', range: '₹10k - ₹50k', sub: 'Mainstream brands, partial cash upfront' },
                                     { key: 'premium', title: 'High-Value', range: '₹50k - ₹2L+', sub: 'Luxury / Corporate campaigns only' },
                                 ].map((tier) => (
-                                    <button
+                                    <button type="button"
                                         key={tier.key}
                                         onClick={() => setProfileFormData((p: any) => ({ ...p, typical_deal_size: tier.key }))}
                                         className={cn(
@@ -1910,7 +1904,7 @@ const MobileDashboardDemo = ({
                             <SectionHeader title="Collaboration Type" isDark={isDark} />
                             <div className="flex gap-2">
                                 {['Paid', 'Barter', 'Hybrid'].map((type) => (
-                                    <button
+                                    <button type="button"
                                         key={type}
                                         onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
                                         className={cn(
@@ -1936,7 +1930,7 @@ const MobileDashboardDemo = ({
                                                     {niche}
                                                 </div>
                                             ))}
-                                            <button className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-white/20 text-white/40" : "border-black/10 text-black/40")}>
+                                            <button type="button" className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-white/20 text-white/40" : "border-black/10 text-black/40")}>
                                                 + ADD
                                             </button>
                                         </div>
@@ -2212,7 +2206,7 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
 
-                                <button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save All Collab Settings'}
                                 </button>
                         {/* Analytics Grid */}
@@ -2363,7 +2357,7 @@ const MobileDashboardDemo = ({
                                 ))}
                             </div>
 
-                            <button className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
+                            <button type="button" className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
                                 <Zap className="w-4 h-4 fill-white" /> Upgrade To Growth Pro
                             </button>
                         </div>
@@ -2442,7 +2436,7 @@ const MobileDashboardDemo = ({
                                     }
                                 />
                                 {isPushSubscribed && (
-                                    <button
+                                    <button type="button"
                                         onClick={async () => {
                                             triggerHaptic();
                                             const res = await sendTestPush();
@@ -2475,7 +2469,7 @@ const MobileDashboardDemo = ({
                                         </p>
                                     )}
                                 </div>
-                                <button
+                                <button type="button"
                                     type="button"
                                     onClick={async () => {
                                         triggerHaptic();
@@ -2513,7 +2507,7 @@ const MobileDashboardDemo = ({
                         </div>
                         <h3 className={cn("text-xl font-bold mb-2", textColor)}>Refining Module</h3>
                         <p className={cn("opacity-40 text-sm leading-relaxed mb-8", textColor)}>We're fine-tuning this control center for your creator business.</p>
-                        <button
+                        <button type="button"
                             onClick={() => setActiveSettingsPage(null)}
                             className="bg-blue-600 text-white font-black px-10 py-4 rounded-2xl active:scale-95 transition-all text-[13px] uppercase tracking-widest"
                         >
@@ -2607,7 +2601,7 @@ const MobileDashboardDemo = ({
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">
                                     {/* Left: Sidebar Menu */}
-                                    <button onClick={() => handleAction('menu')} className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
+                                    <button type="button" onClick={() => handleAction('menu')} className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
                                         <Menu className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
 
@@ -2645,7 +2639,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
 
                                         {/* Bell */}
-                                        <button onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
+                                        <button type="button" onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
                                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white" style={{ borderColor: bgColor }}>
@@ -2655,7 +2649,7 @@ const MobileDashboardDemo = ({
                                         </button>
 
                                         {/* Avatar */}
-                                        <button onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
+                                        <button type="button" onClick={() => setActiveTab('profile')} className={cn("w-8 h-8 rounded-full border overflow-hidden transition-all active:scale-95", borderColor)}>
                                             <img
                                                 src={avatarUrl}
                                                 alt="avatar"
@@ -2700,7 +2694,7 @@ const MobileDashboardDemo = ({
                                                     Get instant notifications when a brand sends you a collaboration request.
                                                 </p>
                                                 <div className="mt-4 flex gap-2">
-                                                    <button
+                                                    <button type="button"
                                                         type="button"
                                                         onClick={async () => {
                                                             triggerHaptic();
@@ -2720,7 +2714,7 @@ const MobileDashboardDemo = ({
                                                     >
                                                         Enable
                                                     </button>
-                                                    <button
+                                                    <button type="button"
                                                         type="button"
                                                         onClick={() => {
                                                             triggerHaptic();
@@ -2782,7 +2776,7 @@ const MobileDashboardDemo = ({
                                                 </div>
 
                                                 <div className="flex gap-2">
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => {
                                                             handleCopyStorefront();
                                                         }}
@@ -2795,7 +2789,7 @@ const MobileDashboardDemo = ({
                                                     >
                                                         {isCollabLinkCopied ? 'Copied' : 'Copy Link'}
                                                     </button>
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => window.open(`/${profile?.handle || username || 'creator'}`, '_blank')}
                                                         className={cn("flex-1 h-12 rounded-2xl flex items-center justify-center border font-bold text-[12px] active:scale-95 transition-all whitespace-nowrap", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700")}
                                                     >
@@ -2928,7 +2922,7 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             <div className="flex gap-2.5">
-                                                <button
+                                                <button type="button"
                                                     onClick={handleCopyStorefront}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
@@ -2938,7 +2932,7 @@ const MobileDashboardDemo = ({
                                                     <Copy className="w-4 h-4 mb-2 opacity-60" />
                                                     <span className={cn("text-[11px] font-bold font-outfit", textColor)}>Copy Bio Link</span>
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     onClick={handleCopyDMReply}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
@@ -3239,7 +3233,7 @@ const MobileDashboardDemo = ({
 
                                                                 {/* Row 3: Action buttons */}
                                                                 <div className="flex gap-2">
-                                                                    <button
+                                                                    <button type="button"
                                                                         onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType(req.isConfirmedDeal ? 'deal' : 'offer'); }}
                                                                         className={cn(
                                                                             "flex-1 h-11 rounded-xl font-semibold text-[12px] border transition-all active:scale-[0.96]",
@@ -3251,7 +3245,7 @@ const MobileDashboardDemo = ({
                                                                         Details
                                                                     </button>
                                                                     {!req.isConfirmedDeal && (
-                                                                        <button
+                                                                        <button type="button"
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
                                                                                 if (req.isDemo) {
@@ -3299,7 +3293,7 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-white/10" : "bg-white/80 backdrop-blur-xl border-b border-slate-100"
                             )}>
                                 <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             triggerHaptic();
                                             setCollabSubTab('pending');
@@ -3318,7 +3312,7 @@ const MobileDashboardDemo = ({
                                     >
                                         Action required ({actionRequiredTotalCount})
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             triggerHaptic();
                                             setCollabSubTab('active');
@@ -3337,7 +3331,7 @@ const MobileDashboardDemo = ({
                                     >
                                         Active ({activeDealsCount})
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             triggerHaptic();
                                             setCollabSubTab('completed');
@@ -3473,7 +3467,7 @@ const MobileDashboardDemo = ({
                                                                     };
 
                                                                     return (
-                                                                        <button
+                                                                        <button type="button"
                                                                             key={it.label}
                                                                             type="button"
                                                                             onClick={(e) => {
@@ -3603,7 +3597,7 @@ const MobileDashboardDemo = ({
                                                                             </span>
                                                                         </div>
 
-	                                                                        <button
+	                                                                        <button type="button"
 	                                                                            type="button"
 	                                                                            onPointerDown={(e) => e.stopPropagation()}
 	                                                                            onClick={(e) => {
@@ -3694,7 +3688,7 @@ const MobileDashboardDemo = ({
                                                             <div className={cn("text-[11px] font-semibold", isDark ? "text-emerald-300" : "text-emerald-700")}>
                                                                 ✅ Completed
                                                             </div>
-                                                            <button
+                                                            <button type="button"
                                                                 type="button"
                                                                 onPointerDown={(e) => e.stopPropagation()}
                                                                 onClick={(e) => {
@@ -3786,7 +3780,7 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                             </div>
 
-                                                            <button
+                                                            <button type="button"
                                                                 type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -3923,7 +3917,7 @@ const MobileDashboardDemo = ({
                                                             </div>
 
                                                             <div className="space-y-3">
-                                                                <button
+                                                                <button type="button"
                                                                     type="button"
                                                                     onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
                                                                     className="h-11 w-full bg-blue-600 text-white rounded-[16px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
@@ -3933,7 +3927,7 @@ const MobileDashboardDemo = ({
                                                                 </button>
 
                                                                 <div className="flex items-center justify-between">
-                                                                    <button
+                                                                    <button type="button"
                                                                         type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -3946,7 +3940,7 @@ const MobileDashboardDemo = ({
                                                                     >
                                                                         Counter
                                                                     </button>
-                                                                    <button
+                                                                    <button type="button"
                                                                         type="button"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -4021,7 +4015,7 @@ const MobileDashboardDemo = ({
                                                                 }}
                                                             />
                                                         </div>
-                                                        <button className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                                                        <button type="button" className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                                                             <Camera className="w-3.5 h-3.5 text-white" />
                                                         </button>
                                                     </div>
@@ -4151,7 +4145,7 @@ const MobileDashboardDemo = ({
                                     <h1 className={cn("text-2xl font-black tracking-tight", textColor)}>Payments</h1>
                                     <p className={cn("text-[11px] font-medium opacity-60", textColor)}>Track pending payments and completed payouts</p>
                                 </div>
-                                <button className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
+                                <button type="button" className={cn("p-2.5 rounded-xl border flex items-center justify-center", cardBgColor, borderColor)}>
                                     <Download className={cn("w-5 h-5", secondaryTextColor)} />
                                 </button>
                             </div>
@@ -4343,7 +4337,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 mb-6">
-                                        <button
+                                        <button type="button"
                                             onClick={() => {
                                                 handleShareStorefront();
                                                 setShowActionSheet(false);
@@ -4364,7 +4358,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         </button>
 
-                                        <button
+                                        <button type="button"
                                             onClick={() => {
                                                 handleCopyStorefront();
                                                 setShowActionSheet(false);
@@ -4375,7 +4369,7 @@ const MobileDashboardDemo = ({
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
                                         </button>
 
-                                        <button
+                                        <button type="button"
                                             onClick={() => { setShowActionSheet(false); window.open(`/${username}`, '_blank'); }}
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
@@ -4383,7 +4377,7 @@ const MobileDashboardDemo = ({
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>See what brands see before you share it</p>
                                         </button>
 
-                                        <button
+                                        <button type="button"
                                             onClick={() => { setShowActionSheet(false); setActiveTab('collabs'); setCollabSubTab('pending'); }}
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
@@ -4462,7 +4456,7 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#061318]/70 backdrop-blur-xl border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
                             )}>
                                 <div className="flex items-center gap-3">
-                                    <button
+                                    <button type="button"
                                         onClick={closeItemDetail}
                                         className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                     >
@@ -4477,7 +4471,7 @@ const MobileDashboardDemo = ({
                                         </p>
                                     </div>
                                 </div>
-                                <button
+                                <button type="button"
                                     onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
                                     className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
                                 >
@@ -4595,7 +4589,7 @@ const MobileDashboardDemo = ({
                                     layout
                                 >
                                     {/* Collapsed trigger */}
-                                    <button
+                                    <button type="button"
                                         onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
                                         className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity"
                                     >
@@ -4824,7 +4818,7 @@ const MobileDashboardDemo = ({
 
                                             {selectedShippingStatus === 'shipped' && (
                                                 <div className="grid grid-cols-1 gap-2.5">
-                                                    <button
+                                                    <button type="button"
                                                         onClick={confirmSelectedProductReceived}
                                                         disabled={isConfirmingReceived}
                                                         className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-white font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
@@ -4832,7 +4826,7 @@ const MobileDashboardDemo = ({
                                                         {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                                         Confirm Product Received
                                                     </button>
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => {
                                                             triggerHaptic();
                                                             setShowReportIssueModal(true);
@@ -4979,7 +4973,7 @@ const MobileDashboardDemo = ({
                                                     </div>
 
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => { triggerHaptic(); openDealContractReview(selectedItem); }}
                                                             className={cn(
                                                                 "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
@@ -4988,7 +4982,7 @@ const MobileDashboardDemo = ({
                                                         >
                                                             Open Contract
                                                         </button>
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => { triggerHaptic(); copySelectedItemLink(); }}
                                                             className={cn(
                                                                 "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
@@ -5150,7 +5144,7 @@ const MobileDashboardDemo = ({
 
                                     {selectedType === 'offer' && (
                                         <div className="flex flex-col gap-2.5 mt-3 pt-3">
-                                            <button
+                                            <button type="button"
                                                 onClick={() => {
                                                     triggerHaptic();
                                                     if (selectedItem.isDemo) {
@@ -5167,7 +5161,7 @@ const MobileDashboardDemo = ({
                                             </button>
                                             
                                             <div className="flex gap-2.5">
-                                                <button
+                                                <button type="button"
                                                     onClick={() => {
                                                         triggerHaptic();
                                                         if (selectedItem.isDemo) {
@@ -5181,7 +5175,7 @@ const MobileDashboardDemo = ({
                                                     <Edit3 className="w-3.5 h-3.5 opacity-50 text-slate-400" /> 
                                                     <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-white" : "text-slate-600")}>Suggest New Price</span>
                                                 </button>
-                                                <button
+                                                <button type="button"
                                                     onClick={() => {
                                                         triggerHaptic();
                                                         if (selectedItem.isDemo) {
@@ -5242,7 +5236,7 @@ const MobileDashboardDemo = ({
                                                 </div>
 
                                                 <div className={cn("rounded-2xl border overflow-hidden", borderColor)}>
-                                                    <button
+                                                    <button type="button"
                                                         onClick={async () => { triggerHaptic(); await copySelectedItemLink(); setShowItemMenu(false); }}
                                                         className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                                     >
@@ -5258,7 +5252,7 @@ const MobileDashboardDemo = ({
                                                         <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
                                                     </button>
                                                     <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
-                                                    <button
+                                                    <button type="button"
                                                         onClick={async () => { triggerHaptic(); await shareSelectedItemLink(); setShowItemMenu(false); }}
                                                         className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                                     >
@@ -5282,7 +5276,7 @@ const MobileDashboardDemo = ({
 
                                                         return (
                                                             <>
-                                                                <button
+                                                                <button type="button"
                                                                     onClick={() => {
                                                                         triggerHaptic();
                                                                         setShowItemMenu(false);
@@ -5306,7 +5300,7 @@ const MobileDashboardDemo = ({
                                                         );
                                                     })()}
 
-                                                    <button
+                                                    <button type="button"
                                                         onClick={() => {
                                                             triggerHaptic();
                                                             const path = getSelectedItemUrl();
@@ -5412,7 +5406,7 @@ const MobileDashboardDemo = ({
 		                                Content Status (Required)
 		                            </label>
 		                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-		                                <button
+		                                <button type="button"
 		                                    type="button"
 		                                    onClick={() => setDeliverContentStatusDraft('draft')}
 		                                    className={cn(
@@ -5428,7 +5422,7 @@ const MobileDashboardDemo = ({
 		                                        Not posted yet
 		                                    </span>
 		                                </button>
-		                                <button
+		                                <button type="button"
 		                                    type="button"
 		                                    onClick={() => setDeliverContentStatusDraft('posted')}
 		                                    className={cn(
@@ -5498,7 +5492,7 @@ const MobileDashboardDemo = ({
                         isDark ? "bg-[#0B0F14]/92 border-white/10" : "bg-white/92 border-slate-200"
                     )}>
                         <div className="grid grid-cols-2 gap-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     triggerHaptic();
                                     setShowDeliverContentModal(false);
@@ -5511,7 +5505,7 @@ const MobileDashboardDemo = ({
                             >
                                 Cancel
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={submitDealContent}
                                 disabled={isSubmittingContent}
                                 className={cn(
@@ -5560,7 +5554,7 @@ const MobileDashboardDemo = ({
                             )}
                         />
                         <div className="grid grid-cols-2 gap-2.5">
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     setShowReportIssueModal(false);
                                     setReportIssueReason('');
@@ -5569,7 +5563,7 @@ const MobileDashboardDemo = ({
                             >
                                 Cancel
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={reportSelectedShippingIssue}
                                 disabled={isReportingIssue || !reportIssueReason.trim()}
                                 className="h-12 rounded-2xl bg-rose-600 text-white text-[14px] font-black transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
@@ -5650,7 +5644,7 @@ const MobileDashboardDemo = ({
                                     />
                                     <div className="flex items-center justify-between px-1">
                                         <p className="text-[11px] font-bold opacity-40 italic">Exp. in 10 minutes</p>
-                                        <button
+                                        <button type="button"
                                             onClick={() => {
                                                 setCreatorSigningStep('send');
                                                 setCreatorOTP('');
@@ -5716,14 +5710,14 @@ const MobileDashboardDemo = ({
                         </div>
 
                         <div className="flex gap-2">
-                            <button
+                            <button type="button"
                                 type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
                                 className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-3 transition-colors"
                             >
                                 Got it
                             </button>
-                            <button
+                            <button type="button"
                                 type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
                                 className="rounded-xl border border-white/20 text-white/85 hover:text-white hover:bg-white/10 text-sm px-4 py-3 transition-colors"
@@ -5772,7 +5766,7 @@ const MobileDashboardDemo = ({
                                 isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-100"
                             )}>
                                 <div className="flex items-center gap-3">
-                                    <button
+                                    <button type="button"
                                         onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
                                         className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
                                     >
@@ -5908,7 +5902,7 @@ const MobileDashboardDemo = ({
                                             <p className={cn("text-[11px] font-semibold", isDark ? "text-emerald-400/60" : "text-emerald-700/70")}>Content Rights Agreement</p>
                                         </div>
                                     </div>
-                                    <button
+                                    <button type="button"
                                         onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
                                         className={cn(
                                             "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",

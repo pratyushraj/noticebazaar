@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Eye, Download, IndianRupee, Calendar, Loader2, Copy, Wrench, Send, FileCheck, X, Wand2, Lock, Info, MessageSquare, Mail, ChevronDown, ChevronUp, TrendingUp, DollarSign, FileCode, Ban, AlertCircle, ArrowDown, Clock, Star, Heart, Zap, CreditCard, Building2, Gift, Package, Edit, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Download, IndianRupee, Loader2, Copy, Send, FileCheck, X, Wand2, Info, MessageSquare, Mail, ChevronDown, ChevronUp, DollarSign, FileCode, Ban, AlertCircle, Clock, Zap, Building2, Edit, Share2, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -390,7 +390,7 @@ const ContractUploadFlow = () => {
     // Fallback to WhatsApp URL (works but may not show contact picker on all devices)
     const encodedText = encodeURIComponent(shareMessage);
     // Use wa.me which works better than api.whatsapp.com
-    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank', 'noopener,noreferrer');
   };
 
   // Share via Instagram (opens Instagram DM - user needs to paste link)
@@ -483,7 +483,7 @@ const ContractUploadFlow = () => {
       });
       // Try to open Instagram app or web
       setTimeout(() => {
-        window.open('https://www.instagram.com/direct/inbox/', '_blank');
+        window.open('https://www.instagram.com/direct/inbox/', '_blank', 'noopener,noreferrer');
       }, 500);
     } else {
       toast.error('Failed to copy message. Please copy it manually.');
@@ -2736,7 +2736,7 @@ ${creatorName}`;
         {/* Header */}
         <div className="flex-shrink-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 mb-4">
           <div className="flex items-center justify-between py-4">
-            <button
+            <button type="button"
               onClick={() => {
                 if (step === 'results') {
                   setStep('upload');
@@ -2774,7 +2774,7 @@ ${creatorName}`;
               {/* Option Selection Cards */}
               <div className="space-y-4 mb-8">
                 {/* Card A: Upload Contract */}
-                <button
+                <button type="button"
                   onClick={() => {
                     setSelectedOption('upload');
                     setDealType('contract');
@@ -2840,7 +2840,7 @@ ${creatorName}`;
                 </button>
 
                 {/* Card B: Request Details from Brand */}
-                <button
+                <button type="button"
                   onClick={() => {
                     setSelectedOption('request_details');
                     setDealType('contract');
@@ -2932,7 +2932,7 @@ ${creatorName}`;
                 You can change this later
               </p>
 
-              <button
+              <button type="button"
                 onClick={() => {
                   if (!selectedOption) return;
 
@@ -2996,7 +2996,7 @@ ${creatorName}`;
                 <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
                 <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
 
-                <button
+                <button type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFileSelect();
@@ -3054,7 +3054,7 @@ ${creatorName}`;
                     <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
 
                     {!collaborationLink ? (
-                      <button
+                      <button type="button"
                         onClick={handleRequestDetailsClick}
                         disabled={isGeneratingLink}
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
@@ -3086,7 +3086,7 @@ ${creatorName}`;
                                   className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white/90 font-mono truncate focus:outline-none focus:ring-1 focus:ring-purple-500"
                                   onClick={(e) => (e.target as HTMLInputElement).select()}
                                 />
-                                <button
+                                <button type="button"
                                   onClick={handleCopyLink}
                                   className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
                                   title="Copy link"
@@ -3100,21 +3100,21 @@ ${creatorName}`;
 
                         {/* Share Buttons */}
                         <div className="flex flex-wrap gap-2">
-                          <button
+                          <button type="button"
                             onClick={handleShareEmail}
                             className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                           >
                             <Mail className="w-4 h-4" />
                             Email
                           </button>
-                          <button
+                          <button type="button"
                             onClick={handleShareWhatsApp}
                             className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                           >
                             <MessageCircle className="w-4 h-4" />
                             WhatsApp
                           </button>
-                          <button
+                          <button type="button"
                             onClick={handleShareInstagram}
                             className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                           >
@@ -3307,14 +3307,14 @@ ${creatorName}`;
                 <p className="text-white/70 mb-6">{uploadError || 'An error occurred during upload. Please try again.'}</p>
 
                 <div className="flex flex-col gap-3">
-                  <button
+                  <button type="button"
                     onClick={handleRetryUpload}
                     className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Upload className="w-5 h-5" />
                     Try Again
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setStep('upload');
                       setUploadError(null);
@@ -3327,7 +3327,7 @@ ${creatorName}`;
                   >
                     Choose Different File
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => navigate('/creator-dashboard')}
                     className="text-purple-300 hover:text-white text-sm transition-colors"
                   >
@@ -3350,14 +3350,14 @@ ${creatorName}`;
                 <p className="text-white/70 mb-6">{reviewError || 'An error occurred during contract review. Please try again.'}</p>
 
                 <div className="flex flex-col gap-3">
-                  <button
+                  <button type="button"
                     onClick={handleRetryReview}
                     className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-5 h-5" />
                     Retry Review
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setStep('upload');
                       setReviewError(null);
@@ -3370,7 +3370,7 @@ ${creatorName}`;
                   >
                     Upload New Contract
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => navigate('/creator-dashboard')}
                     className="text-purple-300 hover:text-white text-sm transition-colors"
                   >
@@ -3393,7 +3393,7 @@ ${creatorName}`;
                 <p className="text-white/70 mb-6 whitespace-pre-line">{validationError || 'This document does not appear to be a brand deal contract.'}</p>
 
                 <div className="flex flex-col gap-3">
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setStep('upload');
                       setValidationError(null);
@@ -3409,7 +3409,7 @@ ${creatorName}`;
                     <Upload className="w-5 h-5" />
                     Choose Different File
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => navigate('/creator-dashboard')}
                     className="text-purple-300 hover:text-white text-sm transition-colors"
                   >
@@ -3748,7 +3748,7 @@ ${creatorName}`;
                   <div className="space-y-3 mt-4">
                     {/* 1. Key Terms */}
                     <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
-                      <button
+                      <button type="button"
                         onClick={() => handleAccordionToggle('keyTerms')}
                         className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                       >
@@ -3835,7 +3835,7 @@ ${creatorName}`;
 
                     {/* 2. Protection Status */}
                     <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
-                      <button
+                      <button type="button"
                         onClick={() => handleAccordionToggle('protectionStatus')}
                         className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                       >
@@ -3886,7 +3886,7 @@ ${creatorName}`;
 
                     {/* 3. Negotiation Suggestions / Optional Improvements */}
                     <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
-                      <button
+                      <button type="button"
                         onClick={() => handleAccordionToggle('issues')}
                         className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                       >
@@ -4056,7 +4056,7 @@ ${creatorName}`;
 
                     {/* 3.5. Missing Clauses */}
                     <div className="bg-white/5 backdrop-blur-md rounded-xl border border-yellow-500/30 overflow-hidden">
-                      <button
+                      <button type="button"
                         onClick={() => handleAccordionToggle('missingClauses')}
                         className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                       >
@@ -4170,7 +4170,7 @@ ${creatorName}`;
 
                     {/* 4. Financial Breakdown */}
                     <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
-                      <button
+                      <button type="button"
                         onClick={() => handleAccordionToggle('financialBreakdown')}
                         className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                       >
@@ -4285,7 +4285,7 @@ ${creatorName}`;
 
                     {/* 6. What We Will Ask the Brand */}
                     <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 backdrop-blur-md rounded-xl border border-blue-500/30 overflow-hidden">
-                      <button
+                      <button type="button"
                         onClick={() => handleAccordionToggle('brandRequests')}
                         className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
                       >
@@ -5207,7 +5207,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                 {/* Old Issues Section - Removed */}
                 {false && analysisResults.issues.length > 0 && (
                   <div id="issues-section-old" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 md:p-8 border border-white/10 md:border-t shadow-lg">
-                    <button
+                    <button type="button"
                       onClick={() => setIsIssuesExpanded(!isIssuesExpanded)}
                       className="w-full flex items-center justify-between mb-4 hover:opacity-80 transition-opacity"
                     >
@@ -5509,7 +5509,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                             {config.label}
                                                           </span>
                                                         </div>
-                                                        <button
+                                                        <button type="button"
                                                           onClick={() => toggleFixExpansion(issue.id)}
                                                           className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mt-1"
                                                         >
@@ -5552,7 +5552,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                             ✅ Clause Generated
                                                           </div>
                                                           <div className="grid grid-cols-2 gap-3">
-                                                            <button
+                                                            <button type="button"
                                                               onClick={async () => {
                                                                 try {
                                                                   const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
@@ -5572,7 +5572,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                               <Copy className="w-4 h-4" />
                                                               Copy
                                                             </button>
-                                                            <button
+                                                            <button type="button"
                                                               onClick={() => handleMarkAsResolved(issue.id)}
                                                               className="bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center"
                                                             >
@@ -5715,7 +5715,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                       </p>
 
                                                       {/* Tap to View Details Link */}
-                                                      <button
+                                                      <button type="button"
                                                         onClick={() => toggleFixExpansion(issue.id)}
                                                         className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mb-3"
                                                       >
@@ -5776,7 +5776,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                         ✅ Clause Generated
                                                       </div>
                                                       <div className="flex gap-2">
-                                                        <button
+                                                        <button type="button"
                                                           onClick={async () => {
                                                             try {
                                                               const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
@@ -5796,7 +5796,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                           <Copy className="w-4 h-4" />
                                                           Copy Clause
                                                         </button>
-                                                        <button
+                                                        <button type="button"
                                                           onClick={() => handleMarkAsResolved(issue.id)}
                                                           className="flex-1 bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center justify-center"
                                                         >
@@ -6210,7 +6210,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                           {/* Auto Actions */}
                           {brandApprovalStatus === 'approved' && (
-                            <button
+                            <button type="button"
                               onClick={async () => {
                                 // Auto-move to Active Deals
                                 const creatorId = profile?.id || session?.user?.id;
@@ -6258,7 +6258,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                             <div className="text-xs text-white/60">
                               Sent {new Date(approvalStatusUpdatedAt).toLocaleDateString()} •
                               {Math.floor((Date.now() - approvalStatusUpdatedAt.getTime()) / (1000 * 60 * 60)) > 48 && (
-                                <button
+                                <button type="button"
                                   onClick={() => {
                                     toast.info('Reminder sent to brand');
                                   }}
@@ -6271,7 +6271,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           )}
 
                           {brandApprovalStatus === 'rejected' && (
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 setShowNegotiationModal(true);
                                 toast.info('Try renegotiation with revised terms');
@@ -6434,7 +6434,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-6">
                             <h3 className="text-2xl font-bold">Auto-Generated Safe Clause</h3>
-                            <button
+                            <button type="button"
                               onClick={() => {
                                 setSelectedIssueForClause(null);
                                 setGeneratedClause(null);
@@ -6468,7 +6468,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           </div>
 
                           {/* Copy Button */}
-                          <button
+                          <button type="button"
                             onClick={async () => {
                               try {
                                 const isSecureContext = typeof window !== 'undefined' && (window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost');
@@ -6655,7 +6655,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               placeholder="brand@example.com"
                               className="flex-1 px-4 py-2 bg-white/10 border border-purple-400/30 rounded-lg text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
-                            <button
+                            <button type="button"
                               onClick={() => handleSendEmail(brandEmail)}
                               disabled={isSendingEmail || !brandEmail}
                               className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
@@ -6672,7 +6672,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       )}
 
                       {/* Close Button */}
-                      <button
+                      <button type="button"
                         onClick={() => {
                           setShowNegotiationModal(false);
                           setBrandEmail('');
@@ -6765,7 +6765,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           const whatsappMessage = await createWhatsAppMessage(fullMessage);
                           const encodedMessage = encodeURIComponent(whatsappMessage);
                           const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-                          window.open(whatsappUrl, '_blank');
+                          window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
                           toast.success('Opening WhatsApp...');
                           setShowWhatsAppPreview(false);
                         }}

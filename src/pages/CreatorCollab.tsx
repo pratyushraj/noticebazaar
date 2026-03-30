@@ -42,7 +42,7 @@ const CreatorCollab = () => {
 
         {/* Top Navigation Tabs */}
         <div className="flex bg-white/5 p-1 rounded-xl mb-4 md:mb-6 shadow-sm border border-white/10">
-          <button
+          <button type="button"
             onClick={() => {
               triggerHaptic(HapticPatterns.light);
               setActiveTab('requests');
@@ -54,7 +54,7 @@ const CreatorCollab = () => {
           >
             Brand Requests
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               triggerHaptic(HapticPatterns.light);
               setActiveTab('link');

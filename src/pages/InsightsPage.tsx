@@ -5,19 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  TrendingUp,
-  BarChart3,
-  Target,
-  LineChart,
-  Calendar,
-  Award,
-  ArrowLeft,
-  Sparkles,
-  Briefcase,
-  Settings,
-  Instagram,
-} from 'lucide-react';
+import { TrendingUp, BarChart3, Target, LineChart, Calendar, Award, ArrowLeft, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';

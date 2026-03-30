@@ -62,7 +62,7 @@ export const OverduePaymentCard: React.FC<OverduePaymentCardProps> = ({
             </div>
           </div>
 
-          <button
+          <button type="button"
             onClick={onSendReminder}
             className="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 text-white font-semibold rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-red-500/20"
           >

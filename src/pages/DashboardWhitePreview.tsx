@@ -27,7 +27,7 @@ export default function DashboardWhitePreview() {
               <CardTitle className="text-[15px] font-semibold text-gray-900 tracking-tight">
                 This Month's Earnings
               </CardTitle>
-              <button className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors font-medium active:scale-[0.97] flex items-center gap-1">
+              <button type="button" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors font-medium active:scale-[0.97] flex items-center gap-1">
                 View Breakdown
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -76,7 +76,7 @@ export default function DashboardWhitePreview() {
                   1
                 </span>
               </CardTitle>
-              <button className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors font-medium active:scale-[0.97]">
+              <button type="button" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors font-medium active:scale-[0.97]">
                 View All
               </button>
             </div>
@@ -111,10 +111,10 @@ export default function DashboardWhitePreview() {
                 </p>
               </div>
               <div className="space-y-2 pt-1">
-                <button className="w-full py-3 rounded-[12px] bg-gray-900 text-white font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150">
+                <button type="button" className="w-full py-3 rounded-[12px] bg-gray-900 text-white font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150">
                   Send Reminder
                 </button>
-                <button className="w-full py-3 rounded-[12px] bg-gray-100 text-gray-700 font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150 border border-gray-200">
+                <button type="button" className="w-full py-3 rounded-[12px] bg-gray-100 text-gray-700 font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150 border border-gray-200">
                   Escalate
                 </button>
               </div>
@@ -158,7 +158,7 @@ export default function DashboardWhitePreview() {
                 </div>
                 Coming Up
               </CardTitle>
-              <button className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors font-medium active:scale-[0.97]">
+              <button type="button" className="text-[13px] text-gray-600 hover:text-gray-900 transition-colors font-medium active:scale-[0.97]">
                 View Calendar →
               </button>
             </div>

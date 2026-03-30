@@ -133,7 +133,7 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
       {/* Actions */}
       <div className="flex gap-2 pt-4 border-t border-white/10">
         {onViewHistory && (
-          <button
+          <button type="button"
             onClick={onViewHistory}
             className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-white"
           >
@@ -142,7 +142,7 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
           </button>
         )}
         {onUpdateIssue && (
-          <button
+          <button type="button"
             onClick={onUpdateIssue}
             className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm"
           >

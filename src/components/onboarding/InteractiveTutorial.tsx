@@ -178,7 +178,7 @@ const InteractiveTutorial = ({ steps, storageKey = 'onboarding-tutorial', onComp
                   Step {currentStep + 1} of {steps.length}
                 </span>
               </div>
-              <button
+              <button type="button"
                 onClick={handleDismiss}
                 className="p-1 hover:bg-white/20 rounded-lg transition-colors"
                 aria-label="Dismiss tutorial"
@@ -191,7 +191,7 @@ const InteractiveTutorial = ({ steps, storageKey = 'onboarding-tutorial', onComp
             <p className="text-[15px] text-gray-600 mb-4 leading-relaxed">{step.description}</p>
 
             <div className="flex items-center justify-between gap-2">
-              <button
+              <button type="button"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-[15px] font-medium text-gray-700 transition-colors flex items-center gap-2"
@@ -199,7 +199,7 @@ const InteractiveTutorial = ({ steps, storageKey = 'onboarding-tutorial', onComp
                 <ArrowLeft className="w-4 h-4" />
                 Previous
               </button>
-              <button
+              <button type="button"
                 onClick={handleNext}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-[15px] font-semibold transition-all flex items-center gap-2"
               >

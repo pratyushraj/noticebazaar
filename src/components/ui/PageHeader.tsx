@@ -100,7 +100,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {/* Left: Back Button or Menu — safe padding, left-aligned */}
         <div className="flex items-center flex-shrink-0 min-w-0">
           {showBackButton && (
-            <button
+            <button type="button"
               onClick={handleBack}
               className={cn(
                 "flex items-center gap-1 text-white",
@@ -115,7 +115,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </button>
           )}
           {showMenuButton && !showBackButton && (
-            <button
+            <button type="button"
               onClick={handleMenuClick}
               className={cn(
                 premium ? "w-9 h-9 rounded-lg" : "p-2 rounded-lg",

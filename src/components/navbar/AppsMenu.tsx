@@ -182,7 +182,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
   return (
     <div className="relative">
       {/* Hamburger Menu Trigger Button */}
-      <button
+      <button type="button"
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10 transition-all duration-200 cursor-pointer active:scale-95"
@@ -292,7 +292,7 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
                       };
 
                       return (
-                        <button
+                        <button type="button"
                           key={item.path}
                           type="button"
                           onClick={(e) => {

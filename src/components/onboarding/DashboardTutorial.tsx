@@ -374,7 +374,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                 <h2 className="text-[22px] font-semibold leading-tight break-words flex-1 min-w-0">
                   {step.title}
                 </h2>
-                <button
+                <button type="button"
                   onClick={handleNext}
                   className="text-white/70 hover:text-white transition active:scale-95 flex-shrink-0 ml-2"
                   aria-label="Skip this step"
@@ -407,7 +407,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               {/* Buttons */}
               <div className="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
                 {currentStep > 0 ? (
-                  <button
+                  <button type="button"
                     onClick={handlePrevious}
                     className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-0.5 sm:gap-1 text-[13px] sm:text-[14px] active:scale-95 transition flex-shrink-0 min-w-0"
                   >
@@ -417,14 +417,14 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                   <div className="flex-shrink-0 w-0" />
                 )}
                 
-                <button
+                <button type="button"
                   onClick={handleNext}
                   className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center justify-center text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
                 >
                   Later
                 </button>
 
-                <button
+                <button type="button"
                   onClick={step.interactive ? handleInteractiveClick : handleNext}
                   className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center justify-center gap-1 sm:gap-1.5 text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
                 >

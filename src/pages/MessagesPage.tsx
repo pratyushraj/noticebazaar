@@ -1030,7 +1030,7 @@ function MessageBubbleScoped({
 
           {/* Failed message retry option */}
           {message.failed && isCurrentUser && onRetry && (
-            <button
+            <button type="button"
               onClick={() => onRetry(message.id)}
               className="ml-1 p-0.5 rounded hover:bg-white/10 transition-colors"
               aria-label="Retry sending message"

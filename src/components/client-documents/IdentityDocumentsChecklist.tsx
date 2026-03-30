@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, FileUp, CheckCircle, Clock, FileText, Lightbulb, XCircle, FileWarning, Badge as BadgeIcon } from 'lucide-react';
+import { Loader2, FileUp, CheckCircle, Clock, FileText, Lightbulb, XCircle, FileWarning } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Document, Category } from '@/types';
 

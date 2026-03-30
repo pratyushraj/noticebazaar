@@ -109,7 +109,7 @@ const SidebarItem: React.FC<{
   const showProBadge = isProFeature && isProUser;
 
   return (
-    <button
+    <button type="button"
       type="button"
       onClick={onClick}
       className={cn(

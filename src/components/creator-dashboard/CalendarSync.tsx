@@ -258,7 +258,7 @@ const CalendarSync: React.FC<CalendarSyncProps> = ({ brandDeals = [] }) => {
                   <TooltipProvider key={provider}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button
+                        <button type="button"
                           onClick={() => handleConnect(provider)}
                           disabled={syncState.status === 'connecting'}
                           className={cn(

@@ -146,7 +146,7 @@ const UpcomingDeadlines: React.FC<UpcomingDeadlinesProps> = ({ deadlines, isLoad
               </div>
               <CardTitle className="text-white">Coming Up</CardTitle>
             </div>
-            <button className="text-body text-[#F472B6] hover:text-[#FF8FAB] hover:bg-[#F472B6]/10 transition-fast font-medium active:scale-[0.97] focus-ring rounded-lg px-3 py-2">
+            <button type="button" className="text-body text-[#F472B6] hover:text-[#FF8FAB] hover:bg-[#F472B6]/10 transition-fast font-medium active:scale-[0.97] focus-ring rounded-lg px-3 py-2">
               View Calendar →
             </button>
           </div>

@@ -754,7 +754,7 @@ const BrandDealDetailsPage = () => {
             <p className="text-white/80 text-lg mb-6">
               Your details have been received. The contract is ready for you to review and sign.
             </p>
-            <button
+            <button type="button"
               onClick={async (e) => {
                 e.preventDefault();
                 // Verify the token exists before redirecting
@@ -852,7 +852,7 @@ const BrandDealDetailsPage = () => {
           <h2 className="text-xl font-semibold mb-2">Link Invalid</h2>
           <p className="text-white/70">{error}</p>
           {session?.access_token && (
-            <button
+            <button type="button"
               onClick={() => navigate('/brand-dashboard?tab=collabs')}
               className="mt-5 w-full h-11 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold transition-all"
             >
@@ -977,7 +977,7 @@ const BrandDealDetailsPage = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-white/70">Deliverable {index + 1}</span>
                     {formData.deliverables.length > 1 && (
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => handleRemoveDeliverable(index)}
                         className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
@@ -1046,7 +1046,7 @@ const BrandDealDetailsPage = () => {
                   </div>
                 </div>
               ))}
-              <button
+              <button type="button"
                 type="button"
                 onClick={handleAddDeliverable}
                 className="text-sm text-purple-300 hover:text-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1170,7 +1170,7 @@ const BrandDealDetailsPage = () => {
               Deal Type *
             </label>
             <div className="grid grid-cols-2 gap-3">
-              <button
+              <button type="button"
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, dealType: 'paid' }))}
                 className={cn(
@@ -1185,7 +1185,7 @@ const BrandDealDetailsPage = () => {
                 <IndianRupee className="w-5 h-5 mx-auto mb-1" />
                 Paid
               </button>
-              <button
+              <button type="button"
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, dealType: 'barter' }))}
                 className={cn(
@@ -1646,7 +1646,7 @@ const BrandDealDetailsPage = () => {
                     maxLength={15}
                     disabled={isFormUsed || isGstLookupLoading}
                   />
-                  <button
+                  <button type="button"
                     type="button"
                     onClick={handleGstLookup}
                     disabled={isFormUsed || isGstLookupLoading || !formData.companyGstin?.trim() || formData.companyGstin.trim().length !== 15}

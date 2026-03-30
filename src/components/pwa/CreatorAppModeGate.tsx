@@ -84,7 +84,7 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
         <p className="text-slate-600 mb-5">
           For the best creator experience, please use the installed web app instead of browser mode.
         </p>
-        <button
+        <button type="button"
           onClick={handleInstall}
           className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3.5 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
         >

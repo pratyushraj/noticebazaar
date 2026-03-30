@@ -40,7 +40,7 @@ const InfluencerRateCalculator = () => {
           </select>
         </div>
 
-        <button onClick={calculateRate} className="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">
+        <button type="button" onClick={calculateRate} className="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">
           Calculate Rate
         </button>
 

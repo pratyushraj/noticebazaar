@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Shield, AlertCircle, FileText, Clock } from 'lucide-react';
+import { ArrowLeft, Shield, AlertCircle, FileText } from 'lucide-react';
 
 const About = () => {
   return (

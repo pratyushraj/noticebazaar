@@ -95,7 +95,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
               <div className="relative mb-3">
                 {/* Close button - positioned absolutely */}
                 {!tip.persistent && (
-                  <button
+                  <button type="button"
                     onClick={() => onDismiss(true)}
                     className="absolute -top-1 -right-1 p-1 hover:bg-white/20 rounded-lg transition-colors"
                     aria-label="Dismiss tip"
@@ -135,7 +135,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
               {/* Actions */}
               <div className="flex gap-2">
                 {!tip.persistent && (
-                  <button
+                  <button type="button"
                     onClick={() => onDismiss(false)}
                     className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm font-medium py-2.5 px-4 rounded-xl transition-colors text-white text-sm"
                   >
@@ -143,7 +143,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
                   </button>
                 )}
                 {tip.action && (
-                  <button
+                  <button type="button"
                     onClick={() => onAction(tip.action!)}
                     className="flex-1 bg-white hover:bg-white/90 font-semibold py-2.5 px-4 rounded-xl transition-colors text-purple-600 text-sm flex items-center justify-center gap-2"
                   >

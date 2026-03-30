@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from '@/integrations/supabase/client';
-import { ShieldCheck, ArrowLeft, Sparkles, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Shield, TrendingUp, MessageCircle, Eye, EyeOff, Loader2, Link2 } from 'lucide-react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useEffect, useState } from 'react';
@@ -624,7 +624,7 @@ const Signup = () => {
                 {!showLogin && (
                   <div className="mb-6">
                     <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 w-full">
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => {
                           const next = new URLSearchParams(searchParams);
@@ -640,7 +640,7 @@ const Signup = () => {
                       >
                         Creator
                       </button>
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => {
                           const next = new URLSearchParams(searchParams);
@@ -697,7 +697,7 @@ const Signup = () => {
                       <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
                         Password
                       </Label>
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={handleForgotPassword}
                         className="text-[11px] font-black text-emerald-500 uppercase tracking-widest"
@@ -812,7 +812,7 @@ const Signup = () => {
                         autoComplete="new-password"
                         minLength={6}
                       />
-                      <button
+                      <button type="button"
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
@@ -873,7 +873,7 @@ const Signup = () => {
             </div>
 
             <div className="text-center pt-6 border-t border-slate-200">
-              <button
+              <button type="button"
                 onClick={() => setShowLogin(!showLogin)}
                 className="text-slate-600 hover:text-slate-900 font-medium text-[13px] transition-all group inline-flex items-center gap-2"
               >

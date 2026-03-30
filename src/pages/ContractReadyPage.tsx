@@ -889,7 +889,7 @@ const ContractReadyPage = () => {
                       <p className="text-base font-mono text-white/85">CA-{dealInfo?.id?.slice(0, 8).toUpperCase()}</p>
                     </div>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       copyToClipboard(`CA-${dealInfo?.id?.toUpperCase()}`);
@@ -929,7 +929,7 @@ const ContractReadyPage = () => {
               View Executed Agreement
             </motion.button>
 
-            <button
+            <button type="button"
               onClick={() => window.close()}
               className="text-white/55 text-base hover:text-white/80 transition-colors pt-1 block mx-auto"
             >
@@ -1281,7 +1281,7 @@ const ContractReadyPage = () => {
                 </span>
               </label>
 
-              <button
+              <button type="button"
                 onClick={handleSign}
                 disabled={isSigning || !isAuthorizedToSign}
                 className="w-full h-16 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:from-white/5 disabled:to-white/5 disabled:text-white/10 rounded-2xl text-white font-bold transition-all shadow-xl shadow-green-500/10 flex items-center justify-center gap-3 text-lg"
@@ -1336,7 +1336,7 @@ const ContractReadyPage = () => {
                       : 'N/A'}</p>
                   </div>
                 </div>
-                <button
+                <button type="button"
                   onClick={() => setShowSignatureDetails(true)}
                   className="mt-6 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-xs font-bold uppercase tracking-widest transition-all"
                 >
@@ -1388,7 +1388,7 @@ const ContractReadyPage = () => {
                 </div>
               </div>
 
-              <button
+              <button type="button"
                 onClick={sendOTP}
                 disabled={isSendingOTP || otpResendCooldown > 0}
                 className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:from-white/5 disabled:to-white/5 disabled:text-white/20 rounded-2xl text-white font-bold transition-all shadow-xl shadow-purple-500/10 flex items-center justify-center gap-2 group"
@@ -1455,7 +1455,7 @@ const ContractReadyPage = () => {
                   </div>
                   <h3 className="text-xl font-bold text-white tracking-tight">Security Code</h3>
                 </div>
-                <button
+                <button type="button"
                   onClick={() => setShowOTPModal(false)}
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:text-white transition-colors"
                 >
@@ -1490,7 +1490,7 @@ const ContractReadyPage = () => {
               </p>
 
               <div className="space-y-3">
-                <button
+                <button type="button"
                   onClick={verifyOTP}
                   disabled={isVerifyingOTP || otp.join('').length !== 6}
                   className="w-full h-14 bg-white text-black hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
@@ -1505,7 +1505,7 @@ const ContractReadyPage = () => {
                   )}
                 </button>
 
-                <button
+                <button type="button"
                   onClick={sendOTP}
                   disabled={isSendingOTP || otpResendCooldown > 0}
                   className="w-full py-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-purple-400 disabled:hover:text-white/30 transition-colors"
@@ -1534,7 +1534,7 @@ const ContractReadyPage = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-white">Acceptance Record</h3>
-                <button
+                <button type="button"
                   onClick={() => setShowSignatureDetails(false)}
                   className="text-white/60 hover:text-white"
                 >
@@ -1596,7 +1596,7 @@ const ContractReadyPage = () => {
               </div>
 
               <div className="mt-6 flex justify-end">
-                <button
+                <button type="button"
                   onClick={() => setShowSignatureDetails(false)}
                   className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-medium transition-all"
                 >
@@ -1617,7 +1617,7 @@ const ContractReadyPage = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-white">Request Edit</h3>
-                <button
+                <button type="button"
                   onClick={() => {
                     setShowRequestEditModal(false);
                     setRequestEditText('');
@@ -1641,7 +1641,7 @@ const ContractReadyPage = () => {
               />
 
               <div className="flex gap-2">
-                <button
+                <button type="button"
                   onClick={() => {
                     setShowRequestEditModal(false);
                     setRequestEditText('');
@@ -1650,7 +1650,7 @@ const ContractReadyPage = () => {
                 >
                   Cancel
                 </button>
-                <button
+                <button type="button"
                   onClick={handleRequestEdit}
                   disabled={isSubmitting || !requestEditText.trim()}
                   className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-all"

@@ -59,7 +59,7 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
             const Icon = goal.icon;
             const isSelected = selectedGoals.includes(goal.id);
             return (
-              <button
+              <button type="button"
                 key={goal.id}
                 onClick={() => onGoalToggle(goal.id)}
                 className={`w-full p-4 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${

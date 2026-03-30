@@ -418,7 +418,7 @@ const BrandSettings = () => {
 
       <header className={cn('sticky top-0 z-20 border-b backdrop-blur-xl', isDark ? 'bg-[#061318]/92 border-white/10' : 'bg-white/90 border-slate-100')}>
         <div className="w-full md:max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
-          <button
+          <button type="button"
             type="button"
             onClick={() => navigate('/brand-dashboard')}
             className={cn('w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
@@ -429,7 +429,7 @@ const BrandSettings = () => {
             <p className={cn('text-[10px] font-black uppercase tracking-[0.2em] opacity-40', textColor)}>Settings</p>
             <p className={cn('text-[16px] font-black tracking-tight', textColor)}>Business control</p>
           </div>
-          <button
+          <button type="button"
             type="button"
             onClick={handleLogout}
             className={cn('w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-700')}
@@ -451,7 +451,7 @@ const BrandSettings = () => {
                     {brandName.slice(0, 1).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <button
+                <button type="button"
                   type="button"
                   disabled={isUploadingLogo}
                   onClick={() => logoFileInputRef.current?.click()}
@@ -560,10 +560,10 @@ const BrandSettings = () => {
                 <Landmark className={cn('w-5 h-5', isDark ? 'text-emerald-200' : 'text-emerald-800')} />
               </div>
               <div className="grid grid-cols-2 gap-2 mt-3">
-                <button onClick={() => toast.message('Payment methods', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+                <button type="button" onClick={() => toast.message('Payment methods', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
                   Payment methods
                 </button>
-                <button onClick={() => toast.message('Invoices', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+                <button type="button" onClick={() => toast.message('Invoices', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
                   Invoice history
                 </button>
               </div>
@@ -576,7 +576,7 @@ const BrandSettings = () => {
           <div className="p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
               <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Team members</p>
-              <button onClick={() => toast.message('Invite member', { description: 'Team invites are coming next.' })} className={cn('px-3 py-2 rounded-2xl border text-[11px] font-black uppercase tracking-widest', isDark ? 'border-white/10 bg-white/5 text-white/80' : 'border-slate-200 bg-white text-slate-700')}>
+              <button type="button" onClick={() => toast.message('Invite member', { description: 'Team invites are coming next.' })} className={cn('px-3 py-2 rounded-2xl border text-[11px] font-black uppercase tracking-widest', isDark ? 'border-white/10 bg-white/5 text-white/80' : 'border-slate-200 bg-white text-slate-700')}>
                 Invite
               </button>
             </div>
@@ -606,7 +606,7 @@ const BrandSettings = () => {
         <div className={cn('rounded-[28px] border overflow-hidden', cardBorder, cardBg)}>
           <div className="p-5">
             <p className={cn('text-[12px] font-black uppercase tracking-[0.2em] opacity-50 mb-3', textColor)}>Preferences</p>
-            <button onClick={toggleTheme} className={cn('w-full p-4 rounded-2xl border flex items-center justify-between active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+            <button type="button" onClick={toggleTheme} className={cn('w-full p-4 rounded-2xl border flex items-center justify-between active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
               <div className="flex items-center gap-3">
                 <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-amber-500/15 text-amber-200' : 'bg-amber-500/10 text-amber-800')}>
                   {themeIcon}
@@ -653,10 +653,10 @@ const BrandSettings = () => {
               <ShieldCheck className={cn('w-6 h-6', isDark ? 'text-emerald-200' : 'text-emerald-800')} />
             </div>
             <div className="grid grid-cols-2 gap-2 mt-4">
-              <button onClick={() => navigate('/brand-dashboard?tab=collabs&subtab=active')} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+              <button type="button" onClick={() => navigate('/brand-dashboard?tab=collabs&subtab=active')} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
                 View active deals
               </button>
-              <button onClick={() => toast.message('Disputes', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
+              <button type="button" onClick={() => toast.message('Disputes', { description: 'Coming soon.' })} className={cn('h-12 rounded-2xl border text-[13px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-emerald-200 text-emerald-900')}>
                 Raise issue
               </button>
             </div>
@@ -673,7 +673,7 @@ const BrandSettings = () => {
                 { label: 'Pending', value: metrics.isLoading ? '—' : String(metrics.actionRequired), icon: <AlertTriangle className="w-4 h-4" /> },
                 { label: 'Completed', value: metrics.isLoading ? '—' : String(metrics.completedDeals), icon: <ShieldCheck className="w-4 h-4" /> },
               ].map((i) => (
-                <button key={i.label} type="button" onClick={() => navigate('/brand-dashboard?tab=collabs')} className={cn('p-3 rounded-2xl border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                <button type="button" key={i.label} type="button" onClick={() => navigate('/brand-dashboard?tab=collabs')} className={cn('p-3 rounded-2xl border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
                   <div className={cn('w-9 h-9 rounded-2xl flex items-center justify-center mb-2', isDark ? 'bg-white/5 text-white/70' : 'bg-slate-50 text-slate-700')}>
                     {i.icon}
                   </div>
@@ -686,7 +686,7 @@ const BrandSettings = () => {
         </div>
 
         {/* Advanced */}
-        <button type="button" onClick={() => setShowAdvanced((s) => !s)} className={cn('w-full p-4 rounded-[24px] border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
+        <button type="button" type="button" onClick={() => setShowAdvanced((s) => !s)} className={cn('w-full p-4 rounded-[24px] border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-white/5 text-white/70' : 'bg-slate-50 text-slate-700')}>
@@ -731,7 +731,7 @@ const BrandSettings = () => {
         )}
 
         <div className={cn('rounded-[24px] border p-4', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
-          <button onClick={handleLogout} className={cn('w-full h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.99]', isDark ? 'bg-rose-500/10 border-rose-300/30 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100')}>
+          <button type="button" onClick={handleLogout} className={cn('w-full h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.99]', isDark ? 'bg-rose-500/10 border-rose-300/30 text-rose-200 hover:bg-rose-500/15' : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100')}>
             Logout
           </button>
         </div>

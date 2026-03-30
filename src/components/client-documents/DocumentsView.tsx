@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Eye, File, Star, Plus, MoreVertical, FileText, FileUp, FileWarning, FileArchive, FileCode, FileImage, FileAudio, FileVideo, FolderOpen, ArrowLeft, Search, Filter, ArrowDownWideNarrow, ArrowUpWideNarrow, Tag, Settings, Briefcase, Handshake, Wallet, Badge as BadgeIcon, Home, Trash2, XCircle } from 'lucide-react';
+import { Loader2, Eye, File, Star, MoreVertical, FileText, FileUp, FileArchive, FileCode, FileImage, FileAudio, FileVideo, ArrowLeft, Search, Filter, ArrowDownWideNarrow, ArrowUpWideNarrow, Briefcase, Handshake, Wallet, Badge as BadgeIcon, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDocuments, useUpdateDocument } from '@/lib/hooks/useDocuments';
 import { usePagination } from '@/lib/hooks/usePagination';

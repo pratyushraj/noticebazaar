@@ -86,7 +86,7 @@ const TaskManager: React.FC = () => {
                 className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
                 onClick={() => toggleTask(task.id)}
               >
-                <button className="flex-shrink-0 mt-0.5">
+                <button type="button" className="flex-shrink-0 mt-0.5">
                   <Circle className="h-5 w-5 text-white/40 hover:text-white/60" />
                 </button>
                 <div className="flex-1 min-w-0">
@@ -106,7 +106,7 @@ const TaskManager: React.FC = () => {
                     className="flex items-start gap-3 p-3 rounded-xl opacity-60"
                     onClick={() => toggleTask(task.id)}
                   >
-                    <button className="flex-shrink-0 mt-0.5">
+                    <button type="button" className="flex-shrink-0 mt-0.5">
                       <CheckCircle2 className="h-5 w-5 text-green-400" />
                     </button>
                     <div className="flex-1 min-w-0">

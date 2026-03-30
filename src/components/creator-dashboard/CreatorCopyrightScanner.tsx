@@ -206,7 +206,7 @@ const CreatorCopyrightScanner: React.FC = () => {
                 const Icon = platform.icon;
                 const isSelected = selectedPlatforms.includes(platform.id);
                 return (
-                  <button
+                  <button type="button"
                     key={platform.id}
                     type="button"
                     onClick={() => togglePlatform(platform.id)}

@@ -5,24 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  FolderOpen,
-  FileText,
-  Upload,
-  Search,
-  Filter,
-  Tag,
-  Calendar,
-  Download,
-  Trash2,
-  Eye,
-  FileCheck,
-  Receipt,
-  Shield,
-  CreditCard,
-  ArrowLeft,
-  Plus,
-} from 'lucide-react';
+import { FolderOpen, FileText, Upload, Search, Filter, Tag, Calendar, Download, Eye, FileCheck, Receipt, Shield, CreditCard, ArrowLeft, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -428,7 +411,7 @@ const DocumentsVault: React.FC = () => {
                               className="h-8 w-8 p-0 hover:bg-white/10"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(doc.url, '_blank');
+                                window.open(doc.url, '_blank', 'noopener,noreferrer');
                               }}
                             >
                               <Eye className="w-4 h-4 text-white/70" />

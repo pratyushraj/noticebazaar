@@ -15,7 +15,7 @@ type Props = {
 
 export const AdvisorCard: React.FC<Props> = ({ advisor, selected, onClick }) => {
   return (
-    <button
+    <button type="button"
       onClick={() => onClick?.(advisor)}
       className={clsx(
         'w-full text-left rounded-xl p-3 flex items-center gap-3 transition-all duration-150 ease-in-out',

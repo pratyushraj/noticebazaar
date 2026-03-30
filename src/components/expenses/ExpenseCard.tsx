@@ -23,7 +23,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({ expense, onClick }) =>
   const handleReceiptClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (expense.receipt_file_url) {
-      window.open(expense.receipt_file_url, '_blank');
+      window.open(expense.receipt_file_url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -113,7 +113,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({ expense, onClick }) =>
         {/* Receipt */}
         {expense.receipt_file_url && (
           <div className="pt-2">
-            <button
+            <button type="button"
               onClick={handleReceiptClick}
               className={cn(
                 "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg",

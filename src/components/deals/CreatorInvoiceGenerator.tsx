@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, IndianRupee, Printer, Percent, XCircle, AlertCircle } from 'lucide-react';
+import { Download, FileText, Printer, AlertCircle } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
 

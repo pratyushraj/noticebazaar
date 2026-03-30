@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Clock, CheckCircle2 } from 'lucide-react';
+import { Upload, FileText, Clock } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { useNavigate } from 'react-router-dom';
 

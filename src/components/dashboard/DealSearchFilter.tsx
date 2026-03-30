@@ -92,7 +92,7 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
           )}
         />
         {searchQuery && (
-          <button
+          <button type="button"
             onClick={() => {
               setSearchQuery('');
               onSearch?.('');
@@ -138,7 +138,7 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
         </p>
 
         <motion.div className="relative">
-          <button
+          <button type="button"
             onClick={() => setShowFilterMenu(!showFilterMenu)}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',

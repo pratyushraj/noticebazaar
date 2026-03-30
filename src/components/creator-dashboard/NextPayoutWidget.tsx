@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { IndianRupee, Clock, CheckCircle2, AlertCircle, ArrowRight, ExternalLink } from 'lucide-react';
+import { IndianRupee, Clock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { motion } from 'framer-motion';
 import { formatDate } from '@/lib/utils';

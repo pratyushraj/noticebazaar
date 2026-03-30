@@ -76,10 +76,10 @@ const PreviewAmanParmar = () => {
                 Govt Schemes | Bank Loans | Strategic Debt Structuring
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                <button className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:from-cyan-300 hover:to-blue-400">
+                <button type="button" className="rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:from-cyan-300 hover:to-blue-400">
                   Check Eligibility
                 </button>
-                <button className="rounded-xl border border-white/25 bg-white/5 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">
+                <button type="button" className="rounded-xl border border-white/25 bg-white/5 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">
                   See Success Stories
                 </button>
               </div>
@@ -204,7 +204,7 @@ const PreviewAmanParmar = () => {
               onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
               className="rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-cyan-300/50"
             />
-            <button
+            <button type="button"
               type="submit"
               className="sm:col-span-2 mt-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:from-emerald-300 hover:to-cyan-300"
             >
@@ -217,7 +217,7 @@ const PreviewAmanParmar = () => {
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <div className="rounded-2xl border border-white/10 bg-[linear-gradient(130deg,#1d2f6f_0%,#0e173d_45%,#0a0f21_100%)] p-6 text-center sm:p-10">
           <h2 className="text-2xl font-bold sm:text-3xl">See How Much Funding You Can Unlock in 2 Minutes</h2>
-          <button className="mt-5 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-slate-100">
+          <button type="button" className="mt-5 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-slate-100">
             Check Eligibility
           </button>
         </div>

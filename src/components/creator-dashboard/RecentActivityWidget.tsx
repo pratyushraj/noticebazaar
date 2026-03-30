@@ -104,7 +104,7 @@ export const RecentActivityWidget = ({ activities, maxItems = 5 }: RecentActivit
             </div>
 
             {activities.length > maxItems && (
-                <button className="w-full mt-3 md:mt-4 text-xs md:text-sm text-white/60 hover:text-white transition-colors">
+                <button type="button" className="w-full mt-3 md:mt-4 text-xs md:text-sm text-white/60 hover:text-white transition-colors">
                     View all activity →
                 </button>
             )}

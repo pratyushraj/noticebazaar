@@ -230,7 +230,7 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                           </div>
                         </div>
 
-                        <button
+                        <button type="button"
                           onClick={() => handleDismiss(suggestion.id)}
                           className="flex-shrink-0 p-1.5 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
                           aria-label="Dismiss suggestion"
@@ -291,7 +291,7 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                           {suggestion.action}
                           <ChevronDown className="w-3.5 h-3.5" />
                         </Button>
-                        <button
+                        <button type="button"
                           onClick={() => setExpandedId(isExpanded ? null : suggestion.id)}
                           className="px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-slate-300 hover:text-white"
                           aria-label={isExpanded ? 'Show less' : 'Show more'}

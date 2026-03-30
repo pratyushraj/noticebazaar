@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2, Check, Menu, X, Briefcase, Clock, IndianRupee, Star, ArrowRight, MessageSquare, Bot, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, Send, UserCheck, FileText, Calculator, Gavel, Youtube, Instagram, Globe, Facebook, LayoutDashboard } from 'lucide-react'; // Replaced Tiktok with Globe
+import { Loader2, Check, Menu, X, Clock, IndianRupee, Star, ArrowRight, MessageSquare, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, Send, FileText, Instagram, Globe } from 'lucide-react';
+ // Replaced Tiktok with Globe
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
@@ -24,7 +25,7 @@ const openCalendly = (url: string) => {
     (window as any).Calendly.initPopupWidget({ url });
   } else {
     console.warn("Calendly script not loaded. Cannot open widget.");
-    window.open(url, '_blank'); // Fallback to direct link
+    window.open(url, '_blank', 'noopener,noreferrer'); // Fallback to direct link
   }
   return false;
 };
@@ -119,7 +120,7 @@ const MarketingHome = () => {
 
           <div className="pt-6 space-y-4 border-t border-white/10">
             <Link to="/login" className="w-full inline-flex justify-center text-lg border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10">Client Login</Link>
-            <button
+            <button type="button"
               onClick={() => openCalendly(CALENDLY_URL)}
               className="w-full cta-secondary py-2 rounded-lg text-lg font-semibold"
             >
@@ -246,7 +247,7 @@ const MarketingHome = () => {
 
           <div className="flex items-center gap-3">
             {/* Desktop CTAs */}
-            <button
+            <button type="button"
               onClick={() => openCalendly(CALENDLY_URL)}
               className="cta-secondary py-2 px-4 rounded-lg text-sm font-semibold hidden md:inline-block"
             >
@@ -302,7 +303,7 @@ const MarketingHome = () => {
                 Protect My Deals
                 <ArrowRight className="h-5 w-5 transition-transform duration-150 ease-out group-hover:translate-x-1 group-active:translate-x-0.5" />
               </Link>
-              <button
+              <button type="button"
                 onClick={() => openCalendly(CALENDLY_URL)}
                 className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1"
               >
@@ -463,13 +464,13 @@ const MarketingHome = () => {
           {/* Monthly / Yearly Toggle */}
           <div className="flex justify-center mb-8" data-aos="fade-up">
             <div className="relative flex p-1 bg-card rounded-full border border-white/10">
-              <button
+              <button type="button"
                 onClick={() => setIsYearly(false)}
                 className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", !isYearly ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}
               >
                 Monthly
               </button>
-              <button
+              <button type="button"
                 onClick={() => setIsYearly(true)}
                 className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", isYearly ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}
               >

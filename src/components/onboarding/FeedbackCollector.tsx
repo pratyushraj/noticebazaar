@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Star, ThumbsUp, ThumbsDown, Send } from 'lucide-react';
+import { MessageSquare, X, Star, Send } from 'lucide-react';
 import { onboardingAnalytics } from '@/lib/onboarding/analytics';
 import { toast } from 'sonner';
 
@@ -83,7 +83,7 @@ const FeedbackCollector = ({ triggerAfter = 30000, onDismiss }: FeedbackCollecto
                 <p className="text-[13px] text-gray-600">Help us improve your experience</p>
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={handleDismiss}
               className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Dismiss feedback"
@@ -96,7 +96,7 @@ const FeedbackCollector = ({ triggerAfter = 30000, onDismiss }: FeedbackCollecto
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-3">
               {[1, 2, 3, 4, 5].map((star) => (
-                <button
+                <button type="button"
                   key={star}
                   onClick={() => setRating(star)}
                   className="p-1 hover:scale-110 transition-transform"
@@ -124,13 +124,13 @@ const FeedbackCollector = ({ triggerAfter = 30000, onDismiss }: FeedbackCollecto
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={handleDismiss}
               className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-[15px] font-medium text-gray-700 transition-colors"
             >
               Maybe Later
             </button>
-            <button
+            <button type="button"
               onClick={handleSubmit}
               disabled={!rating || isSubmitting}
               className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-[15px] font-semibold transition-all flex items-center justify-center gap-2"

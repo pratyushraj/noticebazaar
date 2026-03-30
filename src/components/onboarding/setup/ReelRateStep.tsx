@@ -83,7 +83,7 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                             { id: 'hybrid', icon: RefreshCcw, label: 'Cash + Product' },
                             { id: 'all', icon: Layers, label: 'All Deal Types' },
                         ].map((type) => (
-                            <button
+                            <button type="button"
                                 key={type.id}
                                 type="button"
                                 onClick={() => onDealTypeChange(type.id as DealType)}
@@ -117,7 +117,7 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                                     <span className="text-sm text-blue-600 dark:text-purple-400 font-medium">
                                         Suggested: ₹{suggestedRate.toLocaleString('en-IN')}
                                     </span>
-                                    <button
+                                    <button type="button"
                                         onClick={() => onRateChange(suggestedRate.toString())}
                                         className="ml-2 text-xs text-slate-400 dark:text-white/40 hover:text-slate-600 dark:hover:text-white transition-colors underline"
                                     >
@@ -156,7 +156,7 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                        <button
+                        <button type="button"
                             onClick={onBack}
                             className="w-full py-4 text-slate-500 dark:text-white/70 font-medium hover:text-slate-700 dark:hover:text-white transition-colors"
                         >

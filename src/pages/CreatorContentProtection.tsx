@@ -542,7 +542,7 @@ const CreatorContentProtection = () => {
                               
                               <p className={`${typography.bodySmall} mb-3 leading-relaxed`}>{alert.description}</p>
                               
-                              <button className={`${typography.bodySmall} font-medium ${alertConfig[alertType].iconColor} hover:underline`}>
+                              <button type="button" className={`${typography.bodySmall} font-medium ${alertConfig[alertType].iconColor} hover:underline`}>
                                 {alert.action} →
                               </button>
                             </div>

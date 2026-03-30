@@ -268,7 +268,7 @@ const BrandDirectory = () => {
                           </p>
                         </div>
                       </div>
-                      <button
+                      <button type="button"
                         onClick={() => handleToggleBookmark(brand.id)}
                         disabled={toggleBookmarkMutation.isPending}
                         className="p-2 hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50"

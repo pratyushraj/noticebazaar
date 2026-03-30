@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Upload, FileText, CalendarDays, DollarSign, User, Globe, Mail, ReceiptText, X, Phone } from 'lucide-react';
+import { Loader2, Upload, FileText, CalendarDays, DollarSign, User, Globe, Mail, ReceiptText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { useAddBrandDeal, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
@@ -132,7 +132,7 @@ const FileUploader = ({
       <div className="mb-2 flex items-center gap-2 text-xs text-purple-200/70">
         <FileText className="h-4 w-4" />
         <span>Existing File:</span>
-        <button
+        <button type="button"
           type="button"
           onClick={() => openContractFile(existingFileUrl)}
           className="text-purple-300 hover:text-purple-200 underline transition-colors"
@@ -145,7 +145,7 @@ const FileUploader = ({
       <div className="mb-2 flex items-center gap-2 text-xs text-purple-200/70 bg-purple-900/20 rounded-lg p-2 border border-purple-400/10">
         <FileText className="h-4 w-4" />
         <span className="flex-1 truncate">{file.name}</span>
-        <button
+        <button type="button"
           type="button"
           onClick={onRemove}
           className="text-purple-200/50 hover:text-purple-200/80 transition-colors"

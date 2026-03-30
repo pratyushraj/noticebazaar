@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ImageIcon, AlertCircle } from 'lucide-react';
+import { ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ImageWithPlaceholderProps {

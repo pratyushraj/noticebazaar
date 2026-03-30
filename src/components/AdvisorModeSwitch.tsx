@@ -23,7 +23,7 @@ export const AdvisorModeSwitch = ({ mode, onToggle }: AdvisorModeSwitchProps) =>
       />
       
       {/* CA Button */}
-      <button
+      <button type="button"
         onClick={mode !== "ca" ? onToggle : undefined}
         disabled={mode === "ca"}
         className={clsx(
@@ -40,7 +40,7 @@ export const AdvisorModeSwitch = ({ mode, onToggle }: AdvisorModeSwitchProps) =>
       </button>
       
       {/* Legal Advisor Button */}
-      <button
+      <button type="button"
         onClick={mode !== "advisor" ? onToggle : undefined}
         disabled={mode === "advisor"}
         className={clsx(

@@ -202,7 +202,7 @@ const EnhancedPaymentCard: React.FC<EnhancedPaymentCardProps> = ({
             </Button>
           )}
           {onMarkPaid && status !== 'paid' && (
-            <button
+            <button type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onMarkPaid(deal);

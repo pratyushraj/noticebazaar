@@ -63,7 +63,7 @@ export const PlatformsStep: React.FC<PlatformsStepProps> = ({
             const Icon = platform.icon;
             const isSelected = selectedPlatforms.includes(platform.id);
             return (
-              <button
+              <button type="button"
                 key={platform.id}
                 onClick={() => onPlatformToggle(platform.id)}
                 className={`relative p-4 rounded-xl border-2 transition-all ${

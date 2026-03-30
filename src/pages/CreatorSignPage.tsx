@@ -288,7 +288,7 @@ const CreatorSignPage = () => {
                     <p className="text-white/50 text-sm mb-8 leading-relaxed">
                         Any changes to these terms now require a new agreement.
                     </p>
-                    <button
+                    <button type="button"
                         onClick={() => window.close()}
                         className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl border border-white/10 transition-all">
                         Close Window
@@ -389,7 +389,7 @@ const CreatorSignPage = () => {
                                 </div>
                             </div>
 
-                            <button
+                            <button type="button"
                                 onClick={sendOTP}
                                 disabled={isSendingOTP || otpResendCooldown > 0}
                                 className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:from-white/5 disabled:to-white/5 disabled:text-white/20 rounded-2xl text-white font-bold transition-all shadow-lg shadow-purple-500/5 flex items-center justify-center gap-2">
@@ -434,7 +434,7 @@ const CreatorSignPage = () => {
                                 </span>
                             </label>
 
-                            <button
+                            <button type="button"
                                 onClick={handleSign}
                                 disabled={isSigning || !isAuthorizedToSign}
                                 className="w-full h-16 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 disabled:from-white/5 disabled:to-white/5 disabled:text-white/10 rounded-2xl text-white font-bold transition-all shadow-lg shadow-purple-500/5 flex items-center justify-center gap-3 text-lg">
@@ -472,7 +472,7 @@ const CreatorSignPage = () => {
                                     </div>
                                     <h3 className="text-xl font-bold text-white tracking-tight">Security Code</h3>
                                 </div>
-                                <button
+                                <button type="button"
                                     onClick={() => setShowOTPModal(false)}
                                     className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/40 hover:text-white transition-colors">
                                     <X className="w-5 h-5" />
@@ -504,7 +504,7 @@ const CreatorSignPage = () => {
                             </p>
 
                             <div className="space-y-3">
-                                <button
+                                <button type="button"
                                     onClick={verifyOTP}
                                     disabled={isVerifyingOTP || otp.join('').length !== 6}
                                     className="w-full h-14 bg-white text-black hover:bg-white/90 disabled:bg-white/10 disabled:text-white/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
@@ -518,7 +518,7 @@ const CreatorSignPage = () => {
                                     )}
                                 </button>
 
-                                <button
+                                <button type="button"
                                     onClick={sendOTP}
                                     disabled={isSendingOTP || otpResendCooldown > 0}
                                     className="w-full py-2 text-xs font-bold uppercase tracking-widest text-white/30 hover:text-purple-400 disabled:hover:text-white/30 transition-colors">

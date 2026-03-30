@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Clock, AlertCircle, CheckCircle2, Package } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -98,7 +98,7 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
             📅 Deal Timeline
           </h3>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
               className={cn(
                 'p-2 rounded-lg transition-colors',
@@ -113,7 +113,7 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
             )}>
               {currentMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
             </span>
-            <button
+            <button type="button"
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
               className={cn(
                 'p-2 rounded-lg transition-colors',

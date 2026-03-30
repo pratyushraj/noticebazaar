@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { FileText, MessageSquare, Briefcase, ArrowRight, Check } from 'lucide-react';
+import { FileText, MessageSquare, Check } from 'lucide-react';
 
 const PortalGuideWidget = () => {
   return (

@@ -319,7 +319,7 @@ const RateCalculator = () => {
     const rate = getDisplayRate();
     const message = `Check out my content rate: ${currencySymbols[currency]}${rate.toLocaleString('en-IN')}\n\nCalculated using Creator Armour Rate Calculator`;
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
     toast.success('Opening WhatsApp...');
   };
 
@@ -728,7 +728,7 @@ const RateCalculator = () => {
                   </div>
                   
                   {/* Reset Calculator Link */}
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setFollowers(100000);
                       setEngagementRate(5);
@@ -850,7 +850,7 @@ const RateCalculator = () => {
 
           {/* Compare With Previous Calculations Link */}
           <div className="text-center pt-2">
-            <button
+            <button type="button"
               onClick={() => toast.info('Past calculations feature coming soon!')}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
             >

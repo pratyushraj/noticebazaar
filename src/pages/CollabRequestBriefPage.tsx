@@ -210,7 +210,7 @@ const CollabRequestBriefPage = () => {
           <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-white/80">
             <p className="text-sm font-semibold text-white mb-1">Couldn’t open this offer</p>
             <p className="text-sm text-white/60">{loadError || 'Unknown error'}</p>
-            <button
+            <button type="button"
               type="button"
               onClick={() => navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true })}
               className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 transition-colors"
@@ -494,7 +494,7 @@ const CollabRequestBriefPage = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <button
+                  <button type="button"
                     type="button"
                     onClick={handleAccept}
                     disabled={isAccepting || isDeclining}
@@ -505,7 +505,7 @@ const CollabRequestBriefPage = () => {
                   >
                     {isAccepting ? 'Accepting…' : `Accept ${budgetLabel}`}
                   </button>
-                  <button
+                  <button type="button"
                     type="button"
                     onClick={() => navigate(`/collab-requests/${request.id}/counter`, { state: { request } })}
                     disabled={isAccepting || isDeclining}
@@ -513,7 +513,7 @@ const CollabRequestBriefPage = () => {
                   >
                     Suggest new price
                   </button>
-                  <button
+                  <button type="button"
                     type="button"
                     onClick={handleDecline}
                     disabled={isAccepting || isDeclining}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { LucideIcon, MessageSquare, FileText, Search, Filter, X, Upload, Briefcase, Wallet, Inbox } from 'lucide-react';
+import { LucideIcon, MessageSquare, FileText, Search, X, Briefcase, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';

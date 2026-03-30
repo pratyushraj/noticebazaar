@@ -204,7 +204,7 @@ export default function ShipPage() {
               className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             />
           </div>
-          <button
+          <button type="button"
             type="submit"
             disabled={submitting}
             className="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"

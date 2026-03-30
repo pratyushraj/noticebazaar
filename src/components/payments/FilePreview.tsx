@@ -25,7 +25,7 @@ export const FilePreview = ({
     if (onPreview) {
       onPreview();
     } else {
-      window.open(fileURL, '_blank');
+      window.open(fileURL, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -56,7 +56,7 @@ export const FilePreview = ({
       <div className="flex-1 min-w-0">
         <div className="text-sm text-white/80 truncate">{fileName}</div>
       </div>
-      <button
+      <button type="button"
         onClick={(e) => {
           e.stopPropagation();
           onRemove();

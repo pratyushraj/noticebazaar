@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ChevronUp, ShieldCheck, Rocket, Target, IndianRupee, Package, Mail, Building2, MapPin, Phone, Globe, AtSign, FileText, ImageIcon, Wallet, RefreshCcw, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, Languages, ArrowRight, Users, ChevronRight, Activity, Heart, AlertCircle, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
+import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -2616,7 +2616,7 @@ const CollabLinkLanding = () => {
                   )}
                 </div>
                 {isOwner && (
-                  <button
+                  <button type="button"
                     onClick={() => setIsEditingTemplates(!isEditingTemplates)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
                   >
@@ -2647,7 +2647,7 @@ const CollabLinkLanding = () => {
                           </div>
                         </div>
                       )}
-	                      <button
+	                      <button type="button"
 	                        type="button"
 	                        onClick={() => handleTemplateSelect(template)}
 		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-amber-300 bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
@@ -2736,7 +2736,7 @@ const CollabLinkLanding = () => {
 
                       {isOwner && isEditingTemplates && (
                         <div className="absolute top-2 right-2 z-10">
-                          <button
+                          <button type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               setEditingTemplate(template);
@@ -2830,7 +2830,7 @@ const CollabLinkLanding = () => {
                       <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Bio and active platforms</p>
                     </div>
                     {!editMode && (
-                      <button
+                      <button type="button"
                         type="button"
                         aria-expanded={aboutCreatorOpen}
                         aria-controls="about-creator-panel"
@@ -2960,7 +2960,7 @@ const CollabLinkLanding = () => {
                               className="bg-teal-50 text-teal-700 border-teal-100 pl-3 pr-1 py-1 flex items-center gap-1 group"
                             >
                               {niche}
-                              <button
+                              <button type="button"
                                 onClick={() => {
                                   const updated = creator.content_niches?.filter(n => n !== niche);
                                   handleInlineProfileUpdate('content_niches', updated);
@@ -3246,7 +3246,7 @@ const CollabLinkLanding = () => {
                             { id: 'hybrid', label: 'Hybrid', icon: <Zap className="h-5 w-5" />, sub: 'Cash + Product' },
                             { id: 'affiliate', label: 'Affiliate', icon: <TrendingUp className="h-5 w-5" />, sub: 'Sales commission' },
                           ].map((type) => (
-                            <button
+                            <button type="button"
                               key={type.id}
                               onClick={() => setCollabType(type.id as CollabType)}
                               className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all group ${collabType === type.id ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.02]' : 'border-slate-100 bg-white hover:border-slate-200 text-slate-600'}`}
@@ -3279,7 +3279,7 @@ const CollabLinkLanding = () => {
                             {DELIVERABLE_OPTIONS.map((option) => {
                               const isSelected = deliverables.includes(option.value);
                               return (
-                                <button
+                                <button type="button"
                                   key={option.value}
                                   type="button"
                                   onClick={() => handleDeliverableToggle(option.value)}
@@ -3301,14 +3301,14 @@ const CollabLinkLanding = () => {
 	                                  <div key={d} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:border-slate-300 transition-all">
                                     <span className="text-[12px] font-black text-slate-700">{d}</span>
                                     <div className="flex items-center gap-3">
-                                      <button
+                                      <button type="button"
                                         onClick={() => updateDeliverableQuantity(d, (deliverableQuantities[d] || 1) - 1)}
                                         className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-900 active:scale-90 transition-all font-bold"
                                       >
                                         −
                                       </button>
                                       <span className="w-6 text-center text-[13px] font-black text-slate-900">{deliverableQuantities[d] || 1}</span>
-                                      <button
+                                      <button type="button"
                                         onClick={() => updateDeliverableQuantity(d, (deliverableQuantities[d] || 1) + 1)}
                                         className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-900 active:scale-90 transition-all font-bold"
                                       >
@@ -3403,7 +3403,7 @@ const CollabLinkLanding = () => {
                             <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Target className="h-5 w-5 text-slate-900" />Project Category</label>
                             <div className="flex flex-wrap gap-2">
                               {PRODUCT_CATEGORY_OPTIONS.slice(0, 10).map((option) => (
-                                <button
+                                <button type="button"
                                   key={option.value}
                                   type="button"
                                   onClick={() => setCampaignCategory(option.label)}
@@ -3445,7 +3445,7 @@ const CollabLinkLanding = () => {
                                   Turn this on if the brand will send a product or sample as part of the collaboration.
                                 </p>
                               </div>
-                              <button
+                              <button type="button"
                                 type="button"
                                 onClick={() => {
                                   const next = !requiresShipping;
@@ -3775,7 +3775,7 @@ const CollabLinkLanding = () => {
                     {/* Demo Fill Button */}
                     {import.meta.env.DEV && (
                       <div className="mt-6 flex justify-center">
-                        <button
+                        <button type="button"
                           type="button"
                           onClick={fillDemoData}
                           className="text-[10px] text-slate-200 hover:text-slate-300 font-bold uppercase tracking-widest"
@@ -3794,7 +3794,7 @@ const CollabLinkLanding = () => {
 
           {isOwner && !previewAsBrand && hasIncompleteSetup && (
             <div className="fixed right-4 bottom-24 z-50 md:hidden">
-              <button
+              <button type="button"
                 type="button"
                 onClick={() => {
                   if (!editMode) setEditMode(true);
@@ -4066,9 +4066,9 @@ const EditDealTemplateModal = ({
                     </label>
                     {isSelected && (
                       <div className="flex items-center gap-1.5 shrink-0 bg-white rounded-lg border border-slate-200 px-1 py-0.5 shadow-sm">
-                        <button onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">−</button>
+                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">−</button>
                         <span className="text-[12px] font-black w-3 text-center text-slate-800">{edited.quantities[opt.value] || 1}</span>
-                        <button onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">+</button>
+                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">+</button>
                       </div>
                     )}
                   </div>
@@ -4139,7 +4139,7 @@ const EditDealTemplateModal = ({
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Optional Add-ons</label>
-              <button onClick={handleAddAddon} className="flex items-center gap-1 text-[10px] font-black uppercase text-teal-600 bg-teal-50 px-2 py-1 rounded hover:bg-teal-100 transition-colors">
+              <button type="button" onClick={handleAddAddon} className="flex items-center gap-1 text-[10px] font-black uppercase text-teal-600 bg-teal-50 px-2 py-1 rounded hover:bg-teal-100 transition-colors">
                 <span className="text-xl leading-none -mt-0.5">+</span> Add Item
               </button>
             </div>
@@ -4161,7 +4161,7 @@ const EditDealTemplateModal = ({
                     onChange={(e) => handleUpdateAddon(index, { price: Number(e.target.value) })}
                   />
                 </div>
-                <button onClick={() => handleRemoveAddon(index)} className="p-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove add-on">
+                <button type="button" onClick={() => handleRemoveAddon(index)} className="p-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove add-on">
                   <X className="w-5 h-5" />
                 </button>
               </div>

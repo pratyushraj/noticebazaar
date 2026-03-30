@@ -277,7 +277,7 @@ const Login = () => {
                   <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
                     Secure Access
                   </Label>
-                  <button
+                  <button type="button"
                     type="button"
                     onClick={handleForgotPassword}
                     className="text-[11px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors"
@@ -310,7 +310,7 @@ const Login = () => {
 	                {isLoading ? 'Authenticating...' : 'Sign In To Armour'}
 	              </Button>
 
-                <button
+                <button type="button"
                   type="button"
                   onClick={() => {
                     setEmail(DEMO_BRAND_EMAIL);

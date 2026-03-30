@@ -57,7 +57,7 @@ export const NicheStep: React.FC<NicheStepProps> = ({
                         {SUGGESTED_NICHES.map((niche) => {
                             const isSelected = selectedNiches.includes(niche);
                             return (
-                                <button
+                                <button type="button"
                                     key={niche}
                                     onClick={() => onNicheToggle(niche)}
                                     className={`relative py-3 px-4 rounded-xl border transition-all text-sm font-medium ${isSelected

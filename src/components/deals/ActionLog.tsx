@@ -1,15 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import {
-  Upload,
-  CheckCircle,
-  FileText,
-  DollarSign,
-  AlertCircle,
-  MessageSquare,
-  Calendar,
-  Clock,
-} from 'lucide-react';
+import { Upload, CheckCircle, FileText, DollarSign, AlertCircle, MessageSquare, Clock } from 'lucide-react';
 
 export interface ActionLogEntry {
   id: string;

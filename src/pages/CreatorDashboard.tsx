@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Briefcase, CreditCard, Shield, TrendingUp, FileText, FileEdit, ChevronRight, Search, Target, BarChart3, LogOut, Loader2, XCircle, Menu, Link2, Copy, ExternalLink, Check, AlertTriangle, MessageCircle, Instagram, MapPin, BellRing, Eye, Zap, Mail } from 'lucide-react';
+import {  } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
@@ -452,13 +452,13 @@ const CreatorDashboard = () => {
             <p><span className="text-white font-semibold">Step 3</span><br />Open CreatorArmour from your Home Screen</p>
           </div>
           <div className="mt-5 flex gap-2">
-            <button
+            <button type="button"
               onClick={() => setShowIosInstallGuide(false)}
               className="flex-1 rounded-lg bg-violet-500 hover:bg-violet-400 text-white text-sm font-semibold px-4 py-2 transition-colors"
             >
               Got it
             </button>
-            <button
+            <button type="button"
               onClick={() => { setShowIosInstallGuide(false); dismissDealAlertPrompt(); }}
               className="rounded-lg border border-white/25 text-white/85 hover:text-white hover:bg-white/10 text-sm px-3 py-2 transition-colors"
             >

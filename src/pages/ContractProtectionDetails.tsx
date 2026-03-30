@@ -2,11 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Shield, AlertTriangle, CheckCircle, FileText, Upload, 
-  Download, Eye, XCircle, Clock, AlertCircle, Zap, Scale, Lock,
-  MessageCircle, RefreshCw, ExternalLink
-} from 'lucide-react';
+import { ArrowLeft, Shield, AlertTriangle, CheckCircle, FileText, Upload, Download, Eye, XCircle, Clock, AlertCircle, Zap, Scale } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useContractIssues, useResolveContractIssue } from '@/lib/hooks/useContractIssues';
@@ -221,7 +217,7 @@ const ContractProtectionDetails = () => {
           <AlertCircle className="w-16 h-16 text-purple-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Contract Not Found</h2>
           <p className="text-purple-200 mb-4">The contract you're looking for doesn't exist.</p>
-          <button
+          <button type="button"
             onClick={() => navigate('/creator-protection')}
             className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl transition-colors"
           >
@@ -237,7 +233,7 @@ const ContractProtectionDetails = () => {
       {/* Header */}
       <div className="sticky top-0 z-50 bg-purple-900/95 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4">
-          <button
+          <button type="button"
             onClick={() => navigate('/creator-protection')}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
             aria-label="Back"
@@ -362,7 +358,7 @@ const ContractProtectionDetails = () => {
               { id: 'alerts' as const, label: 'Alerts', count: contract.issues },
               { id: 'recommendations' as const, label: 'Recommendations', count: recommendations.length },
             ].map((tab) => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
@@ -441,7 +437,7 @@ const ContractProtectionDetails = () => {
                               <p className="text-sm text-blue-200">{issue.recommendation}</p>
                             </div>
                             {!isResolved && (
-                              <button
+                              <button type="button"
                                 onClick={() => {
                                   setSelectedIssueId(issue.id);
                                   setShowResolveDialog(true);
@@ -560,7 +556,7 @@ const ContractProtectionDetails = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <button type="button"
                     onClick={async () => {
                       await openContractFile(contract.contractFileUrl, (error) => {
                         toast.error('Failed to view contract', {
@@ -574,7 +570,7 @@ const ContractProtectionDetails = () => {
                   >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() => {
                       if (contract.contractFileUrl) {
                         const link = document.createElement('a');
@@ -609,14 +605,14 @@ const ContractProtectionDetails = () => {
           transition={{ delay: 0.4 }}
           className="grid grid-cols-1 md:grid-cols-2 gap-3"
         >
-          <button
+          <button type="button"
             onClick={() => navigate('/contract-upload')}
             className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95"
           >
             <Upload className="w-5 h-5 text-purple-300" />
             <span className="font-medium">Re-upload Contract</span>
           </button>
-          <button
+          <button type="button"
             onClick={async () => {
               await openContractFile(contract.contractFileUrl, (error) => {
                 toast.error('Failed to view contract', {
@@ -630,7 +626,7 @@ const ContractProtectionDetails = () => {
             <Eye className="w-5 h-5 text-purple-300" />
             <span className="font-medium">View Original File</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowLawyerRequestDialog(true)}
             disabled={createLawyerRequestMutation.isPending}
             className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -638,7 +634,7 @@ const ContractProtectionDetails = () => {
             <Scale className="w-5 h-5 text-purple-300" />
             <span className="font-medium">Request Lawyer Help</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               if (contract.issuesList.length > 0) {
                 // Resolve all open issues for this contract
@@ -680,7 +676,7 @@ const ContractProtectionDetails = () => {
               Are you sure you want to mark this issue as resolved? This will help track which protection issues have been addressed.
             </p>
             <div className="flex gap-3">
-              <button
+              <button type="button"
                 onClick={() => {
                   setShowResolveDialog(false);
                   setSelectedIssueId(null);
@@ -689,7 +685,7 @@ const ContractProtectionDetails = () => {
               >
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={async () => {
                   if (selectedIssueId && contractId) {
                     try {
@@ -801,14 +797,14 @@ const ContractProtectionDetails = () => {
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
-                <button
+                <button type="button"
                   type="button"
                   onClick={() => setShowLawyerRequestDialog(false)}
                   className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
-                <button
+                <button type="button"
                   type="submit"
                   disabled={createLawyerRequestMutation.isPending}
                   className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors disabled:opacity-50"
