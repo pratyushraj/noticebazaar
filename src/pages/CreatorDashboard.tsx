@@ -18,6 +18,7 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl, fetchWithTimeout } from '@/lib/utils/api';
+import { withRetry } from '@/lib/utils/retry';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, shadows, radius, zIndex, vision, motion as motionTokens } from '@/lib/design-system';
 import { BaseCard, SectionCard, StatCard } from '@/components/ui/card-variants';
@@ -126,10 +127,10 @@ const CreatorDashboard = () => {
       const sess = sessionData.session;
       if (!sess?.access_token) return;
       const apiUrl = getApiBaseUrl();
-      const res = await fetch(`${apiUrl}/api/collab-requests`, {
+      const res = await withRetry(() => fetch(`${apiUrl}/api/collab-requests`, {
         headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
         signal: signal ?? undefined,
-      });
+      }));
       let data: CollabRequestsResponse;
       if (res.ok) {
         data = await res.json().catch(() => ({ success: false, requests: [] }));
