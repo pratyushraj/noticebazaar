@@ -129,6 +129,7 @@ import LegacyCollabRedirect from "./components/collab/LegacyCollabRedirect";
 import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccessRedirect";
 import LegacyCreatorProfileRedirect from "./components/collab/LegacyCreatorProfileRedirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
+import { GlobalLoadingBar } from "./components/GlobalLoadingBar";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
 import AddToHomeScreen from "./components/mobile/AddToHomeScreen";
@@ -284,6 +285,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <GlobalLoadingBar />
         <TooltipProvider>
           <AppToaster />
           {/* Splash Screen */}

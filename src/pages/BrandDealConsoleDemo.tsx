@@ -105,7 +105,7 @@ const BrandDealConsoleDemo = () => {
 
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex gap-3 items-center">
-                                    <img src="https://i.pravatar.cc/150?img=47" alt="Creator" className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-sm" />
+                                    <img src="https://i.pravatar.cc/150?img=47" alt="Creator" loading="lazy" className="w-12 h-12 rounded-full border border-slate-200 object-cover shadow-sm" />
                                     <div>
                                         <h3 className="font-bold text-[16px] text-slate-900 leading-tight">@thebloomingmiss</h3>
                                         <p className="text-[12px] text-slate-500 mt-0.5">Fashion & Lifestyle • 1.2M</p>

@@ -1,7 +1,8 @@
-import { validateEnv } from "./lib/validateEnv";
+import { validateEnv, silenceConsoleInProduction } from "./lib/validateEnv";
 
 // Fail fast before any rendering if env is misconfigured
 validateEnv();
+silenceConsoleInProduction();
 
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";

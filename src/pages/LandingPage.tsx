@@ -55,7 +55,35 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white sm:bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
-      <SEOHead title={seoTitle} description={seoDescription} keywords={seoKeywords} canonicalUrl={canonicalUrl} />
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        canonicalUrl={canonicalUrl}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'WebSite',
+              name: 'Creator Armour',
+              url: 'https://creatorarmour.com',
+              description: seoDescription,
+            },
+            {
+              '@type': 'SoftwareApplication',
+              name: 'Creator Armour',
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web',
+              description: seoDescription,
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'INR',
+              },
+            },
+          ],
+        }}
+      />
 
       {/* Modern Top Nav */}
       <nav className={cn(

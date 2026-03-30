@@ -3630,7 +3630,7 @@ const BrandMobileDashboard = ({
                     }}
                     className={cn('w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95', borderColor, isDark ? 'bg-white/5' : 'bg-white/80 shadow-sm')}
                   >
-                    <img alt={brandName} src={brandLogo} className="w-full h-full object-cover" />
+                    <img alt={brandName} src={brandLogo} loading="lazy" className="w-full h-full object-cover" />
                   </button>
                 </div>
               </div>

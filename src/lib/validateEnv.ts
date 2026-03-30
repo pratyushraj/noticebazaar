@@ -8,6 +8,16 @@ const REQUIRED_ENV_VARS = [
   'VITE_SUPABASE_ANON_KEY',
 ] as const;
 
+/** Silence console.log/debug in production to prevent leaking info */
+export function silenceConsoleInProduction(): void {
+  if (import.meta.env.PROD) {
+    console.log = () => {};
+    console.debug = () => {};
+    console.info = () => {};
+    // Keep console.warn and console.error for real issues
+  }
+}
+
 export function validateEnv(): void {
   const missing: string[] = [];
 

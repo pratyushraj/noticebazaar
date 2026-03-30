@@ -14,6 +14,7 @@ interface SEOHeadProps {
   robots?: string;
   imageAlt?: string;
   locale?: string;
+  jsonLd?: Record<string, unknown>; // JSON-LD structured data
 }
 
 /**
@@ -33,6 +34,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   robots = 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   imageAlt,
   locale = 'en_IN',
+  jsonLd,
 }) => {
   const location = useLocation();
   const baseUrl = 'https://creatorarmour.com';
@@ -116,11 +118,22 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
     updateMetaTag('twitter:image', image);
     updateMetaTag('twitter:url', currentUrl);
 
+    // JSON-LD structured data
+    const existingJsonLd = document.querySelector('script[data-seo-jsonld]');
+    if (existingJsonLd) existingJsonLd.remove();
+    if (jsonLd) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-seo-jsonld', 'true');
+      script.textContent = JSON.stringify(jsonLd);
+      document.head.appendChild(script);
+    }
+
     // Cleanup function
     return () => {
       // Optionally restore default meta tags when component unmounts
     };
-  }, [title, description, keywords, image, type, publishedTime, modifiedTime, author, currentUrl, robots, imageAlt, locale]);
+  }, [title, description, keywords, image, type, publishedTime, modifiedTime, author, currentUrl, robots, imageAlt, locale, jsonLd]);
 
   return null; // This component doesn't render anything
 };
