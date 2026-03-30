@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Shield, AlertCircle, FileText } from 'lucide-react';
@@ -8,6 +9,12 @@ import { ArrowLeft, Shield, AlertCircle, FileText } from 'lucide-react';
 const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+      <SEOHead
+        title="About Creator Armour — Protecting Indian Creators"
+        description="Creator Armour helps Indian creators close brand deals professionally. Contracts, payments, and collaboration — all in one platform."
+        keywords={['about creator armour', 'creator platform india', 'influencer protection']}
+        canonicalUrl="https://creatorarmour.com/about"
+      />
       <div className="container mx-auto px-6 py-12">
         <Button 
           asChild 

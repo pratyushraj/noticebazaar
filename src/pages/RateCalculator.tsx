@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -348,6 +349,12 @@ const RateCalculator = () => {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+      <SEOHead
+        title="Influencer Rate Calculator — Know What to Charge Brands"
+        description="Free influencer rate calculator for Indian creators. Calculate fair rates based on followers, engagement, and content type. Used by 10,000+ creators."
+        keywords={['influencer rate calculator', 'how much to charge brands', 'creator pricing tool', 'instagram rate card']}
+        canonicalUrl="https://creatorarmour.com/rate-calculator"
+      />
       {/* Header */}
       <div className="mb-6 pb-4 border-b border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
         <div className="flex items-start justify-between gap-4">

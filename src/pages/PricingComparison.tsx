@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check, X, ArrowRight, MessageSquare } from 'lucide-react';
@@ -47,6 +48,12 @@ const PricingComparison = () => {
 
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
+      <SEOHead
+        title="Creator Armour Pricing — Plans for Every Creator"
+        description="Compare Creator Armour plans. Free collab link, essential protection, and growth features for Indian influencers and creators."
+        keywords={['creator armour pricing', 'influencer tools pricing', 'brand deal platform cost']}
+        canonicalUrl="https://creatorarmour.com/pricing-comparison"
+      />
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
         <Link to="/">
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Homepage

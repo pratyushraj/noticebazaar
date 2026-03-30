@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -109,6 +110,12 @@ const BrandDirectory = () => {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden pb-[80px] px-4 md:px-6 antialiased">
+      <SEOHead
+        title="Brand Directory — Find Brands for Creator Collaborations"
+        description="Browse brands looking for Indian creators. Filter by industry, payment rating, and bookmark brands you want to work with."
+        keywords={['brand directory', 'brands for influencers', 'brand collaboration india', 'find brand deals']}
+        canonicalUrl="https://creatorarmour.com/brand-directory"
+      />
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">

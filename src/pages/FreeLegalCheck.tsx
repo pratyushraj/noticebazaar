@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowDown, ShieldCheck, Users, Gavel, Zap, Clock, IndianRupee, Star, ArrowRight, FileText, Lock, AlertTriangle } from 'lucide-react';
@@ -110,6 +111,13 @@ const FreeLegalCheck = () => {
 
   return (
     <div className="nb-screen-height bg-background">
+      <SEOHead
+        title="Free Legal Check for Influencer Contracts — Creator Armour"
+        description="Upload your brand deal contract and get a free legal analysis. Check for red flags, unfair clauses, and payment risks before you sign."
+        keywords={['influencer contract review', 'free legal check', 'brand deal contract analysis', 'contract red flags']}
+        canonicalUrl="https://creatorarmour.com/free-legal-check"
+      />
+
       {/* Inject FAQ Schema */}
       <script 
         type="application/ld+json" 
