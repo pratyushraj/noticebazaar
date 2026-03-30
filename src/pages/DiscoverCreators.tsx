@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -37,6 +38,7 @@ const DiscoverCreators = () => {
     const [categories, setCategories] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
     const [isFilterVisible, setIsFilterVisible] = useState(false);
 
     useEffect(() => {
@@ -79,12 +81,12 @@ const DiscoverCreators = () => {
 
     const filteredCreators = useMemo(() => {
         return creators.filter(creator =>
-            creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            creator.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            creator.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            creator.bio?.toLowerCase().includes(searchTerm.toLowerCase())
+            creator.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            creator.username.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            creator.category?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+            creator.bio?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
         );
-    }, [creators, searchTerm]);
+    }, [creators, debouncedSearchTerm]);
 
     const getPlatformIcon = (platformName: string) => {
         switch (platformName.toLowerCase()) {

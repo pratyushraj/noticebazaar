@@ -170,7 +170,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
           <p className="text-lg text-slate-900 text-center font-semibold mb-2">Taking longer than usual?</p>
           <p className="text-sm text-slate-600 text-center max-w-md mb-6">You can continue to your dashboard. Your profile will finish loading there.</p>
-          <button onClick={() => window.location.replace('/creator-dashboard')} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg">
+          <button onClick={() => navigate('/creator-dashboard', { replace: true })} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg">
             Continue to dashboard
           </button>
         </div>

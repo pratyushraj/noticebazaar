@@ -8,11 +8,11 @@ import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, Exte
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
-const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&h=500&fit=crop";
-const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500&h=500&fit=crop";
-const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=500&h=500&fit=crop";
-const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=500&h=500&fit=crop";
-const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&h=500&fit=crop";
+const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
+const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
+const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
+const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
+const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
 
 const LandingPage = () => {
   const { session, loading, profile } = useSession();

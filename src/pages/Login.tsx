@@ -240,7 +240,7 @@ const Login = () => {
               {loading ? 'Authenticating…' : "Session established. Launching dashboard…"}
             </p>
             <Button
-              onClick={() => window.location.replace('/creator-dashboard')}
+              onClick={() => navigate('/creator-dashboard', { replace: true })}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
             >
               Go to Dashboard

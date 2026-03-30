@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +37,7 @@ const BrandDirectory = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [industryFilter, setIndustryFilter] = useState<string>('all');
   const [ratingFilter, setRatingFilter] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
@@ -47,7 +49,7 @@ const BrandDirectory = () => {
     minRating: ratingFilter !== 'all' ? parseFloat(ratingFilter) : undefined,
     verifiedOnly: false,
     bookmarkedOnly: bookmarkedOnly,
-    searchTerm: searchTerm || undefined,
+    searchTerm: debouncedSearchTerm || undefined,
   });
 
   const toggleBookmarkMutation = useToggleBrandBookmark();
@@ -391,10 +393,10 @@ const BrandDirectory = () => {
         <div className="py-8">
           {(() => {
             // Step 1: Check if search term exists
-            if (searchTerm.trim().length > 0) {
+            if (debouncedSearchTerm.trim().length > 0) {
               return (
                 <SearchNoResultsEmptyState
-                  searchTerm={searchTerm}
+                  searchTerm={debouncedSearchTerm}
                   onClearFilters={() => {
                     setIndustryFilter('all');
                     setRatingFilter('all');
