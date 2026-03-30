@@ -8,11 +8,11 @@ import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, Exte
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
-const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
-const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
-const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
-const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
-const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
+const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&fit=crop&auto=format&q=80";
+const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&fit=crop&auto=format&q=80";
+const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&fit=crop&auto=format&q=80";
+const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&fit=crop&auto=format&q=80";
+const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&fit=crop&auto=format&q=80";
 
 const LandingPage = () => {
   const { session, loading, profile } = useSession();
@@ -55,35 +55,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white sm:bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
-      <SEOHead
-        title={seoTitle}
-        description={seoDescription}
-        keywords={seoKeywords}
-        canonicalUrl={canonicalUrl}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@graph': [
-            {
-              '@type': 'WebSite',
-              name: 'Creator Armour',
-              url: 'https://creatorarmour.com',
-              description: seoDescription,
-            },
-            {
-              '@type': 'SoftwareApplication',
-              name: 'Creator Armour',
-              applicationCategory: 'BusinessApplication',
-              operatingSystem: 'Web',
-              description: seoDescription,
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'INR',
-              },
-            },
-          ],
-        }}
-      />
+      <SEOHead title={seoTitle} description={seoDescription} keywords={seoKeywords} canonicalUrl={canonicalUrl} />
 
       {/* Modern Top Nav */}
       <nav className={cn(
@@ -122,7 +94,7 @@ const LandingPage = () => {
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap min-h-[44px]"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
             >
               Create Collab Link
             </Link>
