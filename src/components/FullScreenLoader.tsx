@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { MadeWithDyad } from '@/components/made-with-dyad';
 
 interface FullScreenLoaderProps {
   message?: string;
@@ -112,7 +111,7 @@ export const FullScreenLoader = ({
             transition={{ duration: 0.5 }}
             className="mt-12"
           >
-            <MadeWithDyad />
+            <span className="text-sm text-white/30">Powered by CreatorArmour ©2026</span>
           </motion.div>
         )}
       </AnimatePresence>

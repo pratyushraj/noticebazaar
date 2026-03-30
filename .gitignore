@@ -27,7 +27,22 @@ dist-ssr
 
 # Supabase
 supabase/.temp/
-ADD_FACEBOOK_SECRETS.md
+
+# One-time migration SQL files (should not be in version control)
+*.sql
+!supabase/migrations/*.sql
+
+# One-time fix/setup docs
+*_FIX.md
+*_SETUP.md
+*_GUIDE.md
+*_SUMMARY.md
+*_REPORT.md
+APPLY_*.md
+RUN_*.md
+UPDATE_*.sql
+VERIFY_*.sql
+FIX_*.sql
 .vercel
 cursor_mac_id_modifier.sh
 server/.env

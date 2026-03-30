@@ -94,7 +94,7 @@ const LandingPage = () => {
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap min-h-[44px]"
             >
               Create Collab Link
             </Link>

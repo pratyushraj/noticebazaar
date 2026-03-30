@@ -2,20 +2,8 @@ import { defineConfig } from "vite";
 import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { existsSync } from "fs";
 
-// Dynamically resolve React paths to ensure single instance
-function resolveReactPath() {
-  const root = process.cwd();
-  return {
-    react: path.resolve(root, "node_modules/react"),
-    reactDom: path.resolve(root, "node_modules/react-dom"),
-    jsxRuntime: path.resolve(root, "node_modules/react/jsx-runtime"),
-    jsxDevRuntime: path.resolve(root, "node_modules/react/jsx-dev-runtime"),
-  };
-}
 
-const reactPaths = resolveReactPath();
 
 // Plugin to fix use-sync-external-store/shim CommonJS export issue
 const useSyncExternalStoreShimPlugin = (): any => {
@@ -51,24 +39,6 @@ const useSyncExternalStoreShimPlugin = (): any => {
   };
 };
 
-// Plugin to force React into a single pre-bundled chunk
-const forceSingleReactChunkPlugin = (): any => {
-  return {
-    name: 'force-single-react-chunk',
-    enforce: 'pre' as const,
-    resolveId(id: string) {
-      // Force all React imports to resolve to the same location
-      if (id === 'react') return reactPaths.react;
-      if (id === 'react-dom') return reactPaths.reactDom;
-      if (id === 'react/jsx-runtime') return reactPaths.jsxRuntime;
-      if (id === 'react/jsx-dev-runtime') return reactPaths.jsxDevRuntime;
-      return null;
-    },
-    configResolved() {
-      // Ensure React dependencies are bundled together
-    },
-  };
-};
 
 export default defineConfig(() => ({
   server: {
@@ -95,9 +65,8 @@ export default defineConfig(() => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          'pdf-vendor': ['jspdf', 'html2canvas'],
-        },
+        // Let Vite auto-split — manual chunks are removed to allow better tree-shaking.
+        // pdf-vendor: jspdf + html2canvas are lazy-loaded via dynamic import in the few pages that need them.
       },
     },
   },
