@@ -17,6 +17,7 @@ import SocialSyncButton from '@/components/profile/SocialSyncButton';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { withRetry } from '@/lib/utils/retry';
 import { COPY_CONFIRM_MS } from '@/lib/constants/timing';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import {
@@ -293,14 +294,16 @@ const ProfileSettings = () => {
           return;
         }
 
-        const response = await fetch(
-          `${getApiBaseUrl()}/api/collab-analytics/summary`,
-          {
-            headers: {
-              'Authorization': `Bearer ${sessionData.session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          }
+        const response = await withRetry(() =>
+          fetch(
+            `${getApiBaseUrl()}/api/collab-analytics/summary`,
+            {
+              headers: {
+                'Authorization': `Bearer ${sessionData.session.access_token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          )
         );
 
         if (response.status === 401) {
@@ -321,7 +324,8 @@ const ProfileSettings = () => {
         }
       } catch (error) {
         console.error('[CreatorProfile] Error fetching analytics:', error);
-        // Don't show error to user, just use fallback
+        toast.error('Failed to load link analytics.');
+        // Don't show error to user for analytics, just use fallback
       } finally {
         setAnalyticsLoading(false);
       }

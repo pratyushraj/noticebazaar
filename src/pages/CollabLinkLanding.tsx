@@ -16,6 +16,7 @@ import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { withRetry } from '@/lib/utils/retry';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -1224,7 +1225,15 @@ const CollabLinkLanding = () => {
       });
 
       try {
-        const response = await fetch(apiUrl, { signal: controller.signal });
+        const response = await withRetry(() => fetch(apiUrl, { signal: controller.signal }), {
+          maxRetries: 2,
+          baseDelay: 2000,
+          shouldRetry: (error) => {
+            // Don't retry on 404
+            if (error instanceof Response && error.status === 404) return false;
+            return true;
+          },
+        });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -1582,7 +1591,7 @@ const CollabLinkLanding = () => {
 
     try {
       const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
+      const response = await withRetry(() => fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1618,7 +1627,7 @@ const CollabLinkLanding = () => {
           shipping_timeline_days: shippingTimelineDays ? Number(shippingTimelineDays) : undefined,
           cancellation_policy: cancellationPolicy || undefined,
         }),
-      });
+      }));
 
       const data = await response.json();
 

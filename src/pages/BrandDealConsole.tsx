@@ -31,6 +31,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { withRetry } from '@/lib/utils/retry';
 import { useSession } from '@/contexts/SessionContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,7 @@ const BrandDealConsole = () => {
             if (!token) return;
             try {
                 const apiBaseUrl = getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
+                const response = await withRetry(() => fetch(`${apiBaseUrl}/api/collab/console/${token}`));
                 const result = await response.json();
 
                 if (result.success) {
@@ -118,7 +119,7 @@ const BrandDealConsole = () => {
                 }
             } catch (error) {
                 console.error('Console fetch error:', error);
-                toast.error('Network error. Retrying...');
+                toast.error('Network error. Please check your connection and try again.');
             } finally {
                 setLoading(false);
             }
@@ -135,26 +136,27 @@ const BrandDealConsole = () => {
             setIsSubmittingContent(true);
         try {
             const apiBaseUrl = getApiBaseUrl();
-            const response = await fetch(`${apiBaseUrl}/api/deals/${data.brandDeal.id}/submit-content`, {
+            const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
+            const response = await withRetry(() => fetch(`${apiBaseUrl}/api/deals/${data.brandDeal.id}/submit-content`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                    'Authorization': `Bearer ${accessToken}`
                 },
                 body: JSON.stringify({ contentUrl, notes: creatorNotes })
-            });
+            }));
             const result = await response.json();
             if (result.success) {
                 toast.success('Content submitted for review');
                 // Refresh data
-                const refreshRes = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
+                const refreshRes = await withRetry(() => fetch(`${apiBaseUrl}/api/collab/console/${token}`));
                 const refreshData = await refreshRes.json();
                 if (refreshData.success) setData(refreshData);
             } else {
                 toast.error(result.error || 'Failed to submit content');
             }
         } catch (error) {
-            toast.error('Submission failed');
+            toast.error('Submission failed. Please try again.');
         } finally {
             setIsSubmittingContent(false);
         }
@@ -164,16 +166,16 @@ const BrandDealConsole = () => {
         setIsReviewing(true);
         try {
             const apiBaseUrl = getApiBaseUrl();
-            const response = await fetch(`${apiBaseUrl}/api/deals/${data.brandDeal.id}/review-content`, {
+            const response = await withRetry(() => fetch(`${apiBaseUrl}/api/deals/${data.brandDeal.id}/review-content`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status, feedback: brandFeedback })
-            });
+            }));
             const result = await response.json();
             if (result.success) {
                 toast.success(status === 'approved' ? 'Content approved!' : 'Feedback sent to creator');
                 // Refresh data
-                const refreshRes = await fetch(`${apiBaseUrl}/api/collab/console/${token}`);
+                const refreshRes = await withRetry(() => fetch(`${apiBaseUrl}/api/collab/console/${token}`));
                 const refreshData = await refreshRes.json();
                 if (refreshData.success) {
                     setData(refreshData);
@@ -183,7 +185,7 @@ const BrandDealConsole = () => {
                 toast.error(result.error || 'Failed to submit review');
             }
         } catch (error) {
-            toast.error('Review failed');
+            toast.error('Review failed. Please try again.');
         } finally {
             setIsReviewing(false);
         }

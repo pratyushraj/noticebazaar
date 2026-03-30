@@ -10,11 +10,13 @@ import {
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { withRetry } from '@/lib/utils/retry';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
+import { toast } from 'sonner';
 
 interface Creator {
     id: string;
@@ -51,7 +53,7 @@ const DiscoverCreators = () => {
                 ? `${getApiBaseUrl()}/api/creators?category=${category}&limit=100`
                 : `${getApiBaseUrl()}/api/creators?limit=100`;
 
-            const response = await fetch(url);
+            const response = await withRetry(() => fetch(url));
             const data = await response.json();
 
             if (data.success) {
@@ -59,6 +61,7 @@ const DiscoverCreators = () => {
             }
         } catch (error) {
             console.error('[DiscoverCreators] Error fetching creators:', error);
+            toast.error('Failed to load creators. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -66,7 +69,7 @@ const DiscoverCreators = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch(`${getApiBaseUrl()}/api/creators/categories`);
+            const response = await withRetry(() => fetch(`${getApiBaseUrl()}/api/creators/categories`));
             const data = await response.json();
 
             if (data.success) {
@@ -74,6 +77,7 @@ const DiscoverCreators = () => {
             }
         } catch (error) {
             console.error('[DiscoverCreators] Error fetching categories:', error);
+            toast.error('Failed to load categories.');
         }
     };
 
