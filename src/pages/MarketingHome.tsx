@@ -172,6 +172,51 @@ const pricingUseCases: Record<string, { heading: string; description: string }> 
   },
 };
 
+const dashboardProofCards = [
+  {
+    image: '/pasted-image-2025-10-30T08-18-24-826Z.png',
+    alt: 'Contract scan preview',
+    title: 'Clause risk flagged',
+    description: 'Spot risky language before a vague contract turns into a one-sided obligation.',
+  },
+  {
+    image: '/pasted-image-2025-10-29T16-49-34-444Z.png',
+    alt: 'Deal tracking preview',
+    title: 'Payment overdue',
+    description: 'See which brand deals are slipping so follow-up is tied to dates and deliverables.',
+  },
+  {
+    image: '/Pixel-True-Mockup-(2)-(2).png',
+    alt: 'Payments due preview',
+    title: 'Evidence stored',
+    description: 'Keep approvals, invoices, and communications in one place instead of scattered chats.',
+  },
+  {
+    image: '/iPhone-12-PRO-localhost.png',
+    alt: 'Escalation workflow preview',
+    title: 'Escalation ready',
+    description: 'When a brand goes silent, your records are already organized for the next step.',
+  },
+];
+
+const trustPeople = [
+  {
+    name: 'Legal advisors',
+    role: 'Dispute and contract support',
+    description: 'Independent legal professionals help creators review terms, document disputes, and escalate cleanly.',
+  },
+  {
+    name: 'CA partners',
+    role: 'Tax and compliance support',
+    description: 'Compliance guidance is built around creator income realities, not generic small-business templates.',
+  },
+  {
+    name: 'Creator-first product team',
+    role: 'Workflow and evidence design',
+    description: 'The product is designed around delayed payments, vague approvals, and proof loss across chat tools.',
+  },
+];
+
 const MarketingHome = () => {
   const { session, loading, profile } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -682,10 +727,16 @@ const MarketingHome = () => {
             <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">A dedicated portal to manage your brand deals, payments, and content protection.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <img src="/pasted-image-2025-10-30T08-18-24-826Z.png" alt="Contract Scan Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
-            <img src="/pasted-image-2025-10-29T16-49-34-444Z.png" alt="Deal Tracking Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
-            <img src="/Pixel-True-Mockup-(2)-(2).png" alt="Payments Due Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
-            <img src="/iPhone-12-PRO-localhost.png" alt="Copyright Alerts Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
+            {dashboardProofCards.map((card) => (
+              <div key={card.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] overflow-hidden shadow-lg">
+                <img src={card.image} alt={card.alt} className="w-full rounded-t-[1.5rem] border-b border-white/10" loading="lazy" />
+                <div className="p-4">
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-blue-200/75">Dashboard proof</p>
+                  <h3 className="mt-2 text-lg font-bold text-white">{card.title}</h3>
+                  <p className="mt-2 text-sm text-slate-300">{card.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -876,6 +927,26 @@ const MarketingHome = () => {
           </div>
         </section>
 
+        {/* SECTION 11 — Human Trust */}
+        <section className="py-16" data-aos="fade-up">
+          <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+            <div className="max-w-3xl">
+              <p className="section-kicker">Who this is built with</p>
+              <h2 className="mt-3 text-3xl font-bold text-white">Software handles the workflow. Real specialists support the hard parts.</h2>
+              <p className="mt-3 text-lg text-slate-300">Creator Armour is not positioned as generic creator SaaS. The trust model is a product workflow backed by legal and compliance specialists when the situation needs real judgment.</p>
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {trustPeople.map((person) => (
+                <div key={person.name} className="mesh-card rounded-[1.5rem] p-5">
+                  <p className="text-lg font-bold text-white">{person.name}</p>
+                  <p className="mt-1 text-sm font-semibold text-blue-200">{person.role}</p>
+                  <p className="mt-3 text-slate-300">{person.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* SECTION 11 — Final CTA */}
         <section className="py-20 text-center" data-aos="fade-up">
           <h2 className="text-3xl font-bold mb-6">Don't Let Brands Delay Your Payment</h2>
@@ -1019,7 +1090,7 @@ const MarketingHome = () => {
       </div>
 
       {/* Floating WhatsApp CTA (bottom-right) */}
-      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 flex items-center gap-2 transition-all duration-300 hover:scale-105">
+      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
         <MessageSquare className="h-6 w-6 text-white" />
         <span className="text-white font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
       </a>
