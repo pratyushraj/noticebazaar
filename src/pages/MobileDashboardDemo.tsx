@@ -368,7 +368,7 @@ const getCreatorPaymentListUX = (deal: any) => {
 // Animated Number Counter
 const AnimatedCounter = ({ value }: { value: number }) => {
     const springValue = useSpring(0, { stiffness: 45, damping: 20 });
-    const displayValue = useTransform(springValue, (latest) => Math.floor(latest).toLocaleString());
+    const displayValue = useTransform(springValue, (latest: number) => Math.floor(latest).toLocaleString());
 
     useEffect(() => {
         const timeout = setTimeout(() => springValue.set(value), 400);
@@ -797,6 +797,11 @@ const MobileDashboardDemo = ({
     const [selectedPayment, setSelectedPayment] = useState<any | null>(null);
     const [itemDetailPortalRoot, setItemDetailPortalRoot] = useState<HTMLElement | null>(null);
 
+    // New: Availability & Engagement States
+    const [workStatus, setWorkStatus] = useState<'open' | 'limited' | 'booked'>('open');
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+
     const currentDealStage: DealStage | undefined = React.useMemo(() => {
         if (selectedType !== 'deal' || !selectedItem) return undefined;
         return getDealStageFromStatus(selectedItem?.status, selectedItem?.progress_percentage);
@@ -1125,6 +1130,9 @@ const MobileDashboardDemo = ({
     const actionRequiredTotalCount = pendingOffersCount + actionRequiredDealsCount;
     const activeDealsCount = activeDealsList.length;
     const completedDealsCount = completedDealsList.length;
+    const trustLevel = completedDealsCount >= 10 ? 3 : completedDealsCount >= 3 ? 2 : 1;
+    const trustLevelLabel = trustLevel === 3 ? "Pro Partner" : trustLevel === 2 ? "Rising Star" : "New Creator";
+    const nextTrustUnlock = trustLevel === 1 ? (3 - completedDealsCount) : trustLevel === 2 ? (10 - completedDealsCount) : 0;
     const collabViews = collabAnalytics?.views.total ?? 0;
     const collabRequestCount = collabAnalytics?.submissions.total ?? 0;
     const collabConversion = collabAnalytics?.conversionRate.value ?? 0;
@@ -1166,6 +1174,106 @@ const MobileDashboardDemo = ({
         Boolean((profile?.collab_brands_count_override || 0) > 0 || (profile?.collab_past_work_items || []).length > 0),
     ]), [packageTemplates, profile?.bank_upi, profile?.collab_brands_count_override, profile?.collab_intro_line, profile?.collab_past_work_items, profile?.media_kit_url, profileFormData?.bank_upi]);
     const bookingReadinessScore = Math.round((bookingReadinessChecks.filter(Boolean).length / bookingReadinessChecks.length) * 100);
+    const storefrontReadinessTasks = React.useMemo(() => ([
+        {
+            done: Boolean((profile?.collab_intro_line || '').trim()),
+            label: 'Add your intro line',
+            target: () => {
+                setActiveTab('account');
+                setActiveSettingsPage('collab-link');
+                setStorefrontSection('profile');
+            },
+        },
+        {
+            done: Array.isArray(packageTemplates) && packageTemplates.some((pkg: any) => Number(pkg?.rate || 0) > 0),
+            label: 'Set your first package',
+            target: () => {
+                setActiveTab('account');
+                setActiveSettingsPage('packages');
+            },
+        },
+        {
+            done: Boolean((profile?.media_kit_url || '').trim()),
+            label: 'Add a media kit or portfolio link',
+            target: () => {
+                setActiveTab('account');
+                setActiveSettingsPage('collab-link');
+                setStorefrontSection('profile');
+            },
+        },
+        {
+            done: Boolean((profile?.bank_upi || profileFormData?.bank_upi || '').trim()),
+            label: 'Add payout details',
+            target: () => {
+                setActiveTab('account');
+                setActiveSettingsPage('payouts');
+            },
+        },
+        {
+            done: Boolean((profile?.collab_brands_count_override || 0) > 0 || (profile?.collab_past_work_items || []).length > 0),
+            label: 'Add one proof item',
+            target: () => {
+                setActiveTab('account');
+                setActiveSettingsPage('collab-link');
+                setStorefrontSection('proof');
+            },
+        },
+    ]), [packageTemplates, profile?.bank_upi, profile?.collab_brands_count_override, profile?.collab_intro_line, profile?.collab_past_work_items, profile?.media_kit_url, profileFormData?.bank_upi]);
+    const remainingStorefrontTasks = storefrontReadinessTasks.filter((task) => !task.done);
+    const isStorefrontDiscoverable = remainingStorefrontTasks.length === 0;
+    const storefrontStatus = isStorefrontDiscoverable
+        ? { label: 'Visible In Brand Search', tone: 'emerald' as const, helper: 'Brands can now discover and compare your storefront.' }
+        : bookingReadinessScore >= 60
+            ? { label: 'Storefront Preview Ready', tone: 'blue' as const, helper: 'Your page is usable. Finish the remaining fields to unlock discovery.' }
+            : { label: 'Needs Setup', tone: 'amber' as const, helper: 'Add the core selling details so brands know what you offer.' };
+    const applyStarterStorefrontContent = () => {
+        const displayName = String(profileFormData?.full_name || profile?.first_name || profile?.username || 'Creator').trim();
+        const category = String(profileFormData?.creator_category || profile?.creator_category || 'Lifestyle').trim();
+        const followers = Number(profileFormData?.instagram_followers || profile?.instagram_followers || 0) || 18000;
+        const baseRate = Math.max(
+            5000,
+            Number(profileFormData?.avg_rate_reel || profile?.avg_rate_reel || packageTemplates?.[0]?.rate || 0) || 12000
+        );
+
+        setProfileFormData((prev: any) => ({
+            ...prev,
+            collab_intro_line: prev?.collab_intro_line?.trim() || `${category} creator helping brands launch clear, conversion-focused collaborations.`,
+            media_kit_url: prev?.media_kit_url?.trim() || 'https://drive.google.com/your-media-kit',
+            creator_category: prev?.creator_category?.trim() || category,
+            instagram_followers: prev?.instagram_followers || String(followers),
+            collab_brands_count_override: prev?.collab_brands_count_override || '3',
+            collab_response_hours_override: prev?.collab_response_hours_override || '3',
+            content_niches: Array.isArray(prev?.content_niches) && prev.content_niches.length > 0 ? prev.content_niches : [category],
+            collab_past_work_items: Array.isArray(prev?.collab_past_work_items) && prev.collab_past_work_items.length > 0
+                ? prev.collab_past_work_items
+                : [{
+                    id: 'starter-proof',
+                    brand: `${displayName.split(' ')[0] || 'Creator'} x Demo Brand`,
+                    campaignType: 'Instagram Reel',
+                    outcome: 'Starter proof card added for your storefront',
+                    proofLabel: 'Featured work',
+                }],
+        }));
+
+        setPackageTemplates((prev) => {
+            const seeded = Array.isArray(prev) && prev.length > 0 ? [...prev] : buildDefaultPackageTemplates(profile);
+            if (!seeded[0]) return seeded;
+            seeded[0] = {
+                ...seeded[0],
+                name: seeded[0].name || 'Starter Package',
+                description: seeded[0].description || 'Fast brand-ready reel package for discovery campaigns.',
+                deliverables: Array.isArray(seeded[0].deliverables) && seeded[0].deliverables.length > 0 ? seeded[0].deliverables : ['1 Reel'],
+                rate: Number(seeded[0].rate || 0) > 0 ? seeded[0].rate : baseRate,
+                turnaround_days: seeded[0].turnaround_days || 5,
+                revision_count: seeded[0].revision_count ?? 1,
+                is_default: true,
+            };
+            return seeded;
+        });
+
+        toast.success('Starter storefront content added');
+        triggerHaptic(HapticPatterns.success);
+    };
     const dashboardActionItems = React.useMemo(() => {
         const items: Array<{ id: string; priority: number; title: string; subtitle: string; cta: string; tone: 'amber' | 'blue' | 'red' | 'emerald'; onClick: () => void }> = [];
 
@@ -2697,7 +2805,7 @@ const MobileDashboardDemo = ({
                             </div>
                             <SectionHeader title="Financial Reports" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
-                                <SettingsRow icon={<FileText />} iconBg="bg-blue-500" label="Tax Invoices (GST)" subtext="Download monthly summaries" isDark={isDark} textColor={textColor} hasChevron />
+                                <SettingsRow icon={<FileText />} iconBg="bg-blue-500" label="Invoices" subtext="Download monthly summaries" isDark={isDark} textColor={textColor} hasChevron />
                                 <SettingsRow icon={<Download />} iconBg="bg-emerald-500" label="Payout Statements" subtext="Detailed breakdown of fees" isDark={isDark} textColor={textColor} hasChevron />
                             </SettingsGroup>
                         </div>
@@ -3617,6 +3725,112 @@ const MobileDashboardDemo = ({
                             ) : (
                                 <>
                                     <div className="px-5 mb-8 space-y-6">
+                                        {bookingReadinessScore < 100 && (
+                                            <motion.div
+                                                initial={{ y: 10, opacity: 0 }}
+                                                animate={{ y: 0, opacity: 1 }}
+                                                transition={{ delay: 0.05 }}
+                                                className={cn(
+                                                    "rounded-[2rem] border p-5 shadow-sm",
+                                                    isDark ? "bg-[#10192A] border-cyan-400/20" : "bg-white border-emerald-100 shadow-[0_14px_30px_rgba(16,185,129,0.08)]"
+                                                )}
+                                            >
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Complete Your Collab Link</p>
+                                                        <h2 className={cn("text-[22px] leading-[1.05] font-black tracking-tight mt-1", textColor)}>{bookingReadinessScore}% complete</h2>
+                                                        <p className={cn("mt-2 text-[13px] leading-relaxed", secondaryTextColor)}>
+                                                            {isStorefrontDiscoverable
+                                                                ? 'Your storefront is ready for brand discovery.'
+                                                                : `Your storefront is live but not discoverable yet. Complete ${remainingStorefrontTasks.length} more ${remainingStorefrontTasks.length === 1 ? 'step' : 'steps'} to appear in the brand directory.`}
+                                                        </p>
+                                                    </div>
+                                                    <div className={cn(
+                                                        "shrink-0 rounded-full px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em]",
+                                                        isStorefrontDiscoverable ? "bg-emerald-500/15 text-emerald-500" : "bg-amber-500/15 text-amber-500"
+                                                    )}>
+                                                        {isStorefrontDiscoverable ? 'Discoverable' : 'Private'}
+                                                    </div>
+                                                </div>
+                                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                    <div className={cn("rounded-[1.25rem] border px-4 py-3", isDark ? "border-white/10 bg-white/[0.04]" : "border-slate-200 bg-slate-50")}>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>Milestone</p>
+                                                        <p className={cn("mt-1 text-[14px] font-black", textColor)}>{storefrontStatus.label}</p>
+                                                        <p className={cn("mt-1 text-[11px] leading-relaxed", secondaryTextColor)}>{storefrontStatus.helper}</p>
+                                                    </div>
+                                                    <div className={cn("rounded-[1.25rem] border px-4 py-3", isDark ? "border-white/10 bg-white/[0.04]" : "border-slate-200 bg-slate-50")}>
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-45", textColor)}>Next unlock</p>
+                                                        <p className={cn("mt-1 text-[14px] font-black", textColor)}>
+                                                            {isStorefrontDiscoverable ? 'Direct offers ready' : 'Brand directory visibility'}
+                                                        </p>
+                                                        <p className={cn("mt-1 text-[11px] leading-relaxed", secondaryTextColor)}>
+                                                            {isStorefrontDiscoverable ? 'Your storefront can now support discovery and direct outreach.' : `Complete ${remainingStorefrontTasks.length} more ${remainingStorefrontTasks.length === 1 ? 'field group' : 'field groups'} to unlock it.`}
+                                                        </p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={applyStarterStorefrontContent}
+                                                        className={cn(
+                                                            "rounded-[1.25rem] border px-4 py-3 text-left transition-all active:scale-[0.99]",
+                                                            isDark ? "border-cyan-400/20 bg-cyan-400/10 hover:bg-cyan-400/15" : "border-cyan-100 bg-cyan-50 hover:bg-cyan-100"
+                                                        )}
+                                                    >
+                                                        <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-55", textColor)}>Quick start</p>
+                                                        <p className={cn("mt-1 text-[14px] font-black", textColor)}>Use starter content</p>
+                                                        <p className={cn("mt-1 text-[11px] leading-relaxed", secondaryTextColor)}>Prefill your intro, first package, proof card, and media kit placeholder.</p>
+                                                    </button>
+                                                </div>
+                                                <div className={cn("mt-4 h-2.5 w-full rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-slate-100")}>
+                                                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-600" style={{ width: `${bookingReadinessScore}%` }} />
+                                                </div>
+                                                {remainingStorefrontTasks.length > 0 && (
+                                                    <div className="mt-4 space-y-2">
+                                                        {storefrontReadinessTasks.map((task, index) => (
+                                                            <button
+                                                                key={task.label}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    triggerHaptic();
+                                                                    task.target();
+                                                                }}
+                                                                className={cn(
+                                                                    "w-full rounded-[1.2rem] border px-4 py-3 text-left transition-all active:scale-[0.99] flex items-center justify-between gap-3",
+                                                                    task.done
+                                                                        ? (isDark ? "border-emerald-500/20 bg-emerald-500/10" : "border-emerald-100 bg-emerald-50")
+                                                                        : (isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50")
+                                                                )}
+                                                            >
+                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                    <div className={cn(
+                                                                        "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0",
+                                                                        task.done
+                                                                            ? "bg-emerald-500 text-white"
+                                                                            : (isDark ? "bg-white/10 text-white/70" : "bg-white text-slate-500 border border-slate-200")
+                                                                    )}>
+                                                                        {task.done ? <CheckCircle2 className="w-4 h-4" /> : index + 1}
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <p className={cn("text-[13px] font-black", textColor)}>{task.label}</p>
+                                                                        <p className={cn("text-[11px]", secondaryTextColor)}>
+                                                                            {task.done ? 'Completed' : 'Required for brand discovery'}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <span className={cn(
+                                                                    "shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]",
+                                                                    task.done
+                                                                        ? "bg-emerald-500/15 text-emerald-500"
+                                                                        : "bg-blue-600 text-white"
+                                                                )}>
+                                                                    {task.done ? 'Done' : 'Open'}
+                                                                </span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        )}
+
                                         <motion.div
                                             initial={{ scale: 0.97, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}

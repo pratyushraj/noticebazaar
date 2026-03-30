@@ -32,9 +32,10 @@ import { CollabProfileStep } from '@/components/onboarding/setup/CollabProfileSt
 import { CollabPricingStep } from '@/components/onboarding/setup/CollabPricingStep';
 import { PayoutSetupStep } from '@/components/onboarding/setup/PayoutSetupStep';
 import { SuccessStep } from '@/components/onboarding/setup/SuccessStep';
+import { CollabPagePreview } from '@/components/onboarding/CollabPagePreview';
 
 type WelcomeStep = 0 | 1 | 2 | 3 | 4 | 5;
-type SetupStep = 'name' | 'instagram' | 'niches' | 'reelRate' | 'basics' | 'collabProfile' | 'pricing' | 'payout' | 'success';
+type SetupStep = 'instagram' | 'name' | 'niches' | 'reelRate' | 'basics' | 'collabProfile' | 'pricing' | 'payout' | 'success';
 type DealType = 'paid' | 'barter' | 'hybrid' | 'all';
 
 interface OnboardingData {
@@ -114,7 +115,7 @@ const CreatorOnboarding = () => {
   }, []);
 
   const [welcomeStep, setWelcomeStep] = useState<WelcomeStep>(0);
-  const [setupStep, setSetupStep] = useState<SetupStep>('name');
+  const [setupStep, setSetupStep] = useState<SetupStep>('instagram');
   const [onboardingData, setOnboardingData] = useState<OnboardingData>(() => {
     // Auto-save: Load from localStorage
     const saved = localStorage.getItem('onboarding-data');
@@ -199,10 +200,10 @@ const CreatorOnboarding = () => {
         handleNextWelcome();
       }
       // Setup steps - navigate forward
-      else if (setupStep === 'name') {
-        if (onboardingData.name.trim()) handleNameNext();
-      } else if (setupStep === 'instagram') {
+      else if (setupStep === 'instagram') {
         if (onboardingData.instagramUsername.trim().length >= 3) handleInstagramNext();
+      } else if (setupStep === 'name') {
+        if (onboardingData.name.trim()) handleNameNext();
       } else if (setupStep === 'niches') {
         if (onboardingData.contentNiches.length > 0) handleNichesNext();
       } else if (setupStep === 'reelRate') {
@@ -223,10 +224,10 @@ const CreatorOnboarding = () => {
         handleBackWelcome();
       }
       // Setup steps - navigate back
-      else if (setupStep === 'instagram') {
-        setSetupStep('name');
-      } else if (setupStep === 'niches') {
+      else if (setupStep === 'name') {
         setSetupStep('instagram');
+      } else if (setupStep === 'niches') {
+        setSetupStep('name');
       } else if (setupStep === 'reelRate') {
         setSetupStep('niches');
       } else if (setupStep === 'basics') {
@@ -345,7 +346,7 @@ const CreatorOnboarding = () => {
       // Move from welcome screens to setup steps
       // Set welcomeStep to 5 so the welcome screen condition becomes false
       setWelcomeStep(5 as WelcomeStep);
-      setSetupStep('name');
+      setSetupStep('instagram');
     }
   };
 
@@ -355,19 +356,19 @@ const CreatorOnboarding = () => {
     }
   };
 
-  const handleNameNext = () => {
-    if (onboardingData.name.trim()) {
-      setSetupStep('instagram');
-    }
-  };
-
   const handleInstagramNext = () => {
     if (onboardingData.instagramUsername.trim().length < 3) {
       setValidationErrors({ instagramUsername: 'Enter at least 3 characters for your public collab link.' });
       return;
     }
     clearValidationErrors('instagramUsername');
-    setSetupStep('niches');
+    setSetupStep('name');
+  };
+
+  const handleNameNext = () => {
+    if (onboardingData.name.trim()) {
+      setSetupStep('niches');
+    }
   };
 
   const handleNichesNext = () => {
@@ -891,8 +892,8 @@ const CreatorOnboarding = () => {
     }
   };
 
-  // Welcome Screens
-  if (setupStep === 'name' && welcomeStep < 5 && !onboardingData.name) {
+  // Progress Dots and Welcome Screens Logic
+  if (welcomeStep < 5 && setupStep === 'instagram' && !onboardingData.instagramUsername) {
     return (
       <OnboardingContainer theme={theme}>
         <div className="w-full relative z-50 h-12 md:h-14 max-w-3xl mx-auto px-4 md:px-6 flex items-center justify-center">
@@ -904,63 +905,37 @@ const CreatorOnboarding = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {welcomeStep === 0 && (
-            <WelcomeScreen1 key="welcome-0" onNext={handleNextWelcome} />
-          )}
-          {welcomeStep === 1 && (
-            <WelcomeScreen2
-              key="welcome-1"
-              onNext={handleNextWelcome}
-              onBack={handleBackWelcome}
-            />
-          )}
-          {welcomeStep === 2 && (
-            <WelcomeScreen3
-              key="welcome-2"
-              onNext={handleNextWelcome}
-              onBack={handleBackWelcome}
-            />
-          )}
-          {welcomeStep === 3 && (
-            <WelcomeScreen4
-              key="welcome-3"
-              onNext={handleNextWelcome}
-              onBack={handleBackWelcome}
-            />
-          )}
-          {welcomeStep === 4 && (
-            <WelcomeScreen5
-              key="welcome-4"
-              onNext={handleNextWelcome}
-              onBack={handleBackWelcome}
-            />
-          )}
+          {welcomeStep === 0 && <WelcomeScreen1 key="welcome-0" onNext={handleNextWelcome} />}
+          {welcomeStep === 1 && <WelcomeScreen2 key="welcome-1" onNext={handleNextWelcome} onBack={handleBackWelcome} />}
+          {welcomeStep === 2 && <WelcomeScreen3 key="welcome-2" onNext={handleNextWelcome} onBack={handleBackWelcome} />}
+          {welcomeStep === 3 && <WelcomeScreen4 key="welcome-3" onNext={handleNextWelcome} onBack={handleBackWelcome} />}
+          {welcomeStep === 4 && <WelcomeScreen5 key="welcome-4" onNext={handleNextWelcome} onBack={handleBackWelcome} />}
         </AnimatePresence>
       </OnboardingContainer>
     );
   }
 
-  // Setup Steps
+  // Helper for progress bar
   const getStepNumber = () => {
     switch (setupStep) {
-      case 'name': return 1;
-      case 'instagram': return 2;
+      case 'instagram': return 1;
+      case 'name': return 2;
       case 'niches': return 3;
       case 'reelRate': return 4;
       case 'basics': return 5;
       case 'collabProfile': return 6;
       case 'pricing': return 7;
       case 'payout': return 8;
-      default: return 0;
+      default: return 9;
     }
   };
 
   return (
-    <OnboardingContainer theme={theme}>
-      <div className="flex-1 flex flex-col min-h-0 max-w-2xl mx-auto w-full p-4 pb-16 overflow-y-auto overscroll-contain">
-        {/* Progress Bar - Add top padding on mobile to account for safe area */}
+    <OnboardingContainer theme={theme} className="!flex-row overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 w-full overflow-y-auto overscroll-contain relative scrollbar-hide">
+        {/* Progress Bar */}
         {setupStep !== 'success' && (
-          <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 flex-shrink-0">
+          <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 px-4 md:px-8 max-w-2xl mx-auto w-full flex-shrink-0">
             <OnboardingProgressBar
               currentStep={getStepNumber()}
               totalSteps={8}
@@ -968,244 +943,208 @@ const CreatorOnboarding = () => {
           </div>
         )}
 
-        {/* Calculate suggested India-market rate based on followers if available */}
-        {(() => {
-          const followers = profile?.instagram_followers || 0;
-          let suggestedRate = followers > 0 ? Math.round(followers * 0.06) : undefined;
-          if (followers > 5000000) suggestedRate = Math.max(suggestedRate || 0, 150000);
-          else if (followers > 1000000) suggestedRate = Math.max(suggestedRate || 0, 80000);
-          else if (followers > 500000) suggestedRate = Math.max(suggestedRate || 0, 40000);
-          if (followers >= 10000) suggestedRate = Math.max(suggestedRate || 0, 2000);
-          else if (followers >= 5000) suggestedRate = Math.max(suggestedRate || 0, 1500);
-          if (suggestedRate) suggestedRate = Math.max(1500, Math.min(800000, suggestedRate));
+        <div className="flex-1 flex flex-col p-4 md:p-8 max-w-2xl mx-auto w-full">
+          <AnimatePresence mode="wait">
+            {setupStep === 'instagram' && (
+              <InstagramStep
+                key="instagram"
+                instagramUsername={onboardingData.instagramUsername}
+                onUsernameChange={(v) => {
+                  clearValidationErrors('instagramUsername');
+                  setOnboardingData(p => ({ ...p, instagramUsername: v }));
+                }}
+                error={validationErrors.instagramUsername}
+                onNext={handleInstagramNext}
+                onBack={() => setWelcomeStep(4)}
+              />
+            )}
 
-          return (
-            <AnimatePresence mode="wait">
-              {/* Step 1: Name */}
-              {setupStep === 'name' && (
-                <NameStep
-                  key="name"
-                  name={onboardingData.name}
-                  onNameChange={(name) =>
-                    setOnboardingData((prev) => ({ ...prev, name }))
-                  }
-                  onNext={handleNameNext}
-                />
-              )}
+            {setupStep === 'name' && (
+              <NameStep
+                key="name"
+                name={onboardingData.name}
+                onNameChange={(v) => setOnboardingData(p => ({ ...p, name: v }))}
+                onNext={handleNameNext}
+              />
+            )}
 
-              {/* Step 2: Instagram username (collab link) */}
-              {setupStep === 'instagram' && (
-                <InstagramStep
-                  key="instagram"
-                  instagramUsername={onboardingData.instagramUsername}
-                  onUsernameChange={(username) => {
-                    clearValidationErrors('instagramUsername');
-                    setOnboardingData((prev) => ({ ...prev, instagramUsername: username }));
-                  }}
-                  error={validationErrors.instagramUsername}
-                  onNext={handleInstagramNext}
-                  onBack={() => setSetupStep('name')}
-                />
-              )}
+            {setupStep === 'niches' && (
+              <NicheStep
+                key="niches"
+                selectedNiches={onboardingData.contentNiches}
+                onNicheToggle={(niche) => {
+                  setOnboardingData((prev) => ({
+                    ...prev,
+                    contentNiches: prev.contentNiches.includes(niche)
+                      ? prev.contentNiches.filter((n) => n !== niche)
+                      : [...prev.contentNiches, niche],
+                  }));
+                }}
+                onNext={handleNichesNext}
+                onBack={() => setSetupStep('name')}
+              />
+            )}
 
-              {/* Step 5: Niches */}
-              {setupStep === 'niches' && (
-                <NicheStep
-                  key="niches"
-                  selectedNiches={onboardingData.contentNiches}
-                  onNicheToggle={(niche) => {
-                    setOnboardingData((prev) => ({
-                      ...prev,
-                      contentNiches: prev.contentNiches.includes(niche)
-                        ? prev.contentNiches.filter((n) => n !== niche)
-                        : [...prev.contentNiches, niche],
-                    }));
-                  }}
-                  onNext={handleNichesNext}
-                  onBack={() => setSetupStep('instagram')}
-                />
-              )}
+            {setupStep === 'reelRate' && (
+              <ReelRateStep
+                key="reel-rate"
+                reelRate={onboardingData.reelRate}
+                dealType={onboardingData.dealType}
+                barterValueMin={onboardingData.barterValueMin}
+                onRateChange={(v) => {
+                  clearValidationErrors('reelRate');
+                  setOnboardingData(p => ({ ...p, reelRate: v }));
+                }}
+                onDealTypeChange={(v) => setOnboardingData(p => ({ ...p, dealType: v }))}
+                onBarterValueMinChange={(v) => {
+                  clearValidationErrors('barterValueMin');
+                  setOnboardingData(p => ({ ...p, barterValueMin: v }));
+                }}
+                reelRateError={validationErrors.reelRate}
+                barterValueError={validationErrors.barterValueMin}
+                onNext={handleReelRateNext}
+                onBack={() => setSetupStep('niches')}
+              />
+            )}
 
-              {/* Step 6: Reel Rate */}
-              {setupStep === 'reelRate' && (
-                <ReelRateStep
-                  key="reelRate"
-                  reelRate={onboardingData.reelRate}
-                  dealType={onboardingData.dealType}
-                  barterValueMin={onboardingData.barterValueMin}
-                  suggestedRate={suggestedRate}
-                  onRateChange={(rate) => {
-                    clearValidationErrors('reelRate');
-                    setOnboardingData((prev) => ({ ...prev, reelRate: rate }));
-                  }}
-                  onDealTypeChange={(dealType) =>
-                    setOnboardingData((prev) => ({ ...prev, dealType }))
-                  }
-                  onBarterValueMinChange={(barterValueMin) => {
-                    clearValidationErrors('barterValueMin');
-                    setOnboardingData((prev) => ({ ...prev, barterValueMin }));
-                  }}
-                  reelRateError={validationErrors.reelRate}
-                  barterValueError={validationErrors.barterValueMin}
-                  onNext={handleReelRateNext}
-                  onBack={() => setSetupStep('niches')}
-                />
-              )}
+            {setupStep === 'basics' && (
+              <CollabBasicsStep
+                key="collab-basics"
+                city={onboardingData.collabCity}
+                responseHours={onboardingData.collabResponseHours}
+                onCityChange={(v) => {
+                  clearValidationErrors('collabCity');
+                  setOnboardingData(p => ({ ...p, collabCity: v }));
+                }}
+                onResponseHoursChange={(v) => setOnboardingData(p => ({ ...p, collabResponseHours: v }))}
+                cityError={validationErrors.collabCity}
+                onNext={handleBasicsNext}
+                onBack={() => setSetupStep('reelRate')}
+              />
+            )}
 
-              {/* Step 7: Collab Basics */}
-              {setupStep === 'basics' && (
-                <CollabBasicsStep
-                  key="collab-basics"
-                  city={onboardingData.collabCity}
-                  responseHours={onboardingData.collabResponseHours}
-                  onCityChange={(collabCity) => {
-                    clearValidationErrors('collabCity');
-                    setOnboardingData((prev) => ({ ...prev, collabCity }));
-                  }}
-                  onResponseHoursChange={(collabResponseHours) =>
-                    setOnboardingData((prev) => ({ ...prev, collabResponseHours }))
-                  }
-                  cityError={validationErrors.collabCity}
-                  onNext={handleBasicsNext}
-                  onBack={() => setSetupStep('reelRate')}
-                />
-              )}
+            {setupStep === 'collabProfile' && (
+              <CollabProfileStep
+                key="collab-profile"
+                bio={onboardingData.collabBio}
+                followers={onboardingData.collabFollowers}
+                brandDealsCompleted={onboardingData.collabBrandsCompleted}
+                audienceGenderSplit={onboardingData.audienceGenderSplit}
+                primaryAudienceLanguage={onboardingData.primaryAudienceLanguage}
+                postingFrequency={onboardingData.postingFrequency}
+                avgReelViewsManual={onboardingData.avgReelViewsManual}
+                avgLikesManual={onboardingData.avgLikesManual}
+                onBioChange={(v) => {
+                  clearValidationErrors('collabBio');
+                  setOnboardingData(p => ({ ...p, collabBio: v }));
+                }}
+                onFollowersChange={(v) => {
+                  clearValidationErrors('collabFollowers');
+                  setOnboardingData(p => ({ ...p, collabFollowers: v }));
+                }}
+                onBrandDealsCompletedChange={(v) => {
+                  clearValidationErrors('collabBrandsCompleted');
+                  setOnboardingData(p => ({ ...p, collabBrandsCompleted: v }));
+                }}
+                onAudienceGenderSplitChange={(v) => {
+                  clearValidationErrors('audiencePersona');
+                  setOnboardingData(p => ({ ...p, audienceGenderSplit: v }));
+                }}
+                onPrimaryAudienceLanguageChange={(v) => {
+                  clearValidationErrors('audiencePersona');
+                  setOnboardingData(p => ({ ...p, primaryAudienceLanguage: v }));
+                }}
+                onPostingFrequencyChange={(v) => {
+                  clearValidationErrors('postingFrequency');
+                  setOnboardingData(p => ({ ...p, postingFrequency: v }));
+                }}
+                onAvgReelViewsManualChange={(v) => {
+                  clearValidationErrors('performanceSignal');
+                  setOnboardingData(p => ({ ...p, avgReelViewsManual: v }));
+                }}
+                onAvgLikesManualChange={(v) => {
+                  clearValidationErrors('performanceSignal');
+                  setOnboardingData(p => ({ ...p, avgLikesManual: v }));
+                }}
+                onGenerateBio={handleGenerateBio}
+                isGeneratingBio={isGeneratingBio}
+                errors={{
+                  bio: validationErrors.collabBio,
+                  followers: validationErrors.collabFollowers,
+                  brandDealsCompleted: validationErrors.collabBrandsCompleted,
+                  audiencePersona: validationErrors.audiencePersona,
+                  postingFrequency: validationErrors.postingFrequency,
+                  performanceSignal: validationErrors.performanceSignal,
+                }}
+                onNext={handleCollabProfileNext}
+                onBack={() => setSetupStep('basics')}
+              />
+            )}
 
-              {setupStep === 'collabProfile' && (
-                <CollabProfileStep
-                  key="collab-profile"
-                  bio={onboardingData.collabBio}
-                  followers={onboardingData.collabFollowers}
-                  brandDealsCompleted={onboardingData.collabBrandsCompleted}
-                  audienceGenderSplit={onboardingData.audienceGenderSplit}
-                  primaryAudienceLanguage={onboardingData.primaryAudienceLanguage}
-                  postingFrequency={onboardingData.postingFrequency}
-                  avgReelViewsManual={onboardingData.avgReelViewsManual}
-                  avgLikesManual={onboardingData.avgLikesManual}
-                  starterPrice={onboardingData.packageStarterPrice}
-                  engagementPrice={onboardingData.packageEngagementPrice}
-                  productValue={onboardingData.packageProductValue}
-                  bankAccountName={onboardingData.bankAccountName}
-                  bankUpi={onboardingData.bankUpi}
-                  onBioChange={(collabBio) => {
-                    clearValidationErrors('collabBio');
-                    setOnboardingData((prev) => ({ ...prev, collabBio }));
-                  }}
-                  onFollowersChange={(collabFollowers) => {
-                    clearValidationErrors('collabFollowers');
-                    setOnboardingData((prev) => ({ ...prev, collabFollowers }));
-                  }}
-                  onBrandDealsCompletedChange={(collabBrandsCompleted) => {
-                    clearValidationErrors('collabBrandsCompleted');
-                    setOnboardingData((prev) => ({ ...prev, collabBrandsCompleted }));
-                  }}
-                  onAudienceGenderSplitChange={(audienceGenderSplit) => {
-                    clearValidationErrors('audiencePersona');
-                    setOnboardingData((prev) => ({ ...prev, audienceGenderSplit }));
-                  }}
-                  onPrimaryAudienceLanguageChange={(primaryAudienceLanguage) => {
-                    clearValidationErrors('audiencePersona');
-                    setOnboardingData((prev) => ({ ...prev, primaryAudienceLanguage }));
-                  }}
-                  onPostingFrequencyChange={(postingFrequency) => {
-                    clearValidationErrors('postingFrequency');
-                    setOnboardingData((prev) => ({ ...prev, postingFrequency }));
-                  }}
-                  onAvgReelViewsManualChange={(avgReelViewsManual) => {
-                    clearValidationErrors('performanceSignal');
-                    setOnboardingData((prev) => ({ ...prev, avgReelViewsManual }));
-                  }}
-                  onAvgLikesManualChange={(avgLikesManual) => {
-                    clearValidationErrors('performanceSignal');
-                    setOnboardingData((prev) => ({ ...prev, avgLikesManual }));
-                  }}
-                  onGenerateBio={handleGenerateBio}
-                  isGeneratingBio={isGeneratingBio}
-                  errors={{
-                    bio: validationErrors.collabBio,
-                    followers: validationErrors.collabFollowers,
-                    brandDealsCompleted: validationErrors.collabBrandsCompleted,
-                    audiencePersona: validationErrors.audiencePersona,
-                    postingFrequency: validationErrors.postingFrequency,
-                    performanceSignal: validationErrors.performanceSignal,
-                  }}
-                  onBack={() => setSetupStep('basics')}
-                  onNext={handleCollabProfileNext}
-                />
-              )}
+            {setupStep === 'pricing' && (
+              <CollabPricingStep
+                key="collab-pricing"
+                starterPrice={onboardingData.packageStarterPrice}
+                engagementPrice={onboardingData.packageEngagementPrice}
+                productValue={onboardingData.packageProductValue}
+                onStarterPriceChange={(v) => {
+                  clearValidationErrors('packageStarterPrice');
+                  setOnboardingData(p => ({ ...p, packageStarterPrice: v }));
+                }}
+                onEngagementPriceChange={(v) => {
+                  clearValidationErrors('packageEngagementPrice');
+                  setOnboardingData(p => ({ ...p, packageEngagementPrice: v }));
+                }}
+                onProductValueChange={(v) => {
+                  clearValidationErrors('packageProductValue');
+                  setOnboardingData(p => ({ ...p, packageProductValue: v }));
+                }}
+                onAutoSuggestPrices={handleAutoSuggestPrices}
+                errors={{
+                  starterPrice: validationErrors.packageStarterPrice,
+                  engagementPrice: validationErrors.packageEngagementPrice,
+                  productValue: validationErrors.packageProductValue,
+                }}
+                onNext={handlePricingNext}
+                onBack={() => setSetupStep('collabProfile')}
+              />
+            )}
 
-              {setupStep === 'pricing' && (
-                <CollabPricingStep
-                  key="collab-pricing"
-                  starterPrice={onboardingData.packageStarterPrice}
-                  engagementPrice={onboardingData.packageEngagementPrice}
-                  productValue={onboardingData.packageProductValue}
-                  onStarterPriceChange={(packageStarterPrice) => {
-                    clearValidationErrors('packageStarterPrice');
-                    setOnboardingData((prev) => ({ ...prev, packageStarterPrice }));
-                  }}
-                  onEngagementPriceChange={(packageEngagementPrice) => {
-                    clearValidationErrors('packageEngagementPrice');
-                    setOnboardingData((prev) => ({ ...prev, packageEngagementPrice }));
-                  }}
-                  onProductValueChange={(packageProductValue) => {
-                    clearValidationErrors('packageProductValue');
-                    setOnboardingData((prev) => ({ ...prev, packageProductValue }));
-                  }}
-                  onAutoSuggestPrices={handleAutoSuggestPrices}
-                  errors={{
-                    starterPrice: validationErrors.packageStarterPrice,
-                    engagementPrice: validationErrors.packageEngagementPrice,
-                    productValue: validationErrors.packageProductValue,
-                  }}
-                  onBack={() => setSetupStep('collabProfile')}
-                  onNext={handlePricingNext}
-                />
-              )}
+            {setupStep === 'payout' && (
+              <PayoutSetupStep
+                key="payout"
+                bankAccountName={onboardingData.bankAccountName}
+                bankUpi={onboardingData.bankUpi}
+                onBankAccountNameChange={(v) => setOnboardingData(p => ({ ...p, bankAccountName: v }))}
+                onBankUpiChange={(v) => {
+                  clearValidationErrors('bankUpi');
+                  setOnboardingData(p => ({ ...p, bankUpi: v }));
+                }}
+                bankUpiError={validationErrors.bankUpi}
+                onNext={handlePayoutNext}
+                onBack={() => setSetupStep('pricing')}
+              />
+            )}
 
-              {setupStep === 'payout' && (
-                <PayoutSetupStep
-                  key="payout"
-                  bankAccountName={onboardingData.bankAccountName}
-                  bankUpi={onboardingData.bankUpi}
-                  onBankAccountNameChange={(bankAccountName) => setOnboardingData((prev) => ({ ...prev, bankAccountName }))}
-                  onBankUpiChange={(bankUpi) => {
-                    clearValidationErrors('bankUpi');
-                    setOnboardingData((prev) => ({ ...prev, bankUpi }));
-                  }}
-                  bankUpiError={validationErrors.bankUpi}
-                  onBack={() => setSetupStep('pricing')}
-                  onNext={handlePayoutNext}
-                />
-              )}
-
-              {/* Success Screen */}
-              {setupStep === 'success' && (
-                <SuccessStep
-                  key="success"
-                  userName={onboardingData.name}
-                  onGoToDashboard={() => navigate('/creator-dashboard')}
-                  onCompleteCollabProfile={() => {
-                    const handle = profile?.instagram_handle || profile?.username;
-                    if (handle) {
-                      navigate(`/${handle}?edit=true`);
-                    } else {
-                      navigate('/creator-dashboard');
-                    }
-                  }}
-                  collabProfile={profile as unknown as Record<string, any>}
-                  collabLink={profile?.instagram_handle || profile?.username
-                    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/${profile?.instagram_handle || profile?.username}`
-                    : undefined}
-                  collabShortLabel={profile?.instagram_handle || profile?.username
-                    ? `creatorarmour.com/${profile?.instagram_handle || profile?.username}`
-                    : undefined}
-                />
-              )}
-            </AnimatePresence>
-          );
-        })()}
+            {setupStep === 'success' && (
+              <SuccessStep
+                key="success"
+                userName={onboardingData.name}
+                onGoToDashboard={() => navigate('/creator-dashboard')}
+                collabProfile={profile as any}
+                collabLink={`${window.location.protocol}//${window.location.host}/collab/${onboardingData.instagramUsername}`}
+                collabShortLabel={`creatorarmour.com/collab/${onboardingData.instagramUsername}`}
+              />
+            )}
+          </AnimatePresence>
+        </div>
       </div>
+
+      {/* Live Profile Preview - Mobile Mockup */}
+      <CollabPagePreview
+        data={onboardingData}
+        isVisible={welcomeStep === 5 && setupStep !== 'success'}
+      />
     </OnboardingContainer>
   );
 };
