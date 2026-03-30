@@ -130,6 +130,7 @@ import LegacyCollabSuccessRedirect from "./components/collab/LegacyCollabSuccess
 import LegacyCreatorProfileRedirect from "./components/collab/LegacyCreatorProfileRedirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { GlobalLoadingBar } from "./components/GlobalLoadingBar";
+import { RouteAnnouncer } from "./components/RouteAnnouncer";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
 import AddToHomeScreen from "./components/mobile/AddToHomeScreen";
@@ -304,6 +305,7 @@ const App = () => {
                 Skip to main content
               </a>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                      <RouteAnnouncer />
                 <ScrollToTop />
                 <NetworkStatusWrapper>
                   <FacebookPixelTracker />

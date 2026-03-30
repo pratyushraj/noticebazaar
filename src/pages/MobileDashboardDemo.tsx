@@ -2676,7 +2676,7 @@ const MobileDashboardDemo = ({
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">
                                     {/* Left: Sidebar Menu */}
-                                    <button type="button" onClick={() => handleAction('menu')} className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
+                                    <button type="button" onClick={() => handleAction('menu')} aria-label="Open menu" className={cn("p-1.5 -ml-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}>
                                         <Menu className="w-6 h-6" strokeWidth={1.5} />
                                     </button>
 
@@ -2729,7 +2729,7 @@ const MobileDashboardDemo = ({
                                         </motion.button>
 
                                         {/* Bell */}
-                                        <button type="button" onClick={() => handleAction('notifications')} className={cn('relative', secondaryTextColor)}>
+                                        <button type="button" onClick={() => handleAction('notifications')} aria-label={`Notifications${collabRequests.length > 0 ? ` (${collabRequests.length} new)` : ''}`} className={cn('relative', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
                                                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white" style={{ borderColor: bgColor }}>

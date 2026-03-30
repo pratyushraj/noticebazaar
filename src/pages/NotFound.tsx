@@ -1,5 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { ShieldCheck, Home, Search, Users, Calculator } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
   const location = useLocation();
@@ -10,9 +12,8 @@ const NotFound = () => {
     const pathname = location.pathname;
     const search = location.search;
     const hash = location.hash;
-    
-    // Check if pathname or search contains OAuth parameters
-    const hasOAuthParams = 
+
+    const hasOAuthParams =
       pathname.includes('access_token=') ||
       pathname.includes('refresh_token=') ||
       pathname.includes('expires_at=') ||
@@ -21,76 +22,77 @@ const NotFound = () => {
       hash.includes('type=');
 
     if (hasOAuthParams) {
-      console.log('[NotFound] Detected OAuth callback with malformed URL, redirecting to handle OAuth...');
-      
-      // Extract tokens from pathname if present
       if (pathname.includes('access_token=')) {
-        // Move tokens from pathname to hash
         const tokenPart = pathname.substring(pathname.indexOf('access_token='));
-        const newHash = '#' + tokenPart;
-        
-        // Clean the URL and set hash
         window.history.replaceState({}, '', '/');
-        window.location.hash = newHash;
-        
-        // Redirect to login page which will handle OAuth
+        window.location.hash = '#' + tokenPart;
         navigate('/login', { replace: true });
         return;
       }
-      
-      // If tokens are in search params, move to hash
       if (search.includes('access_token=')) {
         const searchParams = new URLSearchParams(search);
         const accessToken = searchParams.get('access_token');
-        const refreshToken = searchParams.get('refresh_token');
-        const expiresAt = searchParams.get('expires_at');
-        const expiresIn = searchParams.get('expires_in');
-        const tokenType = searchParams.get('token_type');
-        const type = searchParams.get('type');
-        
         if (accessToken) {
-          // Build hash with tokens
           const hashParams = new URLSearchParams();
-          if (accessToken) hashParams.set('access_token', accessToken);
-          if (refreshToken) hashParams.set('refresh_token', refreshToken);
-          if (expiresAt) hashParams.set('expires_at', expiresAt);
-          if (expiresIn) hashParams.set('expires_in', expiresIn);
-          if (tokenType) hashParams.set('token_type', tokenType);
-          if (type) hashParams.set('type', type);
-          
-          const newHash = '#' + hashParams.toString();
-          
-          // Clean the URL and set hash
+          for (const [key, value] of searchParams) hashParams.set(key, value);
           window.history.replaceState({}, '', '/');
-          window.location.hash = newHash;
-          
-          // Redirect to login page which will handle OAuth
+          window.location.hash = '#' + hashParams.toString();
           navigate('/login', { replace: true });
           return;
         }
       }
-      
-      // If tokens are already in hash, just redirect to login
       if (hash.includes('access_token=')) {
         navigate('/login', { replace: true });
         return;
       }
     }
-    
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname,
-    );
+
+    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname, location.search, location.hash, navigate]);
 
+  const popularPages = [
+    { label: 'Home', path: '/', icon: Home },
+    { label: 'Browse Creators', path: '/discover-creators', icon: Users },
+    { label: 'Rate Calculator', path: '/rate-calculator', icon: Calculator },
+    { label: 'Contract Analyzer', path: '/contract-analyzer', icon: Search },
+  ];
+
   return (
-    <div className="nb-screen-height flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
+      <div className="text-center max-w-md">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+            <ShieldCheck className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</span>
+        </div>
+
+        <h1 className="text-6xl font-black text-slate-900 mb-2">404</h1>
+        <p className="text-lg text-slate-600 mb-8">
+          This page doesn't exist or has been moved.
+        </p>
+
+        {/* Popular pages */}
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          {popularPages.map(({ label, path, icon: Icon }) => (
+            <button
+              key={path}
+              onClick={() => navigate(path)}
+              className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all text-left active:scale-[0.98]"
+            >
+              <Icon className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-bold text-slate-700">{label}</span>
+            </button>
+          ))}
+        </div>
+
+        <Button
+          onClick={() => navigate('/')}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6"
+        >
+          Go to Homepage
+        </Button>
       </div>
     </div>
   );

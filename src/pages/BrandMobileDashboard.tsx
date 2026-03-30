@@ -1,7 +1,7 @@
 import { cloneElement, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sun, User } from 'lucide-react';
+import { AlertTriangle, Bell, Briefcase, Camera, Check, Clock, ChevronRight, CreditCard, FileText, Handshake, Landmark, LayoutDashboard, Loader2, Lock, Mail, Menu, Moon, MoreHorizontal, Plus, RefreshCw, Search, Send, Settings, Shield, ShieldCheck, Sparkles, Sun, User } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -3512,6 +3512,39 @@ const BrandMobileDashboard = ({
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
+
+              {/* Brand Getting Started Banner — shown when no deals exist */}
+              {!isLoading && deals.length === 0 && (
+                <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-bold text-slate-900">Welcome to Brand Console</p>
+                      <p className="text-[12px] text-slate-500">Find creators and close deals in 3 steps</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      { n: 1, label: 'Browse creators in your niche', action: () => navigate('/discover-creators') },
+                      { n: 2, label: 'Send your first collab offer', action: () => navigate('/brand-dashboard?tab=creators') },
+                      { n: 3, label: 'Track deals and payments', action: () => navigate('/brand-dashboard?tab=collabs') },
+                    ].map(step => (
+                      <button
+                        key={step.n}
+                        onClick={step.action}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-white border border-blue-100 hover:border-blue-300 active:scale-[0.98] transition-all text-left"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-[11px] font-black flex items-center justify-center">{step.n}</span>
+                        <span className="text-[13px] font-semibold text-slate-700">{step.label}</span>
+                        <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center justify-between mb-6">
                 <button type="button"
                   onClick={() => {
