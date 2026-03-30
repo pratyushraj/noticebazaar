@@ -16,12 +16,12 @@ const DEMO_BRAND_PASSWORD = 'BrandDemo123!@#';
 const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
   error instanceof Error ? error.message : fallback;
 
-const getDashboardPathForRole = (role?: string | null) => {
+const getDashboardPathForRole = (role?: string | null, onboardingComplete?: boolean | null) => {
   if (role === 'admin') return '/admin-dashboard';
   if (role === 'brand') return '/brand-dashboard';
   if (role === 'chartered_accountant') return '/ca-dashboard';
   if (role === 'lawyer') return '/lawyer-dashboard';
-  return '/creator-dashboard';
+  return onboardingComplete ? '/creator-dashboard' : '/creator-onboarding';
 };
 
 const Login = () => {
@@ -107,7 +107,7 @@ const Login = () => {
 	        // If we're still on /login, do a role-based redirect as a fallback.
 	        // (SessionContext should usually handle this, but this prevents brand users landing on creator routes.)
 	        if (window.location.pathname === '/login') {
-	          navigate(getDashboardPathForRole(profile?.role), { replace: true });
+	          navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true });
 	        }
 	      }, delay);
 	      return () => clearTimeout(timer);
@@ -128,7 +128,7 @@ const Login = () => {
 	            setTimeout(() => {
 	              const currentHash = window.location.hash;
 	              if (currentHash.includes('access_token') || currentHash === '' || window.location.pathname === '/login') {
-	                navigate(getDashboardPathForRole(profile?.role), { replace: true });
+	                navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true });
 	              }
 	            }, 500);
 	          } else if (Date.now() - startTime > maxWait) {
@@ -245,13 +245,13 @@ const Login = () => {
         {session && (
           <div className="mb-6 space-y-4">
             <p className="text-slate-400 text-sm text-center font-medium">
-              {loading ? 'Authenticating…' : "Session established. Launching dashboard…"}
+              {loading ? 'Authenticating…' : "Session established. Launching workspace…"}
             </p>
             <Button
-              onClick={() => navigate('/creator-dashboard', { replace: true })}
+              onClick={() => navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true })}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
             >
-              Go to Dashboard
+              Continue
             </Button>
           </div>
         )}
@@ -350,8 +350,8 @@ const Login = () => {
               <Button
                 onClick={async () => {
                   try {
-                    const redirectUrl = `${window.location.origin}/creator-dashboard`;
-                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
+                    const redirectUrl = `${window.location.origin}/creator-onboarding`;
+                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {

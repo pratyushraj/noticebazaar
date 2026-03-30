@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { Loader2 } from 'lucide-react';
@@ -28,11 +28,13 @@ import { InstagramStep } from '@/components/onboarding/setup/InstagramStep';
 import { NicheStep } from '@/components/onboarding/setup/NicheStep';
 import { ReelRateStep } from '@/components/onboarding/setup/ReelRateStep';
 import { CollabBasicsStep } from '@/components/onboarding/setup/CollabBasicsStep';
-import { CollabReadyStep } from '@/components/onboarding/setup/CollabReadyStep';
+import { CollabProfileStep } from '@/components/onboarding/setup/CollabProfileStep';
+import { CollabPricingStep } from '@/components/onboarding/setup/CollabPricingStep';
+import { PayoutSetupStep } from '@/components/onboarding/setup/PayoutSetupStep';
 import { SuccessStep } from '@/components/onboarding/setup/SuccessStep';
 
 type WelcomeStep = 0 | 1 | 2 | 3 | 4 | 5;
-type SetupStep = 'name' | 'instagram' | 'niches' | 'reelRate' | 'basics' | 'collabReady' | 'success';
+type SetupStep = 'name' | 'instagram' | 'niches' | 'reelRate' | 'basics' | 'collabProfile' | 'pricing' | 'payout' | 'success';
 type DealType = 'paid' | 'barter' | 'hybrid' | 'all';
 
 interface OnboardingData {
@@ -58,6 +60,23 @@ interface OnboardingData {
   packageProductValue: string;
   bankAccountName: string;
   bankUpi: string;
+}
+
+interface ValidationErrors {
+  instagramUsername?: string;
+  reelRate?: string;
+  barterValueMin?: string;
+  collabCity?: string;
+  collabBio?: string;
+  collabFollowers?: string;
+  collabBrandsCompleted?: string;
+  audiencePersona?: string;
+  postingFrequency?: string;
+  performanceSignal?: string;
+  packageStarterPrice?: string;
+  packageEngagementPrice?: string;
+  packageProductValue?: string;
+  bankUpi?: string;
 }
 
 const normalizeDealType = (value: unknown): DealType => {
@@ -159,6 +178,18 @@ const CreatorOnboarding = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [stepStartTime, setStepStartTime] = useState<number>(Date.now());
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const previousTrackedStepRef = useRef<SetupStep | null>(null);
+
+  const clearValidationErrors = (...keys: (keyof ValidationErrors)[]) => {
+    setValidationErrors((prev) => {
+      const next = { ...prev };
+      keys.forEach((key) => {
+        delete next[key];
+      });
+      return next;
+    });
+  };
 
   // Swipe gesture support for all screens
   useSwipeGesture({
@@ -178,8 +209,12 @@ const CreatorOnboarding = () => {
         handleReelRateNext();
       } else if (setupStep === 'basics') {
         handleBasicsNext();
-      } else if (setupStep === 'collabReady') {
-        handleCollabReadyNext();
+      } else if (setupStep === 'collabProfile') {
+        handleCollabProfileNext();
+      } else if (setupStep === 'pricing') {
+        handlePricingNext();
+      } else if (setupStep === 'payout') {
+        handlePayoutNext();
       }
     },
     onSwipeRight: () => {
@@ -196,8 +231,12 @@ const CreatorOnboarding = () => {
         setSetupStep('niches');
       } else if (setupStep === 'basics') {
         setSetupStep('reelRate');
-      } else if (setupStep === 'collabReady') {
+      } else if (setupStep === 'collabProfile') {
         setSetupStep('basics');
+      } else if (setupStep === 'pricing') {
+        setSetupStep('collabProfile');
+      } else if (setupStep === 'payout') {
+        setSetupStep('pricing');
       }
     },
   });
@@ -215,27 +254,30 @@ const CreatorOnboarding = () => {
 
   // Track step changes
   useEffect(() => {
-    if (setupStep !== 'name' && setupStep !== 'success') {
+    if (setupStep !== 'name' && setupStep !== 'success' && previousTrackedStepRef.current !== setupStep) {
       const stepMap: Record<string, { name: string; number: number }> = {
         instagram: { name: 'instagram_username', number: 1 },
         niches: { name: 'niches', number: 2 },
         reelRate: { name: 'reel_rate', number: 3 },
         basics: { name: 'collab_basics', number: 4 },
-        collabReady: { name: 'collab_ready', number: 5 },
+        collabProfile: { name: 'collab_profile', number: 5 },
+        pricing: { name: 'pricing', number: 6 },
+        payout: { name: 'payout_setup', number: 7 },
       };
 
       const stepInfo = stepMap[setupStep];
       if (stepInfo) {
         const timeSpent = Date.now() - stepStartTime;
-        onboardingAnalytics.trackStep(stepInfo.name, stepInfo.number, 6, timeSpent);
+        onboardingAnalytics.trackStep(stepInfo.name, stepInfo.number, 7, timeSpent);
         void trackEvent('onboarding_step_completed', {
           step: stepInfo.name,
           step_number: stepInfo.number,
         });
+        previousTrackedStepRef.current = setupStep;
         setStepStartTime(Date.now());
       }
     }
-  }, [setupStep, stepStartTime]);
+  }, [setupStep]);
 
   // Handle navigation in useEffect to avoid render-time navigation warnings
   useEffect(() => {
@@ -320,9 +362,12 @@ const CreatorOnboarding = () => {
   };
 
   const handleInstagramNext = () => {
-    if (onboardingData.instagramUsername.trim().length >= 3) {
-      setSetupStep('niches');
+    if (onboardingData.instagramUsername.trim().length < 3) {
+      setValidationErrors({ instagramUsername: 'Enter at least 3 characters for your public collab link.' });
+      return;
     }
+    clearValidationErrors('instagramUsername');
+    setSetupStep('niches');
   };
 
   const handleNichesNext = () => {
@@ -343,70 +388,92 @@ const CreatorOnboarding = () => {
     const requiresBarter = onboardingData.dealType === 'barter' || onboardingData.dealType === 'hybrid' || onboardingData.dealType === 'all';
 
     if (requiresPaid && (!Number.isFinite(parsed) || parsed <= 0)) {
+      setValidationErrors({ reelRate: 'Add a starting paid reel rate to continue.' });
       toast.error('Please enter your Reel price in INR');
       return;
     }
     if (requiresBarter && (!Number.isFinite(parsedBarterMin) || parsedBarterMin <= 0)) {
+      setValidationErrors({ barterValueMin: 'Add the minimum barter value you would accept.' });
       toast.error('Please enter minimum barter value');
       return;
     }
 
+    clearValidationErrors('reelRate', 'barterValueMin');
     setSetupStep('basics');
   };
 
   const handleBasicsNext = () => {
     if (onboardingData.collabCity.trim().length < 2) {
+      setValidationErrors({ collabCity: 'Add your top audience city so brands can judge fit quickly.' });
       toast.error('Please enter top audience city');
       return;
     }
-    setSetupStep('collabReady');
+    clearValidationErrors('collabCity');
+    setSetupStep('collabProfile');
   };
 
-  const handleCollabReadyNext = () => {
+  const handleCollabProfileNext = () => {
     if (onboardingData.collabBio.trim().length < 20) {
+      setValidationErrors({ collabBio: 'Add a short bio with what you create and the collaborations you want.' });
       toast.error('Please add a short bio for brands');
       return;
     }
     if (!Number.isFinite(Number(onboardingData.collabFollowers)) || Number(onboardingData.collabFollowers) <= 0) {
+      setValidationErrors({ collabFollowers: 'Add your current follower count.' });
       toast.error('Please enter your Instagram followers');
       return;
     }
     if (!Number.isFinite(Number(onboardingData.collabBrandsCompleted)) || Number(onboardingData.collabBrandsCompleted) < 0) {
+      setValidationErrors({ collabBrandsCompleted: 'Add completed brand deals. Use 0 if you are just starting.' });
       toast.error('Please enter completed brand deals (0 or more)');
       return;
     }
     if (!onboardingData.audienceGenderSplit.trim() && !onboardingData.primaryAudienceLanguage.trim()) {
+      setValidationErrors({ audiencePersona: 'Add at least one audience signal: split or primary language.' });
       toast.error('Please add audience split or primary language');
       return;
     }
     if (!onboardingData.postingFrequency.trim()) {
+      setValidationErrors({ postingFrequency: 'Tell brands how often you typically post.' });
       toast.error('Please add your posting frequency');
       return;
     }
     if (!(Number(onboardingData.avgReelViewsManual) > 0) && !(Number(onboardingData.avgLikesManual) > 0)) {
+      setValidationErrors({ performanceSignal: 'Add average views or average likes so brands can understand performance.' });
       toast.error('Please add average views or average likes');
       return;
     }
+    clearValidationErrors('collabBio', 'collabFollowers', 'collabBrandsCompleted', 'audiencePersona', 'postingFrequency', 'performanceSignal');
+    setSetupStep('pricing');
+  };
+
+  const handlePricingNext = () => {
     if (!Number.isFinite(Number(onboardingData.packageStarterPrice)) || Number(onboardingData.packageStarterPrice) <= 0) {
+      setValidationErrors({ packageStarterPrice: 'Add a starter package price to continue.' });
       toast.error('Please enter starter package price');
       return;
     }
     if (!Number.isFinite(Number(onboardingData.packageEngagementPrice)) || Number(onboardingData.packageEngagementPrice) <= 0) {
+      setValidationErrors({ packageEngagementPrice: 'Add an engagement package price to continue.' });
       toast.error('Please enter engagement package price');
       return;
     }
     if (!Number.isFinite(Number(onboardingData.packageProductValue)) || Number(onboardingData.packageProductValue) <= 0) {
+      setValidationErrors({ packageProductValue: 'Add the minimum product value you expect for barter reviews.' });
       toast.error('Please enter product review value');
       return;
     }
-    if (!onboardingData.bankUpi.trim()) {
-      toast.error('Please add your UPI ID');
-      return;
-    }
-    if (!isValidUpiId(onboardingData.bankUpi)) {
+    clearValidationErrors('packageStarterPrice', 'packageEngagementPrice', 'packageProductValue');
+    setSetupStep('payout');
+  };
+
+  const handlePayoutNext = () => {
+    if (onboardingData.bankUpi.trim() && !isValidUpiId(onboardingData.bankUpi)) {
+      setValidationErrors({ bankUpi: 'Enter a valid UPI ID like yourname@upi or leave it blank for now.' });
       toast.error('Enter a valid UPI ID like yourname@upi');
       return;
     }
+    clearValidationErrors('bankUpi');
     handleOnboardingComplete();
   };
 
@@ -544,7 +611,7 @@ const CreatorOnboarding = () => {
 
     try {
       // Track step completion
-      onboardingAnalytics.trackStep('collab_ready', 6, 6, Date.now() - stepStartTime);
+      onboardingAnalytics.trackStep('payout_setup', 7, 7, Date.now() - stepStartTime);
 
       // Handle referral tracking
       const referralCode = sessionStorage.getItem('referral_code');
@@ -881,7 +948,9 @@ const CreatorOnboarding = () => {
       case 'niches': return 3;
       case 'reelRate': return 4;
       case 'basics': return 5;
-      case 'collabReady': return 6;
+      case 'collabProfile': return 6;
+      case 'pricing': return 7;
+      case 'payout': return 8;
       default: return 0;
     }
   };
@@ -894,7 +963,7 @@ const CreatorOnboarding = () => {
           <div className="pt-[max(60px,calc(env(safe-area-inset-top,0px)+36px))] md:pt-10 flex-shrink-0">
             <OnboardingProgressBar
               currentStep={getStepNumber()}
-              totalSteps={6}
+              totalSteps={8}
             />
           </div>
         )}
@@ -929,9 +998,11 @@ const CreatorOnboarding = () => {
                 <InstagramStep
                   key="instagram"
                   instagramUsername={onboardingData.instagramUsername}
-                  onUsernameChange={(username) =>
-                    setOnboardingData((prev) => ({ ...prev, instagramUsername: username }))
-                  }
+                  onUsernameChange={(username) => {
+                    clearValidationErrors('instagramUsername');
+                    setOnboardingData((prev) => ({ ...prev, instagramUsername: username }));
+                  }}
+                  error={validationErrors.instagramUsername}
                   onNext={handleInstagramNext}
                   onBack={() => setSetupStep('name')}
                 />
@@ -963,15 +1034,19 @@ const CreatorOnboarding = () => {
                   dealType={onboardingData.dealType}
                   barterValueMin={onboardingData.barterValueMin}
                   suggestedRate={suggestedRate}
-                  onRateChange={(rate) =>
-                    setOnboardingData((prev) => ({ ...prev, reelRate: rate }))
-                  }
+                  onRateChange={(rate) => {
+                    clearValidationErrors('reelRate');
+                    setOnboardingData((prev) => ({ ...prev, reelRate: rate }));
+                  }}
                   onDealTypeChange={(dealType) =>
                     setOnboardingData((prev) => ({ ...prev, dealType }))
                   }
-                  onBarterValueMinChange={(barterValueMin) =>
-                    setOnboardingData((prev) => ({ ...prev, barterValueMin }))
-                  }
+                  onBarterValueMinChange={(barterValueMin) => {
+                    clearValidationErrors('barterValueMin');
+                    setOnboardingData((prev) => ({ ...prev, barterValueMin }));
+                  }}
+                  reelRateError={validationErrors.reelRate}
+                  barterValueError={validationErrors.barterValueMin}
                   onNext={handleReelRateNext}
                   onBack={() => setSetupStep('niches')}
                 />
@@ -983,20 +1058,22 @@ const CreatorOnboarding = () => {
                   key="collab-basics"
                   city={onboardingData.collabCity}
                   responseHours={onboardingData.collabResponseHours}
-                  onCityChange={(collabCity) =>
-                    setOnboardingData((prev) => ({ ...prev, collabCity }))
-                  }
+                  onCityChange={(collabCity) => {
+                    clearValidationErrors('collabCity');
+                    setOnboardingData((prev) => ({ ...prev, collabCity }));
+                  }}
                   onResponseHoursChange={(collabResponseHours) =>
                     setOnboardingData((prev) => ({ ...prev, collabResponseHours }))
                   }
+                  cityError={validationErrors.collabCity}
                   onNext={handleBasicsNext}
                   onBack={() => setSetupStep('reelRate')}
                 />
               )}
 
-              {setupStep === 'collabReady' && (
-                <CollabReadyStep
-                  key="collab-ready"
+              {setupStep === 'collabProfile' && (
+                <CollabProfileStep
+                  key="collab-profile"
                   bio={onboardingData.collabBio}
                   followers={onboardingData.collabFollowers}
                   brandDealsCompleted={onboardingData.collabBrandsCompleted}
@@ -1010,24 +1087,95 @@ const CreatorOnboarding = () => {
                   productValue={onboardingData.packageProductValue}
                   bankAccountName={onboardingData.bankAccountName}
                   bankUpi={onboardingData.bankUpi}
-                  onBioChange={(collabBio) => setOnboardingData((prev) => ({ ...prev, collabBio }))}
-                  onFollowersChange={(collabFollowers) => setOnboardingData((prev) => ({ ...prev, collabFollowers }))}
-                  onBrandDealsCompletedChange={(collabBrandsCompleted) => setOnboardingData((prev) => ({ ...prev, collabBrandsCompleted }))}
-                  onAudienceGenderSplitChange={(audienceGenderSplit) => setOnboardingData((prev) => ({ ...prev, audienceGenderSplit }))}
-                  onPrimaryAudienceLanguageChange={(primaryAudienceLanguage) => setOnboardingData((prev) => ({ ...prev, primaryAudienceLanguage }))}
-                  onPostingFrequencyChange={(postingFrequency) => setOnboardingData((prev) => ({ ...prev, postingFrequency }))}
-                  onAvgReelViewsManualChange={(avgReelViewsManual) => setOnboardingData((prev) => ({ ...prev, avgReelViewsManual }))}
-                  onAvgLikesManualChange={(avgLikesManual) => setOnboardingData((prev) => ({ ...prev, avgLikesManual }))}
-                  onStarterPriceChange={(packageStarterPrice) => setOnboardingData((prev) => ({ ...prev, packageStarterPrice }))}
-                  onEngagementPriceChange={(packageEngagementPrice) => setOnboardingData((prev) => ({ ...prev, packageEngagementPrice }))}
-                  onProductValueChange={(packageProductValue) => setOnboardingData((prev) => ({ ...prev, packageProductValue }))}
-                  onBankAccountNameChange={(bankAccountName) => setOnboardingData((prev) => ({ ...prev, bankAccountName }))}
-                  onBankUpiChange={(bankUpi) => setOnboardingData((prev) => ({ ...prev, bankUpi }))}
+                  onBioChange={(collabBio) => {
+                    clearValidationErrors('collabBio');
+                    setOnboardingData((prev) => ({ ...prev, collabBio }));
+                  }}
+                  onFollowersChange={(collabFollowers) => {
+                    clearValidationErrors('collabFollowers');
+                    setOnboardingData((prev) => ({ ...prev, collabFollowers }));
+                  }}
+                  onBrandDealsCompletedChange={(collabBrandsCompleted) => {
+                    clearValidationErrors('collabBrandsCompleted');
+                    setOnboardingData((prev) => ({ ...prev, collabBrandsCompleted }));
+                  }}
+                  onAudienceGenderSplitChange={(audienceGenderSplit) => {
+                    clearValidationErrors('audiencePersona');
+                    setOnboardingData((prev) => ({ ...prev, audienceGenderSplit }));
+                  }}
+                  onPrimaryAudienceLanguageChange={(primaryAudienceLanguage) => {
+                    clearValidationErrors('audiencePersona');
+                    setOnboardingData((prev) => ({ ...prev, primaryAudienceLanguage }));
+                  }}
+                  onPostingFrequencyChange={(postingFrequency) => {
+                    clearValidationErrors('postingFrequency');
+                    setOnboardingData((prev) => ({ ...prev, postingFrequency }));
+                  }}
+                  onAvgReelViewsManualChange={(avgReelViewsManual) => {
+                    clearValidationErrors('performanceSignal');
+                    setOnboardingData((prev) => ({ ...prev, avgReelViewsManual }));
+                  }}
+                  onAvgLikesManualChange={(avgLikesManual) => {
+                    clearValidationErrors('performanceSignal');
+                    setOnboardingData((prev) => ({ ...prev, avgLikesManual }));
+                  }}
                   onGenerateBio={handleGenerateBio}
-                  onAutoSuggestPrices={handleAutoSuggestPrices}
                   isGeneratingBio={isGeneratingBio}
+                  errors={{
+                    bio: validationErrors.collabBio,
+                    followers: validationErrors.collabFollowers,
+                    brandDealsCompleted: validationErrors.collabBrandsCompleted,
+                    audiencePersona: validationErrors.audiencePersona,
+                    postingFrequency: validationErrors.postingFrequency,
+                    performanceSignal: validationErrors.performanceSignal,
+                  }}
                   onBack={() => setSetupStep('basics')}
-                  onNext={handleCollabReadyNext}
+                  onNext={handleCollabProfileNext}
+                />
+              )}
+
+              {setupStep === 'pricing' && (
+                <CollabPricingStep
+                  key="collab-pricing"
+                  starterPrice={onboardingData.packageStarterPrice}
+                  engagementPrice={onboardingData.packageEngagementPrice}
+                  productValue={onboardingData.packageProductValue}
+                  onStarterPriceChange={(packageStarterPrice) => {
+                    clearValidationErrors('packageStarterPrice');
+                    setOnboardingData((prev) => ({ ...prev, packageStarterPrice }));
+                  }}
+                  onEngagementPriceChange={(packageEngagementPrice) => {
+                    clearValidationErrors('packageEngagementPrice');
+                    setOnboardingData((prev) => ({ ...prev, packageEngagementPrice }));
+                  }}
+                  onProductValueChange={(packageProductValue) => {
+                    clearValidationErrors('packageProductValue');
+                    setOnboardingData((prev) => ({ ...prev, packageProductValue }));
+                  }}
+                  onAutoSuggestPrices={handleAutoSuggestPrices}
+                  errors={{
+                    starterPrice: validationErrors.packageStarterPrice,
+                    engagementPrice: validationErrors.packageEngagementPrice,
+                    productValue: validationErrors.packageProductValue,
+                  }}
+                  onBack={() => setSetupStep('collabProfile')}
+                  onNext={handlePricingNext}
+                />
+              )}
+
+              {setupStep === 'payout' && (
+                <PayoutSetupStep
+                  key="payout"
+                  bankAccountName={onboardingData.bankAccountName}
+                  bankUpi={onboardingData.bankUpi}
+                  onBankAccountNameChange={(bankAccountName) => setOnboardingData((prev) => ({ ...prev, bankAccountName }))}
+                  onBankUpiChange={(bankUpi) => {
+                    clearValidationErrors('bankUpi');
+                    setOnboardingData((prev) => ({ ...prev, bankUpi }));
+                  }}
+                  bankUpiError={validationErrors.bankUpi}
+                  onBack={() => setSetupStep('pricing')}
+                  onNext={handlePayoutNext}
                 />
               )}
 

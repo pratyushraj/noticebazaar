@@ -15,10 +15,13 @@ import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/utils/analytics';
 import type { Tables } from '@/types/supabase';
 
-type ProfileRoleLookup = Pick<Tables<'profiles'>, 'role'>;
+type ProfileRoleLookup = Pick<Tables<'profiles'>, 'role' | 'onboarding_complete'>;
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
+
+const getCreatorTargetPath = (profile?: ProfileRoleLookup | null) =>
+  profile?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -35,6 +38,7 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [signupPhase, setSignupPhase] = useState<'idle' | 'creating' | 'provisioning' | 'opening'>('idle');
 
   useEffect(() => {
     document.title = accountMode === 'brand' ? 'Create Brand Account | Creator Armour' : 'Create Creator Account | Creator Armour';
@@ -104,6 +108,11 @@ const Signup = () => {
   };
 
   const triggerWelcomeEmail = async (accessToken: string) => {
+    const endpointDisabledKey = 'welcome_email_endpoint_unavailable';
+    if (typeof window !== 'undefined' && sessionStorage.getItem(endpointDisabledKey) === 'true') {
+      return;
+    }
+
     try {
       const apiBaseUrl = getApiBaseUrl();
       const response = await fetch(`${apiBaseUrl}/api/onboarding-emails/welcome`, {
@@ -116,7 +125,12 @@ const Signup = () => {
 
       // Best-effort enhancement: in fresh signups the profile row may not exist yet,
       // and some environments may not have this endpoint. Treat 404 as non-fatal.
-      if (response.status === 404) return;
+      if (response.status === 404) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(endpointDisabledKey, 'true');
+        }
+        return;
+      }
 
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
@@ -197,14 +211,14 @@ const Signup = () => {
           // Session has user; redirect to intended route (e.g. after Google login) or role dashboard.
           if (session?.user) {
             const intendedRoute = sessionStorage.getItem('oauth_intended_route');
-            let fallbackPath = accountMode === 'brand' ? '/brand-dashboard' : '/creator-dashboard';
+            let fallbackPath = accountMode === 'brand' ? '/brand-dashboard' : '/creator-onboarding';
             try {
               const { data: p } = await profilesTable
-                .select('role')
+                .select('role, onboarding_complete')
                 .eq('id', session.user.id)
                 .maybeSingle();
               if (p?.role === 'brand') fallbackPath = '/brand-dashboard';
-              if (p?.role && p.role !== 'brand') fallbackPath = '/creator-dashboard';
+              if (p?.role && p.role !== 'brand') fallbackPath = getCreatorTargetPath(p);
             } catch {
               // ignore
             }
@@ -251,6 +265,7 @@ const Signup = () => {
     }
 
     setIsLoading(true);
+    setSignupPhase('creating');
     void trackEvent('signup_started', { mode: accountMode, method: 'email' });
     try {
       // Split name into first and last name
@@ -262,7 +277,7 @@ const Signup = () => {
         email: emailAtSignup,
         password: password,
         options: {
-          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-dashboard'}`,
+          emailRedirectTo: `${window.location.origin}/${accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding'}`,
           data: {
             first_name: firstName,
             last_name: lastName,
@@ -357,6 +372,7 @@ const Signup = () => {
           // Wait a moment for Supabase to establish session (even if email confirmation is disabled)
           // Sometimes there's a brief delay before session is available
           setTimeout(async () => {
+            setSignupPhase('provisioning');
             // Check if session is now available
             const { data: { session: currentSession } } = await supabase.auth.getSession();
 
@@ -374,6 +390,7 @@ const Signup = () => {
                 if (profileData || attempts >= maxAttempts) {
                   clearInterval(checkProfile);
                   sessionStorage.removeItem('just_signed_up');
+                  setSignupPhase('opening');
                   if (profileData) {
                     // Fire-and-forget: welcome email trigger (only after profile exists to avoid 404 noise)
                     void triggerWelcomeEmail(currentSession.access_token);
@@ -387,7 +404,7 @@ const Signup = () => {
                       toast.error(getErrorMessage(e, 'Failed to set up brand account'));
                     }
                   }
-                  navigate('/creator-dashboard', { replace: true });
+                  navigate('/creator-onboarding', { replace: true });
                 }
               }, 500);
             } else {
@@ -402,6 +419,7 @@ const Signup = () => {
                 void triggerWelcomeEmail(signInData.session.access_token);
 
                 sessionStorage.removeItem('just_signed_up');
+                setSignupPhase('opening');
                 // Wait a moment for profile creation
                 setTimeout(async () => {
                   if (accountMode === 'brand') {
@@ -414,7 +432,7 @@ const Signup = () => {
                     window.location.assign('/brand-dashboard');
                     return;
                   }
-                  navigate('/creator-dashboard', { replace: true });
+                  navigate('/creator-onboarding', { replace: true });
                 }, 1000);
               } else {
                 // Signin failed - redirect to login
@@ -457,6 +475,7 @@ const Signup = () => {
       }
     } finally {
       setIsLoading(false);
+      setSignupPhase('idle');
     }
   };
 
@@ -486,16 +505,16 @@ const Signup = () => {
         // Don't show toast - AuthLoadingScreen will handle the transition
         try {
           const { data: p } = await profilesTable
-            .select('role')
+            .select('role, onboarding_complete')
             .eq('id', data.session.user.id)
             .maybeSingle();
           if (p?.role === 'brand') {
             navigate('/brand-dashboard', { replace: true });
           } else {
-            navigate('/creator-dashboard', { replace: true });
+            navigate(getCreatorTargetPath(p), { replace: true });
           }
         } catch {
-          navigate(accountMode === 'brand' ? '/brand-dashboard' : '/creator-dashboard', { replace: true });
+          navigate(accountMode === 'brand' ? '/brand-dashboard' : '/creator-onboarding', { replace: true });
         }
       }
     } catch (err: unknown) {
@@ -856,8 +875,21 @@ const Signup = () => {
 	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
 	                  >
 	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                    {isLoading ? 'Creating Account...' : accountMode === 'brand' ? 'Create Brand Console' : 'Create Creator Workspace'}
+	                    {isLoading
+                        ? signupPhase === 'opening'
+                          ? 'Opening Onboarding...'
+                          : signupPhase === 'provisioning'
+                            ? 'Setting Up Workspace...'
+                            : 'Creating Account...'
+                        : accountMode === 'brand'
+                          ? 'Create Brand Console'
+                          : 'Create Creator Workspace'}
 	                  </Button>
+                    {!showLogin && accountMode === 'creator' && (
+                      <p className="text-center text-xs text-slate-500 mt-3">
+                        Takes about 2 minutes. No payout details needed yet.
+                      </p>
+                    )}
 	                </form>
 	              </div>
             )}
@@ -876,7 +908,7 @@ const Signup = () => {
 	                onClick={async () => {
                   void trackEvent('signup_started', { mode: accountMode, method: 'google' });
 	                  try {
-	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-dashboard';
+	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-onboarding';
 	                    const redirectUrl = `${window.location.origin}/${redirectPath}`;
 	                    sessionStorage.setItem('oauth_intended_route', redirectPath);
 	                    const { data, error } = await supabase.auth.signInWithOAuth({

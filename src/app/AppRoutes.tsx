@@ -12,10 +12,10 @@ export default function AppRoutes() {
     <SessionContextProvider>
       <SidebarProvider>
         <Routes>
-          <PublicRoutes />
-          <ClientRoutes />
-          <CreatorRoutes />
-          <BrandRoutes />
+          {PublicRoutes()}
+          {ClientRoutes()}
+          {CreatorRoutes()}
+          {BrandRoutes()}
         </Routes>
         <AddToHomeScreen />
       </SidebarProvider>

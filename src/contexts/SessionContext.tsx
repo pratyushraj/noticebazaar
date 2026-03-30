@@ -360,9 +360,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
               }
             } else if (!intendedRoute || intendedRoute === 'login') {
-              intendedRoute = 'creator-dashboard';
+              intendedRoute = 'creator-onboarding';
               if (import.meta.env?.DEV) {
-                console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
+                console.log('[SessionContext] No intended route found, defaulting to creator-onboarding');
               }
             }
           } else if (isUsernameRoute) {
@@ -411,8 +411,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 console.error('[SessionContext] Error setting session:', setSessionError);
               } else if (sessionData.session) {
                 console.log('[SessionContext] Session set successfully via manual token parsing');
-                // Use path-based route (BrowserRouter), e.g. /creator-dashboard
-                let redirectPath = '/creator-dashboard';
+                // Use path-based route (BrowserRouter).
+                let redirectPath = '/creator-onboarding';
 
                 if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
@@ -420,7 +420,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   try {
                     const { data: profileData } = await supabase
                       .from('profiles')
-                      .select('role')
+                      .select('role, onboarding_complete')
                       .eq('id', sessionData.session.user.id)
                       .single();
 
@@ -440,6 +440,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                         redirectPath = '/ca-dashboard';
                       } else if (p?.role === 'lawyer') {
                         redirectPath = '/lawyer-dashboard';
+                      } else {
+                        redirectPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
                       }
                     }
                   } catch (error) {
@@ -672,8 +674,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          // Dashboard-first: creators go straight to dashboard, complete profile later
-          let targetPath = '/creator-dashboard';
+          let targetPath = '/creator-onboarding';
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -691,7 +692,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             }
           }
 
-          if (targetPath === '/creator-dashboard' && session?.user?.id) {
+          if ((targetPath === '/creator-dashboard' || targetPath === '/creator-onboarding') && session?.user?.id) {
             // Fetch profile to determine role-based redirect and onboarding status, with 2.5s timeout
             const profileFetchTimeoutMs = 2500;
             try {
@@ -733,15 +734,15 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 } else if (p?.role === 'lawyer') {
                   targetPath = '/lawyer-dashboard';
                 } else {
-                  targetPath = '/creator-dashboard';
-                  // Dashboard-first: creators land on dashboard, complete profile via banner
+                  targetPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
                 }
               } else {
-                console.log('[SessionContext] No profile data / timeout, defaulting to dashboard');
+                console.log('[SessionContext] No profile data / timeout, defaulting to creator-onboarding');
+                targetPath = '/creator-onboarding';
               }
             } catch (error) {
-              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to dashboard:', error);
-              targetPath = '/creator-dashboard';
+              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-onboarding:', error);
+              targetPath = '/creator-onboarding';
             }
           }
 
