@@ -2881,6 +2881,27 @@ const MobileDashboardDemo = ({
                                 </button>
                             </div>
 
+                            {/* How It Works — always show for new accounts */}
+                            {(!profile?.instagram_handle || !profile?.bio) && (
+                                <div className="px-5 mb-5">
+                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-200 shadow-sm")}>
+                                        <p className={cn("text-[13px] font-bold mb-3", textColor)}>How it works</p>
+                                        <div className="space-y-3">
+                                            {[
+                                                { n: 1, text: 'Share your link on Instagram bio, DMs, or email', icon: '🔗' },
+                                                { n: 2, text: 'Brand fills a structured brief with budget & deliverables', icon: '📋' },
+                                                { n: 3, text: 'You accept, counter, or decline — with contract protection', icon: '✅' },
+                                            ].map(step => (
+                                                <div key={step.n} className="flex items-start gap-3">
+                                                    <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[12px] shrink-0 mt-0.5", isDark ? "bg-white/10" : "bg-slate-100")}>{step.icon}</span>
+                                                    <p className={cn("text-[12px] font-medium leading-relaxed pt-1", textColor)}>{step.text}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Empty State vs Normal Metrics */}
                             {activeDealsCount === 0 && pendingOffersCount === 0 && monthlyRevenue === 0 && collabRequests.length === 0 ? (
                                 <>
@@ -2940,22 +2961,6 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
 
-                                            {/* How It Works */}
-                                            <div className={cn("p-3.5 rounded-3xl border mb-3", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
-                                                <p className={cn("text-[11px] font-bold mb-3", textColor)}>How it works</p>
-                                                <div className="space-y-3">
-                                                    {[
-                                                        { n: 1, text: 'Share your link on Instagram bio, DMs, or email', icon: '🔗' },
-                                                        { n: 2, text: 'Brand fills a structured brief with budget & deliverables', icon: '📋' },
-                                                        { n: 3, text: 'You accept, counter, or decline — with contract protection', icon: '✅' },
-                                                    ].map(step => (
-                                                        <div key={step.n} className="flex items-start gap-3">
-                                                            <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[12px] shrink-0 mt-0.5", isDark ? "bg-white/10" : "bg-slate-100")}>{step.icon}</span>
-                                                            <p className={cn("text-[12px] font-medium leading-relaxed pt-1", textColor)}>{step.text}</p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
 
                                             {/* Where to Share Guide */}
                                             <div className={cn("p-3.5 rounded-3xl border mb-1", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
