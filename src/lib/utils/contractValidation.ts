@@ -377,7 +377,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         
         console.log('[ContractValidation] Total extracted text length:', fullText.length);
         resolve(fullText);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[ContractValidation] PDF extraction error:', error);
         reject(new Error(`PDF extraction failed: ${error.message || 'Unknown error'}`));
       }

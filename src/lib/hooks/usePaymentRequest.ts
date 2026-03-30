@@ -85,7 +85,7 @@ export function usePaymentRequest() {
             logger.error('Failed to update deal with invoice URL', updateError);
             // Continue anyway - invoice is uploaded
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error('Failed to generate invoice', error);
           // Continue without invoice if generation fails
         }

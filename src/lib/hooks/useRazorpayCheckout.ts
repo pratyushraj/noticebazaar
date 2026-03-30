@@ -42,7 +42,7 @@ interface CheckoutDetails {
   planId: string; // New: Plan ID instead of amount
   description: string;
   onPaymentSuccess: (response: any) => void;
-  onPaymentFailure?: (error: any) => void;
+  onPaymentFailure?: (error: unknown) => void;
 }
 
 export const useRazorpayCheckout = () => {
@@ -159,7 +159,7 @@ export const useRazorpayCheckout = () => {
 
       rzp.open();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Subscription initiation failed', { description: error.message });
       onPaymentFailure?.(error);
     }

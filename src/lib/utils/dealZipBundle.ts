@@ -116,7 +116,7 @@ export async function downloadDealZipBundle(
     toast.success('Document bundle downloaded!', {
       description: `All documents saved as ZIP file.`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     const toast = (await import('sonner')).toast;
     toast.error('Failed to create document bundle', {
       description: error.message || 'Could not bundle documents. Please try again.',

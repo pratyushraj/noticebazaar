@@ -146,14 +146,34 @@ export const fetchWithTimeout = async (
   }
 };
 
+/** Common error shape for type-safe error handling */
+interface ErrorLike {
+  message?: string;
+  name?: string;
+  status?: number;
+  statusCode?: number;
+  code?: string | number;
+}
+
+function isErrorLike(error: unknown): error is ErrorLike {
+  return typeof error === 'object' && error !== null;
+}
+
+function getErrorMessage_(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (isErrorLike(error) && typeof error.message === 'string') return error.message;
+  return String(error);
+}
+
 /**
  * Check if error is a timeout error
  */
-export const isTimeoutError = (error: any): boolean => {
+export const isTimeoutError = (error: unknown): boolean => {
   if (!error) return false;
-  const errorMessage = String(error.message || error).toLowerCase();
+  const errorMessage = getErrorMessage_(error).toLowerCase();
+  const name = isErrorLike(error) ? error.name : '';
   return (
-    error.name === 'AbortError' ||
+    name === 'AbortError' ||
     errorMessage.includes('timeout') ||
     errorMessage.includes('aborted')
   );
@@ -162,9 +182,9 @@ export const isTimeoutError = (error: any): boolean => {
 /**
  * Check if error is a network error
  */
-export const isNetworkError = (error: any): boolean => {
+export const isNetworkError = (error: unknown): boolean => {
   if (!error) return false;
-  const errorMessage = String(error.message || error).toLowerCase();
+  const errorMessage = getErrorMessage_(error).toLowerCase();
   return (
     errorMessage.includes('network') ||
     errorMessage.includes('failed to fetch') ||
@@ -177,25 +197,25 @@ export const isNetworkError = (error: any): boolean => {
 /**
  * Check if error is a server error (5xx)
  */
-export const isServerError = (error: any): boolean => {
-  if (!error) return false;
-  const status = error.status || error.statusCode || error.code;
-  return status >= 500 && status < 600;
+export const isServerError = (error: unknown): boolean => {
+  if (!error || !isErrorLike(error)) return false;
+  const status = error.status || error.statusCode || (typeof error.code === 'number' ? error.code : undefined);
+  return typeof status === 'number' && status >= 500 && status < 600;
 };
 
 /**
  * Check if error indicates maintenance mode (503)
  */
-export const isMaintenanceError = (error: any): boolean => {
-  if (!error) return false;
-  const status = error.status || error.statusCode || error.code;
+export const isMaintenanceError = (error: unknown): boolean => {
+  if (!error || !isErrorLike(error)) return false;
+  const status = error.status || error.statusCode || (typeof error.code === 'number' ? error.code : undefined);
   return status === 503;
 };
 
 /**
  * Get user-friendly error message from error object
  */
-export const getErrorMessage = (error: any, defaultMessage: string = 'An unexpected error occurred'): string => {
+export const getErrorMessage = (error: unknown, defaultMessage: string = 'An unexpected error occurred'): string => {
   if (!error) return defaultMessage;
 
   // Check for timeout
@@ -219,8 +239,9 @@ export const getErrorMessage = (error: any, defaultMessage: string = 'An unexpec
   }
 
   // Return error message if available
-  if (error.message) {
-    return error.message;
+  const msg = getErrorMessage_(error);
+  if (msg && msg !== '[object Object]') {
+    return msg;
   }
 
   if (typeof error === 'string') {

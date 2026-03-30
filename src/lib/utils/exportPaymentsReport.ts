@@ -171,7 +171,7 @@ export async function exportPaymentsReport(data: PaymentsReportData): Promise<vo
     toast.success('Report exported successfully!', {
       description: `Downloaded ${filename}`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error exporting payments report:', error);
     toast.error('Failed to export report', { description: error.message });
     throw error;
@@ -231,7 +231,7 @@ export function exportPaymentsCSV(data: PaymentsReportData): void {
     URL.revokeObjectURL(url);
 
     toast.success('CSV report exported successfully!');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error exporting CSV:', error);
     toast.error('Failed to export CSV report', { description: error.message });
     throw error;

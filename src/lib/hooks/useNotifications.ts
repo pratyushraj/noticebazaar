@@ -155,7 +155,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
       toast.success('All notifications marked as read');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error('Failed to mark all as read', { description: error.message });
     },
   });

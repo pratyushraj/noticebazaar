@@ -58,7 +58,7 @@ export const useSendBrandMessage = () => {
             name: file.name,
             type: file.type,
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
           logger.error('Error uploading attachment', error);
           throw error;
         }

@@ -87,7 +87,7 @@ export const useNotificationPreferences = () => {
       queryClient.invalidateQueries({ queryKey: ['notification-preferences', userId] });
       toast.success('Notification preferences updated');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error('Failed to update preferences', { description: error.message });
     },
   });
@@ -124,7 +124,7 @@ export const useNotificationPreferences = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-preferences', userId] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast.error('Failed to update category preference', { description: error.message });
     },
   });

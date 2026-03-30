@@ -33,7 +33,7 @@ async function fallbackDirectQuery(dateRange?: DateRange): Promise<AdminDashboar
         return 0;
       }
       return count || 0;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.warn(`[AdminDashboard] Exception fetching ${table}:`, error.message);
       return 0;
     }

@@ -178,9 +178,10 @@ const CreatorContractDashboardRoute = () => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error: any) => {
+      retry: (failureCount, error: unknown) => {
         // Don't retry on 4xx errors (client errors)
-        if (error?.status >= 400 && error?.status < 500) {
+        const status = (error as any)?.status;
+        if (status >= 400 && status < 500) {
           return false;
         }
         // Retry up to 2 times for network/server errors
