@@ -8,6 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Gift, ArrowRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 
+type ReferralLinkRow = {
+  user_id: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
+};
+
 const ReferralLanding: React.FC = () => {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
@@ -26,8 +34,15 @@ const ReferralLanding: React.FC = () => {
 
       try {
         // Get referrer info
-        const { data: referralLink, error: linkError } = await supabase
-          .from('referral_links')
+        const referralLinksTable = supabase.from('referral_links') as unknown as {
+          select: (columns: string) => {
+            eq: (column: string, value: string) => {
+              single: () => Promise<{ data: ReferralLinkRow | null; error: unknown }>;
+            };
+          };
+        };
+
+        const { data: referralLink, error: linkError } = await referralLinksTable
           .select('user_id, profiles:user_id (first_name, last_name)')
           .eq('code', code)
           .single();
@@ -38,7 +53,7 @@ const ReferralLanding: React.FC = () => {
           return;
         }
 
-        const referrerProfile = (referralLink as any).profiles;
+        const referrerProfile = referralLink.profiles;
         if (referrerProfile) {
           setReferrerName(`${referrerProfile.first_name || ''} ${referrerProfile.last_name || ''}`.trim() || 'Your friend');
         }
@@ -46,20 +61,31 @@ const ReferralLanding: React.FC = () => {
         // If user is already logged in, store referral and redirect to dashboard
         if (user && profile) {
           // Check if referral already exists
-          // @ts-expect-error - Table types will be updated after migration
-          const { data: existingReferral } = await (supabase
-            // @ts-expect-error - Table types will be updated after migration
-            .from('referrals') as any)
+          const referralsTable = supabase.from('referrals') as unknown as {
+            select: (columns: string) => {
+              eq: (column: string, value: string) => {
+                eq: (column: string, value: string) => {
+                  single: () => Promise<{ data: { id: string } | null }>;
+                };
+              };
+            };
+            insert: (payload: {
+              referrer_id: string;
+              referred_user_id: string;
+              subscribed: boolean;
+            }) => Promise<unknown>;
+          };
+
+          const { data: existingReferral } = await referralsTable
             .select('id')
-            .eq('referrer_id', (referralLink as any).user_id)
+            .eq('referrer_id', referralLink.user_id)
             .eq('referred_user_id', user.id)
             .single();
 
           if (!existingReferral) {
             // Create referral record
-            // @ts-expect-error - Table types will be updated after migration
-            await (supabase.from('referrals') as any).insert({
-              referrer_id: (referralLink as any).user_id,
+            await referralsTable.insert({
+              referrer_id: referralLink.user_id,
               referred_user_id: user.id,
               subscribed: false, // Will be updated on subscription
             });
@@ -74,7 +100,7 @@ const ReferralLanding: React.FC = () => {
         // If not logged in, store referral code and redirect to signup
         sessionStorage.setItem('referral_code', code);
         setLoading(false);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error handling referral:', err);
         setError('Failed to process referral link');
         setLoading(false);
@@ -128,13 +154,12 @@ const ReferralLanding: React.FC = () => {
         <CardContent className="space-y-4">
           <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
             <p className="text-sm text-white/80">
-              Sign up using this link and you'll both get rewards when you subscribe!
+              Sign up using this link and both of you unlock referral rewards when you activate your Creator Armour account.
             </p>
           </div>
           <Button
             onClick={() => {
-              // Navigate to signup with referral code
-              navigate('/login?ref=' + code);
+              navigate('/signup?ref=' + code);
             }}
             className="w-full"
             size="lg"
@@ -156,4 +181,3 @@ const ReferralLanding: React.FC = () => {
 };
 
 export default ReferralLanding;
-

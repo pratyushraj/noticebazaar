@@ -12,6 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/utils/analytics';
+import type { Tables } from '@/types/supabase';
+
+type ProfileRoleLookup = Pick<Tables<'profiles'>, 'role'>;
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -29,6 +36,30 @@ const Signup = () => {
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    document.title = accountMode === 'brand' ? 'Create Brand Account | Creator Armour' : 'Create Creator Account | Creator Armour';
+    const meta = document.querySelector('meta[name="description"]');
+    meta?.setAttribute('content', accountMode === 'brand'
+      ? 'Create a Creator Armour brand account to send structured offers and manage creator deal workflows.'
+      : 'Create a Creator Armour account to protect creator deals with clearer contracts, proof trails, and payment workflows.');
+  }, [accountMode]);
+
+  const profilesTable = supabase.from('profiles') as unknown as {
+    update: (payload: {
+      role?: string;
+      business_name?: string;
+      onboarding_complete?: boolean;
+    }) => {
+      eq: (column: string, value: string) => Promise<{ error: { message?: string } | null }>;
+    };
+    select: (columns: string) => {
+      eq: (column: string, value: string) => {
+        maybeSingle: () => Promise<{ data: ProfileRoleLookup | null }>;
+        single: () => Promise<{ data: { id: string } | null }>;
+      };
+    };
+  };
+
   const ensureBrandWorkspace = async (userId: string, emailToUse: string) => {
     const cleanBrandName = String(brandName || '').trim();
     const cleanIndustry = String(brandIndustry || '').trim() || 'Other';
@@ -36,8 +67,7 @@ const Signup = () => {
     if (!cleanBrandName) throw new Error('Brand name is required');
 
     // Update profile role so ProtectedLayout allows brand routes.
-    const { error: profileErr } = await supabase
-      .from('profiles')
+    const { error: profileErr } = await profilesTable
       .update({
         role: 'brand',
         business_name: cleanBrandName,
@@ -169,8 +199,7 @@ const Signup = () => {
             const intendedRoute = sessionStorage.getItem('oauth_intended_route');
             let fallbackPath = accountMode === 'brand' ? '/brand-dashboard' : '/creator-dashboard';
             try {
-              const { data: p } = await supabase
-                .from('profiles')
+              const { data: p } = await profilesTable
                 .select('role')
                 .eq('id', session.user.id)
                 .maybeSingle();
@@ -222,6 +251,7 @@ const Signup = () => {
     }
 
     setIsLoading(true);
+    void trackEvent('signup_started', { mode: accountMode, method: 'email' });
     try {
       // Split name into first and last name
       const nameParts = name.trim().split(' ');
@@ -316,6 +346,7 @@ const Signup = () => {
             description: 'Setting up your account...',
             duration: 2000,
           });
+          void trackEvent('signup_completed', { mode: accountMode, method: 'email' });
 
           // Clear form immediately
           setName('');
@@ -335,8 +366,7 @@ const Signup = () => {
               const maxAttempts = 10;
               const checkProfile = setInterval(async () => {
                 attempts++;
-                const { data: profileData } = await supabase
-                  .from('profiles')
+                const { data: profileData } = await profilesTable
                   .select('id')
                   .eq('id', currentSession.user.id)
                   .single();
@@ -353,8 +383,8 @@ const Signup = () => {
                       await ensureBrandWorkspace(currentSession.user.id, currentSession.user.email || emailAtSignup);
                       window.location.assign('/brand-dashboard');
                       return;
-                    } catch (e: any) {
-                      toast.error(e?.message || 'Failed to set up brand account');
+                    } catch (e: unknown) {
+                      toast.error(getErrorMessage(e, 'Failed to set up brand account'));
                     }
                   }
                   navigate('/creator-dashboard', { replace: true });
@@ -377,8 +407,8 @@ const Signup = () => {
                   if (accountMode === 'brand') {
                     try {
                       await ensureBrandWorkspace(signInData.session.user.id, signInData.session.user.email || emailAtSignup);
-                    } catch (e: any) {
-                      toast.error(e?.message || 'Failed to set up brand account');
+                    } catch (e: unknown) {
+                      toast.error(getErrorMessage(e, 'Failed to set up brand account'));
                       return;
                     }
                     window.location.assign('/brand-dashboard');
@@ -402,9 +432,9 @@ const Signup = () => {
           }, 1000); // Wait 1 second for session to be established
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[Signup] Email/password signup exception:', err);
-      const errMsg = err?.message?.toLowerCase() || '';
+      const errMsg = getErrorMessage(err, '').toLowerCase();
       if (
         errMsg.includes('user already registered') ||
         errMsg.includes('already registered') ||
@@ -455,8 +485,7 @@ const Signup = () => {
       } else if (data.session) {
         // Don't show toast - AuthLoadingScreen will handle the transition
         try {
-          const { data: p } = await supabase
-            .from('profiles')
+          const { data: p } = await profilesTable
             .select('role')
             .eq('id', data.session.user.id)
             .maybeSingle();
@@ -469,7 +498,7 @@ const Signup = () => {
           navigate(accountMode === 'brand' ? '/brand-dashboard' : '/creator-dashboard', { replace: true });
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[Signup] Email/password exception:', err);
       toast.error('An error occurred. Please try again.');
     } finally {
@@ -493,7 +522,7 @@ const Signup = () => {
       } else {
         toast.success('Password reset email sent! Check your inbox.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[Signup] Forgot password exception:', err);
       toast.error('An error occurred. Please try again.');
     }
@@ -560,11 +589,11 @@ const Signup = () => {
             </div>
 
             <h2 className="text-5xl font-black leading-tight tracking-tight">
-              Scale Your<br />
-              Creator Business
+              Protect and scale<br />
+              your creator business
             </h2>
             <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
-              The professional collaboration operating system. Structured, protected, and powered by you.
+              The deal protection workspace for creators who want clearer contracts, cleaner proofs, and fewer payment surprises.
             </p>
           </div>
 
@@ -624,7 +653,7 @@ const Signup = () => {
                 {!showLogin && (
                   <div className="mb-6">
                     <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 w-full">
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={() => {
                           const next = new URLSearchParams(searchParams);
@@ -640,7 +669,7 @@ const Signup = () => {
                       >
                         Creator
                       </button>
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={() => {
                           const next = new URLSearchParams(searchParams);
@@ -661,14 +690,14 @@ const Signup = () => {
                 )}
 
 	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
-	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Join Armour'}
+	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create Creator Account'}
 	              </h2>
 	              <p className="text-slate-600 font-medium leading-relaxed">
 	                {showLogin
-	                  ? 'Access your dashboard.'
+	                  ? 'Access your deal workspace.'
 	                  : accountMode === 'brand'
 	                    ? 'Send structured offers, track deals, and sign contracts without DMs.'
-	                    : 'Start protecting your deals and scale your earnings.'
+	                    : 'Set up your deal protection workspace and move into onboarding.'
 	                }
 	              </p>
 	            </div>
@@ -697,7 +726,7 @@ const Signup = () => {
                       <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
                         Password
                       </Label>
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={handleForgotPassword}
                         className="text-[11px] font-black text-emerald-500 uppercase tracking-widest"
@@ -812,7 +841,7 @@ const Signup = () => {
                         autoComplete="new-password"
                         minLength={6}
                       />
-                      <button type="button"
+                      <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
@@ -827,7 +856,7 @@ const Signup = () => {
 	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
 	                  >
 	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                    {isLoading ? 'Creating Account...' : accountMode === 'brand' ? 'Create Brand Console' : 'Get My Collab Link'}
+	                    {isLoading ? 'Creating Account...' : accountMode === 'brand' ? 'Create Brand Console' : 'Create Creator Workspace'}
 	                  </Button>
 	                </form>
 	              </div>
@@ -845,6 +874,7 @@ const Signup = () => {
 	            <div className="space-y-3 mb-8">
 	              <Button
 	                onClick={async () => {
+                  void trackEvent('signup_started', { mode: accountMode, method: 'google' });
 	                  try {
 	                    const redirectPath = accountMode === 'brand' ? 'brand-dashboard' : 'creator-dashboard';
 	                    const redirectUrl = `${window.location.origin}/${redirectPath}`;
@@ -868,7 +898,7 @@ const Signup = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                Continue with Google
+              Continue with Google
               </Button>
             </div>
 

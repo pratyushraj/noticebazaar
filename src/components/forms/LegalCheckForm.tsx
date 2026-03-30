@@ -13,16 +13,17 @@ import { useSendLegalCheckEmail } from '@/lib/hooks/useSendLegalCheckEmail';
 import { useLeadSubmission, useFetchLeadSubmission } from '@/lib/hooks/useLeadSubmission';
 import { setCookie, getCookie } from '@/lib/utils/cookies';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/utils/analytics';
 
 // --- Constants ---
 const BUSINESS_TYPES = [
-  'E-Commerce Business', 'Manufacturing / Industrial', 'Tech Startup / SaaS', 
-  'Real Estate / Construction', 'Agency / Freelancer / Service Provider', 
-  'NGO / Non-Profit', 'Professional (CA, CS, Doctor, Lawyer, etc.)', 
-  'Retail / Offline Business', 'Import / Export Business', 'Other',
+  'Influencer / Content Creator', 'UGC Creator', 'Creator-led Brand', 
+  'Talent Manager / Agency', 'Freelancer / Service Provider', 
+  'YouTube Creator', 'Instagram Creator', 
+  'Podcast / Education Creator', 'Streamer / Gaming Creator', 'Other',
 ];
-const BUSINESS_STAGES = ['Just registered', '6–12 months old', '1–3 years old', '3+ years old'];
-const ENTITY_TYPES = ['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'NGO / Trust / Society', 'Not Registered Yet'];
+const BUSINESS_STAGES = ['Just starting out', 'Taking my first paid deals', 'Already doing repeat brand deals', 'Established creator business'];
+const ENTITY_TYPES = ['Individual creator', 'Proprietorship', 'Partnership / Agency', 'Private Limited / LLP', 'Not registered yet', 'Not sure'];
 const YES_NO_NOTSURE = ['Yes', 'No', 'Not sure'];
 const YES_NO = ['Yes', 'No'];
 const YES_NO_NA = ['Yes', 'No', 'Not applicable'];
@@ -157,7 +158,7 @@ const LegalCheckForm = () => {
   const validateStep = (currentStep: number): boolean => {
     if (currentStep === 1) {
       if (!formData.fullName.trim() || !formData.email.trim()) {
-        toast.error('Please fill in your Full Name and Work Email ID.');
+        toast.error('Please fill in your full name and email.');
         return false;
       }
       if (!formData.email.includes('@')) {
@@ -186,6 +187,7 @@ const LegalCheckForm = () => {
   const handleNextStep = () => {
     if (validateStep(step)) {
       if (step === 1) {
+        void trackEvent('legal_check_started', { source: 'legal_check_form_step_1' });
         // Meta Pixel Event 2: Contact (Micro-conversion for starting the form)
         if (typeof (window as any).fbq === 'function') {
           (window as any).fbq('track', 'Contact');
@@ -202,6 +204,11 @@ const LegalCheckForm = () => {
     try {
       // 1. Mark lead as completed in the database
       await saveProgress(formData, 'completed');
+      void trackEvent('legal_check_submitted', {
+        creator_type: formData.companyType,
+        creator_stage: formData.businessStage,
+        has_payment_issue: formData.debtRecoveryChallenge,
+      });
 
       // 2. Send the email (which triggers the external notification)
       await sendEmailMutation.mutateAsync(formData);
@@ -251,8 +258,8 @@ const LegalCheckForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8 p-6 bg-card rounded-xl shadow-lg border border-border">
-      <h3 className="text-2xl font-bold text-foreground">1. Tell Us About Your Business (Takes 1 Min)</h3>
-      <p className="text-muted-foreground">Get a quick, personalized Legal & Compliance Health Report for your business — completely free. Our experts will analyze your responses and email you a summary with next steps within 24 hours. 📩 *Takes only 60 seconds to complete.*</p>
+      <h3 className="text-2xl font-bold text-foreground">1. Tell Us About Your Creator Workflow</h3>
+      <p className="text-muted-foreground">Answer a few quick questions so Creator Armour can flag your likely contract, payment, and proof risks. You will get a personalized summary with the next action to take first.</p>
 
       {/* Progress Bar and Step Indicators */}
       <div className="space-y-3">
@@ -260,13 +267,13 @@ const LegalCheckForm = () => {
           <div className="bg-primary h-2.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
         </div>
         <div className="flex justify-between items-center text-sm">
-          <p className="text-primary font-medium">Step {step} of {totalSteps}: {['Basic Details', 'Business Profile', 'Legal Health', 'Final Step'][step - 1]}</p>
+          <p className="text-primary font-medium">Step {step} of {totalSteps}: {['Basic Details', 'Creator Profile', 'Deal Risk', 'Final Step'][step - 1]}</p>
           <p className="text-muted-foreground italic">{getEncouragementMessage()}</p>
         </div>
         <div className="flex justify-between pt-2 border-t border-border/50">
           <StepIndicator stepNum={1} title="Basic Details" Icon={User} isCurrent={step === 1} />
-          <StepIndicator stepNum={2} title="Business Profile" Icon={Building2} isCurrent={step === 2} />
-          <StepIndicator stepNum={3} title="Legal Health" Icon={Scale} isCurrent={step === 3} />
+          <StepIndicator stepNum={2} title="Creator Profile" Icon={Building2} isCurrent={step === 2} />
+          <StepIndicator stepNum={3} title="Deal Risk" Icon={Scale} isCurrent={step === 3} />
           <StepIndicator stepNum={4} title="Final Step" Icon={CheckCircle} isCurrent={step === 4} />
         </div>
       </div>
@@ -281,7 +288,7 @@ const LegalCheckForm = () => {
               <Input id="fullName" value={formData.fullName} onChange={handleChange} onBlur={handleBlur} disabled={isLoading} className="bg-input text-foreground border-border" />
             </div>
             <div>
-              <Label htmlFor="email">Work Email ID *</Label>
+              <Label htmlFor="email">Email Address *</Label>
               <Input id="email" type="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} disabled={isLoading} className="bg-input text-foreground border-border" />
             </div>
           </div>
@@ -291,13 +298,13 @@ const LegalCheckForm = () => {
         </div>
       )}
 
-      {/* STEP 2: Business Profile (Moved Phone/Company Name here) */}
+      {/* STEP 2: Creator Profile */}
       {step === 2 && (
         <div className="space-y-4 transition-opacity duration-300">
-          <h4 className="text-xl font-semibold text-primary border-b border-border/50 pb-2 flex items-center"><Building2 className="h-5 w-5 mr-2" /> 2. Business Profile</h4>
+          <h4 className="text-xl font-semibold text-primary border-b border-border/50 pb-2 flex items-center"><Building2 className="h-5 w-5 mr-2" /> 2. Creator Profile</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="companyName">Company / Brand Name</Label>
+              <Label htmlFor="companyName">Creator / Brand Name</Label>
               <Input id="companyName" value={formData.companyName} onChange={handleChange} onBlur={handleBlur} disabled={isLoading} className="bg-input text-foreground border-border" />
             </div>
             <div>
@@ -307,25 +314,25 @@ const LegalCheckForm = () => {
           </div>
           <FormSelect
             id="companyType"
-            label="Select your business type *"
+            label="Select your creator type *"
             options={BUSINESS_TYPES}
             value={formData.companyType}
-            placeholder="Select business type"
+            placeholder="Select creator type"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormSelect
               id="businessStage"
-              label="Business Stage *"
+              label="Creator Stage *"
               options={BUSINESS_STAGES}
               value={formData.businessStage}
               placeholder="Select stage"
             />
             <FormSelect
               id="entityType"
-              label="Registered Entity Type *"
+              label="Operating Structure *"
               options={ENTITY_TYPES}
               value={formData.entityType}
-              placeholder="Select entity type"
+              placeholder="Select structure"
             />
           </div>
           <div className="flex justify-between gap-4 pt-4">
@@ -339,58 +346,58 @@ const LegalCheckForm = () => {
         </div>
       )}
 
-      {/* STEP 3: Legal Health */}
+      {/* STEP 3: Deal Risk */}
       {step === 3 && (
         <div className="space-y-4 transition-opacity duration-300">
-          <h4 className="text-xl font-semibold text-primary border-b border-border/50 pb-2 flex items-center"><Scale className="h-5 w-5 mr-2" /> 3. Legal Health</h4>
+          <h4 className="text-xl font-semibold text-primary border-b border-border/50 pb-2 flex items-center"><Scale className="h-5 w-5 mr-2" /> 3. Deal Risk</h4>
           <FormSelect
             id="hasGst"
-            label="Do you have a registered GST number? *"
+            label="Do you usually invoice brands formally? *"
             options={YES_NO_NOTSURE}
             value={formData.hasGst}
             placeholder="Select option"
-            helperText="No GST yet? That's normal for pre-revenue startups. We'll advise on when to register."
+            helperText="This helps us assess how prepared your payment workflow is."
           />
           <FormSelect
             id="hasClientVendorAgreements"
-            label="Do you have written agreements for clients/vendors? *"
+            label="Do you usually work with written agreements or clear scopes? *"
             options={YES_NO}
             value={formData.hasClientVendorAgreements}
             placeholder="Select option"
-            helperText="Don't worry if the answer is 'No' - most early startups don't. We'll help you fix it!"
+            helperText="If not, the report will prioritize contract structure before escalation."
           />
           <FormSelect
             id="hasEmployeeAgreements"
-            label="Do you maintain employee offer letters or NDAs? *"
+            label="Do you keep approvals, chats, and deliverables in one place? *"
             options={YES_NO_NA}
             value={formData.hasEmployeeAgreements}
             placeholder="Select option"
-            helperText="If missing, we'll show you templates to protect your IP and team."
+            helperText="Weak proof trails make payment recovery much harder."
           />
           <FormSelect
             id="hasFiledAnnualReturns"
-            label="Have you filed your annual returns (ITR / MCA / NGO filings)? *"
+            label="Have you already had a brand delay payment, change scope, or go silent? *"
             options={YES_NO_NOTSURE}
             value={formData.hasFiledAnnualReturns}
             placeholder="Select option"
-            helperText="If you're unsure or unfiled, we'll calculate potential penalties and a fix-it plan."
+            helperText="We use this to separate prevention issues from active dispute issues."
           />
           <FormSelect
             id="debtRecoveryChallenge"
-            label="Do you face any challenges in debt recovery or pending payments from clients/vendors? *"
+            label="Are unpaid or underpaid deals an active challenge for you? *"
             options={YES_NO}
             value={formData.debtRecoveryChallenge}
             placeholder="Select option"
           />
           <div>
-            <Label htmlFor="ongoingDisputes">Any ongoing legal issues or disputes? (Optional)</Label>
+            <Label htmlFor="ongoingDisputes">What is the main issue worrying you right now? (Optional)</Label>
             <Textarea
               id="ongoingDisputes"
               value={formData.ongoingDisputes}
               onChange={handleChange}
               onBlur={handleBlur}
               disabled={isLoading}
-              placeholder="Briefly describe your business in one sentence (e.g., We are a B2B SaaS startup providing HR software to SMEs)."
+              placeholder="Example: a brand approved work on WhatsApp but is now delaying payment, or the contract terms feel vague."
               className="bg-input text-foreground border-border min-h-[80px]"
             />
           </div>
@@ -411,14 +418,14 @@ const LegalCheckForm = () => {
           <h4 className="text-xl font-semibold text-primary border-b border-border/50 pb-2 flex items-center"><CheckCircle className="h-5 w-5 mr-2" /> 4. Final Step</h4>
           <FormSelect
             id="preferredContactMethod"
-            label="Preferred way to receive your Legal Health Report *"
+            label="Preferred way to receive your risk summary *"
             options={CONTACT_METHODS}
             value={formData.preferredContactMethod}
             placeholder="Select contact method"
           />
           <FormSelect
             id="wantsConsultation"
-            label="Would you like a free 15-min consultation with our legal expert? *"
+            label="Would you like an optional 15-min call to review the result? *"
             options={YES_NO}
             value={formData.wantsConsultation}
             placeholder="Select option"
@@ -435,7 +442,7 @@ const LegalCheckForm = () => {
                 </>
               ) : (
                 <>
-                  Get My Legal Report in 48 Hours <ArrowRight className="h-5 w-5 ml-2" />
+                  Get My Risk Summary <ArrowRight className="h-5 w-5 ml-2" />
                 </>
               )}
             </Button>
@@ -443,7 +450,7 @@ const LegalCheckForm = () => {
           
           {/* Tiny FAQ / Reassurance (Point 8) */}
           <div className="mt-4 p-3 bg-secondary rounded-lg text-sm space-y-1">
-            <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> ⏱️ Takes 60 seconds to complete</p>
+            <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> ⏱️ Takes about 2 minutes</p>
             <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> 🔒 100% Confidential & Secure</p>
             <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> 💰 Completely FREE (₹0)</p>
           </div>

@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 import { useParallax } from '@/lib/hooks/useParallax'; // Import the new hook
+import { trackEvent } from '@/lib/utils/analytics';
 import LeadCaptureForm from '@/components/LeadCaptureForm'; // Import the new component
 import NewsletterSignup from '@/components/NewsletterSignup'; // Import the new component
 import CaseStudyCard from '@/components/CaseStudyCard'; // Import the new component
@@ -327,6 +328,10 @@ const MarketingHome = () => {
 
   const getPriceSuffix = () => isYearly ? '/yr' : '/mo';
 
+  const trackMarketingCta = (label: string) => {
+    void trackEvent('marketing_cta_clicked', { label, page: 'marketing_home' });
+  };
+
   return (
     <div className="antialiased">
       <style>{`
@@ -430,7 +435,7 @@ const MarketingHome = () => {
           <p className="text-sm font-semibold flex items-center gap-2">
             <Zap className="h-4 w-4" /> Free Legal Health Check — Takes &lt; 1 min
           </p>
-          <Link to="/free-legal-check" className="bg-black text-yellow-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-800 transition-colors">
+          <Link to="/free-legal-check" onClick={() => trackMarketingCta('sticky_top_free_legal_check')} className="bg-black text-yellow-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-800 transition-colors">
             Get Started
           </Link>
         </div>
@@ -520,6 +525,7 @@ const MarketingHome = () => {
               */}
               <Link
                 to="/free-legal-check"
+                onClick={() => trackMarketingCta('hero_free_legal_check')}
                 className="cta-primary nb-hero-cta inline-flex items-center justify-center gap-3 font-bold py-4 px-6 rounded-xl text-lg flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
               >
                 Start Free Legal Check
@@ -852,7 +858,7 @@ const MarketingHome = () => {
                   ))}
                 </ul>
                 <div className="mt-6">
-                  <Link to={plan.link} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
+                  <Link to={plan.link} onClick={() => trackMarketingCta(`pricing_card_${plan.name.toLowerCase()}`)} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
                     Get Started
                   </Link>
                   <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-blue-400 hover:text-blue-300 font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
@@ -952,7 +958,7 @@ const MarketingHome = () => {
           <h2 className="text-3xl font-bold mb-6">Don't Let Brands Delay Your Payment</h2>
           <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg mb-8">Start free. Upgrade only if you need legal recovery.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link to="/free-legal-check" className="cta-primary px-8 py-4 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
+            <Link to="/free-legal-check" onClick={() => trackMarketingCta('final_cta_free_legal_check')} className="cta-primary px-8 py-4 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
               Protect My Deals Now <ArrowRight className="h-6 w-6 ml-2" />
             </Link>
           </div>
@@ -1084,7 +1090,7 @@ const MarketingHome = () => {
         "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 md:hidden",
         showFloatingCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}>
-        <Link to="/free-legal-check" className="cta-primary px-6 py-3 rounded-lg font-bold text-lg shadow-2xl flex items-center gap-2">
+        <Link to="/free-legal-check" onClick={() => trackMarketingCta('mobile_floating_free_legal_check')} className="cta-primary px-6 py-3 rounded-lg font-bold text-lg shadow-2xl flex items-center gap-2">
           Get My Free Audit (No Payment Required) <ArrowRight className="h-5 w-5 ml-2" />
         </Link>
       </div>

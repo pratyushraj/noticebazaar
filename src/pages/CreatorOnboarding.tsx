@@ -12,6 +12,7 @@ import { AnimatePresence } from 'framer-motion';
 import { onboardingAnalytics } from '@/lib/onboarding/analytics';
 import { useSwipeGesture } from '@/components/onboarding/useSwipeGesture';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { trackEvent } from '@/lib/utils/analytics';
 
 // Import new components
 import { OnboardingContainer } from '@/components/onboarding/OnboardingContainer';
@@ -73,6 +74,8 @@ const toTitleCaseName = (value: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
 
+const isValidUpiId = (value: string) => /^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(value.trim());
+
 const CreatorOnboarding = () => {
   const { profile, loading: sessionLoading, refetchProfile, user } = useSession();
   const navigate = useNavigate();
@@ -83,6 +86,12 @@ const CreatorOnboarding = () => {
   useEffect(() => {
     document.documentElement.classList.add('light');
     document.documentElement.classList.remove('dark');
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Creator Onboarding | Creator Armour';
+    const meta = document.querySelector('meta[name="description"]');
+    meta?.setAttribute('content', 'Complete your Creator Armour setup to create a stronger deal profile, clearer rates, and a faster creator workflow.');
   }, []);
 
   const [welcomeStep, setWelcomeStep] = useState<WelcomeStep>(0);
@@ -219,6 +228,10 @@ const CreatorOnboarding = () => {
       if (stepInfo) {
         const timeSpent = Date.now() - stepStartTime;
         onboardingAnalytics.trackStep(stepInfo.name, stepInfo.number, 6, timeSpent);
+        void trackEvent('onboarding_step_completed', {
+          step: stepInfo.name,
+          step_number: stepInfo.number,
+        });
         setStepStartTime(Date.now());
       }
     }
@@ -248,7 +261,7 @@ const CreatorOnboarding = () => {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500 dark:text-blue-400" />
-            <p className="text-slate-600 dark:text-white/80">Loading...</p>
+            <p className="text-slate-600 dark:text-white/80">Preparing your creator workspace...</p>
           </div>
         </div>
       </OnboardingContainer>
@@ -276,7 +289,7 @@ const CreatorOnboarding = () => {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-blue-500 dark:text-blue-400" />
-            <p className="text-slate-600 dark:text-white/80">Redirecting to dashboard...</p>
+            <p className="text-slate-600 dark:text-white/80">Redirecting to your deal dashboard...</p>
           </div>
         </div>
       </OnboardingContainer>
@@ -388,6 +401,10 @@ const CreatorOnboarding = () => {
     }
     if (!onboardingData.bankUpi.trim()) {
       toast.error('Please add your UPI ID');
+      return;
+    }
+    if (!isValidUpiId(onboardingData.bankUpi)) {
+      toast.error('Enter a valid UPI ID like yourname@upi');
       return;
     }
     handleOnboardingComplete();
@@ -781,6 +798,10 @@ const CreatorOnboarding = () => {
 
       refetchProfile();
       setSetupStep('success');
+      void trackEvent('onboarding_completed', {
+        niches_count: onboardingData.contentNiches.length,
+        deal_type: onboardingData.dealType,
+      });
     } catch (error: any) {
       // User-friendly error message
       const errorMessage = error?.message || 'An unexpected error occurred';

@@ -31,7 +31,7 @@ const ThankYou = () => {
       <Card className="max-w-xl w-full bg-card p-8 rounded-xl shadow-2xl border border-border text-center">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
         <h1 className="text-3xl font-bold text-foreground mb-4">
-          🎉 Thank You — Your Legal Health Check Is Under Review
+          Thank you. Your Creator Deal Risk Check is in review.
         </h1>
         
         <Separator className="bg-border mb-6" />
@@ -42,13 +42,13 @@ const ThankYou = () => {
             <Clock className="h-5 w-5 mr-2" /> What Happens Next
           </h2>
           <p className="text-lg text-muted-foreground">
-            Our legal experts are analyzing your responses. Your Personalized Legal Health Report will be delivered to your inbox within <strong>24–48 hours</strong>.
+            Creator Armour is reviewing your answers. Your summary will be emailed within <strong>24–48 hours</strong> with the clearest next action to take first.
           </p>
           
           <ul className="list-none space-y-2 text-foreground text-sm pl-0">
-            <li className="flex items-center"><ArrowRight className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" /> 📊 Your Legal Health Score</li>
-            <li className="flex items-center"><ArrowRight className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" /> ⚠️ Any red flags or missing compliances</li>
-            <li className="flex items-center"><ArrowRight className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" /> 🧭 Recommended next steps (custom to your industry)</li>
+            <li className="flex items-center"><ArrowRight className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" /> Your top deal risk: contract, proof, or payment</li>
+            <li className="flex items-center"><ArrowRight className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" /> The likely money or leverage gap to address first</li>
+            <li className="flex items-center"><ArrowRight className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" /> Recommended next step tailored to your situation</li>
           </ul>
         </div>
 
@@ -58,7 +58,7 @@ const ThankYou = () => {
             <Zap className="h-6 w-6 mr-2 text-yellow-400" /> Want to Fast-Track It?
           </h3>
           <p className="text-muted-foreground text-sm mb-4">
-            Book a Free 15-Min Consultation and get early access to your results + personalized advice on your business.
+            Book a free 15-minute consultation if you want help understanding the result and what to do next on an active deal.
           </p>
           <Button asChild className="w-full cta-primary py-3 rounded-lg font-bold text-lg">
             <a 
@@ -67,7 +67,7 @@ const ThankYou = () => {
               rel="noopener noreferrer"
               className="flex items-center justify-center"
             >
-              <CalendarDays className="h-5 w-5 mr-2" /> Book My Free Consultation Now
+              <CalendarDays className="h-5 w-5 mr-2" /> Book My Free Review Call
             </a>
           </Button>
         </Card>
@@ -80,7 +80,7 @@ const ThankYou = () => {
           </div>
           <div className="space-y-2">
             <h4 className="font-bold text-foreground flex items-center"><AlertTriangle className="h-4 w-4 mr-2 text-red-400" /> Pro Tip</h4>
-            <p className="text-xs text-muted-foreground">Businesses that fix gaps within 7 days of audit improve compliance readiness by up to 80% before investor or tax review.</p>
+            <p className="text-xs text-muted-foreground">Creators who organize proof and payment terms before the brand goes silent usually recover faster than creators rebuilding the trail later.</p>
           </div>
         </div>
 

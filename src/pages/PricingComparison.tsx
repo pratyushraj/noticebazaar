@@ -42,7 +42,7 @@ const FeatureCell = ({ value, isPopular }: { value: string | boolean, isPopular:
 };
 
 const PricingComparison = () => {
-  const whatsappMessage = encodeURIComponent("Hi Creator Armour, I need help choosing the right subscription plan for my business.");
+  const whatsappMessage = encodeURIComponent("Hi Creator Armour, I need help choosing the right protection plan for my creator workflow.");
   const whatsappLink = `https://wa.me/919205376316?text=${whatsappMessage}`;
 
   return (
@@ -54,16 +54,16 @@ const PricingComparison = () => {
       </Button>
       
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-foreground mb-2">Subscription Plan Comparison</h1>
+        <h1 className="text-4xl font-bold text-foreground mb-2">Choose the protection level that matches your deal stage</h1>
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          Find the perfect legal and CA support for your business. All plans include secure portal access and the AI Assistant, Lexi.
+          Use Essential when you want safer contracts, Growth when deals are active and recurring, and Strategic when you already need stronger escalation support.
         </p>
         
         {/* New WhatsApp CTA */}
         <div className="mt-6">
           <Button asChild className="bg-green-600 hover:bg-green-700 text-white font-semibold text-lg px-6 py-3 shadow-md">
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2" /> Need help choosing a plan?
+              <MessageSquare className="h-5 w-5 mr-2" /> Need help choosing a creator plan?
             </a>
           </Button>
         </div>

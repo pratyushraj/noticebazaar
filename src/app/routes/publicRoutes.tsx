@@ -57,8 +57,8 @@ const MaintenancePage = lazy(() => import("@/pages/MaintenancePage"));
 
 export const PublicRoutes = () => (
   <>
-    <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
-    <Route path="/old-home" element={<LazyRoute><ProtectedRoute><MarketingHome /></ProtectedRoute></LazyRoute>} />
+    <Route path="/" element={<LazyRoute><MarketingHome /></LazyRoute>} />
+    <Route path="/old-home" element={<LazyRoute><LandingPage /></LazyRoute>} />
 
     <Route path="/login" element={<LazyRoute><Login /></LazyRoute>} />
     <Route path="/signup" element={<LazyRoute><Signup /></LazyRoute>} />

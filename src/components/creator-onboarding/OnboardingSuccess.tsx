@@ -50,10 +50,10 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
         className="space-y-4"
       >
         <h1 className="text-4xl md:text-5xl font-bold text-white">
-          You're All Set! 🎉
+          Your Deal Workspace Is Ready
         </h1>
         <p className="text-xl text-purple-200">
-          Welcome to Creator Armour, {userName || 'Creator'}!
+          Welcome to Creator Armour, {userName || 'Creator'}.
         </p>
       </motion.div>
 
@@ -76,7 +76,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
             className="flex items-start gap-3 text-purple-200"
           >
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-            <span>Your 30-day free trial has started</span>
+            <span>Your creator workspace is active</span>
           </motion.li>
           <motion.li
             initial={{ opacity: 0, x: -20 }}
@@ -85,7 +85,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
             className="flex items-start gap-3 text-purple-200"
           >
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-            <span>Add your first brand deal to get started</span>
+            <span>Add your first brand deal to start tracking risk and payment status</span>
           </motion.li>
           <motion.li
             initial={{ opacity: 0, x: -20 }}
@@ -94,7 +94,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
             className="flex items-start gap-3 text-purple-200"
           >
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-            <span>Explore your dashboard and features</span>
+            <span>Use your dashboard to organize contracts, proofs, and payouts</span>
           </motion.li>
         </ul>
       </motion.div>
@@ -111,7 +111,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
           size="lg"
           className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
         >
-          Go to Dashboard
+          Open Deal Dashboard
           <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
       </motion.div>
@@ -120,4 +120,3 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
 };
 
 export default OnboardingSuccess;
-
