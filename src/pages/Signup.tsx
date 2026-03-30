@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { cn } from '@/lib/utils';
+import { trackEvent } from '@/lib/utils/analytics';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -357,6 +358,7 @@ const Signup = () => {
                       toast.error(e?.message || 'Failed to set up brand account');
                     }
                   }
+                  trackEvent('signup_completed', { method: 'email', account_mode: accountMode });
                   navigate('/creator-dashboard', { replace: true });
                 }
               }, 500);
@@ -385,6 +387,7 @@ const Signup = () => {
                     return;
                   }
                   navigate('/creator-dashboard', { replace: true });
+                  trackEvent('signup_completed', { method: 'email', account_mode: accountMode });
                 }, 1000);
               } else {
                 // Signin failed - redirect to login

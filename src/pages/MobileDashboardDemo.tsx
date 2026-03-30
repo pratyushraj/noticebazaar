@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { trackEvent } from '@/lib/utils/analytics';
 import { User, Search, ShieldCheck, Handshake, Camera, Plus, LayoutDashboard, CreditCard, Briefcase, Menu, Instagram, Target, Dumbbell, Shirt, Sun, Moon, RefreshCw, Loader2, Bell, ChevronRight, Zap, Link2, CheckCircle2, Download, Clock, Info, Globe, Star, LogOut, Copy, Share2, QrCode, Eye, MoreHorizontal, Landmark, FileText, Smartphone, TrendingUp, BarChart3, Mail, MessageCircle, MessageSquare, Edit3, Send, X, XCircle, ExternalLink, AlertCircle, AlertTriangle, ArrowRight, Package, Flag, MapPin, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -31,6 +32,7 @@ import DealTimelineView from '@/components/dashboard/DealTimelineView';
 import DealComparison from '@/components/dashboard/DealComparison';
 import DealStatusFlow from '@/components/dashboard/DealStatusFlow';
 import SmartNotificationsCenter from '@/components/dashboard/SmartNotificationsCenter';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
 interface MobileDashboardProps {
     profile?: any;
@@ -566,6 +568,16 @@ const MobileDashboardDemo = ({
 
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [completionDismissed, setCompletionDismissed] = useState(false);
+    const { canInstall, promptInstall } = usePwaInstall();
+    const sessionTracked = useRef(false);
+
+    // Track first dashboard view (once per session)
+    useEffect(() => {
+        if (!sessionTracked.current) {
+            trackEvent('first_dashboard_view');
+            sessionTracked.current = true;
+        }
+    }, []);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
@@ -2643,6 +2655,22 @@ const MobileDashboardDemo = ({
                                     </div>
                                 );
                             })()}
+
+                            {/* PWA Install Banner (Android only) */}
+                            {canInstall && (
+                                <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
+                                            <Download className="w-4 h-4 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[13px] font-bold text-slate-900">Install Creator Armour</p>
+                                            <p className="text-[11px] text-slate-500">Add to home screen for faster access</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={promptInstall} className="text-[11px] font-bold px-4 py-2 rounded-full bg-blue-600 text-white active:scale-95">Install</button>
+                                </div>
+                            )}
 
                             {/* Command Header */}
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>

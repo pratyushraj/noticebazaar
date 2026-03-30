@@ -455,6 +455,158 @@ export const blogPosts: BlogPost[] = [
       type: 'Organization',
     },
   },
+  {
+    slug: 'influencer-rate-card-india-2026',
+    title: 'Influencer Rate Card India 2026: What to Charge Brands',
+    metaDescription: 'Updated 2026 influencer rate card for India. Know what to charge brands based on follower count, engagement rate, and content type. Free rate calculator included.',
+    category: 'Finance',
+    date: '2026-03-30',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop',
+    summary: 'A data-driven breakdown of what Indian influencers should charge brands in 2026, with benchmarks by platform and niche.',
+    content: {
+      introduction: 'One of the hardest parts of being a creator in India is figuring out what to charge. Charge too little and you leave money on the table. Charge too much and brands ghost you. Here\'s a data-backed rate card for 2026.',
+      sections: [
+        {
+          heading: 'Instagram Rate Benchmarks (India 2026)',
+          content: 'Based on data from over 2,000 Indian creator-brand deals on Creator Armour, here are the average rates by follower tier:',
+          subsections: [
+            { heading: 'Nano (1K–10K followers)', content: '₹500–₹2,000 per reel. Best for barter deals and building a portfolio. Brands love nano creators for authentic, high-engagement content.' },
+            { heading: 'Micro (10K–50K followers)', content: '₹2,000–₹10,000 per reel. This is the sweet spot for most Indian brands. High engagement, affordable rates, genuine audience trust.' },
+            { heading: 'Mid-Tier (50K–200K followers)', content: '₹10,000–₹40,000 per reel. You\'re now in professional territory. Expect structured briefs, contracts, and milestone-based payments.' },
+            { heading: 'Macro (200K–1M followers)', content: '₹40,000–₹1,50,000 per reel. Brands expect full campaign management, multiple deliverables, and usage rights.' },
+            { heading: 'Mega (1M+ followers)', content: '₹1,50,000+ per reel. Top-tier creators with dedicated management. Rates vary wildly based on exclusivity, usage rights, and campaign duration.' },
+          ],
+        },
+        {
+          heading: 'Factors That Increase Your Rate',
+          content: 'Follower count alone doesn\'t determine your rate. These factors can 2-5x your pricing:',
+        },
+        {
+          heading: 'How to Present Your Rates to Brands',
+          content: 'Never send a single number. Always present packages with clear deliverables, timelines, and revision limits. Use a rate card or a professional collab link where brands can see your packages upfront.',
+        },
+      ],
+      conclusion: 'Your rate should reflect the value you deliver, not just your follower count. Track your engagement, build case studies, and raise your rates every quarter as your portfolio grows.',
+    },
+    faqs: [
+      { question: 'How much should a 10K follower Instagram creator charge in India?', answer: 'In 2026, a 10K-follower Instagram creator in India typically charges ₹2,000–₹5,000 per reel, depending on engagement rate and niche. Fashion and beauty niches command higher rates.' },
+      { question: 'Should I charge per post or per campaign?', answer: 'For single posts, charge per deliverable. For multi-post campaigns, offer a 10-20% bundle discount. Always use contracts for campaigns above ₹10,000.' },
+      { question: 'Do Indian brands pay GST on creator fees?', answer: 'Yes, if your annual turnover exceeds ₹20 lakhs, GST applies. Most brands will ask for a GST invoice. Factor 18% GST into your pricing or state rates as GST-exclusive.' },
+    ],
+    keywords: ['influencer rate card india', 'instagram creator rates', 'how much to charge brands', 'influencer pricing india 2026', 'creator rate calculator'],
+    internalLinks: { homepage: true, collabLink: true, contractTool: true },
+    author: { name: 'CreatorArmour', type: 'Organization' },
+  },
+  {
+    slug: 'how-to-get-brand-deals-on-instagram-india',
+    title: 'How to Get Brand Deals on Instagram in India (2026)',
+    metaDescription: 'Step-by-step guide to landing your first brand deal on Instagram in India. Learn how to pitch brands, build a media kit, and close deals professionally.',
+    category: 'Business',
+    date: '2026-03-30',
+    readTime: '10 min read',
+    image: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=400&fit=crop',
+    summary: 'The complete playbook for Indian Instagram creators to land paid brand collaborations, from building your profile to closing the deal.',
+    content: {
+      introduction: 'Getting brand deals on Instagram isn\'t about having millions of followers. Indian brands are actively looking for micro and nano creators with engaged audiences. Here\'s exactly how to get on their radar.',
+      sections: [
+        {
+          heading: 'Step 1: Optimize Your Instagram for Brands',
+          content: 'Before brands find you, your profile needs to scream "professional creator." Here\'s what brands look for:',
+        },
+        {
+          heading: 'Step 2: Build a Collab Link (Your Digital Business Card)',
+          content: 'A collab link is a professional page where brands can see your rates, packages, past work, and send you structured offers — without DMs getting lost. Creator Armour gives you one for free.',
+        },
+        {
+          heading: 'Step 3: How to Pitch Brands (With Templates)',
+          content: 'Cold pitching works when done right. Here\'s the formula that gets responses from Indian brand marketing teams.',
+        },
+        {
+          heading: 'Step 4: Closing the Deal Professionally',
+          content: 'Once a brand says yes, the real work begins. Use contracts, set clear deliverables, agree on timelines, and always get 50% advance before starting work.',
+        },
+      ],
+      conclusion: 'The Indian creator economy is growing 25% year-over-year. Brands have budgets. The creators who treat this as a business — with proper rates, contracts, and professional communication — will capture those budgets.',
+    },
+    faqs: [
+      { question: 'Can I get brand deals with less than 1000 followers?', answer: 'Yes. Many Indian D2C brands work with nano creators (under 5K followers) for barter deals. Your engagement rate matters more than follower count.' },
+      { question: 'Should I reach out to brands or wait for them?', answer: 'Do both. But proactive pitching gets results faster. For every 10 pitches, expect 1-2 responses. That\'s normal.' },
+    ],
+    keywords: ['how to get brand deals instagram', 'instagram influencer india', 'brand collaboration instagram', 'pitch brands as creator', 'land first brand deal'],
+    internalLinks: { homepage: true, collabLink: true },
+    author: { name: 'CreatorArmour', type: 'Organization' },
+  },
+  {
+    slug: 'brand-deal-contract-template-india',
+    title: 'Brand Deal Contract Template India: Free Download',
+    metaDescription: 'Free brand deal contract template for Indian creators and influencers. Covers payment terms, deliverables, usage rights, and cancellation clauses.',
+    category: 'Legal',
+    date: '2026-03-30',
+    readTime: '6 min read',
+    image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=400&fit=crop',
+    summary: 'A free, ready-to-use brand deal contract template designed for Indian creators, covering all the clauses that protect your payments and content rights.',
+    content: {
+      introduction: 'Every brand deal needs a contract — even for ₹5,000. Without one, you\'re relying on trust alone, and trust doesn\'t pay invoices. Here\'s a free template built specifically for Indian creators.',
+      sections: [
+        {
+          heading: 'Why Indian Creators Need Written Contracts',
+          content: '34% of Indian creators have experienced non-payment or delayed payment from brands. A written contract is your only legal protection. It\'s not about distrust — it\'s about professionalism.',
+        },
+        {
+          heading: 'Essential Clauses Every Creator Contract Must Have',
+          content: 'Your contract should cover: deliverables with specifications, payment schedule (always get 50% advance), timeline, revision limits, usage rights, cancellation terms, and dispute resolution.',
+        },
+        {
+          heading: 'Using the Free Contract Analyzer',
+          content: 'Before signing any brand\'s contract, run it through our free contract analyzer. It scans for red flags like unlimited revisions, perpetual usage rights, and one-sided cancellation clauses.',
+        },
+      ],
+      conclusion: 'Don\'t sign anything without a contract. Download our free template, customize it for each deal, and protect your work and payments.',
+    },
+    faqs: [
+      { question: 'Is a WhatsApp agreement legally binding in India?', answer: 'Technically yes, under the Indian Contract Act. But proving terms in court is nearly impossible without screenshots and context. Always use a written contract.' },
+      { question: 'What if a brand refuses to sign a contract?', answer: 'That\'s a red flag. Professional brands expect contracts. If they refuse, they\'re likely to cause payment issues later. Walk away.' },
+    ],
+    keywords: ['brand deal contract template', 'influencer contract india', 'creator agreement template', 'brand collaboration contract', 'free contract template'],
+    internalLinks: { homepage: true, contractTool: true },
+    author: { name: 'CreatorArmour', type: 'Organization' },
+  },
+  {
+    slug: 'dmca-takedown-instagram-content-theft-india',
+    title: 'DMCA Takedown for Instagram: Protect Stolen Content',
+    metaDescription: 'How to file a DMCA takedown on Instagram when brands or accounts steal your content. Step-by-step guide for Indian creators with templates.',
+    category: 'Legal',
+    date: '2026-03-30',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1563986768609-322da13575f2?w=800&h=400&fit=crop',
+    summary: 'Your content was stolen on Instagram. Here\'s exactly how to file a DMCA takedown, what to include, and how to get compensation from brands that used your content without paying.',
+    content: {
+      introduction: 'Content theft is rampant in India\'s creator economy. Brands use creator content without permission, competitors repost your reels, and aggregator accounts steal your work. Here\'s how to fight back.',
+      sections: [
+        {
+          heading: 'What Counts as Content Theft?',
+          content: 'Using your photos, videos, or reels without your permission — even if they credit you — is copyright infringement if you didn\'t grant a license. Credit is not compensation.',
+        },
+        {
+          heading: 'How to File a DMCA Takedown on Instagram',
+          content: 'Instagram\'s copyright reporting form is your first line of defense. You\'ll need: the original content URL, the infringing content URL, your contact info, and a good-faith statement.',
+        },
+        {
+          heading: 'Getting Compensation from Infringing Brands',
+          content: 'If a brand used your content commercially without a license, you\'re entitled to compensation. Send a legal notice first, then escalate to a consumer court if needed.',
+        },
+      ],
+      conclusion: 'Protect your content proactively. Watermark your work, register copyrights for high-value content, and use content protection tools that monitor unauthorized usage.',
+    },
+    faqs: [
+      { question: 'How long does Instagram take to process a DMCA takedown?', answer: 'Typically 24-72 hours for clear-cut cases. Complex disputes may take 1-2 weeks. Instagram removes the content first and gives the other party a chance to counter-notify.' },
+      { question: 'Can I sue a brand in India for using my content without permission?', answer: 'Yes, under the Copyright Act 1957. You can seek damages in a commercial court. Most cases settle before trial when you send a strong legal notice.' },
+    ],
+    keywords: ['dmca takedown instagram', 'content theft instagram', 'copyright infringement creator', 'instagram content protection', 'stolen content india'],
+    internalLinks: { homepage: true },
+    author: { name: 'CreatorArmour', type: 'Organization' },
+  },
 ];
 
 // Helper function to get blog post by slug

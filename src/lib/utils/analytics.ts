@@ -54,7 +54,13 @@ type AnalyticsEvent =
   | 'pwa_install_prompt_dismissed'
   | 'pwa_app_installed'
   | 'pwa_notification_nudge_shown'
-  | 'pwa_notification_enabled';
+  | 'pwa_notification_enabled'
+  // Conversion Funnel
+  | 'signup_completed'
+  | 'first_dashboard_view'
+  | 'profile_completed'
+  | 'first_deal_created'
+  | 'first_collab_request_sent';
 
 /** Fire events once per deal. Attach deal_id, creator_id, collab_type where applicable. Contract/brand events (contract_generated, contract_viewed_by_brand, contract_signed_by_brand, contract_not_signed_48h, payment_*) are typically fired from the backend. */
 
