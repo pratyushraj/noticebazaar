@@ -565,6 +565,7 @@ const MobileDashboardDemo = ({
 
 
     const [showActionSheet, setShowActionSheet] = useState(false);
+    const [completionDismissed, setCompletionDismissed] = useState(false);
     const [activeSettingsPage, setActiveSettingsPage] = useState<string | null>(null);
     const [showPushInstallGuide, setShowPushInstallGuide] = useState(false);
     const [processingDeal, setProcessingDeal] = React.useState<string | null>(null);
@@ -2598,33 +2599,50 @@ const MobileDashboardDemo = ({
                     {activeTab === 'dashboard' && (
                         <>
                             {/* Complete Your Collab Link Banner */}
-                            {profile && (!profile.onboarding_complete || !profile.instagram_handle) && (
-                                <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
-                                            <ShieldCheck className="w-5 h-5 text-white" />
+                            {!completionDismissed && profile && (!profile.instagram_handle || !profile.bio || (!profile.pricing_min && !profile.avg_rate_reel) || !profile.bank_upi) && (() => {
+                                const tasks = [
+                                    { done: !!profile.instagram_handle, label: 'Add Instagram', focus: 'instagram' },
+                                    { done: !!profile.bio, label: 'Add intro line', focus: 'bio' },
+                                    { done: !!(profile.pricing_min || profile.avg_rate_reel), label: 'Set rates', focus: 'rates' },
+                                    { done: !!profile.bank_upi, label: 'Add payout', focus: 'payout', tabLink: true },
+                                ];
+                                const completed = tasks.filter(t => t.done).length;
+                                const remaining = tasks.filter(t => !t.done);
+                                const pct = Math.round((completed / tasks.length) * 100);
+                                return (
+                                    <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
+                                                    <ShieldCheck className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[14px] font-bold text-slate-900">Complete Your Collab Link</p>
+                                                    <p className="text-[12px] text-slate-500">{completed}/{tasks.length} done • {pct}%</p>
+                                                </div>
+                                            </div>
+                                            <button onClick={() => setCompletionDismissed(true)} className="p-1 rounded-full hover:bg-emerald-100 active:scale-95">
+                                                <X className="w-4 h-4 text-slate-400" />
+                                            </button>
                                         </div>
-                                        <div>
-                                            <p className="text-[14px] font-bold text-slate-900">Complete Your Collab Link</p>
-                                            <p className="text-[12px] text-slate-500">Brands can't find you yet</p>
+                                        {/* Progress bar */}
+                                        <div className="w-full h-1.5 bg-emerald-100 rounded-full mb-3 overflow-hidden">
+                                            <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {remaining.map(task => (
+                                                <button
+                                                    key={task.focus}
+                                                    onClick={() => navigate((task as any).tabLink ? '/creator-profile?section=profile' : `/creator-profile?section=collab&focus=${task.focus}`)}
+                                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95"
+                                                >
+                                                    {task.label}
+                                                </button>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {!profile.instagram_handle && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add Instagram</button>
-                                        )}
-                                        {!profile.bio && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add intro line</button>
-                                        )}
-                                        {(!profile.pricing_min && !profile.avg_rate_reel) && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Set rates</button>
-                                        )}
-                                        {!profile.bank_upi && (
-                                            <button onClick={() => navigate('/creator-profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95">Add payout</button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+                                );
+                            })()}
 
                             {/* Command Header */}
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>

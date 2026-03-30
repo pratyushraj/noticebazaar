@@ -529,6 +529,29 @@ const ProfileSettings = () => {
     if (section === 'profile' || section === 'account' || section === 'collab' || section === 'support') {
       setActiveSection(section);
     }
+
+    // Deep-link focus: scroll to specific field and enable edit mode
+    const focus = params.get('focus');
+    if (focus) {
+      setEditMode(true);
+      // Wait for section render, then scroll to field
+      setTimeout(() => {
+        const focusMap: Record<string, string> = {
+          instagram: 'input-instagram-handle',
+          bio: 'input-instagram-handle', // Bio is auto-generated from Instagram, focus on handle
+          rates: 'input-rate-reel',
+          payout: 'input-rate-reel', // Payout is on dashboard profile tab, focus on rates as fallback
+        };
+        const elementId = focusMap[focus];
+        if (elementId) {
+          const el = document.getElementById(elementId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.focus();
+          }
+        }
+      }, 500);
+    }
   }, [location.search]);
 
   const handleSectionChange = (section: 'profile' | 'account' | 'collab' | 'support') => {
@@ -1926,6 +1949,7 @@ const ProfileSettings = () => {
                   <div className="flex items-center gap-2">
                     <Instagram className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                     <input
+                      id="input-instagram-handle"
                       type="text"
                       value={formData.instagramHandle}
                       onChange={(e) => {
@@ -2461,6 +2485,7 @@ const ProfileSettings = () => {
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60">₹</span>
                     <input
+                      id="input-rate-reel"
                       type="number"
                       min="0"
                       step="1"
