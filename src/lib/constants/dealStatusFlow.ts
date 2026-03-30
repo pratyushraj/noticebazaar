@@ -8,7 +8,9 @@
 export type DealStageKey =
   | 'details_submitted'
   | 'contract_ready'
-  | 'signed'
+  | 'brand_signed'
+  | 'fully_executed'
+  | 'live_deal'
   | 'needs_changes'
   | 'declined'
   | 'completed'
@@ -45,13 +47,27 @@ export const DEAL_STAGE_DISPLAY: Record<DealStageKey, StageDisplayConfig> = {
     helperText: 'Waiting for brand to sign',
     colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   },
-  signed: {
+  brand_signed: {
+    label: 'Brand Signed',
+    shortLabel: 'Brand Signed',
+    helperText: 'Waiting for your signature',
+    colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
+  },
+  fully_executed: {
     label: 'Contract Signed',
     shortLabel: 'Signed',
-    helperText: 'Payment expected before delivery',
+    helperText: 'Agreement is active',
     helperTextPaid: 'Payment expected before delivery',
     helperTextBarter: 'Product dispatch expected',
     colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
+  },
+  live_deal: {
+    label: 'In Progress',
+    shortLabel: 'Live Deal',
+    helperText: 'Deliverables in progress',
+    helperTextPaid: 'Deliverables in progress',
+    helperTextBarter: 'Product received · content pending',
+    colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   },
   needs_changes: {
     label: 'Action Required',

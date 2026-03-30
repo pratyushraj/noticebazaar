@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
@@ -6,6 +7,8 @@ import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
 import { logger } from '@/lib/utils/logger';
+
+type LooseRow = Record<string, any>;
 
 // Demo data for Brand Deals (used when database table doesn't exist or for preview)
 // Updated to match Payments page requirements exactly
@@ -232,13 +235,13 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         'Awaiting Product Shipment', // Barter: delivery details saved, waiting for brand to ship
       ];
 
-      let query = supabase
+      let query = (supabase
         .from('brand_deals')
         .select('*')
         .eq('creator_id', creatorId)
         // Filter to only show signed deals
         .in('status', signedStatuses)
-        .order(sortBy, { ascending: sortOrder === 'asc' });
+        .order(sortBy, { ascending: sortOrder === 'asc' })) as any;
 
       // If a specific status filter is provided, apply it (but only if it's a signed status)
       if (statusFilter && statusFilter !== 'All') {
@@ -363,7 +366,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         console.log('[useBrandDeals] Returning', data.length, 'deals');
       }
 
-      const rawDeals = data as BrandDeal[];
+      const rawDeals = data as unknown as BrandDeal[];
       const brandIds = Array.from(
         new Set(
           rawDeals
@@ -379,8 +382,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         )
       );
 
-      let logosByBrandId = new Map<string, string>();
-      let logosByBrandName = new Map<string, string>();
+      const logosByBrandId = new Map<string, string>();
+      const logosByBrandName = new Map<string, string>();
 
       if (brandIds.length > 0 || brandNames.length > 0) {
         const [brandsByIdResult, brandsByNameResult] = await Promise.all([
@@ -388,13 +391,13 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
             ? supabase
                 .from('brands')
                 .select('id, name, logo_url')
-                .in('id', brandIds)
+                .in('id', brandIds as readonly string[])
             : Promise.resolve({ data: [], error: null } as any),
           brandNames.length > 0
             ? supabase
                 .from('brands')
                 .select('id, name, logo_url')
-                .in('name', brandNames)
+                .in('name', brandNames as readonly string[])
             : Promise.resolve({ data: [], error: null } as any),
         ]);
 
@@ -480,6 +483,7 @@ export const useAddBrandDeal = () => {
       invoice_file,
       utr_number,
       brand_email,
+      brand_phone,
       payment_received_date
     }) => {
       let contract_file_url: string | null = null;
@@ -554,7 +558,7 @@ export const useAddBrandDeal = () => {
 
       // Build insert payload - only include organization_id if it's a valid UUID
       // We explicitly omit it if null to avoid NOT NULL constraint violations
-      const insertPayload: Database['public']['Tables']['brand_deals']['Insert'] = {
+      const insertPayload: Record<string, any> = {
         creator_id,
         brand_name,
         deal_amount,
@@ -588,9 +592,9 @@ export const useAddBrandDeal = () => {
 
       // Debug logging removed for production
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase
         .from('brand_deals')
-        .insert(insertPayload);
+        .insert(insertPayload as any) as any);
 
       if (insertError) {
         // Attempt to remove uploaded files if database insert fails
@@ -648,6 +652,7 @@ interface UpdateBrandDealVariables {
   brand_email?: string | null; // New: brand email
   brand_phone?: string | null; // New: brand phone
   brand_address?: string | null; // New: brand address (required for contract generation)
+  invoice_number?: string | null;
   payment_received_date?: string | null; // New: payment received date
   proof_of_payment_url?: string | null; // New: proof of payment URL
 }
@@ -737,10 +742,10 @@ export const useUpdateBrandDeal = () => {
         updatePayload.status = 'Payment Pending';
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('brand_deals')
-        .update(updatePayload)
-        .eq('id', id);
+        .update(updatePayload as any)
+        .eq('id', id) as any);
 
       if (error) {
         throw new Error(error.message);
@@ -780,12 +785,12 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
     async () => {
       if (!dealId || !creatorId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('brand_deals')
         .select('*')
         .eq('id', dealId)
         .eq('creator_id', creatorId)
-        .single();
+        .single() as any);
 
       if (error) {
         const isMissingTableError =
@@ -802,7 +807,7 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
         throw error;
       }
 
-      return data as BrandDeal | null;
+      return (data as unknown as BrandDeal) ?? null;
     },
     {
       enabled: !!dealId && !!creatorId,
@@ -833,10 +838,10 @@ export const useDeleteBrandDeal = () => {
         }
       }
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase
         .from('brand_deals')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
 
       if (dbError) {
         throw new Error(`Failed to delete brand deal record: ${dbError.message}`);
@@ -982,7 +987,7 @@ export const getDealStageFromStatus = (status: string | null | undefined, progre
   if (statusLower.includes('draft')) return 'details_submitted';
   if (statusLower.includes('review')) return 'contract_ready';
   if (statusLower.includes('negotiation')) return 'negotiation';
-  if (statusLower.includes('signed') && !statusLower.includes('pending')) return 'signed';
+  if (statusLower.includes('signed') && !statusLower.includes('pending')) return 'fully_executed';
   if (statusLower.includes('content_making') || statusLower.includes('content making')) return 'content_making';
   if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) return 'content_delivered';
 

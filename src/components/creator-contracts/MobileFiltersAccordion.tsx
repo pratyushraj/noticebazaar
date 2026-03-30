@@ -52,11 +52,12 @@ const MobileFiltersAccordion: React.FC<MobileFiltersAccordionProps> = ({
 
   const statusOptions: { value: DealStage | 'All'; label: string }[] = [
     { value: 'All', label: 'All' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'active', label: 'Active' },
-    { value: 'payment_pending', label: 'Payment Pending' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'overdue', label: 'Overdue' },
+    { value: 'details_submitted', label: 'New Request' },
+    { value: 'contract_ready', label: 'Contract Ready' },
+    { value: 'brand_signed', label: 'Brand Signed' },
+    { value: 'fully_executed', label: 'Signed' },
+    { value: 'live_deal', label: 'Live Deal' },
+    { value: 'content_delivered', label: 'Delivered' },
     { value: 'completed', label: 'Completed' },
   ];
 

@@ -23,8 +23,12 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
     
     const dealsWithStages = allDeals.map(deal => ({ deal, stage: getDealStage(deal) }));
     
-    const activeDeals = dealsWithStages.filter(({ stage }) => 
-      stage === 'signed' || stage === 'content_making' || stage === 'content_delivered'
+    const activeDeals = dealsWithStages.filter(({ stage }) =>
+      stage === 'brand_signed' ||
+      stage === 'fully_executed' ||
+      stage === 'live_deal' ||
+      stage === 'content_making' ||
+      stage === 'content_delivered'
     ).length;
     
     const pendingPayments = dealsWithStages.filter(({ deal }) => 
@@ -153,4 +157,3 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
 };
 
 export default BrandDealsStats;
-

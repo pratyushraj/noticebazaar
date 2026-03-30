@@ -8,6 +8,7 @@ import { DealStage } from '@/components/creator-contracts/DealStatusBadge';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 
 interface DealKanbanProps {
   brandDeals: BrandDeal[] | undefined;
@@ -22,9 +23,9 @@ type KanbanColumn = {
 };
 
 const columns: KanbanColumn[] = [
-  { id: 'negotiating', title: 'Negotiating', statuses: ['Drafting'], stage: 'draft' },
-  { id: 'signed', title: 'Signed', statuses: ['Approved'], stage: 'in_progress' },
-  { id: 'delivered', title: 'Delivered', statuses: ['Payment Pending'], stage: 'review_pending' },
+  { id: 'negotiating', title: 'Negotiating', statuses: ['Drafting', 'Negotiation'], stage: 'details_submitted' },
+  { id: 'signed', title: 'Signed', statuses: ['CONTRACT_READY', 'SIGNED_BY_BRAND', 'FULLY_EXECUTED', 'LIVE'], stage: 'fully_executed' },
+  { id: 'delivered', title: 'Delivered', statuses: ['Content Making', 'Content Delivered'], stage: 'content_delivered' },
   { id: 'paid', title: 'Paid', statuses: ['Completed'], stage: 'completed' },
 ];
 
@@ -149,4 +150,3 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
 };
 
 export default DealKanban;
-

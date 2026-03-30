@@ -30,8 +30,12 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
   const stats = React.useMemo(() => {
     const dealsWithStages = allDeals.map(deal => ({ deal, stage: getDealStage(deal) }));
     
-    const activeCampaigns = dealsWithStages.filter(({ stage }) => 
-      stage === 'signed' || stage === 'content_making' || stage === 'content_delivered'
+    const activeCampaigns = dealsWithStages.filter(({ stage }) =>
+      stage === 'brand_signed' ||
+      stage === 'fully_executed' ||
+      stage === 'live_deal' ||
+      stage === 'content_making' ||
+      stage === 'content_delivered'
     ).length;
     
     const pendingPayments = dealsWithStages.filter(({ deal }) => 
@@ -225,4 +229,3 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
 };
 
 export default DealsHeader;
-
