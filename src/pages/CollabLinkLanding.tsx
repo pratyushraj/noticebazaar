@@ -3123,7 +3123,27 @@ const CollabLinkLanding = () => {
 			            <div className="w-full md:w-[380px] md:max-w-[380px] md:justify-self-end md:pb-32 md:sticky md:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
-                {!showCustomFlow && (
+              {/* How it works for brands */}
+              <div className="mb-5 pb-5 border-b border-slate-100">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2.5">How it works</p>
+                <div className="flex items-center gap-2">
+                  {[
+                    { n: 1, title: 'Fill your brief' },
+                    { n: 2, title: 'Creator reviews' },
+                    { n: 3, title: 'Deal starts' },
+                  ].map((step, idx) => (
+                    <div key={step.n} className="flex items-center gap-2 flex-1">
+                      <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                        {step.n}
+                      </div>
+                      <p className="text-[11px] font-black text-slate-800 leading-tight">{step.title}</p>
+                      {idx < 2 && <ArrowRight className="w-3 h-3 text-slate-300 shrink-0 hidden sm:block" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {!showCustomFlow && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-5">
                     <div className="grid gap-3">
                       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -3290,8 +3310,11 @@ const CollabLinkLanding = () => {
                         <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
                           <label className={`block text-[15px] font-black text-slate-800 mb-4 ${typeLabel} flex items-center gap-2`}>
                             <Clapperboard className="h-5 w-5 text-slate-900" />
-                            What content would you like?
+                            What content do you need?
                           </label>
+                          <p className="text-[11px] text-slate-500 font-semibold -mt-2 mb-4 px-1">
+                            e.g., 1 Instagram Reel, 3 Stories, 1 Product Review
+                          </p>
                           <div className="flex flex-wrap gap-2.5">
                             {DELIVERABLE_OPTIONS.map((option) => {
                               const isSelected = deliverables.includes(option.value);
@@ -3347,7 +3370,7 @@ const CollabLinkLanding = () => {
                         <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
                           <label className={`block text-[15px] font-black text-slate-800 mb-6 ${typeLabel} flex items-center gap-2`}>
                             <IndianRupee className="h-5 w-5 text-slate-900" />
-                            {collabType === 'paid' ? 'Campaign Budget' : collabType === 'barter' ? 'Product Value' : 'Commitment Details'}
+                            Budget (₹)
                           </label>
 
                           {collabType === 'paid' && (
@@ -3433,7 +3456,7 @@ const CollabLinkLanding = () => {
                           </div>
 
                           <div>
-                            <label className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}><FileText className="h-5 w-5 text-slate-900" />Campaign Goal</label>
+                            <label className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}><FileText className="h-5 w-5 text-slate-900" />What do you want the creator to do?</label>
                             <Textarea
                               value={campaignDescription}
                               onChange={(e) => setCampaignDescription(e.target.value)}
@@ -3444,7 +3467,7 @@ const CollabLinkLanding = () => {
                           </div>
 
                           <div>
-                            <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Calendar className="h-5 w-5 text-slate-900" />Target Completion Date</label>
+                            <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Calendar className="h-5 w-5 text-slate-900" />When do you need this done?</label>
                             <Input
                               type="date"
                               min={new Date().toISOString().split('T')[0]}

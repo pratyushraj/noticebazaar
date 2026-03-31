@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal, Zap, ChevronUp } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
 import AvatarUploader from '@/components/profile/AvatarUploader';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -379,6 +379,7 @@ const ProfileSettings = () => {
     collaborationPreference: "hybrid" as (typeof COLLAB_PREFERENCE_OPTIONS)[number],
     autoPricingEnabled: false,
     dealTemplates: [] as DealTemplate[],
+    upiId: "",
   });
 
   const isDirty = useMemo(() => {
@@ -1574,6 +1575,248 @@ const ProfileSettings = () => {
         </div>
       </div>
 
+      {/* Simplified Onboarding Form - For users who haven't completed onboarding */}
+      {!profile.onboarding_complete ? (
+        <div className="p-4 space-y-4" style={{ paddingBottom: 'calc(160px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="max-w-2xl mx-auto">
+            {/* Welcome Header */}
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold mb-2">Complete Your Profile</h2>
+              <p className="text-sm text-muted-foreground">
+                Fill in the essentials to get your brand deal page live.
+              </p>
+            </div>
+
+            {/* Instagram Handle */}
+            <div className="bg-card rounded-xl p-4 border border-border mb-4">
+              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                <Instagram className="w-4 h-4" />
+                Instagram Username *
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">@</span>
+                <input
+                  type="text"
+                  value={formData.instagramHandle}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/@/g, '')
+                      .replace(/\s/g, '')
+                      .toLowerCase();
+                    setFormData(prev => ({
+                      ...prev,
+                      instagramHandle: value,
+                      username: value
+                    }));
+                  }}
+                  placeholder="your_handle"
+                  className="flex-1 bg-muted/50 border border-border rounded-lg px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                This creates your brand deal page: creatorarmour.com/{formData.instagramHandle || 'username'}
+              </p>
+            </div>
+
+            {/* Bio */}
+            <div className="bg-card rounded-xl p-4 border border-border mb-4">
+              <label className="text-sm font-medium mb-2 block">Bio</label>
+              <textarea
+                value={formData.bio}
+                onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                placeholder="Tell brands about yourself and your content style..."
+                rows={3}
+                className="w-full bg-muted/50 border border-border rounded-lg px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                A short bio helps brands understand your style and audience.
+              </p>
+            </div>
+
+            {/* Rate */}
+            <div className="bg-card rounded-xl p-4 border border-border mb-4">
+              <label className="text-sm font-medium mb-2 block">Typical Reel Price (INR)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60">₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={formData.avgRateReel}
+                  onChange={(e) => setFormData(prev => ({ ...prev, avgRateReel: e.target.value }))}
+                  placeholder="e.g. 1500"
+                  className="w-full bg-muted/50 border border-border rounded-lg pl-7 pr-3 py-3 text-sm text-foreground placeholder-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Your typical rate for a single Instagram reel collaboration.
+              </p>
+            </div>
+
+            {/* Niches */}
+            <div className="bg-card rounded-xl p-4 border border-border mb-4">
+              <label className="text-sm font-medium mb-2 block">Content Niches</label>
+              <p className="text-xs text-muted-foreground mb-3">Select up to 5 niches that describe your content.</p>
+              <div className="flex flex-wrap gap-2">
+                {CONTENT_NICHE_OPTIONS.map((niche) => {
+                  const selected = formData.contentNiches.includes(niche);
+                  return (
+                    <button
+                      type="button"
+                      key={niche}
+                      onClick={() => {
+                        if (selected) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            contentNiches: prev.contentNiches.filter((item) => item !== niche)
+                          }));
+                        } else if (formData.contentNiches.length < 5) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            contentNiches: [...prev.contentNiches, niche]
+                          }));
+                        }
+                      }}
+                      className={`px-3 py-2 rounded-full text-xs border transition-all ${
+                        selected
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm font-semibold'
+                          : 'bg-muted/40 border-border text-foreground/75 hover:bg-muted'
+                      }`}
+                    >
+                      {niche}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* UPI */}
+            <div className="bg-card rounded-xl p-4 border border-border mb-4">
+              <label className="text-sm font-medium mb-2 block">UPI ID</label>
+              <input
+                type="text"
+                value={formData.upiId || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, upiId: e.target.value }))}
+                placeholder="yourname@upi"
+                className="w-full bg-muted/50 border border-border rounded-lg px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                For receiving payments from brand collaborations.
+              </p>
+            </div>
+
+            {/* Advanced Fields - Collapsible */}
+            <Collapsible open={showAdvancedInsights} onOpenChange={setShowAdvancedInsights}>
+              <CollapsibleTrigger className="w-full rounded-xl border border-border bg-muted/40 hover:bg-muted/60 transition-all mb-4">
+                <div className="p-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground/90">Advanced Settings</span>
+                  <ChevronDown className={cn(
+                    'h-4 w-4 text-muted-foreground transition-transform duration-200',
+                    showAdvancedInsights && 'rotate-180'
+                  )} />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 mb-4">
+                {/* Media Kit */}
+                <div className="bg-card rounded-xl p-4 border border-border">
+                  <label className="text-sm font-medium mb-2 block">Media Kit URL</label>
+                  <input
+                    type="url"
+                    value={formData.mediaKitUrl}
+                    onChange={(e) => setFormData(prev => ({ ...prev, mediaKitUrl: e.target.value }))}
+                    placeholder="https://..."
+                    className="w-full bg-muted/50 border border-border rounded-lg px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Link to your media kit or portfolio for brands to review.
+                  </p>
+                </div>
+
+                {/* Audience Demographics */}
+                <div className="bg-card rounded-xl p-4 border border-border">
+                  <label className="text-sm font-medium mb-2 block">Audience Demographics</label>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">Gender Split</label>
+                      <input
+                        type="text"
+                        value={genderSplit}
+                        onChange={(e) => setGenderSplit(e.target.value)}
+                        placeholder="Example: 70% Women • 30% Men"
+                        className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">Primary Audience Region</label>
+                      <input
+                        type="text"
+                        value={formData.collabRegionLabel}
+                        onChange={(e) => setFormData(prev => ({ ...prev, collabRegionLabel: e.target.value }))}
+                        placeholder="NCR (Delhi Region)"
+                        className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1.5 block">Age Range</label>
+                      <select
+                        value={ageRange}
+                        onChange={(e) => setAgeRange(e.target.value)}
+                        className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+                      >
+                        <option value="" className="bg-popover text-popover-foreground">Select</option>
+                        <option value="18-24" className="bg-popover text-popover-foreground">18-24</option>
+                        <option value="25-34" className="bg-popover text-popover-foreground">25-34</option>
+                        <option value="35-44" className="bg-popover text-popover-foreground">35-44</option>
+                        <option value="Mixed" className="bg-popover text-popover-foreground">Mixed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Reliability */}
+                <div className="bg-card rounded-xl p-4 border border-border">
+                  <label className="text-sm font-medium mb-2 block">Delivery Reliability Notes</label>
+                  <textarea
+                    value={formData.collabDeliveryReliabilityPreset}
+                    onChange={(e) => setFormData(prev => ({ ...prev, collabDeliveryReliabilityPreset: e.target.value }))}
+                    placeholder="e.g., Fast turnaround, 2-3 days for reels"
+                    rows={2}
+                    className="w-full bg-muted/50 border border-border rounded-lg px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Let brands know about your typical delivery speed and reliability.
+                  </p>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Save Button */}
+            <button
+              type="button"
+              onClick={() => {
+                handleSave();
+                // After saving, the profile should be marked as onboarding complete
+                // This happens automatically when the profile is saved
+              }}
+              disabled={isSaving || !formData.instagramHandle.trim()}
+              className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSaving ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </span>
+              ) : (
+                'Save & Continue'
+              )}
+            </button>
+            <p className="text-xs text-center text-muted-foreground mt-3">
+              You can always update these details later from your profile settings.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* Sticky Segmented Control */}
       <div className="sticky top-[57px] z-40 bg-background/95 backdrop-blur-lg border-b border-border px-4 py-3">
         <div
@@ -3183,6 +3426,8 @@ const ProfileSettings = () => {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Logout Confirmation Dialog - Always rendered outside conditionals */}
       <AlertDialog open={showLogoutDialog} onOpenChange={(open) => setShowLogoutDialog(open)}>

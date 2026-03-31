@@ -154,6 +154,7 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                       onClose?.();
                     }}
                     className="h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                    aria-label="Close search"
                   >
                     <X className="h-4 w-4 text-white/60" />
                   </button>

@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, type ReactNode } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense, type ReactNode } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
@@ -134,6 +134,22 @@ import { RouteAnnouncer } from "./components/RouteAnnouncer";
 import NetworkStatusWrapper from "./components/NetworkStatusWrapper";
 import ScrollToTop from "./components/ScrollToTop";
 import AddToHomeScreen from "./components/mobile/AddToHomeScreen";
+
+// Global keyboard shortcut: Cmd+K / Ctrl+K navigates to /discover
+function GlobalKeyboardShortcut() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        navigate('/discover');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+  return null;
+}
 
 // Lazy-loaded pages for better bundle splitting
 
@@ -296,17 +312,17 @@ const App = () => {
           {/* Main App - Only show after splash is completely gone */}
           {splashComplete && (
             <div className="opacity-0 animate-[fadeInApp_0.2s_ease-out_0.05s_forwards]">
-              {/* replaced-by-ultra-polish: Skip to main content link for accessibility */}
+              {/* Skip to main content link for accessibility */}
               <a
                 href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10001] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                aria-label="Skip to main content"
+                className="skip-to-content"
               >
                 Skip to main content
               </a>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                       <RouteAnnouncer />
                 <ScrollToTop />
+                <GlobalKeyboardShortcut />
                 <NetworkStatusWrapper>
                   <FacebookPixelTracker />
                   <GoogleAnalyticsTracker /> {/* Add GA4 tracker here */}
