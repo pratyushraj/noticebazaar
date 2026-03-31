@@ -27,6 +27,7 @@ const Signup = () => {
   const [brandIndustry, setBrandIndustry] = useState('Other');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [instagramHandle, setInstagramHandle] = useState('');
   const [emailError, setEmailError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -239,6 +240,7 @@ const Signup = () => {
             last_name: lastName,
             full_name: name.trim(),
             account_mode: accountMode,
+            instagram_handle: instagramHandle.trim() || undefined,
             brand_name: accountMode === 'brand' ? brandName.trim() : undefined,
           },
         },
@@ -359,6 +361,13 @@ const Signup = () => {
                     }
                   }
                   trackEvent('signup_completed', { method: 'email', account_mode: accountMode });
+                  // Auto-set Instagram handle on profile if provided during signup
+                  if (instagramHandle.trim()) {
+                    supabase.from('profiles').update({
+                      instagram_handle: instagramHandle.trim(),
+                      username: instagramHandle.trim(),
+                    }).eq('id', currentSession.user.id).then();
+                  }
                   navigate('/creator-dashboard', { replace: true });
                 }
               }, 500);
@@ -749,6 +758,26 @@ const Signup = () => {
 	                      autoComplete="name"
 	                    />
 	                  </div>
+                    {accountMode === 'creator' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-instagram" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                          Instagram @
+                        </Label>
+                        <div className="relative">
+                          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-[16px]">@</span>
+                          <Input
+                            id="signup-instagram"
+                            type="text"
+                            placeholder="your_handle"
+                            value={instagramHandle}
+                            onChange={(e) => setInstagramHandle(e.target.value.replace(/@/g, '').replace(/\s/g, '').toLowerCase())}
+                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl pl-9 pr-5"
+                            autoComplete="off"
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-400 ml-1">Your deal page: creatorarmour.com/@{instagramHandle || 'your_handle'}</p>
+                      </div>
+                    )}
                     {accountMode === 'brand' && (
                       <>
                         <div className="space-y-2">

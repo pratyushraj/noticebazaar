@@ -538,13 +538,13 @@ const ProfileSettings = () => {
     const focus = params.get('focus');
     if (focus) {
       setEditMode(true);
-      // Wait for section render, then scroll to field
-      setTimeout(() => {
+      // Auto-scroll to field with retry (page may still be loading)
+      const tryFocus = (retries: number) => {
         const focusMap: Record<string, string> = {
           instagram: 'input-instagram-handle',
-          bio: 'input-instagram-handle', // Bio is auto-generated from Instagram, focus on handle
+          bio: 'input-instagram-handle',
           rates: 'input-rate-reel',
-          payout: 'input-rate-reel', // Payout is on dashboard profile tab, focus on rates as fallback
+          payout: 'input-rate-reel',
         };
         const elementId = focusMap[focus];
         if (elementId) {
@@ -552,9 +552,12 @@ const ProfileSettings = () => {
           if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el.focus();
+          } else if (retries > 0) {
+            setTimeout(() => tryFocus(retries - 1), 500);
           }
         }
-      }, 500);
+      };
+      setTimeout(() => tryFocus(5), 300);
     }
   }, [location.search]);
 
