@@ -225,9 +225,9 @@ export default function PremiumDrawer({
 
   const menuData: DrawerMenuData = {
     main: [
-      { id: 'deals', label: 'Brand Deals', icon: Briefcase, path: '/creator-dashboard?tab=deals' },
+      { id: 'deals', label: 'Collabs', icon: Briefcase, path: '/creator-dashboard?tab=deals' },
       { id: 'payments', label: 'Payments', icon: Wallet, path: '/creator-dashboard?tab=payments' },
-      { id: 'collab', label: 'Collab', icon: Link2, path: '/creator-dashboard?tab=collab' },
+      { id: 'collab', label: 'Collab Link', icon: Link2, path: '/creator-dashboard?tab=collab' },
       { id: 'calendar', label: 'Calendar', icon: Calendar, path: '/calendar' },
     ],
     quickActions: [
@@ -240,8 +240,8 @@ export default function PremiumDrawer({
       { id: 'my-complaints', label: 'My Complaints', icon: FileText, path: '/dashboard/consumer-complaints', variant: 'default' },
     ],
     settings: [
-      { id: 'profile', label: 'Profile Settings', icon: Settings, path: '/creator-dashboard?tab=profile' },
-      { id: 'notification-settings', label: 'Notification Settings', icon: Bell, path: '/creator-dashboard?tab=profile' },
+      { id: 'profile', label: 'Account', icon: Settings, path: '/creator-dashboard?tab=profile' },
+      { id: 'notification-settings', label: 'Notifications', icon: Bell, path: '/creator-dashboard?tab=profile' },
       { id: 'help', label: 'Help & Support', icon: HelpCircle },
       { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/creator-analytics' },
     ],
@@ -354,8 +354,8 @@ export default function PremiumDrawer({
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-[13px] font-black tracking-tight uppercase text-slate-900 dark:text-white leading-none">
-                  Creator<span className="text-emerald-600 dark:text-emerald-400">Armour</span>
+                <p className="text-[13px] font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                  CreatorArmour
                 </p>
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/30 mt-0.5">
                   Console

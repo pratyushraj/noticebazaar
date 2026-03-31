@@ -208,7 +208,6 @@ const CreatorCopyrightScanner: React.FC = () => {
                 return (
                   <button type="button"
                     key={platform.id}
-                    type="button"
                     onClick={() => togglePlatform(platform.id)}
                     disabled={performCopyrightScanMutation.isPending}
                     className={cn(

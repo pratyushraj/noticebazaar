@@ -398,7 +398,6 @@ const CollabRequestsPage = () => {
                         </p>
                         {request.campaign_description.length > 170 && (
                           <button type="button"
-                            type="button"
                             onClick={() => setExpandedDescriptions((prev) => ({ ...prev, [request.id]: !prev[request.id] }))}
                             className="mt-1.5 inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white"
                           >
@@ -438,7 +437,6 @@ const CollabRequestsPage = () => {
                       </div>
                       <div className="flex items-center justify-center gap-3 py-0.5">
                         <button type="button"
-                          type="button"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
                           className="text-sm font-medium text-indigo-200 hover:text-white min-h-[40px] px-1.5"
                         >
@@ -446,7 +444,6 @@ const CollabRequestsPage = () => {
                         </button>
                         <span className="w-px h-4 bg-white/30" />
                         <button type="button"
-                          type="button"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
                           className="text-sm font-medium text-[#FCA5A5] hover:text-white min-h-[40px] px-1.5"
                         >

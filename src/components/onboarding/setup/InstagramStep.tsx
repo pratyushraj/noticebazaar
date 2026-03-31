@@ -12,6 +12,7 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 interface InstagramStepProps {
   instagramUsername: string;
   onUsernameChange: (username: string) => void;
+  error?: string;
   onNext: () => void;
   onBack: () => void;
   onSkip?: () => void;
@@ -24,6 +25,7 @@ interface InstagramStepProps {
 export const InstagramStep: React.FC<InstagramStepProps> = ({
   instagramUsername,
   onUsernameChange,
+  error,
   onNext,
   onBack,
   onSkip,
@@ -98,7 +100,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
             Your Instagram username
           </h2>
           <p className="text-base text-slate-500 dark:text-white/80 text-center mb-6">
-            This becomes your collaboration link so brands can find you. Same as your Instagram handle.
+            This becomes your collaboration link so brands can find you. Use your handle now, and change it later if needed.
           </p>
 
           <div className="mb-6">
@@ -140,6 +142,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
                 )}
               </div>
             )}
+            {error && <p className="mt-3 text-center text-xs font-medium text-rose-600">{error}</p>}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">

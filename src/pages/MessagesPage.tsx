@@ -26,6 +26,7 @@ import { AdvisorModeSwitch } from '@/components/AdvisorModeSwitch';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { NoMessagesEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 import { logger } from '@/lib/utils/logger';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { spacing, typography, iconSizes, radius, shadows, glass, animations, vision, colors, gradients, badges } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
@@ -53,6 +54,15 @@ type Message = {
   isRead?: boolean; // For read status
   failed?: boolean; // For failed message retry
 };
+
+type AppError = {
+  message?: string;
+  code?: string | number;
+  status?: number;
+};
+
+const getErrorMessage = (error: unknown, fallback = 'Unknown error occurred') =>
+  error instanceof Error ? error.message : fallback;
 
 // --- Local Avatar (single canonical avatar used in this file) ---
 function LocalAvatar({ src, alt, size = 'md', className }: { src?: string; alt?: string; size?: 'sm' | 'md' | 'lg'; className?: string }) {
@@ -493,8 +503,8 @@ function MessageInputScoped({
 
           attachmentId = attachment_id;
           toast.success('File uploaded successfully');
-        } catch (error: any) {
-          toast.error(`Failed to upload file: ${error.message}`);
+        } catch (error: unknown) {
+          toast.error(`Failed to upload file: ${getErrorMessage(error)}`);
           setIsUploading(false);
           return;
         }
@@ -515,8 +525,8 @@ function MessageInputScoped({
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 30);
-    } catch (error: any) {
-      toast.error(`Failed to send: ${error.message}`);
+    } catch (error: unknown) {
+      toast.error(`Failed to send: ${getErrorMessage(error)}`);
     } finally {
       setIsUploading(false);
     }
@@ -534,7 +544,17 @@ function MessageInputScoped({
     if (!conversationId || !userId) return;
 
     try {
-      const { error } = await supabase.from('presence').upsert({
+      const { error } = await (supabase.from('presence') as unknown as {
+        upsert: (
+          values: {
+            conversation_id: string;
+            user_id: string;
+            status: 'typing' | 'online';
+            last_seen_at: string;
+          },
+          options: { onConflict: string }
+        ) => Promise<{ error: AppError | null }>;
+      }).upsert({
         conversation_id: conversationId,
         user_id: userId,
         status: status,
@@ -545,11 +565,11 @@ function MessageInputScoped({
 
       // Silently handle expected errors (409 conflict, RLS blocking, table doesn't exist)
       if (error && (
-        (error as any).code === '23505' || // Unique violation
-        (error as any).status === 409 || // Conflict
-        (error as any).code === 'PGRST301' || // RLS policy violation
-        (error as any).code === '42P01' || // Table doesn't exist
-        (error as any).status === 404 || // Not found
+        error.code === '23505' || // Unique violation
+        error.status === 409 || // Conflict
+        error.code === 'PGRST301' || // RLS policy violation
+        error.code === '42P01' || // Table doesn't exist
+        error.status === 404 || // Not found
         error.message?.includes('permission denied') ||
         error.message?.includes('RLS')
       )) {
@@ -1137,8 +1157,8 @@ function ChatWindowScoped({
         // Scroll after message is rendered
         scrollToBottom();
       }, 30);
-    } catch (err: any) {
-      toast.error('Failed to send message', { description: err.message });
+    } catch (err: unknown) {
+      toast.error('Failed to send message', { description: getErrorMessage(err) });
     }
   };
 
@@ -1725,7 +1745,7 @@ export default function MessagesPage() {
           next.set(selectedAdvisorId, convId);
           return next;
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[MessagesPage] Failed to setup conversation:', error);
       }
     };
@@ -1786,9 +1806,9 @@ export default function MessagesPage() {
               console.log('[MessagesPage] Conversation created:', conversationId);
             }
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('[MessagesPage] Failed to create conversation:', error);
-          toast.error('Failed to setup conversation', { description: error.message });
+          toast.error('Failed to setup conversation', { description: getErrorMessage(error) });
           return;
         }
       }
@@ -1824,9 +1844,9 @@ export default function MessagesPage() {
           console.log('[MessagesPage] Message sent successfully via legacy system');
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[MessagesPage] Failed to send message:', error);
-      toast.error('Failed to send message', { description: error.message || 'Unknown error occurred' });
+      toast.error('Failed to send message', { description: getErrorMessage(error) });
     }
   };
 
@@ -1903,4 +1923,3 @@ export default function MessagesPage() {
     </ContextualTipsProvider>
   );
 }
-

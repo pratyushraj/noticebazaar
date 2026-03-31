@@ -8,6 +8,18 @@ import { lockTrialIfExpired, getTrialStatus, TrialStatus } from '@/lib/trial';
 import { analytics } from '@/utils/analytics';
 import { logger } from '@/lib/utils/logger';
 
+const debugLog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
+
+const debugWarn = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.warn(...args);
+};
+
+const debugError = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.error(...args);
+};
+
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
 interface SessionContextType {
@@ -282,7 +294,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Check for double hash format: #/route#access_token=...
         const doubleHashMatch = hash.match(/^#\/([^#]+)#(access_token|type=)/);
         if (doubleHashMatch) {
-          console.log('[SessionContext] Detected double hash format, extracting route and tokens...', hash);
+          debugLog('[SessionContext] Detected double hash format, extracting route and tokens...', hash);
           // Extract the intended route (e.g., "creator-onboarding")
           intendedRoute = doubleHashMatch[1];
           // Extract the access_token part (everything after the second #)
@@ -348,7 +360,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             intendedRoute = null;
             // Only log in dev to avoid noise
             if (import.meta.env?.DEV && isCollabPathname) {
-              console.log('[SessionContext] Collab pathname detected, skipping default route');
+              debugLog('[SessionContext] Collab pathname detected, skipping default route');
             }
           } else if (!isPublicRoute && !isUsernameRoute && (!intendedRoute || intendedRoute === 'login')) {
             // If we're on /login but have tokens, the intended route should be dashboard/onboarding
@@ -357,16 +369,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             if (storedRoute && storedRoute !== 'login') {
               intendedRoute = storedRoute;
               if (import.meta.env?.DEV) {
-                console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
+                debugLog('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
               }
             } else if (!intendedRoute || intendedRoute === 'login') {
               intendedRoute = 'creator-onboarding';
               if (import.meta.env?.DEV) {
-                console.log('[SessionContext] No intended route found, defaulting to creator-onboarding');
+                debugLog('[SessionContext] No intended route found, defaulting to creator-onboarding');
               }
             }
           } else if (isUsernameRoute) {
-            console.log('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);
+            debugLog('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);
             intendedRoute = null;
           }
         }
@@ -386,12 +398,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const secondHashIndex = hash.indexOf('#', 1);
             if (secondHashIndex !== -1) {
               tokenHash = '#' + hash.substring(secondHashIndex + 1);
-              console.log('[SessionContext] Extracted token hash from double hash format');
+              debugLog('[SessionContext] Extracted token hash from double hash format');
             }
           }
 
-          console.log('[SessionContext] Parsing tokens from hash:', tokenHash.substring(0, 50) + '...');
-          console.log('[SessionContext] Stored intended route:', intendedRoute);
+          debugLog('[SessionContext] Parsing tokens from hash:', tokenHash.substring(0, 50) + '...');
+          debugLog('[SessionContext] Stored intended route:', intendedRoute);
 
           // Parse tokens from hash
           const hashParams = new URLSearchParams(tokenHash.substring(1)); // Remove #
@@ -399,7 +411,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           const refreshToken = hashParams.get('refresh_token');
 
           if (accessToken && refreshToken) {
-            console.log('[SessionContext] Parsed tokens from hash, setting session manually...');
+            debugLog('[SessionContext] Parsed tokens from hash, setting session manually...');
             try {
               // Set the session directly using Supabase's setSession method
               const { data: sessionData, error: setSessionError } = await supabase.auth.setSession({
@@ -408,9 +420,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               });
 
               if (setSessionError) {
-                console.error('[SessionContext] Error setting session:', setSessionError);
+                debugError('[SessionContext] Error setting session:', setSessionError);
               } else if (sessionData.session) {
-                console.log('[SessionContext] Session set successfully via manual token parsing');
+                debugLog('[SessionContext] Session set successfully via manual token parsing');
                 // Use path-based route (BrowserRouter).
                 let redirectPath = '/creator-onboarding';
 
@@ -418,9 +430,9 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   redirectPath = `/${intendedRoute}`;
                 } else if (sessionData.session.user?.id) {
                   try {
-                    const { data: profileData } = await supabase
+                    const { data: profileData } = await (supabase
                       .from('profiles')
-                      .select('role, onboarding_complete')
+                      .select('role, onboarding_complete, creator_stage, profile_completion') as any)
                       .eq('id', sessionData.session.user.id)
                       .single();
 
@@ -433,7 +445,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                         redirectPath = '/creator-dashboard';
                       } else if (p?.role === 'admin') {
                         redirectPath = '/admin-dashboard';
-                        console.log('[SessionContext] Admin user detected in initializeSession');
+                        debugLog('[SessionContext] Admin user detected in initializeSession');
                       } else if (p?.role === 'brand') {
                         redirectPath = '/brand-dashboard';
                       } else if (p?.role === 'chartered_accountant') {
@@ -441,23 +453,23 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                       } else if (p?.role === 'lawyer') {
                         redirectPath = '/lawyer-dashboard';
                       } else {
-                        redirectPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
+                        redirectPath = (p?.creator_stage === 'new' && !p?.onboarding_complete) ? '/creator-onboarding' : '/creator-dashboard';
                       }
                     }
                   } catch (error) {
-                    console.error('[SessionContext] Error fetching profile in initializeSession:', error);
+                    debugError('[SessionContext] Error fetching profile in initializeSession:', error);
                   }
                 }
 
                 // Navigate using React Router to be safer and avoid Safari loops
-                console.log('[SessionContext] Navigating to:', redirectPath);
+                debugLog('[SessionContext] Navigating to:', redirectPath);
                 navigate(redirectPath, { replace: true });
               }
             } catch (err) {
-              console.error('[SessionContext] Exception setting session:', err);
+              debugError('[SessionContext] Exception setting session:', err);
             }
           } else {
-            console.warn('[SessionContext] Could not parse tokens from hash', { hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
+            debugWarn('[SessionContext] Could not parse tokens from hash', { hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
           }
         }
 
@@ -469,12 +481,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // Auto-recovery for stuck refresh tokens:
           // If the token is completely invalid/revoked, force sign-out to clear local storage and avoid infinite loops.
           if (error.message.includes("Refresh Token Not Found") || error.message.includes("Invalid Refresh Token")) {
-            console.warn("[SessionContext] Invalid refresh token detected. Clearing local session state...");
+            debugWarn("[SessionContext] Invalid refresh token detected. Clearing local session state...");
             await supabase.auth.signOut();
             currentSession = null;
           }
         } else {
-          console.log('[SessionContext] Initial session check:', {
+          debugLog('[SessionContext] Initial session check:', {
             hasSession: !!currentSession,
             userEmail: currentSession?.user?.email,
             hasHashTokens: hasAccessToken,
@@ -492,7 +504,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // If we have hash tokens but no session yet, wait for onAuthStateChange to process them
           // Don't clean the hash here - let onAuthStateChange do it after processing tokens
           if (hasAccessToken && !currentSession) {
-            console.log('[SessionContext] Hash tokens found but no session yet, waiting for onAuthStateChange...');
+            debugLog('[SessionContext] Hash tokens found but no session yet, waiting for onAuthStateChange...');
             // onAuthStateChange will clean the hash after processing tokens
           }
 
@@ -509,7 +521,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !hasOauthTokensInHash &&
             !hasRouteInHash
           ) {
-            console.log('[SessionContext] Session exists on bare root/login, navigating to dashboard...');
+            debugLog('[SessionContext] Session exists on bare root/login, navigating to dashboard...');
             navigate('/creator-dashboard', { replace: true });
           }
         }
@@ -525,7 +537,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     // Listen for auth state changes (this handles hash fragments automatically)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[SessionContext] Auth state change:', event, {
+        debugLog('[SessionContext] Auth state change:', event, {
           hasSession: !!session,
           userEmail: session?.user?.email,
           hash: window.location.hash.substring(0, 50) + '...',
@@ -571,7 +583,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             hash = '#' + hash.substring(secondHashIndex + 1);
             // Use replaceState to avoid triggering React Router
             window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
-            console.log('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
+            debugLog('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
           }
         } else {
           // Hash might already be normalized (#access_token=...) or have route in query (#/route?access_token=...)
@@ -588,7 +600,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             if (storedRoute) {
               intendedRoute = storedRoute;
               sessionStorage.removeItem('oauth_intended_route');
-              console.log('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
+              debugLog('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
             }
           }
         }
@@ -600,10 +612,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Handle INITIAL_SESSION with tokens but no session yet
         // This happens when OAuth tokens are present but Supabase hasn't processed them yet
         if (event === 'INITIAL_SESSION' && !session && hasHashTokens) {
-          console.log('[SessionContext] INITIAL_SESSION: Tokens detected but no session yet, waiting for SIGNED_IN event...');
+          debugLog('[SessionContext] INITIAL_SESSION: Tokens detected but no session yet, waiting for SIGNED_IN event...');
           // Don't clean hash yet - wait for SIGNED_IN event to process tokens
         } else if (event === 'INITIAL_SESSION' && !session) {
-          console.log('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
+          debugLog('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
         }
 
         // If we have a session after OAuth callback or SIGNED_IN event
@@ -619,7 +631,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             if (storedRoute) {
               intendedRoute = storedRoute;
               sessionStorage.removeItem('oauth_intended_route');
-              console.log('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
+              debugLog('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
             }
           }
 
@@ -653,7 +665,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             pathname.startsWith('/creator-contracts/');
 
           if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
-            console.log('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
+            debugLog('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
             setIsAuthInitializing(false);
             return;
           }
@@ -665,7 +677,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             return;
           }
 
-          console.log('[SessionContext] Session established after OAuth, redirecting...', {
+          debugLog('[SessionContext] Session established after OAuth, redirecting...', {
             event,
             isOAuthCallback,
             hasHashTokens,
@@ -684,11 +696,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const isInfluencerRoute = intendedRoute.includes('influencer') || intendedRoute.includes('discovery');
 
             if (isInfluencerRoute) {
-              console.log('[SessionContext] Influencer route detected, will redirect based on role');
+              debugLog('[SessionContext] Influencer route detected, will redirect based on role');
               // Don't use intended route if it's an influencer route - let role-based redirect handle it
             } else {
               targetPath = `/${intendedRoute}`;
-              console.log('[SessionContext] Using intended route:', targetPath);
+              debugLog('[SessionContext] Using intended route:', targetPath);
             }
           }
 
@@ -696,12 +708,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             // Fetch profile to determine role-based redirect and onboarding status, with 2.5s timeout
             const profileFetchTimeoutMs = 2500;
             try {
-              console.log('[SessionContext] Fetching profile for user:', session.user.id);
-              const profilePromise = supabase
-                .from('profiles')
-                .select('role, onboarding_complete')
-                .eq('id', session.user.id)
-                .single();
+              debugLog('[SessionContext] Fetching profile for user:', session.user.id);
+                const profilePromise = (supabase
+                  .from('profiles')
+                  .select('role, onboarding_complete, creator_stage, profile_completion') as any)
+                  .eq('id', session.user.id)
+                  .single();
               const timeoutFallback = { data: null as { role: string; onboarding_complete?: boolean } | null, error: { message: 'timeout' } };
               const result = await Promise.race([
                 profilePromise,
@@ -713,11 +725,11 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               const profileError = result?.error;
 
               if (profileError) {
-                console.warn('[SessionContext] Profile fetch for redirect:', profileError.message);
+                debugWarn('[SessionContext] Profile fetch for redirect:', profileError.message);
               }
 
               if (profileData) {
-                console.log('[SessionContext] Profile fetched, role:', profileData.role, 'onboarding_complete:', profileData.onboarding_complete);
+                debugLog('[SessionContext] Profile fetched, role:', profileData.role, 'onboarding_complete:', profileData.onboarding_complete);
                 const userEmail = session.user.email?.toLowerCase();
                 const isPratyush = userEmail === 'pratyushraj@outlook.com';
 
@@ -726,7 +738,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   targetPath = '/creator-dashboard';
                 } else if (p?.role === 'admin') {
                   targetPath = '/admin-dashboard';
-                  console.log('[SessionContext] Admin user detected, redirecting to admin dashboard');
+                  debugLog('[SessionContext] Admin user detected, redirecting to admin dashboard');
                 } else if (p?.role === 'brand') {
                   targetPath = '/brand-dashboard';
                 } else if (p?.role === 'chartered_accountant') {
@@ -734,14 +746,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 } else if (p?.role === 'lawyer') {
                   targetPath = '/lawyer-dashboard';
                 } else {
-                  targetPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
+                  targetPath = (p?.creator_stage === 'new' && !p?.onboarding_complete) ? '/creator-onboarding' : '/creator-dashboard';
                 }
               } else {
-                console.log('[SessionContext] No profile data / timeout, defaulting to creator-onboarding');
+                debugLog('[SessionContext] No profile data / timeout, defaulting to creator-onboarding');
                 targetPath = '/creator-onboarding';
               }
             } catch (error) {
-              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-onboarding:', error);
+              debugWarn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-onboarding:', error);
               targetPath = '/creator-onboarding';
             }
           }
@@ -751,12 +763,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           const normalizedTargetPath = targetPath.replace(/\/$/, '');
 
           if (currentPath === normalizedTargetPath) {
-            console.log('[SessionContext] Already on target route, skipping navigation:', currentPath);
+            debugLog('[SessionContext] Already on target route, skipping navigation:', currentPath);
             setIsAuthInitializing(false);
             return;
           }
 
-          console.log('[SessionContext] Navigating after SIGNED_IN/OAuth:', targetPath);
+          debugLog('[SessionContext] Navigating after SIGNED_IN/OAuth:', targetPath);
           navigate(targetPath, { replace: true });
         }
       }
@@ -822,7 +834,7 @@ export const useSession = () => {
     // This should never happen if component is within SessionContextProvider
     // But during React's initial render or strict mode double-render, it might be temporarily undefined
     // Provide a fallback value instead of throwing to prevent crashes
-    console.error('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    debugError('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
 
     // Return a safe fallback value to prevent crashes
     return {

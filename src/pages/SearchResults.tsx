@@ -73,13 +73,13 @@ export default function SearchResults() {
   };
 
   // Filter results by type
-  const filteredResults = selectedType === 'all' 
+  const filteredResults = selectedType === 'all'
     ? results 
     : groupedResults[selectedType as keyof typeof groupedResults] || [];
 
   // Group results by type for display
-  const displayGroups = selectedType === 'all'
-    ? Object.entries(groupedResults).filter(([_, items]) => items.length > 0)
+  const displayGroups: Array<[string, SearchResult[]]> = selectedType === 'all'
+    ? Object.entries(groupedResults).filter((entry): entry is [string, SearchResult[]] => entry[1].length > 0)
     : [[selectedType, filteredResults]];
 
   const handleResultClick = (result: SearchResult) => {
@@ -122,13 +122,13 @@ export default function SearchResults() {
             <div className="mt-4">
               <SegmentedControl
                 value={selectedType}
-                onValueChange={setSelectedType}
+                onChange={setSelectedType}
                 options={[
-                  { value: 'all', label: `All (${stats.total})` },
-                  { value: 'deal', label: `Deals (${stats.byType.deals})` },
-                  { value: 'payment', label: `Payments (${stats.byType.payments})` },
-                  { value: 'contract', label: `Contracts (${stats.byType.contracts})` },
-                  { value: 'notification', label: `Notifications (${stats.byType.notifications})` },
+                  { id: 'all', label: `All (${stats.total})` },
+                  { id: 'deal', label: `Deals (${stats.byType.deals})` },
+                  { id: 'payment', label: `Payments (${stats.byType.payments})` },
+                  { id: 'contract', label: `Contracts (${stats.byType.contracts})` },
+                  { id: 'notification', label: `Notifications (${stats.byType.notifications})` },
                 ]}
               />
             </div>
@@ -235,4 +235,3 @@ export default function SearchResults() {
     </div>
   );
 }
-

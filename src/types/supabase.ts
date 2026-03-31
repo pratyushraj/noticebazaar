@@ -880,6 +880,13 @@ export type Database = {
           avg_likes_manual: number | null
           learned_avg_rate_reel: number | null
           learned_deal_count: number | null
+          profile_completion: number | null
+          creator_stage: string | null
+          packages_added: boolean | null
+          past_work_added: boolean | null
+          payout_upi: string | null
+          intro_line: string | null
+          media_kit_url: string | null
         }
         Insert: {
           address?: string | null
@@ -913,6 +920,13 @@ export type Database = {
           avg_likes_manual?: number | null
           learned_avg_rate_reel?: number | null
           learned_deal_count?: number | null
+          profile_completion?: number | null
+          creator_stage?: string | null
+          packages_added?: boolean | null
+          past_work_added?: boolean | null
+          payout_upi?: string | null
+          intro_line?: string | null
+          media_kit_url?: string | null
         }
         Update: {
           address?: string | null
@@ -946,6 +960,13 @@ export type Database = {
           avg_likes_manual?: number | null
           learned_avg_rate_reel?: number | null
           learned_deal_count?: number | null
+          profile_completion?: number | null
+          creator_stage?: string | null
+          packages_added?: boolean | null
+          past_work_added?: boolean | null
+          payout_upi?: string | null
+          intro_line?: string | null
+          media_kit_url?: string | null
         }
         Relationships: [
           {
@@ -1588,16 +1609,16 @@ export type Tables<
     Database[PublicTableNameOrOptions['schema']]['Views'])
   : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
-    Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
-      Row: infer R
-    }
+  ? (
+      Database[PublicTableNameOrOptions['schema']]['Tables'] &
+      Database[PublicTableNameOrOptions['schema']]['Views']
+    )[TableName] extends { Row: infer R }
   ? R
   : never
-  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-  ? Database['public']['Tables'][PublicTableNameOrOptions]['Row']
-  : PublicTableNameOrOptions extends keyof Database['public']['Views']
-  ? Database['public']['Views'][PublicTableNameOrOptions]['Row']
+  : PublicTableNameOrOptions extends keyof (Database['public']['Tables'] & Database['public']['Views'])
+  ? (Database['public']['Tables'] & Database['public']['Views'])[PublicTableNameOrOptions] extends { Row: infer R }
+    ? R
+    : never
   : never
 
 export type TablesInsert<
@@ -1608,13 +1629,13 @@ export type TablesInsert<
   ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
   : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
-    Insert: infer I
-  }
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends { Insert: infer I }
   ? I
   : never
   : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-  ? Database['public']['Tables'][PublicTableNameOrOptions]['Insert']
+  ? Database['public']['Tables'][PublicTableNameOrOptions] extends { Insert: infer I }
+    ? I
+    : never
   : never
 
 export type TablesUpdate<
@@ -1625,13 +1646,13 @@ export type TablesUpdate<
   ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
   : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
-    Update: infer U
-  }
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends { Update: infer U }
   ? U
   : never
   : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-  ? Database['public']['Tables'][PublicTableNameOrOptions]['Update']
+  ? Database['public']['Tables'][PublicTableNameOrOptions] extends { Update: infer U }
+    ? U
+    : never
   : never
 
 export type Enums<

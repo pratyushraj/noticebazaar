@@ -17,6 +17,8 @@ interface ReelRateStepProps {
     onRateChange: (rate: string) => void;
     onDealTypeChange: (type: DealType) => void;
     onBarterValueMinChange: (value: string) => void;
+    reelRateError?: string;
+    barterValueError?: string;
     onNext: () => void;
     onBack: () => void;
     onSkip?: () => void;
@@ -35,6 +37,8 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
     onRateChange,
     onDealTypeChange,
     onBarterValueMinChange,
+    reelRateError,
+    barterValueError,
     onNext,
     onBack,
     onSkip,
@@ -70,10 +74,10 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                     </div>
 
                     <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
-                        Set your deal preferences
+                        How do you usually work with brands?
                     </h2>
                     <p className="text-base text-slate-500 dark:text-white/80 text-center mb-8">
-                        Brands will see this on your collab link.
+                        Set your starting paid rate and barter threshold. You can adjust both later.
                     </p>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
@@ -85,7 +89,6 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                         ].map((type) => (
                             <button type="button"
                                 key={type.id}
-                                type="button"
                                 onClick={() => onDealTypeChange(type.id as DealType)}
                                 className={`h-11 rounded-lg border text-[11px] font-black uppercase tracking-tight inline-flex items-center justify-center gap-1.5 transition-all ${dealType === type.id
                                     ? 'bg-blue-50 border-blue-500 text-blue-600 shadow-sm dark:bg-violet-500/30 dark:border-violet-400 dark:text-white'
@@ -125,6 +128,10 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                                     </button>
                                 </div>
                             )}
+                            <p className="mt-3 text-xs text-slate-500 dark:text-white/60">
+                                Use the amount you would quote for a typical branded reel.
+                            </p>
+                            {reelRateError && <p className="mt-2 text-xs font-medium text-rose-600">{reelRateError}</p>}
                         </div>
                     )}
 
@@ -142,8 +149,9 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                                 />
                             </div>
                             <p className="text-xs text-slate-400 dark:text-white/60">
-                                Creator reviews value based on audience fit and deliverables.
+                                Add the minimum product value you would accept for barter or product-only work.
                             </p>
+                            {barterValueError && <p className="text-xs font-medium text-rose-600">{barterValueError}</p>}
                         </div>
                     )}
 

@@ -268,11 +268,11 @@ const EmptyState = ({ hasUrl }: EmptyStateProps) => (
     aria-label="No deals or requests"
   >
     <AlertCircle className="mx-auto h-12 w-12 text-slate-500 mb-4" aria-hidden="true" />
-    <p className="text-lg font-black text-white">No deals yet</p>
+    <p className="text-lg font-black text-white">No brand offers yet</p>
     <p className="mt-2 text-sm text-slate-300">
-      {hasUrl 
-        ? 'Share your collab page in WhatsApp and Instagram DMs to start getting requests.'
-        : 'Set up your Instagram handle to start receiving collaboration requests.'
+      {hasUrl
+        ? 'Share your collab page with brands. When a brand sends you an offer, it will appear here.'
+        : 'Add your Instagram handle first so your collab page is ready to share with brands.'
       }
     </p>
   </div>
@@ -992,7 +992,7 @@ const CreatorDashboard = () => {
                   <p id="collab-page-heading" className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Your Collab Page</p>
                   <p className="mt-2 break-all text-2xl font-black text-white">{collabUrlShort || 'Create your Instagram handle first'}</p>
                   <p className="mt-2 text-sm text-slate-300">
-                    Send this link when a brand asks for price, details, or examples of your work.
+                    Send this link in Instagram DM or WhatsApp when a brand asks how to collaborate.
                   </p>
                 </div>
                 <Button
@@ -1043,7 +1043,7 @@ const CreatorDashboard = () => {
                   aria-label="Copy Instagram DM template"
                 >
                   <Copy className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Instagram DM Template
+                  Copy Message for Instagram DM
                 </Button>
                 <Button
                   type="button"
@@ -1059,9 +1059,9 @@ const CreatorDashboard = () => {
               </div>
 
               <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Instagram DM Template</p>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">Copy Message for Instagram DM</p>
                 <p className="mt-2 text-sm leading-6 text-slate-200">
-                  {dmTemplate || 'Add your Instagram handle to generate a ready-to-send message.'}
+                  {dmTemplate || 'Add your Instagram handle to generate a message you can paste into Instagram DM.'}
                 </p>
                 {copiedDm && (
                   <p className="mt-2 text-xs font-semibold text-emerald-300" role="status" aria-live="polite">

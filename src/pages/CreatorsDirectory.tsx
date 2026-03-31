@@ -19,6 +19,24 @@ interface Creator {
   platforms: Array<{ name: string; handle: string; followers?: number }>;
 }
 
+const isGeneratedCreatorHandle = (value?: string | null) =>
+  Boolean(value && /^creator-[a-z0-9]{6,}$/i.test(value.trim()));
+
+const getCreatorPublicHandle = (creator: Creator) => {
+  const instagramHandle = creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle;
+  const normalizedInstagramHandle = String(instagramHandle || '').trim().replace(/^@+/, '');
+  if (normalizedInstagramHandle && !isGeneratedCreatorHandle(normalizedInstagramHandle)) {
+    return normalizedInstagramHandle;
+  }
+
+  const normalizedUsername = String(creator.username || '').trim().replace(/^@+/, '');
+  if (normalizedUsername && !isGeneratedCreatorHandle(normalizedUsername)) {
+    return normalizedUsername;
+  }
+
+  return normalizedInstagramHandle || normalizedUsername;
+};
+
 const CreatorsDirectory = () => {
   const { category } = useParams<{ category: string }>();
   const navigate = useNavigate();
@@ -147,7 +165,6 @@ const CreatorsDirectory = () => {
             {session && (
               <div className="sticky top-0 z-40 -mx-4 px-4 pt-[max(0px,env(safe-area-inset-top,0px))] pb-3 mb-4 bg-gradient-to-b from-white/80 via-white/60 to-transparent backdrop-blur-md">
                 <button type="button"
-                  type="button"
                   onClick={() => navigate(dashboardPath)}
                   className="inline-flex items-center gap-2 h-10 px-4 rounded-full bg-white/70 border border-slate-200 hover:bg-white active:scale-[0.99] transition-all text-[12px] font-bold text-slate-900 shadow-sm"
                   aria-label="Back to dashboard"
@@ -229,16 +246,18 @@ const CreatorsDirectory = () => {
             </Card>
           ) : (
 	            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-	              {filteredCreators.map((creator) => (
+	              {filteredCreators.map((creator) => {
+                  const publicHandle = getCreatorPublicHandle(creator);
+                  return (
 	                <div
 	                  key={creator.id}
 	                  role="link"
 	                  tabIndex={0}
-	                  onClick={() => navigate(`/creator/${creator.username}`)}
+	                  onClick={() => navigate(`/${publicHandle}`)}
 	                  onKeyDown={(e) => {
 	                    if (e.key === 'Enter' || e.key === ' ') {
 	                      e.preventDefault();
-	                      navigate(`/creator/${creator.username}`);
+	                      navigate(`/${publicHandle}`);
 	                    }
 	                  }}
 	                  className="outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 rounded-xl"
@@ -250,7 +269,7 @@ const CreatorsDirectory = () => {
                           <h3 className="text-xl font-bold text-slate-900 mb-1">
                             {creator.name}
                           </h3>
-                          <p className="text-sm text-sky-700">@{creator.username}</p>
+                          <p className="text-sm text-sky-700">@{publicHandle}</p>
                         </div>
                         {creator.category && (
                           <Badge className="bg-emerald-500/10 text-emerald-800 border-emerald-200">
@@ -311,7 +330,7 @@ const CreatorsDirectory = () => {
 		                        onClick={(e) => {
 	                          e.preventDefault();
 	                          e.stopPropagation();
-	                          navigate(`/creator/${creator.username}`);
+	                          navigate(`/${publicHandle}`);
 	                        }}
 	                      >
 	                        View Profile
@@ -319,7 +338,7 @@ const CreatorsDirectory = () => {
 	                    </CardContent>
 	                  </Card>
 	                </div>
-	              ))}
+	              )})}
 	            </div>
           )}
 

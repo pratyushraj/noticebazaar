@@ -56,6 +56,50 @@ const STAGES: { id: Stage; label: string; description: string }[] = [
     { id: 'VESTED', label: 'Vested', description: 'Campaign closed' }
 ];
 
+const getCreatorConsoleGuidance = (brandDeal: any, isCreatorView: boolean) => {
+    const status = String(brandDeal?.status || '').toLowerCase();
+    const approvalStatus = String(brandDeal?.brand_approval_status || '').toLowerCase();
+    const hasSubmittedContent = Boolean(brandDeal?.content_submitted_at);
+
+    if (!isCreatorView) return null;
+
+    if (approvalStatus === 'changes_requested') {
+        return {
+            title: 'Upload Revised Content',
+            helper: 'The brand requested changes. Upload your updated content here.',
+            cta: 'Upload Revised Content',
+        };
+    }
+
+    if (approvalStatus === 'approved') {
+        return {
+            title: 'Waiting for Payment',
+            helper: 'Your content is approved. The next step is for the brand to send payment.',
+        };
+    }
+
+    if (hasSubmittedContent) {
+        return {
+            title: 'Waiting for Brand Review',
+            helper: 'Your content was uploaded. You do not need to do anything right now.',
+        };
+    }
+
+    if (status === 'contract_ready' || status.includes('signed')) {
+        return {
+            title: 'Start Content',
+            helper: 'Your deal is confirmed. Start creating the content for this brand.',
+            cta: 'Upload Content',
+        };
+    }
+
+    return {
+        title: 'Upload Content',
+        helper: 'Paste your Google Drive, Dropbox, or preview link here so the brand can review your content.',
+        cta: 'Upload Content',
+    };
+};
+
 const BrandDealConsole = () => {
     const { token } = useParams<{ token: string }>();
     const location = useLocation();
@@ -101,6 +145,8 @@ const BrandDealConsole = () => {
     }, []);
 
     const isDark = themePreference === 'system' ? systemPrefersDark : themePreference === 'dark';
+    const brandDeal = data?.brandDeal;
+    const creatorGuidance = getCreatorConsoleGuidance(brandDeal, Boolean(isCreator));
 
     useEffect(() => {
         const fetchData = async () => {
@@ -194,7 +240,7 @@ const BrandDealConsole = () => {
             <div className={cn("min-h-screen flex items-center justify-center", "bg-slate-50 dark:bg-[#0A0A0B]")}>
                 <div className="flex flex-col items-center gap-4">
                     <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
-                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Initializing Secure Console...</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Loading deal details...</p>
                 </div>
             </div>
         );
@@ -313,7 +359,7 @@ const BrandDealConsole = () => {
                         </div>
                         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-white/5 text-[11px] font-medium text-slate-400">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            Secure Connection
+                            Protected page
                         </div>
                         <button type="button" className="p-2 text-slate-400 hover:text-white transition-colors">
                             <MoreVertical className="w-5 h-5" />
@@ -333,8 +379,8 @@ const BrandDealConsole = () => {
                         >
                             <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5" />
                             <div>
-                                <h3 className="text-sm font-semibold text-slate-900 dark:text-emerald-100">Proposal Submitted Successfully</h3>
-                                <p className="text-xs text-slate-600 dark:text-emerald-300/80 mt-1">Your collaboration request has been securely delivered. This page is your persistent console for tracking the deal lifecycle.</p>
+                                <h3 className="text-sm font-semibold text-slate-900 dark:text-emerald-100">Offer sent successfully</h3>
+                                <p className="text-xs text-slate-600 dark:text-emerald-300/80 mt-1">Your offer has been sent. You can come back here to track what happens next.</p>
                             </div>
                         </motion.div>
                     )}
@@ -345,7 +391,7 @@ const BrandDealConsole = () => {
                                 <h1 className="text-2xl font-semibold text-white tracking-tight">
                                     {collabRequest?.campaign_name || 'Campaign Partnership'}
                                 </h1>
-                                <p className="text-slate-400 text-sm mt-1">Console ID: <span className="font-mono text-xs">{token?.slice(0, 8)}...</span></p>
+                                <p className="text-slate-400 text-sm mt-1">Deal ID: <span className="font-mono text-xs">{token?.slice(0, 8)}...</span></p>
                             </div>
 
                             <div className="flex items-center gap-3">
@@ -428,9 +474,9 @@ const BrandDealConsole = () => {
                                         <div className="flex items-start justify-between mb-8">
                                             <div>
                                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border border-emerald-500/20">
-                                                    PROPOSAL_ACTIVE
+                                                    OFFER SENT
                                                 </span>
-                                                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mt-3">Proposal Details</h2>
+                                                <h2 className="text-xl font-semibold text-slate-900 dark:text-white mt-3">Offer details</h2>
                                             </div>
                                             <div className="flex items-center gap-2 text-xs text-slate-500">
                                                 <Calendar className="w-3.5 h-3.5" />
@@ -453,7 +499,7 @@ const BrandDealConsole = () => {
                                                 </ul>
                                             </div>
                                             <div className="bg-white rounded-xl p-5 border border-slate-200/80 dark:bg-white/5 dark:border-white/5">
-                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Proposed Budget</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Offer amount</p>
                                                 <div className="flex items-baseline gap-1">
                                                     <span className="text-2xl font-bold text-slate-900 dark:text-white">₹{collabRequest?.exact_budget || collabRequest?.budget || 'N/A'}</span>
                                                     <span className="text-xs text-slate-400">Fixed Fee</span>
@@ -467,9 +513,9 @@ const BrandDealConsole = () => {
 
                                         <div className="mt-8 flex flex-col items-center justify-center p-12 border border-dashed border-slate-300/70 dark:border-white/10 rounded-2xl bg-white/60 dark:bg-white/[0.02]">
                                             <Clock className="w-8 h-8 text-slate-500 dark:text-slate-600 mb-4" />
-                                            <h3 className="text-slate-900 dark:text-white font-medium">Awaiting Creator Confirmation</h3>
+                                            <h3 className="text-slate-900 dark:text-white font-medium">Waiting for creator reply</h3>
                                             <p className="text-slate-600 dark:text-slate-400 text-sm text-center mt-2 max-w-sm">
-                                                {creator?.name} has been notified and is currently reviewing the specifications. You will receive an email once the proposal is accepted or countered.
+                                                {creator?.name} has been notified and is checking the offer. You will get an email once the offer is accepted or a new price is suggested.
                                             </p>
                                         </div>
                                     </motion.div>
@@ -528,6 +574,25 @@ const BrandDealConsole = () => {
                                     </motion.div>
                                 )}
 
+                                {creatorGuidance && (
+                                    <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-300">What to do next</p>
+                                        <h2 className="mt-2 text-xl font-semibold text-white">{creatorGuidance.title}</h2>
+                                            <p className="mt-2 text-sm text-slate-300">{creatorGuidance.helper}</p>
+                                        {creatorGuidance.cta && (
+                                            <Button
+                                                onClick={() => {
+                                                    const element = document.getElementById('creator-content-upload');
+                                                    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                }}
+                                                className="mt-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold"
+                                            >
+                                                {creatorGuidance.cta}
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
+
                                 {currentStage === 'EXECUTING' && (
                                     <motion.div
                                         key="executing"
@@ -536,10 +601,10 @@ const BrandDealConsole = () => {
                                     >
                                         <div className="mb-8">
                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 text-orange-400 uppercase tracking-widest border border-orange-500/20">
-                                                EXECUTION_PHASE
+                                                CONTENT STAGE
                                             </span>
-                                            <h2 className="text-xl font-semibold text-white mt-3">Content Production</h2>
-                                            <p className="text-slate-400 text-sm mt-1">Creator is currently producing agreed deliverables. Track milestones below.</p>
+                                            <h2 className="text-xl font-semibold text-white mt-3">Content in progress</h2>
+                                            <p className="text-slate-400 text-sm mt-1">Track the next content steps for this deal below.</p>
                                         </div>
 
                                         <div className="space-y-6">
@@ -555,7 +620,7 @@ const BrandDealConsole = () => {
                                                     )}>
                                                         <FileText className="w-4 h-4" />
                                                     </div>
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Content Submited</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Content Submitted</span>
                                                     {brandDeal?.content_submitted_at && <span className="text-[10px] text-emerald-400">{new Date(brandDeal.content_submitted_at).toLocaleDateString()}</span>}
                                                 </div>
                                                 <div className={cn(
@@ -590,11 +655,16 @@ const BrandDealConsole = () => {
 
                                             {/* Role-specific Actions */}
                                             {isCreator && brandDeal?.brand_approval_status !== 'approved' && (
-                                                <div className="bg-purple-600/5 border border-purple-500/20 rounded-2xl p-6">
+                                                <div id="creator-content-upload" className="bg-purple-600/5 border border-purple-500/20 rounded-2xl p-6">
                                                     <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
                                                         <Send className="w-4 h-4 text-purple-400" />
-                                                        Submit Content Draft
+                                                        {brandDeal?.brand_approval_status === 'changes_requested' ? 'Upload Revised Content' : 'Upload Content'}
                                                     </h3>
+                                                    <p className="mb-4 text-sm text-slate-300">
+                                                        {brandDeal?.brand_approval_status === 'changes_requested'
+                                                            ? 'The brand requested changes. Upload your updated content here.'
+                                                            : 'Paste your Google Drive, Dropbox, or preview link here so the brand can review your content.'}
+                                                    </p>
                                                     <div className="space-y-4">
                                                         <div>
                                                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Link to your content (Drive, Dropbox, Unlisted Link)</label>
@@ -621,7 +691,7 @@ const BrandDealConsole = () => {
                                                             className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold"
                                                         >
                                                             {isSubmittingContent ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
-                                                            Submit for Review
+                                                            {brandDeal?.brand_approval_status === 'changes_requested' ? 'Upload Revised Content' : 'Upload Content'}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -726,9 +796,9 @@ const BrandDealConsole = () => {
                                                     <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                                                         <CheckCircle className="w-8 h-8 text-emerald-500" />
                                                     </div>
-                                                    <h3 className="text-xl font-bold text-white mb-2">Content Approved</h3>
+                                                    <h3 className="text-xl font-bold text-white mb-2">Content approved</h3>
                                                     <p className="text-slate-400 text-sm max-w-md mx-auto">
-                                                        The content has been officially approved. The campaign is now moving to the closing phase.
+                                                        The content is approved. The next step is payment.
                                                     </p>
                                                     {brandDeal.brand_feedback && (
                                                         <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/5 text-left">
@@ -753,10 +823,10 @@ const BrandDealConsole = () => {
                                     >
                                         <div className="mb-8">
                                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 uppercase tracking-widest border border-blue-500/20">
-                                                SIGNING_ACTIVE
+                                                READY TO SIGN
                                             </span>
-                                            <h2 className="text-xl font-semibold text-white mt-3">Agreement Finalized</h2>
-                                            <p className="text-slate-400 text-sm mt-1">Review the generated contract and execute the legal signature.</p>
+                                            <h2 className="text-xl font-semibold text-white mt-3">Contract ready</h2>
+                                            <p className="text-slate-400 text-sm mt-1">Review the contract and sign it to continue.</p>
                                         </div>
 
                                         <div className="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
@@ -770,7 +840,7 @@ const BrandDealConsole = () => {
                                             <div className="aspect-[4/5] bg-[#1a1a1f] p-8 m-4 rounded-lg flex items-center justify-center border border-white/5">
                                                 <div className="text-center">
                                                     <Lock className="w-8 h-8 text-slate-700 mx-auto mb-4" />
-                                                    <p className="text-slate-500 text-sm">Agreement Preview Secured</p>
+                                                    <p className="text-slate-500 text-sm">Contract preview</p>
                                                 </div>
                                             </div>
                                             <div className="p-6 bg-slate-800/50 flex items-center justify-between">
@@ -839,9 +909,9 @@ const BrandDealConsole = () => {
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                                     <Activity className="w-4 h-4 text-purple-500" />
-                                    Activity Ledger
+                                    Deal timeline
                                 </h3>
-                                <span className="text-[10px] font-bold text-slate-500 bg-slate-900 border border-white/5 px-2 py-0.5 rounded uppercase tracking-widest">Global Audit</span>
+                                <span className="text-[10px] font-bold text-slate-500 bg-slate-900 border border-white/5 px-2 py-0.5 rounded uppercase tracking-widest">Live updates</span>
                             </div>
 
                             <div className="relative space-y-8 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[1px] before:bg-white/5">
@@ -849,9 +919,9 @@ const BrandDealConsole = () => {
                                 <div className="relative pl-7 group">
                                     <div className="absolute left-0 top-1.5 w-[15px] h-[15px] rounded-full bg-emerald-500/20 border-2 border-emerald-500 z-10" />
                                     <div>
-                                        <p className="text-xs font-semibold text-white">Proposal Submitted</p>
+                                        <p className="text-xs font-semibold text-white">Offer sent</p>
                                         <p className="text-[11px] text-slate-500 mt-0.5">{new Date(collabRequest?.created_at).toLocaleString()}</p>
-                                        <p className="text-xs text-slate-400 mt-2 p-2 rounded bg-white/[0.03] border border-white/5 italic">"Initial brief for Summer Campaign sent to creator profile."</p>
+                                        <p className="text-xs text-slate-400 mt-2 p-2 rounded bg-white/[0.03] border border-white/5 italic">"The first offer was sent to the creator."</p>
                                     </div>
                                 </div>
 
@@ -871,7 +941,7 @@ const BrandDealConsole = () => {
 
                                 {/* Loading state indicator for future logs */}
                                 <div className="relative pl-7 text-[11px] text-slate-600 font-medium italic">
-                                    Awaiting next protocol event...
+                                    Waiting for the next update...
                                 </div>
                             </div>
                         </div>
@@ -879,14 +949,14 @@ const BrandDealConsole = () => {
                         <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-purple-500/20">
                             <div className="flex items-center gap-2 mb-3">
                                 <Shield className="w-4 h-4 text-purple-400" />
-                                <h4 className="text-sm font-semibold text-white">Creator Armour Security</h4>
+                                <h4 className="text-sm font-semibold text-white">Creator Armour Protection</h4>
                             </div>
                             <p className="text-xs text-slate-400 leading-relaxed">
-                                All transitions in the console are cryptographically timestamped and logged.
-                                Funds are only released once milestones are verified by our content protocol.
+                                Important actions in this deal are logged here so both sides can track what happened.
+                                Payment moves only after the required deal steps are completed.
                             </p>
                             <button type="button" className="mt-4 text-[11px] font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2 hover:text-purple-300">
-                                Learn more about protection
+                                Learn more
                                 <ExternalLink className="w-3 h-3" />
                             </button>
                         </div>
@@ -899,12 +969,12 @@ const BrandDealConsole = () => {
                     <div className="flex items-center gap-4">
                         <span>© 2025 Creator Armour</span>
                         <span className="w-1 h-1 rounded-full bg-slate-800" />
-                        <a href="#" className="hover:text-white transition-colors">Legal Framework</a>
-                        <a href="#" className="hover:text-white transition-colors">Audit Integrity</a>
+                        <a href="#" className="hover:text-white transition-colors">Terms</a>
+                        <a href="#" className="hover:text-white transition-colors">Privacy</a>
                     </div>
                     <div className="flex items-center gap-2">
                         <Lock className="w-3 h-3" />
-                        End-to-End Encrypted Console
+                        Protected deal page
                     </div>
                 </div>
             </footer>

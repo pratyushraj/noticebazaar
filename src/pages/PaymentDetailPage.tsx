@@ -8,6 +8,7 @@ import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals'
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { trackEvent } from '@/lib/utils/analytics';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { calculatePaymentRiskLevel, getPaymentRiskConfig, getPaymentRiskTooltip } from '@/lib/utils/paymentRisk';
 import { supabase } from '@/integrations/supabase/client';
@@ -233,6 +234,12 @@ const PaymentDetailPage = () => {
         proof_of_payment_url: proofOfPaymentUrl,
         utr_number: null, // Can be added separately
         // updated_at will be automatically updated by trigger
+      });
+
+      void trackEvent('payment_confirmed', {
+        creator_id: profile.id,
+        deal_id: brandDeal.id,
+        amount: paymentData.amount,
       });
 
       // Set undo deadline (5 minutes from now)
@@ -637,6 +644,13 @@ const PaymentDetailPage = () => {
                 )}
               </>
             )}
+          </div>
+          <div className="max-w-4xl mx-auto mt-2">
+            <p className="text-xs text-white/70">
+              {paymentData.status === 'pending' || paymentData.status === 'overdue'
+                ? 'Confirm payment only after the money reaches your bank account.'
+                : 'This deal is completed. You can download the invoice and share your collab page for more deals.'}
+            </p>
           </div>
         </div>
 

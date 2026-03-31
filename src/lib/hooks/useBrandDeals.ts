@@ -170,15 +170,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
   return useSupabaseQuery<BrandDeal[], Error>(
     ['brand_deals', SIGNED_STATUSES_VERSION, creatorId, statusFilter, platformFilter, sortBy, sortOrder, limit],
     async () => {
-      // Debug: Log creatorId (dev only)
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Fetching deals for creatorId:', creatorId);
-      }
-
       if (!creatorId) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] No creatorId provided, returning empty array');
-        }
         return [];
       }
 
@@ -186,14 +178,11 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       const { data: { session } } = await supabase.auth.getSession();
       const authUserId = session?.user?.id;
 
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Auth user ID:', authUserId, 'Creator ID:', creatorId);
-      }
-
       if (authUserId !== creatorId) {
-        if (import.meta.env.DEV) {
-          console.warn('[useBrandDeals] WARNING: auth.uid() does not match creatorId. This may cause RLS issues.');
-        }
+        logger.warn('[useBrandDeals] auth.uid() does not match creatorId. This may cause RLS issues.', {
+          authUserId,
+          creatorId,
+        });
       }
 
       // Define signed statuses that should be visible (includes barter: Drafting, Awaiting Product Shipment)
@@ -263,7 +252,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       // Debug: Log error details
       if (error) {
-        console.error('[useBrandDeals] Query error:', {
+        logger.error('[useBrandDeals] Query error', {
           code: error.code,
           message: error.message,
           details: error.details,
@@ -280,8 +269,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           error.message?.toLowerCase().includes('policy');
 
         if (isRLSError) {
-          console.error('[useBrandDeals] RLS ERROR: Permission denied. Check RLS policies for brand_deals table.');
-          console.error('[useBrandDeals] RLS Error Details:', {
+          logger.error('[useBrandDeals] RLS ERROR: Permission denied. Check RLS policies for brand_deals table.', {
             creatorId,
             authUserId,
             errorMessage: error.message,
@@ -298,9 +286,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           error.message?.includes('not found');
 
         if (isMissingTableError && creatorId) {
-          if (import.meta.env.DEV) {
-            console.log('[useBrandDeals] Table missing, returning demo data');
-          }
+          logger.warn('[useBrandDeals] Table missing, returning demo data');
           // Return demo data when table doesn't exist
           return getDemoBrandDeals(creatorId);
         }
@@ -308,35 +294,17 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         // Log the error but return an empty array to prevent crashing the UI
         // Error is logged via useSupabaseQuery error handling
         // NOTE: We return [] here instead of throwing to handle missing tables gracefully.
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] Returning empty array due to error');
-        }
         return [];
-      }
-
-      // Debug: Log data (dev only)
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Query successful:', {
-          dataLength: data?.length ?? 0,
-          dataIsNull: data === null,
-          dataIsArray: Array.isArray(data),
-          creatorId,
-        });
       }
 
       // Ensure Supabase always returns [] instead of null
       if (!data) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] Data is null, returning empty array');
-        }
         return [];
       }
 
       // Ensure data is always an array
       if (!Array.isArray(data)) {
-        if (import.meta.env.DEV) {
-          console.warn('[useBrandDeals] Data is not an array, converting to array');
-        }
+        logger.warn('[useBrandDeals] Data is not an array, returning empty array');
         return [];
       }
 
@@ -348,22 +316,13 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       // For real users with no data, return empty array (shows empty state)
       if (!isPreviewMode && data.length === 0) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] No deals found for user, returning empty array');
-        }
         return [];
       }
 
       // Only use demo data in preview mode
       if (isPreviewMode && creatorId && data.length < 6) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] Preview mode with insufficient data, returning demo data');
-        }
+        logger.warn('[useBrandDeals] Preview mode with insufficient data, returning demo data');
         return getDemoBrandDeals(creatorId);
-      }
-
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Returning', data.length, 'deals');
       }
 
       const rawDeals = data as unknown as BrandDeal[];
@@ -494,7 +453,7 @@ export const useAddBrandDeal = () => {
 
       // Use provided URL if available (file already uploaded), otherwise upload the file
       if (providedContractUrl) {
-        console.log('[useAddBrandDeal] Using provided contract_file_url:', providedContractUrl);
+        logger.info('[useAddBrandDeal] Using provided contract_file_url', { providedContractUrl });
         contract_file_url = providedContractUrl;
       } else if (contract_file) {
         // Upload contract file only if URL not provided
@@ -586,7 +545,7 @@ export const useAddBrandDeal = () => {
         if (uuidRegex.test(organization_id)) {
           insertPayload.organization_id = organization_id;
         } else {
-          console.warn('Invalid organization_id format, omitting from insert:', organization_id);
+          logger.warn('Invalid organization_id format, omitting from insert', { organization_id });
         }
       }
 

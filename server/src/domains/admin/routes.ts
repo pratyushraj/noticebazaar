@@ -648,12 +648,65 @@ router.get('/metrics', async (req: AuthenticatedRequest, res: Response) => {
       .order('created_at', { ascending: false })
       .limit(20);
 
+    const [{ data: creatorFunnelRows }, { data: dealMetricRows }] = await Promise.all([
+      supabase.from('creator_funnel_metrics' as any).select('*'),
+      supabase.from('deal_metrics' as any).select('*'),
+    ]);
+
+    const creatorFunnels = (creatorFunnelRows || []) as any[];
+    const dealMetrics = (dealMetricRows || []) as any[];
+
+    const offersSent = dealMetrics.filter((row) => row.offer_received_at).length;
+    const dealsStarted = dealMetrics.filter((row) => row.deal_started_at).length;
+    const dealsCompleted = dealMetrics.filter((row) => row.deal_completed_at).length;
+    const totalDealValue = dealMetrics.reduce((sum, row) => sum + Number(row.deal_value || 0), 0);
+    const averageDealValue = dealsStarted > 0 ? totalDealValue / dealsStarted : 0;
+
+    const timeToFirstOfferDays = creatorFunnels
+      .filter((row) => row.signed_up_at && row.first_offer_received_at)
+      .map((row) => (
+        (new Date(row.first_offer_received_at).getTime() - new Date(row.signed_up_at).getTime()) / (1000 * 60 * 60 * 24)
+      ));
+    const avgTimeToFirstOfferDays = timeToFirstOfferDays.length > 0
+      ? timeToFirstOfferDays.reduce((sum, value) => sum + value, 0) / timeToFirstOfferDays.length
+      : 0;
+
+    const timeToCompleteDealDays = dealMetrics
+      .filter((row) => row.deal_started_at && row.deal_completed_at)
+      .map((row) => (
+        (new Date(row.deal_completed_at).getTime() - new Date(row.deal_started_at).getTime()) / (1000 * 60 * 60 * 24)
+      ));
+    const avgTimeToCompleteDealDays = timeToCompleteDealDays.length > 0
+      ? timeToCompleteDealDays.reduce((sum, value) => sum + value, 0) / timeToCompleteDealDays.length
+      : 0;
+
+    const totalCreators = Number((userStats as any)?.creators || 0);
+    const totalBrands = Number((userStats as any)?.brands || 0);
+    const creatorsWithDeals = creatorFunnels.filter((row) => row.first_deal_started_at).length;
+    const signupToDealConversionRate = totalCreators > 0 ? creatorsWithDeals / totalCreators : 0;
+    const offerToDealConversionRate = offersSent > 0 ? dealsStarted / offersSent : 0;
+    const repeatCreators = creatorFunnels.filter((row) => Number(row.deals_completed_count || 0) > 1).length;
+
     return res.json({
       success: true,
       data: {
         users: userStats,
         deals: dealStats,
         recentEvents,
+        marketplace: {
+          totalCreators,
+          totalBrands,
+          offersSent,
+          dealsStarted,
+          dealsCompleted,
+          totalDealValue,
+          averageDealValue,
+          timeToFirstOfferDays: avgTimeToFirstOfferDays,
+          timeToCompleteDealDays: avgTimeToCompleteDealDays,
+          creatorSignupToDealConversionRate: signupToDealConversionRate,
+          offerToDealConversionRate,
+          repeatCreators,
+        },
       },
     });
   } catch (error: any) {

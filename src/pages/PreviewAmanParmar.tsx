@@ -204,7 +204,7 @@ const PreviewAmanParmar = () => {
               onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
               className="rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-cyan-300/50"
             />
-            <button type="button"
+            <button
               type="submit"
               className="sm:col-span-2 mt-2 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:from-emerald-300 hover:to-cyan-300"
             >

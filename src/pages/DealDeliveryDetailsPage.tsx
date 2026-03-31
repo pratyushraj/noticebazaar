@@ -216,7 +216,7 @@ export default function DealDeliveryDetailsPage() {
   return (
     <CreatorNavigationWrapper
       title="Delivery Details"
-      subtitle="Brands cannot ship your product until this is filled."
+      subtitle="Add your delivery details so the brand can send the product."
       showBackButton
     >
       <div className="bg-white/6 border-b border-white/12">
@@ -231,10 +231,10 @@ export default function DealDeliveryDetailsPage() {
       <main className="max-w-xl mx-auto px-4 py-6">
         <div className="mb-6">
           <p className="text-sm font-medium text-foreground mb-1">
-            Brands cannot ship your product until this is filled.
+            Add your delivery details so the brand can send the product.
           </p>
           <p className="text-sm text-muted-foreground">
-            This protects you from fake or delayed deliveries by ensuring brand accountability.
+            Fill this once so the brand knows where to send the product.
           </p>
         </div>
 

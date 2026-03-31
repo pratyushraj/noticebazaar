@@ -35,7 +35,7 @@ const Login = () => {
   useEffect(() => {
     document.title = 'Sign In | Creator Armour';
     const meta = document.querySelector('meta[name="description"]');
-    meta?.setAttribute('content', 'Sign in to Creator Armour to manage creator deals, contract risks, proof trails, and payment recovery workflows.');
+    meta?.setAttribute('content', 'Sign in to see your brand offers, active deals, and payments in one place.');
   }, []);
 
   // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
@@ -230,14 +230,14 @@ const Login = () => {
         {/* Title and Subtitle */}
         <div className="mb-10">
           <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Sign In</h2>
-          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Access your deal workspace to manage contracts, proof, payouts, and next steps.</p>
+          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Sign in to see your brand offers and active deals.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-emerald-500" aria-hidden />
-            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Initializing OS...</p>
+            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
           </div>
         )}
 
@@ -245,7 +245,7 @@ const Login = () => {
         {session && (
           <div className="mb-6 space-y-4">
             <p className="text-slate-400 text-sm text-center font-medium">
-              {loading ? 'Authenticating…' : "Session established. Launching workspace…"}
+              {loading ? 'Authenticating…' : 'Signed in. Opening your deals…'}
             </p>
             <Button
               onClick={() => navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true })}
@@ -267,7 +267,7 @@ const Login = () => {
             <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                  Email Intelligence
+                  Email
                 </Label>
                 <Input
                   id="email"
@@ -283,7 +283,7 @@ const Login = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
-                    Secure Access
+                    Password
                   </Label>
                   <button
                     type="button"
@@ -315,7 +315,7 @@ const Login = () => {
                 }}
 	              >
 	                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                {isLoading ? 'Authenticating...' : 'Open My Deal Workspace'}
+	                {isLoading ? 'Authenticating...' : 'Open My Deals'}
 	              </Button>
 
                 <button
@@ -343,7 +343,7 @@ const Login = () => {
                 <span className="w-full border-t border-slate-800" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-[#0B0F14] px-4 text-slate-600">Secure Vault Access</span>
+                <span className="bg-[#0B0F14] px-4 text-slate-600">Or continue with</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -390,7 +390,7 @@ const Login = () => {
         {(!loading || loadingTimedOut) && !session && (
           <div className="text-center">
             <Link to="/signup" className="text-slate-400 hover:text-white transition-all text-[13px] font-medium group inline-flex items-center gap-2">
-              Don't have an account? <span className="text-emerald-500 font-bold group-hover:underline">Start protecting deals</span>
+              Don't have an account? <span className="text-emerald-500 font-bold group-hover:underline">Create your collab page</span>
             </Link>
           </div>
         )}

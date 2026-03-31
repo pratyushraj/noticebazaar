@@ -78,9 +78,6 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.74.0
         version: 2.95.3
-      '@swc/core-win32-x64-msvc':
-        specifier: ^1.15.21
-        version: 1.15.21
       '@tanstack/react-query':
         specifier: ^5.56.2
         version: 5.90.20(react@18.3.1)
@@ -1646,12 +1643,6 @@ packages:
 
   '@swc/core-win32-x64-msvc@1.15.11':
     resolution: {integrity: sha512-IQ2n6af7XKLL6P1gIeZACskSxK8jWtoKpJWLZmdXTDj1MGzktUy4i+FvpdtxFmJWNavRWH1VmTr6kAubRDHeKw==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [win32]
-
-  '@swc/core-win32-x64-msvc@1.15.21':
-    resolution: {integrity: sha512-zUyWso7OOENB6e1N1hNuNn8vbvLsTdKQ5WKLgt/JcBNfJhKy/6jmBmqI3GXk/MyvQKd5SLvP7A0F36p7TeDqvw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
@@ -5347,8 +5338,6 @@ snapshots:
 
   '@swc/core-win32-x64-msvc@1.15.11':
     optional: true
-
-  '@swc/core-win32-x64-msvc@1.15.21': {}
 
   '@swc/core@1.15.11':
     dependencies:

@@ -85,6 +85,39 @@ const deriveAvailabilityStatus = (profile: any) => {
   return 'available';
 };
 
+const isCreatorDiscoverable = (profile: any, stats: any) => {
+  const checks = [
+    Boolean(String(profile?.username || profile?.instagram_handle || '').trim()),
+    Boolean(String(profile?.creator_category || '').trim()),
+    Number(stats?.starting_price || 0) > 0,
+    Number(profile?.instagram_followers ?? profile?.followers_count ?? 0) > 0 || Number(stats?.avg_views || 0) > 0,
+    Boolean(String(profile?.media_kit_url || '').trim()) || Number(stats?.completed_deals || 0) > 0,
+  ];
+
+  const completedChecks = checks.filter(Boolean).length;
+  return (profile?.open_to_collabs !== false) && completedChecks >= 4;
+};
+
+const isBlockedSocialAvatar = (value: unknown) => {
+  const url = String(value || '').trim().toLowerCase();
+  if (!url) return false;
+  return (
+    url.includes('cdninstagram.com') ||
+    url.includes('instagram.') ||
+    url.includes('fbcdn.net')
+  );
+};
+
+const getSafeCreatorPhoto = (profile: any) => {
+  const avatarUrl = String((profile as any)?.avatar_url || '').trim();
+  if (avatarUrl && !isBlockedSocialAvatar(avatarUrl)) return avatarUrl;
+
+  const instagramPhoto = String(profile?.instagram_profile_photo || '').trim();
+  if (instagramPhoto && !isBlockedSocialAvatar(instagramPhoto)) return instagramPhoto;
+
+  return null;
+};
+
 const stableSeedNumber = (input: unknown) => {
   const text = String(input || 'creator-armour').trim().toLowerCase();
   let hash = 0;
@@ -312,11 +345,7 @@ router.get('/', async (req: Request, res: Response) => {
         `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
         'Creator';
 
-      const rawPhoto = (profile as any).avatar_url || (profile as any).instagram_profile_photo || null;
-      const profilePhoto =
-        rawPhoto && typeof rawPhoto === 'string' && rawPhoto.includes('cdninstagram.com')
-          ? null
-          : rawPhoto;
+      const profilePhoto = getSafeCreatorPhoto(profile);
       const avgViews = deriveAvgViews(profile);
       const startingPrice = deriveStartingPrice(profile);
       const stats = {
@@ -367,7 +396,11 @@ router.get('/', async (req: Request, res: Response) => {
         },
         platforms,
       };
-    });
+    }).filter((creator: any) => isCreatorDiscoverable(creator, {
+      starting_price: creator.starting_price,
+      avg_views: creator.avg_views,
+      completed_deals: creator.completed_deals,
+    }));
 
     res.json({
       success: true,
@@ -559,12 +592,7 @@ router.get('/suggested', async (req: Request, res: Response) => {
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
-        profile_photo:
-          ((profile as any).avatar_url && typeof (profile as any).avatar_url === 'string' && !(profile as any).avatar_url.includes('cdninstagram.com'))
-            ? (profile as any).avatar_url
-            : (profile.instagram_profile_photo && typeof profile.instagram_profile_photo === 'string' && profile.instagram_profile_photo.includes('cdninstagram.com'))
-              ? null
-              : (profile.instagram_profile_photo || null),
+        profile_photo: getSafeCreatorPhoto(profile),
         followers: numberOrNull(profile.followers_count) ?? profile.instagram_followers ?? null,
         avg_views: stats.avg_views,
         engagement_rate: stats.engagement_rate,
@@ -599,7 +627,11 @@ router.get('/suggested', async (req: Request, res: Response) => {
           avg_response_hours: stats.response_hours,
         },
       };
-    });
+    }).filter((creator: any) => isCreatorDiscoverable(creator, {
+      starting_price: creator.starting_price,
+      avg_views: creator.avg_views,
+      completed_deals: creator.completed_deals,
+    }));
 
     res.setHeader('Cache-Control', 'public, max-age=60');
     res.json({ success: true, creators, count: creators.length });

@@ -58,7 +58,7 @@ import { BrandSettingsPanel } from '@/pages/BrandSettings';
 import { toast } from 'sonner';
 
 type BrandTab = 'dashboard' | 'collabs' | 'creators' | 'profile';
-type BrandCollabTab = 'action_required' | 'active' | 'completed';
+type BrandCollabTab = 'awaiting_creator' | 'awaiting_brand' | 'needs_revision' | 'ready_to_pay' | 'completed';
 
 import type { Profile, BrandDeal } from '@/types';
 
@@ -126,7 +126,14 @@ const hoursSince = (iso: string | Date | null | undefined) => {
 const safeImageSrc = (url: string | null | undefined) => {
   const s = typeof url === 'string' ? url : '';
   if (!s) return undefined;
-  if (s.includes('cdninstagram.com')) return undefined;
+  const normalized = s.toLowerCase();
+  if (
+    normalized.includes('cdninstagram.com') ||
+    normalized.includes('instagram.') ||
+    normalized.includes('fbcdn.net')
+  ) {
+    return undefined;
+  }
   return s;
 };
 
@@ -273,7 +280,11 @@ const getCreatorLocationLabel = (creator: SuggestedCreator | any) =>
   String(creator?.location || creator?.city || creator?.region || 'India').trim() || 'India';
 
 const getCreatorAvatarSrc = (creator: SuggestedCreator | any) => {
-  const primary = safeImageSrc(creator?.profile_photo || creator?.avatar_url || creator?.avatar);
+  const primary = safeImageSrc(
+    creator?.avatar_url ||
+    creator?.profile_photo ||
+    creator?.avatar
+  );
   if (primary) return primary;
   const seed = encodeURIComponent(String(creator?.username || creator?.name || 'creator'));
   return `https://api.dicebear.com/9.x/personas/svg?seed=${seed}&backgroundType=gradientLinear`;
@@ -302,15 +313,33 @@ const getCreatorBadges = (creator: SuggestedCreator | any) => {
     : [];
   if (explicit.length > 0) return explicit.slice(0, 2);
 
+  const startPrice = getCreatorStartingPrice(creator);
+  const responseHours = getCreatorResponseHours(creator);
+  const reliability = getCreatorReliability(creator);
+  const completedDeals = getCreatorCompletedDeals(creator);
+  const profileCompletion = getCreatorProfileCompletion(creator);
+  const avgViews = getCreatorAvgViews(creator);
+  const followers = Number(creator?.followers ?? 0) || 0;
+  const hasStorefrontBasics = Boolean(
+    getPreferredCreatorHandle(creator) &&
+    startPrice > 0 &&
+    profileCompletion >= 80
+  );
+
   const badges: string[] = [];
-  if (creator?.is_verified) badges.push('Verified');
-  if (getCreatorResponseHours(creator) > 0 && getCreatorResponseHours(creator) <= 6) badges.push('Fast Responder');
-  if (getCreatorReliability(creator) >= 95) badges.push('High Reliability');
-  if (creator?.is_budget_friendly || (getCreatorStartingPrice(creator) > 0 && getCreatorStartingPrice(creator) <= 12000)) badges.push('Budget Friendly');
-  if (getCreatorCompletedDeals(creator) === 0) badges.push('New Creator');
+
+  if (creator?.manual_badge) badges.push(String(creator.manual_badge).trim());
+  if (creator?.is_verified || profileCompletion >= 95) badges.push('Verified Profile');
+  if (hasStorefrontBasics) badges.push('Ready to Book');
+  if (responseHours > 0 && responseHours <= 6) badges.push('Quick Responder');
+  if (completedDeals >= 3 || reliability >= 97) badges.push('Recently Active');
+  if (startPrice > 0 && startPrice <= 12000) badges.push('Budget Friendly');
+  if (startPrice > 0 && avgViews > 0 && avgViews / Math.max(startPrice / 1000, 1) >= 1800) badges.push('Best Value');
+  if (followers >= 75000 || avgViews >= 30000) badges.push('Strong Reach');
   if (String(creator?.availability_status || '').toLowerCase() === 'available') badges.push('Available Now');
-  if (creator?.manual_badge) badges.unshift(String(creator.manual_badge));
-  return Array.from(new Set(badges)).slice(0, 2);
+  if (badges.length === 0) badges.push('Verified Profile');
+
+  return Array.from(new Set(badges.filter(Boolean))).slice(0, 2);
 };
 
 function formatDeliverables(row: BrandDeal | null | undefined) {
@@ -587,14 +616,20 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
             : 'CONTRACT';
 
   const primaryCta = getDealPrimaryCta({ role: 'brand', deal: row });
-  const needsAction = primaryCta.tone === 'action' && !primaryCta.disabled;
-  const primaryActionLabel = primaryCta.label;
+  let needsAction = primaryCta.tone === 'action' && !primaryCta.disabled;
+  let primaryActionLabel = primaryCta.label;
+  let ctaTone = primaryCta.tone;
+  let ctaDisabled = primaryCta.disabled;
 
   const statusLine =
     s === 'DISPUTED'
       ? 'Issue raised — view details'
-      : s === 'COMPLETED'
-        ? 'Deal completed'
+      : s === 'PAYMENT_RELEASED'
+        ? 'Payment marked as paid'
+        : s === 'CONTENT_APPROVED'
+          ? 'Content approved — mark payment as paid'
+        : s === 'COMPLETED'
+          ? 'Deal completed'
         : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE')
           ? 'Content ready — review and approve'
           : s === 'REVISION_REQUESTED'
@@ -608,13 +643,26 @@ const brandDealCardUi = (row: BrandDeal | null | undefined) => {
                   : 'Signature required to start';
 
   const step =
-    s === 'COMPLETED' ? 5
+    s === 'PAYMENT_RELEASED' || s === 'COMPLETED' ? 5
+      : s === 'CONTENT_APPROVED' ? 4
       : (s === 'CONTENT_DELIVERED' || s === 'REVISION_DONE' || s === 'DISPUTED') ? 4
         : (s === 'CONTENT_MAKING' || s === 'REVISION_REQUESTED') ? 3
           : s === 'FULLY_EXECUTED' ? 2
             : 1;
 
-  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone: primaryCta.tone, ctaDisabled: primaryCta.disabled };
+  if (s === 'CONTENT_APPROVED') {
+    needsAction = true;
+    primaryActionLabel = 'Mark as Paid';
+    ctaTone = 'action';
+    ctaDisabled = false;
+  } else if (s === 'PAYMENT_RELEASED') {
+    needsAction = false;
+    primaryActionLabel = 'Completed';
+    ctaTone = 'view';
+    ctaDisabled = false;
+  }
+
+  return { status: s, human, stageBadge, needsAction, primaryActionLabel, statusLine, step, ctaTone, ctaDisabled };
 };
 
 const BrandMobileDashboard = ({
@@ -638,12 +686,14 @@ const BrandMobileDashboard = ({
     tabParam === 'dashboard' || tabParam === 'collabs' || tabParam === 'creators' || tabParam === 'profile'
       ? tabParam
       : initialTab;
-	  const activeCollabTab: BrandCollabTab = (() => {
+  const activeCollabTab: BrandCollabTab = (() => {
 	    const raw = String(subtabParam || '').trim().toLowerCase();
-	    if (raw === 'pending' || raw === 'action_required' || raw === 'action-required' || raw === 'action') return 'action_required';
-	    if (raw === 'active') return 'active';
+	    if (raw === 'pending' || raw === 'action_required' || raw === 'action-required' || raw === 'action' || raw === 'awaiting_creator' || raw === 'awaiting-creator') return 'awaiting_creator';
+	    if (raw === 'active' || raw === 'awaiting_brand' || raw === 'awaiting-brand') return 'awaiting_brand';
+	    if (raw === 'needs_revision' || raw === 'needs-revision' || raw === 'revision') return 'needs_revision';
+	    if (raw === 'ready_to_pay' || raw === 'ready-to-pay' || raw === 'payment') return 'ready_to_pay';
 	    if (raw === 'completed') return 'completed';
-	    return 'action_required';
+	    return 'awaiting_creator';
 	  })();
 
 	  const showSignatureDebug = useMemo(() => {
@@ -652,11 +702,11 @@ const BrandMobileDashboard = ({
 	    return params.get('debugSig') === '1';
 	  }, []);
 
-	  const setActiveTab = (tab: BrandTab, subtab?: BrandCollabTab) => {
+  const setActiveTab = (tab: BrandTab, subtab?: BrandCollabTab) => {
 	    const next = new URLSearchParams(searchParams);
 	    next.set('tab', tab);
 	    if (tab === 'collabs') {
-      next.set('subtab', subtab || activeCollabTab || 'action_required');
+      next.set('subtab', subtab || activeCollabTab || 'awaiting_creator');
     } else {
       next.delete('subtab');
     }
@@ -1375,16 +1425,46 @@ const BrandMobileDashboard = ({
   const completedDealsList = useMemo(() => {
     return uniqDeals((deals || []).filter((d: any) => {
       const s = normalizeStatus(d?.status);
+      const effective = effectiveDealStatus(d);
+      if (effective === 'PAYMENT_RELEASED' || effective === 'COMPLETED') return true;
       if (!s) return false;
-      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid');
+      return s.includes('complete') || s.includes('completed') || s.includes('closed') || s.includes('paid') || s.includes('payment_released');
     }) as any[]);
   }, [deals]);
 
+  const awaitingCreatorItems = useMemo(() => {
+    const creatorDeals = activeDealsList.filter((deal: any) => {
+      const status = effectiveDealStatus(deal);
+      return status === 'SENT' || status === 'AWAITING_CREATOR_SIGNATURE' || status === 'FULLY_EXECUTED' || status === 'CONTENT_MAKING';
+    });
+    return [...pendingOffersList, ...creatorDeals];
+  }, [activeDealsList, pendingOffersList]);
+
+  const awaitingBrandItems = useMemo(() => {
+    return activeDealsList.filter((deal: any) => {
+      const status = effectiveDealStatus(deal);
+      return status === 'CONTRACT_READY' || status === 'AWAITING_BRAND_SIGNATURE' || status === 'CONTENT_DELIVERED' || status === 'REVISION_DONE' || status === 'DISPUTED';
+    });
+  }, [activeDealsList]);
+
+  const needsRevisionItems = useMemo(() => {
+    return activeDealsList.filter((deal: any) => effectiveDealStatus(deal) === 'REVISION_REQUESTED');
+  }, [activeDealsList]);
+
+  const readyToPayItems = useMemo(() => {
+    return uniqDeals([
+      ...activeDealsList.filter((deal: any) => effectiveDealStatus(deal) === 'CONTENT_APPROVED'),
+      ...completedDealsList.filter((deal: any) => effectiveDealStatus(deal) === 'PAYMENT_RELEASED'),
+    ] as any[]);
+  }, [activeDealsList, completedDealsList]);
+
   const visibleCollabItems = useMemo(() => {
-    if (activeCollabTab === 'active') return activeDealsList;
+    if (activeCollabTab === 'awaiting_brand') return awaitingBrandItems;
+    if (activeCollabTab === 'needs_revision') return needsRevisionItems;
+    if (activeCollabTab === 'ready_to_pay') return readyToPayItems;
     if (activeCollabTab === 'completed') return completedDealsList;
-    return pendingOffersList;
-  }, [activeCollabTab, activeDealsList, completedDealsList, pendingOffersList]);
+    return awaitingCreatorItems;
+  }, [activeCollabTab, awaitingBrandItems, needsRevisionItems, readyToPayItems, completedDealsList, awaitingCreatorItems]);
 
   useEffect(() => {
     if (activeTab !== 'collabs') return;
@@ -1516,7 +1596,7 @@ const BrandMobileDashboard = ({
     const title = offer?.profiles ? firstNameish(offer.profiles) : offer?.creator_name || offer?.creator_email || 'Creator';
     const username = String(offer?.profiles?.username || '').trim();
     const isMarkedCompleted = normalizeStatus(offer?.status) === 'completed';
-    const canMarkComplete = activeCollabTab === 'active' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
+    const canMarkComplete = activeCollabTab !== 'completed' && !!offer?.id && !isMarkedCompleted && (offer?.deal_amount !== undefined || offer?.due_date !== undefined);
     const deliverables = formatDeliverables(offer) || offer?.collab_type || 'Collaboration';
     const budget = formatBudget(offer);
     const deadlineValue = offer?.due_date || offer?.deadline;
@@ -4547,7 +4627,7 @@ const BrandMobileDashboard = ({
                               <>
 		                          <div className="flex items-center gap-3">
 		                            <Avatar className="w-11 h-11">
-		                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar_url)} alt={c.name} />
+		                              <AvatarImage src={getCreatorAvatarSrc(c)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
@@ -4717,13 +4797,49 @@ const BrandMobileDashboard = ({
 	              {activeTab === 'collabs' && (
 	                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
 	                  {(() => {
-	                    const needsActionDeals = activeDealsList.filter((d: any) => brandDealCardUi(d).needsAction);
-	                    const needsActionOffers = pendingOffersList.filter((r: any) => normalizeStatus(r?.status) === 'countered');
-	                    const needsActionTotal = needsActionDeals.length + needsActionOffers.length;
+	                    const inboxTabs = [
+                        { key: 'awaiting_creator' as BrandCollabTab, label: 'Awaiting Creator', count: awaitingCreatorItems.length },
+                        { key: 'awaiting_brand' as BrandCollabTab, label: 'Awaiting Brand', count: awaitingBrandItems.length },
+                        { key: 'needs_revision' as BrandCollabTab, label: 'Needs Revision', count: needsRevisionItems.length },
+                        { key: 'ready_to_pay' as BrandCollabTab, label: 'Ready to Pay', count: readyToPayItems.length },
+                        { key: 'completed' as BrandCollabTab, label: 'Completed', count: completedDealsList.length },
+                      ];
+	                    const needsActionTotal = awaitingBrandItems.length + readyToPayItems.length;
+                      const emptyState = (() => {
+                        if (activeCollabTab === 'awaiting_creator') {
+                          return {
+                            title: 'No deals waiting on creators right now',
+                            detail: 'New offers, unsigned contracts, and creator work-in-progress will show up here.',
+                            cta: 'Send new offer',
+                          };
+                        }
+                        if (activeCollabTab === 'awaiting_brand') {
+                          return {
+                            title: 'Nothing is blocked on your review',
+                            detail: 'Creator deliveries, contracts needing your signature, and issue reviews will show up here.',
+                          };
+                        }
+                        if (activeCollabTab === 'needs_revision') {
+                          return {
+                            title: 'No revision loops are open',
+                            detail: 'If you request changes on delivered content, those deals will stay here until the creator resubmits.',
+                          };
+                        }
+                        if (activeCollabTab === 'ready_to_pay') {
+                          return {
+                            title: 'No approved deals are waiting for payout',
+                            detail: 'Once content is approved, mark payment as paid here so creators can close the collaboration cleanly.',
+                          };
+                        }
+                        return {
+                          title: 'No completed collaborations yet',
+                          detail: 'Completed and paid deals will build your collaboration history here.',
+                        };
+                      })();
 	                    return (
 	                      <>
 	                  <div className="flex items-center justify-between mb-4">
-	                    <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
+	                    <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Deal Inbox</h2>
 	                    <div className="flex items-center gap-3">
 	                      {needsActionTotal > 0 && (
 	                        <div className={cn('px-2.5 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')}>
@@ -4736,14 +4852,31 @@ const BrandMobileDashboard = ({
 	                    </div>
 	                  </div>
 
-		                  {/* Keep the summary pill in the header; avoid duplicating the same items again in a separate widget. */}
+		                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                        {[
+                          { label: 'Awaiting creator', value: awaitingCreatorItems.length, tone: 'neutral' },
+                          { label: 'Awaiting brand', value: awaitingBrandItems.length, tone: awaitingBrandItems.length > 0 ? 'warn' : 'neutral' },
+                          { label: 'Needs revision', value: needsRevisionItems.length, tone: needsRevisionItems.length > 0 ? 'warn' : 'neutral' },
+                          { label: 'Ready to pay', value: readyToPayItems.length, tone: readyToPayItems.length > 0 ? 'success' : 'neutral' },
+                        ].map((item) => (
+                          <div key={item.label} className={cn('p-3 rounded-[20px] border', cardBgColor, borderColor)}>
+                            <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>{item.label}</p>
+                            <p className={cn(
+                              'text-[18px] font-black tracking-tight mt-2',
+                              item.tone === 'warn'
+                                ? (isDark ? 'text-amber-200' : 'text-amber-800')
+                                : item.tone === 'success'
+                                  ? (isDark ? 'text-emerald-200' : 'text-emerald-700')
+                                  : textColor
+                            )}>
+                              {item.value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
 
 		                  <div className={cn('mb-4 rounded-[22px] border p-1 flex gap-1 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.10)]', isDark ? 'bg-white/[0.06] border-white/10' : 'bg-white/80 border-slate-200/70')}>
-		                    {[
-			                      { key: 'action_required', label: 'Action Required', count: offers.length },
-		                      { key: 'active', label: 'Active', count: activeDealsList.length },
-		                      { key: 'completed', label: 'Completed', count: completedDealsList.length },
-		                    ].map((item) => {
+		                    {inboxTabs.map((item) => {
 		                      const isSelected = activeCollabTab === item.key;
 		                      return (
 		                        <button
@@ -4783,19 +4916,22 @@ const BrandMobileDashboard = ({
 		                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
 	                    <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-white/10 bg-white/[0.03]' : 'border-b border-slate-200/80 bg-white/45')}>
 	                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
-	                        {activeCollabTab === 'action_required' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
+	                        {activeCollabTab === 'awaiting_creator'
+                            ? 'Awaiting Creator'
+                            : activeCollabTab === 'awaiting_brand'
+                              ? 'Awaiting Brand'
+                              : activeCollabTab === 'needs_revision'
+                                ? 'Needs Revision'
+                                : activeCollabTab === 'ready_to_pay'
+                                  ? 'Ready To Pay'
+                                  : 'Completed Deals'}
 	                      </p>
 	                    </div>
                     {visibleCollabItems.length === 0 ? (
                       <div className="p-8 text-center">
-                        <p className={cn('text-[12px] font-bold opacity-50', textColor)}>
-                          {activeCollabTab === 'action_required'
-                            ? 'No action required items'
-                            : activeCollabTab === 'active'
-                              ? 'No active collabs yet'
-                              : 'No completed collabs yet'}
-                        </p>
-                        {activeCollabTab === 'action_required' && (
+                        <p className={cn('text-[13px] font-black', textColor)}>{emptyState.title}</p>
+                        <p className={cn('text-[12px] font-semibold opacity-55 mt-2 max-w-md mx-auto', textColor)}>{emptyState.detail}</p>
+                        {emptyState.cta && (
                           <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
                             <Send className="w-4 h-4 mr-2" /> Send new offer
                           </Button>
@@ -4804,7 +4940,7 @@ const BrandMobileDashboard = ({
                     ) : (
 	                      <div className="p-4 space-y-4 pb-44">
 	                        {visibleCollabItems.slice(0, 20).map((item: any) => {
-	                          const isPendingItem = activeCollabTab === 'action_required';
+	                          const isPendingItem = ['pending', 'countered', 'declined', 'expired'].includes(normalizeStatus(item?.status)) && item?.deal_amount === undefined && item?.due_date === undefined;
 	                          const isCompletedItem = activeCollabTab === 'completed';
 		                          const due = isPendingItem ? offerExpiryLabel(item) : deadlineLabel(item);
 	                          const amount = Number(item?.deal_amount || item?.exact_budget || 0);
@@ -5247,7 +5383,7 @@ const BrandMobileDashboard = ({
                             )}
                           >
                             <Avatar className="w-9 h-9">
-                              <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
+                              <AvatarImage src={getCreatorAvatarSrc(c)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0 flex-1">
@@ -5425,7 +5561,7 @@ const BrandMobileDashboard = ({
                         {creatorFeed.map((c) => (
                           <button key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white/60')}>
                             <Avatar className="w-10 h-10">
-                              <AvatarImage src={safeImageSrc(c.avatar_url)} alt={c.name} />
+                              <AvatarImage src={getCreatorAvatarSrc(c)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0 text-left">
@@ -5469,7 +5605,7 @@ const BrandMobileDashboard = ({
                         <div className="w-12 h-1 rounded-full mx-auto mb-5 bg-slate-400/30" />
                         <div className="flex items-start gap-4">
                           <Avatar className="w-16 h-16 border border-white/10">
-                            <AvatarImage src={safeImageSrc(selectedCreatorPreview.profile_photo)} alt={selectedCreatorPreview.name} />
+                            <AvatarImage src={getCreatorAvatarSrc(selectedCreatorPreview)} alt={selectedCreatorPreview.name} />
                             <AvatarFallback>{String(selectedCreatorPreview.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X } from 'lucide-react';
+import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X, IndianRupee, FileText, BriefcaseBusiness, Clock3 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +13,101 @@ const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?
 const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
 const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
 const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200?w=500&h=500&fit=cropfit=crop?w=500&h=500&fit=cropauto=format?w=500&h=500&fit=cropq=80";
+
+const dashboardShowcase = [
+  {
+    eyebrow: 'Incoming Offers',
+    title: 'Know which brand is offering what',
+    description: 'Creators see live offer value, deliverables, and due dates instead of re-reading old chats.',
+    icon: BriefcaseBusiness,
+    accent: 'emerald',
+    body: (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-black text-slate-900">Nykaa Summer Drop</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">1 Reel + 3 stories • due in 4 days</p>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-emerald-700">Pending</span>
+          </div>
+          <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+            <span className="text-xs font-bold text-slate-500">Offer value</span>
+            <span className="text-lg font-black text-slate-900">₹18,000</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-slate-950 px-4 py-3 text-white">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Awaiting reply</p>
+            <p className="mt-2 text-2xl font-black">03</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Best-fit brand</p>
+            <p className="mt-2 text-sm font-black text-slate-900">Beauty / D2C</p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    eyebrow: 'Contract Clarity',
+    title: 'See risky deal terms before accepting',
+    description: 'Important clauses are highlighted so a creator who has only used DMs can still understand what matters.',
+    icon: FileText,
+    accent: 'blue',
+    body: (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-black text-slate-900">Campaign agreement scan</p>
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-700">2 flags</span>
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">
+              Unlimited usage rights detected
+            </div>
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+              No payment due date mentioned
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Suggested fix</p>
+          <p className="mt-2 text-sm font-bold text-slate-700">Add 50% advance, 30-day usage cap, and final payment within 7 days of posting.</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    eyebrow: 'Payout Tracking',
+    title: 'Track what is paid, late, or at risk',
+    description: 'The payout side should feel as visible as the storefront so creators know what to follow up on fast.',
+    icon: IndianRupee,
+    accent: 'teal',
+    body: (
+      <div className="space-y-3">
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 p-4 text-white shadow-lg shadow-emerald-500/20">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-100">This month</p>
+          <p className="mt-2 text-3xl font-black">₹42,500</p>
+          <p className="mt-1 text-sm font-medium text-emerald-50">2 paid deals, 1 overdue payout</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-black text-slate-900">Myntra festive edit</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">Final payment pending</p>
+            </div>
+            <span className="rounded-full bg-rose-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-rose-700">4 days late</span>
+          </div>
+          <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+            <span className="text-xs font-bold text-slate-500">Amount due</span>
+            <span className="text-lg font-black text-slate-900">₹12,000</span>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+];
 
 const LandingPage = () => {
   const { session, loading, profile } = useSession();
@@ -215,6 +310,26 @@ const LandingPage = () => {
                 </div>
               </div>
 
+              <div className="hidden lg:flex absolute -left-8 bottom-10 z-30 rounded-3xl border border-slate-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-sm items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-500 hover:scale-105 transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Contract check</p>
+                  <p className="text-sm font-black text-slate-900">2 risky clauses flagged</p>
+                </div>
+              </div>
+
+              <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-3xl border border-slate-200 bg-slate-950 px-4 py-3 text-white shadow-2xl items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-105 transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center text-emerald-300">
+                  <Clock3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Payment follow-up</p>
+                  <p className="text-sm font-black text-white">₹12,000 overdue by 4 days</p>
+                </div>
+              </div>
+
               {/* Phone Mockup Screen */}
               <div className="bg-slate-50 rounded-[40px] md:rounded-[48px] shadow-2xl border-[10px] md:border-[14px] border-slate-100 overflow-hidden w-full max-w-[360px] md:max-w-[380px] mx-auto relative z-10 transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 ring-1 ring-slate-900/5">
                 {/* Dynamic Island */}
@@ -283,6 +398,51 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-[42px] font-black tracking-tight text-slate-900">
+              More than a collab page
+            </h2>
+            <p className="mt-4 text-lg text-slate-600 font-medium max-w-2xl mx-auto">
+              Show creators what happens after a brand clicks their link: offers arrive cleanly, contracts are easier to read, and payouts stay visible.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
+            {dashboardShowcase.map((panel) => {
+              const Icon = panel.icon;
+
+              return (
+                <div
+                  key={panel.title}
+                  className="rounded-[28px] border border-slate-200 bg-white p-6 md:p-7 shadow-sm hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className={cn(
+                      'w-11 h-11 rounded-2xl flex items-center justify-center',
+                      panel.accent === 'emerald' && 'bg-emerald-50 text-emerald-600',
+                      panel.accent === 'blue' && 'bg-blue-50 text-blue-600',
+                      panel.accent === 'teal' && 'bg-teal-50 text-teal-600',
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">{panel.eyebrow}</p>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-black tracking-tight text-slate-900 leading-tight">{panel.title}</h3>
+                    <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{panel.description}</p>
+                  </div>
+
+                  <div className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-4">
+                    {panel.body}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 

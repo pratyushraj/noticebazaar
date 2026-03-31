@@ -256,6 +256,12 @@ const LegalCheckForm = () => {
     return "Final step! Just need your contact preferences.";
   };
 
+  const finalStepReassurance = [
+    'Useful before signing, not only after a dispute starts',
+    'Works for small creators, not just big retained talent',
+    'You do not need a formal contract to start spotting risk',
+  ];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8 p-6 bg-card rounded-xl shadow-lg border border-border">
       <h3 className="text-2xl font-bold text-foreground">1. Tell Us About Your Creator Workflow</h3>
@@ -453,6 +459,18 @@ const LegalCheckForm = () => {
             <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> ⏱️ Takes about 2 minutes</p>
             <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> 🔒 100% Confidential & Secure</p>
             <p className="text-foreground flex items-center"><Check className="h-4 w-4 text-green-500 mr-2" /> 💰 Completely FREE (₹0)</p>
+          </div>
+
+          <div className="rounded-xl border border-border/60 bg-background/40 p-4">
+            <p className="text-sm font-semibold text-foreground">Good to know before you submit</p>
+            <div className="mt-3 space-y-2">
+              {finalStepReassurance.map((item) => (
+                <p key={item} className="text-sm text-muted-foreground flex items-start">
+                  <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  {item}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       )}

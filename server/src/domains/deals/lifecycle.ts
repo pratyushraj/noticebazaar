@@ -9,13 +9,13 @@ import { createClient } from '@supabase/supabase-js';
 import {
   DealState,
   DealEventType,
-  DealEvent,
   TransitionResult,
   DEAL_TRANSITIONS,
   isValidTransition,
   getTransitionEvent,
   isTerminalState,
 } from './types/index.js';
+import { getCreatorNotificationContent, type CreatorNotificationTemplate } from './creatorNotificationCopy.js';
 
 // ============================================================
 // TYPES
@@ -31,7 +31,7 @@ interface TransitionOptions {
   reason?: string; // For admin overrides
 }
 
-interface DealRecord {
+export interface DealRecord {
   id: string;
   status: string;
   creator_id: string;
@@ -341,42 +341,62 @@ export class DealLifecycleService {
     template: string,
     metadata: Record<string, any>
   ): Promise<void> {
-    // Import the notification queue dynamically to avoid circular dependencies
     try {
-      const { addNotificationJob } = await import('../../shared/lib/queue.js');
-      
-      // Get creator email if needed
-      let creatorEmail: string | null = null;
-      if (recipient === 'creator' || recipient === 'both') {
-        const { data: authUser } = await this.supabase.auth.admin.getUserById(deal.creator_id);
-        creatorEmail = authUser?.user?.email || null;
-      }
+      const { queueEmail } = await import('../../shared/lib/queue.js');
 
-      // Queue notifications
       if (recipient === 'creator' || recipient === 'both') {
-        if (creatorEmail) {
-          await addNotificationJob({
-            type: 'email',
-            userId: deal.creator_id,
-            title: `Deal Update: ${template}`,
-            message: `Your deal with ${deal.brand_name} has been updated.`,
+        const creatorContent = this.getCreatorNotificationContent(template, deal);
+        if (creatorContent) {
+          const { data: authUser } = await this.supabase.auth.admin.getUserById(deal.creator_id);
+          const creatorEmail = authUser?.user?.email || null;
+
+          await this.supabase.from('notifications').insert({
+            user_id: deal.creator_id,
+            type: creatorContent.type,
+            category: creatorContent.category,
+            title: creatorContent.title,
+            message: creatorContent.message,
             data: {
               template,
-              dealId: deal.id,
-              brandName: deal.brand_name,
+              deal_id: deal.id,
+              brand_name: deal.brand_name,
               ...metadata,
             },
+            link: creatorContent.link,
+            priority: creatorContent.priority,
+            icon: creatorContent.type,
+            action_label: creatorContent.actionLabel,
+            action_link: creatorContent.actionLink,
+            read: false,
           });
+
+          if (creatorEmail) {
+            await queueEmail({
+              to: creatorEmail,
+              subject: creatorContent.emailSubject,
+              template: 'notification',
+              data: {
+                title: creatorContent.title,
+                message: creatorContent.message,
+                ctaLabel: creatorContent.actionLabel,
+                ctaUrl: creatorContent.actionLink,
+                brandName: deal.brand_name,
+                dealId: deal.id,
+                ...metadata,
+              },
+            });
+          }
         }
       }
 
       if (recipient === 'brand' || recipient === 'both') {
-        await addNotificationJob({
-          type: 'email',
-          userId: deal.brand_email, // Brand email
-          title: `Deal Update: ${template}`,
-          message: `Your deal with a creator has been updated.`,
+        await queueEmail({
+          to: deal.brand_email,
+          subject: `Deal Update: ${template}`,
+          template: 'notification',
           data: {
+            title: `Deal Update: ${template}`,
+            message: `Your deal with a creator has been updated.`,
             template,
             dealId: deal.id,
             brandEmail: deal.brand_email,
@@ -387,6 +407,29 @@ export class DealLifecycleService {
     } catch (error) {
       console.error('[DealLifecycle] Failed to queue notification:', error);
     }
+  }
+
+  private getCreatorNotificationContent(
+    template: string,
+    deal: DealRecord
+  ) {
+    const creatorTemplates = new Set<CreatorNotificationTemplate>([
+      'offer_received',
+      'offer_accepted',
+      'contract_signed',
+      'content_requested',
+      'revision_requested',
+      'content_approved',
+      'payment_marked',
+      'payment_confirmed',
+      'deal_completed',
+    ]);
+
+    if (!creatorTemplates.has(template as CreatorNotificationTemplate)) {
+      return null;
+    }
+
+    return getCreatorNotificationContent(template as CreatorNotificationTemplate, deal);
   }
 
   /**

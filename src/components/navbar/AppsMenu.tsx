@@ -4,11 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Calendar,
-  FolderOpen,
   AlertTriangle,
   FileText,
-  Receipt,
-  Sparkles,
   Settings,
   Menu,
   Search,
@@ -52,7 +49,6 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
       title: "Tools",
       items: [
         { name: "Calendar Sync", icon: Calendar, path: "/creator-dashboard?tab=calendar", roles: ['creator'] },
-        { name: "Documents Vault", icon: FolderOpen, path: "/documents-vault", roles: ['creator'] },
         { name: "Invoice Generator", icon: FileText, path: "/creator-dashboard?tab=invoices", roles: ['creator'] },
       ]
     },
@@ -60,13 +56,6 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
       title: "Support",
       items: [
         { name: "Disputes Center", icon: AlertTriangle, path: "/creator-dashboard?tab=disputes", roles: ['creator'] },
-      ]
-    },
-    {
-      title: "Business",
-      items: [
-        { name: "Tax Summary", icon: Receipt, path: "/creator-tax-compliance", roles: ['creator'] },
-        { name: "Partner Program", icon: Sparkles, path: "/partner-program", roles: ['creator'] },
       ]
     },
     {
@@ -283,18 +272,14 @@ const AppsMenu: React.FC<AppsMenuProps> = ({ profileRole }) => {
                       // iOS-style icon colors
                       const iconColors: Record<string, string> = {
                         'Calendar Sync': 'text-blue-400',
-                        'Documents Vault': 'text-blue-400',
                         'Invoice Generator': 'text-green-400',
                         'Disputes Center': 'text-orange-400',
-                        'Tax Summary': 'text-yellow-400',
-                        'Partner Program': 'text-pink-400',
                         'Settings': 'text-gray-400',
                       };
 
                       return (
                         <button type="button"
                           key={item.path}
-                          type="button"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();

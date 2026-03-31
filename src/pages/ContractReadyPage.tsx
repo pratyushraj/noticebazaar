@@ -145,6 +145,27 @@ const ContractReadyPage = () => {
 
         // Check if API suggests redirecting to deal details page
         if (response.ok && data.redirectTo) {
+          // Some backends return redirectTo for deal-details tokens. Before following it, try to
+          // resolve an active contract-ready token so the user lands on OTP signing when ready.
+          try {
+            const maybeContractReadyResp = await fetch(
+              `${apiBaseUrl}/api/deal-details-tokens/${token}/contract-ready-token`
+            );
+            const maybeContractReadyData = await maybeContractReadyResp.json();
+
+            if (
+              maybeContractReadyResp.ok &&
+              maybeContractReadyData?.success &&
+              maybeContractReadyData?.contractReadyToken
+            ) {
+              console.log('[ContractReadyPage] Resolved contract ready token via deal details token, redirecting...');
+              window.location.href = `${window.location.origin}/contract-ready/${maybeContractReadyData.contractReadyToken}`;
+              return;
+            }
+          } catch (err) {
+            console.warn('[ContractReadyPage] Redirect precheck failed, following redirectTo:', err);
+          }
+
           console.log('[ContractReadyPage] Redirecting to deal details page:', data.redirectTo);
           window.location.href = data.redirectTo;
           return;

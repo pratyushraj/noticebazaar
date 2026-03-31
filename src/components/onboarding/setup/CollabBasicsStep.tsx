@@ -12,6 +12,7 @@ interface CollabBasicsStepProps {
   responseHours: string;
   onCityChange: (value: string) => void;
   onResponseHoursChange: (value: string) => void;
+  cityError?: string;
   onNext: () => void;
   onBack: () => void;
 }
@@ -21,6 +22,7 @@ export const CollabBasicsStep: React.FC<CollabBasicsStepProps> = ({
   responseHours,
   onCityChange,
   onResponseHoursChange,
+  cityError,
   onNext,
   onBack,
 }) => {
@@ -54,6 +56,8 @@ export const CollabBasicsStep: React.FC<CollabBasicsStepProps> = ({
               placeholder="e.g. Delhi, Mumbai, Bengaluru"
               className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
             />
+            <p className="mt-2 text-xs text-slate-500 dark:text-white/60">This helps brands quickly judge audience fit and regional relevance.</p>
+            {cityError && <p className="mt-2 text-xs font-medium text-rose-600">{cityError}</p>}
           </label>
 
           <label className="block">

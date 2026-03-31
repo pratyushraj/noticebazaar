@@ -32,6 +32,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [name, setName] = useState('');
+  const [instagramHandle, setInstagramHandle] = useState('');
   const [brandName, setBrandName] = useState('');
   const [brandIndustry, setBrandIndustry] = useState('Other');
   const [email, setEmail] = useState('');
@@ -41,11 +42,11 @@ const Signup = () => {
   const [signupPhase, setSignupPhase] = useState<'idle' | 'creating' | 'provisioning' | 'opening'>('idle');
 
   useEffect(() => {
-    document.title = accountMode === 'brand' ? 'Create Brand Account | Creator Armour' : 'Create Creator Account | Creator Armour';
+    document.title = accountMode === 'brand' ? 'Create Brand Account | Creator Armour' : 'Create your collab page | Creator Armour';
     const meta = document.querySelector('meta[name="description"]');
     meta?.setAttribute('content', accountMode === 'brand'
       ? 'Create a Creator Armour brand account to send structured offers and manage creator deal workflows.'
-      : 'Create a Creator Armour account to protect creator deals with clearer contracts, proof trails, and payment workflows.');
+      : 'Create your Creator Armour account and get your collab link ready in 2 minutes.');
   }, [accountMode]);
 
   const profilesTable = supabase.from('profiles') as unknown as {
@@ -237,9 +238,12 @@ const Signup = () => {
 
   const handleEmailPasswordSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalizedHandle = instagramHandle.replace(/^@+/, '').trim().toLowerCase();
 
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      toast.error('Please enter your name, email, and password');
+    if (!name.trim() || !email.trim() || !password.trim() || (accountMode === 'creator' && !instagramHandle.trim())) {
+      toast.error(accountMode === 'creator'
+        ? 'Please enter your name, Instagram handle, email, and password'
+        : 'Please enter your name, email, and password');
       return;
     }
     if (accountMode === 'brand' && !brandName.trim()) {
@@ -256,6 +260,11 @@ const Signup = () => {
     if (!emailRegex.test(emailAtSignup)) {
       toast.error('Please enter a valid email address');
       setEmailError('Invalid email format');
+      return;
+    }
+
+    if (accountMode === 'creator' && normalizedHandle.length < 3) {
+      toast.error('Instagram handle must be at least 3 characters');
       return;
     }
 
@@ -282,6 +291,7 @@ const Signup = () => {
             first_name: firstName,
             last_name: lastName,
             full_name: name.trim(),
+            instagram_handle: accountMode === 'creator' ? normalizedHandle : undefined,
             account_mode: accountMode,
             brand_name: accountMode === 'brand' ? brandName.trim() : undefined,
           },
@@ -362,6 +372,9 @@ const Signup = () => {
             duration: 2000,
           });
           void trackEvent('signup_completed', { mode: accountMode, method: 'email' });
+          if (accountMode === 'creator') {
+            void trackEvent('creator_signed_up', { method: 'email' });
+          }
 
           // Clear form immediately
           setName('');
@@ -612,7 +625,7 @@ const Signup = () => {
               your creator business
             </h2>
             <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
-              The deal protection workspace for creators who want clearer contracts, cleaner proofs, and fewer payment surprises.
+              Create your collab page, get brand offers, and track deals and payments in one place.
             </p>
           </div>
 
@@ -709,14 +722,14 @@ const Signup = () => {
                 )}
 
 	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
-	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create Creator Account'}
+	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create your collab page'}
 	              </h2>
 	              <p className="text-slate-600 font-medium leading-relaxed">
 	                {showLogin
-	                  ? 'Access your deal workspace.'
+	                  ? 'Sign in to see your brand offers and active deals.'
 	                  : accountMode === 'brand'
 	                    ? 'Send structured offers, track deals, and sign contracts without DMs.'
-	                    : 'Set up your deal protection workspace and move into onboarding.'
+	                    : 'Sign up and get your collab link ready in 2 minutes. Brands will send you offers through this link.'
 	                }
 	              </p>
 	            </div>
@@ -781,7 +794,7 @@ const Signup = () => {
 	                <form onSubmit={handleEmailPasswordSignup} className="space-y-4">
 	                  <div className="space-y-2">
 	                    <Label htmlFor="signup-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      {accountMode === 'brand' ? 'Your Name' : 'Full Name'}
+	                      {accountMode === 'brand' ? 'Your Name' : 'Name'}
 	                    </Label>
 	                    <Input
 	                      id="signup-name"
@@ -794,6 +807,26 @@ const Signup = () => {
 	                      autoComplete="name"
 	                    />
 	                  </div>
+                    {accountMode === 'creator' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-instagram-handle" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                          Instagram Handle
+                        </Label>
+                        <Input
+                          id="signup-instagram-handle"
+                          type="text"
+                          placeholder="@yourhandle"
+                          value={instagramHandle}
+                          onChange={(e) => setInstagramHandle(e.target.value)}
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                          required
+                          autoComplete="username"
+                        />
+                        <p className="px-1 text-xs text-slate-500">
+                          Use your Instagram username, for example sana.reels.delhi
+                        </p>
+                      </div>
+                    )}
                     {accountMode === 'brand' && (
                       <>
                         <div className="space-y-2">
@@ -828,7 +861,7 @@ const Signup = () => {
                     )}
 	                  <div className="space-y-2">
 	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      {accountMode === 'brand' ? 'Work Email' : 'Business Email'}
+	                      {accountMode === 'brand' ? 'Work Email' : 'Email'}
 	                    </Label>
 	                    <Input
 	                      id="signup-email"
@@ -846,7 +879,7 @@ const Signup = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                      Secure Password
+                      Password
                     </Label>
                     <div className="relative">
                       <Input
@@ -871,7 +904,7 @@ const Signup = () => {
 	                  </div>
 	                  <Button
 	                    type="submit"
-	                    disabled={isLoading || !name.trim() || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
+	                    disabled={isLoading || !name.trim() || (accountMode === 'creator' && !instagramHandle.trim()) || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
 	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
 	                  >
 	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
@@ -883,11 +916,11 @@ const Signup = () => {
                             : 'Creating Account...'
                         : accountMode === 'brand'
                           ? 'Create Brand Console'
-                          : 'Create Creator Workspace'}
+                          : 'Get My Collab Link'}
 	                  </Button>
                     {!showLogin && accountMode === 'creator' && (
                       <p className="text-center text-xs text-slate-500 mt-3">
-                        Takes about 2 minutes. No payout details needed yet.
+                        Takes about 2 minutes. You will set your price next.
                       </p>
                     )}
 	                </form>
@@ -899,7 +932,7 @@ const Signup = () => {
                 <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-white px-4 text-slate-500">Secure Protocol Access</span>
+                <span className="bg-white px-4 text-slate-500">Or continue with</span>
               </div>
             </div>
 

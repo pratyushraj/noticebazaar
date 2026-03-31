@@ -41,7 +41,39 @@ router.get('/:token', async (req: Request, res: Response) => {
         const dealDetailsTokenInfo = await getDealDetailsTokenInfo(token.trim());
         
         if (dealDetailsTokenInfo) {
-          // It's a deal details token - redirect to deal details page
+          // It's a deal details token. If a contract-ready token already exists for the associated deal,
+          // redirect to OTP signing instead of the deal details page.
+          try {
+            const { data: submission } = await (supabase as any)
+              .from('deal_details_submissions')
+              .select('deal_id')
+              .eq('token_id', token.trim())
+              .maybeSingle();
+
+            if (submission?.deal_id) {
+              const { data: contractReadyTokenData } = await (supabase as any)
+                .from('contract_ready_tokens')
+                .select('id')
+                .eq('deal_id', submission.deal_id)
+                .eq('is_active', true)
+                .is('revoked_at', null)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (contractReadyTokenData?.id) {
+                return res.json({
+                  success: true,
+                  redirectToToken: contractReadyTokenData.id,
+                  message: 'Contract is ready. Redirecting to signature link.'
+                });
+              }
+            }
+          } catch (err) {
+            console.warn('[ContractReadyTokens] Failed to resolve contract-ready token from deal details token:', err);
+          }
+
+          // No contract ready token exists yet - redirect to deal details page
           return res.json({
             success: false,
             redirectTo: `/deal/${token.trim()}`,
@@ -526,4 +558,3 @@ router.post('/:token/request-edit', async (req: Request, res: Response) => {
 });
 
 export default router;
-

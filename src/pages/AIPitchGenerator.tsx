@@ -657,7 +657,6 @@ const AIPitchGenerator = () => {
                     {(mode === 'pitch' ? quickPrompts.pitch : quickPrompts.notice).map((prompt) => (
                       <button type="button"
                         key={prompt}
-                        type="button"
                         onClick={() => setInput((prev) => prev ? `${prev}\n${prompt}` : prompt)}
                         className="text-xs text-white/70 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/10 hover:bg-white/[0.15] transition"
                       >

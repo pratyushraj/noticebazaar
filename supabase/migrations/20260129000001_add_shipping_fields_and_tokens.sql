@@ -55,14 +55,47 @@ COMMENT ON TABLE public.shipping_tokens IS 'One-time tokens for brand shipping u
 ALTER TABLE public.shipping_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Allow anon/authenticated to read by token only via service role in API; restrict direct access
-CREATE POLICY "shipping_tokens_select_by_token"
-  ON public.shipping_tokens FOR SELECT
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'shipping_tokens'
+      AND policyname = 'shipping_tokens_select_by_token'
+  ) THEN
+    CREATE POLICY "shipping_tokens_select_by_token"
+      ON public.shipping_tokens FOR SELECT
+      USING (true);
+  END IF;
+END $$;
 
-CREATE POLICY "shipping_tokens_insert_service"
-  ON public.shipping_tokens FOR INSERT
-  WITH CHECK (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'shipping_tokens'
+      AND policyname = 'shipping_tokens_insert_service'
+  ) THEN
+    CREATE POLICY "shipping_tokens_insert_service"
+      ON public.shipping_tokens FOR INSERT
+      WITH CHECK (true);
+  END IF;
+END $$;
 
-CREATE POLICY "shipping_tokens_update_service"
-  ON public.shipping_tokens FOR UPDATE
-  USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'shipping_tokens'
+      AND policyname = 'shipping_tokens_update_service'
+  ) THEN
+    CREATE POLICY "shipping_tokens_update_service"
+      ON public.shipping_tokens FOR UPDATE
+      USING (true);
+  END IF;
+END $$;

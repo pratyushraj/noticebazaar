@@ -978,7 +978,6 @@ const BrandDealDetailsPage = () => {
                     <span className="text-sm text-white/70">Deliverable {index + 1}</span>
                     {formData.deliverables.length > 1 && (
                       <button type="button"
-                        type="button"
                         onClick={() => handleRemoveDeliverable(index)}
                         className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
                         disabled={isFormUsed}
@@ -1047,7 +1046,6 @@ const BrandDealDetailsPage = () => {
                 </div>
               ))}
               <button type="button"
-                type="button"
                 onClick={handleAddDeliverable}
                 className="text-sm text-purple-300 hover:text-purple-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isFormUsed}
@@ -1171,7 +1169,6 @@ const BrandDealDetailsPage = () => {
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button type="button"
-                type="button"
                 onClick={() => setFormData(prev => ({ ...prev, dealType: 'paid' }))}
                 className={cn(
                   "px-4 py-3 rounded-xl border-2 transition-all",
@@ -1186,7 +1183,6 @@ const BrandDealDetailsPage = () => {
                 Paid
               </button>
               <button type="button"
-                type="button"
                 onClick={() => setFormData(prev => ({ ...prev, dealType: 'barter' }))}
                 className={cn(
                   "px-4 py-3 rounded-xl border-2 transition-all",
@@ -1647,7 +1643,6 @@ const BrandDealDetailsPage = () => {
                     disabled={isFormUsed || isGstLookupLoading}
                   />
                   <button type="button"
-                    type="button"
                     onClick={handleGstLookup}
                     disabled={isFormUsed || isGstLookupLoading || !formData.companyGstin?.trim() || formData.companyGstin.trim().length !== 15}
                     className={cn(

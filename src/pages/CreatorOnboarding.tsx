@@ -122,8 +122,10 @@ export default function CreatorOnboarding() {
     if (mode === 'copy') {
       await navigator.clipboard.writeText(publicLink);
       toast.success('Collab link copied');
+      void trackEvent('collab_link_copied', { creator_id: profile?.id });
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(`Check my Creator Armour collab link: ${publicLink}`)}`, '_blank', 'noopener,noreferrer');
+      window.open(`https://wa.me/?text=${encodeURIComponent(`Hi! You can send me a brand offer here: ${publicLink}`)}`, '_blank', 'noopener,noreferrer');
+      void trackEvent('collab_link_shared', { creator_id: profile?.id, mode: 'whatsapp' });
     }
 
     await persistCreatorSetup(false, {
@@ -147,6 +149,10 @@ export default function CreatorOnboarding() {
     try {
       await persistCreatorSetup(true);
       if (withRates) {
+        void trackEvent('reel_price_set', {
+          creator_id: profile.id,
+          reel_price: Number(reelPrice) || 0,
+        });
         void trackEvent('creators_set_price', {
           creator_id: profile.id,
           has_story_price: Number(storyPrice) > 0,
@@ -193,8 +199,8 @@ export default function CreatorOnboarding() {
             {step === 'instagram'
               ? 'This creates your collab page link so brands know where to send offers.'
               : step === 'pricing'
-                ? 'Start simple. Add the reel price you already quote in DMs. You can improve the rest later.'
-                : 'Share this link with brands instead of explaining everything again in Instagram DMs.'}
+                ? 'Enter the reel price you usually tell brands in DM. You can change this later.'
+                : 'Send this link in Instagram DM or WhatsApp when a brand asks how to collaborate.'}
           </p>
           <div className="rounded-[28px] border border-emerald-200 bg-white/90 p-5 shadow-[0_22px_60px_rgba(16,185,129,0.12)]">
             {step === 'instagram' ? (
@@ -212,13 +218,16 @@ export default function CreatorOnboarding() {
                     autoCapitalize="none"
                     autoCorrect="off"
                   />
-                  <p className="text-xs text-slate-500">Your collab page will look like `creatorarmour.com/@{instagramHandle || 'yourhandle'}`</p>
+                  <p className="text-xs text-slate-500">Use your Instagram username, for example sana.reels.delhi</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Button
                     type="button"
                     className="bg-emerald-600 text-white hover:bg-emerald-700"
-                    onClick={() => setStep('pricing')}
+                    onClick={() => {
+                      void trackEvent('instagram_added', { creator_id: profile.id, instagram_handle: instagramHandle });
+                      setStep('pricing');
+                    }}
                     disabled={!instagramHandle}
                   >
                     Continue
@@ -252,7 +261,7 @@ export default function CreatorOnboarding() {
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                    <p>Your collab page is live. You can now share it and manage deals from one place.</p>
+                    <p>Your collab page is live. Share it in Instagram DM or WhatsApp when a brand asks how to collaborate.</p>
                   </div>
                 </div>
               </div>
@@ -266,21 +275,27 @@ export default function CreatorOnboarding() {
                   <div className="space-y-2">
                     <Label htmlFor="reel-price">Reel price</Label>
                     <Input id="reel-price" value={reelPrice} onChange={(e) => setReelPrice(e.target.value)} inputMode="numeric" placeholder="5000" />
+                    <p className="text-xs text-slate-500">Enter the reel price you usually tell brands in DM. You can change this later.</p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="story-price">Story price (optional)</Label>
-                    <Input id="story-price" value={storyPrice} onChange={(e) => setStoryPrice(e.target.value)} inputMode="numeric" placeholder="2000" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-days">Days to make content</Label>
-                    <Input id="delivery-days" value={deliveryDays} onChange={(e) => setDeliveryDays(e.target.value)} inputMode="numeric" placeholder="7" />
-                    <p className="text-xs text-slate-500">Brands will see this timeline</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Accept free products as payment?</Label>
-                    <div className="flex gap-2">
-                      <Button type="button" variant={acceptsBarter ? 'default' : 'outline'} className={acceptsBarter ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'border-slate-200 bg-white'} onClick={() => setAcceptsBarter(true)}>Yes</Button>
-                      <Button type="button" variant={!acceptsBarter ? 'default' : 'outline'} className={!acceptsBarter ? 'bg-slate-900 text-white hover:bg-slate-800' : 'border-slate-200 bg-white'} onClick={() => setAcceptsBarter(false)}>No</Button>
+                  <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:col-span-2">
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Optional for now</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="story-price">Story price</Label>
+                        <Input id="story-price" value={storyPrice} onChange={(e) => setStoryPrice(e.target.value)} inputMode="numeric" placeholder="2000" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery-days">Days to make content</Label>
+                        <Input id="delivery-days" value={deliveryDays} onChange={(e) => setDeliveryDays(e.target.value)} inputMode="numeric" placeholder="7" />
+                        <p className="text-xs text-slate-500">Brands will see this on your collab page.</p>
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label>Accept free products as payment?</Label>
+                        <div className="flex gap-2">
+                          <Button type="button" variant={acceptsBarter ? 'default' : 'outline'} className={acceptsBarter ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'border-slate-200 bg-white'} onClick={() => setAcceptsBarter(true)}>Yes</Button>
+                          <Button type="button" variant={!acceptsBarter ? 'default' : 'outline'} className={!acceptsBarter ? 'bg-slate-900 text-white hover:bg-slate-800' : 'border-slate-200 bg-white'} onClick={() => setAcceptsBarter(false)}>No</Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -102,7 +102,6 @@ export const ChipInput: React.FC<ChipInputProps> = ({
               >
                 <span>{chip}</span>
                 <button type="button"
-                  type="button"
                   onClick={() => removeChip(chip)}
                   disabled={disabled}
                   className={cn(

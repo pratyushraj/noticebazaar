@@ -13,6 +13,7 @@ import { createShippingToken } from '../services/shippingTokenService.js';
 import { sendBrandShippingUpdateEmail, sendBrandShippingIssueEmail } from '../services/shippingEmailService.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { signContractAsCreator, getClientIp, getDeviceInfo } from '../services/contractSigningService.js';
+import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 
 const router = Router();
 
@@ -1449,6 +1450,18 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       }
     });
 
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'content_submitted',
+      userId,
+      creatorId: userId,
+      dealId,
+      metadata: {
+        creator_id: userId,
+        deal_id: dealId,
+        content_status: normalizedContentStatus,
+      },
+    });
+
     return res.json({
       success: true,
       message: isRevision ? 'Revision submitted for review' : 'Content submitted for review',
@@ -1559,6 +1572,17 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
       event: status === 'approved' ? 'CONTENT_APPROVED' : status === 'disputed' ? 'DEAL_DISPUTED' : 'REVISION_REQUESTED',
       metadata: { feedback: feedback ?? null, dispute_notes: updateData.dispute_notes ?? null }
     });
+
+    if (status === 'approved') {
+      await recordMarketplaceEvent(supabase, {
+        eventName: 'content_approved',
+        userId,
+        dealId,
+        metadata: {
+          deal_id: dealId,
+        },
+      });
+    }
 
     return res.json({
       success: true,
@@ -1672,6 +1696,16 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       if (error) console.warn('[Deals] release-payment action log failed:', error.message);
     });
 
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'payment_marked',
+      userId,
+      dealId,
+      metadata: {
+        deal_id: dealId,
+        amount: (deal as any).deal_amount || 0,
+      },
+    });
+
     return res.json({
       success: true,
       message: 'Payment released.',
@@ -1771,6 +1805,16 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       },
     }).then(({ error }) => {
       if (error) console.warn('[Deals] mark-complete action log failed:', error.message);
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'deal_completed',
+      userId,
+      dealId,
+      metadata: {
+        deal_id: dealId,
+        deal_value: (deal as any).deal_amount || 0,
+      },
     });
 
     return res.json({ success: true, message: 'Deal marked as completed.' });

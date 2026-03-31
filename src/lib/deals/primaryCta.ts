@@ -7,6 +7,7 @@ export type CanonicalDealStatus =
   | 'CONTENT_MAKING'
   | 'CONTENT_DELIVERED'
   | 'REVISION_REQUESTED'
+  | 'DISPUTED'
   | 'COMPLETED'
   | 'CANCELLED'
   | 'UNKNOWN';
@@ -23,6 +24,7 @@ export type DealPrimaryCtaAction =
   | 'review_content'
   | 'upload_revision'
   | 'view_summary'
+  | 'view_issue'
   | 'view_details'
   | 'none';
 
@@ -37,6 +39,7 @@ export interface DealPrimaryCta {
 const normalizeStatusText = (raw: unknown) =>
   String(raw || '')
     .trim()
+    .replace(/[\s-]+/g, '_')
     .toUpperCase()
     .replaceAll(' ', '_');
 
@@ -62,22 +65,6 @@ const hasTruthyKeyMatch = (sources: any[], pattern: RegExp) => {
 export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
   if (!deal) return 'UNKNOWN';
 
-  // Signature-driven override (prevents "signature required" when already signed).
-  const signatureSources = [
-    deal,
-    deal?.raw,
-    deal?.contract,
-    deal?.contract_data,
-    deal?.contract_metadata,
-    deal?.esign,
-    deal?.signature,
-    deal?.signatures,
-  ].filter((x) => x && typeof x === 'object');
-
-  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
-  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
-  if (creatorSigned && brandSigned) return 'FULLY_EXECUTED';
-
   const raw = normalizeStatusText(deal?.status ?? deal?.raw?.status);
   const lower = raw.toLowerCase();
 
@@ -85,9 +72,11 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   if (lower.includes('cancel')) return 'CANCELLED';
   if (lower === 'completed' || lower.includes('completed')) return 'COMPLETED';
+  if (lower.includes('dispute') || lower.includes('disputed')) return 'DISPUTED';
 
   // Revision requested: prefer explicit status, but also treat brand_approval_status as a signal.
   const approval = String(deal?.brand_approval_status || '').trim().toLowerCase();
+  if (approval === 'disputed') return 'DISPUTED';
   if (lower.includes('revision_requested') || lower.includes('changes_requested') || approval === 'changes_requested') {
     return 'REVISION_REQUESTED';
   }
@@ -97,7 +86,8 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
     lower.includes('content_delivered') ||
     lower.includes('revision_done') ||
     lower.includes('revision_submitted') ||
-    lower.includes('awaiting_review')
+    lower.includes('awaiting_review') ||
+    lower.includes('waiting_for_review')
   ) {
     return 'CONTENT_DELIVERED';
   }
@@ -123,6 +113,23 @@ export const getCanonicalDealStatus = (deal: any): CanonicalDealStatus => {
 
   if (lower.includes('fully_executed') || lower.includes('executed') || lower === 'signed') return 'FULLY_EXECUTED';
 
+  // Signature-driven override (prevents "signature required" when already signed).
+  // IMPORTANT: Only apply when we couldn't derive a later-stage status from `deal.status`.
+  const signatureSources = [
+    deal,
+    deal?.raw,
+    deal?.contract,
+    deal?.contract_data,
+    deal?.contract_metadata,
+    deal?.esign,
+    deal?.signature,
+    deal?.signatures,
+  ].filter((x) => x && typeof x === 'object');
+
+  const creatorSigned = hasTruthyKeyMatch(signatureSources, /(creator.*signed|signed.*creator|creator_signature|creator_esign|creator_signed_at)/i);
+  const brandSigned = hasTruthyKeyMatch(signatureSources, /(brand.*signed|signed.*brand|brand_signature|brand_esign|brand_signed_at)/i);
+  if (creatorSigned && brandSigned) return 'FULLY_EXECUTED';
+
   return 'UNKNOWN';
 };
 
@@ -144,6 +151,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
 
   // Brand
   if (role === 'brand') {
+    if (status === 'DISPUTED') {
+      return { status, label: 'View Issue', disabled: false, tone: 'view', action: 'view_issue' };
+    }
     if (status === 'CONTRACT_READY' || status === 'SENT') {
       // If the brand already signed, this is no longer an "action required" step for the brand.
       // The next step is waiting for the creator to sign.
@@ -193,6 +203,9 @@ export const getDealPrimaryCta = (params: { role: DealRole; deal: any }): DealPr
   }
   if (status === 'REVISION_REQUESTED') {
     return { status, label: 'Upload Revised Content', disabled: false, tone: 'action', action: 'upload_revision' };
+  }
+  if (status === 'DISPUTED') {
+    return { status, label: 'View Issue', disabled: false, tone: 'view', action: 'view_issue' };
   }
   if (status === 'COMPLETED') {
     return { status, label: 'View Summary', disabled: false, tone: 'view', action: 'view_summary' };

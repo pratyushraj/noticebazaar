@@ -3,26 +3,13 @@
  * Supports multiple analytics providers with fallback
  */
 
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    fbq?: (...args: any[]) => void;
-    posthog?: {
-      capture: (event: string, properties?: Record<string, any>) => void;
-    };
-    mixpanel?: {
-      track: (event: string, properties?: Record<string, any>) => void;
-    };
-  }
-}
-
 export interface AnalyticsEvent {
   event: string;
   category?: string;
   label?: string;
   value?: number;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 class Analytics {
@@ -40,7 +27,7 @@ class Analytics {
   /**
    * Track an event across all configured analytics providers
    */
-  track(event: string, properties?: Record<string, any>) {
+  track(event: string, properties?: Record<string, unknown>) {
     if (!this.enabled) {
       console.log('[Analytics]', event, properties);
       return;
@@ -75,10 +62,19 @@ class Analytics {
       }
     }
 
+    const analyticsWindow = window as Window & {
+      posthog?: {
+        capture: (eventName: string, props?: Record<string, unknown>) => void;
+      };
+      mixpanel?: {
+        track: (eventName: string, props?: Record<string, unknown>) => void;
+      };
+    };
+
     // PostHog
-    if (window.posthog) {
+    if (analyticsWindow.posthog) {
       try {
-        window.posthog.capture(event, {
+        analyticsWindow.posthog.capture(event, {
           ...properties,
           userId: this.userId,
         });
@@ -88,9 +84,9 @@ class Analytics {
     }
 
     // Mixpanel
-    if (window.mixpanel) {
+    if (analyticsWindow.mixpanel) {
       try {
-        window.mixpanel.track(event, {
+        analyticsWindow.mixpanel.track(event, {
           ...properties,
           distinct_id: this.userId,
         });
@@ -216,9 +212,7 @@ class Analytics {
     }
 
     try {
-      // Try to get token from Supabase client
-      const { createClient } = await import('@/integrations/supabase/client');
-      const supabase = createClient();
+      const { supabase } = await import('@/integrations/supabase/client');
       const { data: { session } } = await supabase.auth.getSession();
       return session?.access_token || null;
     } catch (error) {
@@ -255,4 +249,3 @@ export const analytics = new Analytics();
 if (typeof window !== 'undefined') {
   analytics.init();
 }
-

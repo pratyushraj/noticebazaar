@@ -798,14 +798,12 @@ const ContractProtectionDetails = () => {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button"
-                  type="button"
                   onClick={() => setShowLawyerRequestDialog(false)}
                   className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
-                <button type="button"
-                  type="submit"
+                <button type="submit"
                   disabled={createLawyerRequestMutation.isPending}
                   className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors disabled:opacity-50"
                 >

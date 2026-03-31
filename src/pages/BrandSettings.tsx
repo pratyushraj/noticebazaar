@@ -419,7 +419,6 @@ const BrandSettings = () => {
       <header className={cn('sticky top-0 z-20 border-b backdrop-blur-xl', isDark ? 'bg-[#061318]/92 border-white/10' : 'bg-white/90 border-slate-100')}>
         <div className="w-full md:max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
           <button type="button"
-            type="button"
             onClick={() => navigate('/brand-dashboard')}
             className={cn('w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
           >
@@ -430,7 +429,6 @@ const BrandSettings = () => {
             <p className={cn('text-[16px] font-black tracking-tight', textColor)}>Business control</p>
           </div>
           <button type="button"
-            type="button"
             onClick={handleLogout}
             className={cn('w-10 h-10 rounded-full border flex items-center justify-center active:scale-90 transition', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-700')}
           >
@@ -452,7 +450,6 @@ const BrandSettings = () => {
                   </AvatarFallback>
                 </Avatar>
                 <button type="button"
-                  type="button"
                   disabled={isUploadingLogo}
                   onClick={() => logoFileInputRef.current?.click()}
                   className={cn(
@@ -673,7 +670,7 @@ const BrandSettings = () => {
                 { label: 'Pending', value: metrics.isLoading ? '—' : String(metrics.actionRequired), icon: <AlertTriangle className="w-4 h-4" /> },
                 { label: 'Completed', value: metrics.isLoading ? '—' : String(metrics.completedDeals), icon: <ShieldCheck className="w-4 h-4" /> },
               ].map((i) => (
-                <button type="button" key={i.label} type="button" onClick={() => navigate('/brand-dashboard?tab=collabs')} className={cn('p-3 rounded-2xl border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                <button type="button" key={i.label} onClick={() => navigate('/brand-dashboard?tab=collabs')} className={cn('p-3 rounded-2xl border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
                   <div className={cn('w-9 h-9 rounded-2xl flex items-center justify-center mb-2', isDark ? 'bg-white/5 text-white/70' : 'bg-slate-50 text-slate-700')}>
                     {i.icon}
                   </div>
@@ -686,7 +683,7 @@ const BrandSettings = () => {
         </div>
 
         {/* Advanced */}
-        <button type="button" type="button" onClick={() => setShowAdvanced((s) => !s)} className={cn('w-full p-4 rounded-[24px] border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
+        <button type="button" onClick={() => setShowAdvanced((s) => !s)} className={cn('w-full p-4 rounded-[24px] border text-left active:scale-[0.99] transition', isDark ? 'bg-white/5 border-white/10' : 'bg-white/70 border-slate-200')}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-white/5 text-white/70' : 'bg-slate-50 text-slate-700')}>

@@ -24,6 +24,8 @@ import { estimateBarterValueRange, estimateReelBudgetRange, estimateReelRate, ge
 import { fetchInstagramPublicData } from '../services/instagramService.js';
 import { notifyCreatorOnCollabRequestCreated, sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
 import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brandAuthService.js';
+import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
+import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 
 const router = express.Router();
 
@@ -533,23 +535,46 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
         .eq('id', claimedLead.id);
 
       try {
+        await recordMarketplaceEvent(supabase, {
+          eventName: 'offer_received',
+          userId: creatorId,
+          creatorId,
+          requestId,
+          metadata: {
+            creator_id: creatorId,
+            request_id: requestId,
+            brand_name: claimedLead.brand_name,
+            collab_type: collabTypeForApi,
+          },
+        });
+
+        const creatorOfferNotification = getCreatorNotificationContent('offer_received', {
+          id: requestId,
+          status: 'OFFER_SENT',
+          creator_id: creatorId,
+          brand_email: claimedLead.brand_email || '',
+          brand_name: claimedLead.brand_name,
+          deal_type: collabTypeForApi || 'paid',
+          deal_amount: 0,
+          current_state: 'OFFER_SENT',
+        });
         await supabase.from('notifications').insert({
           user_id: creatorId,
-          type: 'deal',
-          category: 'collab_request',
-          title: `New collaboration request from ${claimedLead.brand_name}`,
-          message: 'A request submitted before your onboarding is now attached to your account.',
+          type: creatorOfferNotification.type,
+          category: creatorOfferNotification.category,
+          title: creatorOfferNotification.title,
+          message: creatorOfferNotification.message,
           data: {
             collab_request_id: requestId,
             brand_name: claimedLead.brand_name,
             collab_type: collabTypeForApi,
             source: 'attached_lead',
           },
-          link: `${frontendUrl}/creator-dashboard`,
-          priority: 'high',
-          icon: 'collab_request',
-          action_label: 'Review Request',
-          action_link: `${frontendUrl}/creator-dashboard`,
+          link: creatorOfferNotification.link,
+          priority: creatorOfferNotification.priority,
+          icon: creatorOfferNotification.type,
+          action_label: creatorOfferNotification.actionLabel,
+          action_link: creatorOfferNotification.actionLink,
         });
       } catch (notificationError) {
         console.warn('[CollabRequests] Failed to create notification for attached lead (non-fatal):', notificationError);
@@ -1006,6 +1031,7 @@ router.get('/:username', async (req: Request, res: Response) => {
           collab_response_hours_override,
           collab_cancellations_percent_override,
           collab_region_label,
+          collab_intro_line,
           collab_audience_fit_note,
           collab_recent_activity_note,
           collab_audience_relevance_note,
@@ -1015,6 +1041,11 @@ router.get('/:username', async (req: Request, res: Response) => {
           collab_cta_trust_note,
           collab_cta_dm_note,
           collab_cta_platform_note,
+          collab_show_packages,
+          collab_show_trust_signals,
+          collab_show_audience_snapshot,
+          collab_show_past_work,
+          collab_past_work_items,
           learned_avg_rate_reel,
           learned_deal_count
       `)
@@ -1029,7 +1060,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       // Fetch optional trust arrays separately so older schemas don't break the main extended select.
       const { data: trustArraysProfile } = await supabase
         .from('profiles')
-        .select('past_brands, recent_campaign_types')
+        .select('past_brands, recent_campaign_types, collab_past_work_items')
         .eq('id', profile.id)
         .maybeSingle();
 
@@ -1040,6 +1071,9 @@ router.get('/:username', async (req: Request, res: Response) => {
         }
         if (Array.isArray((trustArraysProfile as any).recent_campaign_types)) {
           nextProfile.recent_campaign_types = (trustArraysProfile as any).recent_campaign_types;
+        }
+        if (Array.isArray((trustArraysProfile as any).collab_past_work_items)) {
+          nextProfile.collab_past_work_items = (trustArraysProfile as any).collab_past_work_items;
         }
         profile = nextProfile as typeof profile;
       }
@@ -1409,6 +1443,7 @@ router.get('/:username', async (req: Request, res: Response) => {
         collab_response_hours_override: (profile as any).collab_response_hours_override ?? null,
         collab_cancellations_percent_override: (profile as any).collab_cancellations_percent_override ?? null,
         collab_region_label: (profile as any).collab_region_label || null,
+        collab_intro_line: (profile as any).collab_intro_line || null,
         collab_audience_fit_note: (profile as any).collab_audience_fit_note || null,
         collab_recent_activity_note: (profile as any).collab_recent_activity_note || null,
         collab_audience_relevance_note: (profile as any).collab_audience_relevance_note || null,
@@ -1418,6 +1453,11 @@ router.get('/:username', async (req: Request, res: Response) => {
         collab_cta_trust_note: (profile as any).collab_cta_trust_note || null,
         collab_cta_dm_note: (profile as any).collab_cta_dm_note || null,
         collab_cta_platform_note: (profile as any).collab_cta_platform_note || null,
+        collab_show_packages: (profile as any).collab_show_packages ?? true,
+        collab_show_trust_signals: (profile as any).collab_show_trust_signals ?? true,
+        collab_show_audience_snapshot: (profile as any).collab_show_audience_snapshot ?? true,
+        collab_show_past_work: (profile as any).collab_show_past_work ?? true,
+        collab_past_work_items: Array.isArray((profile as any).collab_past_work_items) ? (profile as any).collab_past_work_items : [],
         past_brands: Array.isArray((profile as any).past_brands) ? (profile as any).past_brands : [],
         recent_campaign_types: Array.isArray((profile as any).recent_campaign_types) ? (profile as any).recent_campaign_types : [],
         avg_reel_views: (() => {
@@ -2136,26 +2176,48 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
       // ── In-app Notification ──────────────────────────────────────────────────
       try {
-        const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-        const dashboardLink = `${frontendUrl}/creator-dashboard`;
+        await recordMarketplaceEvent(supabase, {
+          eventName: 'offer_received',
+          userId: creator.id,
+          creatorId: creator.id,
+          requestId: collabRequest.id,
+          metadata: {
+            creator_id: creator.id,
+            request_id: collabRequest.id,
+            brand_name,
+            collab_type: collabTypeForApi || collabTypeForDb,
+            deal_value: Number(exact_budget || barter_value || 0),
+          },
+        });
+
+        const creatorOfferNotification = getCreatorNotificationContent('offer_received', {
+          id: collabRequest.id,
+          status: 'OFFER_SENT',
+          creator_id: creator.id,
+          brand_email: brand_email || '',
+          brand_name,
+          deal_type: collabTypeForApi || collabTypeForDb || 'paid',
+          deal_amount: Number(exact_budget || barter_value || 0),
+          current_state: 'OFFER_SENT',
+        });
         const { error: notificationError } = await supabase
           .from('notifications')
           .insert({
             user_id: creator.id,
-            type: 'deal',
-            category: 'collab_request',
-            title: `New collaboration request from ${brand_name}`,
-            message: `You have a new collaboration request. Review it in your dashboard.`,
+            type: creatorOfferNotification.type,
+            category: creatorOfferNotification.category,
+            title: creatorOfferNotification.title,
+            message: creatorOfferNotification.message,
             data: {
               collab_request_id: collabRequest.id,
               brand_name: brand_name,
               collab_type: collabTypeForApi || collabTypeForDb,
             },
-            link: dashboardLink,
-            priority: 'high',
-            icon: 'collab_request',
-            action_label: 'Review Request',
-            action_link: dashboardLink,
+            link: creatorOfferNotification.link,
+            priority: creatorOfferNotification.priority,
+            icon: creatorOfferNotification.type,
+            action_label: creatorOfferNotification.actionLabel,
+            action_link: creatorOfferNotification.actionLink,
           });
         if (notificationError) {
           console.warn('[CollabRequests] Failed to create notification entry (non-fatal):', notificationError.message);
@@ -2596,6 +2658,36 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       isBarter,
     }).catch((pushError) => {
       console.error('[CollabRequests] Accept confirm: brand push failed (non-fatal):', pushError);
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'offer_accepted',
+      userId,
+      creatorId: userId,
+      dealId: deal.id,
+      requestId: id,
+      metadata: {
+        creator_id: userId,
+        deal_id: deal.id,
+        request_id: id,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+        deal_value: dealAmount,
+      },
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'deal_started',
+      userId,
+      creatorId: userId,
+      dealId: deal.id,
+      requestId: id,
+      metadata: {
+        creator_id: userId,
+        deal_id: deal.id,
+        request_id: id,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+        deal_value: dealAmount,
+      },
     });
 
     if (isBarter) {

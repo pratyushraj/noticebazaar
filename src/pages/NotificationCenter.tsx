@@ -39,8 +39,10 @@ const NotificationCenter = () => {
     deleteNotification,
     isMarkingAllAsRead,
   } = useNotifications({
-    filter: filter === 'unread' ? { read: false } : filter === 'read' ? { read: true } : {},
-    type: typeFilter !== 'all' ? typeFilter : undefined,
+    filter: {
+      ...(filter === 'unread' ? { read: false } : filter === 'read' ? { read: true } : {}),
+      ...(typeFilter !== 'all' ? { type: typeFilter } : {}),
+    },
   });
 
   // Filter notifications by search query
@@ -108,7 +110,7 @@ const NotificationCenter = () => {
     }
 
     // Handle collaboration request notifications specially
-    if (notification.category === 'collab_request' && notification.data?.collab_request_id) {
+    if (notification.data?.collab_request_id) {
       // Navigate to creator dashboard and scroll to collab requests section
       navigate('/creator-dashboard');
       // Scroll to collab requests section after a brief delay to allow page to render
@@ -238,7 +240,7 @@ const NotificationCenter = () => {
               { id: 'read', label: 'Read' },
             ]}
             value={filter}
-            onChange={(value) => setFilter(value as any)}
+            onChange={(value) => setFilter(value as 'all' | 'unread' | 'read')}
             className="flex-shrink-0"
           />
         </div>
@@ -383,4 +385,3 @@ const NotificationCenter = () => {
 };
 
 export default NotificationCenter;
-

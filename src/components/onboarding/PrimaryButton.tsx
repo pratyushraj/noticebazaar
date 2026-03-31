@@ -31,8 +31,7 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   type = 'button',
 }) => {
   return (
-    <button type="button"
-      type={type}
+    <button type={type}
       onClick={onClick}
       disabled={disabled || isLoading}
       className={cn(

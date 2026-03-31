@@ -1,760 +1,252 @@
-import { useSupabaseQuery } from './useSupabaseQuery';
-import { useSupabaseMutation } from './useSupabaseMutation';
+import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useCallback } from 'react';
+import { useSupabaseQuery } from './useSupabaseQuery';
+import type { PartnerTier } from '@/lib/utils/partner';
 
-export interface ReferralLink {
-  id: string;
-  user_id: string;
+export interface ReferralLinkRecord {
   code: string;
-  created_at: string;
+  url?: string | null;
 }
 
-export interface Referral {
-  id: string;
-  referrer_id: string;
-  referred_user_id: string;
-  subscribed: boolean;
-  first_payment_at: string | null;
-  created_at: string;
-}
-
-export interface PartnerEarning {
-  id: string;
-  user_id: string;
-  amount: number;
-  type: 'cash' | 'voucher' | 'credit';
-  source: 'referral' | 'milestone';
-  description: string | null;
-  tds_applied: boolean;
-  tds_amount: number;
-  net_amount: number;
-  referral_id: string | null;
-  milestone_id: string | null;
-  created_at: string;
-}
-
-export interface PartnerStats {
-  user_id: string;
-  total_referrals: number;
-  active_referrals: number;
+export interface PartnerStatsRecord {
   total_earnings: number;
-  tier: 'starter' | 'partner' | 'growth' | 'elite' | 'pro';
-  next_payout_date: string | null;
+  this_month_earnings: number;
+  active_referrals: number;
+  tier: PartnerTier;
+  total_referrals: number;
   free_months_credit: number;
-  updated_at: string;
-  // New fields
   total_clicks?: number;
   total_signups?: number;
   total_paid_users?: number;
   current_month_earnings?: number;
-  partner_rank?: number | null;
-  next_reward_referrals?: number | null;
-  created_at?: string;
+  partner_rank?: number;
+  next_reward_referrals?: number;
+  next_payout_date?: string | null;
+  updated_at?: string;
 }
 
-export interface PartnerReward {
+export interface PartnerEarningRecord {
   id: string;
-  user_id: string;
+  created_at: string;
+  amount: number;
+  net_amount: number;
+  type: 'cash' | 'voucher' | 'free_month';
+  status?: string;
+}
+
+export interface PartnerMilestoneRecord {
+  id?: string;
+  milestone_name: string;
+  reward_value: number;
+  reward_type: 'voucher' | 'cash' | 'free_month';
+  achieved_at?: string | null;
+  brand?: string | null;
+}
+
+export interface PartnerLeaderboardRecord {
+  name: string;
+  referrals: number;
+  earnings: number;
+  tier: PartnerTier;
+  avatar?: string | null;
+  isCurrentUser?: boolean;
+}
+
+export interface PartnerPerformanceRecord {
+  total_clicks: number;
+  total_signups: number;
+  total_paid_users: number;
+}
+
+export interface PartnerRankRecord {
+  rank: number;
+  totalPartners: number;
+}
+
+export interface RewardHistoryRecord {
+  id: string;
   reward_type: 'cash' | 'voucher' | 'free_month';
   amount: number;
-  status: 'paid' | 'unlocked' | 'locked';
-  description: string | null;
+  status: string;
+  description: string;
   created_at: string;
 }
 
-export interface ReferralEvent {
-  id: string;
-  user_id: string;
-  event_type: 'click' | 'signup' | 'paid';
-  referral_id: string | null;
-  metadata: any;
-  timestamp: string;
-}
+const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
 
-export interface PartnerMilestone {
-  id: string;
-  user_id: string;
-  milestone_name: string;
-  reward_type: 'voucher' | 'credit';
-  reward_value: number;
-  achieved_at: string;
-}
-
-/**
- * Get referral link for current user
- */
-export const useReferralLink = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return null;
-
-    try {
-      // First try to get existing link
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data: existingLink, error: fetchError } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('referral_links') as any)
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      // Check if error is 404 (table doesn't exist)
-      if (fetchError && (fetchError as any).status === 404) {
-        // Table doesn't exist yet - migrations not run
-        return null;
-      }
-
-      if (!fetchError && existingLink) {
-        return existingLink as ReferralLink;
-      }
-
-      // If no link exists, create one via function
-      // @ts-expect-error - Function types will be updated after migration
-      const { data: code, error: createError } = await (
-        // @ts-expect-error - Function doesn't exist in types yet
-        supabase.rpc('get_or_create_referral_link', { user_uuid: userId }) as any
-      );
-
-      if (createError) {
-        const errorCode = (createError as any).code;
-        const errorStatus = (createError as any).status || (createError as any).statusCode;
-        const errorMessage = String((createError as any).message || (createError as any).details || '').toLowerCase();
-        const errorDetails = String((createError as any).details || '').toLowerCase();
-        
-        // For PGRST202/404, return null instead of throwing (migrations not run)
-        const isMigrationError = 
-          errorCode === 'PGRST202' || 
-          errorCode === 'PGRST116' ||
-          errorCode === '42P01' ||
-          errorStatus === 404 ||
-          errorMessage.includes('not found') ||
-          errorMessage.includes('schema cache') ||
-          errorMessage.includes('could not find') ||
-          errorMessage.includes('searched for the function') ||
-          errorMessage.includes('no matches were found') ||
-          errorDetails.includes('not found') ||
-          errorDetails.includes('schema cache') ||
-          errorDetails.includes('could not find');
-        
-        if (isMigrationError) {
-          return null; // Migrations not run - silently return
-        }
-        // Only log and throw unexpected errors (not migration-related)
-        console.error('Error creating referral link:', createError);
-        throw createError;
-      }
-
-      // Fetch the created link
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data: newLink, error: newLinkError } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('referral_links') as any)
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      if (newLinkError) {
-        if ((newLinkError as any).status === 404) {
-          return null; // Table doesn't exist
-        }
-        throw newLinkError;
-      }
-
-      return newLink as ReferralLink;
-    } catch (err: any) {
-      // Handle 404/PGRST202 errors gracefully (table/function doesn't exist)
-      if (err?.status === 404 || 
-          err?.code === 'PGRST116' || 
-          err?.code === 'PGRST202' ||
-          err?.code === '42P01' ||
-          err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache')) {
-        return null; // Table/function doesn't exist yet
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<ReferralLink | null, Error>(
-    ['referralLink', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch referral link',
-    }
-  );
+const fetchPartnerStats = async (userId?: string): Promise<PartnerStatsRecord | null> => {
+  if (!userId) return null;
+  const { data, error } = await (supabase
+    .from('partner_stats') as unknown as {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          maybeSingle: () => Promise<{ data: PartnerStatsRecord | null; error: { message?: string } | null }>;
+        };
+      };
+    })
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message || 'Failed to load partner stats');
+  return data;
 };
 
-/**
- * Get partner stats for current user
- */
-export const usePartnerStats = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return null;
-
-    try {
-      // @ts-expect-error - Table types will be updated after migration
-      const { data, error } = await (supabase
-        // @ts-expect-error - Table types will be updated after migration
-        .from('partner_stats') as any)
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle(); // Use maybeSingle() instead of single() to handle missing rows gracefully
-
-      // Check if table doesn't exist (404, 406) or RLS blocking
-      if (error && (
-        (error as any).status === 404 || 
-        (error as any).status === 406 ||
-        error.code === 'PGRST116' || 
-        error.code === '42P01' ||
-        error.code === 'PGRST301' // RLS policy violation
-      )) {
-        return null; // Table doesn't exist yet or access denied - migrations not run
-      }
-
-      if (error) {
-        // If stats don't exist, initialize them
-        if (error.code === 'PGRST116') {
-          // @ts-expect-error - Function doesn't exist in types yet
-          await (supabase.rpc('initialize_partner_stats', { user_uuid: userId }) as any);
-          // Retry fetch
-          // @ts-expect-error - Table doesn't exist in types yet
-          const { data: newData, error: retryError } = await (supabase
-            // @ts-expect-error - Table doesn't exist in types yet
-            .from('partner_stats') as any)
-            .select('*')
-            .eq('user_id', userId)
-            .single();
-
-          if (retryError) {
-            if ((retryError as any).status === 404) {
-              return null; // Table still doesn't exist
-            }
-            throw retryError;
-          }
-          return newData as PartnerStats;
-        }
-        throw error;
-      }
-
-      return data as PartnerStats;
-    } catch (err: any) {
-      // Handle 404/406/PGRST202 errors gracefully (table/function doesn't exist or RLS blocking)
-      if (err?.status === 404 || 
-          err?.status === 406 ||
-          err?.code === 'PGRST116' || 
-          err?.code === 'PGRST202' ||
-          err?.code === 'PGRST301' ||
-          err?.code === '42P01' ||
-          err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache') ||
-          err?.message?.includes('permission denied')) {
-        return null; // Table/function doesn't exist yet or access denied
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<PartnerStats | null, Error>(
-    ['partnerStats', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch partner stats',
-    }
-  );
+const fetchPartnerEarnings = async (userId?: string, limit = 20): Promise<PartnerEarningRecord[]> => {
+  if (!userId) return [];
+  const { data, error } = await (supabase
+    .from('partner_earnings') as unknown as {
+      select: (columns: string) => {
+        eq: (column: string, value: string) => {
+          order: (column: string, options: { ascending: boolean }) => {
+            limit: (count: number) => Promise<{ data: PartnerEarningRecord[] | null; error: { message?: string } | null }>;
+          };
+        };
+      };
+    })
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message || 'Failed to load partner earnings');
+  return data || [];
 };
 
-/**
- * Get partner earnings
- */
-export const usePartnerEarnings = (userId: string | undefined, limit = 50) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return [];
-
-    try {
-      // @ts-expect-error - Table doesn't exist in types yet
+export const useReferralLink = (userId?: string) =>
+  useSupabaseQuery<ReferralLinkRecord | null>(
+    ['partner-program', 'referral-link', userId],
+    async () => {
+      if (!userId) return null;
       const { data, error } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('partner_earnings') as any)
-        .select('*')
+        .from('referral_links') as unknown as {
+          select: (columns: string) => {
+            eq: (column: string, value: string) => {
+              maybeSingle: () => Promise<{ data: ReferralLinkRecord | null; error: { message?: string } | null }>;
+            };
+          };
+        })
+        .select('code, url')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      // Check if table doesn't exist (404, 406) or RLS blocking
-      if (error && (
-        (error as any).status === 404 || 
-        (error as any).status === 406 ||
-        error.code === 'PGRST116' || 
-        error.code === '42P01' ||
-        error.code === 'PGRST301'
-      )) {
-        return []; // Table doesn't exist yet or access denied - return empty array
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      return (data || []) as PartnerEarning[];
-    } catch (err: any) {
-      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
-      if (err?.status === 404 || 
-          err?.status === 406 ||
-          err?.code === 'PGRST116' || 
-          err?.code === 'PGRST202' ||
-          err?.code === 'PGRST301' ||
-          err?.code === '42P01' ||
-          err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache') ||
-          err?.message?.includes('permission denied')) {
-        return []; // Table doesn't exist yet or access denied
-      }
-      throw err;
-    }
-  }, [userId, limit]);
-
-  return useSupabaseQuery<PartnerEarning[], Error>(
-    ['partnerEarnings', userId, limit],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch earnings',
-    }
+        .maybeSingle();
+      if (error) throw new Error(error.message || 'Failed to load referral link');
+      return data;
+    },
+    { enabled: !!userId }
   );
-};
 
-/**
- * Get partner milestones
- */
-export const usePartnerMilestones = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return [];
+export const usePartnerStats = (userId?: string) =>
+  useSupabaseQuery<PartnerStatsRecord | null>(
+    ['partner-program', 'stats', userId],
+    () => fetchPartnerStats(userId),
+    { enabled: !!userId }
+  );
 
-    try {
-      // @ts-expect-error - Table doesn't exist in types yet
+export const usePartnerEarnings = (userId?: string, limit = 20) =>
+  useSupabaseQuery<PartnerEarningRecord[]>(
+    ['partner-program', 'earnings', userId, limit],
+    () => fetchPartnerEarnings(userId, limit),
+    { enabled: !!userId }
+  );
+
+export const usePartnerMilestones = (userId?: string) =>
+  useSupabaseQuery<PartnerMilestoneRecord[]>(
+    ['partner-program', 'milestones', userId],
+    async () => {
+      if (!userId) return [];
       const { data, error } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('partner_milestones') as any)
+        .from('partner_milestones') as unknown as {
+          select: (columns: string) => {
+            eq: (column: string, value: string) => {
+              order: (column: string, options: { ascending: boolean }) => Promise<{ data: PartnerMilestoneRecord[] | null; error: { message?: string } | null }>;
+            };
+          };
+        })
         .select('*')
         .eq('user_id', userId)
         .order('achieved_at', { ascending: false });
-
-      // Check if table doesn't exist (404, 406) or RLS blocking
-      if (error && (
-        (error as any).status === 404 || 
-        (error as any).status === 406 ||
-        error.code === 'PGRST116' || 
-        error.code === '42P01' ||
-        error.code === 'PGRST301'
-      )) {
-        return []; // Table doesn't exist yet or access denied - return empty array
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      return (data || []) as PartnerMilestone[];
-    } catch (err: any) {
-      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
-      if (err?.status === 404 || 
-          err?.status === 406 ||
-          err?.code === 'PGRST116' || 
-          err?.code === 'PGRST202' ||
-          err?.code === 'PGRST301' ||
-          err?.code === '42P01' ||
-          err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache') ||
-          err?.message?.includes('permission denied')) {
-        return []; // Table doesn't exist yet or access denied
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<PartnerMilestone[], Error>(
-    ['partnerMilestones', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch milestones',
-    }
-  );
-};
-
-/**
- * Get referrals list
- */
-export const useReferrals = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return [];
-
-    try {
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data, error } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('referrals') as any)
-        .select('*')
-        .eq('referrer_id', userId)
-        .order('created_at', { ascending: false });
-
-      // Check if table doesn't exist (404, 406) or RLS blocking
-      if (error && (
-        (error as any).status === 404 || 
-        (error as any).status === 406 ||
-        error.code === 'PGRST116' || 
-        error.code === '42P01' ||
-        error.code === 'PGRST301'
-      )) {
-        return []; // Table doesn't exist yet or access denied - return empty array
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      return (data || []) as Referral[];
-    } catch (err: any) {
-      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
-      if (err?.status === 404 || 
-          err?.status === 406 ||
-          err?.code === 'PGRST116' || 
-          err?.code === 'PGRST202' ||
-          err?.code === 'PGRST301' ||
-          err?.code === '42P01' ||
-          err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache') ||
-          err?.message?.includes('permission denied')) {
-        return []; // Table doesn't exist yet or access denied
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<Referral[], Error>(
-    ['referrals', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch referrals',
-    }
-  );
-};
-
-/**
- * Get leaderboard (top partners)
- */
-export const usePartnerLeaderboard = (limit = 10) => {
-  const queryFn = useCallback(async () => {
-    try {
-      // @ts-expect-error - Table types will be updated after migration
-      const { data, error } = await (supabase
-        // @ts-expect-error - Table types will be updated after migration
-        .from('partner_stats') as any)
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name,
-            avatar_url
-          )
-        `)
-        .order('total_earnings', { ascending: false })
-        .limit(limit);
-
-      // Check if table doesn't exist (404, 406) or RLS blocking
-      if (error && (
-        (error as any).status === 404 || 
-        (error as any).status === 406 ||
-        error.code === 'PGRST116' || 
-        error.code === '42P01' ||
-        error.code === 'PGRST301'
-      )) {
-        return []; // Table doesn't exist yet or access denied - return empty array
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      return (data || []) as (PartnerStats & {
-        profiles: { first_name: string | null; last_name: string | null; avatar_url: string | null } | null;
-      })[];
-    } catch (err: any) {
-      // Handle 404/406/PGRST202 errors gracefully (table doesn't exist or RLS blocking)
-      if (err?.status === 404 || 
-          err?.status === 406 ||
-          err?.code === 'PGRST116' || 
-          err?.code === 'PGRST202' ||
-          err?.code === 'PGRST301' ||
-          err?.code === '42P01' ||
-          err?.message?.includes('not found') ||
-          err?.message?.includes('schema cache') ||
-          err?.message?.includes('permission denied')) {
-        return []; // Table doesn't exist yet or access denied
-      }
-      throw err;
-    }
-  }, [limit]);
-
-  return useSupabaseQuery<
-    (PartnerStats & {
-      profiles: { first_name: string | null; last_name: string | null; avatar_url: string | null } | null;
-    })[],
-    Error
-  >(['partnerLeaderboard', limit], queryFn, {
-    errorMessage: 'Failed to fetch leaderboard',
-  });
-};
-
-/**
- * Refresh partner stats
- */
-export const useRefreshPartnerStats = () => {
-    return useSupabaseMutation<void, Error, string>(
-      async (userId) => {
-        // Try new complete refresh function first, fallback to old one
-        // @ts-expect-error - Function doesn't exist in types yet
-        let { error } = await (supabase.rpc('refresh_partner_stats_complete', {
-          p_user_id: userId,
-        }) as any);
-
-        // If new function doesn't exist, try old one
-        if (error && (error.code === 'PGRST202' || (error as any).status === 404)) {
-          // @ts-expect-error - Function doesn't exist in types yet
-          const oldResult = await (supabase.rpc('refresh_partner_stats', {
-            p_user_id: userId,
-          }) as any);
-          error = oldResult.error;
-        }
-
-      if (error) {
-        // Handle function not found gracefully
-        if (error.code === 'PGRST202' || 
-            error.code === 'PGRST116' ||
-            (error as any).status === 404 ||
-            error.message?.includes('not found') ||
-            error.message?.includes('schema cache')) {
-          // Function doesn't exist yet - migrations not run
-          return; // Silently return without error
-        }
-        throw error;
-      }
+      if (error) throw new Error(error.message || 'Failed to load partner milestones');
+      return data || [];
     },
-    {
-      successMessage: 'Stats refreshed successfully',
-      errorMessage: 'Failed to refresh stats',
+    { enabled: !!userId }
+  );
+
+export const usePartnerLeaderboard = (limit = 10) =>
+  useSupabaseQuery<PartnerLeaderboardRecord[]>(
+    ['partner-program', 'leaderboard', limit],
+    async () => {
+      const { data, error } = await (supabase.rpc('get_partner_leaderboard', { limit_count: limit }) as unknown as Promise<{
+        data: PartnerLeaderboardRecord[] | null;
+        error: { message?: string } | null;
+      }>);
+      if (error) throw new Error(error.message || 'Failed to load leaderboard');
+      return data || [];
     }
   );
-};
 
-/**
- * Get partner performance metrics (clicks, signups, paid users)
- */
-export const usePartnerPerformance = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return null;
-
-    try {
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data, error } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('partner_stats') as any)
-        .select('total_clicks, total_signups, total_paid_users')
-        .eq('user_id', userId)
-        .single();
-
-      // Check if table doesn't exist (404)
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return null;
-      }
-
-      if (error) {
-        throw error;
-      }
-
+export const usePartnerPerformance = (userId?: string) =>
+  useSupabaseQuery<PartnerPerformanceRecord | null>(
+    ['partner-program', 'performance', userId],
+    async () => {
+      const stats = await fetchPartnerStats(userId);
+      if (!stats) return null;
       return {
-        total_clicks: data?.total_clicks || 0,
-        total_signups: data?.total_signups || 0,
-        total_paid_users: data?.total_paid_users || 0,
+        total_clicks: stats.total_clicks || 0,
+        total_signups: stats.total_signups || 0,
+        total_paid_users: stats.total_paid_users || 0,
       };
-    } catch (err: any) {
-      if (err?.status === 404 || err?.code === 'PGRST116' || err?.code === 'PGRST202' || err?.code === '42P01') {
-        return null;
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<{ total_clicks: number; total_signups: number; total_paid_users: number } | null, Error>(
-    ['partnerPerformance', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch performance metrics',
-    }
+    },
+    { enabled: !!userId }
   );
-};
 
-/**
- * Get partner rank and total partners count
- */
-export const usePartnerRank = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return null;
-
-    try {
-      // Get user's rank
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data: statsData, error: statsError } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('partner_stats') as any)
-        .select('partner_rank')
-        .eq('user_id', userId)
-        .single();
-
-      if (statsError && ((statsError as any).status === 404 || statsError.code === 'PGRST116' || statsError.code === '42P01')) {
-        return null;
-      }
-
-      // Get total partners count
-      // @ts-expect-error - Function doesn't exist in types yet
-      const { data: totalCount, error: countError } = await (supabase.rpc('get_total_partners') as any);
-
-      if (countError && ((countError as any).status === 404 || countError.code === 'PGRST202')) {
-        // Fallback: count from partner_stats
-        // @ts-expect-error - Table doesn't exist in types yet
-        const { count } = await (supabase
-          // @ts-expect-error - Table doesn't exist in types yet
-          .from('partner_stats') as any)
-          .select('*', { count: 'exact', head: true });
-
-        return {
-          rank: statsData?.partner_rank || null,
-          totalPartners: count || 0,
-        };
-      }
-
+export const usePartnerRank = (userId?: string) =>
+  useSupabaseQuery<PartnerRankRecord | null>(
+    ['partner-program', 'rank', userId],
+    async () => {
+      const stats = await fetchPartnerStats(userId);
+      if (!stats) return null;
       return {
-        rank: statsData?.partner_rank || null,
-        totalPartners: totalCount || 0,
+        rank: stats.partner_rank || 0,
+        totalPartners: 0,
       };
-    } catch (err: any) {
-      if (err?.status === 404 || err?.code === 'PGRST116' || err?.code === 'PGRST202' || err?.code === '42P01') {
-        return null;
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<{ rank: number | null; totalPartners: number } | null, Error>(
-    ['partnerRank', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch partner rank',
-    }
+    },
+    { enabled: !!userId }
   );
-};
 
-/**
- * Get projected monthly earnings
- */
-export const useProjectedEarnings = (userId: string | undefined) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return null;
-
-    try {
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data, error } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('partner_stats') as any)
-        .select('current_month_earnings')
-        .eq('user_id', userId)
-        .single();
-
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return null;
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      const currentMonthEarnings = data?.current_month_earnings || 0;
-      const now = new Date();
-      const daysPassed = now.getDate();
-      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-
-      const projected = daysPassed > 0 
-        ? (currentMonthEarnings / daysPassed) * daysInMonth
-        : currentMonthEarnings;
-
-      // Round to nearest ₹10
-      const projectedRounded = Math.round(projected / 10) * 10;
-
-      return projectedRounded;
-    } catch (err: any) {
-      if (err?.status === 404 || err?.code === 'PGRST116' || err?.code === 'PGRST202' || err?.code === '42P01') {
-        return null;
-      }
-      throw err;
-    }
-  }, [userId]);
-
-  return useSupabaseQuery<number | null, Error>(
-    ['projectedEarnings', userId],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to calculate projected earnings',
-    }
+export const useProjectedEarnings = (userId?: string) =>
+  useSupabaseQuery<number | null>(
+    ['partner-program', 'projected-earnings', userId],
+    async () => {
+      const stats = await fetchPartnerStats(userId);
+      return stats?.current_month_earnings ?? stats?.this_month_earnings ?? null;
+    },
+    { enabled: !!userId }
   );
-};
 
-/**
- * Get reward history
- */
-export const useRewardHistory = (userId: string | undefined, limit = 50) => {
-  const queryFn = useCallback(async () => {
-    if (!userId) return [];
-
-    try {
-      // @ts-expect-error - Table doesn't exist in types yet
-      const { data, error } = await (supabase
-        // @ts-expect-error - Table doesn't exist in types yet
-        .from('partner_rewards') as any)
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (error && ((error as any).status === 404 || error.code === 'PGRST116' || error.code === '42P01')) {
-        return [];
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      return (data || []) as PartnerReward[];
-    } catch (err: any) {
-      if (err?.status === 404 || err?.code === 'PGRST116' || err?.code === 'PGRST202' || err?.code === '42P01') {
-        return [];
-      }
-      throw err;
-    }
-  }, [userId, limit]);
-
-  return useSupabaseQuery<PartnerReward[], Error>(
-    ['rewardHistory', userId, limit],
-    queryFn,
-    {
-      enabled: !!userId,
-      errorMessage: 'Failed to fetch reward history',
-    }
+export const useRewardHistory = (userId?: string, limit = 20) =>
+  useSupabaseQuery<RewardHistoryRecord[]>(
+    ['partner-program', 'reward-history', userId, limit],
+    async () => {
+      const earnings = await fetchPartnerEarnings(userId, limit);
+      return asArray<PartnerEarningRecord>(earnings).map((entry) => ({
+        id: entry.id,
+        reward_type: entry.type,
+        amount: entry.type === 'free_month' ? 1 : entry.net_amount || entry.amount,
+        status: entry.status || 'paid',
+        description: entry.type === 'voucher' ? 'Voucher reward' : entry.type === 'free_month' ? 'Free month credit' : 'Commission payout',
+        created_at: entry.created_at,
+      }));
+    },
+    { enabled: !!userId }
   );
-};
 
+export const useRefreshPartnerStats = () =>
+  useMutation({
+    mutationFn: async (userId?: string) => {
+      if (!userId) return null;
+      const { data, error } = await (supabase.rpc('refresh_partner_stats', { user_id: userId }) as unknown as Promise<{
+        data: unknown;
+        error: { message?: string } | null;
+      }>);
+      if (error) throw new Error(error.message || 'Failed to refresh partner stats');
+      return data;
+    },
+  });

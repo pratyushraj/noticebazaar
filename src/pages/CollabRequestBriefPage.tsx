@@ -159,7 +159,7 @@ const CollabRequestBriefPage = () => {
         setRequest(data as any);
       } catch (err: any) {
         if (cancelled) return;
-        setLoadError(err?.message || 'Failed to load offer brief');
+        setLoadError(err?.message || 'Failed to load offer details');
         setRequest(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -171,6 +171,14 @@ const CollabRequestBriefPage = () => {
     };
   }, [effectiveRequestId, profile?.id, requestFromState]);
 
+  useEffect(() => {
+    if (!request?.id || !profile?.id) return;
+    void trackEvent('offer_opened', {
+      creator_id: profile.id,
+      request_id: request.id,
+    });
+  }, [request?.id, profile?.id]);
+
   if (!effectiveRequestId) {
     navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
     return null;
@@ -179,7 +187,7 @@ const CollabRequestBriefPage = () => {
   if (loading) {
     return (
       <CreatorNavigationWrapper
-        title="Full brief"
+        title="Offer details"
         subtitle="Loading offer…"
         compactHeader
         showBackButton
@@ -199,7 +207,7 @@ const CollabRequestBriefPage = () => {
   if (loadError || !request) {
     return (
       <CreatorNavigationWrapper
-        title="Full brief"
+        title="Offer details"
         subtitle="Offer not available"
         compactHeader
         showBackButton
@@ -281,6 +289,16 @@ const CollabRequestBriefPage = () => {
         creator_id: profile?.id,
         collab_type: request.collab_type || 'paid',
       });
+      trackEvent('offer_accepted', {
+        deal_id: data?.deal?.id,
+        creator_id: profile?.id,
+        request_id: effectiveRequestId,
+      });
+      trackEvent('deal_started', {
+        deal_id: data?.deal?.id,
+        creator_id: profile?.id,
+        request_id: effectiveRequestId,
+      });
 
       toast.success(data?.needs_delivery_details ? 'Accepted — add delivery details to proceed' : 'Accepted — deal created');
       navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
@@ -328,7 +346,7 @@ const CollabRequestBriefPage = () => {
 
   return (
     <CreatorNavigationWrapper
-      title="Full brief"
+      title="Offer details"
       subtitle={subtitle}
       compactHeader
       showBackButton
@@ -428,7 +446,7 @@ const CollabRequestBriefPage = () => {
 
           {/* Campaign Brief */}
           <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-4">
-            <p className="text-[10px] font-medium text-blue-300/60 uppercase tracking-wider mb-1.5">Campaign Brief</p>
+            <p className="text-[10px] font-medium text-blue-300/60 uppercase tracking-wider mb-1.5">Brand message</p>
             <p className="text-sm text-blue-200 leading-relaxed whitespace-pre-wrap">
               {request.campaign_description || '—'}
             </p>
@@ -477,13 +495,12 @@ const CollabRequestBriefPage = () => {
               <div className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl p-3">
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <div className="min-w-0">
-                    <p className="text-[12px] font-semibold text-white">Accept Collaboration</p>
-                    {timeLeft ? (
-                      <p className="text-[11px] text-white/55 flex items-center gap-1.5">
+                    <p className="text-[12px] font-semibold text-white">Respond to offer</p>
+                    <p className="text-[11px] text-white/55">Review the brand offer and accept if you want to work with them.</p>
+                    {timeLeft && (
+                      <p className="mt-1 text-[11px] text-white/55 flex items-center gap-1.5">
                         <Clock className="h-3.5 w-3.5" /> {timeLeft.label}
                       </p>
-                    ) : (
-                      <p className="text-[11px] text-white/55">Review and respond to this offer.</p>
                     )}
                   </div>
                   <div className="shrink-0 text-right">
@@ -508,7 +525,7 @@ const CollabRequestBriefPage = () => {
                     disabled={isAccepting || isDeclining}
                     className="h-12 px-4 rounded-xl border border-white/15 text-white/85 hover:text-white hover:bg-white/10 text-[12px] font-bold transition-colors"
                   >
-                    Suggest new price
+                    Ask for a different price
                   </button>
                   <button type="button"
                     onClick={handleDecline}

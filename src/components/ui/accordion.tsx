@@ -49,7 +49,6 @@ const AccordionItem = ({ children, className, isOpen, onToggle, value }: any) =>
 const AccordionTrigger = ({ children, className, isOpen, onToggle }: any) => {
     return (
         <button type="button"
-            type="button"
             onClick={onToggle}
             className={cn(
                 "flex flex-1 items-center justify-between py-4 font-medium transition-all w-full text-left",

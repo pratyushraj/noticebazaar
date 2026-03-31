@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { User, Settings, LogOut, Sparkles, Loader2 } from 'lucide-react';
+import { User, Settings, LogOut, Loader2 } from 'lucide-react';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
 import { useSession } from '@/contexts/SessionContext';
@@ -72,18 +72,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
           </Link>
         </DropdownMenuItem>
 
-        {isCreator && (
-          <DropdownMenuItem 
-            asChild
-            className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors"
-          >
-            <Link to="/partner-program" className="flex items-center w-full">
-              <Sparkles className="mr-3 h-4 w-4 text-white/60" />
-              <span className="text-[15px] text-white/90">Partner Program</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
-
         <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors">
           <Link to={profilePath} className="flex items-center w-full">
             <Settings className="mr-3 h-4 w-4 text-white/60" />
@@ -133,4 +121,3 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
 };
 
 export default ProfileDropdown;
-

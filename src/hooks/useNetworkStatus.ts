@@ -14,18 +14,24 @@ export interface NetworkStatus {
  * - Provides timestamps for connection events
  */
 export const useNetworkStatus = (): NetworkStatus => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const isLocalhost =
+    typeof window !== 'undefined' &&
+    ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+
+  const getEffectiveOnlineState = () => (isLocalhost ? true : navigator.onLine);
+
+  const [isOnline, setIsOnline] = useState(getEffectiveOnlineState);
   const [wasOffline, setWasOffline] = useState(false);
   const [lastOnlineTime, setLastOnlineTime] = useState<Date | null>(
-    navigator.onLine ? new Date() : null
+    getEffectiveOnlineState() ? new Date() : null
   );
   const [lastOfflineTime, setLastOfflineTime] = useState<Date | null>(
-    !navigator.onLine ? new Date() : null
+    !getEffectiveOnlineState() ? new Date() : null
   );
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOnline(true);
+      setIsOnline(getEffectiveOnlineState());
       setLastOnlineTime(new Date());
       if (wasOffline) {
         // Connection restored
@@ -34,6 +40,10 @@ export const useNetworkStatus = (): NetworkStatus => {
     };
 
     const handleOffline = () => {
+      if (isLocalhost) {
+        setIsOnline(true);
+        return;
+      }
       setIsOnline(false);
       setWasOffline(true);
       setLastOfflineTime(new Date());
@@ -46,7 +56,7 @@ export const useNetworkStatus = (): NetworkStatus => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [wasOffline]);
+  }, [isLocalhost, wasOffline]);
 
   return {
     isOnline,
@@ -55,4 +65,3 @@ export const useNetworkStatus = (): NetworkStatus => {
     lastOfflineTime,
   };
 };
-

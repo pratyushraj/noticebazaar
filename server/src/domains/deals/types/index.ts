@@ -108,6 +108,7 @@ export const DEAL_TRANSITIONS: StateTransition[] = [
     event: DealEventType.OFFER_ACCEPTED,
     notifications: [
       { recipient: 'brand', template: 'offer_accepted' },
+      { recipient: 'creator', template: 'offer_accepted' },
     ],
   },
   {
@@ -135,7 +136,8 @@ export const DEAL_TRANSITIONS: StateTransition[] = [
     to: DealState.CONTRACT_SIGNED,
     event: DealEventType.CONTRACT_FULLY_SIGNED,
     notifications: [
-      { recipient: 'both', template: 'contract_fully_signed' },
+      { recipient: 'brand', template: 'contract_fully_signed' },
+      { recipient: 'creator', template: 'contract_signed' },
     ],
   },
   
@@ -144,6 +146,9 @@ export const DEAL_TRANSITIONS: StateTransition[] = [
     from: DealState.CONTRACT_SIGNED,
     to: DealState.CONTENT_IN_PROGRESS,
     event: DealEventType.WORK_STARTED,
+    notifications: [
+      { recipient: 'creator', template: 'content_requested' },
+    ],
   },
   {
     from: DealState.CONTENT_IN_PROGRESS,
@@ -193,6 +198,7 @@ export const DEAL_TRANSITIONS: StateTransition[] = [
     event: DealEventType.PAYMENT_CONFIRMED,
     notifications: [
       { recipient: 'brand', template: 'payment_confirmed' },
+      { recipient: 'creator', template: 'payment_confirmed' },
     ],
   },
   

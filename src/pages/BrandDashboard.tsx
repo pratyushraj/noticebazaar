@@ -5,6 +5,7 @@ import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import BrandMobileDashboard from './BrandMobileDashboard';
+import { getCanonicalDealStatus, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 
 const PROD_API_BASE = 'https://noticebazaar-api.onrender.com';
 
@@ -142,8 +143,8 @@ const BrandDashboard = () => {
     });
     const acceptedRequests = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'accepted');
     const activeFromDeals = deals.filter((d: any) => {
-      const s = String(d?.status || '').toLowerCase();
-      return !s.includes('cancel') && !s.includes('complete') && !s.includes('closed') && !s.includes('paid');
+      const s = getCanonicalDealStatus(d);
+      return s !== 'COMPLETED' && s !== 'CANCELLED';
     });
     // Active = brand_deals that are active + accepted requests not already in brand_deals
     const dealCreatorIds = new Set(activeFromDeals.map((d: any) => String(d.creator_id || '')).filter(Boolean));
@@ -151,7 +152,12 @@ const BrandDashboard = () => {
     const activeDeals = activeFromDeals.length + acceptedNotInDeals.length;
 
     const totalInvestment = deals.reduce((acc: number, d: any) => acc + (Number(d?.deal_amount) || 0), 0);
-    const needsAction = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'countered').length;
+    const needsActionOffers = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'countered').length;
+    const needsActionDeals = deals.filter((d: any) => {
+      const cta = getDealPrimaryCta({ role: 'brand', deal: d });
+      return cta.tone === 'action' && !cta.disabled;
+    }).length;
+    const needsAction = needsActionOffers + needsActionDeals;
 
     return { totalSent: pendingRequests.length, activeDeals, totalInvestment, needsAction };
   }, [requests, deals]);

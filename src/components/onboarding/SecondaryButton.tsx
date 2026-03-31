@@ -29,8 +29,7 @@ export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
   type = 'button',
 }) => {
   return (
-    <button type="button"
-      type={type}
+    <button type={type}
       onClick={onClick}
       disabled={disabled}
       className={cn(

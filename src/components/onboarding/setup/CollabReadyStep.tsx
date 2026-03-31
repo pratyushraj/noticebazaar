@@ -155,7 +155,6 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 Bio for brands
               </span>
               <button type="button"
-                type="button"
                 onClick={onGenerateBio}
                 disabled={isGeneratingBio}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -292,7 +291,6 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 Your collaboration packages
               </p>
               <button type="button"
-                type="button"
                 onClick={onAutoSuggestPrices}
                 className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-white shadow-[0_8px_20px_rgba(16,185,129,0.28)] transition-all hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] whitespace-nowrap"
               >

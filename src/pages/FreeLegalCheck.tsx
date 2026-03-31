@@ -27,6 +27,18 @@ const updateMetadata = (title: string, description: string) => {
 // New constant for the Supabase hosted PDF URL
 const SAMPLE_REPORT_URL = 'https://ooaxtwmqrvfzdqzoijcj.supabase.co/storage/v1/object/public/marketing-assets/legal_health_check.pdf';
 
+const reportPreviewItems = [
+  'Risk level across contract, payment, and proof',
+  'The first issue to fix before the next deal gets harder to recover',
+  'Whether you need prevention, documentation, or escalation support next',
+];
+
+const fitSignals = [
+  'Creators doing paid or barter-plus-cash deals',
+  'UGC creators working from briefs and WhatsApp approvals',
+  'Anyone chasing late payment or unclear scope right now',
+];
+
 const FreeLegalCheck = () => {
   const formRef = useRef<HTMLDivElement>(null);
   const [showFloatingCta, setShowFloatingCta] = useState(false);
@@ -132,45 +144,67 @@ const FreeLegalCheck = () => {
 
       <main className="container mx-auto px-6 py-12">
         {/* Hero Section */}
-        <section className="text-center max-w-3xl mx-auto mb-16" id="hero">
-          <div className="badge mb-4 mx-auto bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+        <section className="max-w-5xl mx-auto mb-16" id="hero">
+          <div className="badge mb-4 mx-auto lg:mx-0 bg-yellow-500/20 text-yellow-400 border-yellow-500/30 w-fit">
             ⚡ Free creator deal risk check
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-foreground mb-4">
-            Find the weak spots in your next brand deal before they cost you money.
-          </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-6">
-            In under 2 minutes, Creator Armour will flag your likely contract, payment, and proof risks and tell you what to fix first.
-          </p>
-          
-          {/* Trust Badges (Point 6) */}
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-8">
-            <span className="flex items-center gap-1 text-green-500 font-semibold"><Lock className="h-4 w-4" /> Confidential Report</span>
-            <span className="flex items-center gap-1 text-blue-500 font-semibold"><Clock className="h-4 w-4" /> Risk summary in 24-48 hrs</span>
-            <span className="flex items-center gap-1 text-purple-500 font-semibold">
-              <Star className="h-4 w-4 fill-current text-yellow-500" /> Built for Indian creators
-            </span>
-          </div>
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-foreground mb-4">
+                Find the weak spots in your next brand deal before they cost you money.
+              </h1>
+              <p className="text-lg text-gray-400 max-w-2xl lg:mx-0 mx-auto mb-6">
+                In under 2 minutes, Creator Armour will flag your likely contract, payment, and proof risks and tell you what to fix first.
+              </p>
+              
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-muted-foreground mb-8">
+                <span className="flex items-center gap-1 text-green-500 font-semibold"><Lock className="h-4 w-4" /> Confidential report</span>
+                <span className="flex items-center gap-1 text-blue-500 font-semibold"><Clock className="h-4 w-4" /> Risk summary in 24-48 hrs</span>
+                <span className="flex items-center gap-1 text-purple-500 font-semibold">
+                  <Star className="h-4 w-4 fill-current text-yellow-500" /> Built for Indian creators
+                </span>
+              </div>
 
-          {/* CTA Layout with "No Payment Required" */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-            <Button 
-              onClick={scrollToForm} 
-              className="cta-primary px-8 py-3 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]"
-            >
-              Get My Free Risk Check <ArrowDown className="h-5 w-5 ml-2" />
-            </Button>
-          </div>
+              <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mt-8">
+                <Button 
+                  onClick={scrollToForm} 
+                  className="cta-primary px-8 py-3 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]"
+                >
+                  Get My Free Risk Check <ArrowDown className="h-5 w-5 ml-2" />
+                </Button>
+              </div>
 
-          {/* Urgency/Social Proof below CTA */}
-          <div className="mt-8 space-y-2">
-            <p className="text-sm font-semibold text-green-500 flex items-center justify-center">
-              <Users className="h-4 w-4 mr-2" /> Used by creators handling paid, barter, and hybrid deals
-            </p>
-            <div className="max-w-xs mx-auto mt-4">
-              <p className="text-xs font-semibold text-red-500 mb-1">Limited review slots this week</p>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-red-500 h-2 rounded-full" style={{ width: '74%' }}></div>
+              <div className="mt-8 space-y-2">
+                <p className="text-sm font-semibold text-green-500 flex items-center justify-center lg:justify-start">
+                  <Users className="h-4 w-4 mr-2" /> Used by creators handling paid, barter, and hybrid deals
+                </p>
+                <div className="max-w-xs lg:mx-0 mx-auto mt-4">
+                  <p className="text-xs font-semibold text-red-500 mb-1">Limited review slots this week</p>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="bg-red-500 h-2 rounded-full" style={{ width: '74%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[1.75rem] border border-white/10 bg-card p-6 text-left shadow-lg">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-400">What you will get</p>
+              <h2 className="mt-3 text-2xl font-bold text-foreground">Your first useful answer, not just an intake form.</h2>
+              <ul className="mt-5 space-y-3">
+                {reportPreviewItems.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-foreground">
+                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6 rounded-2xl border border-white/10 bg-secondary p-4">
+                <p className="text-sm font-semibold text-foreground">Best for</p>
+                <div className="mt-3 space-y-2">
+                  {fitSignals.map((item) => (
+                    <p key={item} className="text-sm text-muted-foreground">{item}</p>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -198,31 +232,37 @@ const FreeLegalCheck = () => {
           <LegalCheckForm />
         </section>
         
-        {/* Social Proof Section (Point 3) */}
-        <section className="max-w-2xl mx-auto mt-16" data-aos="fade-up">
-          <h3 className="text-2xl font-bold text-foreground mb-6 text-center">📣 What Creators Are Saying</h3>
+        {/* Objection Handling */}
+        <section className="max-w-4xl mx-auto mt-16" data-aos="fade-up">
+          <h3 className="text-2xl font-bold text-foreground mb-6 text-center">Before you submit</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-secondary p-6 rounded-xl border-l-4 border-blue-500 shadow-lg">
-              <div className="flex mb-3 text-yellow-400">
-                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
-              </div>
-              <p className="text-gray-300 text-lg leading-relaxed">
-                "The risk check made it obvious my contract was weak on usage rights and payment terms. I fixed it before sending the final yes."
+              <h4 className="text-lg font-bold text-white">This is useful even if you do not have a dispute yet.</h4>
+              <p className="mt-3 text-gray-300 leading-relaxed">
+                Many creators use the check before signing so they can fix contract gaps, usage terms, and payment expectations early.
               </p>
-              <div className="mt-4 font-bold text-white">— Riya S., fashion creator</div>
             </Card>
             <Card className="bg-secondary p-6 rounded-xl border-l-4 border-green-500 shadow-lg">
-              <div className="flex mb-3 text-yellow-400">
-                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 text-gray-600" />
-              </div>
-              <p className="text-gray-300 text-lg leading-relaxed">
-                "It helped me realize the real problem was not just delayed payment. I had almost no usable proof saved in one place."
+              <h4 className="text-lg font-bold text-white">This is also useful if a brand is already delaying payment.</h4>
+              <p className="mt-3 text-gray-300 leading-relaxed">
+                The result helps separate a proof problem, a contract problem, or an escalation problem so your next step is clearer.
               </p>
-              <div className="mt-4 font-bold text-white">— Aryan K., tech reviewer</div>
+            </Card>
+            <Card className="bg-secondary p-6 rounded-xl border-l-4 border-yellow-500 shadow-lg">
+              <h4 className="text-lg font-bold text-white">Small creators can use it too.</h4>
+              <p className="mt-3 text-gray-300 leading-relaxed">
+                If you handle any paid or barter-linked deal, weak terms can still cost real money or future usage rights.
+              </p>
+            </Card>
+            <Card className="bg-secondary p-6 rounded-xl border-l-4 border-purple-500 shadow-lg">
+              <h4 className="text-lg font-bold text-white">You do not need legal documents prepared first.</h4>
+              <p className="mt-3 text-gray-300 leading-relaxed">
+                Start with what you know. Creator Armour uses your answers to point toward the first issue worth fixing.
+              </p>
             </Card>
           </div>
           <div className="text-center mt-6 text-muted-foreground text-sm">
-            Creators use this before signing, while chasing payment, and when brands go silent
+            Creators use this before signing, while chasing payment, and when brands go silent.
           </div>
         </section>
       </main>
