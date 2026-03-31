@@ -328,10 +328,10 @@ const FreeInfluencerContract = () => {
                       <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30">
                         <CardContent className="p-4">
                           <p className="text-white text-sm leading-relaxed mb-3">
-                            <strong>✅ Contract Generated!</strong> This contract can be sent via your collab link.
+                            <strong>✅ Contract Generated!</strong> This contract can be sent via your deal page.
                           </p>
                           <p className="text-purple-200 text-sm leading-relaxed mb-4">
-                            When brands submit collaboration requests through your collab link, contracts are automatically generated 
+                            When brands submit collaboration requests through your deal page, contracts are automatically generated 
                             and managed securely—no manual sending needed.
                           </p>
                           <Button
@@ -349,9 +349,9 @@ const FreeInfluencerContract = () => {
                     <div className="mt-6 pt-6 border-t border-white/20">
                       <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
                         <p className="text-purple-200 text-sm leading-relaxed">
-                          <strong className="text-white">💡 Pro Tip:</strong> This contract can be sent via your collab link. 
-                          When brands submit collaboration requests through your collab link, contracts are automatically generated 
-                          and managed securely. <Link to="/signup" className="text-purple-300 hover:text-white underline font-medium">Get your free collab link →</Link>
+                          <strong className="text-white">💡 Pro Tip:</strong> This contract can be sent via your deal page. 
+                          When brands submit collaboration requests through your deal page, contracts are automatically generated 
+                          and managed securely. <Link to="/signup" className="text-purple-300 hover:text-white underline font-medium">Get your free deal page →</Link>
                         </p>
                       </div>
                     </div>

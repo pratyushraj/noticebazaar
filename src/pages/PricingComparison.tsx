@@ -50,7 +50,7 @@ const PricingComparison = () => {
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <SEOHead
         title="Creator Armour Pricing — Plans for Every Creator"
-        description="Compare Creator Armour plans. Free collab link, essential protection, and growth features for Indian influencers and creators."
+        description="Compare Creator Armour plans. Free deal page, essential protection, and growth features for Indian influencers and creators."
         keywords={['creator armour pricing', 'influencer tools pricing', 'brand deal platform cost']}
         canonicalUrl="https://creatorarmour.com/pricing-comparison"
       />

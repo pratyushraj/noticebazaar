@@ -88,7 +88,7 @@ const renderBudgetValue = (item: any) => {
     if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
     
     const barter = Number(item?.barter_value || item?.form_data?.barter_value);
-    if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Barter)`;
+    if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Free products)`;
     
     return 'Flexible Budget';
 };
@@ -1922,7 +1922,7 @@ const MobileDashboardDemo = ({
 
                             <SectionHeader title="Collaboration Type" isDark={isDark} />
                             <div className="flex gap-2">
-                                {['Paid', 'Barter', 'Hybrid'].map((type) => (
+                                {['Paid', 'Free products', 'Hybrid'].map((type) => (
                                     <button type="button"
                                         key={type}
                                         onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
@@ -2723,7 +2723,7 @@ const MobileDashboardDemo = ({
                                                         }
                                                     }}
                                                     className={cn("p-1.5 rounded-full transition-all active:scale-95", secondaryTextColor)}
-                                                    title="Share your collab link"
+                                                    title="Share your deal page"
                                                 >
                                                     <Share2 className="w-5 h-5" />
                                                 </button>
@@ -3321,7 +3321,7 @@ const MobileDashboardDemo = ({
                                                                         {/* Brand name + type badge */}
                                                                         <div className="flex items-center gap-2 mb-1">
                                                                             <p className={cn("text-[15px] font-bold leading-tight truncate", isDark ? "text-white" : "text-slate-900")}>
-                                                                                {(req.brand_name || 'Brand').replace(/\s*\(Barter Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
+                                                                                {(req.brand_name || 'Brand').replace(/\s*\(Free products Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
                                                                             </p>
                                                                             {req.isConfirmedDeal ? (
                                                                                 <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/15">
@@ -3329,7 +3329,7 @@ const MobileDashboardDemo = ({
                                                                                 </span>
                                                                             ) : req.collab_type === 'barter' ? (
                                                                                 <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-500 border border-amber-500/20">
-                                                                                    🎁 Barter
+                                                                                    🎁 Free products
                                                                                 </span>
                                                                             ) : req.collab_type === 'hybrid' ? (
                                                                                 <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-violet-500/10 to-purple-500/10 text-violet-500 border border-violet-500/15">
@@ -4489,7 +4489,7 @@ const MobileDashboardDemo = ({
                                 <div className="max-w-md mx-auto">
                                     <div className="flex items-start justify-between mb-6">
                                         <div>
-                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Manage your collab link</h2>
+                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Manage your deal page</h2>
                                             <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-white" : "text-slate-900")}>Share your profile, review offers, and keep your page current.</p>
                                         </div>
                                         <motion.button
@@ -4516,7 +4516,7 @@ const MobileDashboardDemo = ({
                                                     <Share2 className="w-5 h-5" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-[13px] font-black uppercase tracking-widest">Share collab link</p>
+                                                    <p className="text-[13px] font-black uppercase tracking-widest">Share deal page</p>
                                                     <p className="text-[12px] opacity-75 mt-1">Send your profile page to brands in one tap</p>
                                                 </div>
                                             </div>
@@ -4529,7 +4529,7 @@ const MobileDashboardDemo = ({
                                             }}
                                             className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
                                         >
-                                            <p className={cn('text-[13px] font-bold', textColor)}>Copy collab link</p>
+                                            <p className={cn('text-[13px] font-bold', textColor)}>Copy deal page</p>
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
                                         </button>
 
@@ -4661,7 +4661,7 @@ const MobileDashboardDemo = ({
 
                                         {/* Campaign Type Tag */}
                                         {selectedItem.collab_type === 'barter' ? (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">Barter Campaign</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
                                         ) : (
                                             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
                                         )}
@@ -6007,7 +6007,7 @@ const MobileDashboardDemo = ({
                                     {[
                                         { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel' },
                                         { label: 'Deal Value', value: renderBudgetValue(pay) },
-                                        { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Barter' : '💰 Paid Campaign' },
+                                        { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Free products' : '💰 Paid Campaign' },
                                         { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
                                     ].map((row, i) => (
                                         <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
