@@ -609,6 +609,7 @@ const CreatorDashboard = () => {
       }).catch(() => undefined);
     }
 
+    void trackEvent('collab_link_shared', { creator_id: profile.id, mode: 'whatsapp' });
     void trackEvent('creators_shared_link', { creator_id: profile.id, mode: 'whatsapp' });
   }, [collabUrl, profile, updateProfileMutation]);
 
@@ -624,6 +625,7 @@ const CreatorDashboard = () => {
         return;
       }
       void copyText(collabUrl, 'Collab page copied');
+      void trackEvent('collab_link_copied', { creator_id: profile?.id });
     };
     const openPayment = (dealId: string) => navigate(`/payment/${dealId}`);
     const openDeliveryDetails = (dealId: string) => navigate(`/deal-delivery-details/${dealId}`);
@@ -771,7 +773,7 @@ const CreatorDashboard = () => {
         secondaryLabel: collabUrl ? 'WhatsApp Share' : undefined,
         secondaryAction: collabUrl ? () => void handleShareWhatsApp() : undefined,
       };
-  }, [collabRequestsPreview, collabUrl, copyText, handleShareWhatsApp, navigate, normalizedBrandDeals]);
+  }, [collabRequestsPreview, collabUrl, copyText, handleShareWhatsApp, navigate, normalizedBrandDeals, profile?.id]);
 
   // ============================================
   // PROFILE SYNC EFFECT
@@ -789,32 +791,21 @@ const CreatorDashboard = () => {
       storefrontViews,
     });
 
-    const firstOfferAt = totalOffersReceived > 0 ? (profile.first_offer_at || new Date().toISOString()) : profile.first_offer_at;
-    const firstDealAt = completedDealsCount > 0 ? (profile.first_deal_at || new Date().toISOString()) : profile.first_deal_at;
-
+    // Only update fields that exist in the profiles table schema
+    // Note: storefront_completion, offers_received, offers_accepted, completed_deals,
+    // total_deals, total_earnings, storefront_views, conversion_rate, first_offer_at,
+    // first_deal_at, last_active_at do NOT exist in the database schema
     const hasDiff = (
       profile.creator_stage !== progressPatch.creator_stage ||
-      Number(profile.profile_completion || 0) !== progressPatch.profile_completion ||
-      Number(profile.storefront_completion || 0) !== progressPatch.storefront_completion ||
-      Number(profile.offers_received || 0) !== progressPatch.offers_received ||
-      Number(profile.offers_accepted || 0) !== progressPatch.offers_accepted ||
-      Number(profile.completed_deals || 0) !== progressPatch.completed_deals ||
-      Number(profile.total_deals || 0) !== progressPatch.total_deals ||
-      Number(profile.total_earnings || 0) !== progressPatch.total_earnings ||
-      Number(profile.storefront_views || 0) !== progressPatch.storefront_views ||
-      Number(profile.conversion_rate || 0) !== progressPatch.conversion_rate ||
-      firstOfferAt !== profile.first_offer_at ||
-      firstDealAt !== profile.first_deal_at
+      Number(profile.profile_completion || 0) !== progressPatch.profile_completion
     );
 
     if (!hasDiff) return;
 
     void updateProfileMutation.mutateAsync({
       id: profile.id,
-      ...progressPatch,
-      first_offer_at: firstOfferAt,
-      first_deal_at: firstDealAt,
-      last_active_at: new Date().toISOString(),
+      creator_stage: progressPatch.creator_stage,
+      profile_completion: progressPatch.profile_completion,
     }).catch(() => {
       // Ignore dashboard lifecycle sync errors.
     });
@@ -1019,7 +1010,10 @@ const CreatorDashboard = () => {
                 <Button
                   type="button"
                   className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-                  onClick={() => void copyText(collabUrl, 'Collab page copied')}
+                  onClick={() => {
+                    void copyText(collabUrl, 'Collab page copied');
+                    void trackEvent('collab_link_copied', { creator_id: profile?.id });
+                  }}
                   disabled={!collabUrl}
                   aria-label="Copy collab page link"
                 >
