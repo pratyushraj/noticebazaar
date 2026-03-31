@@ -222,14 +222,14 @@ const Login = () => {
         {/* Title and Subtitle */}
         <div className="mb-10">
           <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Sign In</h2>
-          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Access your creator business OS to manage deals and payouts.</p>
+          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Sign in to manage your deals and payouts.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-emerald-500" aria-hidden />
-            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Initializing OS...</p>
+            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Signing you in...</p>
           </div>
         )}
 
@@ -259,7 +259,7 @@ const Login = () => {
             <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                  Email Intelligence
+                  Email
                 </Label>
                 <Input
                   id="email"
@@ -307,7 +307,7 @@ const Login = () => {
                 }}
 	              >
 	                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                {isLoading ? 'Authenticating...' : 'Sign In To Armour'}
+	                {isLoading ? 'Signing in...' : 'Sign In'}
 	              </Button>
 
                 <button type="button"
@@ -335,7 +335,7 @@ const Login = () => {
                 <span className="w-full border-t border-slate-800" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-[#0B0F14] px-4 text-slate-600">Secure Vault Access</span>
+                <span className="bg-[#0B0F14] px-4 text-slate-600">Or continue with</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -390,7 +390,7 @@ const Login = () => {
         {/* Back to Homepage */}
         <div className="mt-8 pt-6 border-t border-slate-800">
           <Link to="/" className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-300 transition-all text-[12px] font-black uppercase tracking-widest">
-            <ArrowLeft className="h-4 w-4" /> Exit To Homepage
+            <ArrowLeft className="h-4 w-4" /> Back to Homepage
           </Link>
         </div>
       </div>
@@ -409,3 +409,4 @@ const Login = () => {
 };
 
 export default Login;
+n;

@@ -747,7 +747,7 @@ const CollabLinkLanding = () => {
   const typeSectionTitle = 'bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent';
   const typeLabel = 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent';
   const ctaStepStatus = !hasStartedOffer ? 'create' : currentStep < 5 ? 'next' : 'send';
-  const ctaLabel = ctaStepStatus === 'create' ? 'Send Collaboration Proposal' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Legal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collaboration Proposal';
+  const ctaLabel = ctaStepStatus === 'create' ? 'Send Collab Offer' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Deal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collab Offer';
   const ctaIcon = ctaStepStatus === 'send'
     ? <Send className="h-4 w-4" />
     : <Rocket className="h-4 w-4" />;
@@ -2039,7 +2039,7 @@ const CollabLinkLanding = () => {
   const recentCollaborations = [
     { name: 'Priya Sharma', type: 'Reel campaign', price: '₹4,500' },
     { name: 'Ajay Patel', type: 'Engagement package', price: '₹3,000 + product' },
-    { name: 'Neha Verma', type: 'Product review', price: 'Barter' },
+    { name: 'Neha Verma', type: 'Product review', price: 'Free products' },
   ];
   const creatorCollabSchema = (() => {
     const creatorId = creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-');
@@ -2379,9 +2379,9 @@ const CollabLinkLanding = () => {
 	              <div className="mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
                 <div className="grid grid-cols-3 gap-2.5 px-0">
                   {[
-                    { label: 'Legally Binding', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-contract' },
-                    { label: 'Secure Payment', icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />, desc: 'Dispute protected' },
-                    { label: 'Trusted by 50+ Brands', icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />, desc: 'Trust Armour' },
+                    { label: 'Deal Agreement', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-generated' },
+                    { label: 'Safe Payments', icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />, desc: 'Protected' },
+                    { label: '50+ Brands Trust Us', icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />, desc: 'Verified' },
                   ].map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(15,23,42,0.06)] border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(15,23,42,0.10)] hover:border-slate-300 active:scale-[0.985]">
                       <div className={`shrink-0 rounded-xl p-2.5 border ${idx === 0 ? 'bg-emerald-100 border-emerald-200 text-emerald-700' :
@@ -3279,7 +3279,7 @@ const CollabLinkLanding = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {[
                             { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Fixed cash budget' },
-                            { id: 'barter', label: 'Barter', icon: <Package className="h-5 w-5" />, sub: 'Product exchange' },
+                            { id: 'barter', label: 'Free Products', icon: <Package className="h-5 w-5" />, sub: 'Free products as payment' },
                             { id: 'hybrid', label: 'Hybrid', icon: <Zap className="h-5 w-5" />, sub: 'Cash + Product' },
                             { id: 'affiliate', label: 'Affiliate', icon: <TrendingUp className="h-5 w-5" />, sub: 'Sales commission' },
                           ].map((type) => (
@@ -4147,7 +4147,7 @@ const EditDealTemplateModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Delivery Time</label>
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Days to make content</label>
             <div className="relative">
               <Input
                 type="number"

@@ -143,7 +143,7 @@ const LandingPage = () => {
               </h1>
 
               <p className="text-[17px] md:text-[20px] text-slate-600 font-medium mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Share your deal page. Brands send you paid offers directly. Contracts and payments — all protected.
+                Share your deal page. Brands send you paid offers directly. Deals and payments — all protected.
               </p>
 
 	              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
@@ -609,3 +609,4 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+ndingPage;

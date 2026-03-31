@@ -25,7 +25,7 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
     },
     {
       name: 'Prateek Sharma',
-      role: 'Brand Contracts',
+      role: 'Deal Agreements',
       photo: '/avatars/adv_prateek_sharma.png',
     },
   ];

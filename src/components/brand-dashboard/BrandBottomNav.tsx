@@ -16,7 +16,7 @@ const BrandBottomNav = ({ activeTab, onTabChange, isDark = true }: BrandBottomNa
   const navItems = [
     { id: 'pipeline' as const, label: 'Offers', icon: LayoutDashboard },
     { id: 'creators' as const, label: 'Collaborations', icon: Briefcase },
-    { id: 'analytics' as const, label: 'Analytics', icon: BarChart3 },
+    { id: 'analytics' as const, label: 'Your Stats', icon: BarChart3 },
   ];
 
   return (

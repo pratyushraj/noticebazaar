@@ -345,7 +345,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 </div>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_12px_rgba(15,23,42,0.05)]">
-                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">Product Review (Barter)</p>
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">Product Review (Free Products)</p>
                 <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-slate-600">
                   <li>• 1 Unboxing</li>
                   <li>• 1 Story mention</li>

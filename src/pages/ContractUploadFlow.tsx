@@ -5,7 +5,13 @@ import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { AICounterProposal } from '@/components/contract/AICounterProposal';
+import { ClauseGenerationModal } from '@/components/contract/ClauseGenerationModal';
+import { NegotiationMessageModal } from '@/components/contract/NegotiationMessageModal';
+import { WhatsAppPreviewModal } from '@/components/contract/WhatsAppPreviewModal';
+import { MissingPriceAlert } from '@/components/contract/MissingPriceAlert';
 import { UniversalShareModal } from '@/components/deals/UniversalShareModal';
+import type { RiskLevel, Severity, ContractIssue, ContractVerifiedClause, ContractKeyTerms, AnalysisResults, AccordionSection, ActionType, ClauseState } from '@/lib/types/contract-analysis';
+import { getRiskScoreInfo, getRiskVerdictLabel, getKeyTermStatus, getIssueCategory, getImpactIfIgnored, getSuggestedFix, getNegotiationStrength, getTopIssues, getActionType, generateBrandRequests } from '@/lib/utils/contract-helpers';
 import { useNavigate } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
@@ -19,9 +25,6 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { trackEvent } from '@/lib/utils/analytics';
 import { getApiBaseUrl } from '@/lib/utils/api';
-
-type RiskLevel = 'low' | 'medium' | 'high';
-type ActionType = 'NEGOTIATION' | 'CLARIFICATION' | 'SUMMARY';
 
 const ContractUploadFlow = () => {
   const navigate = useNavigate();
@@ -994,35 +997,7 @@ ${creatorName}`;
     }
   };
 
-  const [analysisResults, setAnalysisResults] = useState<{
-    overallRisk: RiskLevel;
-    score: number;
-    negotiationPowerScore?: number;
-    issues: Array<{
-      id: number;
-      severity: 'high' | 'medium' | 'low' | 'warning';
-      category: string;
-      title: string;
-      description: string;
-      clause?: string;
-      recommendation: string;
-    }>;
-    verified: Array<{
-      id: number;
-      category: string;
-      title: string;
-      description: string;
-      clause?: string;
-    }>;
-    keyTerms: {
-      dealValue?: string;
-      duration?: string;
-      deliverables?: string;
-      paymentSchedule?: string;
-      exclusivity?: string;
-      brandName?: string;
-    };
-  } | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResults | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedIssueForClause, setSelectedIssueForClause] = useState<number | null>(null);
@@ -1045,14 +1020,6 @@ ${creatorName}`;
   const [isFinancialBreakdownExpanded, setIsFinancialBreakdownExpanded] = useState(false);
   const [isRecommendedActionsExpanded, setIsRecommendedActionsExpanded] = useState(false);
 
-  type AccordionSection =
-    | 'keyTerms'
-    | 'protectionStatus'
-    | 'issues'
-    | 'missingClauses'
-    | 'financialBreakdown'
-    | 'brandRequests';
-
   const handleAccordionToggle = (section: AccordionSection) => {
     setIsKeyTermsExpanded((prev) => (section === 'keyTerms' ? !prev : false));
     setIsProtectionStatusExpanded((prev) => (section === 'protectionStatus' ? !prev : false));
@@ -1063,57 +1030,6 @@ ${creatorName}`;
   };
 
   // Helper function to get risk score color and label
-  const getRiskScoreInfo = (score: number) => {
-    if (score >= 71) {
-      return {
-        color: 'text-green-400',
-        bgColor: 'bg-green-500',
-        label: 'Low Legal Risk',
-        progressColor: 'from-green-500 to-emerald-500',
-        glowColor: 'rgba(16, 185, 129, 0.3)',
-        dotColor: '#10b981' // green-500
-      };
-    } else if (score >= 41) {
-      return {
-        color: 'text-orange-400',
-        bgColor: 'bg-orange-500',
-        label: 'Moderate Legal Risk',
-        progressColor: 'from-orange-500 to-yellow-500',
-        glowColor: 'rgba(249, 115, 22, 0.3)',
-        dotColor: '#f97316' // orange-500
-      };
-    } else {
-      return {
-        color: 'text-red-400',
-        bgColor: 'bg-red-500',
-        label: 'High Legal Risk',
-        progressColor: 'from-red-500 to-rose-500',
-        glowColor: 'rgba(239, 68, 68, 0.3)',
-        dotColor: '#ef4444' // red-500
-      };
-    }
-  };
-
-  // Unified verdict label helper
-  const getRiskVerdictLabel = (overallRisk: 'low' | 'medium' | 'high' | string) => {
-    if (overallRisk === 'high') return 'Needs Attention';
-    if (overallRisk === 'medium') return 'Needs Negotiation';
-    return 'Safe';
-  };
-
-  // Helper function to get key term status
-  const getKeyTermStatus = (term: string, value: string | undefined) => {
-    if (!value || value === 'Not specified') {
-      return { badge: '⚠', color: 'bg-yellow-500/20 text-yellow-400', label: 'Specs Missing' };
-    }
-    // Check for vague terms
-    const vagueTerms = ['tbd', 'to be determined', 'as per', 'negotiable', 'discuss'];
-    const isVague = vagueTerms.some(v => value.toLowerCase().includes(v));
-    if (isVague) {
-      return { badge: '⚠', color: 'bg-yellow-500/20 text-yellow-400', label: 'Needs Attention' };
-    }
-    return { badge: '✅', color: 'bg-green-500/20 text-green-400', label: 'Clear' };
-  };
 
   // Calculate fixed issues count
   const fixedIssuesCount = analysisResults ? (
@@ -1122,13 +1038,7 @@ ${creatorName}`;
   const totalIssuesCount = analysisResults?.issues?.length || 0;
 
   // Get top 2 most dangerous issues (sorted by severity: high > medium > low > warning)
-  const getTopIssues = (issues: any[]) => {
-    const severityOrder = { high: 4, medium: 3, low: 2, warning: 1 };
-    return [...issues]
-      .filter(issue => !resolvedIssues.has(issue.id))
-      .sort((a, b) => (severityOrder[b.severity as keyof typeof severityOrder] || 0) - (severityOrder[a.severity as keyof typeof severityOrder] || 0))
-      .slice(0, 2);
-  };
+  const getTopIssuesFn = (issues: ContractIssue[]) => getTopIssues(issues, resolvedIssues);
 
   // Generate brand-specific requests from issues and missing clauses
   const generateBrandRequests = () => {
@@ -1416,146 +1326,16 @@ ${creatorName}`;
     }
   };
 
-  // Helper functions for issue categorization and impact
-  const getIssueCategory = (issue: typeof analysisResults.issues[0]) => {
-    const title = issue.title.toLowerCase();
-    const category = issue.category?.toLowerCase() || '';
-
-    if (title.includes('payment') || title.includes('fee') || title.includes('compensation') || category.includes('payment')) {
-      return { icon: DollarSign, label: 'Payment Issues', emoji: '💰' };
-    }
-    if (title.includes('intellectual') || title.includes('ip') || title.includes('ownership') || title.includes('rights') || category.includes('ip')) {
-      return { icon: FileCode, label: 'Intellectual Property', emoji: '📜' };
-    }
-    if (title.includes('exclusive') || title.includes('exclusivity') || category.includes('exclusive')) {
-      return { icon: Ban, label: 'Exclusivity', emoji: '⛔' };
-    }
-    if (title.includes('termination') || title.includes('cancel') || category.includes('termination')) {
-      return { icon: AlertCircle, label: 'Termination', emoji: '🛑' };
-    }
-    return { icon: AlertTriangle, label: 'Other Issues', emoji: '⚠️' };
-  };
-
-  const getImpactIfIgnored = (issue: typeof analysisResults.issues[0]) => {
-    const severity = issue.severity;
-    const title = issue.title.toLowerCase();
-
-    if (severity === 'high') {
-      if (title.includes('payment')) {
-        return 'You may face financial penalties or delayed payments';
-      }
-      if (title.includes('ip') || title.includes('rights')) {
-        return 'You may lose ownership of your content';
-      }
-      if (title.includes('exclusive')) {
-        return 'You may be restricted from working with other brands';
-      }
-      return 'This could lead to significant legal or financial consequences';
-    }
-    if (severity === 'medium') {
-      return 'This may limit your flexibility or create future complications';
-    }
-    return 'This could become a concern in future negotiations';
-  };
-
-  const getSuggestedFix = (issue: typeof analysisResults.issues[0]) => {
-    const title = issue.title.toLowerCase();
-    const category = (issue.category || '').toLowerCase();
-
-    if (title.includes('late fee') || category.includes('late fee')) {
-      return 'Ask the brand to define the late fee % and when it applies.';
-    }
-    if (title.includes('payment') || category.includes('payment')) {
-      return 'Ask the brand to clearly write the amount, due date, and payment method.';
-    }
-    if (title.includes('usage') || title.includes('license') || category.includes('usage')) {
-      return 'Limit how long and where the brand can use your content.';
-    }
-    if (title.includes('termination') || category.includes('termination')) {
-      return 'Add a clear exit option with notice period and payment for work done.';
-    }
-    if (title.includes('exclusiv') || category.includes('exclusiv')) {
-      return 'Clarify which competitors you cannot work with and for how long.';
-    }
-    return 'Ask the brand to add one clear sentence to make this safer for you.';
-  };
-
-  const getNegotiationStrength = (issue: typeof analysisResults.issues[0]) => {
-    const severity = issue.severity;
-
-    if (severity === 'high') {
-      return { label: 'Hard to Negotiate', color: 'bg-red-500/30 text-red-300 border-red-500/50', emoji: '🔴' };
-    }
-    if (severity === 'medium') {
-      return { label: 'Moderate', color: 'bg-orange-500/30 text-orange-300 border-orange-500/50', emoji: '🟠' };
-    }
-    return { label: 'Easy to Negotiate', color: 'bg-green-500/30 text-green-300 border-green-500/50', emoji: '🟢' };
-  };
+  // Helper functions for issue categorization (imported from contract-helpers)
+  const getIssueCategoryLocal = (issue: ContractIssue) => getIssueCategory(issue);
+  const getImpactIfIgnoredLocal = (issue: ContractIssue) => getImpactIfIgnored(issue);
+  const getSuggestedFixLocal = (issue: ContractIssue) => getSuggestedFix(issue);
+  const getNegotiationStrengthLocal = (issue: ContractIssue) => getNegotiationStrength(issue);
 
   const handleMarkAsResolved = (issueId: number) => {
     setResolvedIssues(new Set([...resolvedIssues, issueId]));
     triggerHaptic(HapticPatterns.light);
     toast.success('Issue marked as resolved');
-  };
-
-  // Missing Price Alert Component
-  const MissingPriceAlert = ({ onAskBrand }: { onAskBrand: () => void }) => {
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        const alertElement = document.getElementById('deal-breaker-alert');
-        if (alertElement) {
-          alertElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }, []);
-
-    return (
-      <motion.div
-        id="deal-breaker-alert"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 bg-red-500/20 border-2 border-red-500/50 rounded-xl p-5 md:p-6 relative overflow-hidden"
-      >
-        {/* Pulse animation */}
-        <motion.div
-          animate={{
-            scale: [1, 1.02, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute inset-0 bg-red-500/10 rounded-xl"
-        />
-        <div className="relative z-10">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-6 h-6 text-red-400" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-lg md:text-xl text-red-300 mb-2">
-                🔴 DEAL BREAKER ALERT: Payment amount is missing
-              </h4>
-              <p className="text-sm text-red-200/80 leading-relaxed">
-                This contract does not specify the payment amount. This is a critical issue that must be addressed before proceeding.
-              </p>
-            </div>
-          </div>
-          <motion.button
-            onClick={onAskBrand}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
-          >
-            <Mail className="w-4 h-4" />
-            Ask Brand to Add Price
-          </motion.button>
-        </div>
-      </motion.div>
-    );
   };
 
   const toggleFixExpansion = (issueId: number) => {
@@ -5426,7 +5206,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                             const unresolvedIssues = analysisResults.issues.filter(issue => !resolvedIssues.has(issue.id));
 
                             // Get top 2 most dangerous issues
-                            const topIssues = getTopIssues(unresolvedIssues);
+                            const topIssues = getTopIssues(unresolvedIssues, resolvedIssues);
                             const issuesToShow = showAllIssues ? unresolvedIssues : topIssues;
 
                             const groupedIssues = new Map<string, typeof analysisResults.issues>();

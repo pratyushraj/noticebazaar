@@ -138,7 +138,7 @@ export const ReelRateStep: React.FC<ReelRateStepProps> = ({
                                     onChange={(e) => onBarterValueMinChange(e.target.value)}
                                     placeholder="Product value"
                                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
-                                    aria-label="Enter barter product value"
+                                    aria-label="Enter minimum product value"
                                 />
                             </div>
                             <p className="text-xs text-slate-400 dark:text-white/60">

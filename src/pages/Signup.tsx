@@ -576,7 +576,7 @@ const Signup = () => {
               Creator Business
             </h2>
             <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
-              The professional collaboration operating system. Structured, protected, and powered by you.
+              Share one link. Brands send you paid offers with contracts and payments handled.
             </p>
           </div>
 
@@ -812,7 +812,7 @@ const Signup = () => {
                     )}
 	                  <div className="space-y-2">
 	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      {accountMode === 'brand' ? 'Work Email' : 'Business Email'}
+	                      {accountMode === 'brand' ? 'Work Email' : 'Your Email'}
 	                    </Label>
 	                    <Input
 	                      id="signup-email"
@@ -830,7 +830,7 @@ const Signup = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-                      Secure Password
+                      Password
                     </Label>
                     <div className="relative">
                       <Input
@@ -870,7 +870,7 @@ const Signup = () => {
                 <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-white px-4 text-slate-500">Secure Protocol Access</span>
+                <span className="bg-white px-4 text-slate-500">Or continue with</span>
               </div>
             </div>
 
@@ -917,7 +917,7 @@ const Signup = () => {
             {/* Back to Homepage */}
             <div className="mt-8 text-center pt-6 border-t border-slate-200">
               <Link to="/" className="text-slate-500 hover:text-emerald-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
-                <ArrowLeft className="w-3 h-3" /> Back to Protocol
+                <ArrowLeft className="w-3 h-3" /> Back to Homepage
               </Link>
             </div>
           </div>
