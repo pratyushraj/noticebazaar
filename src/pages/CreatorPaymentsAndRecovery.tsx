@@ -234,7 +234,7 @@ const CreatorPaymentsAndRecovery = () => {
     now.setHours(0, 0, 0, 0);
 
     // Show all deals that have payment information (received or expected)
-    // Include deals with: payment_received_date, payment_expected_date, or Payment Pending status
+    // Include deals with: payment_received_date, payment_expected_date, or Waiting for Payment status
     return brandDeals
       .filter(deal =>
         deal.payment_received_date ||
@@ -696,7 +696,6 @@ const CreatorPaymentsAndRecovery = () => {
                 <p className="text-base font-semibold text-white">No pending transactions</p>
                 <p className="text-sm text-white/60">You&apos;re all caught up on payments!</p>
                 <button type="button"
-                  type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setActiveFilter('all');
@@ -711,7 +710,6 @@ const CreatorPaymentsAndRecovery = () => {
                 <p className="text-base font-semibold text-white">No paid transactions yet</p>
                 <p className="text-sm text-white/60">Completed payments will show here.</p>
                 <button type="button"
-                  type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setActiveFilter('all');

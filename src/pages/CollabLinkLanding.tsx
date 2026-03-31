@@ -2376,7 +2376,7 @@ const CollabLinkLanding = () => {
 	                          <div className="flex items-center gap-2">
 	                            <TrendingUp className="h-3.5 w-3.5 text-slate-600" />
 	                            <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
-	                              Average campaign reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
+	                              Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
 	                            </span>
 	                          </div>
 	                        </div>
@@ -2524,9 +2524,9 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
 
-                        {/* Reliability / Completion Rate */}
+                        {/* Delivery success / Completion Rate */}
                         <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Reliability</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Delivery success</p>
                           {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
                             <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
                           ) : (
@@ -2641,9 +2641,9 @@ const CollabLinkLanding = () => {
                 </AccordionItem>
                 </Accordion>
               </div>
-	            {/* LEFT COLUMN continues below (packages + bio) */}
+	            {/* LEFT COLUMN continues below (services + bio) */}
 
-            {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
+            {/* 1.5. Services (Moved higher for conversion speed) */}
 		            <div id="packages-section" ref={packagesSectionRef} className={`deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl ${showPackagesSection ? '' : 'hidden'}`} style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
 	              <div className="flex items-center justify-between mb-3.5">
                 <div className="flex flex-col">
@@ -2654,7 +2654,7 @@ const CollabLinkLanding = () => {
                   </div>
                   {isOwner && !previewAsBrand && (
                     <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit package name, deliverables, price, and mark one as Most Popular.
+                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit service name, deliverables, price, and mark one as Most Popular.
                     </p>
                   )}
                 </div>
@@ -2691,7 +2691,6 @@ const CollabLinkLanding = () => {
                         </div>
                       )}
 	                      <button type="button"
-	                        type="button"
 	                        onClick={() => handleTemplateSelect(template)}
 		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-amber-300 bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
 		                      >
@@ -2733,7 +2732,7 @@ const CollabLinkLanding = () => {
                             </div>
                             {template.type === 'barter' && (
                               <p className="mt-2 text-[11px] font-bold text-slate-600">
-                                Product exchange collaboration
+                                Free products as payment
                               </p>
                             )}
                             {template.addons && template.addons.length > 0 && (
@@ -2751,7 +2750,7 @@ const CollabLinkLanding = () => {
                             )}
                             <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
                               <Clock className="w-3 h-3 text-slate-400" />
-                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Delivery: {template.deadlineDays || 7} days</span>
+                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Days to make content: {template.deadlineDays || 7} days</span>
                             </div>
                           </div>
                         </div>
@@ -2763,9 +2762,9 @@ const CollabLinkLanding = () => {
                           )}
                           <div className="flex flex-col gap-2">
 	                            <p className={`leading-[0.92] tracking-tight drop-shadow-[0_1px_0_rgba(0,0,0,0.06)] ${template.type === 'barter' ? 'text-[26px] xl:text-[38px]' : 'text-[38px] md:text-[44px] xl:text-[54px]'} font-black ${template.isPopular ? 'text-[#0B8E6E]' : 'text-[#0FA47F]'}`}>
-                              {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
+                              {template.type === 'barter' ? 'Free products as payment' : `₹${template.budget.toLocaleString()}`}
                             </p>
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 -mt-1">Starting collaboration price</p>
+                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 -mt-1">Starting price</p>
 	                            <div className="w-full px-3 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center justify-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" }}>
 	                              {selectedTemplateId === template.id ? (
 	                                '✓ Selected'
@@ -2822,11 +2821,11 @@ const CollabLinkLanding = () => {
                     How collaboration works
                   </h3>
                   <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
-                    Choose a package above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
+                    Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
                   </p>
 	                  <div className="mt-2.5 grid grid-cols-3 gap-2">
 	                    {[
-	                      { n: 1, title: 'Choose package', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
+	                      { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
 	                      { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
 	                      { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
 	                    ].map((step) => (
@@ -2879,7 +2878,6 @@ const CollabLinkLanding = () => {
                     </div>
                     {!editMode && (
                       <button type="button"
-                        type="button"
                         aria-expanded={aboutCreatorOpen}
                         aria-controls="about-creator-panel"
                         onClick={() => setAboutCreatorOpen(v => !v)}
@@ -3162,8 +3160,8 @@ const CollabLinkLanding = () => {
                           <Package className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="text-[13px] font-black text-slate-900">Choose a package</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review templates are pre-optimized.</p>
+                          <p className="text-[13px] font-black text-slate-900">Choose a service</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review options are ready to use.</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -3181,7 +3179,7 @@ const CollabLinkLanding = () => {
                         </div>
                         <div>
                           <p className="text-[13px] font-black text-slate-900">Send secure proposal</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured, contract-ready collaboration request.</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured offer with the deal details ready.</p>
                         </div>
                       </div>
                     </div>
@@ -3194,7 +3192,7 @@ const CollabLinkLanding = () => {
 		                        }}
 		                        className="w-full min-w-0 h-12 rounded-2xl bg-[#0FA47F] text-white hover:bg-emerald-600 font-black text-[11px] uppercase tracking-widest shadow-[0_10px_26px_rgba(15,164,127,0.20)]"
 		                      >
-		                        Choose Package
+		                        Choose Service
 		                      </Button>
 	                      <Button
 	                        type="button"
@@ -3227,10 +3225,10 @@ const CollabLinkLanding = () => {
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Selected package</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Selected service</p>
                                 <p className="text-[15px] font-black text-slate-900 truncate">{selectedTemplate.label}</p>
                                 <p className="text-[12px] font-semibold text-slate-600 mt-0.5">
-                                  {selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
+                                  {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days to make content
                                 </p>
                               </div>
                               <div className="shrink-0 flex flex-col items-end gap-2">
@@ -3250,7 +3248,7 @@ const CollabLinkLanding = () => {
                                   }}
                                   className="h-9 px-3 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
                                 >
-                                  Change package
+                                  Change service
                                 </Button>
                               </div>
                             </div>
@@ -3290,8 +3288,8 @@ const CollabLinkLanding = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {[
                             { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Fixed cash budget' },
-                            { id: 'barter', label: 'Barter', icon: <Package className="h-5 w-5" />, sub: 'Product exchange' },
-                            { id: 'hybrid', label: 'Hybrid', icon: <Zap className="h-5 w-5" />, sub: 'Cash + Product' },
+                            { id: 'barter', label: 'Free products as payment', icon: <Package className="h-5 w-5" />, sub: 'Product exchange' },
+                            { id: 'hybrid', label: 'Paid + Product', icon: <Zap className="h-5 w-5" />, sub: 'Cash + Product' },
                             { id: 'affiliate', label: 'Affiliate', icon: <TrendingUp className="h-5 w-5" />, sub: 'Sales commission' },
                           ].map((type) => (
                             <button type="button"
@@ -3329,7 +3327,6 @@ const CollabLinkLanding = () => {
                               return (
                                 <button type="button"
                                   key={option.value}
-                                  type="button"
                                   onClick={() => handleDeliverableToggle(option.value)}
                                   className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-black transition-all border-2 ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
                                 >
@@ -3453,7 +3450,6 @@ const CollabLinkLanding = () => {
                               {PRODUCT_CATEGORY_OPTIONS.slice(0, 10).map((option) => (
                                 <button type="button"
                                   key={option.value}
-                                  type="button"
                                   onClick={() => setCampaignCategory(option.label)}
                                   className={`px-4 py-2.5 rounded-2xl text-[12px] font-black transition-all border-2 ${campaignCategory === option.label ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
                                 >
@@ -3494,7 +3490,6 @@ const CollabLinkLanding = () => {
                                 </p>
                               </div>
                               <button type="button"
-                                type="button"
                                 onClick={() => {
                                   const next = !requiresShipping;
                                   setRequiresShipping(next);
@@ -3554,11 +3549,11 @@ const CollabLinkLanding = () => {
 	                                <div className="col-span-2 border-t border-white/10 pt-4 flex items-center justify-between">
 	                                  <div>
 	                                    <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Price</p>
-	                                    <p className="text-[18px] font-black">{selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}</p>
+	                                    <p className="text-[18px] font-black">{selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}</p>
 	                                  </div>
 	                                  <div className="text-right">
 	                                    <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Delivery</p>
-	                                    <p className="text-[12px] font-black">{selectedTemplate.deadlineDays || 7} days</p>
+	                                    <p className="text-[12px] font-black">{selectedTemplate.deadlineDays || 7} days to make content</p>
 	                                  </div>
 	                                </div>
 	                              </div>
@@ -3824,7 +3819,6 @@ const CollabLinkLanding = () => {
                     {import.meta.env.DEV && (
                       <div className="mt-6 flex justify-center">
                         <button type="button"
-                          type="button"
                           onClick={fillDemoData}
                           className="text-[10px] text-slate-200 hover:text-slate-300 font-bold uppercase tracking-widest"
                         >
@@ -3843,7 +3837,6 @@ const CollabLinkLanding = () => {
           {isOwner && !previewAsBrand && hasIncompleteSetup && (
             <div className="fixed right-4 bottom-24 z-50 md:hidden">
               <button type="button"
-                type="button"
                 onClick={() => {
                   if (!editMode) setEditMode(true);
                   scrollToSetupSection();
@@ -3943,7 +3936,7 @@ const CollabLinkLanding = () => {
 			                  selectedTemplate ? (
 			                    <span className="w-full flex flex-col items-center justify-center leading-tight">
 			                      <span className="text-[12px] font-black">
-			                        Selected Package — {selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
+			                        Selected Service — {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
 			                      </span>
 			                      <span className="mt-1 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
 			                        Continue
@@ -3952,14 +3945,14 @@ const CollabLinkLanding = () => {
 			                    </span>
 		                  ) : (
 		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      View collaboration packages
+		                      View services
 		                      <ArrowRight className="h-4 w-4" />
 		                    </span>
 		                  )
 		                ) : (
 		                  (currentStep === 5 && hasStartedOffer) ? (
 		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Send collaboration offer
+		                      Send brand offer
 		                      <ArrowRight className="h-4 w-4" />
 		                    </span>
 		                  ) : (
@@ -4023,7 +4016,7 @@ const EditDealTemplateModal = ({
       const isSelected = prev.deliverables.includes(val);
       if (isSelected) {
         if (prev.deliverables.length <= 1) {
-          toast.error('Packages must have at least 1 deliverable.');
+          toast.error('Your Services must have at least 1 deliverable.');
           return prev;
         }
         return {
@@ -4078,13 +4071,13 @@ const EditDealTemplateModal = ({
         <DialogHeader className="pt-2">
           <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
             <span className="text-2xl">{edited.icon}</span>
-            Edit Deal Template
+            Edit Service
           </DialogTitle>
-          <p className="text-xs text-slate-500 font-medium tracking-tight">Set your collaboration package to guide brands.</p>
+          <p className="text-xs text-slate-500 font-medium tracking-tight">Set your service details so brands can choose faster.</p>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Package Name</label>
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Service Name</label>
             <Input
               value={edited.label}
               onChange={(e) => setEdited({ ...edited, label: e.target.value })}
@@ -4136,8 +4129,8 @@ const EditDealTemplateModal = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
-                  <SelectItem value="paid" className="rounded-xl font-bold">💰 Paid Collab</SelectItem>
-                  <SelectItem value="barter" className="rounded-xl font-bold">📦 Barter Deal</SelectItem>
+                  <SelectItem value="paid" className="rounded-xl font-bold">💰 Paid</SelectItem>
+                  <SelectItem value="barter" className="rounded-xl font-bold">📦 Free products as payment</SelectItem>
                 </SelectContent>
               </Select>
             </div>

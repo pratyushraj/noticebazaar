@@ -281,7 +281,6 @@ const BrandDealConsole = () => {
                     <div className="flex items-center gap-3">
                         <div className="hidden sm:flex items-center gap-1 rounded-full border border-slate-200/80 bg-white/70 px-1 py-1 shadow-sm dark:border-white/10 dark:bg-white/5">
                             <button type="button"
-                                type="button"
                                 onClick={() => setThemePreference('system')}
                                 className={cn(
                                     "h-8 w-8 rounded-full flex items-center justify-center transition-colors",
@@ -292,7 +291,6 @@ const BrandDealConsole = () => {
                                 <Laptop className="w-4 h-4" />
                             </button>
                             <button type="button"
-                                type="button"
                                 onClick={() => setThemePreference('light')}
                                 className={cn(
                                     "h-8 w-8 rounded-full flex items-center justify-center transition-colors",
@@ -303,7 +301,6 @@ const BrandDealConsole = () => {
                                 <Sun className="w-4 h-4" />
                             </button>
                             <button type="button"
-                                type="button"
                                 onClick={() => setThemePreference('dark')}
                                 className={cn(
                                     "h-8 w-8 rounded-full flex items-center justify-center transition-colors",
@@ -600,7 +597,7 @@ const BrandDealConsole = () => {
                                                     </h3>
                                                     <div className="space-y-4">
                                                         <div>
-                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Content URL (Drive, Dropbox, Unlisted Link)</label>
+                                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Link to your content (Drive, Dropbox, Unlisted Link)</label>
                                                             <Input
                                                                 value={contentUrl}
                                                                 onChange={(e) => setContentUrl(e.target.value)}

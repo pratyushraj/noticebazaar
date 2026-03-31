@@ -90,8 +90,8 @@ const isPaidLike = (collabType: CollabType) => collabType === 'paid' || isHybrid
 const isBarterLike = (collabType: CollabType) => collabType === 'barter' || isHybrid(collabType);
 const collabTypeLabel = (collabType: CollabType) => {
   if (collabType === 'paid') return 'Paid';
-  if (collabType === 'barter') return 'Barter';
-  return 'Hybrid';
+  if (collabType === 'barter') return 'Free products as payment';
+  return 'Paid + Product';
 };
 
 const formatBudget = (request: CollabRequest): string => {
@@ -108,8 +108,8 @@ const formatBudget = (request: CollabRequest): string => {
     }
   }
   if (isBarterLike(request.collab_type)) {
-    if (request.barter_value) return `Barter (₹${request.barter_value.toLocaleString()})`;
-    return 'Barter';
+    if (request.barter_value) return `Free products as payment (₹${request.barter_value.toLocaleString()})`;
+    return 'Free products as payment';
   }
   return 'Not specified';
 };
@@ -211,7 +211,6 @@ const CollabRequestBriefPage = () => {
             <p className="text-sm font-semibold text-white mb-1">Couldn’t open this offer</p>
             <p className="text-sm text-white/60">{loadError || 'Unknown error'}</p>
             <button type="button"
-              type="button"
               onClick={() => navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true })}
               className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 transition-colors"
             >
@@ -224,7 +223,7 @@ const CollabRequestBriefPage = () => {
   }
 
   const deliverablesList = parseDeliverables(request.deliverables);
-  const subtitle = isBarterLike(request.collab_type) ? 'Barter collaboration' : (request.brand_name ?? 'Brand');
+  const subtitle = isBarterLike(request.collab_type) ? 'Free products as payment offer' : (request.brand_name ?? 'Brand');
   const budgetLabel = formatBudget(request);
   const deadlineDate = request.deadline ? new Date(request.deadline) : null;
   const brandInstagramHandle = normalizeInstagramHandle((request as any)?.brand_instagram);
@@ -495,7 +494,6 @@ const CollabRequestBriefPage = () => {
 
                 <div className="flex gap-2">
                   <button type="button"
-                    type="button"
                     onClick={handleAccept}
                     disabled={isAccepting || isDeclining}
                     className={cn(
@@ -506,7 +504,6 @@ const CollabRequestBriefPage = () => {
                     {isAccepting ? 'Accepting…' : `Accept ${budgetLabel}`}
                   </button>
                   <button type="button"
-                    type="button"
                     onClick={() => navigate(`/collab-requests/${request.id}/counter`, { state: { request } })}
                     disabled={isAccepting || isDeclining}
                     className="h-12 px-4 rounded-xl border border-white/15 text-white/85 hover:text-white hover:bg-white/10 text-[12px] font-bold transition-colors"
@@ -514,7 +511,6 @@ const CollabRequestBriefPage = () => {
                     Suggest new price
                   </button>
                   <button type="button"
-                    type="button"
                     onClick={handleDecline}
                     disabled={isAccepting || isDeclining}
                     className={cn(

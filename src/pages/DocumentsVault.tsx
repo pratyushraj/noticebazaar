@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/navbar/Navbar';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { FilteredNoMatchesEmptyState, NoContractsEmptyState, SearchNoResultsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
 
 type DocumentType = 'contract' | 'invoice' | 'payment_proof' | 'legal_notice' | 'pan_gst' | 'other';
 type DocumentCategory = 'All' | DocumentType;
@@ -212,7 +213,7 @@ const DocumentsVault: React.FC = () => {
               className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              Back to Your Deals
             </Button>
             <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center border border-blue-500/30">
@@ -443,4 +444,3 @@ const DocumentsVault: React.FC = () => {
 };
 
 export default DocumentsVault;
-

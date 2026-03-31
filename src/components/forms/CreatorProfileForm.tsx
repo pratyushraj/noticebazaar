@@ -1,665 +1,193 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Loader2, MapPin, MessageSquareText, Shapes, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Instagram, Youtube, Facebook, Twitter, Globe, DollarSign, Building2, CreditCard, FileText, Link2, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { Profile } from '@/types';
-import { useUpdateProfile } from '@/lib/hooks/useProfiles';
-import AvatarUploader from '@/components/profile/AvatarUploader';
-import ProfileCompletionMeter from '@/components/profile/ProfileCompletionMeter';
-import CategorySelect from '@/components/profile/CategorySelect';
-import ReferralCard from '@/components/profile/ReferralCard';
-import SocialSyncButton from '@/components/profile/SocialSyncButton';
+import { Textarea } from '@/components/ui/textarea';
 import { useSession } from '@/contexts/SessionContext';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useUpdateProfile } from '@/lib/hooks/useProfiles';
+import type { Profile } from '@/types';
 
 interface CreatorProfileFormProps {
   initialProfile: Profile;
   onSaveSuccess?: () => void;
 }
 
-// Suggested content niches for quick selection (brands can filter by these on collab pages)
-const SUGGESTED_NICHES = [
-  'Fashion', 'Fitness', 'Tech', 'Beauty', 'Food', 'Travel', 'Lifestyle',
-  'Gaming', 'Education', 'Finance', 'Health', 'Entertainment', 'Parenting',
+const CATEGORY_OPTIONS = [
+  'Fashion',
+  'Beauty',
+  'Fitness',
+  'Tech',
+  'Food',
+  'Travel',
+  'Lifestyle',
+  'Gaming',
+  'Education',
+  'Finance',
+  'Health',
+  'Parenting',
 ];
+
+const toLines = (value: string) => value.split('\n').map((item) => item.trim()).filter(Boolean);
 
 const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile, onSaveSuccess }) => {
   const { user, refetchProfile } = useSession();
-
-  const toggleNiche = (niche: string) => {
-    setContentNiches((prev) =>
-      prev.includes(niche) ? prev.filter((n) => n !== niche) : [...prev, niche]
-    );
-  };
-  
-  // Personal Information
-  const [firstName, setFirstName] = useState(initialProfile.first_name || '');
-  const [lastName, setLastName] = useState(initialProfile.last_name || '');
-  const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url || '');
-  
-  // Creator Category
-  const [creatorCategory, setCreatorCategory] = useState(initialProfile.creator_category || '');
-  
-  // Collab readiness (open to collabs, content niches, media kit)
-  const [openToCollabs, setOpenToCollabs] = useState(initialProfile.open_to_collabs !== false);
-  const [contentNiches, setContentNiches] = useState<string[]>(Array.isArray(initialProfile.content_niches) ? initialProfile.content_niches : []);
-  const [mediaKitUrl, setMediaKitUrl] = useState(initialProfile.media_kit_url || '');
-  
-  // Pricing
-  const [pricingMin, setPricingMin] = useState(initialProfile.pricing_min?.toString() || '');
-  const [pricingAvg, setPricingAvg] = useState(initialProfile.pricing_avg?.toString() || '');
-  const [pricingMax, setPricingMax] = useState(initialProfile.pricing_max?.toString() || '');
-  const [avgRateReel, setAvgRateReel] = useState(initialProfile.avg_rate_reel?.toString() || '');
-  
-  // Social Accounts
-  const [instagramHandle, setInstagramHandle] = useState(initialProfile.instagram_handle || '');
-  const [youtubeChannelId, setYoutubeChannelId] = useState(initialProfile.youtube_channel_id || '');
-  const [tiktokHandle, setTiktokHandle] = useState(initialProfile.tiktok_handle || '');
-  const [facebookProfileUrl, setFacebookProfileUrl] = useState(initialProfile.facebook_profile_url || '');
-  const [twitterHandle, setTwitterHandle] = useState(initialProfile.twitter_handle || '');
-  
-  // Bank Details
-  const [bankAccountName, setBankAccountName] = useState(initialProfile.bank_account_name || '');
-  const [bankAccountNumber, setBankAccountNumber] = useState(initialProfile.bank_account_number || '');
-  const [bankIfsc, setBankIfsc] = useState(initialProfile.bank_ifsc || '');
-  const [bankUpi, setBankUpi] = useState(initialProfile.bank_upi || '');
-  
-  // GST & PAN
-  const [gstNumber, setGstNumber] = useState(initialProfile.gst_number || '');
-  const [panNumber, setPanNumber] = useState(initialProfile.pan_number || '');
-  
-  // Follower counts (display only, updated via sync)
-  const [instagramFollowers, setInstagramFollowers] = useState(initialProfile.instagram_followers || 0);
-  const [youtubeSubs, setYoutubeSubs] = useState(initialProfile.youtube_subs || 0);
-  const [tiktokFollowers, setTiktokFollowers] = useState(initialProfile.tiktok_followers || 0);
-  const [twitterFollowers, setTwitterFollowers] = useState(initialProfile.twitter_followers || 0);
-  const [facebookFollowers, setFacebookFollowers] = useState(initialProfile.facebook_followers || 0);
-
   const updateProfileMutation = useUpdateProfile();
 
+  const [bio, setBio] = useState(initialProfile.bio || initialProfile.collab_intro_line || '');
+  const [category, setCategory] = useState(initialProfile.creator_category || '');
+  const [city, setCity] = useState(initialProfile.city || initialProfile.collab_region_label || '');
+  const [languages, setLanguages] = useState(initialProfile.language || initialProfile.primary_audience_language || '');
+  const [pastBrandWork, setPastBrandWork] = useState(
+    Array.isArray(initialProfile.past_collabs) ? initialProfile.past_collabs.join('\n') : '',
+  );
+
   useEffect(() => {
-    setFirstName(initialProfile.first_name || '');
-    setLastName(initialProfile.last_name || '');
-    setAvatarUrl(initialProfile.avatar_url || '');
-    setCreatorCategory(initialProfile.creator_category || '');
-    setOpenToCollabs(initialProfile.open_to_collabs !== false);
-    setContentNiches(Array.isArray(initialProfile.content_niches) ? initialProfile.content_niches : []);
-    setMediaKitUrl(initialProfile.media_kit_url || '');
-    setPricingMin(initialProfile.pricing_min?.toString() || '');
-    setPricingAvg(initialProfile.pricing_avg?.toString() || '');
-    setPricingMax(initialProfile.pricing_max?.toString() || '');
-    setAvgRateReel(initialProfile.avg_rate_reel?.toString() || '');
-    setInstagramHandle(initialProfile.instagram_handle || '');
-    setYoutubeChannelId(initialProfile.youtube_channel_id || '');
-    setTiktokHandle(initialProfile.tiktok_handle || '');
-    setFacebookProfileUrl(initialProfile.facebook_profile_url || '');
-    setTwitterHandle(initialProfile.twitter_handle || '');
-    setBankAccountName(initialProfile.bank_account_name || '');
-    setBankAccountNumber(initialProfile.bank_account_number || '');
-    setBankIfsc(initialProfile.bank_ifsc || '');
-    setBankUpi(initialProfile.bank_upi || '');
-    setGstNumber(initialProfile.gst_number || '');
-    setPanNumber(initialProfile.pan_number || '');
-    setInstagramFollowers(initialProfile.instagram_followers || 0);
-    setYoutubeSubs(initialProfile.youtube_subs || 0);
-    setTiktokFollowers(initialProfile.tiktok_followers || 0);
-    setTwitterFollowers(initialProfile.twitter_followers || 0);
-    setFacebookFollowers(initialProfile.facebook_followers || 0);
+    setBio(initialProfile.bio || initialProfile.collab_intro_line || '');
+    setCategory(initialProfile.creator_category || '');
+    setCity(initialProfile.city || initialProfile.collab_region_label || '');
+    setLanguages(initialProfile.language || initialProfile.primary_audience_language || '');
+    setPastBrandWork(Array.isArray(initialProfile.past_collabs) ? initialProfile.past_collabs.join('\n') : '');
   }, [initialProfile]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-    if (!firstName.trim() || !lastName.trim()) {
-      toast.error('First Name and Last Name are required.');
+    if (!bio.trim() || !category.trim() || !city.trim() || !languages.trim()) {
+      toast.error('Please complete bio, category, city, and languages.');
       return;
     }
 
     try {
       await updateProfileMutation.mutateAsync({
         id: initialProfile.id,
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        avatar_url: avatarUrl.trim() || null,
-        creator_category: creatorCategory || null,
-        open_to_collabs: openToCollabs,
-        content_niches: contentNiches.length > 0 ? contentNiches : null,
-        media_kit_url: mediaKitUrl.trim() || null,
-        pricing_min: pricingMin ? parseInt(pricingMin) : null,
-        pricing_avg: pricingAvg ? parseInt(pricingAvg) : null,
-        pricing_max: pricingMax ? parseInt(pricingMax) : null,
-        avg_rate_reel: avgRateReel ? parseFloat(avgRateReel) : null,
-        instagram_handle: instagramHandle.trim() || null,
-        youtube_channel_id: youtubeChannelId.trim() || null,
-        tiktok_handle: tiktokHandle.trim() || null,
-        facebook_profile_url: facebookProfileUrl.trim() || null,
-        twitter_handle: twitterHandle.trim() || null,
-        bank_account_name: bankAccountName.trim() || null,
-        bank_account_number: bankAccountNumber.trim() || null,
-        bank_ifsc: bankIfsc.trim() || null,
-        bank_upi: bankUpi.trim() || null,
-        gst_number: gstNumber.trim() || null,
-        pan_number: panNumber.trim() || null,
-      });
-      toast.success('Profile updated successfully!');
-      refetchProfile?.();
+        bio: bio.trim(),
+        collab_intro_line: bio.trim(),
+        creator_category: category.trim(),
+        city: city.trim(),
+        collab_region_label: city.trim(),
+        language: languages.trim(),
+        primary_audience_language: languages.trim(),
+        past_collabs: pastBrandWork.trim() ? toLines(pastBrandWork) : null,
+      } as any);
+
+      toast.success('Profile updated');
+      await refetchProfile?.();
       onSaveSuccess?.();
     } catch (error: any) {
-      toast.error('Failed to update profile', { description: error.message });
+      toast.error('Failed to update profile', { description: error?.message });
     }
   };
 
-  if (!user) {
-    return null;
-  }
-
-  // Create updated profile for completion meter
-  const currentProfile: Profile = {
-    ...initialProfile,
-    first_name: firstName,
-    last_name: lastName,
-    avatar_url: avatarUrl,
-    creator_category: creatorCategory,
-    pricing_avg: pricingAvg ? parseInt(pricingAvg) : null,
-    avg_rate_reel: avgRateReel ? parseFloat(avgRateReel) : null,
-    instagram_handle: instagramHandle,
-    youtube_channel_id: youtubeChannelId,
-    bank_account_number: bankAccountNumber,
-    pan_number: panNumber,
-    gst_number: gstNumber,
-  };
+  if (!user) return null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Profile Completion Meter */}
-      <ProfileCompletionMeter profile={currentProfile} />
-
-      {/* Personal Information */}
-      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
+      <Card className="border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-blue-400" />
-            Personal Information
+          <CardTitle className="flex items-center gap-2 text-xl font-black text-slate-900">
+            <Sparkles className="h-5 w-5 text-emerald-500" />
+            Edit Profile
           </CardTitle>
+          <p className="text-sm text-slate-600">
+            Keep this simple. Brands only need the basics to understand your collab page.
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col items-center space-y-4 pb-4 border-b border-white/10">
-            <AvatarUploader
-              userId={user.id}
-              currentAvatarUrl={avatarUrl}
-              firstName={firstName}
-              lastName={lastName}
-              onUploadSuccess={async (url) => {
-                // Update local state immediately for UI feedback
-                setAvatarUrl(url);
-                
-                // Auto-save avatar URL to database
-                try {
-                  await updateProfileMutation.mutateAsync({
-                    id: initialProfile.id,
-                    first_name: firstName,
-                    last_name: lastName,
-                    avatar_url: url,
-                  });
-                  
-                  // Refetch profile from SessionContext to update everywhere
-                  if (refetchProfile) {
-                    await refetchProfile();
-                  }
-                  
-                  // Small delay to ensure cache updates
-                  setTimeout(() => {
-                    toast.success('Avatar updated and saved!');
-                  }, 300);
-                } catch (error: any) {
-                  console.error('Error saving avatar:', error);
-                  // Revert local state on error
-                  setAvatarUrl(initialProfile.avatar_url || '');
-                  toast.error('Avatar uploaded but failed to save. Please try again.');
-                }
-              }}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="firstName" className="text-white">First Name</Label>
-              <Input
-                id="firstName"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                className="bg-[#0F121A] text-white border-white/10"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="lastName" className="text-white">Last Name</Label>
-              <Input
-                id="lastName"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                className="bg-[#0F121A] text-white border-white/10"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="email" className="text-white">Email</Label>
-            <Input
-              id="email"
-              value={user?.email || ''}
-              disabled
-              className="bg-[#0F121A]/50 text-white/60 border-white/10 cursor-not-allowed"
-            />
-            <p className="text-xs text-white/40 mt-1">Email cannot be changed</p>
-          </div>
-
-          <div>
-            <Label htmlFor="role" className="text-white">Role</Label>
-            <Input
-              id="role"
-              value={initialProfile.role || ''}
-              disabled
-              className="bg-[#0F121A]/50 text-white/60 border-white/10 cursor-not-allowed capitalize"
-            />
-            <p className="text-xs text-white/40 mt-1">Role cannot be changed</p>
-          </div>
-
-          <CategorySelect
-            value={creatorCategory}
-            onChange={setCreatorCategory}
-            disabled={updateProfileMutation.isPending}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Collab readiness: I'm open + content niches + media kit */}
-      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-400" />
-            Collab readiness
-          </CardTitle>
-          <p className="text-sm text-white/60 mt-1">Help brands find you. Toggle &quot;I&apos;m open&quot; and add niches so your collab link stands out.</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="openToCollabs"
-              checked={openToCollabs}
-              onCheckedChange={(checked) => setOpenToCollabs(checked === true)}
-              disabled={updateProfileMutation.isPending}
-              className="border-white/30 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
-            />
-            <Label htmlFor="openToCollabs" className="text-white font-medium cursor-pointer">
-              I&apos;m open to collabs
+        <CardContent className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="creator-bio" className="flex items-center gap-2 text-slate-800">
+              <MessageSquareText className="h-4 w-4 text-emerald-500" />
+              Bio
             </Label>
+            <Textarea
+              id="creator-bio"
+              value={bio}
+              onChange={(event) => setBio(event.target.value)}
+              rows={4}
+              placeholder="Tell brands what you create and the kind of collaborations that suit you."
+              className="border-slate-200"
+            />
           </div>
-          <div>
-            <Label className="text-white mb-2 block">Content niches</Label>
-            <p className="text-xs text-white/50 mb-2">Select niches that match your content (brands filter by these)</p>
-            <div className="flex flex-wrap gap-2">
-              {SUGGESTED_NICHES.map((niche) => (
-                <label key={niche} className="flex items-center gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={contentNiches.includes(niche)}
-                    onCheckedChange={() => toggleNiche(niche)}
-                    disabled={updateProfileMutation.isPending}
-                    className="border-white/30 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-                  />
-                  <span className="text-sm text-white/90">{niche}</span>
-                </label>
-              ))}
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="creator-category" className="flex items-center gap-2 text-slate-800">
+                <Shapes className="h-4 w-4 text-emerald-500" />
+                Category
+              </Label>
+              <select
+                id="creator-category"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-500"
+              >
+                <option value="">Select category</option>
+                {CATEGORY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="creator-city" className="flex items-center gap-2 text-slate-800">
+                <MapPin className="h-4 w-4 text-emerald-500" />
+                City
+              </Label>
+              <Input
+                id="creator-city"
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                placeholder="Mumbai"
+                className="border-slate-200"
+              />
             </div>
           </div>
-          <div>
-            <Label htmlFor="mediaKitUrl" className="text-white flex items-center gap-2">
-              <Link2 className="h-4 w-4 text-blue-400" />
-              Media kit URL
-            </Label>
+
+          <div className="space-y-2">
+            <Label htmlFor="creator-languages" className="text-slate-800">Languages</Label>
             <Input
-              id="mediaKitUrl"
-              type="url"
-              value={mediaKitUrl}
-              onChange={(e) => setMediaKitUrl(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="https://..."
-              className="bg-[#0F121A] text-white border-white/10 mt-1"
+              id="creator-languages"
+              value={languages}
+              onChange={(event) => setLanguages(event.target.value)}
+              placeholder="Hindi, English, Hinglish"
+              className="border-slate-200"
             />
-            <p className="text-xs text-white/50 mt-1">Link to your media kit or portfolio (optional)</p>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="past-brand-work" className="text-slate-800">Past brand work (optional)</Label>
+            <Textarea
+              id="past-brand-work"
+              value={pastBrandWork}
+              onChange={(event) => setPastBrandWork(event.target.value)}
+              rows={4}
+              placeholder="Add one brand per line"
+              className="border-slate-200"
+            />
+          </div>
+
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+            Advanced settings stay optional. Creators should be able to share their collab page without filling everything else first.
+          </div>
+
+          <Button type="submit" className="bg-emerald-600 text-white hover:bg-emerald-700" disabled={updateProfileMutation.isPending}>
+            {updateProfileMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Profile'
+            )}
+          </Button>
         </CardContent>
       </Card>
-
-      {/* Pricing Preferences */}
-      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-green-400" />
-            Pricing Preferences
-          </CardTitle>
-          <p className="text-sm text-white/60 mt-1">Set your brand deal rates (in ₹)</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="avgRateReel" className="text-white">Average Reel Rate (INR)</Label>
-            <Input
-              id="avgRateReel"
-              type="number"
-              value={avgRateReel}
-              onChange={(e) => setAvgRateReel(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="e.g., 15000"
-              className="bg-[#0F121A] text-white border-white/10"
-            />
-            <p className="text-xs text-white/50 mt-1">Used for “Typical Paid Budget” on your collab page.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="pricingMin" className="text-white">Minimum Rate</Label>
-              <Input
-                id="pricingMin"
-                type="number"
-                value={pricingMin}
-                onChange={(e) => setPricingMin(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., 5000"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-            <div>
-              <Label htmlFor="pricingAvg" className="text-white">Average Rate</Label>
-              <Input
-                id="pricingAvg"
-                type="number"
-                value={pricingAvg}
-                onChange={(e) => setPricingAvg(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., 25000"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-            <div>
-              <Label htmlFor="pricingMax" className="text-white">Maximum Rate</Label>
-              <Input
-                id="pricingMax"
-                type="number"
-                value={pricingMax}
-                onChange={(e) => setPricingMax(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., 100000"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Social Accounts */}
-      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Globe className="h-5 w-5 text-purple-400" />
-            Social Accounts
-          </CardTitle>
-          <p className="text-sm text-white/60 mt-1">Connect your social media accounts and sync follower counts</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="instagramHandle" className="text-white flex items-center gap-2">
-                <Instagram className="h-4 w-4 text-pink-500" />
-                Instagram Handle
-              </Label>
-              <SocialSyncButton
-                platform="instagram"
-                handle={instagramHandle}
-                userId={user.id}
-                onSuccess={(count) => setInstagramFollowers(count)}
-              />
-            </div>
-            <Input
-              id="instagramHandle"
-              value={instagramHandle}
-              onChange={(e) => setInstagramHandle(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="e.g., @yourusername"
-              className="bg-[#0F121A] text-white border-white/10"
-            />
-            {instagramFollowers > 0 && (
-              <p className="text-xs text-white/60 mt-1">{instagramFollowers.toLocaleString()} followers</p>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="youtubeChannelId" className="text-white flex items-center gap-2">
-                <Youtube className="h-4 w-4 text-red-500" />
-                YouTube Channel ID
-              </Label>
-              <SocialSyncButton
-                platform="youtube"
-                channelId={youtubeChannelId}
-                userId={user.id}
-                onSuccess={(count) => setYoutubeSubs(count)}
-              />
-            </div>
-            <Input
-              id="youtubeChannelId"
-              value={youtubeChannelId}
-              onChange={(e) => setYoutubeChannelId(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="e.g., UC_x5XG1OV2P6wGrFgCPvr2w"
-              className="bg-[#0F121A] text-white border-white/10"
-            />
-            {youtubeSubs > 0 && (
-              <p className="text-xs text-white/60 mt-1">{youtubeSubs.toLocaleString()} subscribers</p>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="tiktokHandle" className="text-white flex items-center gap-2">
-                <Globe className="h-4 w-4 text-white" />
-                TikTok Handle
-              </Label>
-              <SocialSyncButton
-                platform="tiktok"
-                handle={tiktokHandle}
-                userId={user.id}
-                onSuccess={(count) => setTiktokFollowers(count)}
-              />
-            </div>
-            <Input
-              id="tiktokHandle"
-              value={tiktokHandle}
-              onChange={(e) => setTiktokHandle(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="e.g., @yourusername"
-              className="bg-[#0F121A] text-white border-white/10"
-            />
-            {tiktokFollowers > 0 && (
-              <p className="text-xs text-white/60 mt-1">{tiktokFollowers.toLocaleString()} followers</p>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="facebookProfileUrl" className="text-white flex items-center gap-2">
-                <Facebook className="h-4 w-4 text-blue-500" />
-                Facebook Profile URL
-              </Label>
-              <SocialSyncButton
-                platform="facebook"
-                url={facebookProfileUrl}
-                userId={user.id}
-                onSuccess={(count) => setFacebookFollowers(count)}
-              />
-            </div>
-            <Input
-              id="facebookProfileUrl"
-              type="url"
-              value={facebookProfileUrl}
-              onChange={(e) => setFacebookProfileUrl(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="e.g., https://facebook.com/yourprofile"
-              className="bg-[#0F121A] text-white border-white/10"
-            />
-            {facebookFollowers > 0 && (
-              <p className="text-xs text-white/60 mt-1">{facebookFollowers.toLocaleString()} followers</p>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="twitterHandle" className="text-white flex items-center gap-2">
-                <Twitter className="h-4 w-4 text-blue-400" />
-                Twitter Handle
-              </Label>
-              <SocialSyncButton
-                platform="twitter"
-                handle={twitterHandle}
-                userId={user.id}
-                onSuccess={(count) => setTwitterFollowers(count)}
-              />
-            </div>
-            <Input
-              id="twitterHandle"
-              value={twitterHandle}
-              onChange={(e) => setTwitterHandle(e.target.value)}
-              disabled={updateProfileMutation.isPending}
-              placeholder="e.g., @yourusername"
-              className="bg-[#0F121A] text-white border-white/10"
-            />
-            {twitterFollowers > 0 && (
-              <p className="text-xs text-white/60 mt-1">{twitterFollowers.toLocaleString()} followers</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Bank Details */}
-      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-blue-400" />
-            Bank Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="bankAccountName" className="text-white">Account Holder Name</Label>
-              <Input
-                id="bankAccountName"
-                value={bankAccountName}
-                onChange={(e) => setBankAccountName(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., John Doe"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-            <div>
-              <Label htmlFor="bankAccountNumber" className="text-white">Account Number</Label>
-              <Input
-                id="bankAccountNumber"
-                value={bankAccountNumber}
-                onChange={(e) => setBankAccountNumber(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., 1234567890"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="bankIfsc" className="text-white">IFSC Code</Label>
-              <Input
-                id="bankIfsc"
-                value={bankIfsc}
-                onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., SBIN0001234"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-            <div>
-              <Label htmlFor="bankUpi" className="text-white">UPI ID (Optional)</Label>
-              <Input
-                id="bankUpi"
-                value={bankUpi}
-                onChange={(e) => setBankUpi(e.target.value)}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., yourname@paytm"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* GST & PAN */}
-      <Card className="bg-[#0A0F1C] border-white/10 rounded-xl shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <FileText className="h-5 w-5 text-orange-400" />
-            GST & PAN
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="gstNumber" className="text-white">GST Number (Optional)</Label>
-              <Input
-                id="gstNumber"
-                value={gstNumber}
-                onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., 29ABCDE1234F1Z5"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-            <div>
-              <Label htmlFor="panNumber" className="text-white">PAN Number (Optional)</Label>
-              <Input
-                id="panNumber"
-                value={panNumber}
-                onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
-                disabled={updateProfileMutation.isPending}
-                placeholder="e.g., ABCDE1234F"
-                className="bg-[#0F121A] text-white border-white/10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Referral System */}
-      <ReferralCard profile={initialProfile} />
-
-      {/* Save Button */}
-      <Button 
-        type="submit" 
-        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg font-semibold" 
-        disabled={updateProfileMutation.isPending}
-      >
-        {updateProfileMutation.isPending ? (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...
-          </>
-        ) : (
-          'Save Changes'
-        )}
-      </Button>
     </form>
   );
 };

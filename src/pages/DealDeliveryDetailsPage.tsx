@@ -105,7 +105,7 @@ export default function DealDeliveryDetailsPage() {
       return;
     }
     if (dealType !== "barter") {
-      toast.error("Delivery details are only for barter deals");
+      toast.error("Delivery details are only for deals with free products as payment");
       navigate(`/creator-contracts/${dealId}`, { replace: true });
       return;
     }
@@ -207,7 +207,7 @@ export default function DealDeliveryDetailsPage() {
           You can update this before shipment begins from the deal details page.
         </p>
         <div className="animate-pulse text-sm text-primary font-medium">
-          Redirecting to your contract...
+          Redirecting to your deal...
         </div>
       </div>
     );
@@ -390,8 +390,7 @@ export default function DealDeliveryDetailsPage() {
                 {submitError}
               </div>
             )}
-            <button type="button"
-              type="submit"
+            <button type="submit"
               className={cn(buttons.primary, "w-full h-14 text-base font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed")}
               disabled={!canSubmit}
             >

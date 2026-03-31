@@ -278,9 +278,9 @@ const CreatorContracts = () => {
     const statusLower = status?.toLowerCase() || '';
     const brandResponseStatus = dealData?.brand_response_status?.toLowerCase() || '';
 
-    // Payment Pending → orange
+    // Waiting for Payment → orange
     if (statusLower.includes('payment') || statusLower === 'payment pending') {
-      return { label: 'Payment Pending', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' };
+      return { label: 'Waiting for Payment', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' };
     }
 
     // Completed → grey
@@ -288,9 +288,9 @@ const CreatorContracts = () => {
       return { label: 'Completed', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' };
     }
 
-    // Signed → green
+    // Deal confirmed → green
     if (statusLower.includes('signed') || brandResponseStatus === 'accepted_verified' || brandResponseStatus === 'accepted') {
-      return { label: 'Signed', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
+      return { label: 'Deal confirmed', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
     }
 
     // Awaiting Product Shipment (barter) → amber
@@ -298,9 +298,9 @@ const CreatorContracts = () => {
       return { label: 'Awaiting Product Shipment', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
     }
 
-    // Contract Ready (sent, draft ready) → blue
+    // Deal confirmed (sent, draft ready) → blue
     if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready') || statusLower.includes('agreement_prepared')) {
-      return { label: 'Contract Ready', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
+      return { label: 'Deal confirmed', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
     }
 
     // Negotiation → yellow (includes barter "Drafting" = Delivery Details Pending)
@@ -969,7 +969,6 @@ const CreatorContracts = () => {
 	                        </div>
 
 	                        <button type="button"
-	                          type="button"
 	                          onClick={(e) => {
 	                            e.stopPropagation();
 	                            triggerHaptic(HapticPatterns.light);
@@ -1008,7 +1007,6 @@ const CreatorContracts = () => {
                         <p className="text-base font-semibold text-white">No deals need action right now</p>
                         <p className="text-sm text-white/60">When a deal needs your attention, it will show up here.</p>
                         <button type="button"
-                          type="button"
                           onClick={() => {
                             triggerHaptic(HapticPatterns.light);
                             setActiveFilter('all');
