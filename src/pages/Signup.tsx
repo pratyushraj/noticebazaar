@@ -186,6 +186,7 @@ const Signup = () => {
               ? `/${intendedRoute}`
               : fallbackPath;
             sessionStorage.removeItem('oauth_intended_route');
+            trackEvent('signup_completed', { method: 'google', account_mode: accountMode });
             navigate(path, { replace: true });
           }
         }, 500);

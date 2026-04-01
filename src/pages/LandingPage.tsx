@@ -94,7 +94,7 @@ const LandingPage = () => {
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap max-w-[140px] sm:max-w-none truncate"
             >
               Get Your Brand Deal Page
             </Link>
@@ -493,7 +493,7 @@ const LandingPage = () => {
                 <h3 className="text-[20px] font-black tracking-tight text-slate-900">Creator Armour</h3>
               </Link>
               <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-slate-600">
-                Close brand deals without Instagram DMs.
+                Get paid brand deals without losing DMs.
               </p>
               <div className="mt-5 flex items-center gap-2">
                 <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="Creator Armour Instagram">

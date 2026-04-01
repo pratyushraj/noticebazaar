@@ -513,6 +513,7 @@ const CollabLinkLanding = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement | null>(null);
   const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
+  const hasTrackedFormStarted = useRef(false);
   const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
   const [profilePhotoError, setProfilePhotoError] = useState(false);
   const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -3596,6 +3597,12 @@ const CollabLinkLanding = () => {
 	                              <Input
 	                                value={brandName}
 	                                onChange={(e) => setBrandName(e.target.value)}
+	                                onFocus={() => {
+	                                  if (!hasTrackedFormStarted.current) {
+	                                    hasTrackedFormStarted.current = true;
+	                                    trackEvent('collab_link_form_started', { username: username || '' });
+	                                  }
+	                                }}
 	                                placeholder="e.g. Acme Marketing Unit"
 	                                className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
 	                              />
