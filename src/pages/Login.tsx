@@ -275,7 +275,7 @@ const Login = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
-                    Secure Access
+                    Password
                   </Label>
                   <button type="button"
                     type="button"
@@ -409,4 +409,3 @@ const Login = () => {
 };
 
 export default Login;
-n;
