@@ -625,4 +625,3 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
-ndingPage;
