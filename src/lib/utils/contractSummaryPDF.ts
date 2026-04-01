@@ -381,7 +381,3 @@ export async function generateContractSummaryPDF(data: ContractSummaryData): Pro
   pdf.save(fileName);
 }
 
-}_${new Date().toISOString().split('T')[0]}.pdf`;
-  pdf.save(fileName);
-}
-
