@@ -228,7 +228,7 @@ const isValidUpiId = (value: string) => /^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(valu
 
 const getCreatorObligationBadges = (deal: any) => {
     const collabType = normalizeCreatorCollabType(deal);
-    const badges = [collabType === 'hybrid' ? 'Hybrid' : collabType === 'barter' ? 'Barter' : 'Paid'];
+    const badges = [collabType === 'hybrid' ? 'Paid + Product' : collabType === 'barter' ? 'Free products' : 'Paid'];
     if (inferCreatorRequiresShipping(deal)) badges.push('Shipping required');
     return badges;
 };
@@ -2454,7 +2454,7 @@ const MobileDashboardDemo = ({
 
                             <SectionHeader title="Deal Type" isDark={isDark} />
                             <div className="flex gap-2">
-                                {['Paid', 'Barter', 'Hybrid'].map((type) => (
+                                {['Paid', 'Free products', 'Paid + Product'].map((type) => (
                                     <button
                                         key={type}
                                         onClick={() => setProfileFormData((p: any) => ({ ...p, collaboration_preference: type }))}
@@ -2855,7 +2855,7 @@ const MobileDashboardDemo = ({
                                         { key: 'audience', label: 'Audience' },
                                         { key: 'proof', label: 'Proof' },
                                         { key: 'settings', label: 'Page Settings' },
-                                        { key: 'analytics', label: 'Analytics' },
+                                        { key: 'analytics', label: 'Performance' },
                                     ].map((item) => (
                                         <button
                                             key={item.key}
@@ -3122,7 +3122,7 @@ const MobileDashboardDemo = ({
 
                             {storefrontSection === 'analytics' && (
                                 <>
-                                    <SectionHeader title="Analytics" isDark={isDark} />
+                                    <SectionHeader title="Performance" isDark={isDark} />
                                     <div className={cn("p-5 rounded-[2rem] border", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100 shadow-sm")}>
                                         <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-40 mb-2", textColor)}>Performance</p>
                                         <p className={cn("text-[14px] font-semibold leading-relaxed", textColor)}>
@@ -3595,7 +3595,7 @@ const MobileDashboardDemo = ({
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
                                     <div className="flex items-center justify-between">
                                         <h1 className={cn('text-[18px] font-semibold tracking-tight', textColor)}>
-                                            Dashboard
+                                            Your Deals
                                         </h1>
                                         <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -3789,7 +3789,7 @@ const MobileDashboardDemo = ({
                                         <div ref={actionRequiredRef} className={cn("rounded-[2rem] border p-5 shadow-sm", cardBgColor, borderColor)}>
                                             <div className="flex items-start justify-between gap-4 mb-5">
                                                 <div>
-                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Action Required</p>
+                                                    <p className={cn("text-[11px] font-black uppercase tracking-widest opacity-45", textColor)}>Your Turn</p>
                                                     <h2 className={cn("text-[22px] leading-[1.05] font-black tracking-tight mt-1", textColor)}>Deals waiting on you</h2>
                                                 </div>
                                                 <button
@@ -5125,7 +5125,7 @@ const MobileDashboardDemo = ({
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
                             <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Dashboard</span>
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Your Deals</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14 relative">
@@ -5385,7 +5385,7 @@ const MobileDashboardDemo = ({
 
                                         {/* Campaign Type Tag */}
                                         {selectedItem.collab_type === 'barter' ? (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">Barter Campaign</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">Free Products</span>
                                         ) : (
                                             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
                                         )}
@@ -6731,7 +6731,7 @@ const MobileDashboardDemo = ({
                                     {[
                                         { label: 'Deliverables', value: pay.deliverables_summary || '1 Instagram Reel' },
                                         { label: 'Deal Value', value: renderBudgetValue(pay) },
-                                        { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Barter' : '💰 Paid Campaign' },
+                                        { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Free Products' : '💰 Paid Campaign' },
                                         { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
                                     ].map((row, i) => (
                                         <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>

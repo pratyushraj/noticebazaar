@@ -5648,9 +5648,9 @@ const BrandMobileDashboard = ({
                               navigate(`/${handle}`);
                             }}
                             className={cn('h-12 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 text-white' : 'border-slate-200 bg-slate-50 text-slate-900')}
-                          >
-                            Storefront
-                          </button>
+                        >
+                          Collab Page
+                        </button>
                           <button
                             type="button"
                             onClick={() => {

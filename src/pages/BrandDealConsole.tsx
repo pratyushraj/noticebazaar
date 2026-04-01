@@ -264,7 +264,7 @@ const BrandDealConsole = () => {
         );
     }
 
-    const { collabRequest, brandDeal, creator, activity } = data;
+    const { collabRequest, creator, activity } = data;
 
     return (
         <div className={cn(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Copy, Instagram, Link2, Loader2, MessageCircleMore, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -38,6 +38,7 @@ export default function CreatorOnboarding() {
   const updateProfileMutation = useUpdateProfile();
   const [step, setStep] = useState<ProgressiveStep>('instagram');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasAutoCopiedLinkRef = useRef(false);
 
   const fullName = useMemo(() => {
     const fromProfile = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
@@ -76,10 +77,44 @@ export default function CreatorOnboarding() {
     }
   }, [sessionLoading, profile, navigate]);
 
-  const collabLink = instagramHandle ? `creatorarmour.com/@${instagramHandle}` : 'creatorarmour.com/@yourhandle';
+  useEffect(() => {
+    if (sessionLoading) return;
+    if (!profile) return;
+
+    // Minimize onboarding time: if handle already exists, start on "link ready".
+    if (instagramHandle && instagramHandle.trim().length > 0) {
+      setStep('linkReady');
+      return;
+    }
+    setStep('instagram');
+  }, [instagramHandle, profile, sessionLoading]);
+
+  const collabLink = instagramHandle ? `creatorarmour.com/${instagramHandle}` : 'creatorarmour.com/yourhandle';
   const publicLink = instagramHandle ? `${window.location.origin}/${instagramHandle}` : null;
   const followersForSuggestion = Number((profile as any)?.followers_count || profile?.instagram_followers || 25000);
   const pricingSuggestion = getPricingSuggestion(followersForSuggestion);
+
+  useEffect(() => {
+    if (step !== 'linkReady') return;
+    if (!publicLink) return;
+    if (typeof window === 'undefined') return;
+
+    // Auto-copy once to give the creator an immediate "win" (reduces drop-off).
+    if (hasAutoCopiedLinkRef.current) return;
+    hasAutoCopiedLinkRef.current = true;
+
+    const storageKey = `creatorarmour:autoCopiedCollabLink:${profile?.id || instagramHandle || 'unknown'}`;
+    if (localStorage.getItem(storageKey) === 'true') return;
+
+    navigator.clipboard
+      .writeText(publicLink)
+      .then(() => {
+        localStorage.setItem(storageKey, 'true');
+        toast.success('Link copied. Paste it in DM');
+        void trackEvent('collab_link_copied', { creator_id: profile?.id, mode: 'auto' });
+      })
+      .catch(() => undefined);
+  }, [instagramHandle, profile?.id, publicLink, step]);
 
   const persistCreatorSetup = async (markComplete: boolean, extras?: Record<string, unknown>) => {
     if (!profile?.id || !instagramHandle) return;
@@ -121,10 +156,14 @@ export default function CreatorOnboarding() {
 
     if (mode === 'copy') {
       await navigator.clipboard.writeText(publicLink);
-      toast.success('Collab link copied');
+      toast.success('Link copied. Paste it in DM');
       void trackEvent('collab_link_copied', { creator_id: profile?.id });
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(`Hi! You can send me a brand offer here: ${publicLink}`)}`, '_blank', 'noopener,noreferrer');
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(`Hi! Collab details + prices are here: ${publicLink}\nPlease send your brief here.`)}`,
+        '_blank',
+        'noopener,noreferrer',
+      );
       void trackEvent('collab_link_shared', { creator_id: profile?.id, mode: 'whatsapp' });
     }
 
@@ -141,7 +180,7 @@ export default function CreatorOnboarding() {
     }
 
     if (withRates && !Number(reelPrice)) {
-      toast.error('Add your starting reel price to continue');
+      toast.error('Add your starting reel price or skip for now');
       return;
     }
 
@@ -192,14 +231,14 @@ export default function CreatorOnboarding() {
             {step === 'instagram'
               ? 'Add Your Instagram Handle'
               : step === 'pricing'
-                ? 'Set Your Reel Price'
+                ? 'Add Your Starting Price'
                 : 'Your Collab Link Is Ready'}
           </h1>
           <p className="max-w-xl text-base leading-7 text-slate-600">
             {step === 'instagram'
               ? 'This creates your collab page link so brands know where to send offers.'
               : step === 'pricing'
-                ? 'Enter the reel price you usually tell brands in DM. You can change this later.'
+                ? 'Optional. If you’re unsure, skip for now — you can add this later.'
                 : 'Send this link in Instagram DM or WhatsApp when a brand asks how to collaborate.'}
           </p>
           <div className="rounded-[28px] border border-emerald-200 bg-white/90 p-5 shadow-[0_22px_60px_rgba(16,185,129,0.12)]">
@@ -226,7 +265,7 @@ export default function CreatorOnboarding() {
                     className="bg-emerald-600 text-white hover:bg-emerald-700"
                     onClick={() => {
                       void trackEvent('instagram_added', { creator_id: profile.id, instagram_handle: instagramHandle });
-                      setStep('pricing');
+                      setStep('linkReady');
                     }}
                     disabled={!instagramHandle}
                   >
@@ -244,18 +283,28 @@ export default function CreatorOnboarding() {
                   <p className="mt-2 break-all text-2xl font-black text-slate-900">{collabLink}</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button type="button" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => void handleShareLink('copy')}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy Link
-                  </Button>
-                  <Button type="button" variant="outline" className="border-slate-200 bg-white hover:bg-slate-50" onClick={() => void handleShareLink('whatsapp')}>
+                  <Button type="button" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => void handleShareLink('whatsapp')}>
                     <MessageCircleMore className="mr-2 h-4 w-4" />
                     Share on WhatsApp
                   </Button>
+                  <Button type="button" variant="outline" className="border-slate-200 bg-white hover:bg-slate-50" onClick={() => void handleShareLink('copy')}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Link
+                  </Button>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button type="button" className="bg-slate-900 text-white hover:bg-slate-800" onClick={() => void completeOnboarding(true)}>
-                    Go To Your Deals
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-slate-200 bg-white hover:bg-slate-50"
+                    onClick={() => setStep('pricing')}
+                  >
+                    Add Starting Price (Optional)
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button type="button" className="bg-slate-900 text-white hover:bg-slate-800" onClick={() => void completeOnboarding(false)}>
+                    Go To Dashboard
                   </Button>
                 </div>
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
@@ -273,9 +322,9 @@ export default function CreatorOnboarding() {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="reel-price">Reel price</Label>
+                    <Label htmlFor="reel-price">Starting reel price (optional)</Label>
                     <Input id="reel-price" value={reelPrice} onChange={(e) => setReelPrice(e.target.value)} inputMode="numeric" placeholder="5000" />
-                    <p className="text-xs text-slate-500">Enter the reel price you usually tell brands in DM. You can change this later.</p>
+                    <p className="text-xs text-slate-500">If you’re unsure, leave blank. You can add this later.</p>
                   </div>
                   <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:col-span-2">
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Optional for now</p>
@@ -303,10 +352,19 @@ export default function CreatorOnboarding() {
                   <Button
                     type="button"
                     className="bg-emerald-600 text-white hover:bg-emerald-700"
-                    onClick={() => setStep('linkReady')}
-                    disabled={isSubmitting || !Number(reelPrice)}
+                    onClick={() => void completeOnboarding(true)}
+                    disabled={isSubmitting}
                   >
-                    Continue
+                    Save & Finish
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-slate-200 bg-white hover:bg-slate-50"
+                    onClick={() => void completeOnboarding(false)}
+                    disabled={isSubmitting}
+                  >
+                    Skip for now
                   </Button>
                   <Button type="button" variant="ghost" className="text-slate-600 hover:text-slate-900" onClick={() => setStep('instagram')}>
                     Back

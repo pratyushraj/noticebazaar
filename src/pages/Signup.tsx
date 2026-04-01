@@ -240,10 +240,8 @@ const Signup = () => {
     e.preventDefault();
     const normalizedHandle = instagramHandle.replace(/^@+/, '').trim().toLowerCase();
 
-    if (!name.trim() || !email.trim() || !password.trim() || (accountMode === 'creator' && !instagramHandle.trim())) {
-      toast.error(accountMode === 'creator'
-        ? 'Please enter your name, Instagram handle, email, and password'
-        : 'Please enter your name, email, and password');
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      toast.error('Please enter your name, email, and password');
       return;
     }
     if (accountMode === 'brand' && !brandName.trim()) {
@@ -263,8 +261,8 @@ const Signup = () => {
       return;
     }
 
-    if (accountMode === 'creator' && normalizedHandle.length < 3) {
-      toast.error('Instagram handle must be at least 3 characters');
+    if (accountMode === 'creator' && normalizedHandle && normalizedHandle.length > 0 && normalizedHandle.length < 3) {
+      toast.error('Instagram username must be at least 3 characters');
       return;
     }
 
@@ -291,7 +289,7 @@ const Signup = () => {
             first_name: firstName,
             last_name: lastName,
             full_name: name.trim(),
-            instagram_handle: accountMode === 'creator' ? normalizedHandle : undefined,
+            instagram_handle: accountMode === 'creator' ? (normalizedHandle || undefined) : undefined,
             account_mode: accountMode,
             brand_name: accountMode === 'brand' ? brandName.trim() : undefined,
           },
