@@ -10,6 +10,39 @@ import { getApiBaseUrl } from '@/lib/utils/api';
 
 const unsupportedProfileColumns = new Set<string>();
 
+const UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY = 'nb_unsupported_profile_columns_v1';
+
+const loadUnsupportedProfileColumns = () => {
+  // Avoid crashing in non-browser contexts/tests.
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+    for (const col of parsed) {
+      if (typeof col === 'string' && col) unsupportedProfileColumns.add(col);
+    }
+  } catch {
+    // Ignore bad storage state.
+  }
+};
+
+const persistUnsupportedProfileColumns = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY,
+      JSON.stringify(Array.from(unsupportedProfileColumns))
+    );
+  } catch {
+    // Ignore storage errors (private mode, quota, etc).
+  }
+};
+
+// Populate the cache once per page load so we don't repeatedly fire failing PATCHes on refresh.
+loadUnsupportedProfileColumns();
+
 const omitUnsupportedProfileColumns = (payload: Record<string, unknown>) => {
   const nextPayload = { ...payload };
   for (const column of unsupportedProfileColumns) {
@@ -1037,16 +1070,23 @@ export const useUpdateProfile = () => {
             if (missingColumn && optionalExtensionFields.has(missingColumn) && missingColumn in safeUpdateData) {
               delete safeUpdateData[missingColumn];
               droppedFields.add(missingColumn);
-              unsupportedProfileColumns.add(missingColumn);
+              if (!unsupportedProfileColumns.has(missingColumn)) {
+                unsupportedProfileColumns.add(missingColumn);
+                persistUnsupportedProfileColumns();
+              }
             } else if (i === 0) {
               // If we couldn't identify the exact missing column, fallback to minimal known-safe core payload.
               for (const field of Array.from(optionalExtensionFields)) {
                 if (field in safeUpdateData) {
                   delete safeUpdateData[field];
                   droppedFields.add(field);
-                  unsupportedProfileColumns.add(field);
+                  if (!unsupportedProfileColumns.has(field)) {
+                    unsupportedProfileColumns.add(field);
+                  }
                 }
               }
+              // Persist after the bulk add to avoid repeated failing writes on refresh.
+              persistUnsupportedProfileColumns();
             }
 
             const result = await (supabase
