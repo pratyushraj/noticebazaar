@@ -25,8 +25,10 @@ export const useSupabaseMutation = <TData = unknown, TError = Error, TVariables 
 
   const onError = useCallback(
     (error: TError, variables: TVariables, context: TContext | undefined) => {
-      const message = errorMessage || 'An unexpected error occurred.';
-      toast.error(message, { description: (error as Error).message });
+      const message = errorMessage || 'Something went wrong. Please try again.';
+      // Show the specific error detail so users know what to fix
+      const detail = (error as Error)?.message || '';
+      toast.error(message, { description: detail || undefined });
       originalOnError?.(error, variables, context);
     },
     [errorMessage, originalOnError]

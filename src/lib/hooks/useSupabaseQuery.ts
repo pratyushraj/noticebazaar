@@ -57,41 +57,40 @@ export const useSupabaseQuery = <
       
       const errorCode = error?.code || errorStatus;
       
-      const isMissingResourceError = 
-        errorStatus === 404 || 
-        errorStatus === 406 || // Not Acceptable - table/column doesn't exist or RLS blocking
-        errorCode === 'PGRST116' ||
-        errorCode === 'PGRST202' || // Function not found
-        errorCode === 'PGRST301' || // RLS policy violation
-        errorCode === '42P01' ||
+      // Only suppress errors that specifically mean "table/function doesn't exist yet"
+      // Do NOT suppress permission errors — those are real bugs that should surface.
+      const isMissingTableError =
+        errorCode === 'PGRST116' ||  // No rows (single) / resource not found
+        errorCode === 'PGRST202' ||  // Function not found
+        errorCode === '42P01' ||     // Undefined table
         errorCode === 404 ||
-        errorCode === 406 ||
-        errorMessageStr.includes('404') || 
-        errorMessageStr.includes('406') ||
-        errorMessageStr.includes('not found') ||
-        errorMessageStr.includes('could not find') ||
+        errorStatus === 404 ||
+        errorMessageStr.includes('does not exist') ||
         errorMessageStr.includes('could not find the table') ||
         errorMessageStr.includes('could not find the function') ||
-        errorMessageStr.includes('relation') ||
-        errorMessageStr.includes('does not exist') ||
-        errorMessageStr.includes('schema cache') ||
-        errorMessageStr.includes('permission denied') ||
-        errorMessageStr.includes('searched for the function') ||
-        errorMessageStr.includes('no matches were found');
+        errorMessageStr.includes('schema cache');
+
+      // NOTE: We intentionally do NOT suppress "permission denied" (42501),
+      // "RLS policy violation" (PGRST301), or generic "relation" errors.
+      // Those indicate real auth/RLS bugs that should be visible.
       
-      const isMissingTableOrFunction = isPartnerTableOrFunction && isMissingResourceError;
+      const isMissingTableOrFunction = isPartnerTableOrFunction && isMissingTableError;
       
       if (isMissingTableOrFunction) {
-        // Silently ignore 404/PGRST202 errors for tables/functions that might not exist yet
-        // This is expected if migrations haven't been run yet
-        // Don't log to console or show toast
+        // Log in dev so developers know a table is missing, but don't toast
+        if (import.meta.env.DEV) {
+          console.warn('[useSupabaseQuery] Missing table/function (migration may not be applied):', {
+            queryKey: queryKeyStr,
+            error: errorMessageStr,
+          });
+        }
         return;
       }
       
-      // Only show errors for unexpected issues (not migration-related)
-      const message = errorMessage || 'An unexpected error occurred.';
+      // Show errors for real issues (including permission denied, RLS violations, etc.)
+      const message = errorMessage || 'Something went wrong. Please try again.';
       toast.error(message, { description: error?.message || 'Unknown error' });
-      console.error('Supabase Query Error:', queryResult.error);
+      console.error('[useSupabaseQuery] Error:', queryResult.error);
     }
   }, [queryResult.error, errorMessage, queryKey]);
 
