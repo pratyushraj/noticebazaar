@@ -17,8 +17,6 @@ import { useBookConsultation, useConsultations } from '@/lib/hooks/useConsultati
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DialogFooter } from '@/components/ui/dialog';
 import { useLogAdminActivity } from '@/lib/hooks/useLogAdminActivity';
 import TypingIndicator from './TypingIndicator'; // Import TypingIndicator
 import { useQuerySecureVault } from '@/lib/hooks/useQuerySecureVault'; // Import new hook
@@ -138,7 +136,7 @@ const AIAssistant = ({
   const { data: allCasesData, isLoading: isLoadingCases } = useCases({
     clientId: profile?.id,
     enabled: !!profile?.id && (aiState.type === 'general_query' || aiState.type === 'lookup_case_status' || aiState.type === 'lookup_pending_tasks' || aiState.type === 'suggest_consultation' || aiState.type === 'document_filing_select_case'),
-    disablePagination: true,
+    
     joinProfile: false,
   });
   const cases = allCasesData?.data || []; // Define cases here
@@ -148,7 +146,7 @@ const AIAssistant = ({
     clientId: profile?.id,
     status: 'Pending',
     enabled: !!profile?.id && (aiState.type === 'general_query' || aiState.type === 'lookup_pending_tasks'),
-    disablePagination: true,
+    
     joinProfile: false,
   });
   const pendingConsultationsCount = pendingConsultationsData?.data?.length || 0;
@@ -157,7 +155,7 @@ const AIAssistant = ({
     clientId: profile?.id,
     enabled: !!profile?.id, // Always enabled to find system categories
     includeSystemCategories: true,
-    disablePagination: true,
+    
   });
   const categories = categoriesData?.data || [];
   // -----------------------------------------
@@ -773,6 +771,13 @@ const AIAssistant = ({
 
       {/* Close Button */}
       <DialogFooter className="p-4 border-t border-border">
+        <Button variant="outline" onClick={onClose}>Close Assistant</Button>
+      </DialogFooter>
+    </div>
+  );
+};
+
+export default AIAssistant;der">
         <Button variant="outline" onClick={onClose}>Close Assistant</Button>
       </DialogFooter>
     </div>

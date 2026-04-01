@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense, type ReactNode } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { SplashScreen } from "@/components/mobile/SplashScreen";
 
 // Lazy-loaded page components for better bundle splitting
@@ -15,7 +15,6 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const CADashboard = lazy(() => import("./pages/CADashboard"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
 const CreatorCollab = lazy(() => import("./pages/CreatorCollab"));
-const CollabRequestsPage = lazy(() => import("./pages/CollabRequestsPage"));
 const CollabRequestCounterPage = lazy(() => import("./pages/CollabRequestCounterPage"));
 const CollabRequestBriefPage = lazy(() => import("./pages/CollabRequestBriefPage"));
 const CreatorAnalytics = lazy(() => import("./pages/CreatorAnalytics"));
@@ -492,7 +491,7 @@ const App = () => {
                         <Route path="/partner-program" element={<LazyRoute><PartnerProgram /></LazyRoute>} />
 
                         {/* Professional Dashboard Routes */}
-                        <Route path="/advisor-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['advisor']}><AdvisorDashboard /></ProtectedLayout></LazyRoute>} />
+                        <Route path="/advisor-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['chartered_accountant', 'lawyer']}><AdvisorDashboard /></ProtectedLayout></LazyRoute>} />
                         <Route path="/lawyer-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={['lawyer']}><LawyerDashboard /></ProtectedLayout></LazyRoute>} />
                         <Route path="/lawyer/consumer-complaints" element={<LazyRoute><ProtectedLayout allowedRoles={['lawyer']}><ConsumerComplaints /></ProtectedLayout></LazyRoute>} />
 
