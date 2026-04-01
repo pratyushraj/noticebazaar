@@ -2680,6 +2680,46 @@ const MobileDashboardDemo = ({
                                 </div>
                             )}
 
+                            {/* Refer & Earn CTA */}
+                            <div className="mx-5 mb-4">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={cn(
+                                        "p-4 rounded-2xl border relative overflow-hidden",
+                                        isDark
+                                            ? "bg-gradient-to-r from-amber-950/50 to-orange-950/50 border-amber-800/30"
+                                            : "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200"
+                                    )}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                                                isDark ? "bg-amber-500/20" : "bg-amber-500"
+                                            )}>
+                                                <span className={isDark ? "text-lg" : "text-lg"}>🎁</span>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className={cn("text-[13px] font-bold tracking-tight", textColor)}>Invite Creators, Earn Rewards</p>
+                                                <p className={cn("text-[11px] opacity-60 font-medium truncate", textColor)}>Share your referral link — get rewarded when friends join</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => navigate('/creator-profile?section=referral')}
+                                            className={cn(
+                                                "shrink-0 text-[11px] font-bold px-4 py-2 rounded-full active:scale-95 transition-all",
+                                                isDark
+                                                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                                    : "bg-amber-500 text-white shadow-sm"
+                                            )}
+                                        >
+                                            Invite
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </div>
+
                             {/* Command Header */}
                             <div className="px-5 pb-6 pt-safe" style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}>
                                 <div className="flex items-center justify-between mb-8">

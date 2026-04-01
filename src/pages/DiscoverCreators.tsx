@@ -268,8 +268,31 @@ const DiscoverCreators = () => {
                         <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Users className="w-8 h-8 text-white/20" />
                         </div>
-                        <h3 className="text-2xl font-black mb-2 font-outfit">No Matching Creators</h3>
-                        <p className="text-white/40 max-w-sm mx-auto">Try broadening your search or choosing a different category.</p>
+                        <h3 className="text-2xl font-black mb-2 font-outfit">
+                            {debouncedSearchTerm ? 'No Matching Creators' : 'No Creators Found'}
+                        </h3>
+                        <p className="text-white/40 max-w-sm mx-auto mb-6">
+                            {debouncedSearchTerm
+                                ? `No creators match "${debouncedSearchTerm}". Try a different search or browse all categories.`
+                                : 'Be the first creator in this category — set up your brand deal page in 2 minutes.'}
+                        </p>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            {debouncedSearchTerm && (
+                                <Button
+                                    onClick={() => setSearchTerm('')}
+                                    className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl px-6"
+                                    variant="outline"
+                                >
+                                    Clear Search
+                                </Button>
+                            )}
+                            <Button
+                                onClick={() => window.location.href = '/signup?mode=creator'}
+                                className="bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-6"
+                            >
+                                Create Your Deal Page
+                            </Button>
+                        </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

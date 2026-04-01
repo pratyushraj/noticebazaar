@@ -160,6 +160,22 @@ const LandingPage = () => {
                     I'm a Brand <ArrowRight className="w-5 h-5" />
                   </Link>
 	              </div>
+
+              {/* Social Proof Stats */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    <img src={PRIYA_IMG} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" loading="lazy" />
+                    <img src={ARJUN_IMG} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" loading="lazy" />
+                    <img src={NEHA_IMG} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" loading="lazy" />
+                  </div>
+                  <span className="text-[13px] font-bold text-slate-600">50+ creators</span>
+                </div>
+                <div className="w-px h-5 bg-slate-200" />
+                <span className="text-[13px] font-bold text-slate-600">120+ deals closed</span>
+                <div className="w-px h-5 bg-slate-200 hidden sm:block" />
+                <span className="text-[13px] font-bold text-emerald-600">₹8L+ earned by creators</span>
+              </div>
             </div>
 
             {/* Hero Mockup */}
@@ -589,7 +605,7 @@ const LandingPage = () => {
 
           <div className="mt-10 border-t border-slate-200 pt-6">
             <p className="text-sm font-medium text-slate-600 text-center">
-              <span className="font-semibold text-emerald-700">50+ creators</span> already using Creator Armour to collaborate professionally with brands.
+              <span className="font-semibold text-emerald-700">50+ creators</span> already using Creator Armour — <span className="font-semibold text-emerald-700">120+ deals</span> closed, <span className="font-semibold text-emerald-700">₹8L+ earned</span> by creators.
             </p>
           </div>
 
