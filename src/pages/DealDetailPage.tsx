@@ -21,7 +21,7 @@ import { downloadContractSecure } from '@/lib/utils/secureContractDownload';
 import { trackEvent } from '@/lib/utils/analytics';
 import { generateIssueMessage, IssueType } from '@/components/deals/IssueTypeModal';
 import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } from '@/lib/utils/createCalendarEvent';
-import { copyToClipboard } from '@/lib/utils/copyToClipboard';
+// Note: copyToClipboard is defined locally below (Safari-compatible version)
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';

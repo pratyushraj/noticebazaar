@@ -34,6 +34,7 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
 
     setIsGenerating(true);
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0A0E27',
         scale: 2,
@@ -60,6 +61,7 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
 
     setIsGenerating(true);
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#0A0E27',
         scale: 2,

@@ -65,8 +65,39 @@ export default defineConfig(() => ({
     },
     rollupOptions: {
       output: {
-        // Let Vite auto-split — manual chunks are removed to allow better tree-shaking.
-        // pdf-vendor: jspdf + html2canvas are lazy-loaded via dynamic import in the few pages that need them.
+        manualChunks(id) {
+          // Split heavy vendor libraries into separate chunks
+          if (id.includes('node_modules')) {
+            // React ecosystem
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router')) {
+              return 'vendor-react';
+            }
+            // UI libraries
+            if (id.includes('@radix-ui') || id.includes('cmdk') || id.includes('vaul') || id.includes('embla-carousel')) {
+              return 'vendor-ui';
+            }
+            // Supabase
+            if (id.includes('@supabase')) {
+              return 'vendor-supabase';
+            }
+            // Framer motion (heavy animation lib)
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            // Icons
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            // Data/state
+            if (id.includes('@tanstack')) {
+              return 'vendor-query';
+            }
+            // Charts
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+          }
+        },
       },
     },
   },

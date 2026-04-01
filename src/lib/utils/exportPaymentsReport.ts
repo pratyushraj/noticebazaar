@@ -1,6 +1,5 @@
 import { BrandDeal } from '@/types';
 import { Expense } from '@/lib/hooks/useExpenses';
-import jsPDF from 'jspdf';
 import { toast } from 'sonner';
 
 interface PaymentsReportData {
@@ -173,7 +172,7 @@ export async function exportPaymentsReport(data: PaymentsReportData): Promise<vo
     });
   } catch (error: unknown) {
     console.error('Error exporting payments report:', error);
-    toast.error('Failed to export report', { description: error.message });
+    toast.error('Failed to export report', { description: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }
@@ -233,7 +232,7 @@ export function exportPaymentsCSV(data: PaymentsReportData): void {
     toast.success('CSV report exported successfully!');
   } catch (error: unknown) {
     console.error('Error exporting CSV:', error);
-    toast.error('Failed to export CSV report', { description: error.message });
+    toast.error('Failed to export CSV report', { description: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

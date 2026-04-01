@@ -390,7 +390,7 @@ export default function DealDeliveryDetailsPage() {
                 {submitError}
               </div>
             )}
-            <button type="button"
+            <button
               type="submit"
               className={cn(buttons.primary, "w-full h-14 text-base font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed")}
               disabled={!canSubmit}

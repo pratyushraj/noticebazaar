@@ -18,6 +18,7 @@ export interface DealZipBundleOptions {
  * Build a ZIP bundle of all deal documents
  */
 export async function buildDealZipBundle(options: DealZipBundleOptions): Promise<Blob> {
+  const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
   const { dealTitle, documents, deliverables, issueHistory } = options;
 

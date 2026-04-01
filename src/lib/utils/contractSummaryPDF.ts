@@ -3,8 +3,6 @@
  * Creates a comprehensive PDF summarizing contract analysis, risks, and recommendations
  */
 
-import { jsPDF } from 'jspdf';
-
 export interface ContractSummaryData {
   // Deal Information
   dealValue: number | string | null;
@@ -380,6 +378,10 @@ export async function generateContractSummaryPDF(data: ContractSummaryData): Pro
 
   // Download PDF
   const fileName = `Contract_Summary_${data.brandName.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+  pdf.save(fileName);
+}
+
+}_${new Date().toISOString().split('T')[0]}.pdf`;
   pdf.save(fileName);
 }
 

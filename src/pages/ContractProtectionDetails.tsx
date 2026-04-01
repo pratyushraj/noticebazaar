@@ -804,7 +804,7 @@ const ContractProtectionDetails = () => {
                 >
                   Cancel
                 </button>
-                <button type="button"
+                <button
                   type="submit"
                   disabled={createLawyerRequestMutation.isPending}
                   className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors disabled:opacity-50"

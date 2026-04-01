@@ -48,7 +48,7 @@ const AccordionItem = ({ children, className, isOpen, onToggle, value }: any) =>
 
 const AccordionTrigger = ({ children, className, isOpen, onToggle }: any) => {
     return (
-        <button type="button"
+        <button
             type="button"
             onClick={onToggle}
             className={cn(
