@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Flame } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
-import { getTrialStatus } from '@/lib/trial';
 
 const TrialBanner: React.FC = () => {
   const { profile, trialStatus } = useSession();
@@ -62,4 +61,3 @@ const TrialBanner: React.FC = () => {
 };
 
 export default TrialBanner;
-

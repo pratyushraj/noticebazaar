@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WifiOff, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 interface OfflineBannerProps {
@@ -79,4 +79,3 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
 };
 
 export default OfflineBanner;
-

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Settings, LogOut } from 'lucide-react';
 import AppsGridIcon from '@/components/icons/AppsGridIcon';

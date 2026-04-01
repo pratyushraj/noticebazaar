@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+
 import { useSession } from '@/contexts/SessionContext';
-import { supabase } from '@/integrations/supabase/client';
+
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Activity } from 'lucide-react';
-import { Activity as ActivityLogEntry } from '@/types'; // Import Activity from centralized types
+import { Loader2 } from 'lucide-react';
+
 import { useActivityLog } from '@/lib/hooks/useActivityLog'; // Import the new hook
 import { Button } from '@/components/ui/button'; // Import Button for pagination
 import { usePagination } from '@/lib/hooks/usePagination'; // Import usePagination

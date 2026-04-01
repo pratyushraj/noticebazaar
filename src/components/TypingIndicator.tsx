@@ -1,8 +1,5 @@
 "use client";
 
-import React from 'react';
-import { cn } from '@/lib/utils';
-
 const TypingIndicator = () => {
   return (
     <div className="flex items-center space-x-1 p-2 bg-secondary rounded-lg rounded-bl-none max-w-[70%]">

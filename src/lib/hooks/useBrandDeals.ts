@@ -6,8 +6,8 @@ import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
 import { logger } from '@/lib/utils/logger';
-import { validateNewDeal, validateDealAmount, validateEmail, validatePhone, validateFile, ALLOWED_FILE_TYPES, MAX_FILE_SIZES } from '@/lib/utils/validation';
-import { validateStatusTransition, DEAL_STATUS } from '@/lib/constants/dealStatuses';
+import { validateNewDeal, validateDealAmount, validateEmail, validateFile, ALLOWED_FILE_TYPES, MAX_FILE_SIZES } from '@/lib/utils/validation';
+import { validateStatusTransition } from '@/lib/constants/dealStatuses';
 
 // Demo data for Brand Deals (used when database table doesn't exist or for preview)
 // Updated to match Payments page requirements exactly

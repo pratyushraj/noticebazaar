@@ -1,4 +1,4 @@
-import { LucideIcon, DollarSign, Briefcase, FileText, ShieldCheck, Clock, AlertTriangle, MessageSquare, CalendarDays, IndianRupee, CheckCircle, XCircle, Bot, Users, Gavel, Zap, UserCheck, Calculator, Bell, Phone } from 'lucide-react';
+import { LucideIcon, FileText, ShieldCheck, Clock, MessageSquare, CalendarDays, IndianRupee, Users, Gavel, Phone } from 'lucide-react';
 
 export type CreatorPlanName = 'Creator Lite' | 'Creator Pro' | 'Creator Max';
 

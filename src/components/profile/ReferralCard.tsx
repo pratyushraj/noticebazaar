@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, CheckCircle2, Share2, Gift, Users, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Profile } from '@/types';
-import { motion } from 'framer-motion';
+
 import { cn } from '@/lib/utils';
 
 interface ReferralCardProps {
@@ -152,4 +152,3 @@ const ReferralCard: React.FC<ReferralCardProps> = ({ profile }) => {
 };
 
 export default ReferralCard;
-

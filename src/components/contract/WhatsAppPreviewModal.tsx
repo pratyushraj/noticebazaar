@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { MessageSquare, Copy } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface WhatsAppPreviewModalProps {

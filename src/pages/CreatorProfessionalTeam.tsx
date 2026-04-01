@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -70,4 +70,3 @@ const CreatorProfessionalTeamPage = () => {
 };
 
 export default CreatorProfessionalTeamPage;
-

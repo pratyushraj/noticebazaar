@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Shield, Sparkles, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -97,8 +97,3 @@ const UpgradePage: React.FC = () => {
 };
 
 export default UpgradePage;
-
-
-
-
-

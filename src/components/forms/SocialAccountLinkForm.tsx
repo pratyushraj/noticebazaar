@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Instagram, Youtube, Twitter, RefreshCw, Unlink, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';

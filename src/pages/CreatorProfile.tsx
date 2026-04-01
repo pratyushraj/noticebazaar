@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal, Zap, ChevronUp } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Instagram, Lock, CreditCard, Shield, HelpCircle, FileText, LogOut, ChevronRight, ChevronDown, Check, Download, Trash2, Star, TrendingUp, Award, MessageCircle, Loader2, Sparkles, Camera, Link2, Copy, ExternalLink, AlertCircle, Eye, SlidersHorizontal, Zap } from 'lucide-react';
 import NotificationPreferences from '@/components/notifications/NotificationPreferences';
-import AvatarUploader from '@/components/profile/AvatarUploader';
+
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
-import SocialSyncButton from '@/components/profile/SocialSyncButton';
+
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
 import { getApiBaseUrl } from '@/lib/utils/api';

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+
 import { useAddActivityLog } from '@/lib/hooks/useActivityLog';
 import ProfileForm from '@/components/forms/ProfileForm'; // Import the new ProfileForm
 

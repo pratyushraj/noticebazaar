@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+
 import { Check, Clock, AlertCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ActionLog, ActionLogEntry } from './ActionLog';

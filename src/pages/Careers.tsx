@@ -1,6 +1,5 @@
 "use client";
 
-import React from 'react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -189,4 +188,3 @@ const Careers = () => {
 };
 
 export default Careers;
-

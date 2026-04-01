@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+
 import { useSession } from '@/contexts/SessionContext';
-import { supabase } from '@/integrations/supabase/client';
+
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useAddActivityLog } from '@/lib/hooks/useActivityLog'; // Import the new hook
-import { Consultation, Profile } from '@/types';
+import { Consultation } from '@/types';
 import { useConsultations, useUpdateConsultationStatus, useDeleteConsultation } from '@/lib/hooks/useConsultations';
 import { Label } from '@/components/ui/label';
 import { usePagination } from '@/lib/hooks/usePagination'; // Import usePagination

@@ -3,13 +3,13 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FolderOpen, FileText, Upload, Search, Filter, Tag, Calendar, Download, Eye, FileCheck, Receipt, Shield, CreditCard, ArrowLeft, Plus } from 'lucide-react';
+import { FolderOpen, FileText, Search, Calendar, Download, Eye, FileCheck, Receipt, Shield, CreditCard, ArrowLeft, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
+
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -443,4 +443,3 @@ const DocumentsVault: React.FC = () => {
 };
 
 export default DocumentsVault;
-

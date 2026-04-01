@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useGlobalSearch } from '@/lib/hooks/useGlobalSearch';
 import { SearchResult as GlobalSearchResult } from '@/lib/services/searchService';
 import { getSearchSuggestions } from '@/lib/services/searchService';
-import { getSearchHistory } from '@/lib/utils/searchHistory';
+
 import { useSession } from '@/contexts/SessionContext';
 
 interface QuickSearchProps {
@@ -253,4 +253,3 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
     </AnimatePresence>
   );
 }
-

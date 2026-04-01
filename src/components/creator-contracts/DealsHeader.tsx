@@ -7,7 +7,6 @@ import { Download, Filter, Briefcase, Clock, TrendingUp } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { DealStage, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 interface DealsHeaderProps {
   allDeals: BrandDeal[];
@@ -225,4 +224,3 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
 };
 
 export default DealsHeader;
-

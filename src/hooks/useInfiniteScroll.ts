@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface UseInfiniteScrollOptions {
   hasNextPage: boolean;
@@ -53,4 +53,3 @@ export const useInfiniteScroll = ({
 
   return observerTarget;
 };
-

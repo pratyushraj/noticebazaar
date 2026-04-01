@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CalendarDays, ArrowRight, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ComplianceDeadline } from '@/types'; // Use ComplianceDeadline from types
-import { cn } from '@/lib/utils';
+
 import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorImportantDeadlinesProps {

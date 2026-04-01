@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Activity } from '@/types';
 import { useSupabaseQuery } from './useSupabaseQuery'; // Import new hook

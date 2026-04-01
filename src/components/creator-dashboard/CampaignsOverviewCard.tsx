@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { BrandDeal } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PINK_THEME } from '@/constants/colors';
 
 interface CampaignsOverviewCardProps {
   activeCampaigns: number;
@@ -185,4 +184,3 @@ const CampaignsOverviewCard: React.FC<CampaignsOverviewCardProps> = ({
 };
 
 export default CampaignsOverviewCard;
-

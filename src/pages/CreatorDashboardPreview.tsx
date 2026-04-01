@@ -26,7 +26,7 @@ import Navbar from '@/components/navbar/Navbar';
 import CreatorBottomNav from '@/components/creator-dashboard/CreatorBottomNav';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+
 import CountUp from 'react-countup';
 // New UI features
 import MoneyRain from '@/components/celebrations/MoneyRain';
@@ -848,4 +848,3 @@ const CreatorDashboardPreview = () => {
 };
 
 export default CreatorDashboardPreview;
-

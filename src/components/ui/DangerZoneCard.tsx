@@ -8,7 +8,7 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BaseCard } from '@/components/ui/card-variants';
-import { spacing, typography, iconSizes, buttons } from '@/lib/design-system';
+import { spacing, typography, iconSizes } from '@/lib/design-system';
 
 interface DangerZoneCardProps {
   title: string;
@@ -64,4 +64,3 @@ export const DangerZoneCard: React.FC<DangerZoneCardProps> = ({
     </BaseCard>
   );
 };
-

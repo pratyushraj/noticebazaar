@@ -1,6 +1,5 @@
 "use client";
 
-import { useContext } from "react";
 import { toast, ExternalToast } from "sonner";
 
 // Types for toast options

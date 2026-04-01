@@ -7,7 +7,6 @@ import { useTaxFilings } from '@/lib/hooks/useTaxFilings';
 import { CalendarView, CalendarEvent, CalendarViewMode } from './CalendarView';
 import { CalendarEventModal } from './CalendarEventModal';
 import { useState } from 'react';
-import { BrandDeal } from '@/types';
 
 interface DeadlineCalendarProps {
   viewMode?: CalendarViewMode;
@@ -116,4 +115,3 @@ export function DeadlineCalendar({ viewMode = 'month' }: DeadlineCalendarProps) 
     </>
   );
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { Download, Filter, Search, CreditCard, ArrowDownRight } from 'lucide-react';
+import { Download, Search, CreditCard, ArrowDownRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { BrandDeal } from '@/types';
@@ -15,12 +15,11 @@ import { ExpenseCard } from '@/components/expenses/ExpenseCard';
 import { useExpenses } from '@/lib/hooks/useExpenses';
 import { exportPaymentsReport } from '@/lib/utils/exportPaymentsReport';
 import { PaymentCard } from '@/components/payments/PaymentCard';
-import { SummaryCard } from '@/components/payments/SummaryCard';
-import { ActionTile } from '@/components/payments/ActionTile';
+
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { calculatePaymentRiskLevel } from '@/lib/utils/paymentRisk';
 import { formatIndianCurrency } from '@/lib/utils/currency';
-import { spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, glass, shadows, radius, vision, motion as motionTokens, animations } from '@/lib/design-system';
+import { spacing, typography, separators, iconSizes, gradients, buttons, glass, shadows, radius, motion as motionTokens, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -33,7 +32,6 @@ const CreatorPaymentsAndRecovery = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showPaymentRequest, setShowPaymentRequest] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);
-
 
   // Fetch real brand deals data
   const { data: brandDeals = [], isLoading: isLoadingDeals, error: dealsError } = useBrandDeals({
@@ -135,7 +133,6 @@ const CreatorPaymentsAndRecovery = () => {
       netIncome
     };
   }, [brandDeals, expenses]);
-
 
   const filters = [
     { id: 'all', label: 'All' },
@@ -408,7 +405,6 @@ const CreatorPaymentsAndRecovery = () => {
 
     return filtered;
   }, [allTransactions, expenseTransactions, activeFilter, searchQuery]);
-
 
   const totalPending = useMemo(() =>
     allTransactions

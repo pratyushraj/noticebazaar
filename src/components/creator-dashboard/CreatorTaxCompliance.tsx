@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calculator, ArrowRight } from 'lucide-react';
  // Changed AlertTriangle to Calculator
 import { MOCK_TAX_COMPLIANCE_STATUS } from '@/data/creatorDashboardData';
-import { cn } from '@/lib/utils';
+
 import { Link } from 'react-router-dom'; // Import Link
 
 interface CreatorTaxComplianceProps {

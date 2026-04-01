@@ -4,9 +4,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Search, Filter, FileText, Send, Download, Scale, ChevronLeft, LogOut, Loader2 } from 'lucide-react';
-import { spacing, typography, iconSizes, radius, glass, shadows, animations } from '@/lib/design-system';
+import { motion } from 'framer-motion';
+import { MessageSquare, Search, FileText, Send, Download, Scale, ChevronLeft, LogOut, Loader2 } from 'lucide-react';
+import { iconSizes, glass, animations } from '@/lib/design-system';
 import { cn } from '@/lib/utils';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
@@ -1564,4 +1564,3 @@ function ConversationView({
     </div>
   );
 }
-

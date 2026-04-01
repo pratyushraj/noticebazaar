@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+
 import { cn } from '@/lib/utils';
 import { gradients, typography } from '@/lib/design-system';
 
@@ -271,4 +271,3 @@ const FeedbackPage = () => {
 };
 
 export default FeedbackPage;
-

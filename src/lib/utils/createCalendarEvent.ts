@@ -1,5 +1,5 @@
 import { CalendarEvent } from '@/components/calendar/CalendarView';
-import { downloadICalFile, generateGoogleCalendarUrl, openGoogleCalendar } from './calendarExport';
+import { downloadICalFile, openGoogleCalendar } from './calendarExport';
 
 /**
  * Create a calendar event for a deliverable or payment
@@ -99,4 +99,3 @@ Thank you!
 
 Best regards`;
 }
-

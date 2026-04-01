@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Search, ExternalLink, Mail, Globe, Filter, Download, RefreshCw, UserCheck, CheckCircle2, XCircle, Clock, ArrowLeft, Home } from 'lucide-react';
 import { useInfluencers, useUpdateInfluencerStatus, useInfluencerStats, Influencer } from '@/lib/hooks/useInfluencers';
-import { formatDate } from '@/lib/utils/date';
 
 const AdminInfluencers = () => {
   const { session, loading: sessionLoading, isAdmin } = useSession();
@@ -365,4 +364,3 @@ const AdminInfluencers = () => {
 };
 
 export default AdminInfluencers;
-

@@ -3,13 +3,13 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, Upload, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
+import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { useDealSignatures } from '@/lib/hooks/useDealSignatures';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
-import { useDeal, DealProvider } from '@/contexts/DealContext';
+import { useDeal } from '@/contexts/DealContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useIssues } from '@/lib/hooks/useIssues';
 import { useDealActionLogs } from '@/lib/hooks/useActionLogs';
@@ -30,7 +30,7 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { DealStatusCard } from '@/components/deals/DealStatusCard';
 import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
 import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
-import { animations, iconSizes } from '@/lib/design-system';
+
 import { motion } from 'framer-motion';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
 import { cn } from '@/lib/utils';
@@ -95,7 +95,6 @@ function DealDetailPageContent() {
   const { dealId } = useParams<{ dealId: string }>();
   const { profile, session, user } = useSession();
 
-
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
   const queryClient = useQueryClient();
@@ -125,7 +124,6 @@ function DealDetailPageContent() {
   // Remind brand state
   const [isSendingReminder, setIsSendingReminder] = useState(false);
   const [brandReplyLink, setBrandReplyLink] = useState<string | null>(null);
-
 
   // Brand phone edit state
   const [isEditingBrandPhone, setIsEditingBrandPhone] = useState(false);
@@ -303,7 +301,6 @@ function DealDetailPageContent() {
   }, [deal, dealId, isLoadingDeal, navigate]);
 
   // Signature fetching handled by useDealSignatures hook
-
 
   const handleSendCreatorOTP = async () => {
     console.log('[DealDetailPage] handleSendCreatorOTP clicked', {
@@ -655,7 +652,6 @@ function DealDetailPageContent() {
 
     fetchProtectionData();
   }, [deal?.id, (deal as any)?.analysis_report_id]);
-
 
   // Get latest issue - useMemo must be called unconditionally
   const latestIssue = useMemo(() => {
@@ -3124,7 +3120,6 @@ ${link}`;
             </div>
           </DialogContent>
         </Dialog >
-
 
         {/* Invoice Ready */}
         {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { Briefcase, Wallet, Shield, Link2, Calendar, Plus, Upload, Settings, LogOut, Bell, HelpCircle, BarChart3, ChevronRight, CalendarCheck, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from "react-router-dom";
@@ -8,7 +8,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { getInitials } from "@/lib/utils/avatar";
 import { cn } from "@/lib/utils";
 import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
-import { animations, spotlight, radius, iconSizes, spacing, separators, gradients, shadows, typography, getCardClasses } from "@/lib/design-system";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DEFAULT_AVATAR_URL, generateAvatarUrl } from "@/lib/utils/avatar";
 

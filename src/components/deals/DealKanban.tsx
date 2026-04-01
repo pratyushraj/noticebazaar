@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { BrandDeal } from '@/types';
 import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
 import { DealStage } from '@/components/creator-contracts/DealStatusBadge';
-import { cn } from '@/lib/utils';
+
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -149,4 +149,3 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
 };
 
 export default DealKanban;
-

@@ -3,12 +3,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, ArrowRight, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+
 import { useNavigate } from 'react-router-dom';
 import { BrandDeal } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Button } from '@/components/ui/button';
 
 interface ActiveCampaignsCardProps {
   activeCampaigns: number;
@@ -122,4 +121,3 @@ const ActiveCampaignsCard: React.FC<ActiveCampaignsCardProps> = ({
 };
 
 export default ActiveCampaignsCard;
-

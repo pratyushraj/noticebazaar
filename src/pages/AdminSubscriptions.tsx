@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { supabase } from '@/integrations/supabase/client';
+
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useAddActivityLog } from '@/lib/hooks/useActivityLog';
-import { Subscription, Profile } from '@/types';
+import { Subscription } from '@/types';
 import { useAdminSubscriptions, useUpdateSubscription, useDeleteSubscription, useAddSubscription } from '@/lib/hooks/useSubscriptions'; // Updated import
 import { useProfiles } from '@/lib/hooks/useProfiles'; // To get client names for new subscriptions
 import { usePagination } from '@/lib/hooks/usePagination'; // Import usePagination

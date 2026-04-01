@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { toast } from 'sonner';
@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Play, Search, CheckCircle2, XCircle, TrendingUp, Users, ArrowLeft, Home } from 'lucide-react';
 import { useRunDiscoveryScan, DiscoveryScanParams } from '@/lib/hooks/useInfluencers';
-import { formatDateTime } from '@/lib/utils/date';
 
 const AdminDiscovery = () => {
   const { session, loading: sessionLoading, isAdmin } = useSession();
@@ -377,4 +376,3 @@ const AdminDiscovery = () => {
 };
 
 export default AdminDiscovery;
-

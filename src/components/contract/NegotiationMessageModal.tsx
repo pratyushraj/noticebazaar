@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Send, Mail, MessageSquare, Download, Loader2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface NegotiationMessageModalProps {

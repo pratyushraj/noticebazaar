@@ -10,7 +10,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/types/supabase';
-import { Profile } from '@/types';
+
 import {
   ServiceResult,
   ok,

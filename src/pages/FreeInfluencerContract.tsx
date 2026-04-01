@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileText, Download, Shield, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
+import { FileText, Shield, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { FAQSchema } from '@/components/seo/SchemaMarkup';
@@ -412,4 +411,3 @@ const FreeInfluencerContract = () => {
 };
 
 export default FreeInfluencerContract;
-

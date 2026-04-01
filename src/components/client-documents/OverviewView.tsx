@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, File, FolderOpen, Tag, Settings, Briefcase, Handshake, Wallet, Badge as BadgeIcon, Home, MoreVertical, Trash2, FileUp } from 'lucide-react';
-import { toast } from 'sonner';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {

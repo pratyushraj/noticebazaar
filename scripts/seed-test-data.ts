@@ -12,7 +12,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
-import { readFileSync } from 'fs';
+
 import { join } from 'path';
 
 // Load environment variables
@@ -258,4 +258,3 @@ async function seedTestData() {
 
 // Run the seed script
 seedTestData();
-

@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { TaxFiling, TaxSetting } from '@/types';
 import { useTaxFilings, useUpdateTaxFiling } from '@/lib/hooks/useTaxFilings';
-import { useTaxSettings, useUpsertTaxSettings } from '@/lib/hooks/useTaxSettings';
+import { useTaxSettings } from '@/lib/hooks/useTaxSettings';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+
 import FilingUploadForm from '@/components/creator-tax/FilingUploadForm'; // NEW: Import the new form
 import TaxProfileSetupForm from '@/components/creator-tax/TaxProfileSetupForm'; // NEW: Import the new setup form
 
@@ -290,7 +290,6 @@ const CreatorTaxCompliancePage = () => {
 };
 
 export default CreatorTaxCompliancePage;
-
 
 // --- Tax Settings Dialog Component ---
 

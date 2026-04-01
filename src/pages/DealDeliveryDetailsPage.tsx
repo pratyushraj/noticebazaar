@@ -6,7 +6,7 @@ import { Package, Lock } from 'lucide-react';
 import { useSession } from "@/contexts/SessionContext";
 import { useBrandDealById } from "@/lib/hooks/useBrandDeals";
 import { getApiBaseUrl } from "@/lib/utils/api";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ import { trackEvent } from "@/lib/utils/analytics";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { CreatorNavigationWrapper } from "@/components/navigation/CreatorNavigationWrapper";
-import { gradients, spacing, typography, animations, buttons } from "@/lib/design-system";
+import { buttons } from "@/lib/design-system";
 
 export default function DealDeliveryDetailsPage() {
   const { dealId } = useParams<{ dealId: string }>();

@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Trophy, Star, Zap, Shield, TrendingUp, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
 
 export type AchievementId = 
   | 'first-deal'
@@ -206,4 +205,3 @@ export const AchievementDisplay = ({ earnedAchievements, className }: Achievemen
 
 export { achievements };
 export type { Achievement };
-

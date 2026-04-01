@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2, Check, Menu, X, Clock, IndianRupee, Star, ArrowRight, MessageSquare, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, Send, FileText, Instagram, Globe } from 'lucide-react';
+import { Loader2, Check, Menu, X, Clock, IndianRupee, Star, ArrowRight, MessageSquare, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, FileText, Instagram } from 'lucide-react';
  // Replaced Tiktok with Globe
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 import { useParallax } from '@/lib/hooks/useParallax'; // Import the new hook
-import LeadCaptureForm from '@/components/LeadCaptureForm'; // Import the new component
+
 import NewsletterSignup from '@/components/NewsletterSignup'; // Import the new component
-import CaseStudyCard from '@/components/CaseStudyCard'; // Import the new component
-import { CREATOR_PLAN_DETAILS, CreatorPlanName } from '@/data/creatorPlanDetails'; // Import Creator plan details
+
+import { CREATOR_PLAN_DETAILS } from '@/data/creatorPlanDetails'; // Import Creator plan details
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 
 // The Google Forms URL provided by the user (kept for other CTAs)
@@ -543,7 +543,6 @@ const MarketingHome = () => {
             </div>
           </div>
         </section>
-
 
         {/* SECTION 10 — WhatsApp Legal Vault (New Highlight) */}
         <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">

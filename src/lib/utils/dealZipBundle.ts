@@ -1,5 +1,3 @@
-import JSZip from 'jszip';
-import { downloadFile } from './fileDownload';
 
 export interface DealDocument {
   url: string | null;
@@ -125,4 +123,3 @@ export async function downloadDealZipBundle(
     throw error;
   }
 }
-

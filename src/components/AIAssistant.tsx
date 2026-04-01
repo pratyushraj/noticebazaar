@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Loader2, Bot, Send, Briefcase, Clock, CreditCard, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -103,7 +103,6 @@ const openCalendlyWidget = () => {
     console.warn("Calendly script not loaded. Cannot open widget.");
   }
 };
-
 
 const AIAssistant = ({ 
   onClose, 
@@ -771,13 +770,6 @@ const AIAssistant = ({
 
       {/* Close Button */}
       <DialogFooter className="p-4 border-t border-border">
-        <Button variant="outline" onClick={onClose}>Close Assistant</Button>
-      </DialogFooter>
-    </div>
-  );
-};
-
-export default AIAssistant;der">
         <Button variant="outline" onClick={onClose}>Close Assistant</Button>
       </DialogFooter>
     </div>

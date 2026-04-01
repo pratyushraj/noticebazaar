@@ -7,7 +7,7 @@
 import React from 'react';
 import { LucideIcon, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { spacing, typography, iconSizes, animations, radius, glass } from '@/lib/design-system';
+import { spacing, typography, iconSizes, animations } from '@/lib/design-system';
 
 interface ListItemProps {
   icon?: LucideIcon;
@@ -92,4 +92,3 @@ export const ListItem: React.FC<ListItemProps> = ({
     </Component>
   );
 };
-

@@ -1,5 +1,4 @@
 import { FileUp, MessageSquare, CalendarDays, User as UserIcon, Activity as ActivityIcon, CreditCard } from 'lucide-react';
-import React from 'react';
 
 export const getActivityIcon = (description: string) => {
   const lowerDescription = description.toLowerCase();

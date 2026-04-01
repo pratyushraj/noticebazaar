@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
 
 interface FullScreenLoaderProps {
   message?: string;
@@ -120,4 +119,3 @@ export const FullScreenLoader = ({
 };
 
 export default FullScreenLoader;
-

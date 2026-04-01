@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {  } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import BrandLogo from '@/components/creator-contracts/BrandLogo';
-import { cn } from '@/lib/utils';
+
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface TopBrandsCarouselProps {
@@ -74,4 +74,3 @@ export const TopBrandsCarousel: React.FC<TopBrandsCarouselProps> = ({ brandDeals
 };
 
 export default TopBrandsCarousel;
-

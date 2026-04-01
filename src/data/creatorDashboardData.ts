@@ -1,5 +1,4 @@
-import { LucideIcon, DollarSign, Briefcase, FileText, ShieldCheck, Clock, AlertTriangle, MessageSquare, CalendarDays, IndianRupee, CheckCircle, XCircle, Bot } from 'lucide-react';
-import { ComplianceDeadline } from '@/types'; // Import the real type
+import { LucideIcon, DollarSign, Briefcase, FileText, ShieldCheck, Clock, AlertTriangle, MessageSquare, IndianRupee, Bot } from 'lucide-react';
 
 // --- Types for Mock Data ---
 export interface CreatorKpi {
@@ -112,7 +111,6 @@ export const MOCK_CONTRACTS_REQUIRING_REVIEW: ContractReview[] = [
   { id: '1', title: 'MamaEarth Deal - 2 clauses risky', status: 'risky' },
   { id: '2', title: 'XYZ Agency - missing usage rights details', status: 'missing_rights' },
 ];
-
 
 export const MOCK_TAX_COMPLIANCE_STATUS = {
   amount: '₹2,85,700',

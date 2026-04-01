@@ -5,7 +5,6 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { Database } from '@/types/supabase';
 
 type AuditSeverity = 'info' | 'warning' | 'error' | 'security';
 type ResourceType = 
@@ -139,4 +138,3 @@ export async function logContractIssueEvent(
     severity: action === 'deleted' ? 'warning' : 'info',
   });
 }
-

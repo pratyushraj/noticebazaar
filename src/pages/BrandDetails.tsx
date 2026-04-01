@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Star, Clock, DollarSign, ExternalLink, TrendingUp, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+
 import { Loader2 } from 'lucide-react';
 import { EmptyState } from '@/components/empty-states/EmptyState';
 import { useState } from 'react';
@@ -355,4 +355,3 @@ const BrandDetails = () => {
 };
 
 export default BrandDetails;
-

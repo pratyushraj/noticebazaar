@@ -9,7 +9,6 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { BrandDeal } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
 
 interface MoneyOverviewProps {
   pendingPayments: number;

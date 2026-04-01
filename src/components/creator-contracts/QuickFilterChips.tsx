@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
+
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -96,4 +96,3 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
 };
 
 export default QuickFilterChips;
-

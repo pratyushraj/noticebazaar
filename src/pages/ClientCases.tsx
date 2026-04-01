@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { Button } from '@/components/ui/button';
 import { Loader2, Eye, FileText } from 'lucide-react';
  // Added FileText icon
@@ -10,9 +10,8 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { useCases } from '@/lib/hooks/useCases';
 import { usePagination } from '@/lib/hooks/usePagination';
-import { Card, CardContent } from '@/components/ui/card'; // Import Card components
+import { Card } from '@/components/ui/card'; // Import Card components
 import { Link } from 'react-router-dom'; // Import Link
-import { Case } from '@/types'; // Import Case type
 
 const ClientCases = () => {
   const { profile, loading: sessionLoading } = useSession();
@@ -87,7 +86,6 @@ const ClientCases = () => {
       return deadlineA - deadlineB;
     });
   }, [rawCases]);
-
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {

@@ -4,7 +4,6 @@
  * Generates professional invoices as PDFs using jsPDF
  */
 
-import jsPDF from 'jspdf';
 import { BrandDeal } from '@/types';
 
 export interface InvoiceData {
@@ -241,4 +240,3 @@ export async function uploadInvoiceToStorage(
 
   return publicUrlData.publicUrl;
 }
-

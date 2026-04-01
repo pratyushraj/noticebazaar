@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, UtensilsCrossed, Plane, Phone, Wallet, MoreHorizontal, Shield, ArrowRight, Car, Wrench, Heart, HelpCircle, ArrowLeft } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/contexts/SessionContext';
-import { isCreatorProSync } from '@/lib/subscription';
 
 interface Category {
   id: string;
@@ -221,8 +220,3 @@ const ConsumerComplaintsPage: React.FC = () => {
 };
 
 export default ConsumerComplaintsPage;
-
-
-
-
-

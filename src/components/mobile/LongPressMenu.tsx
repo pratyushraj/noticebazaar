@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {  } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { useNativeShare } from '@/hooks/useNativeShare';
-import { toast } from 'sonner';
 
 interface LongPressMenuItem {
   label: string;
@@ -130,4 +129,3 @@ const LongPressMenu: React.FC<LongPressMenuProps> = ({
 };
 
 export default LongPressMenu;
-

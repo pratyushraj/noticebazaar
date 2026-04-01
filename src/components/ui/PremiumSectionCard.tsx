@@ -7,7 +7,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { BaseCard } from '@/components/ui/card-variants';
-import { spacing, typography, separators } from '@/lib/design-system';
+import { typography, separators } from '@/lib/design-system';
 
 interface PremiumSectionCardProps {
   title?: string;
@@ -58,4 +58,3 @@ export const PremiumSectionCard: React.FC<PremiumSectionCardProps> = ({
     </BaseCard>
   );
 };
-

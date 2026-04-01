@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/ui/empty-state';
+
 import { BrandDeal } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -84,4 +84,3 @@ const CompletedCampaignsCard: React.FC<CompletedCampaignsCardProps> = ({
 };
 
 export default CompletedCampaignsCard;
-

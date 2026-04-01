@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import { useParams, Navigate } from 'react-router-dom';
 
 /**

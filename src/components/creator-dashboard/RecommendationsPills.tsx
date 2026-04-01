@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingDown, AlertCircle, Users, FileText, ChevronDown, X, Zap } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -305,4 +305,3 @@ const RecommendationsPills: React.FC = () => {
 };
 
 export default RecommendationsPills;
-

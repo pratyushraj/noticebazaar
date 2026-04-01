@@ -4,7 +4,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
-import { getTrialStatus } from '@/lib/trial';
 
 const AccountSummary: React.FC = () => {
   const { profile, trialStatus } = useSession();
@@ -112,4 +111,3 @@ const AccountSummary: React.FC = () => {
 };
 
 export default AccountSummary;
-

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Briefcase, Wallet, FileText, Bell, Clock, X, Filter } from 'lucide-react';
+import { Search, Briefcase, Wallet, FileText, Bell, Clock, X } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useGlobalSearch } from '@/lib/hooks/useGlobalSearch';
 import { SearchResult } from '@/lib/services/searchService';
@@ -235,4 +235,3 @@ export default function SearchResults() {
     </div>
   );
 }
-

@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { Message, Profile } from '@/types';
+
 import { useMessages, useSendMessage } from '@/lib/hooks/useMessages';
 import {
   useConversationMessages,

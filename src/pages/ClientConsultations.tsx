@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { Button } from '@/components/ui/button';
 import { Loader2, XCircle, Eye } from 'lucide-react';
  // Added Eye icon
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useAddActivityLog } from '@/lib/hooks/useActivityLog';
 import { usePagination } from '@/lib/hooks/usePagination';
-import { Card, CardContent } from '@/components/ui/card'; // Import Card components
+import { Card } from '@/components/ui/card'; // Import Card components
 import { Link } from 'react-router-dom'; // Import Link
 
 const ClientConsultations = () => {

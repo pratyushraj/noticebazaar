@@ -10,7 +10,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/types/supabase';
-import { Brand, BrandReview, Opportunity } from '@/types';
+import { BrandReview, Opportunity } from '@/types';
 import {
   ServiceResult,
   QueryOptions,

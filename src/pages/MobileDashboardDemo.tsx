@@ -19,11 +19,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { DealStage, getDealStageFromStatus, STAGE_TO_PROGRESS, STAGE_TO_STATUS, useUpdateDealProgress } from '@/lib/hooks/useBrandDeals';
 import { dealPrimaryCtaButtonClass, getDealPrimaryCta } from '@/lib/deals/primaryCta';
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
-import { DealTemplate } from '@/types';
+
 import DashboardMetricsCards from '@/components/dashboard/DashboardMetricsCards';
 import DealSearchFilter from '@/components/dashboard/DealSearchFilter';
 import EnhancedEmptyStates from '@/components/dashboard/EnhancedEmptyStates';
-import SkeletonLoader from '@/components/dashboard/SkeletonLoader';
+
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import AchievementBadges from '@/components/dashboard/AchievementBadges';
 import PaymentTimeline from '@/components/dashboard/PaymentTimeline';
@@ -566,7 +566,6 @@ const MobileDashboardDemo = ({
             document.documentElement.classList.remove('light');
         };
     }, [theme]);
-
 
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [completionDismissed, setCompletionDismissed] = useState(false);
@@ -3003,7 +3002,6 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
 
-
                                             {/* Where to Share Guide */}
                                             <div className={cn("p-3.5 rounded-3xl border mb-1", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
                                                 <p className={cn("text-[11px] font-bold mb-3", textColor)}>Where to share your deal page</p>
@@ -3023,11 +3021,9 @@ const MobileDashboardDemo = ({
                                         </motion.div>
                                     </div>
 
-
                                 </>
                             ) : (
                                 <>
-
 
                                     {/* Metrics Strip */}
                                     <div className="px-5 mb-8">
@@ -4236,7 +4232,6 @@ const MobileDashboardDemo = ({
                                                 </div>
                                             </div>
 
-
                                             <SectionHeader title="Account" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
@@ -4860,7 +4855,6 @@ const MobileDashboardDemo = ({
                                                         </div>
                                                     ))}
                                                 </div>
-
 
                                             </motion.div>
                                         )}

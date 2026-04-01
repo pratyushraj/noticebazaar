@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { PLAN_COMPARISON_FEATURES, PLAN_DETAILS, PlanName, PlanFeature } from '@/data/planDetails'; // Import data
+import { PLAN_COMPARISON_FEATURES, PLAN_DETAILS, PlanName } from '@/data/planDetails'; // Import data
 
 const plans = [
   { name: 'Essential' as PlanName, price: PLAN_DETAILS['Essential'].price, link: '/plan/essential', loginLink: PLAN_DETAILS['Essential'].link, isPopular: PLAN_DETAILS['Essential'].isPopular },

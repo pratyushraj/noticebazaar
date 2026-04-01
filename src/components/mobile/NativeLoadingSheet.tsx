@@ -6,7 +6,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { glass, radius, shadows, spacing } from '@/lib/design-system';
+import { glass, radius, shadows } from '@/lib/design-system';
 
 interface NativeLoadingSheetProps {
   isOpen: boolean;
@@ -70,4 +70,3 @@ export const NativeLoadingSheet: React.FC<NativeLoadingSheetProps> = ({
     </AnimatePresence>
   );
 };
-

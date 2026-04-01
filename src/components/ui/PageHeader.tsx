@@ -9,7 +9,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { spacing, typography, iconSizes, animations } from '@/lib/design-system';
+import { typography, iconSizes, animations } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 interface PageHeaderProps {
@@ -153,4 +153,3 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     </header>
   );
 };
-

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { typography, spacing } from '@/lib/design-system';
+import { typography } from '@/lib/design-system';
 
 interface SectionHeaderProps {
   title: string;
@@ -41,4 +41,3 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     </div>
   );
 };
-

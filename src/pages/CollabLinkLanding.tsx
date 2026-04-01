@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
+import { Edit, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -644,7 +643,6 @@ const CollabLinkLanding = () => {
     }
   }, [creator]);
 
-
   const isOwner = useMemo(() => {
     return Boolean(user?.id && creator?.id && user.id === creator.id);
   }, [user?.id, creator?.id]);
@@ -1050,7 +1048,6 @@ const CollabLinkLanding = () => {
   }, [username]);
 
   // No longer need local getApiBaseUrl helper as it's imported from @/lib/utils/api
-
 
   // Fetch company name and address from GST by GSTIN
   const handleGstLookup = async () => {
@@ -1682,8 +1679,6 @@ const CollabLinkLanding = () => {
   const elevationLevel2 = 'bg-white/[0.08] border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
   const elevationLevel3 = 'bg-white/[0.12] border border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
 
-
-
   // Readiness badge animation (must run before any conditional returns to preserve hook order)
 
   if (loading) {
@@ -2016,7 +2011,6 @@ const CollabLinkLanding = () => {
       document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
-
 
   const handleUpdateTemplate = (updated: DealTemplate) => {
     let updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
@@ -3202,7 +3196,6 @@ const CollabLinkLanding = () => {
 	                    </div>
                   </div>
                 )}
-
 
 	                {/* Step indicator (Now shows 5 steps) */}
 		                {showCustomFlow && (

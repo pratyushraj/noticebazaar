@@ -5,7 +5,7 @@ import { BrandDeal } from '@/types';
 import BrandLogo from './BrandLogo';
 import DealStatusBadge from './DealStatusBadge';
 import { DealStage, DEAL_PROGRESS_STAGES } from '@/lib/hooks/useBrandDeals';
-import DeliverablesBadge from './DeliverablesBadge';
+
 import DealActionsMenu from './DealActionsMenu';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

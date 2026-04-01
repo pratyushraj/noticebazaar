@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Lightbulb } from 'lucide-react'; // Import Lightbulb
@@ -9,7 +9,7 @@ import { useClientSubscription } from '@/lib/hooks/useSubscriptions';
 import { Badge } from '@/components/ui/badge';
 import { Subscription } from '@/types';
 import { Button } from '@/components/ui/button'; // Import Button
-import { Link, useSearchParams } from 'react-router-dom'; // Import Link and useSearchParams
+import { useSearchParams } from 'react-router-dom'; // Import Link and useSearchParams
 import { useClientDashboardMetrics } from '@/lib/hooks/useClientDashboardMetrics'; // Import new hook
 import { useRazorpayCheckout } from '@/lib/hooks/useRazorpayCheckout'; // Import the new hook
 

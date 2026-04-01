@@ -9,20 +9,18 @@ import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals, getDealStageFromStatus, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
 import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/lib/utils/logger';
+
 import { isCreatorPro } from '@/lib/subscription';
 import { getInitials } from '@/lib/utils/avatar';
-import { motion } from 'framer-motion';
+
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
-import { cn } from '@/lib/utils';
-import { getApiBaseUrl, fetchWithTimeout } from '@/lib/utils/api';
+
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { withRetry } from '@/lib/utils/retry';
-import { getCollabReadiness } from '@/lib/collab/readiness';
-import { sectionLayout, animations, spacing, typography, separators, iconSizes, scroll, sectionHeader, gradients, buttons, shadows, radius, zIndex, vision, motion as motionTokens } from '@/lib/design-system';
-import { BaseCard, SectionCard, StatCard } from '@/components/ui/card-variants';
+
 import { DashboardSkeleton as EnhancedDashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
-import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
+
 import { QuickSearch } from '@/components/dashboard/QuickSearch';
 import AuthLoadingScreen from '@/components/AuthLoadingScreen';
 import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';

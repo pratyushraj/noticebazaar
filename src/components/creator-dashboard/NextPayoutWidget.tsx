@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { IndianRupee, Clock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import { BrandDeal } from '@/types';
 import { motion } from 'framer-motion';
-import { formatDate } from '@/lib/utils';
+
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -230,4 +230,3 @@ const NextPayoutWidget: React.FC<NextPayoutWidgetProps> = ({ brandDeals = [] }) 
 };
 
 export default NextPayoutWidget;
-

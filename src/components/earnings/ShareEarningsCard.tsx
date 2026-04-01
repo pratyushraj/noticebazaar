@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Share2, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
 
 interface ShareEarningsCardProps {
   earnings: number;
@@ -129,4 +128,3 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
 };
 
 export default ShareEarningsCard;
-

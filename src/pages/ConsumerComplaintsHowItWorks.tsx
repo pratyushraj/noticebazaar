@@ -2,14 +2,13 @@
 // Route: /consumer-complaints/how-it-works
 // Audience: Creators, general consumers, non-lawyers
 
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   FileText, Scale, CheckCircle, ArrowRight, Shield, 
   FileCheck, UserCheck, Lock, MessageSquare, X, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 
 export default function ConsumerComplaintsHowItWorks() {
   const navigate = useNavigate();
@@ -310,4 +309,3 @@ export default function ConsumerComplaintsHowItWorks() {
     </div>
   );
 }
-

@@ -2,13 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Check, Trash2, Clock, RotateCcw, Sparkles, Layout, Settings2 } from 'lucide-react';
 import { DealTemplate } from '@/types';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface FiverrPackageEditorProps {
   templates: DealTemplate[] | null;

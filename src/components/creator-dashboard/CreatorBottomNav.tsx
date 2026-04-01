@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Briefcase, Wallet, Link2, User } from 'lucide-react';
@@ -64,8 +63,6 @@ const CreatorBottomNav = () => {
       location.search.includes(path)
     );
   };
-
-
 
   const bottomNavContent = (
     <motion.div
@@ -226,4 +223,3 @@ const CreatorBottomNav = () => {
 };
 
 export default CreatorBottomNav;
-

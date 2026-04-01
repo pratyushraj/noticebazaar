@@ -1,12 +1,12 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Loader2, MessageSquare, Star, Phone } from 'lucide-react';
  // Import Phone icon
-import { Link } from 'react-router-dom';
+
 import { useProfiles } from '@/lib/hooks/useProfiles';
-import { getInitials, DEFAULT_AVATAR_URL, generateAvatarUrl } from '@/lib/utils/avatar';
+import { getInitials, generateAvatarUrl } from '@/lib/utils/avatar';
 import { useSession } from '@/contexts/SessionContext';
 import { Profile } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Download, IndianRupee, Loader2, Copy, Send, FileCheck, X, Wand2, Info, MessageSquare, Mail, ChevronDown, ChevronUp, DollarSign, FileCode, Ban, AlertCircle, Clock, Zap, Building2, Edit, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, CheckCircle, AlertTriangle, XCircle, Loader, Sparkles, Shield, Download, IndianRupee, Loader2, Copy, Send, FileCheck, X, Wand2, Info, MessageSquare, Mail, ChevronDown, ChevronUp, DollarSign, AlertCircle, Clock, Zap, Building2, Edit, Share2, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+
 import { AICounterProposal } from '@/components/contract/AICounterProposal';
-import { ClauseGenerationModal } from '@/components/contract/ClauseGenerationModal';
-import { NegotiationMessageModal } from '@/components/contract/NegotiationMessageModal';
-import { WhatsAppPreviewModal } from '@/components/contract/WhatsAppPreviewModal';
+
 import { MissingPriceAlert } from '@/components/contract/MissingPriceAlert';
 import { UniversalShareModal } from '@/components/deals/UniversalShareModal';
 import type { RiskLevel, Severity, ContractIssue, ContractVerifiedClause, ContractKeyTerms, AnalysisResults, AccordionSection, ActionType, ClauseState } from '@/lib/types/contract-analysis';
-import { getRiskScoreInfo, getRiskVerdictLabel, getKeyTermStatus, getIssueCategory, getImpactIfIgnored, getSuggestedFix, getNegotiationStrength, getTopIssues, getActionType, generateBrandRequests } from '@/lib/utils/contract-helpers';
+import { getRiskScoreInfo, getRiskVerdictLabel, getIssueCategory, getImpactIfIgnored, getSuggestedFix, getNegotiationStrength, getTopIssues } from '@/lib/utils/contract-helpers';
 import { useNavigate } from 'react-router-dom';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { useSession } from '@/contexts/SessionContext';
@@ -5644,9 +5642,6 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                   </div>
                 )}
 
-
-
-
                 {/* Old Recommended Actions - Removed */}
                 {false && analysisResults.issues.length > 0 && (
                   <>
@@ -5939,7 +5934,6 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       </div>
                     </div>
 
-
                     {/* Brand Approval Tracker */}
                     {brandApprovalStatus && (
                       <div className="mt-6 bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg">
@@ -6066,7 +6060,6 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     )}
                   </>
                 )}
-
 
                 {/* Desktop Action Buttons */}
                 <div className="hidden md:flex gap-3 max-w-3xl mx-auto">
@@ -6570,4 +6563,3 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 };
 
 export default ContractUploadFlow;
-

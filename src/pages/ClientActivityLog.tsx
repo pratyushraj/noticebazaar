@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useActivityLog } from '@/lib/hooks/useActivityLog';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { getActivityIcon } from '@/lib/utils/activity-icons';
-import { Card, CardContent } from '@/components/ui/card'; // Import Card components
+import { Card } from '@/components/ui/card'; // Import Card components
 
 const ClientActivityLog = () => {
   const { profile, loading: sessionLoading } = useSession();

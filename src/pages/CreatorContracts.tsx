@@ -9,7 +9,7 @@ import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { motion } from 'framer-motion';
 import { ContextualTipsProvider } from '@/components/contextual-tips/ContextualTipsProvider';
 import { FilteredNoMatchesEmptyState, NoDealsEmptyState } from '@/components/empty-states/PreconfiguredEmptyStates';
-import { animations, spacing, typography, motion as motionTokens, gradients } from '@/lib/design-system';
+import { animations, spacing, motion as motionTokens } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';

@@ -6,7 +6,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, BarChart3, Target, LineChart, Calendar, Award, ArrowLeft, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+
 import { cn } from '@/lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/navbar/Navbar';
@@ -16,8 +16,6 @@ import BrandInterestScore from '@/components/creator-dashboard/BrandInterestScor
 import CreatorScoreBadge from '@/components/creator-dashboard/CreatorScoreBadge';
 import ProjectedEarnings from '@/components/creator-dashboard/ProjectedEarnings';
 import GoalProgressAnnual from '@/components/creator-dashboard/GoalProgressAnnual';
-import LegalHealthScore from '@/components/creator-dashboard/LegalHealthScore';
-import TopPayingBrands from '@/components/creator-dashboard/TopPayingBrands';
 
 const InsightsPage: React.FC = () => {
   const { profile, loading: sessionLoading } = useSession();
@@ -232,4 +230,3 @@ const InsightsPage: React.FC = () => {
 };
 
 export default InsightsPage;
-

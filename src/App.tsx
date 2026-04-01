@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense, type ReactNode } from "react";
+import { useState, useEffect, lazy, Suspense, type ReactNode } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from "react-router-dom";

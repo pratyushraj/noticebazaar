@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, TrendingUp, IndianRupee, CheckCircle, AlertTriangle, ChevronRight, ArrowRight, DollarSign } from "lucide-react";
 
@@ -339,4 +339,3 @@ export default function DashboardWhitePreview() {
     </div>
   );
 }
-

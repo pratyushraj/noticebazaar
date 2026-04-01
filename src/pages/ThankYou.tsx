@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { CheckCircle, ArrowRight, CalendarDays, Clock, AlertTriangle, Zap, Lock, Instagram, Linkedin } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
 const ThankYou = () => {

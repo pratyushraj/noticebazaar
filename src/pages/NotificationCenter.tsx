@@ -2,13 +2,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, X, Filter, Search, ArrowLeft, CheckCircle2, DollarSign, FileText, Calendar, MessageCircle, Clock, Settings } from 'lucide-react';
+import { Bell, Check, X, Search, ArrowLeft, CheckCircle2, DollarSign, FileText, Calendar, MessageCircle, Clock, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotifications } from '@/lib/hooks/useNotifications';
 import { Notification, NotificationType } from '@/types/notifications';
-import { formatDistanceToNow, format } from '@/lib/utils/date';
+import { formatDistanceToNow } from '@/lib/utils/date';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -383,4 +383,3 @@ const NotificationCenter = () => {
 };
 
 export default NotificationCenter;
-

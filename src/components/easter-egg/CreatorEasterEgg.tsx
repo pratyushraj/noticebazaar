@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 
 interface CreatorEasterEggProps {
@@ -77,4 +77,3 @@ const CreatorEasterEgg: React.FC<CreatorEasterEggProps> = ({ onTrigger }) => {
 };
 
 export default CreatorEasterEgg;
-

@@ -8,10 +8,9 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { BrandDeal } from '@/types';
-import { Skeleton } from '@/components/ui/skeleton';
+
 import { EmptyState } from '@/components/ui/empty-state';
 import { Sparkline } from '@/components/ui/sparkline';
-import { PINK_THEME } from '@/constants/colors';
 
 interface MonthlyOverviewCardProps {
   current: number;
@@ -340,4 +339,3 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
 };
 
 export default MonthlyOverviewCard;
-

@@ -14,10 +14,10 @@ import {
   DialogTrigger, // Import DialogTrigger
 } from '@/components/ui/dialog';
 import DocumentUploadForm from '@/components/forms/DocumentUploadForm';
-import ConsultationBookingForm from '@/components/forms/ConsultationBookingForm';
+
 import { useCases } from '@/lib/hooks/useCases';
 import { useCategories, useDeleteCategory } from '@/lib/hooks/useCategories';
-import { Case, Category, Document } from '@/types';
+import { Category, Document } from '@/types';
 import { usePagination } from '@/lib/hooks/usePagination';
 
 // Import the new sub-components

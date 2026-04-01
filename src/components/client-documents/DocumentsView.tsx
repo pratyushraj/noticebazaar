@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Eye, File, Star, MoreVertical, FileText, FileUp, FileArchive, FileCode, FileImage, FileAudio, FileVideo, ArrowLeft, Search, Filter, ArrowDownWideNarrow, ArrowUpWideNarrow, Briefcase, Handshake, Wallet, Badge as BadgeIcon, Home } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDocuments, useUpdateDocument } from '@/lib/hooks/useDocuments';
-import { usePagination } from '@/lib/hooks/usePagination';
+
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,

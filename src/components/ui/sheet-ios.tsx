@@ -3,7 +3,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface IOSSheetProps {
   isOpen: boolean;
@@ -75,4 +74,3 @@ const IOSSheet: React.FC<IOSSheetProps> = ({
 };
 
 export default IOSSheet;
-

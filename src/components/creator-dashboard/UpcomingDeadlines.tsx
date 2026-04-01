@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { PINK_THEME } from '@/constants/colors';
 
 interface Deadline {
   date: string;

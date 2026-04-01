@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSession } from '@/contexts/SessionContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+
 import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useAddActivityLog } from '@/lib/hooks/useActivityLog'; // Import the new hook
-import { Document, Profile } from '@/types';
+
 import { useDocuments, useDeleteDocument } from '@/lib/hooks/useDocuments';
 import { usePagination } from '@/lib/hooks/usePagination'; // Import usePagination
 

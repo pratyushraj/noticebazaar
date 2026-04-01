@@ -1,9 +1,8 @@
 "use client";
 
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Briefcase, File, Eye, Star } from 'lucide-react';
@@ -16,7 +15,7 @@ import { useMessages } from '@/lib/hooks/useMessages';
 import { useProfiles } from '@/lib/hooks/useProfiles';
 import { getActivityIcon } from '@/lib/utils/activity-icons';
 import { toast } from 'sonner';
-import { Case, Document, Consultation, Message } from '@/types';
+
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';

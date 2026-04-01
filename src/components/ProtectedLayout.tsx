@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Layout from '@/components/Layout';

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { BrandDeal } from '@/types';
-import { cn } from '@/lib/utils';
 
 interface ForexTickerProps {
   brandDeals: BrandDeal[] | undefined;
@@ -75,4 +74,3 @@ export const ForexTicker: React.FC<ForexTickerProps> = ({ brandDeals }) => {
 };
 
 export default ForexTicker;
-

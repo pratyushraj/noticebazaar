@@ -1,7 +1,7 @@
 "use client";
 
 import { Briefcase, Wallet, FileText, Calendar, IndianRupee, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+
 import { CalendarEvent } from './CalendarView';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -187,4 +187,3 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
     </Dialog>
   );
 }
-

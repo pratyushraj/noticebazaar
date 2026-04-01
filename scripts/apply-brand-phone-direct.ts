@@ -3,7 +3,6 @@
  * Apply brand_phone migration using direct PostgreSQL connection
  */
 
-import { Client } from 'pg';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as dotenv from 'dotenv';
@@ -55,4 +54,3 @@ async function applyMigration() {
 }
 
 applyMigration().catch(console.error);
-

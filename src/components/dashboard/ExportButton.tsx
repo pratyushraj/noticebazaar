@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Download, FileText, FileJson, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -92,4 +92,3 @@ export function ExportButton({ data, className }: ExportButtonProps) {
     </DropdownMenu>
   );
 }
-
