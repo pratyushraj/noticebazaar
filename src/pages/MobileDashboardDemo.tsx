@@ -1239,6 +1239,7 @@ const MobileDashboardDemo = ({
             await navigator.clipboard.writeText(`creatorarmour.com/${username}`);
             toast.success("Link copied to clipboard!");
             triggerHaptic(HapticPatterns.success);
+            trackEvent('collab_link_shared', { method: 'copy' });
             setIsCollabLinkCopied(true);
             window.setTimeout(() => setIsCollabLinkCopied(false), 1800);
         } catch (e) {
@@ -1267,6 +1268,7 @@ const MobileDashboardDemo = ({
             if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
                 await navigator.share(shareData);
                 triggerHaptic(HapticPatterns.success);
+                trackEvent('collab_link_shared', { method: 'native_share' });
             } else {
                 await handleCopyStorefront();
             }
