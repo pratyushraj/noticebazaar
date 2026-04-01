@@ -6,6 +6,8 @@ import { useSupabaseQuery } from './useSupabaseQuery';
 import { useSupabaseMutation } from './useSupabaseMutation';
 import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/storage';
 import { logger } from '@/lib/utils/logger';
+import { validateNewDeal, validateDealAmount, validateEmail, validatePhone, validateFile, ALLOWED_FILE_TYPES, MAX_FILE_SIZES } from '@/lib/utils/validation';
+import { validateStatusTransition, DEAL_STATUS } from '@/lib/constants/dealStatuses';
 
 // Demo data for Brand Deals (used when database table doesn't exist or for preview)
 // Updated to match Payments page requirements exactly
@@ -482,6 +484,22 @@ export const useAddBrandDeal = () => {
       brand_email,
       payment_received_date
     }) => {
+      // ── Input validation ──────────────────────────────────────
+      const validationErrors = validateNewDeal({
+        brand_name,
+        deal_amount,
+        brand_email,
+        brand_phone: null, // passed separately in AddBrandDealVariables
+        contract_file,
+        invoice_file,
+        due_date,
+        payment_expected_date,
+      });
+      if (Object.keys(validationErrors).length > 0) {
+        const firstErr = Object.values(validationErrors)[0];
+        throw new Error(firstErr);
+      }
+
       let contract_file_url: string | null = null;
       let invoice_file_url: string | null = null;
 
@@ -656,6 +674,32 @@ export const useUpdateBrandDeal = () => {
   const queryClient = useQueryClient();
   return useSupabaseMutation<void, Error, UpdateBrandDealVariables>(
     async ({ id, creator_id, contract_file, original_contract_file_url, invoice_file, original_invoice_file_url, organization_id, ...updates }) => {
+      // ── Input validation (partial — only validate fields being updated) ──
+      if (updates.deal_amount !== undefined && updates.deal_amount !== null) {
+        const amountErr = validateDealAmount(updates.deal_amount);
+        if (amountErr) throw new Error(amountErr);
+      }
+      if (updates.brand_email !== undefined && updates.brand_email !== null) {
+        const emailErr = validateEmail(updates.brand_email);
+        if (emailErr) throw new Error(emailErr);
+      }
+      if (contract_file) {
+        const fileErr = validateFile(contract_file, {
+          allowedTypes: [...ALLOWED_FILE_TYPES.contracts],
+          maxSize: MAX_FILE_SIZES.contract,
+          label: 'Contract file',
+        });
+        if (fileErr) throw new Error(fileErr);
+      }
+      if (invoice_file) {
+        const fileErr = validateFile(invoice_file, {
+          allowedTypes: [...ALLOWED_FILE_TYPES.invoices],
+          maxSize: MAX_FILE_SIZES.invoice,
+          label: 'Invoice file',
+        });
+        if (fileErr) throw new Error(fileErr);
+      }
+
       let contract_file_url: string | null | undefined = undefined;
       let invoice_file_url: string | null | undefined = undefined;
 
@@ -1028,6 +1072,14 @@ export const useUpdateDealProgress = () => {
 
       if ((currentDeal as any)?.creator_id && String((currentDeal as any).creator_id) !== String(creator_id)) {
         throw new Error('You can only update your own deals.');
+      }
+
+      // Validate status transition using canonical rules
+      const currentStatus = (currentDeal as any)?.status || '';
+      const targetStatus = STAGE_TO_STATUS[stage];
+      const transitionErr = validateStatusTransition(currentStatus, targetStatus);
+      if (transitionErr) {
+        throw new Error(transitionErr);
       }
 
       // Validate sequential progression

@@ -2932,7 +2932,15 @@ const BrandMobileDashboard = ({
                                       <input
                                         type="file"
                                         accept="image/*,.pdf"
-                                        onChange={(e) => setPaymentProofFile(e.target.files?.[0] || null)}
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0] || null;
+                                          if (file && file.size > 5 * 1024 * 1024) {
+                                            toast.error('Receipt must be 5 MB or smaller');
+                                            e.target.value = '';
+                                            return;
+                                          }
+                                          setPaymentProofFile(file);
+                                        }}
                                         className={cn('block w-full text-[12px] font-semibold', isDark ? 'text-white/80 file:text-white' : 'text-slate-700')}
                                       />
                                       {paymentProofFile && (
