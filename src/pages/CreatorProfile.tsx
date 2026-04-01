@@ -1635,7 +1635,7 @@ const ProfileSettings = () => {
 
             {/* Rate */}
             <div className="bg-card rounded-xl p-4 border border-border mb-4">
-              <label className="text-sm font-medium mb-2 block">Typical Reel Price (INR)</label>
+              <label className="text-sm font-medium mb-2 block">Price per reel (INR)</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60">₹</span>
                 <input
@@ -1650,12 +1650,13 @@ const ProfileSettings = () => {
               </div>
               <p className="text-xs text-muted-foreground mt-2">
                 Your typical rate for a single Instagram reel collaboration.
+                <span className="block mt-1 text-emerald-600 font-medium">💡 Creators with 10K-50K followers typically charge ₹2K-5K per reel.</span>
               </p>
             </div>
 
             {/* Niches */}
             <div className="bg-card rounded-xl p-4 border border-border mb-4">
-              <label className="text-sm font-medium mb-2 block">Content Niches</label>
+              <label className="text-sm font-medium mb-2 block">What you post about</label>
               <p className="text-xs text-muted-foreground mb-3">Select up to 5 niches that describe your content.</p>
               <div className="flex flex-wrap gap-2">
                 {CONTENT_NICHE_OPTIONS.map((niche) => {
@@ -2595,7 +2596,7 @@ const ProfileSettings = () => {
                 missingStats.push({ label: 'Avg Reel Views', hint: 'Helps brands estimate your reach', field: 'avgViews' });
               }
               if (!formData.avgRateReel?.trim()) {
-                missingStats.push({ label: 'Typical Reel Price', hint: 'Sets expectations before deal talks', field: 'reelRate' });
+                missingStats.push({ label: 'Price per reel', hint: 'Sets expectations before deal talks', field: 'reelRate' });
               }
               if (!formData.collabRegionLabel?.trim()) {
                 missingStats.push({ label: 'Primary Audience Region', hint: 'Improves local brand matching', field: 'region' });
@@ -2731,7 +2732,7 @@ const ProfileSettings = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Typical Reel Price (INR)</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Price per reel (INR)</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/60">₹</span>
                     <input
@@ -2822,7 +2823,7 @@ const ProfileSettings = () => {
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Content Niches</label>
+                  <label className="text-xs text-muted-foreground mb-1.5 block font-medium">What you post about</label>
                   <div className="flex flex-wrap gap-2">
                     {CONTENT_NICHE_OPTIONS.map((niche) => {
                       const selected = formData.contentNiches.includes(niche);
