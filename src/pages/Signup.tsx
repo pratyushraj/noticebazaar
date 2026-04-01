@@ -674,7 +674,7 @@ const Signup = () => {
                 )}
 
 	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
-	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Join Armour'}
+	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Get Your Brand Deal Page'}
 	              </h2>
 	              <p className="text-slate-600 font-medium leading-relaxed">
 	                {showLogin
@@ -813,7 +813,7 @@ const Signup = () => {
                     )}
 	                  <div className="space-y-2">
 	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
-	                      {accountMode === 'brand' ? 'Work Email' : 'Your Email'}
+	                      Email
 	                    </Label>
 	                    <Input
 	                      id="signup-email"
@@ -860,7 +860,7 @@ const Signup = () => {
 	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
 	                  >
 	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                    {isLoading ? 'Creating Account...' : accountMode === 'brand' ? 'Create Brand Console' : 'Get My Collab Link'}
+	                    {isLoading ? 'Creating Account...' : accountMode === 'brand' ? 'Create Brand Console' : 'Get My Deal Page'}
 	                  </Button>
 	                </form>
 	              </div>
