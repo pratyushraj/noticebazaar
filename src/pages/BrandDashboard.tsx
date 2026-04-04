@@ -16,8 +16,6 @@ const BrandDashboard: React.FC = () => {
   const { profile } = useSession();
   const [tab, setTab] = useState<BrandTab>('active');
 
-  const [isLoading, setIsLoading] = useState(true);
-
   const isBrandUser = profile?.profile_type === 'brand' || profile?.role === 'brand';
 
   const { data: fetchedDeals = [], isLoading } = useBrandDeals({
