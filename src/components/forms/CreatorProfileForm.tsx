@@ -75,7 +75,7 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
         past_collabs: pastBrandWork.trim() ? toLines(pastBrandWork) : null,
       } as any);
 
-      toast.success('Profile updated');
+      // Silent save — no toast on every auto-save to avoid flooding the UI
       await refetchProfile?.();
       onSaveSuccess?.();
     } catch (error: any) {
