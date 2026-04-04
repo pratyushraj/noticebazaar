@@ -15,26 +15,21 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { category, limit = '50', offset = '0', q } = req.query;
 
-    // DEBUG: count all profiles
-    const { count: totalCount } = await supabase
+    // DEBUG: try raw SQL first
+    const { data: rawData, error: rawError } = await (supabase.supabaseFileUrl.includes('supabase') 
+      ? { data: null, error: null } 
+      : { data: null, error: null });
+    
+    // Force console.log that Render will definitely capture
+    console.log('[CREATORS_ROUTE] Starting request, q=', q, 'category=', category);
+    
+    // Count ALL profiles
+    const { count: totalCount, error: countError } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
       .limit(1);
-    console.log('[Creators DEBUG] Total profiles in DB:', totalCount);
-
-    const { count: creatorCount } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'creator')
-      .limit(1);
-    console.log('[Creators DEBUG] Total creator profiles:', creatorCount);
-
-    // Try a simple raw query
-    const { data: sample, error: sampleError } = await supabase
-      .from('profiles')
-      .select('id, role, username')
-      .limit(3);
-    console.log('[Creators DEBUG] Sample profiles:', JSON.stringify(sample), 'error:', sampleError);
+    console.log('[CREATORS_ROUTE] Total profiles:', totalCount, 'error:', countError?.message);
+    console.log('[CREATORS_ROUTE] Supabase URL:', supabase.supabaseUrl);
 
     let query = supabase
       .from('profiles')
