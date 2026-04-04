@@ -946,10 +946,10 @@ const ProfileSettings = () => {
     }
   };
 
-  const parsedReelRate = Number(formData.avgRateReel) || 0;
-  const parsedMinBudget = Number(formData.pricingMin) || 0;
-  const parsedMaxBudget = Number(formData.pricingMax) || 0;
-  const parsedAvgBudget = Number(formData.pricingAvg) || 0;
+  const parsedReelRate = Number(formData.avgRateReel.replace(/,/g, '')) || 0;
+  const parsedMinBudget = Number(formData.pricingMin.replace(/,/g, '')) || 0;
+  const parsedMaxBudget = Number(formData.pricingMax.replace(/,/g, '')) || 0;
+  const parsedAvgBudget = Number(formData.pricingAvg.replace(/,/g, '')) || 0;
 
   const normalizedRangeMin = parsedMinBudget > 0 ? parsedMinBudget : 2000;
   const normalizedRangeMax = parsedMaxBudget > 0 ? parsedMaxBudget : Math.max(normalizedRangeMin + 1000, 8000);
@@ -1062,7 +1062,7 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     if (hasManualDealSizeSelectionRef.current) return;
-    const rate = Number(formData.avgRateReel) || 0;
+    const rate = Number(formData.avgRateReel.replace(/,/g, '')) || 0;
     const suggested: TypicalDealSize = rate <= 1500 ? 'starter' : rate <= 5000 ? 'standard' : 'premium';
     const preset = TYPICAL_DEAL_SIZE_OPTIONS.find((option) => option.key === suggested);
     if (!preset) return;
@@ -1324,7 +1324,7 @@ const ProfileSettings = () => {
         updatePayload.creator_category = creatorCategoryValue;
       }
 
-      const avgRateReelValue = formData.avgRateReel?.trim();
+      const avgRateReelValue = formData.avgRateReel?.trim().replace(/,/g, '');
       if (avgRateReelValue) {
         updatePayload.avg_rate_reel = Number(avgRateReelValue);
       }
