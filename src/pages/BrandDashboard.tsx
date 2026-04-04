@@ -95,7 +95,7 @@ const BrandDashboard: React.FC = () => {
 
       <div className="px-4 py-6 space-y-6">
         {/* Stats */}
-        <BrandDealsStats allDeals={deals} isLoading={isLoading} />
+        <BrandDealsStats allDeals={deals} isLoading={isInitiallyLoading} />
 
         {/* Primary Actions */}
         <div className="flex gap-3">
@@ -126,7 +126,7 @@ const BrandDashboard: React.FC = () => {
               tab === 'all' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
             )}
           >
-            All ({allDeals.length})
+            All ({deals.length})
           </button>
         </div>
 
