@@ -7,9 +7,9 @@ const InfluencerRateCalculator = () => {
   const [rate, setRate] = useState(0);
 
   const calculateRate = () => {
-    const baseRates = { 10000: 5000, 50000: 15000, 100000: 30000 };
-    const platformMultipliers = { instagram: 1, youtube: 2.5, tiktok: 1.2 };
-    const nicheFactors = { tech: 1.5, beauty: 1.2, lifestyle: 1.0 };
+    const baseRates: Record<number, number> = { 10000: 5000, 50000: 15000, 100000: 30000 };
+    const platformMultipliers: Record<string, number> = { instagram: 1, youtube: 2.5, tiktok: 1.2 };
+    const nicheFactors: Record<string, number> = { tech: 1.5, beauty: 1.2, lifestyle: 1.0 };
     
     // Simple logic for the draft
     const base = baseRates[followers] || 10000;
