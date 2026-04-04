@@ -1042,6 +1042,21 @@ const CreatorDashboard = () => {
                       <p className="mt-2 text-sm text-slate-300">
                         Send this when a brand DMs you.
                       </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => window.open(`${collabUrl}?preview=1`, '_blank')}
+                          className="flex items-center gap-1.5 text-sm font-bold text-emerald-300 hover:text-emerald-200"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Preview your page
+                        </button>
+                        {storefrontViews > 0 && (
+                          <span className="text-xs text-slate-400">
+                            {storefrontViews.toLocaleString('en-IN')} profile view{storefrontViews === 1 ? '' : 's'}
+                          </span>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <>
@@ -1072,6 +1087,11 @@ const CreatorDashboard = () => {
                 <p className="mt-1 text-sm text-emerald-50/85">
                   When a brand sends an offer, it shows up here.
                 </p>
+                {storefrontViews > 0 && (
+                  <p className="mt-2 text-xs text-emerald-200/60">
+                    {storefrontViews.toLocaleString('en-IN')} people have viewed your collab page
+                  </p>
+                )}
               </section>
 
               <ProgressiveSetupCard />

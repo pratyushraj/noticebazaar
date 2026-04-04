@@ -2229,6 +2229,14 @@ const ProfileSettings = () => {
                   {formData.instagramHandle && (
                     <p className="text-xs text-muted-foreground/70 mt-1">
                       Link: {window?.location?.origin || ''}/{formData.instagramHandle}
+                      {' '}
+                      <button
+                        type="button"
+                        onClick={() => window.open(`/${formData.instagramHandle}?preview=1`, '_blank')}
+                        className="text-primary font-medium hover:underline ml-1"
+                      >
+                        Preview your page →
+                      </button>
                     </p>
                   )}
                 </div>
