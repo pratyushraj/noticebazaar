@@ -6,12 +6,14 @@ import { LazyRoute } from "./routeElements";
 const BrandDashboard = lazy(() => import("@/pages/BrandDashboard"));
 const BrandDealDetailPage = lazy(() => import("@/pages/BrandDealDetailPage"));
 const BrandNewDealPage = lazy(() => import("@/pages/BrandNewDealPage"));
+const BrandDiscoverPage = lazy(() => import("@/pages/BrandDiscoverPage"));
 
 export const BrandRoutes = () => (
   <>
     <Route path="/brand-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandDashboard /></ProtectedLayout></LazyRoute>} />
     <Route path="/brand-deal/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandDealDetailPage /></ProtectedLayout></LazyRoute>} />
     <Route path="/brand-new-deal" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandNewDealPage /></ProtectedLayout></LazyRoute>} />
+    <Route path="/brand-discover" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandDiscoverPage /></ProtectedLayout></LazyRoute>} />
     <Route path="/brand-settings" element={<Navigate to="/brand-dashboard" replace />} />
     <Route path="/upgrade" element={<Navigate to="/brand-dashboard" replace />} />
     <Route path="/messages" element={<Navigate to="/brand-dashboard" replace />} />

@@ -13,7 +13,7 @@ const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
 
   const navItems = [
     { id: 'pipeline' as const, label: 'Offers', icon: LayoutDashboard, path: '/brand-dashboard' },
-    { id: 'creators' as const, label: 'Collabs', icon: Briefcase, path: '/brand-dashboard' },
+    { id: 'creators' as const, label: 'Find Creators', icon: Briefcase, path: '/brand-discover' },
   ];
 
   const isActive = (path: string) => location.pathname.startsWith(path);
