@@ -110,7 +110,7 @@ export function useIssueHistory(issueId: string | undefined, enabled = true) {
 export function useCreateIssue() {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<Issue, CreateIssueInput>(
+  return useSupabaseMutation<Issue, Error, CreateIssueInput>(
     async (variables) => {
       const { data, error } = await supabase
         .from('issues')
@@ -172,7 +172,7 @@ export function useUpdateIssue() {
 export function useAddIssueHistory() {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<IssueHistory, CreateIssueHistoryInput>(
+  return useSupabaseMutation<IssueHistory, Error, CreateIssueHistoryInput>(
     async (variables) => {
       const { data, error } = await supabase
         .from('issue_history')

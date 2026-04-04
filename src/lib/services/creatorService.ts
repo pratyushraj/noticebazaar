@@ -48,6 +48,7 @@ export interface CreatorProfile {
   tiktok_followers: number | null;
   twitter_followers: number | null;
   facebook_followers: number | null;
+  last_instagram_sync: string | null;
   
   // Pricing
   pricing_min: number | null;
@@ -187,54 +188,56 @@ export class CreatorService implements ICreatorService {
     const { data, error } = await this.supabase
       .from('profiles')
       .select('*')
-      .eq('id', userId)
+      .eq('id', userId as any)
       .single();
 
     if (error) {
       return { success: false, error: mapSupabaseError(error) };
     }
 
-    // Transform to CreatorProfile
+    // Transform to CreatorProfile (data is typed as error result by Supabase - cast to access fields)
+    const d = data as any;
     const profile: CreatorProfile = {
-      id: data.id,
-      email: data.email || '',
-      first_name: data.first_name,
-      last_name: data.last_name,
-      avatar_url: data.avatar_url,
-      username: data.username,
-      bio: data.bio,
-      location: data.location,
-      phone: data.phone,
-      instagram_handle: data.instagram_handle,
-      youtube_channel_id: data.youtube_channel_id,
-      tiktok_handle: data.tiktok_handle,
-      twitter_handle: data.twitter_handle,
-      facebook_profile_url: data.facebook_profile_url,
-      instagram_followers: data.instagram_followers,
-      youtube_subs: data.youtube_subs,
-      tiktok_followers: data.tiktok_followers,
-      twitter_followers: data.twitter_followers,
-      facebook_followers: data.facebook_followers,
-      pricing_min: data.pricing_min,
-      pricing_avg: data.pricing_avg,
-      pricing_max: data.pricing_max,
-      avg_rate_reel: data.avg_rate_reel,
-      typical_story_rate: data.typical_story_rate,
-      typical_post_rate: data.typical_post_rate,
-      creator_category: data.creator_category,
-      content_niches: data.content_niches,
-      platforms: data.platforms,
-      goals: data.goals,
-      open_to_collabs: data.open_to_collabs,
-      bank_account_name: data.bank_account_name,
-      bank_account_number: data.bank_account_number,
-      bank_ifsc: data.bank_ifsc,
-      bank_upi: data.bank_upi,
-      gst_number: data.gst_number,
-      pan_number: data.pan_number,
-      onboarding_complete: data.onboarding_complete,
-      created_at: data.created_at,
-      updated_at: data.updated_at,
+      id: d.id,
+      email: d.email || '',
+      first_name: d.first_name,
+      last_name: d.last_name,
+      avatar_url: d.avatar_url,
+      username: d.username,
+      bio: d.bio,
+      location: d.location,
+      phone: d.phone,
+      instagram_handle: d.instagram_handle,
+      youtube_channel_id: d.youtube_channel_id,
+      tiktok_handle: d.tiktok_handle,
+      twitter_handle: d.twitter_handle,
+      facebook_profile_url: d.facebook_profile_url,
+      instagram_followers: d.instagram_followers,
+      last_instagram_sync: d.last_instagram_sync,
+      youtube_subs: d.youtube_subs,
+      tiktok_followers: d.tiktok_followers,
+      twitter_followers: d.twitter_followers,
+      facebook_followers: d.facebook_followers,
+      pricing_min: d.pricing_min,
+      pricing_avg: d.pricing_avg,
+      pricing_max: d.pricing_max,
+      avg_rate_reel: d.avg_rate_reel,
+      typical_story_rate: d.typical_story_rate,
+      typical_post_rate: d.typical_post_rate,
+      creator_category: d.creator_category,
+      content_niches: d.content_niches,
+      platforms: d.platforms,
+      goals: d.goals,
+      open_to_collabs: d.open_to_collabs,
+      bank_account_name: d.bank_account_name,
+      bank_account_number: d.bank_account_number,
+      bank_ifsc: d.bank_ifsc,
+      bank_upi: d.bank_upi,
+      gst_number: d.gst_number,
+      pan_number: d.pan_number,
+      onboarding_complete: d.onboarding_complete,
+      created_at: d.created_at,
+      updated_at: d.updated_at,
     };
 
     return ok(profile);
@@ -244,8 +247,8 @@ export class CreatorService implements ICreatorService {
     const { data, error } = await this.supabase
       .from('profiles')
       .select('*')
-      .eq('username', username)
-      .eq('role', 'creator')
+      .eq('username', username as any)
+      .eq('role', 'creator' as any)
       .single();
 
     if (error) {
@@ -253,7 +256,8 @@ export class CreatorService implements ICreatorService {
     }
 
     // Reuse getById transformation logic
-    return this.getById(data.id);
+    const d = data as any;
+    return this.getById(d.id);
   }
 
   async update(userId: string, input: UpdateCreatorInput): Promise<ServiceResult<CreatorProfile>> {
@@ -264,8 +268,8 @@ export class CreatorService implements ICreatorService {
 
     const { data, error } = await this.supabase
       .from('profiles')
-      .update(updatePayload)
-      .eq('id', userId)
+      .update(updatePayload as any)
+      .eq('id', userId as any)
       .select()
       .single();
 
@@ -385,27 +389,28 @@ export class CreatorService implements ICreatorService {
     const { data: deals, error } = await this.supabase
       .from('brand_deals')
       .select('deal_amount, status, payment_received_date')
-      .eq('creator_id', userId);
+      .eq('creator_id', userId as any);
 
     if (error) {
       return { success: false, error: mapSupabaseError(error) };
     }
 
+    const typedDeals = deals as any as Array<{ status?: string; deal_amount?: number; payment_received_date?: string }> || [];
     const stats: CreatorStats = {
-      totalDeals: deals?.length || 0,
-      completedDeals: deals?.filter(d => d.status === 'Completed').length || 0,
-      totalRevenue: deals
-        ?.filter(d => d.status === 'Completed')
-        .reduce((sum, d) => sum + (d.deal_amount || 0), 0) || 0,
-      pendingPayments: deals
-        ?.filter(d => !d.payment_received_date)
-        .reduce((sum, d) => sum + (d.deal_amount || 0), 0) || 0,
+      totalDeals: typedDeals.length,
+      completedDeals: typedDeals.filter(d => d.status === 'Completed').length,
+      totalRevenue: typedDeals
+        .filter(d => d.status === 'Completed')
+        .reduce((sum, d) => sum + (d.deal_amount || 0), 0),
+      pendingPayments: typedDeals
+        .filter(d => !d.payment_received_date)
+        .reduce((sum, d) => sum + (d.deal_amount || 0), 0),
       averageDealValue: 0,
       completionRate: 0,
     };
 
     stats.averageDealValue = stats.totalDeals > 0
-      ? Math.round((deals?.reduce((sum, d) => sum + (d.deal_amount || 0), 0) || 0) / stats.totalDeals)
+      ? Math.round((typedDeals.reduce((sum, d) => sum + (d.deal_amount || 0), 0)) / stats.totalDeals)
       : 0;
 
     stats.completionRate = stats.totalDeals > 0

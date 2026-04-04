@@ -518,6 +518,10 @@ const CollabLinkLanding = () => {
   const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [lastProfileSaveAt, setLastProfileSaveAt] = useState<Date | null>(null);
   const [previewAsBrand, setPreviewAsBrand] = useState(false);
+  const [barterProductImageUrl, setBarterProductImageUrl] = useState<string>('');
+  const [barterImageUploading, setBarterImageUploading] = useState(false);
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string>('');
+  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
 
   // If the brand came here via "Send offer", auto-open the offer flow.
   useEffect(() => {

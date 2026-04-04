@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { supabase } from '@/integrations/supabase/client';
+import { BrandDeal } from '@/types';
 import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
 import { Button } from '@/components/ui/button';
@@ -15,17 +16,33 @@ const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
   const [tab, setTab] = useState<BrandTab>('active');
+  const [deals, setDeals] = useState<BrandDeal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const isBrandUser = profile?.profile_type === 'brand' || profile?.role === 'brand';
+  const isBrandUser = profile?.role === 'brand';
 
-  const { data: fetchedDeals = [], isLoading } = useBrandDeals({
-    brandId: profile?.id,
-    limit: 50,
-    enabled: Boolean(profile?.id),
-  });
-
-  // Cast fetched deals to the right type
-  const deals = (fetchedDeals as unknown) as BrandDealRow[];
+  useEffect(() => {
+    if (!profile?.id || !isBrandUser) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('brand_id', profile.id as any)
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[BrandDashboard] Failed to fetch deals:', error);
+          setDeals([]);
+        } else {
+          setDeals((data as unknown as BrandDeal[]) || []);
+        }
+        setIsLoading(false);
+      });
+  }, [profile?.id, isBrandUser]);
 
   // Filter deals by stage
   const activeDeals = deals.filter(deal => {
@@ -124,7 +141,7 @@ const BrandDashboard: React.FC = () => {
               tab === 'all' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
             )}
           >
-            All ({allDeals.length})
+            All ({deals.length})
           </button>
         </div>
 

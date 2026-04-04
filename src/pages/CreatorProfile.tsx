@@ -15,6 +15,7 @@ import { logger } from '@/lib/utils/logger';
 import { cn } from '@/lib/utils';
 
 import FiverrPackageEditor from '@/components/profile/FiverrPackageEditor';
+import { DealTemplate } from '@/types';
 import { fetchPincodeData, parseLocationString, formatLocationString } from '@/lib/utils/pincodeLookup';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { withRetry } from '@/lib/utils/retry';
@@ -507,7 +508,7 @@ const ProfileSettings = () => {
         collaborationPreference: savedCollabPreference,
         autoPricingEnabled: !!profile.auto_pricing_enabled,
         dealTemplates: Array.isArray(profile.deal_templates) ? profile.deal_templates : [],
-      });
+      } as any);
       setGenderSplit(profile.audience_gender_split || '');
       setTopCities(
         Array.isArray(profile.top_cities)
@@ -1969,7 +1970,7 @@ const ProfileSettings = () => {
                   >
                     {(profile.instagram_profile_photo || profile.avatar_url) && !profilePhotoError ? (
                       <img
-                        src={profile.instagram_profile_photo || profile.avatar_url}
+                        src={(profile.instagram_profile_photo || profile.avatar_url) ?? ''}
                         alt={userData.name}
                         className="w-full h-full object-cover"
                         onError={() => setProfilePhotoError(true)}

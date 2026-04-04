@@ -43,6 +43,7 @@ const CollabRequestsPage = () => {
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
   const [failedBarterImages, setFailedBarterImages] = useState<Record<string, boolean>>({});
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     if (error) {
@@ -126,6 +127,7 @@ const CollabRequestsPage = () => {
 
   const acceptRequest = (request: CollabRequest) => {
     if (!request) return;
+    setAcceptingRequestId(request.id);
     navigate(`/collab-requests/${request.id}/brief`, { state: { request } });
   };
 

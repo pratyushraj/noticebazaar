@@ -160,17 +160,18 @@ const CollabRequestBriefPage = () => {
         const { data, error } = await supabase
           .from('collab_requests')
           .select('*')
-          .eq('id', effectiveRequestId)
+          .eq('id', effectiveRequestId as any)
           .maybeSingle();
 
         if (cancelled) return;
         if (error) throw error;
         if (!data) throw new Error('Offer not found');
-        if (profile?.id && data.creator_id && data.creator_id !== profile.id) {
+        const d = data as any;
+        if (profile?.id && d.creator_id && d.creator_id !== profile.id) {
           throw new Error('You do not have access to this offer');
         }
 
-        setRequest(data as any);
+        setRequest(d);
       } catch (err: any) {
         if (cancelled) return;
         setLoadError(err?.message || 'Failed to load offer details');
@@ -660,7 +661,7 @@ const CollabRequestBriefPage = () => {
 
                 <div className="space-y-3" role="group" aria-labelledby="offer-action-heading">
                   <button type="button"
-                    onClick={handleAccept}
+                    onClick={() => handleAccept()}
                     disabled={isAccepting || isDeclining}
                     className={cn(
                       "w-full h-14 rounded-2xl font-black text-base text-white transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black",
@@ -748,7 +749,7 @@ const CollabRequestBriefPage = () => {
 
               <div className="flex gap-3">
                 <button type="button"
-                  onClick={handleAccept}
+                  onClick={() => handleAccept()}
                   disabled={isAccepting || isDeclining}
                   className={cn(
                     "flex-1 h-14 rounded-xl font-black text-base uppercase tracking-wider text-white transition-colors shadow-lg",

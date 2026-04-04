@@ -798,17 +798,18 @@ export const useUpdateBrandDeal = () => {
   );
 };
 
-export const useBrandDealById = (dealId: string | undefined, creatorId: string | undefined) => {
+export const useBrandDealById = (dealId: string | undefined, userId: string | undefined, role: 'creator' | 'brand' = 'creator') => {
+  const queryKey = ['brand_deal', dealId, userId, role];
   return useSupabaseQuery<BrandDeal | null, Error>(
-    ['brand_deal', dealId, creatorId],
+    queryKey,
     async () => {
-      if (!dealId || !creatorId) return null;
+      if (!dealId || !userId) return null;
 
       const { data, error } = await (supabase
         .from('brand_deals')
         .select('*')
         .eq('id', dealId)
-        .eq('creator_id', creatorId)
+        .eq(role === 'brand' ? 'brand_id' : 'creator_id', userId)
         .single() as any);
 
       if (error) {
@@ -829,7 +830,7 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
       return (data as unknown as BrandDeal) ?? null;
     },
     {
-      enabled: !!dealId && !!creatorId,
+      enabled: !!dealId && !!userId,
       errorMessage: 'Failed to fetch brand deal',
       retry: false,
     }

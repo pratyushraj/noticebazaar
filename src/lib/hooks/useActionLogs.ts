@@ -54,7 +54,7 @@ export function useDealActionLogs(dealId: string | undefined, enabled = true) {
 export function useCreateActionLog() {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<DealActionLog, CreateActionLogInput>(
+  return useSupabaseMutation<DealActionLog, Error, CreateActionLogInput>(
     async (variables) => {
       const { data, error } = await supabase
         .from('deal_action_logs')
