@@ -15,6 +15,27 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { category, limit = '50', offset = '0', q } = req.query;
 
+    // DEBUG: count all profiles
+    const { count: totalCount } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .limit(1);
+    console.log('[Creators DEBUG] Total profiles in DB:', totalCount);
+
+    const { count: creatorCount } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'creator')
+      .limit(1);
+    console.log('[Creators DEBUG] Total creator profiles:', creatorCount);
+
+    // Try a simple raw query
+    const { data: sample, error: sampleError } = await supabase
+      .from('profiles')
+      .select('id, role, username')
+      .limit(3);
+    console.log('[Creators DEBUG] Sample profiles:', JSON.stringify(sample), 'error:', sampleError);
+
     let query = supabase
       .from('profiles')
       .select(`
