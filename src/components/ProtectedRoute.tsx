@@ -12,6 +12,7 @@ import { routes } from '@/lib/routes';
 interface ProtectedRouteProps {
   children: ReactNode;
   allowedRoles?: ('client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer' | 'brand')[];
+  requiredRole?: 'client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer' | 'brand';
 }
 
 const LOADER_TIMEOUT_MS = 8000;
@@ -48,7 +49,7 @@ function getTargetDashboard(profile: any): string {
     case 'chartered_accountant': return '/ca-dashboard';
     case 'brand': return '/brand-dashboard';
     case 'lawyer': return '/lawyer-dashboard';
-    default: return '/creator-dashboard';
+    default: return profile?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
   }
 }
 
@@ -66,7 +67,7 @@ async function createProfileFallback(userId: string): Promise<boolean> {
   }
 }
 
-const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
@@ -137,8 +138,10 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     }
 
     // Role-based access control
-    if (allowedRoles && allowedRoles.length > 0) {
-      const hasRole = allowedRoles.includes(userRole) || (!profile.role && allowedRoles.includes('creator'));
+    const effectiveAllowedRoles = allowedRoles ?? (requiredRole ? [requiredRole] : undefined);
+
+    if (effectiveAllowedRoles && effectiveAllowedRoles.length > 0) {
+      const hasRole = effectiveAllowedRoles.includes(userRole) || (!profile.role && effectiveAllowedRoles.includes('creator'));
       if (!hasRole) {
         navigate(targetDashboard, { replace: true });
         return;
@@ -154,7 +157,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
         return;
       }
     }
-  }, [session, authStatus, profile, allowedRoles, navigate, location.pathname, user, refetchProfile]);
+  }, [session, authStatus, profile, allowedRoles, requiredRole, navigate, location.pathname, user, refetchProfile]);
 
   // --- Render logic ---
 

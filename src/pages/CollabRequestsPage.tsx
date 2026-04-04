@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, Loader2, Copy, Image as ImageIcon, Gift, ShoppingBag, ChevronDown, ChevronUp } from 'lucide-react';
+import { Briefcase, Loader2, Copy, Image as ImageIcon, Gift, ChevronDown, ChevronUp, ShieldCheck, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,7 +41,6 @@ const CollabRequestsPage = () => {
   const { requests, isLoading: loading, error, invalidate } = useCollabRequests(profile?.id);
   const [selectedRequest, setSelectedRequest] = useState<CollabRequest | null>(null);
   const [showDeclineDialog, setShowDeclineDialog] = useState(false);
-  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
   const [failedBarterImages, setFailedBarterImages] = useState<Record<string, boolean>>({});
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
@@ -125,60 +124,9 @@ const CollabRequestsPage = () => {
     return 'Not specified';
   };
 
-  const acceptRequest = async (request: CollabRequest) => {
+  const acceptRequest = (request: CollabRequest) => {
     if (!request) return;
-
-    try {
-      setAcceptingRequestId(request.id);
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        toast.error('Please log in to accept requests');
-        setAcceptingRequestId(null);
-        return;
-      }
-
-      const response = await fetch(
-        `${getApiBaseUrl()}/api/collab-requests/${request.id}/accept`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${session.session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        trackEvent('creator_accepted_request', {
-          deal_id: data.deal?.id,
-          creator_id: profile?.id,
-          collab_type: selectedRequest?.collab_type || 'paid',
-        });
-        if (data.needs_delivery_details) {
-          toast.success('Share delivery details to proceed');
-          invalidate();
-          setSelectedRequest(null);
-          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}/delivery-details`);
-        } else {
-          if (data.contract) {
-            toast.success('Contract generated and ready for signing');
-          } else {
-            toast.success('Collaboration request accepted! Deal created successfully.');
-          }
-          invalidate();
-          setSelectedRequest(null);
-          // Keep creators inside the Collabs flow; deal details are accessible from Active.
-          navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
-        }
-      } else {
-        toast.error(data.error || 'Please review details before accepting');
-      }
-    } catch (error) {
-      toast.error('Please review details before accepting');
-    } finally {
-      setAcceptingRequestId(null);
-    }
+    navigate(`/collab-requests/${request.id}/brief`, { state: { request } });
   };
 
   const handleDecline = async () => {
@@ -221,8 +169,13 @@ const CollabRequestsPage = () => {
     const usernameForLink = profile?.instagram_handle || profile?.username;
     if (usernameForLink) {
       const link = `${window.location.origin}/${usernameForLink}`;
-      navigator.clipboard.writeText(link);
-      toast.success('Collab link copied to clipboard!');
+      navigator.clipboard.writeText(link).then(() => {
+        toast.success('Collab link copied to clipboard!');
+      }).catch(() => {
+        toast.error('Failed to copy link. Please try again.');
+      });
+    } else {
+      toast.error('Add your Instagram handle first to share your collab link.');
     }
   };
 
@@ -270,17 +223,31 @@ const CollabRequestsPage = () => {
                 <Briefcase className="h-10 w-10 text-blue-300/80" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">No brand requests yet</h3>
-              <p className="text-sm text-blue-200/80 mb-6 max-w-xs mx-auto">
-                Share your collab link to receive protected deals
-              </p>
-              {hasUsername && (
-                <Button
-                  onClick={copyCollabLink}
-                  className="w-full min-h-[44px] font-medium bg-white/15 hover:bg-white/25 border border-white/20 text-white"
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Collab Link
-                </Button>
+              {hasUsername ? (
+                <>
+                  <p className="text-sm text-blue-200/80 mb-6 max-w-xs mx-auto">
+                    Share your collab link to receive protected deals
+                  </p>
+                  <Button
+                    onClick={copyCollabLink}
+                    className="w-full min-h-[44px] font-medium bg-white/15 hover:bg-white/25 border border-white/20 text-white"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Collab Link
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-blue-200/80 mb-4 max-w-xs mx-auto">
+                    Add your Instagram handle to get your collab link.
+                  </p>
+                  <Button
+                    onClick={() => navigate('/creator-profile?section=profile')}
+                    className="w-full min-h-[44px] font-medium bg-blue-600 hover:bg-blue-500 text-white"
+                  >
+                    Add Instagram handle
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>
@@ -300,7 +267,7 @@ const CollabRequestsPage = () => {
                   )}
                 >
                   {/* Header: Incoming Brand Request — darker purple band */}
-                  <div className="bg-gradient-to-r from-blue-800/90 to-indigo-800/90 px-4 py-2 text-center border-b border-white/10">
+                  <div className="bg-gradient-to-r from-blue-800/90 to-blue-700/90 px-4 py-2 text-center border-b border-white/10">
                     <h2 className="text-xs font-bold text-white tracking-wide uppercase">
                       Incoming Brand Request
                     </h2>
@@ -309,8 +276,9 @@ const CollabRequestsPage = () => {
                     {/* Brand name + Barter tag on same row; contact below */}
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-xl font-bold text-white leading-tight">
+                        <h3 className="text-xl font-bold text-white leading-tight flex items-center gap-2">
                           {request.brand_name ?? 'Brand'}
+                          {request.brand_verified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
                         </h3>
                         <span className={cn(
                           "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-white shrink-0",
@@ -336,7 +304,7 @@ const CollabRequestsPage = () => {
                     {/* Deadline */}
                     {request.deadline && (
                       <div className="flex items-center gap-1.5 text-sm text-white/70">
-                        <ShoppingBag className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+                        <Clock className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
                         <span>{new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                       </div>
                     )}
@@ -398,7 +366,6 @@ const CollabRequestsPage = () => {
                         </p>
                         {request.campaign_description.length > 170 && (
                           <button type="button"
-                            type="button"
                             onClick={() => setExpandedDescriptions((prev) => ({ ...prev, [request.id]: !prev[request.id] }))}
                             className="mt-1.5 inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white"
                           >
@@ -424,13 +391,13 @@ const CollabRequestsPage = () => {
                           onClick={(e) => { e.stopPropagation(); acceptRequest(request); }}
                           className={cn(
                             "w-full min-h-[44px] font-bold text-white rounded-xl text-sm transition-colors duration-200",
-                            "shadow-[0_2px_12px_rgba(139,92,246,0.25)] border-0",
+                            "shadow-[0_2px_12px_rgba(16,185,129,0.25)] border-0",
                             acceptingRequestId === request.id
-                              ? "bg-indigo-900 text-indigo-400 opacity-70 cursor-not-allowed"
-                              : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500"
+                              ? "bg-emerald-900/60 text-emerald-300 opacity-70 cursor-not-allowed"
+                              : "bg-emerald-600 hover:bg-emerald-500"
                           )}
                         >
-                          {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept Deal'}
+                          {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept offer'}
                         </Button>
                         <p className="text-[11px] text-center text-white/55">
                           By clicking Accept, a contract is auto-generated.
@@ -438,17 +405,15 @@ const CollabRequestsPage = () => {
                       </div>
                       <div className="flex items-center justify-center gap-3 py-0.5">
                         <button type="button"
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/counter`, { state: { request } }); }}
-                          className="text-sm font-medium text-indigo-200 hover:text-white min-h-[40px] px-1.5"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/brief`, { state: { request } }); }}
+                          className="text-sm font-medium text-indigo-200 hover:text-white min-h-[44px] px-1.5"
                         >
-                          Counter
+                          Counter offer
                         </button>
                         <span className="w-px h-4 bg-white/30" />
                         <button type="button"
-                          type="button"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
-                          className="text-sm font-medium text-[#FCA5A5] hover:text-white min-h-[40px] px-1.5"
+                          className="text-sm font-medium text-[#FCA5A5] hover:text-white min-h-[44px] px-1.5"
                         >
                           Decline
                         </button>
@@ -468,9 +433,25 @@ const CollabRequestsPage = () => {
             <Card key={request.id} className="rounded-[20px] bg-white/5 border border-white/10 overflow-hidden">
               <CardContent className="p-4 sm:p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-white">{request.brand_name}</h3>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    {request.brand_name}
+                    {request.brand_verified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
+                  </h3>
                   <span className="text-[11px] font-medium bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-md">Counter Sent</span>
                 </div>
+                {(request.counter_offer?.final_price || request.counter_offer?.notes) && (
+                  <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                    {request.counter_offer.final_price && (
+                      <p className="text-sm text-indigo-200">
+                        Your price: <span className="font-semibold text-white">₹{request.counter_offer.final_price.toLocaleString('en-IN')}</span>
+                      </p>
+                    )}
+                    {request.counter_offer.notes && (
+                      <p className="text-sm text-white/60 truncate">{request.counter_offer.notes}</p>
+                    )}
+                    <p className="text-xs text-white/40">Waiting for brand response</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -479,13 +460,16 @@ const CollabRequestsPage = () => {
 
         {/* Decline confirmation */}
         <AlertDialog open={showDeclineDialog} onOpenChange={(showDeclineDialog) => setShowDeclineDialog(showDeclineDialog)}>
-          <AlertDialogContent className="bg-indigo-950 border-white/20 text-white">
+          <AlertDialogContent className="bg-[#0f172a] border-white/20 text-white">
             <AlertDialogHeader>
-              <AlertDialogTitle>Decline request?</AlertDialogTitle>
+              <AlertDialogTitle>Decline this offer?</AlertDialogTitle>
+              <AlertDialogDescription className="text-white/70">
+                The brand will be notified. You cannot undo this action.
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDecline} className="bg-red-600">Decline</AlertDialogAction>
+              <AlertDialogAction onClick={handleDecline} className="bg-red-600 hover:bg-red-500">Yes, decline</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

@@ -9,6 +9,179 @@ import { estimateReelBudgetRange, getEffectiveReelRate } from '../services/creat
 
 const router = express.Router();
 
+const numberOrNull = (value: unknown) => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+};
+
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+const deriveProfileCompletion = (profile: any) => {
+  const explicit = numberOrNull(profile?.profile_completion);
+  if (explicit !== null) return clamp(Math.round(explicit), 0, 100);
+  const checks = [
+    Boolean(profile?.first_name || profile?.business_name),
+    Boolean(profile?.username),
+    Boolean(profile?.creator_category),
+    Boolean(profile?.bio),
+    Boolean(profile?.instagram_handle),
+    Boolean(profile?.media_kit_url),
+    Number(profile?.pricing_min ?? profile?.starting_price ?? profile?.avg_rate_reel ?? 0) > 0,
+    Number(profile?.instagram_followers ?? profile?.followers_count ?? 0) > 0,
+  ];
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+};
+
+const deriveAvgViews = (profile: any) => {
+  const explicit = numberOrNull(profile?.avg_views);
+  if (explicit !== null && explicit > 0) return explicit;
+  const manual = numberOrNull(profile?.avg_reel_views_manual);
+  if (manual !== null && manual > 0) return manual;
+  const followers = Number(profile?.followers_count ?? profile?.instagram_followers ?? 0);
+  if (!Number.isFinite(followers) || followers <= 0) return null;
+  return Math.round(Math.max(1200, followers * 0.22));
+};
+
+const deriveStartingPrice = (profile: any) =>
+  Number(profile?.starting_price ?? profile?.pricing_min ?? profile?.avg_rate_reel ?? profile?.pricing_avg ?? getEffectiveReelRate(profile) ?? 0) || 0;
+
+const deriveCompletedDeals = (profile: any, trustStats: any) => {
+  const explicit = numberOrNull(profile?.completed_deals);
+  if (explicit !== null) return explicit;
+  return Number(trustStats?.completed_deals ?? profile?.collab_brands_count_override ?? 0) || 0;
+};
+
+const deriveResponseHours = (profile: any, trustStats: any) => {
+  const explicit = numberOrNull(profile?.response_hours);
+  if (explicit !== null && explicit > 0) return explicit;
+  const override = numberOrNull(profile?.collab_response_hours_override);
+  if (override !== null && override > 0) return override;
+  const trust = numberOrNull(trustStats?.avg_response_hours);
+  return trust !== null && trust > 0 ? trust : null;
+};
+
+const deriveReliabilityScore = (profile: any, trustStats: any) => {
+  const explicit = numberOrNull(profile?.reliability_score);
+  if (explicit !== null) return clamp(Math.round(explicit), 0, 100);
+  const trust = numberOrNull(trustStats?.completion_rate);
+  if (trust !== null) return clamp(Math.round(trust), 0, 100);
+  return 96;
+};
+
+const deriveEngagementRate = (profile: any, avgViews: number | null) => {
+  const explicit = numberOrNull(profile?.engagement_rate);
+  if (explicit !== null) return explicit;
+  const likes = numberOrNull(profile?.avg_likes_manual);
+  if (likes !== null && avgViews && avgViews > 0) {
+    return Number(((likes / avgViews) * 100).toFixed(2));
+  }
+  return null;
+};
+
+const deriveAvailabilityStatus = (profile: any) => {
+  const status = String(profile?.availability_status || '').trim().toLowerCase();
+  if (['available', 'busy', 'next_week', 'unavailable'].includes(status)) return status;
+  if (profile?.open_to_collabs === false) return 'busy';
+  return 'available';
+};
+
+const isCreatorDiscoverable = (profile: any, stats: any) => {
+  const checks = [
+    Boolean(String(profile?.username || profile?.instagram_handle || '').trim()),
+    Boolean(String(profile?.creator_category || '').trim()),
+    Number(stats?.starting_price || 0) > 0,
+    Number(profile?.instagram_followers ?? profile?.followers_count ?? 0) > 0 || Number(stats?.avg_views || 0) > 0,
+    Boolean(String(profile?.media_kit_url || '').trim()) || Number(stats?.completed_deals || 0) > 0,
+  ];
+
+  const completedChecks = checks.filter(Boolean).length;
+  return (profile?.open_to_collabs !== false) && completedChecks >= 4;
+};
+
+const isBlockedSocialAvatar = (value: unknown) => {
+  const url = String(value || '').trim().toLowerCase();
+  if (!url) return false;
+  return (
+    url.includes('cdninstagram.com') ||
+    url.includes('instagram.') ||
+    url.includes('fbcdn.net')
+  );
+};
+
+const getSafeCreatorPhoto = (profile: any) => {
+  const avatarUrl = String((profile as any)?.avatar_url || '').trim();
+  if (avatarUrl && !isBlockedSocialAvatar(avatarUrl)) return avatarUrl;
+
+  const instagramPhoto = String(profile?.instagram_profile_photo || '').trim();
+  if (instagramPhoto && !isBlockedSocialAvatar(instagramPhoto)) return instagramPhoto;
+
+  return null;
+};
+
+const stableSeedNumber = (input: unknown) => {
+  const text = String(input || 'creator-armour').trim().toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+};
+
+const deriveFallbackBadges = (profile: any, stats: any, existingBadges: string[]) => {
+  const seed = stableSeedNumber(profile?.id || profile?.username || profile?.instagram_handle || profile?.first_name);
+  const fallbackPool = [
+    { label: 'Recently Active', allowed: !existingBadges.includes('Recently Active') },
+    { label: 'Budget Friendly', allowed: !existingBadges.includes('Budget Friendly') && stats.starting_price > 0 && stats.starting_price <= 18000 },
+    { label: 'Available Now', allowed: !existingBadges.includes('Available Now') && stats.availability_status === 'available' },
+    { label: 'Fast Responder', allowed: !existingBadges.includes('Fast Responder') && (stats.response_hours === null || stats.response_hours <= 12) },
+    { label: 'High Reliability', allowed: !existingBadges.includes('High Reliability') && stats.reliability_score >= 90 },
+    { label: 'New Creator', allowed: !existingBadges.includes('New Creator') && stats.completed_deals === 0 },
+    { label: 'Featured', allowed: !existingBadges.includes('Featured') && Boolean(profile?.is_featured) },
+  ].filter((item) => item.allowed);
+
+  if (fallbackPool.length === 0) return [];
+
+  const ordered = fallbackPool
+    .map((item, index) => ({
+      ...item,
+      rank: (seed + (index + 1) * 17) % 97,
+    }))
+    .sort((a, b) => a.rank - b.rank);
+
+  return ordered.map((item) => item.label);
+};
+
+const deriveBadges = (profile: any, stats: any) => {
+  const badges: string[] = [];
+  const responseHours = stats.response_hours;
+  const reliabilityScore = stats.reliability_score;
+  const completedDeals = stats.completed_deals;
+  const avgViews = stats.avg_views;
+  const startingPrice = stats.starting_price;
+  const lastActiveAt = profile?.last_active_at ? new Date(profile.last_active_at).getTime() : 0;
+  const recentlyActive = lastActiveAt > 0 && (Date.now() - lastActiveAt) <= (7 * 24 * 60 * 60 * 1000);
+  const bestValue = avgViews && startingPrice > 0 ? (startingPrice / avgViews) <= 0.45 : false;
+  const budgetFriendly = Boolean(profile?.is_budget_friendly) || (startingPrice > 0 && startingPrice <= 12000);
+
+  if (profile?.is_verified) badges.push('Verified');
+  if (responseHours !== null && responseHours <= 6) badges.push('Fast Responder');
+  if (reliabilityScore >= 95) badges.push('High Reliability');
+  if (bestValue) badges.push('Best Value');
+  if (recentlyActive) badges.push('Recently Active');
+  if (budgetFriendly) badges.push('Budget Friendly');
+  if (completedDeals === 0) badges.push('New Creator');
+  if (stats.availability_status === 'available') badges.push('Available Now');
+  if (profile?.is_featured) badges.push('Featured');
+  if (profile?.manual_badge && String(profile.manual_badge).trim()) badges.unshift(String(profile.manual_badge).trim());
+
+  const uniqueBadges = Array.from(new Set(badges));
+  if (uniqueBadges.length < 2) {
+    uniqueBadges.push(...deriveFallbackBadges(profile, stats, uniqueBadges));
+  }
+
+  return Array.from(new Set(uniqueBadges)).slice(0, 2);
+};
+
 /**
  * GET /api/creators
  * Get list of creators for directory (public, no auth required)
@@ -16,6 +189,59 @@ const router = express.Router();
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { category, limit = '50', offset = '0', username, q } = req.query as any;
+    const baseSelect = `
+      id,
+      username,
+      first_name,
+      last_name,
+      business_name,
+      avatar_url,
+      location,
+      creator_category,
+      bio,
+      instagram_handle,
+      youtube_channel_id,
+      tiktok_handle,
+      twitter_handle,
+      facebook_profile_url,
+      instagram_followers,
+      instagram_profile_photo,
+      last_instagram_sync,
+      avg_rate_reel,
+      learned_avg_rate_reel,
+      pricing_min,
+      pricing_avg,
+      pricing_max,
+      media_kit_url,
+      avg_reel_views_manual,
+      avg_likes_manual,
+      open_to_collabs,
+      collab_brands_count_override,
+      collab_response_hours_override,
+      youtube_subs,
+      tiktok_followers,
+      twitter_followers,
+      facebook_followers
+    `;
+    const performanceSelect = `
+      followers_count,
+      avg_views,
+      engagement_rate,
+      starting_price,
+      completed_deals,
+      reliability_score,
+      response_hours,
+      profile_completion,
+      availability_status,
+      last_active_at,
+      is_verified,
+      is_featured,
+      is_budget_friendly,
+      manual_badge,
+      conversion_rate,
+      repeat_brands,
+      on_time_delivery_rate
+    `;
 
     const normalizeHandle = (raw: unknown) => {
       const s = String(raw || '').trim().replace(/^@+/, '').toLowerCase();
@@ -23,67 +249,49 @@ router.get('/', async (req: Request, res: Response) => {
       return s.replace(/[^a-z0-9._]/g, '');
     };
 
-    let query = supabase
-      .from('profiles')
-      .select(`
-        id,
-        username,
-        first_name,
-        last_name,
-        business_name,
-        avatar_url,
-        creator_category,
-        bio,
-        instagram_handle,
-        youtube_channel_id,
-        tiktok_handle,
-        twitter_handle,
-        facebook_profile_url,
-        instagram_followers,
-        instagram_profile_photo,
-        last_instagram_sync,
-        avg_rate_reel,
-        learned_avg_rate_reel,
-        pricing_min,
-        pricing_avg,
-        pricing_max,
-        youtube_subs,
-        tiktok_followers,
-        twitter_followers,
-        facebook_followers
-      `)
-      .eq('role', 'creator')
-      .not('username', 'is', null)
-      .order('created_at', { ascending: false });
+    const buildQuery = (selectClause: string) => {
+      let query = supabase
+        .from('profiles')
+        .select(selectClause)
+        .eq('role', 'creator')
+        .not('username', 'is', null)
+        .order('created_at', { ascending: false });
 
-    // Username search (exact match preferred; supports "@handle" input).
-    // This is used by Brand Dashboard "Search by username".
-    const usernameTerm = normalizeHandle(username);
-    if (usernameTerm) {
-      // ilike without wildcards behaves like a case-insensitive equals in Postgres.
-      query = query.or(`username.ilike.${usernameTerm},instagram_handle.ilike.${usernameTerm}`);
-    }
+      const usernameTerm = normalizeHandle(username);
+      if (usernameTerm) {
+        query = query.or(`username.ilike.${usernameTerm},instagram_handle.ilike.${usernameTerm}`);
+      }
 
-    // Generic text search (partial).
-    const qTerm = normalizeHandle(q);
-    if (qTerm) {
-      const like = `%${qTerm}%`;
-      query = query.or(
-        `username.ilike.${like},instagram_handle.ilike.${like},business_name.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`
+      const qTerm = normalizeHandle(q);
+      if (qTerm) {
+        const like = `%${qTerm}%`;
+        query = query.or(
+          `username.ilike.${like},instagram_handle.ilike.${like},business_name.ilike.${like},first_name.ilike.${like},last_name.ilike.${like}`
+        );
+      }
+
+      query = query.range(
+        parseInt(offset as string, 10),
+        parseInt(offset as string, 10) + parseInt(limit as string, 10) - 1
       );
+
+      if (category && category !== 'all') {
+        query = query.eq('creator_category', category as string);
+      }
+
+      return query;
+    };
+
+    let { data: profiles, error } = await buildQuery(`${baseSelect}, ${performanceSelect}`);
+    if (error) {
+      const message = String(error.message || '').toLowerCase();
+      const missingColumn = error.code === '42703' || message.includes('column') || message.includes('does not exist') || message.includes('schema cache');
+      if (missingColumn) {
+        const fallback = await buildQuery(baseSelect);
+        profiles = fallback.data;
+        error = fallback.error;
+      }
     }
-
-    // Pagination
-    query = query.range(
-      parseInt(offset as string, 10),
-      parseInt(offset as string, 10) + parseInt(limit as string, 10) - 1
-    );
-
-    if (category && category !== 'all') {
-      query = query.eq('creator_category', category as string);
-    }
-
-    const { data: profiles, error } = await query;
 
     if (error) {
       console.error('[Creators] Error fetching creators:', error);
@@ -137,11 +345,19 @@ router.get('/', async (req: Request, res: Response) => {
         `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
         'Creator';
 
-      const rawPhoto = (profile as any).avatar_url || (profile as any).instagram_profile_photo || null;
-      const profilePhoto =
-        rawPhoto && typeof rawPhoto === 'string' && rawPhoto.includes('cdninstagram.com')
-          ? null
-          : rawPhoto;
+      const profilePhoto = getSafeCreatorPhoto(profile);
+      const avgViews = deriveAvgViews(profile);
+      const startingPrice = deriveStartingPrice(profile);
+      const stats = {
+        avg_views: avgViews,
+        starting_price: startingPrice,
+        completed_deals: deriveCompletedDeals(profile, null),
+        response_hours: deriveResponseHours(profile, null),
+        reliability_score: deriveReliabilityScore(profile, null),
+        profile_completion: deriveProfileCompletion(profile),
+        engagement_rate: deriveEngagementRate(profile, avgViews),
+        availability_status: deriveAvailabilityStatus(profile),
+      };
 
       return {
         id: profile.id,
@@ -150,18 +366,41 @@ router.get('/', async (req: Request, res: Response) => {
         category: profile.creator_category,
         bio: profile.bio,
         profile_photo: profilePhoto,
-        followers: profile.instagram_followers ?? null,
+        followers: numberOrNull(profile.followers_count) ?? profile.instagram_followers ?? null,
+        avg_views: stats.avg_views,
+        engagement_rate: stats.engagement_rate,
+        starting_price: stats.starting_price,
+        completed_deals: stats.completed_deals,
+        reliability_score: stats.reliability_score,
+        response_hours: stats.response_hours,
+        profile_completion: stats.profile_completion,
+        availability_status: stats.availability_status,
+        last_active_at: profile.last_active_at || null,
+        is_verified: Boolean(profile.is_verified),
+        is_featured: Boolean(profile.is_featured),
+        is_budget_friendly: Boolean(profile.is_budget_friendly),
+        manual_badge: profile.manual_badge || null,
+        conversion_rate: numberOrNull(profile.conversion_rate),
+        repeat_brands: numberOrNull(profile.repeat_brands) ?? 0,
+        on_time_delivery_rate: numberOrNull(profile.on_time_delivery_rate),
+        location: profile.location || null,
+        media_kit_url: profile.media_kit_url || null,
+        badges: deriveBadges(profile, stats),
         last_instagram_sync: (profile as any).last_instagram_sync || null,
         pricing: {
-          min: (profile as any).pricing_min ?? null,
+          min: stats.starting_price || ((profile as any).pricing_min ?? null),
           avg: (profile as any).pricing_avg ?? null,
           max: (profile as any).pricing_max ?? null,
-          reel: getEffectiveReelRate(profile),
+          reel: stats.starting_price || getEffectiveReelRate(profile),
           estimated_range: estimateReelBudgetRange(getEffectiveReelRate(profile)),
         },
         platforms,
       };
-    });
+    }).filter((creator: any) => isCreatorDiscoverable(creator, {
+      starting_price: creator.starting_price,
+      avg_views: creator.avg_views,
+      completed_deals: creator.completed_deals,
+    }));
 
     res.json({
       success: true,
@@ -187,37 +426,78 @@ router.get('/suggested', async (req: Request, res: Response) => {
     const { category, limit = '8', offset = '0' } = req.query;
     const safeLimit = Math.max(1, Math.min(24, parseInt(limit as string, 10) || 8));
     const safeOffset = Math.max(0, parseInt(offset as string, 10) || 0);
+    const baseSelect = `
+      id,
+      username,
+      first_name,
+      last_name,
+      business_name,
+      avatar_url,
+      location,
+      creator_category,
+      bio,
+      instagram_handle,
+      instagram_followers,
+      instagram_profile_photo,
+      last_instagram_sync,
+      avg_rate_reel,
+      learned_avg_rate_reel,
+      pricing_min,
+      pricing_avg,
+      pricing_max,
+      media_kit_url,
+      avg_reel_views_manual,
+      avg_likes_manual,
+      open_to_collabs,
+      collab_brands_count_override,
+      collab_response_hours_override
+    `;
+    const performanceSelect = `
+      followers_count,
+      avg_views,
+      engagement_rate,
+      starting_price,
+      completed_deals,
+      reliability_score,
+      response_hours,
+      profile_completion,
+      availability_status,
+      last_active_at,
+      is_verified,
+      is_featured,
+      is_budget_friendly,
+      manual_badge,
+      conversion_rate,
+      repeat_brands,
+      on_time_delivery_rate
+    `;
 
-    let query = supabase
-      .from('profiles')
-      .select(`
-        id,
-        username,
-        first_name,
-        last_name,
-        business_name,
-        avatar_url,
-        creator_category,
-        bio,
-        instagram_handle,
-        instagram_followers,
-        instagram_profile_photo,
-        avg_rate_reel,
-        learned_avg_rate_reel,
-        pricing_min,
-        pricing_avg,
-        pricing_max
-      `)
-      .eq('role', 'creator')
-      .not('username', 'is', null)
-      .order('created_at', { ascending: false })
-      .range(safeOffset, safeOffset + safeLimit - 1);
+    const buildSuggestedQuery = (selectClause: string) => {
+      let query = supabase
+        .from('profiles')
+        .select(selectClause)
+        .eq('role', 'creator')
+        .not('username', 'is', null)
+        .order('created_at', { ascending: false })
+        .range(safeOffset, safeOffset + safeLimit - 1);
 
-    if (category && category !== 'all') {
-      query = query.eq('creator_category', category as string);
+      if (category && category !== 'all') {
+        query = query.eq('creator_category', category as string);
+      }
+
+      return query;
+    };
+
+    let { data: profiles, error } = await buildSuggestedQuery(`${baseSelect}, ${performanceSelect}`);
+    if (error) {
+      const message = String(error.message || '').toLowerCase();
+      const missingColumn = error.code === '42703' || message.includes('column') || message.includes('does not exist') || message.includes('schema cache');
+      if (missingColumn) {
+        const fallback = await buildSuggestedQuery(baseSelect);
+        profiles = fallback.data;
+        error = fallback.error;
+      }
     }
-
-    const { data: profiles, error } = await query;
 
     if (error) {
       console.error('[Creators] Error fetching suggested creators:', error);
@@ -293,6 +573,18 @@ router.get('/suggested', async (req: Request, res: Response) => {
         completion_rate: 100,
         avg_response_hours: null,
       };
+      const avgViews = deriveAvgViews(profile);
+      const startingPrice = deriveStartingPrice(profile) || effectiveReelRate;
+      const stats = {
+        avg_views: avgViews,
+        starting_price: startingPrice,
+        completed_deals: deriveCompletedDeals(profile, trust),
+        response_hours: deriveResponseHours(profile, trust),
+        reliability_score: deriveReliabilityScore(profile, trust),
+        profile_completion: deriveProfileCompletion(profile),
+        engagement_rate: deriveEngagementRate(profile, avgViews),
+        availability_status: deriveAvailabilityStatus(profile),
+      };
 
       return {
         id: profile.id,
@@ -300,23 +592,46 @@ router.get('/suggested', async (req: Request, res: Response) => {
         name: creatorName,
         category: profile.creator_category,
         bio: profile.bio,
-        profile_photo:
-          ((profile as any).avatar_url && typeof (profile as any).avatar_url === 'string' && !(profile as any).avatar_url.includes('cdninstagram.com'))
-            ? (profile as any).avatar_url
-            : (profile.instagram_profile_photo && typeof profile.instagram_profile_photo === 'string' && profile.instagram_profile_photo.includes('cdninstagram.com'))
-              ? null
-              : (profile.instagram_profile_photo || null),
-        followers: profile.instagram_followers ?? null,
+        profile_photo: getSafeCreatorPhoto(profile),
+        followers: numberOrNull(profile.followers_count) ?? profile.instagram_followers ?? null,
+        avg_views: stats.avg_views,
+        engagement_rate: stats.engagement_rate,
+        starting_price: stats.starting_price,
+        completed_deals: stats.completed_deals,
+        reliability_score: stats.reliability_score,
+        response_hours: stats.response_hours,
+        profile_completion: stats.profile_completion,
+        availability_status: stats.availability_status,
+        last_active_at: profile.last_active_at || profile.last_instagram_sync || null,
+        is_verified: Boolean(profile.is_verified),
+        is_featured: Boolean(profile.is_featured),
+        is_budget_friendly: Boolean(profile.is_budget_friendly),
+        manual_badge: profile.manual_badge || null,
+        conversion_rate: numberOrNull(profile.conversion_rate),
+        repeat_brands: numberOrNull(profile.repeat_brands) ?? 0,
+        on_time_delivery_rate: numberOrNull(profile.on_time_delivery_rate),
+        location: profile.location || null,
+        media_kit_url: profile.media_kit_url || null,
+        badges: deriveBadges(profile, stats),
         pricing: {
-          min: profile.pricing_min ?? null,
+          min: stats.starting_price || (profile.pricing_min ?? null),
           avg: profile.pricing_avg ?? null,
           max: profile.pricing_max ?? null,
-          reel: effectiveReelRate,
+          reel: stats.starting_price || effectiveReelRate,
           estimated_range: estimateReelBudgetRange(effectiveReelRate),
         },
-        trust,
+        trust: {
+          ...trust,
+          completed_deals: stats.completed_deals,
+          completion_rate: stats.reliability_score,
+          avg_response_hours: stats.response_hours,
+        },
       };
-    });
+    }).filter((creator: any) => isCreatorDiscoverable(creator, {
+      starting_price: creator.starting_price,
+      avg_views: creator.avg_views,
+      completed_deals: creator.completed_deals,
+    }));
 
     res.setHeader('Cache-Control', 'public, max-age=60');
     res.json({ success: true, creators, count: creators.length });

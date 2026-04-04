@@ -66,14 +66,26 @@ export type Profile = Tables<'profiles'> & {
   media_kit_url?: string | null;
   // NEW: Creator Rate fields
   avg_rate_reel?: number | null;
+  reel_price?: number | null;
+  story_price?: number | null;
+  post_price?: number | null;
+  barter_min_value?: number | null;
+  delivery_days?: number | null;
+  revisions?: number | null;
   learned_avg_rate_reel?: number | null;
   learned_deal_count?: number | null;
   avg_reel_views_manual?: number | null;
+  avg_views?: number | null;
+  followers_count?: number | null;
   avg_likes_manual?: number | null;
+  audience_type?: string | null;
   audience_gender_split?: string | null;
   top_cities?: string[] | null;
   audience_age_range?: string | null;
   primary_audience_language?: string | null;
+  city?: string | null;
+  language?: string | null;
+  niche?: string | null;
   posting_frequency?: string | null;
   active_brand_collabs_month?: number | null;
   campaign_slot_note?: string | null;
@@ -81,6 +93,7 @@ export type Profile = Tables<'profiles'> & {
   collab_response_hours_override?: number | null;
   collab_cancellations_percent_override?: number | null;
   collab_region_label?: string | null;
+  collab_intro_line?: string | null;
   collab_audience_fit_note?: string | null;
   collab_recent_activity_note?: string | null;
   collab_audience_relevance_note?: string | null;
@@ -90,6 +103,17 @@ export type Profile = Tables<'profiles'> & {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  collab_show_packages?: boolean | null;
+  collab_show_trust_signals?: boolean | null;
+  collab_show_audience_snapshot?: boolean | null;
+  collab_show_past_work?: boolean | null;
+  collab_past_work_items?: Array<{
+    id: string;
+    brand: string;
+    campaignType: string;
+    outcome: string;
+    proofLabel?: string | null;
+  }> | null;
   // NEW: Qualification & Deal Rules
   min_deal_value?: number | null;
   min_lead_time_days?: number | null;
@@ -102,6 +126,34 @@ export type Profile = Tables<'profiles'> & {
   allow_negotiation?: boolean | null;
   allow_counter_offer?: boolean | null;
   deal_templates?: DealTemplate[] | null; // Customized collaboration packages
+  past_collabs?: string[] | null;
+  brand_logos?: string[] | null;
+  testimonials?: string[] | null;
+  case_studies?: string[] | null;
+  portfolio_links?: string[] | null;
+  upi_id?: string | null;
+  takes_advance?: boolean | null;
+  completed_deals?: number | null;
+  reliability_score?: number | null;
+  response_hours?: number | null;
+  availability_status?: string | null;
+  last_active_at?: string | null;
+  repeat_brands?: number | null;
+  on_time_delivery_rate?: number | null;
+  conversion_rate?: number | null;
+  creator_stage?: 'new' | 'priced' | 'link_shared' | 'first_offer' | 'first_deal' | 'active' | 'power' | null;
+  link_shared_at?: string | null;
+  first_offer_at?: string | null;
+  first_deal_at?: string | null;
+  total_deals?: number | null;
+  total_earnings?: number | null;
+  offers_received?: number | null;
+  offers_accepted?: number | null;
+  storefront_views?: number | null;
+  profile_completion?: number | null;
+  storefront_completion?: number | null;
+  manual_badge?: string | null;
+  is_verified?: boolean | null;
 };
 
 export type Message = Tables<'messages'> & {

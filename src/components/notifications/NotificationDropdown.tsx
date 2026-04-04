@@ -32,6 +32,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
     limit: 10,
   });
 
+  const getNotificationTarget = React.useCallback((notification: Notification) => {
+    if (notification.action_link) return notification.action_link;
+    if (notification.link) return notification.link;
+    return '/notifications';
+  }, []);
+
   // Log errors for debugging
   React.useEffect(() => {
     if (error) {
@@ -59,10 +65,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
       return;
     }
 
-    // Navigate to link if available
-    if (notification.link) {
-      navigate(notification.link);
-    }
+    navigate(getNotificationTarget(notification));
   };
 
   const handleMarkAllRead = () => {
@@ -217,12 +220,10 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
                             <span className="text-xs text-white/50">
                               {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                             </span>
-                            {notification.action_label && (
-                              <span className="text-xs text-purple-400 flex items-center gap-1">
-                                {notification.action_label}
-                                <ChevronRight className="w-3 h-3" />
-                              </span>
-                            )}
+                            <span className="text-xs text-purple-400 flex items-center gap-1">
+                              {notification.action_label || 'Open'}
+                              <ChevronRight className="w-3 h-3" />
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -254,4 +255,3 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
 };
 
 export default NotificationDropdown;
-

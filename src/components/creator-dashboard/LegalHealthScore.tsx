@@ -83,14 +83,14 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
             <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
               <Shield className="h-5 w-5 text-white/80" />
             </div>
-            Legal Health Score
+            Deal Protection Score
           </CardTitle>
         </CardHeader>
         <CardContent>
           <EmptyState
             icon={Shield}
-            title="No legal data yet"
-            description="Complete brand deals and review contracts to track your legal health score."
+            title="No deal protection data yet"
+            description="Add brand deals and contract details to track how protected your creator workflow is."
           />
         </CardContent>
       </Card>
@@ -104,7 +104,7 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
           <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-violet-500/10 border border-violet-500/20">
             <Shield className="h-5 w-5 text-violet-400" />
           </div>
-          <CardTitle>Legal Health Score</CardTitle>
+          <CardTitle>Deal Protection Score</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -112,7 +112,7 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
           <div className={`text-6xl font-bold number-large ${getScoreColor(score)}`}>
             {score}
           </div>
-          <p className="text-body text-white/60 mt-2">out of 100</p>
+          <p className="text-body text-white/60 mt-2">protection score</p>
         </div>
 
         <div className="space-y-2">
@@ -129,19 +129,19 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
         <div className="space-y-3 pt-2">
           <div className="flex items-center gap-3 text-body">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="text-white/80">Reviewed contracts</span>
+            <span className="text-white/80">Contracts or scopes documented</span>
           </div>
           <div className="flex items-center gap-3 text-body">
             <XCircle className="h-5 w-5 text-warning" />
-            <span className="text-white/80">Missing indemnity clause</span>
+            <span className="text-white/80">Some contract safeguards still missing</span>
           </div>
           <div className="flex items-center gap-3 text-body">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="text-white/80">No open disputes</span>
+            <span className="text-white/80">No active disputes on record</span>
           </div>
           <div className="flex items-center gap-3 text-body">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="text-white/80">Delayed brands flagged</span>
+            <span className="text-white/80">Delayed payment risk flagged</span>
           </div>
         </div>
       </CardContent>
@@ -150,4 +150,3 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
 };
 
 export default LegalHealthScore;
-

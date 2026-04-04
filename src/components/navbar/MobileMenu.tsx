@@ -12,7 +12,6 @@ import { useSession } from '@/contexts/SessionContext';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, DEFAULT_AVATAR_URL } from '@/lib/utils/avatar';
-import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
 
 interface NavTab {
   to: string;
@@ -32,24 +31,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
   const signOutMutation = useSignOut();
   const [open, setOpen] = React.useState(false);
 
-  // Fetch partner stats for earnings badge
-  const { data: partnerStats } = usePartnerStats(profile?.id);
-  const totalEarnings = partnerStats?.total_earnings || 0;
-  const showRewardBadge = totalEarnings > 0 && profile?.role === 'creator';
-
-  // Get plan name - default to Starter for creators, or show from subscription
-  const getPlanName = () => {
-    if (profile?.role === 'creator') {
-      // For creators, we can infer plan from partner tier
-      const tier = partnerStats?.tier || 'starter';
-      if (tier === 'pro') return 'Pro';
-      if (tier === 'elite') return 'Elite';
-      if (tier === 'growth') return 'Growth';
-      if (tier === 'partner') return 'Partner';
-      return 'Starter';
-    }
-    return 'Standard';
-  };
+  const getPlanName = () => (profile?.role === 'creator' ? 'Creator' : 'Standard');
 
   const isActive = (path: string) => {
     if (path === '/creator-dashboard') {
@@ -152,11 +134,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
                     active ? "text-white" : "text-[#A8B0C0] group-hover:text-white"
                   )} />
                   <span className="flex-1 relative z-10">{tab.label}</span>
-                  {tab.to === '/partner-program' && showRewardBadge && (
-                    <span className="text-xs bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded-full font-medium relative z-10">
-                      +₹{totalEarnings.toLocaleString('en-IN')}
-                    </span>
-                  )}
                 </Link>
               );
           })}

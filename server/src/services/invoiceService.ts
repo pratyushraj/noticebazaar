@@ -3,6 +3,7 @@
 // Automatically generates invoices after contract signing
 
 import { supabase } from '../lib/supabase.js';
+import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 
 const CREATOR_ASSETS_BUCKET = 'creator-assets';
 
@@ -173,6 +174,19 @@ export async function generateInvoice(dealId: string): Promise<{ success: boolea
       // Don't fail if update fails, invoice is already uploaded
     }
 
+    await recordMarketplaceEvent(supabase as any, {
+      eventName: 'invoice_generated',
+      userId: deal.creator_id,
+      creatorId: deal.creator_id,
+      dealId,
+      metadata: {
+        creator_id: deal.creator_id,
+        deal_id: dealId,
+        invoice_number: invoiceNumber,
+        deal_value: deal.deal_amount || 0,
+      },
+    });
+
     return {
       success: true,
       invoiceUrl: urlData.publicUrl,
@@ -271,4 +285,3 @@ async function generateInvoicePDF(data: InvoiceData): Promise<Buffer> {
     }
   });
 }
-

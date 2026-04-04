@@ -13,13 +13,15 @@ import { Label } from '@/components/ui/label';
 const LOGIN_LOADING_TIMEOUT_MS = 4000;
 const DEMO_BRAND_EMAIL = 'brand-demo@noticebazaar.com';
 const DEMO_BRAND_PASSWORD = 'BrandDemo123!@#';
+const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
+  error instanceof Error ? error.message : fallback;
 
-const getDashboardPathForRole = (role?: string | null) => {
+const getDashboardPathForRole = (role?: string | null, onboardingComplete?: boolean | null) => {
   if (role === 'admin') return '/admin-dashboard';
   if (role === 'brand') return '/brand-dashboard';
   if (role === 'chartered_accountant') return '/ca-dashboard';
   if (role === 'lawyer') return '/lawyer-dashboard';
-  return '/creator-dashboard';
+  return onboardingComplete ? '/creator-dashboard' : '/creator-onboarding';
 };
 
 const Login = () => {
@@ -29,6 +31,12 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Sign In | Creator Armour';
+    const meta = document.querySelector('meta[name="description"]');
+    meta?.setAttribute('content', 'Sign in to see your brand offers, active deals, and payments in one place.');
+  }, []);
 
   // If session check takes too long (e.g. network/Supabase slow), show form so user isn't stuck
   useEffect(() => {
@@ -99,7 +107,7 @@ const Login = () => {
 	        // If we're still on /login, do a role-based redirect as a fallback.
 	        // (SessionContext should usually handle this, but this prevents brand users landing on creator routes.)
 	        if (window.location.pathname === '/login') {
-	          navigate(getDashboardPathForRole((profile as any)?.role), { replace: true });
+	          navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true });
 	        }
 	      }, delay);
 	      return () => clearTimeout(timer);
@@ -120,7 +128,7 @@ const Login = () => {
 	            setTimeout(() => {
 	              const currentHash = window.location.hash;
 	              if (currentHash.includes('access_token') || currentHash === '' || window.location.pathname === '/login') {
-	                navigate(getDashboardPathForRole((profile as any)?.role), { replace: true });
+	                navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true });
 	              }
 	            }, 500);
 	          } else if (Date.now() - startTime > maxWait) {
@@ -160,9 +168,9 @@ const Login = () => {
         // Don't show toast - AuthLoadingScreen will handle the transition
         // SessionContext will handle the redirect (role-based).
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[Login] Email/password exception:', err);
-      toast.error('An error occurred. Please try again.');
+      toast.error(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -184,9 +192,9 @@ const Login = () => {
       } else {
         toast.success('Password reset email sent! Check your inbox.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[Login] Forgot password exception:', err);
-      toast.error('An error occurred. Please try again.');
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -222,14 +230,14 @@ const Login = () => {
         {/* Title and Subtitle */}
         <div className="mb-10">
           <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Sign In</h2>
-          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Sign in to manage your deals and payouts.</p>
+          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Sign in to see your brand offers and active deals.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-emerald-500" aria-hidden />
-            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Signing you in...</p>
+            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
           </div>
         )}
 
@@ -237,13 +245,13 @@ const Login = () => {
         {session && (
           <div className="mb-6 space-y-4">
             <p className="text-slate-400 text-sm text-center font-medium">
-              {loading ? 'Authenticating…' : "Session established. Launching dashboard…"}
+              {loading ? 'Authenticating…' : 'Signed in. Opening your deals…'}
             </p>
             <Button
-              onClick={() => navigate('/creator-dashboard', { replace: true })}
+              onClick={() => navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true })}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
             >
-              Go to Dashboard
+              Continue
             </Button>
           </div>
         )}
@@ -277,7 +285,7 @@ const Login = () => {
                   <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
                     Password
                   </Label>
-                  <button type="button"
+                  <button
                     type="button"
                     onClick={handleForgotPassword}
                     className="text-[11px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors"
@@ -307,10 +315,10 @@ const Login = () => {
                 }}
 	              >
 	                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-	                {isLoading ? 'Signing in...' : 'Sign In'}
+	                {isLoading ? 'Authenticating...' : 'Open My Deals'}
 	              </Button>
 
-                <button type="button"
+                <button
                   type="button"
                   onClick={() => {
                     setEmail(DEMO_BRAND_EMAIL);
@@ -342,8 +350,8 @@ const Login = () => {
               <Button
                 onClick={async () => {
                   try {
-                    const redirectUrl = `${window.location.origin}/creator-dashboard`;
-                    sessionStorage.setItem('oauth_intended_route', 'creator-dashboard');
+                    const redirectUrl = `${window.location.origin}/creator-onboarding`;
+                    sessionStorage.setItem('oauth_intended_route', 'creator-onboarding');
                     const { data, error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {
@@ -359,8 +367,8 @@ const Login = () => {
                     } else if (data?.url) {
                       window.location.replace(data.url);
                     }
-                  } catch (err: any) {
-                    toast.error('Failed to start Google sign-in');
+                  } catch (err: unknown) {
+                    toast.error(getErrorMessage(err, 'Failed to start Google sign-in'));
                   }
                 }}
                 variant="outline"
@@ -382,7 +390,7 @@ const Login = () => {
         {(!loading || loadingTimedOut) && !session && (
           <div className="text-center">
             <Link to="/signup" className="text-slate-400 hover:text-white transition-all text-[13px] font-medium group inline-flex items-center gap-2">
-              Don't have an account? <span className="text-emerald-500 font-bold group-hover:underline">Start for free</span>
+              Don't have an account? <span className="text-emerald-500 font-bold group-hover:underline">Create your creator link</span>
             </Link>
           </div>
         )}
@@ -390,7 +398,7 @@ const Login = () => {
         {/* Back to Homepage */}
         <div className="mt-8 pt-6 border-t border-slate-800">
           <Link to="/" className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-300 transition-all text-[12px] font-black uppercase tracking-widest">
-            <ArrowLeft className="h-4 w-4" /> Back to Homepage
+            <ArrowLeft className="h-4 w-4" /> Exit To Homepage
           </Link>
         </div>
       </div>

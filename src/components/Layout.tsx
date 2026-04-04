@@ -39,13 +39,6 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="relative min-h-[100dvh] bg-background text-foreground overflow-hidden md:overflow-visible flex flex-col">
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:bg-blue-600 focus:text-white focus:p-4 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-400/50"
-      >
-        Skip to main content
-      </a>
-
       <div className="relative z-10 flex flex-col flex-1 min-h-0">
         <Navbar />
 
@@ -62,7 +55,7 @@ const Layout = ({ children }: LayoutProps) => {
           </main>
 
           <div className="hidden md:block text-center py-4 text-sm text-white/30 mt-auto">
-            <a href="#" className="hover:underline">Legal Resources</a> | <span>Powered by CreatorArmour ©2026</span>
+            <span>© 2026 Creator Armour</span>
           </div>
         </div>
 

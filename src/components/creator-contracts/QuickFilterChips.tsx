@@ -27,8 +27,12 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
   const filterCounts = React.useMemo(() => {
     const dealsWithStages = allDeals.map(deal => ({ deal, stage: getDealStage(deal) }));
     
-    const active = dealsWithStages.filter(({ stage }) => 
-      stage === 'signed' || stage === 'content_making' || stage === 'content_delivered'
+    const active = dealsWithStages.filter(({ stage }) =>
+      stage === 'brand_signed' ||
+      stage === 'fully_executed' ||
+      stage === 'live_deal' ||
+      stage === 'content_making' ||
+      stage === 'content_delivered'
     ).length;
     const pendingPayment = dealsWithStages.filter(({ deal }) => 
       deal.status === 'Payment Pending' || (deal.payment_expected_date && !deal.payment_received_date)

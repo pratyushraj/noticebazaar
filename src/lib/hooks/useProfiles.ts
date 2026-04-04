@@ -8,6 +8,49 @@ import { useGenerateTaxFilings } from './useTaxFilings'; // NEW: Import the new 
 import { logger } from '@/lib/utils/logger';
 import { getApiBaseUrl } from '@/lib/utils/api';
 
+const unsupportedProfileColumns = new Set<string>();
+
+const UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY = 'nb_unsupported_profile_columns_v1';
+
+const loadUnsupportedProfileColumns = () => {
+  // Avoid crashing in non-browser contexts/tests.
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage.getItem(UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+    for (const col of parsed) {
+      if (typeof col === 'string' && col) unsupportedProfileColumns.add(col);
+    }
+  } catch {
+    // Ignore bad storage state.
+  }
+};
+
+const persistUnsupportedProfileColumns = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY,
+      JSON.stringify(Array.from(unsupportedProfileColumns))
+    );
+  } catch {
+    // Ignore storage errors (private mode, quota, etc).
+  }
+};
+
+// Populate the cache once per page load so we don't repeatedly fire failing PATCHes on refresh.
+loadUnsupportedProfileColumns();
+
+const omitUnsupportedProfileColumns = (payload: Record<string, unknown>) => {
+  const nextPayload = { ...payload };
+  for (const column of unsupportedProfileColumns) {
+    delete nextPayload[column];
+  }
+  return nextPayload;
+};
+
 interface UseProfilesOptions {
   role?: 'client' | 'admin' | 'chartered_accountant' | 'creator';
   enabled?: boolean;
@@ -202,9 +245,9 @@ export const useProfileById = (profileId: string | undefined, options?: { enable
 
 interface UpdateProfileVariables {
   id: string;
-  first_name: string;
-  last_name: string;
-  avatar_url: string | null;
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string | null;
   role?: 'client' | 'admin' | 'chartered_accountant' | 'creator'; // Added role to the interface
   business_name?: string | null; // Added new field
   gstin?: string | null; // Added new field
@@ -263,6 +306,7 @@ interface UpdateProfileVariables {
   collab_response_hours_override?: number | null;
   collab_cancellations_percent_override?: number | null;
   collab_region_label?: string | null;
+  collab_intro_line?: string | null;
   collab_audience_fit_note?: string | null;
   collab_recent_activity_note?: string | null;
   collab_audience_relevance_note?: string | null;
@@ -272,8 +316,57 @@ interface UpdateProfileVariables {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  collab_show_packages?: boolean | null;
+  collab_show_trust_signals?: boolean | null;
+  collab_show_audience_snapshot?: boolean | null;
+  collab_show_past_work?: boolean | null;
+  collab_past_work_items?: Array<{
+    id: string;
+    brand: string;
+    campaignType: string;
+    outcome: string;
+    proofLabel?: string | null;
+  }> | null;
   auto_pricing_enabled?: boolean | null;
   deal_templates?: any[] | null;
+  reel_price?: number | null;
+  story_price?: number | null;
+  post_price?: number | null;
+  barter_min_value?: number | null;
+  delivery_days?: number | null;
+  revisions?: number | null;
+  avg_views?: number | null;
+  followers_count?: number | null;
+  audience_type?: string | null;
+  city?: string | null;
+  language?: string | null;
+  niche?: string | null;
+  past_collabs?: string[] | null;
+  brand_logos?: string[] | null;
+  testimonials?: string[] | null;
+  case_studies?: string[] | null;
+  portfolio_links?: string[] | null;
+  upi_id?: string | null;
+  takes_advance?: boolean | null;
+  completed_deals?: number | null;
+  reliability_score?: number | null;
+  response_hours?: number | null;
+  availability_status?: string | null;
+  last_active_at?: string | null;
+  repeat_brands?: number | null;
+  on_time_delivery_rate?: number | null;
+  conversion_rate?: number | null;
+  creator_stage?: string | null;
+  link_shared_at?: string | null;
+  first_offer_at?: string | null;
+  first_deal_at?: string | null;
+  total_deals?: number | null;
+  total_earnings?: number | null;
+  offers_received?: number | null;
+  offers_accepted?: number | null;
+  storefront_views?: number | null;
+  profile_completion?: number | null;
+  storefront_completion?: number | null;
 }
 
 export const useUpdateProfile = () => {
@@ -343,6 +436,7 @@ export const useUpdateProfile = () => {
       collab_response_hours_override,
       collab_cancellations_percent_override,
       collab_region_label,
+      collab_intro_line,
       collab_audience_fit_note,
       collab_recent_activity_note,
       collab_audience_relevance_note,
@@ -352,13 +446,52 @@ export const useUpdateProfile = () => {
       collab_cta_trust_note,
       collab_cta_dm_note,
       collab_cta_platform_note,
+      collab_past_work_items,
       auto_pricing_enabled,
       deal_templates,
+      reel_price,
+      story_price,
+      post_price,
+      barter_min_value,
+      delivery_days,
+      revisions,
+      avg_views,
+      followers_count,
+      audience_type,
+      city,
+      language,
+      niche,
+      past_collabs,
+      brand_logos,
+      testimonials,
+      case_studies,
+      portfolio_links,
+      upi_id,
+      takes_advance,
+      completed_deals,
+      reliability_score,
+      response_hours,
+      availability_status,
+      last_active_at,
+      repeat_brands,
+      on_time_delivery_rate,
+      conversion_rate,
+      creator_stage,
+      link_shared_at,
+      first_offer_at,
+      first_deal_at,
+      total_deals,
+      total_earnings,
+      offers_received,
+      offers_accepted,
+      storefront_views,
+      profile_completion,
+      storefront_completion,
     }) => {
       const updateData: {
-        first_name: string;
-        last_name: string;
-        avatar_url: string | null;
+        first_name?: string;
+        last_name?: string;
+        avatar_url?: string | null;
         role?: 'client' | 'admin' | 'chartered_accountant' | 'creator';
         updated_at: string;
         business_name?: string | null;
@@ -414,6 +547,7 @@ export const useUpdateProfile = () => {
         collab_response_hours_override?: number | null;
         collab_cancellations_percent_override?: number | null;
         collab_region_label?: string | null;
+        collab_intro_line?: string | null;
         collab_audience_fit_note?: string | null;
         collab_recent_activity_note?: string | null;
         collab_audience_relevance_note?: string | null;
@@ -423,14 +557,66 @@ export const useUpdateProfile = () => {
         collab_cta_trust_note?: string | null;
         collab_cta_dm_note?: string | null;
         collab_cta_platform_note?: string | null;
+        collab_past_work_items?: Array<{
+          id: string;
+          brand: string;
+          campaignType: string;
+          outcome: string;
+          proofLabel?: string | null;
+        }> | null;
         auto_pricing_enabled?: boolean | null;
         deal_templates?: any[] | null;
+        reel_price?: number | null;
+        story_price?: number | null;
+        post_price?: number | null;
+        barter_min_value?: number | null;
+        delivery_days?: number | null;
+        revisions?: number | null;
+        avg_views?: number | null;
+        followers_count?: number | null;
+        audience_type?: string | null;
+        city?: string | null;
+        language?: string | null;
+        niche?: string | null;
+        past_collabs?: string[] | null;
+        brand_logos?: string[] | null;
+        testimonials?: string[] | null;
+        case_studies?: string[] | null;
+        portfolio_links?: string[] | null;
+        upi_id?: string | null;
+        takes_advance?: boolean | null;
+        completed_deals?: number | null;
+        reliability_score?: number | null;
+        response_hours?: number | null;
+        availability_status?: string | null;
+        last_active_at?: string | null;
+        repeat_brands?: number | null;
+        on_time_delivery_rate?: number | null;
+        conversion_rate?: number | null;
+        creator_stage?: string | null;
+        link_shared_at?: string | null;
+        first_offer_at?: string | null;
+        first_deal_at?: string | null;
+        total_deals?: number | null;
+        total_earnings?: number | null;
+        offers_received?: number | null;
+        offers_accepted?: number | null;
+        storefront_views?: number | null;
+        profile_completion?: number | null;
+        storefront_completion?: number | null;
       } = {
-        first_name,
-        last_name,
-        avatar_url,
         updated_at: new Date().toISOString(),
       };
+
+      if (first_name !== undefined) {
+        updateData.first_name = first_name;
+      }
+      if (last_name !== undefined) {
+        updateData.last_name = last_name;
+      }
+      if (avatar_url !== undefined) {
+        updateData.avatar_url = avatar_url;
+      }
 
       if (role) {
         updateData.role = role;
@@ -595,6 +781,9 @@ export const useUpdateProfile = () => {
       if (collab_region_label !== undefined) {
         updateData.collab_region_label = collab_region_label;
       }
+      if (collab_intro_line !== undefined) {
+        updateData.collab_intro_line = collab_intro_line;
+      }
       if (collab_audience_fit_note !== undefined) {
         updateData.collab_audience_fit_note = collab_audience_fit_note;
       }
@@ -622,16 +811,135 @@ export const useUpdateProfile = () => {
       if (collab_cta_platform_note !== undefined) {
         updateData.collab_cta_platform_note = collab_cta_platform_note;
       }
+      if (collab_past_work_items !== undefined) {
+        updateData.collab_past_work_items = collab_past_work_items;
+      }
       if (auto_pricing_enabled !== undefined) {
         updateData.auto_pricing_enabled = auto_pricing_enabled;
       }
       if (deal_templates !== undefined) {
         updateData.deal_templates = deal_templates;
       }
+      if (reel_price !== undefined) {
+        updateData.reel_price = reel_price;
+      }
+      if (story_price !== undefined) {
+        updateData.story_price = story_price;
+      }
+      if (post_price !== undefined) {
+        updateData.post_price = post_price;
+      }
+      if (barter_min_value !== undefined) {
+        updateData.barter_min_value = barter_min_value;
+      }
+      if (delivery_days !== undefined) {
+        updateData.delivery_days = delivery_days;
+      }
+      if (revisions !== undefined) {
+        updateData.revisions = revisions;
+      }
+      if (avg_views !== undefined) {
+        updateData.avg_views = avg_views;
+      }
+      if (followers_count !== undefined) {
+        updateData.followers_count = followers_count;
+      }
+      if (audience_type !== undefined) {
+        updateData.audience_type = audience_type;
+      }
+      if (city !== undefined) {
+        updateData.city = city;
+      }
+      if (language !== undefined) {
+        updateData.language = language;
+      }
+      if (niche !== undefined) {
+        updateData.niche = niche;
+      }
+      if (past_collabs !== undefined) {
+        updateData.past_collabs = past_collabs;
+      }
+      if (brand_logos !== undefined) {
+        updateData.brand_logos = brand_logos;
+      }
+      if (testimonials !== undefined) {
+        updateData.testimonials = testimonials;
+      }
+      if (case_studies !== undefined) {
+        updateData.case_studies = case_studies;
+      }
+      if (portfolio_links !== undefined) {
+        updateData.portfolio_links = portfolio_links;
+      }
+      if (upi_id !== undefined) {
+        updateData.upi_id = upi_id;
+      }
+      if (takes_advance !== undefined) {
+        updateData.takes_advance = takes_advance;
+      }
+      if (completed_deals !== undefined) {
+        updateData.completed_deals = completed_deals;
+      }
+      if (reliability_score !== undefined) {
+        updateData.reliability_score = reliability_score;
+      }
+      if (response_hours !== undefined) {
+        updateData.response_hours = response_hours;
+      }
+      if (availability_status !== undefined) {
+        updateData.availability_status = availability_status;
+      }
+      if (last_active_at !== undefined) {
+        updateData.last_active_at = last_active_at;
+      }
+      if (repeat_brands !== undefined) {
+        updateData.repeat_brands = repeat_brands;
+      }
+      if (on_time_delivery_rate !== undefined) {
+        updateData.on_time_delivery_rate = on_time_delivery_rate;
+      }
+      if (conversion_rate !== undefined) {
+        updateData.conversion_rate = conversion_rate;
+      }
+      if (creator_stage !== undefined) {
+        updateData.creator_stage = creator_stage;
+      }
+      if (link_shared_at !== undefined) {
+        updateData.link_shared_at = link_shared_at;
+      }
+      if (first_offer_at !== undefined) {
+        updateData.first_offer_at = first_offer_at;
+      }
+      if (first_deal_at !== undefined) {
+        updateData.first_deal_at = first_deal_at;
+      }
+      if (total_deals !== undefined) {
+        updateData.total_deals = total_deals;
+      }
+      if (total_earnings !== undefined) {
+        updateData.total_earnings = total_earnings;
+      }
+      if (offers_received !== undefined) {
+        updateData.offers_received = offers_received;
+      }
+      if (offers_accepted !== undefined) {
+        updateData.offers_accepted = offers_accepted;
+      }
+      if (storefront_views !== undefined) {
+        updateData.storefront_views = storefront_views;
+      }
+      if (profile_completion !== undefined) {
+        updateData.profile_completion = profile_completion;
+      }
+      if (storefront_completion !== undefined) {
+        updateData.storefront_completion = storefront_completion;
+      }
+
+      const filteredUpdateData = omitUnsupportedProfileColumns(updateData as Record<string, unknown>);
 
       const { error } = await supabase
         .from('profiles')
-        .update(updateData as any)
+        .update(filteredUpdateData as any)
         .eq('id' as any, id);
 
       if (error) {
@@ -647,11 +955,9 @@ export const useUpdateProfile = () => {
 
         if (isColumnError) {
           // Remove only truly missing columns one-by-one so available optional fields still persist.
-          const safeUpdateData: Record<string, any> = { ...updateData };
+          const safeUpdateData: Record<string, any> = { ...filteredUpdateData };
           const droppedFields = new Set<string>();
           const optionalExtensionFields = new Set([
-            'username',
-            'instagram_handle',
             'platforms',
             'goals',
             'creator_category',
@@ -691,6 +997,7 @@ export const useUpdateProfile = () => {
             'collab_response_hours_override',
             'collab_cancellations_percent_override',
             'collab_region_label',
+            'collab_intro_line',
             'collab_audience_fit_note',
             'collab_recent_activity_note',
             'collab_audience_relevance_note',
@@ -700,8 +1007,47 @@ export const useUpdateProfile = () => {
             'collab_cta_trust_note',
             'collab_cta_dm_note',
             'collab_cta_platform_note',
+            'collab_past_work_items',
             'auto_pricing_enabled',
             'deal_templates',
+            'reel_price',
+            'story_price',
+            'post_price',
+            'barter_min_value',
+            'delivery_days',
+            'revisions',
+            'avg_views',
+            'followers_count',
+            'audience_type',
+            'city',
+            'language',
+            'niche',
+            'past_collabs',
+            'brand_logos',
+            'testimonials',
+            'case_studies',
+            'portfolio_links',
+            'upi_id',
+            'takes_advance',
+            'completed_deals',
+            'reliability_score',
+            'response_hours',
+            'availability_status',
+            'last_active_at',
+            'repeat_brands',
+            'on_time_delivery_rate',
+            'conversion_rate',
+            'creator_stage',
+            'link_shared_at',
+            'first_offer_at',
+            'first_deal_at',
+            'total_deals',
+            'total_earnings',
+            'offers_received',
+            'offers_accepted',
+            'storefront_views',
+            'profile_completion',
+            'storefront_completion',
           ]);
 
           const extractMissingColumn = (message: string): string | null => {
@@ -722,14 +1068,23 @@ export const useUpdateProfile = () => {
             if (missingColumn && optionalExtensionFields.has(missingColumn) && missingColumn in safeUpdateData) {
               delete safeUpdateData[missingColumn];
               droppedFields.add(missingColumn);
+              if (!unsupportedProfileColumns.has(missingColumn)) {
+                unsupportedProfileColumns.add(missingColumn);
+                persistUnsupportedProfileColumns();
+              }
             } else if (i === 0) {
               // If we couldn't identify the exact missing column, fallback to minimal known-safe core payload.
               for (const field of Array.from(optionalExtensionFields)) {
                 if (field in safeUpdateData) {
                   delete safeUpdateData[field];
                   droppedFields.add(field);
+                  if (!unsupportedProfileColumns.has(field)) {
+                    unsupportedProfileColumns.add(field);
+                  }
                 }
               }
+              // Persist after the bulk add to avoid repeated failing writes on refresh.
+              persistUnsupportedProfileColumns();
             }
 
             const result = await (supabase
@@ -738,7 +1093,7 @@ export const useUpdateProfile = () => {
               .eq('id' as any, id) as any);
 
             if (!result.error) {
-              if (droppedFields.size > 0) {
+              if (droppedFields.size > 0 && import.meta.env.DEV) {
                 logger.warn('Profile updated without some fields - migrations may be needed', {
                   profileId: id,
                   missingFields: Array.from(droppedFields),
@@ -788,10 +1143,15 @@ export const useUpdateProfile = () => {
       // Auto-sync Instagram public stats when handle is present.
       if (instagram_handle && typeof instagram_handle === 'string' && instagram_handle.trim()) {
         try {
+          const apiBaseUrl = getApiBaseUrl();
+          if (/^http:\/\/localhost(?::\d+)?$/i.test(apiBaseUrl)) {
+            return;
+          }
+
           const { data: sessionData } = await supabase.auth.getSession();
           const token = sessionData.session?.access_token;
           if (token) {
-            await fetch(`${getApiBaseUrl()}/api/profile/instagram-sync`, {
+            const response = await fetch(`${apiBaseUrl}/api/profile/instagram-sync`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -799,6 +1159,13 @@ export const useUpdateProfile = () => {
               },
               body: JSON.stringify({ instagram_username: instagram_handle }),
             });
+
+            if (!response.ok && response.status !== 404) {
+              logger.warn('Instagram sync skipped after profile update', {
+                profileId: id,
+                status: response.status,
+              });
+            }
           }
         } catch (syncError: any) {
           logger.warn('Instagram sync skipped after profile update', {
@@ -822,7 +1189,6 @@ export const useUpdateProfile = () => {
           exact: false
         });
       },
-      successMessage: 'Profile updated successfully!',
       errorMessage: 'Failed to update profile',
     }
   );

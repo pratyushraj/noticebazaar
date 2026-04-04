@@ -178,6 +178,7 @@ export class DealService implements IDealService {
       'sent', 'CONTRACT_READY', 'contract_ready', 'signed',
       'SIGNED_BY_BRAND', 'SIGNED_BY_CREATOR', 'content_making',
       'Content Making', 'content_delivered', 'Content Delivered',
+      'DISPUTED', 'disputed',
       'REVISION_REQUESTED', 'revision_requested', 'Revision Requested',
       'REVISION_DONE', 'revision_done', 'Revision Done',
       'CONTENT_APPROVED', 'content_approved', 'Content Approved',

@@ -15,12 +15,34 @@ create index if not exists ai_pitch_history_created_at_idx on public.ai_pitch_hi
 
 alter table public.ai_pitch_history enable row level security;
 
-create policy "ai_pitch_history_select_own"
-  on public.ai_pitch_history
-  for select
-  using (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'ai_pitch_history'
+      and policyname = 'ai_pitch_history_select_own'
+  ) then
+    create policy "ai_pitch_history_select_own"
+      on public.ai_pitch_history
+      for select
+      using (auth.uid() = user_id);
+  end if;
+end $$;
 
-create policy "ai_pitch_history_insert_own"
-  on public.ai_pitch_history
-  for insert
-  with check (auth.uid() = user_id);
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'ai_pitch_history'
+      and policyname = 'ai_pitch_history_insert_own'
+  ) then
+    create policy "ai_pitch_history_insert_own"
+      on public.ai_pitch_history
+      for insert
+      with check (auth.uid() = user_id);
+  end if;
+end $$;

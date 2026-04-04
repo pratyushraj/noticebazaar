@@ -59,77 +59,14 @@ export default defineConfig(() => ({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        // Don't nuke all console output in production. We want to keep
+        // console.warn/error for debugging real production issues.
+        // Instead, we drop only low-signal logs.
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
         drop_debugger: true,
       },
     },
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Split heavy vendor libraries into separate chunks
-          if (id.includes('node_modules')) {
-            // React ecosystem
-            if (id.includes('react/') || id.includes('react-dom/') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            // UI libraries
-            if (id.includes('@radix-ui') || id.includes('cmdk') || id.includes('vaul') || id.includes('embla-carousel')) {
-              return 'vendor-ui';
-            }
-            // Supabase
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase';
-            }
-            // Framer motion (heavy animation lib)
-            if (id.includes('framer-motion')) {
-              return 'vendor-motion';
-            }
-            // Icons
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            // Data/state
-            if (id.includes('@tanstack')) {
-              return 'vendor-query';
-            }
-            // Charts
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-          }
-        },
-      },
-    },
-  },
-  plugins: [
-    react(),
-    dyadComponentTagger(),
-    useSyncExternalStoreShimPlugin()
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "react": path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
-      "use-sync-external-store/shim": path.resolve(__dirname, "./src/lib/use-sync-external-store-shim.ts"),
-    },
-    dedupe: ["react", "react-dom", "framer-motion", "lucide-react", "react-router-dom"],
-  },
-  optimizeDeps: {
-    include: [
-      "react",
-      "react-dom",
-      "react-dom/client",
-      "framer-motion",
-      "lucide-react",
-      "@supabase/supabase-js",
-      "@tanstack/react-query",
-      "react-router-dom"
-    ],
-    exclude: [
-      "use-sync-external-store",
-      "use-sync-external-store/shim",
-    ],
-    holdUntilCrawlEnd: true,
-  },
-}));
+

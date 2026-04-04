@@ -1050,9 +1050,40 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       });
     }
 
+    // Enrich with brand verification status
+    let brandVerifiedMap: Record<string, boolean> = {};
+    if (requests && requests.length > 0) {
+      const brandNames = [...new Set(requests.map(r => r.brand_name).filter(Boolean))];
+      if (brandNames.length > 0) {
+        const { data: brandsData } = await supabase
+          .from('brands')
+          .select('name, verified')
+          .in('name', brandNames);
+        if (brandsData) {
+          brandVerifiedMap = brandsData.reduce((acc: Record<string, boolean>, b: any) => {
+            acc[b.name] = Boolean(b.verified);
+            return acc;
+          }, {});
+        }
+      }
+    }
+
+    const enrichedRequests = (requests || []).map((request: any) => {
+      const enriched: any = { ...request, brand_verified: Boolean(brandVerifiedMap[request.brand_name]) };
+      // Shape counter offer as nested object for frontend compatibility
+      if (request.status === 'countered' && (request.counter_price || request.counter_notes || request.countered_at)) {
+        enriched.counter_offer = {
+          final_price: request.counter_price,
+          notes: request.counter_notes,
+          countered_at: request.countered_at,
+        };
+      }
+      return enriched;
+    });
+
     res.json({
       success: true,
-      requests: requests || [],
+      requests: enrichedRequests,
     });
   } catch (error: any) {
     console.error('[CollabRequests] Error in GET /:', error);
@@ -1060,6 +1091,115 @@ router.get('/', async (req: AuthenticatedRequest, res: Response) => {
       success: false,
       error: 'Internal server error',
     });
+  }
+});
+
+/**
+ * PATCH /api/collab-requests/:id/counter
+ * Submit a counter offer for a collab request. Auth required.
+ */
+router.patch('/:id/counter', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const requestId = typeof req.params.id === 'string' ? req.params.id.trim() : '';
+
+    if (!requestId) {
+      return res.status(400).json({ success: false, error: 'Invalid request ID' });
+    }
+
+    const { final_price, notes } = req.body as {
+      final_price?: string | number;
+      notes?: string;
+    };
+
+    // Fetch the existing request
+    const { data: existing, error: fetchError } = await supabase
+      .from('collab_requests')
+      .select('id, creator_id, status, brand_name')
+      .eq('id', requestId)
+      .maybeSingle();
+
+    if (fetchError || !existing) {
+      return res.status(404).json({ success: false, error: 'Request not found' });
+    }
+
+    if (existing.creator_id !== userId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    if (existing.status === 'declined') {
+      return res.status(400).json({ success: false, error: 'Cannot counter a declined request' });
+    }
+
+    // Build counter offer data
+    const counterData: Record<string, unknown> = {
+      status: 'countered',
+      counter_price: final_price ? Number(final_price) : null,
+      counter_notes: notes || null,
+      countered_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: updated, error: updateError } = await supabase
+      .from('collab_requests')
+      .update(counterData)
+      .eq('id', requestId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('[CollabRequests] Counter update error:', updateError);
+      return res.status(500).json({ success: false, error: 'Failed to submit counter offer' });
+    }
+
+    res.json({ success: true, request: updated });
+  } catch (e) {
+    console.error('[CollabRequests] Counter error:', e);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/collab-requests/:id/brand-status
+ * Get brand verified status for a collab request. Auth required.
+ */
+router.get('/:id/brand-status', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const requestId = typeof req.params.id === 'string' ? req.params.id.trim() : '';
+
+    if (!requestId) {
+      return res.status(400).json({ success: false, error: 'Invalid request ID' });
+    }
+
+    const { data: request, error: requestError } = await supabase
+      .from('collab_requests')
+      .select('id, brand_name, creator_id')
+      .eq('id', requestId)
+      .maybeSingle();
+
+    if (requestError || !request) {
+      return res.status(404).json({ success: false, error: 'Request not found' });
+    }
+
+    if (request.creator_id !== userId) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    let brandVerified = false;
+    if (request.brand_name) {
+      const { data: brandData } = await supabase
+        .from('brands')
+        .select('verified')
+        .ilike('name', request.brand_name)
+        .maybeSingle();
+      brandVerified = Boolean(brandData?.verified);
+    }
+
+    res.json({ success: true, brand_verified: brandVerified });
+  } catch (e) {
+    console.error('[CollabRequests] Brand status error:', e);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 

@@ -133,7 +133,6 @@ const FileUploader = ({
         <FileText className="h-4 w-4" />
         <span>Existing File:</span>
         <button type="button"
-          type="button"
           onClick={() => openContractFile(existingFileUrl)}
           className="text-purple-300 hover:text-purple-200 underline transition-colors"
         >
@@ -146,7 +145,6 @@ const FileUploader = ({
         <FileText className="h-4 w-4" />
         <span className="flex-1 truncate">{file.name}</span>
         <button type="button"
-          type="button"
           onClick={onRemove}
           className="text-purple-200/50 hover:text-purple-200/80 transition-colors"
         >

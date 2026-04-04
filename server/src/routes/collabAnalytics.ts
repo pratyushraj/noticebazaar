@@ -116,10 +116,10 @@ router.post('/track', async (req: Request, res: Response) => {
         console.log('[CollabAnalytics] Sample usernames in database:', allUsernames);
       }
 
-      return res.status(404).json({
-        success: false,
-        error: 'Creator not found',
-        details: process.env.NODE_ENV === 'development' ? `Username: ${normalizedUsername}` : undefined,
+      return res.json({
+        success: true,
+        skipped: true,
+        message: 'Tracking skipped for fallback public creator',
       });
     }
 
@@ -317,6 +317,25 @@ router.get('/', authMiddleware, async (req: AuthenticatedRequest, res: Response)
         .map(e => e.ip_hash || 'unknown')
     ).size;
 
+    const dailySeries = Array.from({ length: daysNum }, (_, index) => {
+      const day = new Date(startDate);
+      day.setHours(0, 0, 0, 0);
+      day.setDate(day.getDate() + index);
+      const label = day.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+      const dayStart = day.getTime();
+      const dayEnd = dayStart + (24 * 60 * 60 * 1000);
+      const dayEvents = (events || []).filter((event: any) => {
+        const timestamp = new Date(event.created_at).getTime();
+        return timestamp >= dayStart && timestamp < dayEnd;
+      });
+
+      return {
+        label,
+        views: dayEvents.filter((event: any) => event.event_type === 'view').length,
+        submissions: dayEvents.filter((event: any) => event.event_type === 'submit').length,
+      };
+    });
+
     res.json({
       success: true,
       analytics: {
@@ -342,6 +361,7 @@ router.get('/', authMiddleware, async (req: AuthenticatedRequest, res: Response)
             : 'neutral',
         },
         deviceBreakdown,
+        dailySeries,
       },
     });
   } catch (error: any) {

@@ -24,6 +24,8 @@ import { estimateBarterValueRange, estimateReelBudgetRange, estimateReelRate, ge
 import { fetchInstagramPublicData } from '../services/instagramService.js';
 import { notifyCreatorOnCollabRequestCreated, sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
 import { findOrCreateBrandUser, generateBrandMagicLink } from '../services/brandAuthService.js';
+import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
+import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
 
 const router = express.Router();
 
@@ -185,7 +187,12 @@ const notifyBrandOnCreatorAcceptance = async ({
 
 const isMissingColumnError = (error: any): boolean => {
   if (!error) return false;
-  return error.code === '42703' || /column .* does not exist/i.test(error.message || '');
+  return (
+    error.code === '42703'
+    || error.code === 'PGRST204'
+    || /column .* does not exist/i.test(error.message || '')
+    || /could not find the '.*' column/i.test(error.message || '')
+  );
 };
 
 const isUpstreamConnectivityError = (error: any): boolean => {
@@ -352,22 +359,37 @@ const insertUnclaimedCollabRequest = async (payload: Record<string, unknown>) =>
   let lastError: any = null;
 
   for (const table of insertOrder) {
-    const { data, error } = await supabase
-      .from(table)
-      .insert(payload as any)
-      .select('id, created_at')
-      .single();
+    const candidatePayload = { ...payload };
+    const optionalColumns = ['request_payload', 'target_channel', 'brand_phone', 'brand_website', 'brand_instagram', 'submitted_ip', 'submitted_user_agent'];
 
-    if (!error && data) {
-      return { record: data, table };
+    for (;;) {
+      const { data, error } = await supabase
+        .from(table)
+        .insert(candidatePayload as any)
+        .select('id, created_at')
+        .single();
+
+      if (!error && data) {
+        return { record: data, table };
+      }
+
+      if (isMissingTableError(error)) {
+        lastError = error;
+        break;
+      }
+
+      if (isMissingColumnError(error)) {
+        lastError = error;
+        const missingColumn = optionalColumns.find((column) => new RegExp(`column .*${column}.* does not exist`, 'i').test(error.message || ''));
+        if (missingColumn && missingColumn in candidatePayload) {
+          delete candidatePayload[missingColumn];
+          continue;
+        }
+        break;
+      }
+
+      throw error;
     }
-
-    if (isMissingTableError(error) || isMissingColumnError(error)) {
-      lastError = error;
-      continue;
-    }
-
-    throw error;
   }
 
   throw lastError || new Error('No lead table available for unclaimed collab requests');
@@ -533,23 +555,47 @@ async function attachPendingCollabLeadsForCreator(creatorId: string): Promise<{ 
         .eq('id', claimedLead.id);
 
       try {
+        await recordMarketplaceEvent(supabase, {
+          eventName: 'offer_received',
+          userId: creatorId,
+          creatorId,
+          requestId,
+          metadata: {
+            creator_id: creatorId,
+            request_id: requestId,
+            brand_name: claimedLead.brand_name,
+            collab_type: collabTypeForApi,
+          },
+        });
+
+        const creatorOfferNotification = getCreatorNotificationContent('offer_received', {
+          id: requestId,
+          status: 'OFFER_SENT',
+          creator_id: creatorId,
+          brand_email: claimedLead.brand_email || '',
+          brand_name: claimedLead.brand_name,
+          deal_type: collabTypeForApi || 'paid',
+          deal_amount: 0,
+          current_state: 'OFFER_SENT',
+        });
+        const requestReviewPath = `/collab-requests/${requestId}/brief`;
         await supabase.from('notifications').insert({
           user_id: creatorId,
-          type: 'deal',
-          category: 'collab_request',
-          title: `New collaboration request from ${claimedLead.brand_name}`,
-          message: 'A request submitted before your onboarding is now attached to your account.',
+          type: creatorOfferNotification.type,
+          category: creatorOfferNotification.category,
+          title: creatorOfferNotification.title,
+          message: creatorOfferNotification.message,
           data: {
             collab_request_id: requestId,
             brand_name: claimedLead.brand_name,
             collab_type: collabTypeForApi,
             source: 'attached_lead',
           },
-          link: `${frontendUrl}/creator-dashboard`,
-          priority: 'high',
-          icon: 'collab_request',
-          action_label: 'Review Request',
-          action_link: `${frontendUrl}/creator-dashboard`,
+          link: requestReviewPath,
+          priority: creatorOfferNotification.priority,
+          icon: creatorOfferNotification.type,
+          action_label: creatorOfferNotification.actionLabel,
+          action_link: requestReviewPath,
         });
       } catch (notificationError) {
         console.warn('[CollabRequests] Failed to create notification for attached lead (non-fatal):', notificationError);
@@ -1006,6 +1052,7 @@ router.get('/:username', async (req: Request, res: Response) => {
           collab_response_hours_override,
           collab_cancellations_percent_override,
           collab_region_label,
+          collab_intro_line,
           collab_audience_fit_note,
           collab_recent_activity_note,
           collab_audience_relevance_note,
@@ -1015,6 +1062,11 @@ router.get('/:username', async (req: Request, res: Response) => {
           collab_cta_trust_note,
           collab_cta_dm_note,
           collab_cta_platform_note,
+          collab_show_packages,
+          collab_show_trust_signals,
+          collab_show_audience_snapshot,
+          collab_show_past_work,
+          collab_past_work_items,
           learned_avg_rate_reel,
           learned_deal_count
       `)
@@ -1029,7 +1081,7 @@ router.get('/:username', async (req: Request, res: Response) => {
       // Fetch optional trust arrays separately so older schemas don't break the main extended select.
       const { data: trustArraysProfile } = await supabase
         .from('profiles')
-        .select('past_brands, recent_campaign_types')
+        .select('past_brands, recent_campaign_types, collab_past_work_items')
         .eq('id', profile.id)
         .maybeSingle();
 
@@ -1040,6 +1092,9 @@ router.get('/:username', async (req: Request, res: Response) => {
         }
         if (Array.isArray((trustArraysProfile as any).recent_campaign_types)) {
           nextProfile.recent_campaign_types = (trustArraysProfile as any).recent_campaign_types;
+        }
+        if (Array.isArray((trustArraysProfile as any).collab_past_work_items)) {
+          nextProfile.collab_past_work_items = (trustArraysProfile as any).collab_past_work_items;
         }
         profile = nextProfile as typeof profile;
       }
@@ -1409,6 +1464,7 @@ router.get('/:username', async (req: Request, res: Response) => {
         collab_response_hours_override: (profile as any).collab_response_hours_override ?? null,
         collab_cancellations_percent_override: (profile as any).collab_cancellations_percent_override ?? null,
         collab_region_label: (profile as any).collab_region_label || null,
+        collab_intro_line: (profile as any).collab_intro_line || null,
         collab_audience_fit_note: (profile as any).collab_audience_fit_note || null,
         collab_recent_activity_note: (profile as any).collab_recent_activity_note || null,
         collab_audience_relevance_note: (profile as any).collab_audience_relevance_note || null,
@@ -1418,6 +1474,11 @@ router.get('/:username', async (req: Request, res: Response) => {
         collab_cta_trust_note: (profile as any).collab_cta_trust_note || null,
         collab_cta_dm_note: (profile as any).collab_cta_dm_note || null,
         collab_cta_platform_note: (profile as any).collab_cta_platform_note || null,
+        collab_show_packages: (profile as any).collab_show_packages ?? true,
+        collab_show_trust_signals: (profile as any).collab_show_trust_signals ?? true,
+        collab_show_audience_snapshot: (profile as any).collab_show_audience_snapshot ?? true,
+        collab_show_past_work: (profile as any).collab_show_past_work ?? true,
+        collab_past_work_items: Array.isArray((profile as any).collab_past_work_items) ? (profile as any).collab_past_work_items : [],
         past_brands: Array.isArray((profile as any).past_brands) ? (profile as any).past_brands : [],
         recent_campaign_types: Array.isArray((profile as any).recent_campaign_types) ? (profile as any).recent_campaign_types : [],
         avg_reel_views: (() => {
@@ -1604,23 +1665,8 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       });
     }
 
-    if (!brand_address || typeof brand_address !== 'string' || brand_address.trim().length < 15) {
-      return res.status(400).json({
-        success: false,
-        error: 'Company / brand address is required (full registered address, at least 15 characters) for contract generation',
-      });
-    }
-
-    if (brand_gstin != null && typeof brand_gstin === 'string' && brand_gstin.trim()) {
-      const gstin = brand_gstin.trim().toUpperCase();
-      if (!/^[0-9A-Z]{15}$/.test(gstin)) {
-        return res.status(400).json({
-          success: false,
-          error: 'GSTIN must be 15 characters (letters and numbers only)',
-        });
-      }
-    }
-
+    // Address and GSTIN are optional for initial offer
+    
     const collabTypeForDb = normalizeCollabTypeForDb(collab_type);
     const collabTypeForApi = normalizeCollabTypeForApi(collab_type);
 
@@ -1663,7 +1709,7 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       target_handle: normalizedUsername,
       brand_name: brand_name.trim(),
       brand_email: brand_email.toLowerCase().trim(),
-      brand_address: brand_address.trim(),
+      brand_address: brand_address?.trim() || null,
       brand_gstin: brand_gstin && typeof brand_gstin === 'string' ? brand_gstin.trim().toUpperCase() : null,
       brand_phone: brand_phone?.trim() || null,
       brand_website: brand_website?.trim() || null,
@@ -1795,6 +1841,16 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
         brand_phone: basePayload.brand_phone,
         brand_website: basePayload.brand_website,
         brand_instagram: basePayload.brand_instagram,
+        collab_type: basePayload.collab_type,
+        campaign_description: basePayload.campaign_description,
+        deliverables: basePayload.deliverables,
+        usage_rights: basePayload.usage_rights,
+        deadline: basePayload.deadline,
+        budget_range: basePayload.budget_range || null,
+        exact_budget: basePayload.exact_budget ?? null,
+        barter_description: basePayload.barter_description || null,
+        barter_value: basePayload.barter_value ?? null,
+        target_handle: normalizedUsername,
         target_channel: 'username',
         status: 'pending',
         submitted_ip: clientIp,
@@ -1923,11 +1979,51 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
       insertData.barter_product_image_url = basePayload.barter_product_image_url ?? null;
     }
 
-    const { data: collabRequest, error: insertError } = await supabase
-      .from('collab_requests')
-      .insert(insertData)
-      .select('id, brand_name, created_at')
-      .single();
+    const requestOptionalFields = new Set([
+      'shipping_required',
+      'brand_contact_id',
+      'brand_id',
+      'submitted_ip',
+      'submitted_user_agent',
+    ]);
+
+    const extractMissingColumn = (message: string): string | null => {
+      if (!message) return null;
+      const quoted = message.match(/'([^']+)' column/i);
+      if (quoted?.[1]) return quoted[1];
+      const quotedAlt = message.match(/column\s+"([^"]+)"/i);
+      if (quotedAlt?.[1]) return quotedAlt[1];
+      const unquoted = message.match(/column\s+([a-z_][a-z0-9_]*)/i);
+      if (unquoted?.[1]) return unquoted[1];
+      return null;
+    };
+
+    let requestInsertPayload: any = { ...insertData };
+    let collabRequest: any = null;
+    let insertError: any = null;
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const result = await supabase
+        .from('collab_requests')
+        .insert(requestInsertPayload)
+        .select('id, brand_name, created_at')
+        .single();
+
+      collabRequest = result.data;
+      insertError = result.error;
+
+      if (!insertError) {
+        break;
+      }
+
+      const missingColumn = extractMissingColumn(String(insertError.message || ''));
+      if (missingColumn && requestOptionalFields.has(missingColumn) && missingColumn in requestInsertPayload) {
+        delete requestInsertPayload[missingColumn];
+        continue;
+      }
+
+      break;
+    }
 
     if (insertError) {
       console.error('[CollabRequests] Error creating request:', insertError);
@@ -2136,26 +2232,49 @@ router.post('/:username/submit', async (req: Request, res: Response) => {
 
       // ── In-app Notification ──────────────────────────────────────────────────
       try {
-        const frontendUrl = process.env.FRONTEND_URL || 'https://creatorarmour.com';
-        const dashboardLink = `${frontendUrl}/creator-dashboard`;
+        await recordMarketplaceEvent(supabase, {
+          eventName: 'offer_received',
+          userId: creator.id,
+          creatorId: creator.id,
+          requestId: collabRequest.id,
+          metadata: {
+            creator_id: creator.id,
+            request_id: collabRequest.id,
+            brand_name,
+            collab_type: collabTypeForApi || collabTypeForDb,
+            deal_value: Number(exact_budget || barter_value || 0),
+          },
+        });
+
+        const creatorOfferNotification = getCreatorNotificationContent('offer_received', {
+          id: collabRequest.id,
+          status: 'OFFER_SENT',
+          creator_id: creator.id,
+          brand_email: brand_email || '',
+          brand_name,
+          deal_type: collabTypeForApi || collabTypeForDb || 'paid',
+          deal_amount: Number(exact_budget || barter_value || 0),
+          current_state: 'OFFER_SENT',
+        });
+        const requestReviewPath = `/collab-requests/${collabRequest.id}/brief`;
         const { error: notificationError } = await supabase
           .from('notifications')
           .insert({
             user_id: creator.id,
-            type: 'deal',
-            category: 'collab_request',
-            title: `New collaboration request from ${brand_name}`,
-            message: `You have a new collaboration request. Review it in your dashboard.`,
+            type: creatorOfferNotification.type,
+            category: creatorOfferNotification.category,
+            title: creatorOfferNotification.title,
+            message: creatorOfferNotification.message,
             data: {
               collab_request_id: collabRequest.id,
               brand_name: brand_name,
               collab_type: collabTypeForApi || collabTypeForDb,
             },
-            link: dashboardLink,
-            priority: 'high',
-            icon: 'collab_request',
-            action_label: 'Review Request',
-            action_link: dashboardLink,
+            link: requestReviewPath,
+            priority: creatorOfferNotification.priority,
+            icon: creatorOfferNotification.type,
+            action_label: creatorOfferNotification.actionLabel,
+            action_link: requestReviewPath,
           });
         if (notificationError) {
           console.warn('[CollabRequests] Failed to create notification entry (non-fatal):', notificationError.message);
@@ -2516,7 +2635,8 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       due_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       payment_expected_date: request.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       platform: 'Other',
-      status: 'Drafting',
+      status: isBarter ? 'Drafting' : 'content_making',
+      progress_percentage: isBarter ? 15 : 85,
       deal_type: isBarter ? 'barter' : 'paid',
       collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
       shipping_required: (request as any).shipping_required === true || (request as any).shipping_required === 'true',
@@ -2596,6 +2716,36 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
       isBarter,
     }).catch((pushError) => {
       console.error('[CollabRequests] Accept confirm: brand push failed (non-fatal):', pushError);
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'offer_accepted',
+      userId,
+      creatorId: userId,
+      dealId: deal.id,
+      requestId: id,
+      metadata: {
+        creator_id: userId,
+        deal_id: deal.id,
+        request_id: id,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+        deal_value: dealAmount,
+      },
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'deal_started',
+      userId,
+      creatorId: userId,
+      dealId: deal.id,
+      requestId: id,
+      metadata: {
+        creator_id: userId,
+        deal_id: deal.id,
+        request_id: id,
+        collab_type: normalizeCollabTypeForApi(request.collab_type) || request.collab_type,
+        deal_value: dealAmount,
+      },
     });
 
     if (isBarter) {
@@ -2791,11 +2941,52 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
       // collab_request_id: request.id, // Column currently missing in production DB
     };
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .insert(dealData)
-      .select('id')
-      .single();
+    const dealOptionalFields = new Set([
+      'collab_type',
+      'shipping_required',
+      'created_via',
+      'brand_address',
+      'brand_phone',
+      'progress_percentage',
+    ]);
+
+    const extractMissingColumn = (message: string): string | null => {
+      if (!message) return null;
+      const quoted = message.match(/'([^']+)' column/i);
+      if (quoted?.[1]) return quoted[1];
+      const quotedAlt = message.match(/column\s+"([^"]+)"/i);
+      if (quotedAlt?.[1]) return quotedAlt[1];
+      const unquoted = message.match(/column\s+([a-z_][a-z0-9_]*)/i);
+      if (unquoted?.[1]) return unquoted[1];
+      return null;
+    };
+
+    let dealInsertPayload: any = { ...dealData };
+    let deal: any = null;
+    let dealError: any = null;
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const result = await supabase
+        .from('brand_deals')
+        .insert(dealInsertPayload)
+        .select('id')
+        .single();
+
+      deal = result.data;
+      dealError = result.error;
+
+      if (!dealError) {
+        break;
+      }
+
+      const missingColumn = extractMissingColumn(String(dealError.message || ''));
+      if (missingColumn && dealOptionalFields.has(missingColumn) && missingColumn in dealInsertPayload) {
+        delete dealInsertPayload[missingColumn];
+        continue;
+      }
+
+      break;
+    }
 
     if (dealError || !deal) {
       console.error('[CollabRequests] Error creating deal:', dealError);
@@ -2803,6 +2994,21 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
         success: false,
         error: 'Failed to create deal',
       });
+    }
+
+    if (!isBarter) {
+      const { error: paidStageError } = await supabase
+        .from('brand_deals')
+        .update({
+          status: 'content_making',
+          progress_percentage: 85,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', deal.id);
+
+      if (paidStageError) {
+        console.error('[CollabRequests] Error updating paid deal stage after accept:', paidStageError);
+      }
     }
 
     // Link deal to canonical brand for agency
@@ -2988,123 +3194,143 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
           jurisdiction_city: 'Mumbai', // Default to Mumbai, India
         };
 
-        // Generate contract
-        const contractResult = await generateContractFromScratch({
-          brandName: request.brand_name,
-          creatorName,
-          creatorEmail,
-          dealAmount,
-          deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-          paymentTerms,
-          dueDate: request.deadline
-            ? new Date(request.deadline).toLocaleDateString()
-            : undefined,
-          paymentExpectedDate: request.deadline
-            ? new Date(request.deadline).toLocaleDateString()
-            : undefined,
-          platform: 'Multiple Platforms',
-          brandEmail: request.brand_email || undefined,
-          brandAddress: request.brand_address?.trim() || undefined,
-          brandGstin: request.brand_gstin?.trim() || undefined,
-          creatorAddress,
-          dealSchema,
-          usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
-          usagePlatforms: ['All platforms'],
-          usageDuration: '6 months',
-          paidAdsAllowed: false,
-          whitelistingAllowed: false,
-          exclusivityEnabled: false,
-          exclusivityCategory: null,
-          exclusivityDuration: null,
-          terminationNoticeDays: 7,
-          jurisdictionCity: 'Mumbai',
-          additionalTerms: normalizeCollabTypeForDb(request.collab_type) === 'barter' && request.barter_description
-            ? `Barter Collaboration: ${request.barter_description}`
-            : undefined,
-        });
+        const brandAddress = request.brand_address?.trim() || undefined;
+        const canGenerateContract = Boolean(
+          request.brand_name &&
+          creatorName &&
+          creatorEmail &&
+          brandAddress &&
+          creatorAddress
+        );
 
-        // Upload contract DOCX to storage
-        const timestamp = Date.now();
-        const storagePath = `contracts/${deal.id}/${timestamp}_${contractResult.fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('creator-assets')
-          .upload(storagePath, contractResult.contractDocx, {
-            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error('[CollabRequests] Contract upload error:', uploadError);
-          throw new Error('Failed to upload contract');
-        }
-
-        // Get public URL
-        const { data: publicUrlData } = supabase.storage
-          .from('creator-assets')
-          .getPublicUrl(storagePath);
-
-        contractUrl = publicUrlData?.publicUrl || null;
-
-        if (!contractUrl) {
-          throw new Error('Failed to get contract URL');
-        }
-
-        // Update deal with contract URL
-        const { error: contractUpdateError } = await supabase
-          .from('brand_deals')
-          .update({
-            contract_file_url: contractUrl,
-            status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', deal.id);
-
-        if (contractUpdateError) {
-          console.error('[CollabRequests] Error updating deal with contract:', contractUpdateError);
-          // Contract was uploaded, so continue anyway
-        }
-
-        // Create contract ready token for brand signing
-        try {
-          const token = await createContractReadyToken({
+        if (!canGenerateContract) {
+          console.log('[CollabRequests] Skipping contract generation due to missing info:', {
             dealId: deal.id,
-            creatorId: userId,
-            expiresAt: null, // No expiry
+            hasBrandName: !!request.brand_name,
+            hasCreatorName: !!creatorName,
+            hasCreatorEmail: !!creatorEmail,
+            hasBrandAddress: !!brandAddress,
+            hasCreatorAddress: !!creatorAddress,
           });
-          contractReadyToken = token.id;
+        } else {
+          // Generate contract
+          const contractResult = await generateContractFromScratch({
+            brandName: request.brand_name,
+            creatorName,
+            creatorEmail,
+            dealAmount,
+            deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+            paymentTerms,
+            dueDate: request.deadline
+              ? new Date(request.deadline).toLocaleDateString()
+              : undefined,
+            paymentExpectedDate: request.deadline
+              ? new Date(request.deadline).toLocaleDateString()
+              : undefined,
+            platform: 'Multiple Platforms',
+            brandEmail: request.brand_email || undefined,
+            brandAddress,
+            brandGstin: request.brand_gstin?.trim() || undefined,
+            creatorAddress,
+            dealSchema,
+            usageType: request.usage_rights ? 'Exclusive' : 'Non-exclusive',
+            usagePlatforms: ['All platforms'],
+            usageDuration: '6 months',
+            paidAdsAllowed: false,
+            whitelistingAllowed: false,
+            exclusivityEnabled: false,
+            exclusivityCategory: null,
+            exclusivityDuration: null,
+            terminationNoticeDays: 7,
+            jurisdictionCity: 'Mumbai',
+            additionalTerms: normalizeCollabTypeForDb(request.collab_type) === 'barter' && request.barter_description
+              ? `Barter Collaboration: ${request.barter_description}`
+              : undefined,
+          });
 
-          // Send acceptance email to brand (async, don't await)
-          if (request.brand_email && contractReadyToken) {
-            sendCollabRequestAcceptedEmail(request.brand_email, {
-              creatorName,
-              brandName: request.brand_name,
-              dealAmount,
-              dealType: normalizeCollabTypeForDb(request.collab_type) === 'barter' ? 'barter' : 'paid',
-              deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
-              contractReadyToken,
-              contractUrl: contractUrl || undefined,
-            }).catch((emailError) => {
-              console.error('[CollabRequests] Acceptance email sending failed (non-fatal):', emailError);
+          // Upload contract DOCX to storage
+          const timestamp = Date.now();
+          const storagePath = `contracts/${deal.id}/${timestamp}_${contractResult.fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('creator-assets')
+            .upload(storagePath, contractResult.contractDocx, {
+              contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              upsert: false,
             });
+
+          if (uploadError) {
+            console.error('[CollabRequests] Contract upload error:', uploadError);
+            throw new Error('Failed to upload contract');
           }
 
-          // Send confirmation to creator (async, don't await)
-          const { sendCreatorAcceptanceProcessingEmail } = await import('../services/collabRequestEmailService.js');
-          sendCreatorAcceptanceProcessingEmail(
-            creatorEmail || '',
-            creatorName,
-            request.brand_name,
-            deal.id
-          ).catch((emailError) => {
-            console.error('[CollabRequests] Creator acceptance confirmation failed (non-fatal):', emailError);
-          });
-        } catch (tokenError) {
-          console.error('[CollabRequests] Error creating contract ready token:', tokenError);
-          // Contract was created, so continue anyway
-        }
+          // Get public URL
+          const { data: publicUrlData } = supabase.storage
+            .from('creator-assets')
+            .getPublicUrl(storagePath);
 
-        console.log('[CollabRequests] Contract generated successfully for deal:', deal.id);
+          contractUrl = publicUrlData?.publicUrl || null;
+
+          if (!contractUrl) {
+            throw new Error('Failed to get contract URL');
+          }
+
+          // Update deal with contract URL
+          const { error: contractUpdateError } = await supabase
+            .from('brand_deals')
+            .update({
+              contract_file_url: contractUrl,
+              status: 'CONTRACT_READY', // Contract is ready, awaiting brand signature
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', deal.id);
+
+          if (contractUpdateError) {
+            console.error('[CollabRequests] Error updating deal with contract:', contractUpdateError);
+            // Contract was uploaded, so continue anyway
+          }
+
+          // Create contract ready token for brand signing
+          try {
+            const token = await createContractReadyToken({
+              dealId: deal.id,
+              creatorId: userId,
+              expiresAt: null, // No expiry
+            });
+            contractReadyToken = token.id;
+
+            // Send acceptance email to brand (async, don't await)
+            if (request.brand_email && contractReadyToken) {
+              sendCollabRequestAcceptedEmail(request.brand_email, {
+                creatorName,
+                brandName: request.brand_name,
+                dealAmount,
+                dealType: normalizeCollabTypeForDb(request.collab_type) === 'barter' ? 'barter' : 'paid',
+                deliverables: deliverablesArray.length > 0 ? deliverablesArray : ['As per agreement'],
+                contractReadyToken,
+                contractUrl: contractUrl || undefined,
+              }).catch((emailError) => {
+                console.error('[CollabRequests] Acceptance email sending failed (non-fatal):', emailError);
+              });
+            }
+
+            // Send confirmation to creator (async, don't await)
+            const { sendCreatorAcceptanceProcessingEmail } = await import('../services/collabRequestEmailService.js');
+            sendCreatorAcceptanceProcessingEmail(
+              creatorEmail || '',
+              creatorName,
+              request.brand_name,
+              deal.id
+            ).catch((emailError) => {
+              console.error('[CollabRequests] Creator acceptance confirmation failed (non-fatal):', emailError);
+            });
+          } catch (tokenError) {
+            console.error('[CollabRequests] Error creating contract ready token:', tokenError);
+            // Contract was created, so continue anyway
+          }
+
+          console.log('[CollabRequests] Contract generated successfully for deal:', deal.id);
+        }
       }
     } catch (contractError: any) {
       // Log error but don't fail the request - deal was created successfully

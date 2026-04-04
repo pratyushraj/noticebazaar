@@ -13,6 +13,9 @@ import { createShippingToken } from '../services/shippingTokenService.js';
 import { sendBrandShippingUpdateEmail, sendBrandShippingIssueEmail } from '../services/shippingEmailService.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { signContractAsCreator, getClientIp, getDeviceInfo } from '../services/contractSigningService.js';
+import { recordMarketplaceEvent } from '../shared/lib/marketplaceAnalytics.js';
+import { getCreatorNotificationContent } from '../domains/deals/creatorNotificationCopy.js';
+import { sendGenericPushNotificationToCreator } from '../services/pushNotificationService.js';
 
 const router = Router();
 
@@ -46,6 +49,71 @@ const inferRequiresShipping = (deal: any) => {
   const kind = normalizeCollabKind(deal?.collab_type || deal?.deal_type);
   if (kind === 'barter' || kind === 'both' || kind === 'hybrid' || kind === 'paid_barter') return true;
   return false;
+};
+
+const notifyCreatorForDealEvent = async (
+  template: Parameters<typeof getCreatorNotificationContent>[0],
+  deal: any,
+  metadata: Record<string, any> = {}
+) => {
+  const creatorId = String(deal?.creator_id || '').trim();
+  if (!creatorId) return;
+
+  try {
+    const notification = getCreatorNotificationContent(template, {
+      id: String(deal?.id || ''),
+      creator_id: creatorId,
+      brand_name: String(deal?.brand_name || '').trim() || 'Brand',
+      brand_email: String(deal?.brand_email || '').trim() || '',
+      deal_type: deal?.deal_type || deal?.collab_type || 'paid',
+      collab_type: deal?.collab_type || deal?.deal_type || 'paid',
+      deal_amount: Number(deal?.deal_amount || 0),
+      status: String(deal?.status || ''),
+      current_state: String(deal?.status || ''),
+    } as any);
+
+    const { error: notificationError } = await supabase.from('notifications').insert({
+      user_id: creatorId,
+      type: notification.type,
+      category: notification.category,
+      title: notification.title,
+      message: notification.message,
+      data: {
+        template,
+        deal_id: deal.id,
+        brand_name: deal?.brand_name || null,
+        ...metadata,
+      },
+      link: notification.link,
+      priority: notification.priority,
+      icon: notification.type,
+      action_label: notification.actionLabel,
+      action_link: notification.actionLink,
+      read: false,
+    });
+
+    if (notificationError) {
+      console.warn(`[Deals] Failed to create ${template} notification:`, notificationError.message);
+    }
+
+    const pushResult = await sendGenericPushNotificationToCreator({
+      creatorId,
+      title: notification.title,
+      body: notification.message,
+      url: notification.actionLink,
+      data: {
+        template,
+        dealId: deal.id,
+        ...metadata,
+      },
+    });
+
+    if (!pushResult.sent) {
+      console.log(`[Deals] No push subscriptions delivered for ${template} on deal ${deal.id}`);
+    }
+  } catch (error: any) {
+    console.warn(`[Deals] Failed to notify creator for ${template}:`, error?.message || error);
+  }
 };
 
 // Multer configuration for signed contract uploads (in-memory, PDF only, max 10MB)
@@ -1449,6 +1517,18 @@ router.patch('/:id/submit-content', authMiddleware, async (req: AuthenticatedReq
       }
     });
 
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'content_submitted',
+      userId,
+      creatorId: userId,
+      dealId,
+      metadata: {
+        creator_id: userId,
+        deal_id: dealId,
+        content_status: normalizedContentStatus,
+      },
+    });
+
     return res.json({
       success: true,
       message: isRevision ? 'Revision submitted for review' : 'Content submitted for review',
@@ -1486,7 +1566,7 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email, progress_percentage')
+      .select('id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage')
       .eq('id', dealId)
       .maybeSingle();
 
@@ -1560,6 +1640,35 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
       metadata: { feedback: feedback ?? null, dispute_notes: updateData.dispute_notes ?? null }
     });
 
+    if (status === 'approved') {
+      await recordMarketplaceEvent(supabase, {
+        eventName: 'content_approved',
+        userId,
+        dealId,
+        metadata: {
+          deal_id: dealId,
+        },
+      });
+    }
+
+    if (status === 'approved') {
+      await notifyCreatorForDealEvent('content_approved', {
+        ...deal,
+        status: 'CONTENT_APPROVED',
+      }, {
+        approved_at: now,
+        feedback: feedback ?? null,
+      });
+    } else if (status === 'changes_requested') {
+      await notifyCreatorForDealEvent('revision_requested', {
+        ...deal,
+        status: 'REVISION_REQUESTED',
+      }, {
+        revision_requested_at: now,
+        feedback: feedback ?? null,
+      });
+    }
+
     return res.json({
       success: true,
       message: status === 'approved' ? 'Content approved' : status === 'disputed' ? 'Issue raised' : 'Changes requested',
@@ -1591,7 +1700,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
 
     const { data: deal, error: dealError } = await supabase
       .from('brand_deals')
-      .select('id, status, brand_id, brand_email, collab_type, deal_type, deal_amount, shipping_required')
+      .select('id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required')
       .eq('id', dealId)
       .maybeSingle();
 
@@ -1670,6 +1779,26 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       },
     }).then(({ error }) => {
       if (error) console.warn('[Deals] release-payment action log failed:', error.message);
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'payment_marked',
+      userId,
+      dealId,
+      metadata: {
+        deal_id: dealId,
+        amount: (deal as any).deal_amount || 0,
+      },
+    });
+
+    await notifyCreatorForDealEvent('payment_marked', {
+      ...deal,
+      status: 'PAYMENT_RELEASED',
+    }, {
+      payment_reference: paymentReference,
+      payment_received_date: paymentReceivedDate,
+      payment_proof_url: paymentProofUrl,
+      payment_notes: paymentNotes,
     });
 
     return res.json({
@@ -1771,6 +1900,16 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       },
     }).then(({ error }) => {
       if (error) console.warn('[Deals] mark-complete action log failed:', error.message);
+    });
+
+    await recordMarketplaceEvent(supabase, {
+      eventName: 'deal_completed',
+      userId,
+      dealId,
+      metadata: {
+        deal_id: dealId,
+        deal_value: (deal as any).deal_amount || 0,
+      },
     });
 
     return res.json({ success: true, message: 'Deal marked as completed.' });

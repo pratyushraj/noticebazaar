@@ -8,7 +8,7 @@ import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useSignOut } from '@/lib/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
-import { usePartnerStats } from '@/lib/hooks/usePartnerProgram';
+import { useProtectionScore } from '@/lib/hooks/useProtectionReports';
 import { toast } from 'sonner';
 import { getInitials } from '@/lib/utils/avatar';
 import { logger } from '@/lib/utils/logger';
@@ -272,7 +272,11 @@ const ProfileSettings = () => {
     enabled: !!profile?.id,
   });
 
-  const { data: partnerStats } = usePartnerStats(profile?.id);
+  // Fetch protection score from protection reports
+  const { score: protectionScoreData } = useProtectionScore({
+    userId: profile?.id,
+    enabled: !!profile?.id,
+  });
 
   // Fetch collab link analytics summary
   useEffect(() => {
@@ -746,8 +750,8 @@ const ProfileSettings = () => {
     const activeDeals = brandDeals.filter(deal =>
       deal.status !== 'Completed' && deal.status !== 'Drafting'
     ).length;
-    const protectionScore = 85; // TODO: Calculate from content protection data
-    const streak = (partnerStats as any)?.streak_days ? Math.floor((partnerStats as any).streak_days / 7) : 0;
+    const protectionScore = protectionScoreData || 0;
+    const streak = 0;
 
     return {
       totalDeals,
@@ -756,7 +760,7 @@ const ProfileSettings = () => {
       protectionScore,
       streak
     };
-  }, [brandDeals, partnerStats]);
+  }, [brandDeals]);
 
   // Build platforms array from actual profile data
   const platforms = useMemo(() => {
@@ -1464,7 +1468,7 @@ const ProfileSettings = () => {
       // Small delay to ensure profile state updates before showing success
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      toast.success('Profile updated successfully!');
+      toast.success('Profile saved!');
       if (dealSettingsRequired) {
         setDealSettingsRequired(false);
         navigate('/creator-profile?section=collab', { replace: true });
@@ -1536,7 +1540,6 @@ const ProfileSettings = () => {
       <div className="sticky top-0 z-50 bg-background/90 backdrop-blur-lg border-b border-border">
         <div className="flex items-center justify-between p-4">
           <button type="button"
-            type="button"
             onClick={() => {
               if (dealSettingsRequired) {
                 toast.message('Complete Deal Settings first to continue.');
@@ -1553,7 +1556,6 @@ const ProfileSettings = () => {
           <div className="text-lg font-semibold">Profile & Settings</div>
 
           <button type="button"
-            type="button"
             onClick={() => {
               handleSave();
             }}
@@ -2432,7 +2434,7 @@ const ProfileSettings = () => {
                         </div>
                       </div>
 
-                      {/* 6. Analytics — soft empty state */}
+                      {/* 6. Performance — soft empty state */}
                       <div className="rounded-xl border border-border bg-muted/30 p-3">
                         <div className="flex items-center gap-2">
                           <Eye className="h-4 w-4 text-muted-foreground/60 flex-shrink-0" />
@@ -2483,7 +2485,6 @@ const ProfileSettings = () => {
                   className="w-full bg-transparent hover:bg-red-500/10 border border-red-500/40 text-red-300 font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[40px]"
                   aria-label="Log out of your account"
                   aria-describedby="logout-description"
-                  type="button"
                 >
                   {signOutMutation.isPending ? (
                     <>
@@ -2505,7 +2506,6 @@ const ProfileSettings = () => {
 
             <div className="mb-4">
               <button type="button"
-                type="button"
                 onClick={() => handleSave()}
                 disabled={isSaving}
                 className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
@@ -2701,7 +2701,6 @@ const ProfileSettings = () => {
                     <p className="text-[11px] text-muted-foreground mt-0.5">Allow our engine to automatically recommend rates to brands based on your content stats.</p>
                   </div>
                   <button type="button"
-                    type="button"
                     onClick={() => {
                       if (navigator.vibrate) navigator.vibrate(50);
                       setFormData(prev => ({ ...prev, autoPricingEnabled: !prev.autoPricingEnabled }));
@@ -2757,7 +2756,6 @@ const ProfileSettings = () => {
                       return (
                         <button type="button"
                           key={option.key}
-                          type="button"
                           onClick={() => {
                             hasManualDealSizeSelectionRef.current = true;
                             setCollabBudgetError(null);
@@ -2793,14 +2791,13 @@ const ProfileSettings = () => {
                 <p className="text-[11px] text-white/60">This helps brands send relevant offers only.</p>
 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Open To</label>
+                          <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Open To</label>
                   <div className="flex flex-wrap gap-2">
                     {COLLAB_PREFERENCE_OPTIONS.map((option) => {
                       const isSelected = formData.collaborationPreference === option;
                       return (
                         <button type="button"
                           key={option}
-                          type="button"
                           disabled={!editMode}
                           onClick={() => setFormData(prev => ({ ...prev, collaborationPreference: option }))}
                           aria-pressed={isSelected}
@@ -2808,7 +2805,7 @@ const ProfileSettings = () => {
                             ? 'bg-primary text-primary-foreground border-primary shadow-sm font-semibold'
                             : 'bg-muted/40 border-border text-foreground/75'} ${!editMode ? 'opacity-70 cursor-not-allowed' : 'hover:bg-muted'}`}
                         >
-                          {option === 'paid' ? 'Paid' : option === 'barter' ? 'Barter' : 'Hybrid'}
+                          {option === 'paid' ? 'Paid' : option === 'barter' ? 'Free products as payment' : 'Paid + Product'}
                         </button>
                       );
                     })}
@@ -2830,7 +2827,6 @@ const ProfileSettings = () => {
                       return (
                         <button type="button"
                           key={niche}
-                          type="button"
                           disabled={!editMode}
                           onClick={() => {
                             if (selected) {
@@ -2918,7 +2914,7 @@ const ProfileSettings = () => {
                         {topCities.map((city) => (
                           <span key={city} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs border border-border bg-muted/60 text-foreground/90 font-medium">
                             {city}
-                            <button type="button" type="button" onClick={() => removeCity(city)} disabled={!editMode} className="text-muted-foreground hover:text-foreground">×</button>
+                            <button type="button" onClick={() => removeCity(city)} disabled={!editMode} className="text-muted-foreground hover:text-foreground">×</button>
                           </span>
                         ))}
                       </div>
@@ -2938,7 +2934,7 @@ const ProfileSettings = () => {
                           disabled={!editMode}
                           className={`flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
                         />
-                        <button type="button" type="button" onClick={addCity} disabled={!editMode} className={`px-3 py-2 rounded-lg text-sm border border-border ${editMode ? 'bg-muted hover:bg-muted/80 text-foreground font-medium' : 'opacity-70 cursor-not-allowed text-muted-foreground bg-muted/30'}`}>
+                        <button type="button" onClick={addCity} disabled={!editMode} className={`px-3 py-2 rounded-lg text-sm border border-border ${editMode ? 'bg-muted hover:bg-muted/80 text-foreground font-medium' : 'opacity-70 cursor-not-allowed text-muted-foreground bg-muted/30'}`}>
                           Add
                         </button>
                       </div>
@@ -3058,7 +3054,6 @@ const ProfileSettings = () => {
                   ].map((option) => (
                     <button type="button"
                       key={option.key}
-                      type="button"
                       onClick={() => setFormData(prev => ({ ...prev, collabBrandsCountOverride: option.value }))}
                       className={cn(
                         "rounded-lg border px-3 py-2 text-sm text-left transition-all",
@@ -3142,7 +3137,6 @@ const ProfileSettings = () => {
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mb-2 text-center transition-opacity duration-200">{positioningNudge}</p>
               )}
               <button type="button"
-                type="button"
                 onClick={() => {
                   setCtaPressed(true);
                   window.setTimeout(() => setCtaPressed(false), 180);
@@ -3177,7 +3171,6 @@ const ProfileSettings = () => {
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <button type="button"
-                  type="button"
                   onClick={handleEnablePushFromAccount}
                   disabled={
                     isPushBusy
@@ -3197,7 +3190,6 @@ const ProfileSettings = () => {
                 {isPushSubscribed && (
                   <>
                     <button type="button"
-                      type="button"
                       onClick={handleTestPushFromAccount}
                       disabled={isPushBusy}
                       className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border disabled:opacity-60 disabled:cursor-not-allowed transition-all"
@@ -3332,7 +3324,7 @@ const ProfileSettings = () => {
                     if (profile?.id) {
                       localStorage.removeItem(`dashboard-tutorial-completed-${profile.id}`);
                       localStorage.removeItem(`dashboard-tutorial-dismissed-${profile.id}`);
-                      toast.success('Tutorial has been reset! It will appear on your next dashboard visit.');
+                      toast.success('Tutorial has been reset! It will appear on your next Your Deals visit.');
                       setTimeout(() => {
                         navigate('/creator-dashboard');
                       }, 1000);
@@ -3343,7 +3335,7 @@ const ProfileSettings = () => {
                   <div className="flex items-center gap-2.5">
                     <Sparkles className="w-4 h-4 text-amber-500/70" />
                     <div className="text-left">
-                      <div className="font-medium text-sm">Restart Dashboard Tutorial</div>
+                      <div className="font-medium text-sm">Restart Your Deals Tutorial</div>
                       <div className="text-xs text-muted-foreground">Show the guided tour again</div>
                     </div>
                   </div>
@@ -3404,7 +3396,6 @@ const ProfileSettings = () => {
                   disabled={signOutMutation.isPending}
                   className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 font-semibold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
                   aria-label="Log out of your account"
-                  type="button"
                 >
                   {signOutMutation.isPending ? (
                     <>

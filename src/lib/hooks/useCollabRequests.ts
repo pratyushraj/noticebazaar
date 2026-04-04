@@ -9,6 +9,7 @@ export interface CollabRequest {
   id: string;
   brand_name: string;
   brand_email: string;
+  brand_verified?: boolean;
   collab_type: CollabType;
   budget_range: string | null;
   exact_budget: number | null;
@@ -23,6 +24,12 @@ export interface CollabRequest {
   created_at: string;
   updated_at?: string;
   creator_id: string;
+  counter_offer?: {
+    final_price?: number;
+    deliverables?: string;
+    notes?: string;
+    countered_at?: string;
+  };
 }
 
 const STALE_TIME_MS = 3 * 60 * 1000;   // 3 minutes – cache considered fresh, no refetch on remount

@@ -6,7 +6,7 @@ import { Package, Lock } from 'lucide-react';
 import { useSession } from "@/contexts/SessionContext";
 import { useBrandDealById } from "@/lib/hooks/useBrandDeals";
 import { getApiBaseUrl } from "@/lib/utils/api";
-
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,9 @@ import { trackEvent } from "@/lib/utils/analytics";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { CreatorNavigationWrapper } from "@/components/navigation/CreatorNavigationWrapper";
-import { buttons } from "@/lib/design-system";
+import { gradients, spacing, typography, animations, buttons } from "@/lib/design-system";
+
+const DELIVERY_PREFS_STORAGE_KEY = "nb_creator_delivery_prefs_v1";
 
 export default function DealDeliveryDetailsPage() {
   const { dealId } = useParams<{ dealId: string }>();
@@ -90,23 +92,81 @@ export default function DealDeliveryDetailsPage() {
     }
   }, [deal]);
 
+  // Prefill from last-used delivery details (mobile-friendly; reduces form friction).
+  useEffect(() => {
+    // If deal already has delivery details, don't override.
+    if (hasExistingDelivery) return;
+    try {
+      const raw = window.localStorage.getItem(DELIVERY_PREFS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as any;
+      if (!parsed || typeof parsed !== "object") return;
+
+      setDeliveryName((current) => current || String(parsed.deliveryName || ""));
+      setDeliveryPhone((current) => current || String(parsed.deliveryPhone || ""));
+      setAddressLine((current) => current || String(parsed.addressLine || ""));
+      setAddressLine2((current) => current || String(parsed.addressLine2 || ""));
+      setCity((current) => current || String(parsed.city || ""));
+      setState((current) => current || String(parsed.state || ""));
+      setPincode((current) => current || String(parsed.pincode || ""));
+      setDeliveryNotes((current) => current || String(parsed.deliveryNotes || ""));
+    } catch {
+      // ignore
+    }
+  }, [hasExistingDelivery]);
+
+  // Auto-fill from profile if no existing delivery details
+  useEffect(() => {
+    if (hasExistingDelivery) return;
+    if (!profile) return;
+    const profileName = `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+    if (profileName) setDeliveryName((current) => current || profileName);
+    if ((profile as any)?.phone) setDeliveryPhone((current) => current || String((profile as any).phone));
+  }, [profile, hasExistingDelivery]);
+
+  // Pincode-based city/state auto-fill
+  const [isLookingUpPincode, setIsLookingUpPincode] = useState(false);
+  useEffect(() => {
+    if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) return;
+    
+    const lookupPincode = async () => {
+      setIsLookingUpPincode(true);
+      try {
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await response.json();
+        if (data?.[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
+          const postOffice = data[0].PostOffice[0];
+          if (!city.trim()) setCity(postOffice.District || "");
+          if (!state.trim()) setState(postOffice.State || "");
+        }
+      } catch {
+        // Silent fail - user can fill manually
+      } finally {
+        setIsLookingUpPincode(false);
+      }
+    };
+    
+    const timer = setTimeout(lookupPincode, 500);
+    return () => clearTimeout(timer);
+  }, [pincode]);
+
   // Redirect if not barter or not owner
   useEffect(() => {
     if (isLoadingDeal || !dealId) return;
     if (!profile?.id) return;
     if (!deal) {
       toast.error("Deal not found");
-      navigate("/creator-contracts", { replace: true });
+      navigate("/creator-dashboard", { replace: true });
       return;
     }
     // Route guard: paid deals skip delivery — redirect to deal page (no delivery UI)
     if (dealType === "paid") {
-      navigate(`/creator-contracts/${dealId}`, { replace: true });
+      navigate(`/deal/${dealId}`, { replace: true });
       return;
     }
     if (dealType !== "barter") {
-      toast.error("Delivery details are only for barter deals");
-      navigate(`/creator-contracts/${dealId}`, { replace: true });
+      toast.error("Delivery details are only for deals with free products as payment");
+      navigate(`/deal/${dealId}`, { replace: true });
       return;
     }
     // Barter deal: user is on delivery screen
@@ -154,9 +214,29 @@ export default function DealDeliveryDetailsPage() {
         queryClient.invalidateQueries({ queryKey: ["brand_deal", dealId] });
 
         setIsSubmitted(true);
+
+        // Persist for next barter deal to avoid retyping (safe to keep locally).
+        try {
+          window.localStorage.setItem(
+            DELIVERY_PREFS_STORAGE_KEY,
+            JSON.stringify({
+              deliveryName: deliveryName.trim(),
+              deliveryPhone: deliveryPhone.trim(),
+              addressLine: addressLine.trim(),
+              addressLine2: addressLine2.trim(),
+              city: city.trim(),
+              state: state.trim(),
+              pincode: pincode.trim(),
+              deliveryNotes: deliveryNotes.trim(),
+            })
+          );
+        } catch {
+          // ignore
+        }
+
         // We delay navigation to show the confirmation state
         setTimeout(() => {
-          navigate(`/creator-contracts/${dealId}`, { replace: true });
+          navigate(`/deal/${dealId}`, { replace: true });
         }, 2500);
       } else {
         const err = data?.error || "Failed to save delivery details";
@@ -202,12 +282,12 @@ export default function DealDeliveryDetailsPage() {
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
           <Package className="h-8 w-8 text-primary animate-bounce" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Delivery details locked for this deal</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Address saved!</h2>
         <p className="text-muted-foreground mb-8">
-          You can update this before shipment begins from the deal details page.
+          You can update this anytime from the deal page.
         </p>
         <div className="animate-pulse text-sm text-primary font-medium">
-          Redirecting to your contract...
+          Taking you back to your deal...
         </div>
       </div>
     );
@@ -215,8 +295,8 @@ export default function DealDeliveryDetailsPage() {
 
   return (
     <CreatorNavigationWrapper
-      title="Delivery Details"
-      subtitle="Brands cannot ship your product until this is filled."
+      title="Add Your Address"
+      subtitle="Only needed for product deals."
       showBackButton
     >
       <div className="bg-white/6 border-b border-white/12">
@@ -231,22 +311,22 @@ export default function DealDeliveryDetailsPage() {
       <main className="max-w-xl mx-auto px-4 py-6">
         <div className="mb-6">
           <p className="text-sm font-medium text-foreground mb-1">
-            Brands cannot ship your product until this is filled.
+            Add your address so the brand can ship the product.
           </p>
           <p className="text-sm text-muted-foreground">
-            This protects you from fake or delayed deliveries by ensuring brand accountability.
+            You only do this when shipping is required. We will save it for the next product deal.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-24">
           <div className="space-y-2">
-            <Label htmlFor="delivery_name" className="text-white/70">Receiver Name</Label>
+            <Label htmlFor="delivery_name" className="text-white/70">Your name</Label>
             <Input
               id="delivery_name"
               value={deliveryName}
               onChange={(e) => setDeliveryName(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, name: true }))}
-              placeholder="Full name for courier label"
+              placeholder="Your full name"
               className={cn(
                 fieldClass,
                 touched.name && !nameValid && "border-destructive focus:border-destructive"
@@ -260,7 +340,7 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="delivery_phone" className="text-white/70">WhatsApp / Phone Number</Label>
+            <Label htmlFor="delivery_phone" className="text-white/70">Phone number</Label>
             <Input
               id="delivery_phone"
               type="tel"
@@ -268,7 +348,7 @@ export default function DealDeliveryDetailsPage() {
               value={deliveryPhone}
               onChange={(e) => setDeliveryPhone(e.target.value.replace(/\D/g, "").slice(0, 15))}
               onBlur={() => setTouched((t) => ({ ...t, phone: true }))}
-              placeholder="10-digit phone number"
+              placeholder="For delivery updates only"
               className={cn(
                 fieldClass,
                 touched.phone && !phoneValid && "border-destructive focus:border-destructive"
@@ -277,7 +357,7 @@ export default function DealDeliveryDetailsPage() {
               autoComplete="tel"
             />
             <p className="text-[11px] leading-tight text-white/55">
-              Used strictly for courier updates. Never used for marketing. Never shared publicly.
+              Used only for delivery updates.
             </p>
             {touched.phone && !phoneValid && deliveryPhone.length > 0 && (
               <p className="text-xs text-destructive font-medium">Please enter a valid 10-digit number</p>
@@ -285,7 +365,7 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-4">
-            <Label className="text-white/70">Where should the product be delivered?</Label>
+            <Label className="text-white/70">Delivery address</Label>
 
             <div className="space-y-2">
               <Label className="text-xs text-white/55">Address line 1</Label>
@@ -293,7 +373,7 @@ export default function DealDeliveryDetailsPage() {
                 value={addressLine}
                 onChange={(e) => setAddressLine(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, address: true }))}
-                placeholder="Flat / Building / Street Address"
+                placeholder="House / flat / street / area"
                 className={cn(
                   fieldClass,
                   touched.address && !addressLine.trim() && "border-destructive"
@@ -310,7 +390,7 @@ export default function DealDeliveryDetailsPage() {
               <Input
                 value={addressLine2}
                 onChange={(e) => setAddressLine2(e.target.value)}
-                placeholder="Area / Landmark / Apartment"
+                placeholder="Landmark / apartment / delivery hint"
                 className={fieldClass}
               />
             </div>
@@ -339,7 +419,7 @@ export default function DealDeliveryDetailsPage() {
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   onBlur={() => setTouched((t) => ({ ...t, pincode: true }))}
-                  placeholder="Pincode"
+                  placeholder={isLookingUpPincode ? "Looking up..." : "Pincode"}
                   inputMode="numeric"
                   className={cn(
                     fieldClass,
@@ -373,12 +453,12 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-2 pt-2">
-            <Label htmlFor="delivery_notes" className="text-sm text-white/70">Delivery Notes (optional)</Label>
+            <Label htmlFor="delivery_notes" className="text-sm text-white/70">Delivery notes (optional)</Label>
             <Textarea
               id="delivery_notes"
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
-              placeholder="e.g. Near HDFC Bank, Doorbell not working"
+              placeholder="Near HDFC Bank, gate code, or delivery timing note"
               rows={2}
               className={cn("resize-none", textAreaFieldClass)}
             />
@@ -390,22 +470,21 @@ export default function DealDeliveryDetailsPage() {
                 {submitError}
               </div>
             )}
-            <button
-              type="submit"
+            <button type="submit"
               className={cn(buttons.primary, "w-full h-14 text-base font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed")}
               disabled={!canSubmit}
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving Address...
+                  Saving address...
                 </span>
               ) : (
-                "Confirm Address & Continue"
+                "Save Address"
               )}
             </button>
             <p className="text-[11px] text-center text-muted-foreground font-medium uppercase tracking-wider">
-              Product ships only after contract signing
+              The brand sees this only for this product deal
             </p>
           </div>
         </form>
@@ -413,7 +492,7 @@ export default function DealDeliveryDetailsPage() {
         {hasExistingDelivery && !isSubmitted && (
           <div className="mt-8 p-4 rounded-xl bg-muted/40 border border-dashed border-muted-foreground/20 text-center">
             <p className="text-xs text-muted-foreground">
-              You already have delivery details saved. Updating them will regenerate the contract with the new address.
+              You already have an address saved. Updating it will update the contract.
             </p>
           </div>
         )}

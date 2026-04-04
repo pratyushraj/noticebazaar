@@ -3,6 +3,7 @@
  * Supports Mixpanel and Supabase logs as fallback
  * Fire events once per deal; attach deal_id, creator_id, collab_type where applicable.
  */
+import { supabase } from '@/integrations/supabase/client';
 
 type AnalyticsEvent =
   | 'deal_preview_opened'
@@ -55,12 +56,39 @@ type AnalyticsEvent =
   | 'pwa_app_installed'
   | 'pwa_notification_nudge_shown'
   | 'pwa_notification_enabled'
-  // Conversion Funnel
+  // Public funnel
+  | 'marketing_cta_clicked'
+  | 'legal_check_started'
+  | 'legal_check_submitted'
+  | 'signup_started'
   | 'signup_completed'
-  | 'first_dashboard_view'
-  | 'profile_completed'
-  | 'first_deal_created'
-  | 'first_collab_request_sent';
+  | 'creator_signed_up'
+  | 'instagram_added'
+  | 'reel_price_set'
+  | 'collab_link_copied'
+  | 'collab_link_shared'
+  | 'offer_received'
+  | 'offer_opened'
+  | 'offer_accepted'
+  | 'deal_started'
+  | 'content_submitted'
+  | 'content_approved'
+  | 'payment_marked'
+  | 'payment_confirmed'
+  | 'invoice_generated'
+  | 'deal_completed'
+  | 'creators_set_price'
+  | 'creators_shared_link'
+  | 'creators_received_first_offer'
+  | 'creators_completed_first_deal'
+  | 'onboarding_step_completed'
+  | 'onboarding_completed'
+  | 'dashboard_primary_action_viewed'
+  | 'web_vitals_cls'
+  | 'web_vitals_inp'
+  | 'web_vitals_fcp'
+  | 'web_vitals_lcp'
+  | 'web_vitals_ttfb';
 
 /** Fire events once per deal. Attach deal_id, creator_id, collab_type where applicable. Contract/brand events (contract_generated, contract_viewed_by_brand, contract_signed_by_brand, contract_not_signed_48h, payment_*) are typically fired from the backend. */
 
@@ -115,7 +143,6 @@ async function trackEventToSupabase(
   properties?: AnalyticsProperties
 ): Promise<void> {
   try {
-    const { supabase } = await import('@/integrations/supabase/client');
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return;
 

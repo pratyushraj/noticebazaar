@@ -8,10 +8,12 @@ import { SecondaryButton } from '../SecondaryButton';
 import { GradientCard } from '../GradientCard';
 import { SkipButton } from '../SkipButton';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { normalizeInstagramHandle } from '@/lib/utils/creatorMessaging';
 
 interface InstagramStepProps {
   instagramUsername: string;
   onUsernameChange: (username: string) => void;
+  error?: string;
   onNext: () => void;
   onBack: () => void;
   onSkip?: () => void;
@@ -24,6 +26,7 @@ interface InstagramStepProps {
 export const InstagramStep: React.FC<InstagramStepProps> = ({
   instagramUsername,
   onUsernameChange,
+  error,
   onNext,
   onBack,
   onSkip,
@@ -31,11 +34,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
   const [value, setValue] = useState(instagramUsername);
   const [availability, setAvailability] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
 
-  const normalized = value
-    .replace(/@/g, '')
-    .replace(/\s/g, '')
-    .toLowerCase()
-    .trim();
+  const normalized = normalizeInstagramHandle(value);
   const isValid = normalized.length >= 3;
   const canContinue = isValid && availability !== 'checking' && availability !== 'taken';
 
@@ -98,7 +97,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
             Your Instagram username
           </h2>
           <p className="text-base text-slate-500 dark:text-white/80 text-center mb-6">
-            This becomes your collaboration link so brands can find you. Same as your Instagram handle.
+            This becomes your collaboration link so brands can find you. Use your handle now, and change it later if needed.
           </p>
 
           <div className="mb-6">
@@ -140,6 +139,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
                 )}
               </div>
             )}
+            {error && <p className="mt-3 text-center text-xs font-medium text-rose-600">{error}</p>}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">

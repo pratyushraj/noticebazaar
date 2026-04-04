@@ -6,15 +6,11 @@ import {
   Calendar,
   FolderOpen,
   AlertTriangle,
-  FileText,
-  Receipt,
-  Sparkles,
   Settings,
   Bell,
   Search,
   ChevronRight,
   MessageSquare,
-  Shield,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -110,7 +106,6 @@ const SidebarItem: React.FC<{
 
   return (
     <button type="button"
-      type="button"
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 px-[14px] h-[54px] rounded-[14px] transition-all duration-200 ease-in-out relative group",
@@ -243,45 +238,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className, profileRole }) => {
           icon: AlertTriangle,
           path: "/creator-dashboard?tab=disputes",
           iconColor: "#FF453A",
-          roles: ['creator']
-        },
-      ]
-    },
-    {
-      title: "🛡 LIFESTYLE SHIELD",
-      items: [
-        {
-          name: "Consumer Complaints",
-          icon: Shield,
-          path: "/lifestyle/consumer-complaints",
-          iconColor: "#34D399", // Soft green
-          roles: ['creator']
-          // Removed isPro: true for testing phase - available to all users
-        },
-        {
-          name: "My Complaints",
-          icon: FileText,
-          path: "/dashboard/consumer-complaints",
-          iconColor: "#8B5CF6", // Purple
-          roles: ['creator']
-        },
-      ]
-    },
-    {
-      title: "BUSINESS",
-      items: [
-        {
-          name: "Tax Summary",
-          icon: Receipt,
-          path: "/creator-tax-compliance",
-          iconColor: "#FFD60A",
-          roles: ['creator']
-        },
-        {
-          name: "Partner Program",
-          icon: Sparkles,
-          path: "/partner-program",
-          iconColor: "#5E5CE6",
           roles: ['creator']
         },
       ]

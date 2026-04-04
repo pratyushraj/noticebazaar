@@ -5,9 +5,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { trackEvent } from '@/lib/utils/analytics';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { calculatePaymentRiskLevel, getPaymentRiskConfig, getPaymentRiskTooltip } from '@/lib/utils/paymentRisk';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,11 +22,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
   const { paymentId } = useParams<{ paymentId: string }>();
   const { profile } = useSession();
+  const updateProfileMutation = useUpdateProfile();
 
   // Fetch the deal data (paymentId is actually the dealId)
   const { data: brandDeal, isLoading, error } = useBrandDealById(paymentId, profile?.id);
@@ -38,6 +43,8 @@ const PaymentDetailPage = () => {
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingUpi, setPendingUpi] = useState(profile?.bank_upi || '');
+  const [isSavingUpi, setIsSavingUpi] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Undo payment state
@@ -177,6 +184,12 @@ const PaymentDetailPage = () => {
     }
   }, [paymentData]);
 
+  useEffect(() => {
+    setPendingUpi(profile?.bank_upi || '');
+  }, [profile?.bank_upi]);
+
+  const hasSavedUpi = Boolean(String(profile?.bank_upi || '').trim());
+
   // Handle undo deadline expiration
   useEffect(() => {
     if (!undoDeadline) return;
@@ -199,7 +212,33 @@ const PaymentDetailPage = () => {
 
   // Handle mark as received (opens confirmation modal)
   const handleMarkAsReceived = () => {
+    if (!String(profile?.bank_upi || '').trim()) {
+      toast.error('Add your UPI ID before closing this payment');
+      return;
+    }
     setShowConfirmModal(true);
+  };
+
+  const handleSaveUpi = async () => {
+    if (!profile?.id) return;
+    const normalizedUpi = pendingUpi.trim().toLowerCase();
+    if (!/^[a-z0-9.\-_]{2,}@[a-z]{2,}$/i.test(normalizedUpi)) {
+      toast.error('Enter a valid UPI ID');
+      return;
+    }
+
+    try {
+      setIsSavingUpi(true);
+      await updateProfileMutation.mutateAsync({
+        id: profile.id,
+        bank_upi: normalizedUpi,
+      } as any);
+      toast.success('UPI saved');
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not save your UPI ID');
+    } finally {
+      setIsSavingUpi(false);
+    }
   };
 
   // Confirm and mark as received
@@ -233,6 +272,12 @@ const PaymentDetailPage = () => {
         proof_of_payment_url: proofOfPaymentUrl,
         utr_number: null, // Can be added separately
         // updated_at will be automatically updated by trigger
+      });
+
+      void trackEvent('payment_confirmed', {
+        creator_id: profile.id,
+        deal_id: brandDeal.id,
+        amount: paymentData.amount,
       });
 
       // Set undo deadline (5 minutes from now)
@@ -541,14 +586,57 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
+        {!paymentData.receivedAt && !hasSavedUpi && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+            className="relative rounded-2xl border border-amber-400/20 bg-amber-500/10 p-5 md:p-6"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-full bg-amber-400/20 p-2">
+                <AlertCircle className="h-4 w-4 text-amber-300" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">Add your UPI only when payment is near</p>
+                <p className="mt-1 text-sm text-white/70">
+                  This keeps onboarding short. Save it now so you can confirm payment in one tap later.
+                </p>
+                <div className="mt-4 space-y-2">
+                  <Label htmlFor="payment-upi" className="text-xs uppercase tracking-[0.18em] text-white/60">
+                    UPI ID
+                  </Label>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Input
+                      id="payment-upi"
+                      value={pendingUpi}
+                      onChange={(e) => setPendingUpi(e.target.value)}
+                      placeholder="name@oksbi"
+                      className="border-white/15 bg-white/5 text-white placeholder:text-white/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveUpi}
+                      disabled={isSavingUpi}
+                      className="h-11 shrink-0 rounded-xl bg-white text-slate-900 px-4 text-sm font-semibold hover:bg-white/90 disabled:opacity-60"
+                    >
+                      {isSavingUpi ? 'Saving...' : 'Save UPI'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* SECTION 2: Primary Action Bar (Sticky) */}
-        <div className="sticky top-[73px] z-40 bg-purple-900/95 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-3 mb-6 safe-area-top">
+        <div className="sticky top-[73px] z-40 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-3 mb-6 safe-area-top">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
             {paymentData.status === 'pending' ? (
               <>
                 <motion.button
                   onClick={handleMarkAsReceived}
-                  disabled={updateDealMutation.isPending}
+                  disabled={updateDealMutation.isPending || !hasSavedUpi}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold px-4 py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
@@ -560,7 +648,9 @@ const PaymentDetailPage = () => {
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm">Confirm Payment Received</span>
+                      <span className="text-xs sm:text-sm">
+                        {hasSavedUpi ? 'Confirm payment received' : 'Add UPI to confirm'}
+                      </span>
                     </>
                   )}
                 </motion.button>
@@ -570,7 +660,7 @@ const PaymentDetailPage = () => {
                   className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
                   <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">Send Payment Reminder</span>
+                  <span className="text-xs sm:text-sm">Remind brand</span>
                 </motion.button>
               </>
             ) : paymentData.status === 'overdue' ? (
@@ -585,7 +675,7 @@ const PaymentDetailPage = () => {
                 </motion.button>
                 <motion.button
                   onClick={handleMarkAsReceived}
-                  disabled={updateDealMutation.isPending}
+                  disabled={updateDealMutation.isPending || !hasSavedUpi}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                 >
@@ -597,7 +687,9 @@ const PaymentDetailPage = () => {
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm">Confirm Payment Received</span>
+                      <span className="text-xs sm:text-sm">
+                        {hasSavedUpi ? 'Confirm payment received' : 'Add UPI to confirm'}
+                      </span>
                     </>
                   )}
                 </motion.button>
@@ -638,6 +730,15 @@ const PaymentDetailPage = () => {
               </>
             )}
           </div>
+          <div className="max-w-4xl mx-auto mt-2">
+            <p className="text-xs text-white/70">
+              {paymentData.status === 'pending' || paymentData.status === 'overdue'
+                ? hasSavedUpi
+                  ? 'Tap this only after the money reaches your bank account.'
+                  : 'Add your UPI first. We only ask for it when payment is close.'
+                : 'This deal is completed. You can download the invoice and share your collab page for more deals.'}
+            </p>
+          </div>
         </div>
 
         {/* SECTION 3: Overview (Compact Grid) */}
@@ -667,11 +768,11 @@ const PaymentDetailPage = () => {
               </div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Payment Trigger</div>
+              <div className="text-xs text-white/60 mb-1">Payment trigger</div>
               <div className="text-sm font-semibold text-white">On Approval</div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Payment Timeline</div>
+              <div className="text-xs text-white/60 mb-1">Payment window</div>
               <div className="text-sm font-semibold text-white">Within 7 days</div>
             </div>
           </div>
@@ -686,7 +787,7 @@ const PaymentDetailPage = () => {
             className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
           >
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Payment Timeline</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">When payment is due</h3>
               
               <div className="space-y-4">
                 <div>
@@ -723,7 +824,7 @@ const PaymentDetailPage = () => {
           transition={{ delay: 0.25, duration: 0.3 }}
           className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
         >
-          <h3 className="text-lg font-semibold text-white mb-4">Payment History</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Payment updates</h3>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <div className="w-2 h-2 rounded-full bg-white/40 mt-1.5 flex-shrink-0" />
@@ -907,7 +1008,7 @@ const PaymentDetailPage = () => {
         >
           <div className="relative z-10 space-y-4">
             <div>
-              <div className="text-sm font-medium text-white mb-1">Internal Notes (Only visible to you)</div>
+              <div className="text-sm font-medium text-white mb-1">Notes (only visible to you)</div>
               <div className="text-xs text-white/60 mb-3">
                 Brand said they'll pay next week
               </div>
@@ -942,14 +1043,14 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
-        {/* SECTION 8: Destructive Actions (Danger Zone) */}
+        {/* SECTION 8: Advanced Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.3 }}
           className="space-y-3 pt-6 border-t border-white/10"
         >
-          <div className="text-xs text-white/50 mb-3">Danger Zone</div>
+          <div className="text-xs text-white/50 mb-3">Advanced</div>
           <div className="grid grid-cols-2 gap-3">
             <button type="button"
               onClick={() => {
@@ -1038,13 +1139,12 @@ const PaymentDetailPage = () => {
                 <CheckCircle className="w-6 h-6 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Confirm Payment Received?</h3>
+                <h3 className="text-lg font-semibold text-white">Confirm you got the money</h3>
               </div>
             </div>
             
             <p className="text-white/80 mb-6">
-              This will mark the payment as received and close this payment cycle.
-              You can still add notes or upload proof later.
+              Only do this after the money reaches your bank account. You can still add notes or upload proof later.
             </p>
             
             <div className="flex gap-3">
@@ -1069,7 +1169,7 @@ const PaymentDetailPage = () => {
                     Processing...
                   </>
                 ) : (
-                  'Yes, Mark as Received'
+                  'Yes, I Got It'
                 )}
               </motion.button>
             </div>

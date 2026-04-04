@@ -16,6 +16,7 @@ const TRACKER_STEPS = [
     { id: 'production', label: 'Production' },
     { id: 'submitted', label: 'Submitted' },
     { id: 'approved', label: 'Approved' },
+    { id: 'payment', label: 'Payment' },
     { id: 'completed', label: 'Completed' },
 ];
 
@@ -29,8 +30,10 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
     let currentStepIndex = 0;
 
     if (progress >= 100 || statusLower.includes('completed')) {
-        currentStepIndex = 6; // Completed
-    } else if (statusLower.includes('approved') || statusLower.includes('payment pending')) {
+        currentStepIndex = 7; // Completed
+    } else if (statusLower.includes('payment pending') || statusLower.includes('payment_sent') || statusLower.includes('payment_received') || statusLower.includes('payment_marked')) {
+        currentStepIndex = 6; // Payment
+    } else if (statusLower.includes('approved') || statusLower.includes('content approved')) {
         currentStepIndex = 5; // Approved
     } else if (progress >= 95 || statusLower.includes('content delivered') || statusLower.includes('submitted')) {
         currentStepIndex = 4; // Submitted
@@ -93,6 +96,14 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
                     )}>
                         {isDeadlineUrgent ? <AlertCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                         {deadlineText}
+                    </div>
+                )}
+
+                {/* Payment deadline — show when in payment stage */}
+                {currentStepIndex === 6 && deal.payment_expected_date && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border bg-green-500/10 text-green-400 border-green-500/20">
+                        <Clock className="w-4 h-4" />
+                        Payment expected {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </div>
                 )}
             </div>

@@ -67,10 +67,10 @@ const ProfileForm = ({ initialProfile, onSaveSuccess, isAdminView = false }: Pro
         facebook_profile_url: facebookProfileUrl.trim() || null,
         twitter_handle: twitterHandle.trim() || null,
       });
-      toast.success('Profile updated successfully!');
+      toast.success('Profile saved!');
       onSaveSuccess?.();
     } catch (error: any) {
-      toast.error('Failed to update profile', { description: error.message });
+      toast.error("Couldn\u2019t save. Try again.", { description: error.message });
     }
   };
 

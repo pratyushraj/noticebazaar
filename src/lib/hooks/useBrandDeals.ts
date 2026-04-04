@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
@@ -8,6 +9,24 @@ import { CREATOR_ASSETS_BUCKET, extractFilePathFromUrl } from '@/lib/constants/s
 import { logger } from '@/lib/utils/logger';
 import { validateNewDeal, validateDealAmount, validateEmail, validateFile, ALLOWED_FILE_TYPES, MAX_FILE_SIZES } from '@/lib/utils/validation';
 import { validateStatusTransition } from '@/lib/constants/dealStatuses';
+
+// Enhanced retry configuration with exponential backoff for better reliability
+const retryConfig = {
+  retry: (failureCount: number, error: any) => {
+    // Don't retry on authentication errors (401, 403)
+    if (error?.status === 401 || error?.status === 403 ||
+        error?.code === 'PGRST301' || error?.message?.includes('JWT')) {
+      return false;
+    }
+    // Retry up to 3 times with exponential backoff for network/server errors
+    return failureCount < 3;
+  },
+  retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  cacheTime: 10 * 60 * 1000, // 10 minutes
+};
+
+type LooseRow = Record<string, any>;
 
 // Demo data for Brand Deals (used when database table doesn't exist or for preview)
 // Updated to match Payments page requirements exactly
@@ -169,15 +188,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
   return useSupabaseQuery<BrandDeal[], Error>(
     ['brand_deals', SIGNED_STATUSES_VERSION, creatorId, statusFilter, platformFilter, sortBy, sortOrder, limit],
     async () => {
-      // Debug: Log creatorId (dev only)
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Fetching deals for creatorId:', creatorId);
-      }
-
       if (!creatorId) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] No creatorId provided, returning empty array');
-        }
         return [];
       }
 
@@ -185,14 +196,11 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       const { data: { session } } = await supabase.auth.getSession();
       const authUserId = session?.user?.id;
 
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Auth user ID:', authUserId, 'Creator ID:', creatorId);
-      }
-
       if (authUserId !== creatorId) {
-        if (import.meta.env.DEV) {
-          console.warn('[useBrandDeals] WARNING: auth.uid() does not match creatorId. This may cause RLS issues.');
-        }
+        logger.warn('[useBrandDeals] auth.uid() does not match creatorId. This may cause RLS issues.', {
+          authUserId,
+          creatorId,
+        });
       }
 
       // Define signed statuses that should be visible (includes barter: Drafting, Awaiting Product Shipment)
@@ -234,13 +242,13 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         'Awaiting Product Shipment', // Barter: delivery details saved, waiting for brand to ship
       ];
 
-      let query = supabase
+      let query = (supabase
         .from('brand_deals')
         .select('*')
         .eq('creator_id', creatorId)
         // Filter to only show signed deals
         .in('status', signedStatuses)
-        .order(sortBy, { ascending: sortOrder === 'asc' });
+        .order(sortBy, { ascending: sortOrder === 'asc' })) as any;
 
       // If a specific status filter is provided, apply it (but only if it's a signed status)
       if (statusFilter && statusFilter !== 'All') {
@@ -262,7 +270,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       // Debug: Log error details
       if (error) {
-        console.error('[useBrandDeals] Query error:', {
+        logger.error('[useBrandDeals] Query error', {
           code: error.code,
           message: error.message,
           details: error.details,
@@ -279,8 +287,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           error.message?.toLowerCase().includes('policy');
 
         if (isRLSError) {
-          console.error('[useBrandDeals] RLS ERROR: Permission denied. Check RLS policies for brand_deals table.');
-          console.error('[useBrandDeals] RLS Error Details:', {
+          logger.error('[useBrandDeals] RLS ERROR: Permission denied. Check RLS policies for brand_deals table.', {
             creatorId,
             authUserId,
             errorMessage: error.message,
@@ -297,9 +304,7 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
           error.message?.includes('not found');
 
         if (isMissingTableError && creatorId) {
-          if (import.meta.env.DEV) {
-            console.log('[useBrandDeals] Table missing, returning demo data');
-          }
+          logger.warn('[useBrandDeals] Table missing, returning demo data');
           // Return demo data when table doesn't exist
           return getDemoBrandDeals(creatorId);
         }
@@ -307,35 +312,17 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         // Log the error but return an empty array to prevent crashing the UI
         // Error is logged via useSupabaseQuery error handling
         // NOTE: We return [] here instead of throwing to handle missing tables gracefully.
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] Returning empty array due to error');
-        }
         return [];
-      }
-
-      // Debug: Log data (dev only)
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Query successful:', {
-          dataLength: data?.length ?? 0,
-          dataIsNull: data === null,
-          dataIsArray: Array.isArray(data),
-          creatorId,
-        });
       }
 
       // Ensure Supabase always returns [] instead of null
       if (!data) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] Data is null, returning empty array');
-        }
         return [];
       }
 
       // Ensure data is always an array
       if (!Array.isArray(data)) {
-        if (import.meta.env.DEV) {
-          console.warn('[useBrandDeals] Data is not an array, converting to array');
-        }
+        logger.warn('[useBrandDeals] Data is not an array, returning empty array');
         return [];
       }
 
@@ -347,25 +334,16 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
 
       // For real users with no data, return empty array (shows empty state)
       if (!isPreviewMode && data.length === 0) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] No deals found for user, returning empty array');
-        }
         return [];
       }
 
       // Only use demo data in preview mode
       if (isPreviewMode && creatorId && data.length < 6) {
-        if (import.meta.env.DEV) {
-          console.log('[useBrandDeals] Preview mode with insufficient data, returning demo data');
-        }
+        logger.warn('[useBrandDeals] Preview mode with insufficient data, returning demo data');
         return getDemoBrandDeals(creatorId);
       }
 
-      if (import.meta.env.DEV) {
-        console.log('[useBrandDeals] Returning', data.length, 'deals');
-      }
-
-      const rawDeals = data as BrandDeal[];
+      const rawDeals = data as unknown as BrandDeal[];
       const brandIds = Array.from(
         new Set(
           rawDeals
@@ -381,8 +359,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         )
       );
 
-      let logosByBrandId = new Map<string, string>();
-      let logosByBrandName = new Map<string, string>();
+      const logosByBrandId = new Map<string, string>();
+      const logosByBrandName = new Map<string, string>();
 
       if (brandIds.length > 0 || brandNames.length > 0) {
         const [brandsByIdResult, brandsByNameResult] = await Promise.all([
@@ -390,13 +368,13 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
             ? supabase
                 .from('brands')
                 .select('id, name, logo_url')
-                .in('id', brandIds)
+                .in('id', brandIds as readonly string[])
             : Promise.resolve({ data: [], error: null } as any),
           brandNames.length > 0
             ? supabase
                 .from('brands')
                 .select('id, name, logo_url')
-                .in('name', brandNames)
+                .in('name', brandNames as readonly string[])
             : Promise.resolve({ data: [], error: null } as any),
         ]);
 
@@ -437,8 +415,8 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
     {
       enabled: enabled && !!creatorId,
       errorMessage: 'Failed to fetch brand deals',
-      // Do not throw error here, let the queryFn handle it and return []
-      retry: false,
+      // Enhanced retry configuration for better reliability
+      ...retryConfig,
     }
   );
 };
@@ -482,6 +460,7 @@ export const useAddBrandDeal = () => {
       invoice_file,
       utr_number,
       brand_email,
+      brand_phone,
       payment_received_date
     }) => {
       // ── Input validation ──────────────────────────────────────
@@ -508,7 +487,7 @@ export const useAddBrandDeal = () => {
 
       // Use provided URL if available (file already uploaded), otherwise upload the file
       if (providedContractUrl) {
-        console.log('[useAddBrandDeal] Using provided contract_file_url:', providedContractUrl);
+        logger.info('[useAddBrandDeal] Using provided contract_file_url', { providedContractUrl });
         contract_file_url = providedContractUrl;
       } else if (contract_file) {
         // Upload contract file only if URL not provided
@@ -572,7 +551,7 @@ export const useAddBrandDeal = () => {
 
       // Build insert payload - only include organization_id if it's a valid UUID
       // We explicitly omit it if null to avoid NOT NULL constraint violations
-      const insertPayload: Database['public']['Tables']['brand_deals']['Insert'] = {
+      const insertPayload: Record<string, any> = {
         creator_id,
         brand_name,
         deal_amount,
@@ -600,15 +579,15 @@ export const useAddBrandDeal = () => {
         if (uuidRegex.test(organization_id)) {
           insertPayload.organization_id = organization_id;
         } else {
-          console.warn('Invalid organization_id format, omitting from insert:', organization_id);
+          logger.warn('Invalid organization_id format, omitting from insert', { organization_id });
         }
       }
 
       // Debug logging removed for production
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase
         .from('brand_deals')
-        .insert(insertPayload);
+        .insert(insertPayload as any) as any);
 
       if (insertError) {
         // Attempt to remove uploaded files if database insert fails
@@ -666,6 +645,7 @@ interface UpdateBrandDealVariables {
   brand_email?: string | null; // New: brand email
   brand_phone?: string | null; // New: brand phone
   brand_address?: string | null; // New: brand address (required for contract generation)
+  invoice_number?: string | null;
   payment_received_date?: string | null; // New: payment received date
   proof_of_payment_url?: string | null; // New: proof of payment URL
 }
@@ -781,10 +761,10 @@ export const useUpdateBrandDeal = () => {
         updatePayload.status = 'Payment Pending';
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('brand_deals')
-        .update(updatePayload)
-        .eq('id', id);
+        .update(updatePayload as any)
+        .eq('id', id) as any);
 
       if (error) {
         throw new Error(error.message);
@@ -824,12 +804,12 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
     async () => {
       if (!dealId || !creatorId) return null;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('brand_deals')
         .select('*')
         .eq('id', dealId)
         .eq('creator_id', creatorId)
-        .single();
+        .single() as any);
 
       if (error) {
         const isMissingTableError =
@@ -846,7 +826,7 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
         throw error;
       }
 
-      return data as BrandDeal | null;
+      return (data as unknown as BrandDeal) ?? null;
     },
     {
       enabled: !!dealId && !!creatorId,
@@ -877,10 +857,10 @@ export const useDeleteBrandDeal = () => {
         }
       }
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase
         .from('brand_deals')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
 
       if (dbError) {
         throw new Error(`Failed to delete brand deal record: ${dbError.message}`);
@@ -1026,7 +1006,7 @@ export const getDealStageFromStatus = (status: string | null | undefined, progre
   if (statusLower.includes('draft')) return 'details_submitted';
   if (statusLower.includes('review')) return 'contract_ready';
   if (statusLower.includes('negotiation')) return 'negotiation';
-  if (statusLower.includes('signed') && !statusLower.includes('pending')) return 'signed';
+  if (statusLower.includes('signed') && !statusLower.includes('pending')) return 'fully_executed';
   if (statusLower.includes('content_making') || statusLower.includes('content making')) return 'content_making';
   if (statusLower.includes('content_delivered') || statusLower.includes('content delivered')) return 'content_delivered';
 

@@ -1,182 +1,217 @@
-import { useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { useSupabaseQuery } from '@/lib/hooks/useSupabaseQuery';
-import { supabase } from '@/integrations/supabase/client';
-import { getApiBaseUrl } from '@/lib/utils/api';
-import BrandMobileDashboard from './BrandMobileDashboard';
+import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
+import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const PROD_API_BASE = 'https://noticebazaar-api.onrender.com';
+type BrandTab = 'active' | 'all';
 
-const BrandDashboard = () => {
+const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { profile, user, session } = useSession();
+  const { profile } = useSession();
+  const [tab, setTab] = useState<BrandTab>('active');
 
-  const isDemoBrand = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    // Demo mode should be an explicit opt-in via URL param, not tied to a specific account.
-    // This keeps the demo brand account behaving like a real brand by default.
-    return ['1', 'true', 'yes'].includes((params.get('demo') || '').toLowerCase());
-  }, [user?.email]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const initialTab = useMemo(() => {
-    const path = location.pathname;
-    const params = new URLSearchParams(location.search);
-    const tabParam = params.get('tab');
-    
-    if (tabParam === 'collabs' || path.includes('/brand/collaborations') || path.includes('/brand/offers') || path.includes('/brand/deals')) return 'collabs' as const;
-    if (path.includes('/brand/creators')) return 'creators' as const;
-    return 'dashboard' as const;
-  }, [location.pathname, location.search]);
+  const isBrandUser = profile?.profile_type === 'brand' || profile?.role === 'brand';
 
-  const isLocalApiForced = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    const params = new URLSearchParams(window.location.search);
-    return localStorage.getItem('useLocalApi') === 'true' || params.get('localApi') === 'true';
-  }, []);
+  const { data: fetchedDeals = [], isLoading } = useBrandDeals({
+    brandId: profile?.id,
+    limit: 50,
+    enabled: Boolean(profile?.id),
+  });
 
-  const isLocalhostApiBase = (apiBase: string) =>
-    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(String(apiBase || ''));
+  // Cast fetched deals to the right type
+  const deals = (fetchedDeals as unknown) as BrandDealRow[];
 
-  const fetchBrandDashboard = async (path: string) => {
-    if (!session?.access_token) throw new Error('Authentication required');
-    const apiBase = getApiBaseUrl() || PROD_API_BASE;
+  // Filter deals by stage
+  const activeDeals = deals.filter(deal => {
+    const stage = deal.status?.toLowerCase();
+    return !['completed', 'cancelled', 'declined'].includes(stage || '');
+  });
 
-    const doFetch = async (base: string, accessToken: string) => {
-      const res = await fetch(`${base}${path}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const data: any = await res.json().catch(() => ({}));
-      return { res, data };
-    };
+  const completedDeals = deals.filter(deal => {
+    const stage = deal.status?.toLowerCase();
+    return stage === 'completed';
+  });
 
-    // If the access token expired while the app was backgrounded (common on mobile),
-    // refresh the session and retry once before surfacing an error to the UI.
-    const maybeRefreshAndRetry = async (base: string, accessToken: string) => {
-      const first = await doFetch(base, accessToken);
-      const msg = String(first.data?.error || '').toLowerCase();
-      if (first.res.status !== 401 || (!msg.includes('invalid') && !msg.includes('expired'))) return first;
+  const displayedDeals = tab === 'active' ? activeDeals : deals;
 
-      const refreshed = await supabase.auth.refreshSession();
-      const refreshedToken = refreshed.data.session?.access_token;
-      if (!refreshedToken) return first;
-
-      return doFetch(base, refreshedToken);
-    };
-
-    try {
-      const first = await maybeRefreshAndRetry(apiBase, session.access_token);
-      if (first.res.ok && first.data?.success) return first.data;
-
-      // Common pitfall: frontend accidentally pointing to a local API server (or an old local build)
-      // which doesn't have the newest routes. Auto-fallback to production API unless local API is forced.
-      if (!isLocalApiForced && isLocalhostApiBase(apiBase) && (first.res.status === 404 || first.res.status >= 500)) {
-        const token = (await supabase.auth.getSession()).data.session?.access_token || session.access_token;
-        const second = await maybeRefreshAndRetry(PROD_API_BASE, token);
-        if (second.res.ok && second.data?.success) return second.data;
-        throw new Error(second.data?.error || 'Failed to load brand dashboard data');
-      }
-
-      throw new Error(first.data?.error || 'Failed to load brand dashboard data');
-    } catch (err: any) {
-      // Connection refused / server down on localhost → fallback to prod API when not forced.
-      const msg = String(err?.message || err || '').toLowerCase();
-      if (!isLocalApiForced && isLocalhostApiBase(getApiBaseUrl()) && (msg.includes('failed to fetch') || msg.includes('network') || msg.includes('connection'))) {
-        const token = (await supabase.auth.getSession()).data.session?.access_token || session.access_token;
-        const second = await maybeRefreshAndRetry(PROD_API_BASE, token);
-        if (second.res.ok && second.data?.success) return second.data;
-      }
-      throw err;
-    }
+  const getStageColor = (status: string | null) => {
+    if (!status) return 'bg-slate-500/20 text-slate-400';
+    const s = status.toLowerCase();
+    if (s.includes('content') && s.includes('making')) return 'bg-blue-500/20 text-blue-400';
+    if (s.includes('delivered') || s.includes('submitted')) return 'bg-purple-500/20 text-purple-400';
+    if (s.includes('approved') || s.includes('signed')) return 'bg-emerald-500/20 text-emerald-400';
+    if (s.includes('payment') || s.includes('paid')) return 'bg-green-500/20 text-green-400';
+    if (s.includes('revision')) return 'bg-amber-500/20 text-amber-400';
+    if (s.includes('completed')) return 'bg-green-500/20 text-green-400';
+    if (s.includes('cancelled') || s.includes('declined')) return 'bg-red-500/20 text-red-400';
+    return 'bg-blue-500/20 text-blue-400';
   };
 
-  const {
-    data: requests = [],
-    isLoading: isLoadingRequests,
-    refetch: refetchRequests,
-  } = useSupabaseQuery(
-    ['brandRequests', user?.id],
-    async () => {
-      if (!user?.id || !session?.access_token) return [];
-
-      // Use backend (service-role) to avoid RLS blocking brand accounts from reading
-      // collab_requests / brand_deals directly via Supabase.
-      const data = await fetchBrandDashboard('/api/brand-dashboard/requests');
-      return Array.isArray(data.requests) ? data.requests : [];
-    },
-    {
-      enabled: !!user?.id && !!session?.access_token,
-      refetchOnWindowFocus: true,
-      refetchInterval: 15000,
-      staleTime: 5000,
-    }
-  );
-
-  const {
-    data: deals = [],
-    isLoading: isLoadingDeals,
-    refetch: refetchDeals,
-  } = useSupabaseQuery(
-    ['brandDeals', user?.id],
-    async () => {
-      if (!user?.id || !session?.access_token) return [];
-
-      const data = await fetchBrandDashboard('/api/brand-dashboard/deals');
-      return Array.isArray(data.deals) ? data.deals : [];
-    },
-    {
-      enabled: !!user?.id && !!session?.access_token,
-      refetchOnWindowFocus: true,
-      refetchInterval: 15000,
-      staleTime: 5000,
-    }
-  );
-
-  const isLoading = Boolean(isLoadingRequests || isLoadingDeals);
-
-  const stats = useMemo(() => {
-    const pendingRequests = requests.filter((r: any) => {
-      const s = String(r?.status || '').toLowerCase();
-      return s === 'pending' || s === 'countered';
-    });
-    const acceptedRequests = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'accepted');
-    const activeFromDeals = deals.filter((d: any) => {
-      const s = String(d?.status || '').toLowerCase();
-      return !s.includes('cancel') && !s.includes('complete') && !s.includes('closed') && !s.includes('paid');
-    });
-    // Active = brand_deals that are active + accepted requests not already in brand_deals
-    const dealCreatorIds = new Set(activeFromDeals.map((d: any) => String(d.creator_id || '')).filter(Boolean));
-    const acceptedNotInDeals = acceptedRequests.filter((r: any) => !dealCreatorIds.has(String(r.creator_id || '')));
-    const activeDeals = activeFromDeals.length + acceptedNotInDeals.length;
-
-    const totalInvestment = deals.reduce((acc: number, d: any) => acc + (Number(d?.deal_amount) || 0), 0);
-    const needsAction = requests.filter((r: any) => String(r?.status || '').toLowerCase() === 'countered').length;
-
-    return { totalSent: pendingRequests.length, activeDeals, totalInvestment, needsAction };
-  }, [requests, deals]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const handleRefresh = async () => {
-    await Promise.all([refetchRequests(), refetchDeals()]);
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount == null) return '—';
+    return `₹${amount.toLocaleString('en-IN')}`;
   };
+
+  if (!isBrandUser) {
+    return (
+      <div className="min-h-screen bg-[#0D0F1A] text-white flex items-center justify-center p-4">
+        <div className="text-center max-w-sm mx-auto">
+          <h2 className="text-xl font-bold mb-3">Brand account required</h2>
+          <p className="text-white/60 mb-6">This section is for brand accounts only.</p>
+          <Button onClick={() => navigate('/')} className="bg-emerald-600 hover:bg-emerald-500">
+            Go to Creator Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <BrandMobileDashboard
-      profile={profile}
-      requests={requests}
-      deals={deals}
-      stats={stats}
-      initialTab={initialTab}
-      isLoading={isLoading}
-      isDemoBrand={isDemoBrand}
-      onRefresh={handleRefresh}
-      onLogout={handleLogout}
-    />
+    <div className="min-h-screen bg-[#0D0F1A] text-white pb-24">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-900 to-purple-800 px-4 pt-12 pb-6">
+        <p className="text-[11px] font-black uppercase tracking-[0.28em] text-purple-300 mb-1">Brand Armour</p>
+        {profile?.first_name && (
+          <p className="text-sm text-white/50 mb-3">
+            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {profile.first_name}
+          </p>
+        )}
+        <h1 className="text-3xl font-black tracking-tight">Brand Dashboard</h1>
+      </div>
+
+      <div className="px-4 py-6 space-y-6">
+        {/* Stats */}
+        <BrandDealsStats allDeals={deals} isLoading={isLoading} />
+
+        {/* Primary Actions */}
+        <div className="flex gap-3">
+          <Button
+            onClick={() => navigate('/brand-new-deal')}
+            className="flex-1 h-12 bg-purple-600 hover:bg-purple-500 font-bold text-white rounded-xl flex items-center justify-center gap-2"
+          >
+            <Plus className="h-5 w-5" />
+            Send New Offer
+          </Button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 border-b border-white/10">
+          <button
+            onClick={() => setTab('active')}
+            className={cn(
+              'pb-3 px-1 text-sm font-semibold transition-colors',
+              tab === 'active' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+            )}
+          >
+            Active ({activeDeals.length})
+          </button>
+          <button
+            onClick={() => setTab('all')}
+            className={cn(
+              'pb-3 px-1 text-sm font-semibold transition-colors',
+              tab === 'all' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+            )}
+          >
+            All ({allDeals.length})
+          </button>
+        </div>
+
+        {/* Deals List */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+          </div>
+        ) : displayedDeals.length === 0 ? (
+          <Card className="bg-white/5 border-white/10 rounded-2xl">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                <Plus className="h-8 w-8 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">
+                {tab === 'active' ? 'No active deals' : 'No deals yet'}
+              </h3>
+              <p className="text-sm text-white/60 mb-6">
+                {tab === 'active'
+                  ? "You don't have any active collaborations right now."
+                  : 'Start by sending an offer to a creator.'}
+              </p>
+              <Button
+                onClick={() => navigate('/brand-new-deal')}
+                className="bg-purple-600 hover:bg-purple-500 font-bold"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Send First Offer
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {displayedDeals.map((deal) => (
+              <Card
+                key={deal.id}
+                className="bg-white/5 border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
+                onClick={() => navigate(`/brand-deal/${deal.id}`)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-white truncate">
+                          {deal.brand_name || 'Brand'}
+                        </h3>
+                        <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
+                          {deal.status || 'Unknown'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-white/60 mt-1">
+                        {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-base font-bold text-white">
+                        {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
+                      </p>
+                      {deal.deal_type !== 'barter' && (
+                        <p className="text-xs text-white/40">deal value</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  {deal.progress_percentage != null && (
+                    <div className="mt-3">
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-purple-500 rounded-full transition-all"
+                          style={{ width: `${deal.progress_percentage}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-white/40 mt-1">{deal.progress_percentage}% complete</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <BrandBottomNav />
+    </div>
   );
 };
 

@@ -312,7 +312,6 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
             <div className="space-y-4 py-4">
               {/* Lawyer Review Toggle Card */}
               <button type="button"
-                type="button"
                 onClick={() => togglePreFilingAction('wants_lawyer_review')}
                 className={cn(
                   "w-full p-5 rounded-xl border-2 transition-all text-left",
@@ -362,7 +361,6 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
 
               {/* Legal Notice Drafting Toggle Card */}
               <button type="button"
-                type="button"
                 onClick={() => togglePreFilingAction('wants_notice_draft')}
                 className={cn(
                   "w-full p-5 rounded-xl border-2 transition-all text-left",

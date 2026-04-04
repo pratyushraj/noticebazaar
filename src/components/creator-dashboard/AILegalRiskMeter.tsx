@@ -46,12 +46,12 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
     riskScore = Math.min(100, riskScore);
 
     // For demo mode (empty or few deals), show low risk
-    if (brandDeals.length <= 6) {
+        if (brandDeals.length <= 6) {
       return {
         score: 52,
         label: 'Low Risk',
         color: 'green',
-        tooltip: '2 pending contracts need renewal.',
+        tooltip: 'A small number of active deals still need cleaner contract or payment follow-up.',
       };
     }
 
@@ -124,7 +124,7 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
               <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
                 <Shield className="h-5 w-5 text-purple-400" />
               </div>
-              <CardTitle>AI Legal Risk Meter</CardTitle>
+              <CardTitle>AI Deal Risk Meter</CardTitle>
             </div>
             <span className={cn("text-2xl font-bold number-large", colors.text)}>
               {riskData.score}
@@ -148,7 +148,7 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
 
                   <div className="flex items-center justify-between">
                     <span className={cn("text-body font-semibold", colors.text)}>
-                      {riskData.label} Risk
+                      {riskData.label} deal risk
                     </span>
                     <AlertTriangle className={cn("h-5 w-5", colors.text)} />
                   </div>
@@ -166,4 +166,3 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
 };
 
 export default AILegalRiskMeter;
-

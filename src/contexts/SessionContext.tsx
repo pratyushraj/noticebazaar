@@ -8,6 +8,49 @@ import { lockTrialIfExpired, getTrialStatus, TrialStatus } from '@/lib/trial';
 import { analytics } from '@/utils/analytics';
 import { logger } from '@/lib/utils/logger';
 
+const debugLog = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
+
+const debugWarn = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.warn(...args);
+};
+
+const debugError = (...args: unknown[]) => {
+  if (import.meta.env.DEV) console.error(...args);
+};
+
+type RedirectProfile = {
+  role: string | null;
+  onboarding_complete: boolean | null;
+  creator_stage?: string | null;
+  profile_completion?: number | null;
+};
+
+const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | null> => {
+  const fullResult = await (supabase
+    .from('profiles')
+    .select('role, onboarding_complete, creator_stage, profile_completion') as any)
+    .eq('id', userId)
+    .single();
+
+  if (!fullResult.error) {
+    return (fullResult.data as RedirectProfile | null) ?? null;
+  }
+
+  const fallbackResult = await (supabase
+    .from('profiles')
+    .select('role, onboarding_complete') as any)
+    .eq('id', userId)
+    .single();
+
+  if (fallbackResult.error) {
+    throw fallbackResult.error;
+  }
+
+  return (fallbackResult.data as RedirectProfile | null) ?? null;
+};
+
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
 interface SessionContextType {
@@ -54,6 +97,38 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     if (!user?.id) return null; // Don't fetch if no user ID
 
     try {
+      const fetchOptionalProfileFields = async (fields: string[]): Promise<Record<string, any>> => {
+        if (fields.length === 0) return {};
+
+        try {
+          const { data, error } = await (supabase
+            .from('profiles')
+            .select(fields.join(', ')) as any)
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            throw error;
+          }
+
+          return (data as Record<string, any>) || {};
+        } catch (error: any) {
+          // In partially migrated environments, one missing column breaks the whole select.
+          // Split the request until we isolate only the columns that actually exist.
+          if (fields.length === 1) {
+            return {};
+          }
+
+          const midpoint = Math.ceil(fields.length / 2);
+          const [left, right] = await Promise.all([
+            fetchOptionalProfileFields(fields.slice(0, midpoint)),
+            fetchOptionalProfileFields(fields.slice(midpoint)),
+          ]);
+
+          return { ...left, ...right };
+        }
+      };
+
       // Keep the profile query intentionally narrow so it doesn't fail in partially-migrated environments.
       const { data: coreData, error: coreError } = await (supabase
         .from('profiles')
@@ -93,51 +168,56 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
 
       let usernameValue: string | null = null;
       let instagramHandleValue: string | null = null;
-      let optionalFields: Partial<Profile> = {};
+      let optionalFields: Partial<Profile> = {
+        creator_category: null,
+        instagram_followers: null,
+        last_instagram_sync: null,
+        instagram_profile_photo: null,
+        avg_rate_reel: null,
+        pricing_min: null,
+        pricing_avg: null,
+        pricing_max: null,
+        open_to_collabs: true,
+        content_niches: [],
+        media_kit_url: null,
+        avg_reel_views_manual: null,
+        avg_likes_manual: null,
+        audience_gender_split: null,
+        top_cities: [],
+        audience_age_range: null,
+        primary_audience_language: null,
+        posting_frequency: null,
+        active_brand_collabs_month: null,
+        campaign_slot_note: null,
+        collab_brands_count_override: null,
+        collab_response_hours_override: null,
+        collab_cancellations_percent_override: null,
+        collab_region_label: null,
+        collab_intro_line: null,
+        collab_audience_fit_note: null,
+        collab_recent_activity_note: null,
+        collab_audience_relevance_note: null,
+        collab_delivery_reliability_note: null,
+        collab_engagement_confidence_note: null,
+        collab_response_behavior_note: null,
+        collab_cta_trust_note: null,
+        collab_cta_dm_note: null,
+        collab_cta_platform_note: null,
+        collab_show_packages: true,
+        collab_show_trust_signals: true,
+        collab_show_audience_snapshot: true,
+        collab_show_past_work: true,
+        collab_past_work_items: [],
+      };
       try {
-        const { data: handleData, error: handleError } = await (supabase
-          .from('profiles')
-          .select('username, instagram_handle, instagram_followers, last_instagram_sync, instagram_profile_photo, creator_category, avg_rate_reel, pricing_min, pricing_avg, pricing_max, open_to_collabs, content_niches, media_kit_url, avg_reel_views_manual, avg_likes_manual, audience_gender_split, top_cities, audience_age_range, primary_audience_language, posting_frequency, active_brand_collabs_month, campaign_slot_note, collab_brands_count_override, collab_response_hours_override, collab_cancellations_percent_override, collab_region_label, collab_audience_fit_note, collab_recent_activity_note, collab_audience_relevance_note, collab_delivery_reliability_note, collab_engagement_confidence_note, collab_response_behavior_note, collab_cta_trust_note, collab_cta_dm_note, collab_cta_platform_note') as any)
-          .eq('id', user.id)
-          .single();
-        if (!handleError) {
+        const handleData = await fetchOptionalProfileFields([
+          'username',
+          'instagram_handle',
+        ]);
+
+        if (Object.keys(handleData).length > 0) {
           usernameValue = (handleData as any)?.username || null;
           instagramHandleValue = (handleData as any)?.instagram_handle || null;
-          optionalFields = {
-            creator_category: (handleData as any)?.creator_category ?? null,
-            instagram_followers: (handleData as any)?.instagram_followers ?? null,
-            last_instagram_sync: (handleData as any)?.last_instagram_sync ?? null,
-            instagram_profile_photo: (handleData as any)?.instagram_profile_photo ?? null,
-            avg_rate_reel: (handleData as any)?.avg_rate_reel ?? null,
-            pricing_min: (handleData as any)?.pricing_min ?? null,
-            pricing_avg: (handleData as any)?.pricing_avg ?? null,
-            pricing_max: (handleData as any)?.pricing_max ?? null,
-            open_to_collabs: (handleData as any)?.open_to_collabs ?? true,
-            content_niches: Array.isArray((handleData as any)?.content_niches) ? (handleData as any).content_niches : [],
-            media_kit_url: (handleData as any)?.media_kit_url ?? null,
-            avg_reel_views_manual: (handleData as any)?.avg_reel_views_manual ?? null,
-            avg_likes_manual: (handleData as any)?.avg_likes_manual ?? null,
-            audience_gender_split: (handleData as any)?.audience_gender_split ?? null,
-            top_cities: Array.isArray((handleData as any)?.top_cities) ? (handleData as any).top_cities : [],
-            audience_age_range: (handleData as any)?.audience_age_range ?? null,
-            primary_audience_language: (handleData as any)?.primary_audience_language ?? null,
-            posting_frequency: (handleData as any)?.posting_frequency ?? null,
-            active_brand_collabs_month: (handleData as any)?.active_brand_collabs_month ?? null,
-            campaign_slot_note: (handleData as any)?.campaign_slot_note ?? null,
-            collab_brands_count_override: (handleData as any)?.collab_brands_count_override ?? null,
-            collab_response_hours_override: (handleData as any)?.collab_response_hours_override ?? null,
-            collab_cancellations_percent_override: (handleData as any)?.collab_cancellations_percent_override ?? null,
-            collab_region_label: (handleData as any)?.collab_region_label ?? null,
-            collab_audience_fit_note: (handleData as any)?.collab_audience_fit_note ?? null,
-            collab_recent_activity_note: (handleData as any)?.collab_recent_activity_note ?? null,
-            collab_audience_relevance_note: (handleData as any)?.collab_audience_relevance_note ?? null,
-            collab_delivery_reliability_note: (handleData as any)?.collab_delivery_reliability_note ?? null,
-            collab_engagement_confidence_note: (handleData as any)?.collab_engagement_confidence_note ?? null,
-            collab_response_behavior_note: (handleData as any)?.collab_response_behavior_note ?? null,
-            collab_cta_trust_note: (handleData as any)?.collab_cta_trust_note ?? null,
-            collab_cta_dm_note: (handleData as any)?.collab_cta_dm_note ?? null,
-            collab_cta_platform_note: (handleData as any)?.collab_cta_platform_note ?? null,
-          };
         }
       } catch (_error) {
         // Optional fields may not exist in older schemas.
@@ -164,10 +244,15 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // ignore brand fields
       }
 
+      // Fallback to user metadata if profile doesn't have the handle
+      const metadataHandle = user?.user_metadata?.instagram_handle || null;
+      const finalInstagramHandle = instagramHandleValue || metadataHandle;
+      const finalUsername = usernameValue || metadataHandle;
+
       return {
         ...(coreData as any),
-        username: usernameValue,
-        instagram_handle: instagramHandleValue,
+        username: finalUsername,
+        instagram_handle: finalInstagramHandle,
         ...optionalFields,
         ...brandFields,
       } as Profile | null;
@@ -245,7 +330,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Check for double hash format: #/route#access_token=...
         const doubleHashMatch = hash.match(/^#\/([^#]+)#(access_token|type=)/);
         if (doubleHashMatch) {
-          console.log('[SessionContext] Detected double hash format, extracting route and tokens...', hash);
+          debugLog('[SessionContext] Detected double hash format, extracting route and tokens...', hash);
           // Extract the intended route (e.g., "creator-onboarding")
           intendedRoute = doubleHashMatch[1];
           // Extract the access_token part (everything after the second #)
@@ -311,7 +396,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             intendedRoute = null;
             // Only log in dev to avoid noise
             if (import.meta.env?.DEV && isCollabPathname) {
-              console.log('[SessionContext] Collab pathname detected, skipping default route');
+              debugLog('[SessionContext] Collab pathname detected, skipping default route');
             }
           } else if (!isPublicRoute && !isUsernameRoute && (!intendedRoute || intendedRoute === 'login')) {
             // If we're on /login but have tokens, the intended route should be dashboard/onboarding
@@ -320,16 +405,16 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             if (storedRoute && storedRoute !== 'login') {
               intendedRoute = storedRoute;
               if (import.meta.env?.DEV) {
-                console.log('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
+                debugLog('[SessionContext] Using stored intended route from sessionStorage:', intendedRoute);
               }
             } else if (!intendedRoute || intendedRoute === 'login') {
-              intendedRoute = 'creator-dashboard';
+              intendedRoute = 'creator-onboarding';
               if (import.meta.env?.DEV) {
-                console.log('[SessionContext] No intended route found, defaulting to creator-dashboard');
+                debugLog('[SessionContext] No intended route found, defaulting to creator-onboarding');
               }
             }
           } else if (isUsernameRoute) {
-            console.log('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);
+            debugLog('[SessionContext] Username route detected, skipping redirect logic:', intendedRoute);
             intendedRoute = null;
           }
         }
@@ -349,12 +434,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const secondHashIndex = hash.indexOf('#', 1);
             if (secondHashIndex !== -1) {
               tokenHash = '#' + hash.substring(secondHashIndex + 1);
-              console.log('[SessionContext] Extracted token hash from double hash format');
+              debugLog('[SessionContext] Extracted token hash from double hash format');
             }
           }
 
-          console.log('[SessionContext] Parsing tokens from hash:', tokenHash.substring(0, 50) + '...');
-          console.log('[SessionContext] Stored intended route:', intendedRoute);
+          debugLog('[SessionContext] Parsing tokens from hash:', tokenHash.substring(0, 50) + '...');
+          debugLog('[SessionContext] Stored intended route:', intendedRoute);
 
           // Parse tokens from hash
           const hashParams = new URLSearchParams(tokenHash.substring(1)); // Remove #
@@ -362,7 +447,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           const refreshToken = hashParams.get('refresh_token');
 
           if (accessToken && refreshToken) {
-            console.log('[SessionContext] Parsed tokens from hash, setting session manually...');
+            debugLog('[SessionContext] Parsed tokens from hash, setting session manually...');
             try {
               // Set the session directly using Supabase's setSession method
               const { data: sessionData, error: setSessionError } = await supabase.auth.setSession({
@@ -371,21 +456,17 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               });
 
               if (setSessionError) {
-                console.error('[SessionContext] Error setting session:', setSessionError);
+                debugError('[SessionContext] Error setting session:', setSessionError);
               } else if (sessionData.session) {
-                console.log('[SessionContext] Session set successfully via manual token parsing');
-                // Use path-based route (BrowserRouter), e.g. /creator-dashboard
-                let redirectPath = '/creator-dashboard';
+                debugLog('[SessionContext] Session set successfully via manual token parsing');
+                // Use path-based route (BrowserRouter).
+                let redirectPath = '/creator-onboarding';
 
                 if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
                 } else if (sessionData.session.user?.id) {
                   try {
-                    const { data: profileData } = await supabase
-                      .from('profiles')
-                      .select('role')
-                      .eq('id', sessionData.session.user.id)
-                      .single();
+                    const profileData = await fetchRedirectProfile(sessionData.session.user.id);
 
                     if (profileData) {
                       const userEmail = sessionData.session.user.email?.toLowerCase();
@@ -396,29 +477,31 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                         redirectPath = '/creator-dashboard';
                       } else if (p?.role === 'admin') {
                         redirectPath = '/admin-dashboard';
-                        console.log('[SessionContext] Admin user detected in initializeSession');
+                        debugLog('[SessionContext] Admin user detected in initializeSession');
                       } else if (p?.role === 'brand') {
                         redirectPath = '/brand-dashboard';
                       } else if (p?.role === 'chartered_accountant') {
                         redirectPath = '/ca-dashboard';
                       } else if (p?.role === 'lawyer') {
                         redirectPath = '/lawyer-dashboard';
+                      } else {
+                        redirectPath = (p?.creator_stage === 'new' && !p?.onboarding_complete) ? '/creator-onboarding' : '/creator-dashboard';
                       }
                     }
                   } catch (error) {
-                    console.error('[SessionContext] Error fetching profile in initializeSession:', error);
+                    debugError('[SessionContext] Error fetching profile in initializeSession:', error);
                   }
                 }
 
                 // Navigate using React Router to be safer and avoid Safari loops
-                console.log('[SessionContext] Navigating to:', redirectPath);
+                debugLog('[SessionContext] Navigating to:', redirectPath);
                 navigate(redirectPath, { replace: true });
               }
             } catch (err) {
-              console.error('[SessionContext] Exception setting session:', err);
+              debugError('[SessionContext] Exception setting session:', err);
             }
           } else {
-            console.warn('[SessionContext] Could not parse tokens from hash', { hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
+            debugWarn('[SessionContext] Could not parse tokens from hash', { hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
           }
         }
 
@@ -430,12 +513,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // Auto-recovery for stuck refresh tokens:
           // If the token is completely invalid/revoked, force sign-out to clear local storage and avoid infinite loops.
           if (error.message.includes("Refresh Token Not Found") || error.message.includes("Invalid Refresh Token")) {
-            console.warn("[SessionContext] Invalid refresh token detected. Clearing local session state...");
+            debugWarn("[SessionContext] Invalid refresh token detected. Clearing local session state...");
             await supabase.auth.signOut();
             currentSession = null;
           }
         } else {
-          console.log('[SessionContext] Initial session check:', {
+          debugLog('[SessionContext] Initial session check:', {
             hasSession: !!currentSession,
             userEmail: currentSession?.user?.email,
             hasHashTokens: hasAccessToken,
@@ -453,7 +536,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           // If we have hash tokens but no session yet, wait for onAuthStateChange to process them
           // Don't clean the hash here - let onAuthStateChange do it after processing tokens
           if (hasAccessToken && !currentSession) {
-            console.log('[SessionContext] Hash tokens found but no session yet, waiting for onAuthStateChange...');
+            debugLog('[SessionContext] Hash tokens found but no session yet, waiting for onAuthStateChange...');
             // onAuthStateChange will clean the hash after processing tokens
           }
 
@@ -470,7 +553,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !hasOauthTokensInHash &&
             !hasRouteInHash
           ) {
-            console.log('[SessionContext] Session exists on bare root/login, navigating to dashboard...');
+            debugLog('[SessionContext] Session exists on bare root/login, navigating to dashboard...');
             navigate('/creator-dashboard', { replace: true });
           }
         }
@@ -486,7 +569,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
     // Listen for auth state changes (this handles hash fragments automatically)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[SessionContext] Auth state change:', event, {
+        debugLog('[SessionContext] Auth state change:', event, {
           hasSession: !!session,
           userEmail: session?.user?.email,
           hash: window.location.hash.substring(0, 50) + '...',
@@ -532,7 +615,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             hash = '#' + hash.substring(secondHashIndex + 1);
             // Use replaceState to avoid triggering React Router
             window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
-            console.log('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
+            debugLog('[SessionContext] Normalized double hash in onAuthStateChange, intended route:', intendedRoute);
           }
         } else {
           // Hash might already be normalized (#access_token=...) or have route in query (#/route?access_token=...)
@@ -549,7 +632,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             if (storedRoute) {
               intendedRoute = storedRoute;
               sessionStorage.removeItem('oauth_intended_route');
-              console.log('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
+              debugLog('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
             }
           }
         }
@@ -561,10 +644,10 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
         // Handle INITIAL_SESSION with tokens but no session yet
         // This happens when OAuth tokens are present but Supabase hasn't processed them yet
         if (event === 'INITIAL_SESSION' && !session && hasHashTokens) {
-          console.log('[SessionContext] INITIAL_SESSION: Tokens detected but no session yet, waiting for SIGNED_IN event...');
+          debugLog('[SessionContext] INITIAL_SESSION: Tokens detected but no session yet, waiting for SIGNED_IN event...');
           // Don't clean hash yet - wait for SIGNED_IN event to process tokens
         } else if (event === 'INITIAL_SESSION' && !session) {
-          console.log('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
+          debugLog('[SessionContext] INITIAL_SESSION: No session found (normal on first load)');
         }
 
         // If we have a session after OAuth callback or SIGNED_IN event
@@ -580,7 +663,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             if (storedRoute) {
               intendedRoute = storedRoute;
               sessionStorage.removeItem('oauth_intended_route');
-              console.log('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
+              debugLog('[SessionContext] Retrieved intended route from sessionStorage:', intendedRoute);
             }
           }
 
@@ -614,7 +697,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             pathname.startsWith('/creator-contracts/');
 
           if (isUsernameRoute || isPublicRoute || isPublicPathname || (!isOAuthCallback && pathname !== '/' && pathname !== '/login')) {
-            console.log('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
+            debugLog('[SessionContext] Skipping redirect (already on valid path or not an auth flow):', pathname);
             setIsAuthInitializing(false);
             return;
           }
@@ -626,7 +709,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             return;
           }
 
-          console.log('[SessionContext] Session established after OAuth, redirecting...', {
+          debugLog('[SessionContext] Session established after OAuth, redirecting...', {
             event,
             isOAuthCallback,
             hasHashTokens,
@@ -635,8 +718,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          // Dashboard-first: creators go straight to dashboard, complete profile later
-          let targetPath = '/creator-dashboard';
+          let targetPath = '/creator-onboarding';
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -646,40 +728,40 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             const isInfluencerRoute = intendedRoute.includes('influencer') || intendedRoute.includes('discovery');
 
             if (isInfluencerRoute) {
-              console.log('[SessionContext] Influencer route detected, will redirect based on role');
+              debugLog('[SessionContext] Influencer route detected, will redirect based on role');
               // Don't use intended route if it's an influencer route - let role-based redirect handle it
             } else {
               targetPath = `/${intendedRoute}`;
-              console.log('[SessionContext] Using intended route:', targetPath);
+              debugLog('[SessionContext] Using intended route:', targetPath);
             }
           }
 
-          if (targetPath === '/creator-dashboard' && session?.user?.id) {
+          if ((targetPath === '/creator-dashboard' || targetPath === '/creator-onboarding') && session?.user?.id) {
             // Fetch profile to determine role-based redirect and onboarding status, with 2.5s timeout
             const profileFetchTimeoutMs = 2500;
             try {
-              console.log('[SessionContext] Fetching profile for user:', session.user.id);
-              const profilePromise = supabase
-                .from('profiles')
-                .select('role, onboarding_complete')
-                .eq('id', session.user.id)
-                .single();
+              debugLog('[SessionContext] Fetching profile for user:', session.user.id);
+                const profilePromise = (supabase
+                  .from('profiles')
+                  .select('role, onboarding_complete, creator_stage, profile_completion') as any)
+                  .eq('id', session.user.id)
+                  .single();
               const timeoutFallback = { data: null as { role: string; onboarding_complete?: boolean } | null, error: { message: 'timeout' } };
               const result = await Promise.race([
-                profilePromise,
-                new Promise<typeof timeoutFallback>((resolve) =>
-                  setTimeout(() => resolve(timeoutFallback), profileFetchTimeoutMs)
-                ),
+                  fetchRedirectProfile(session.user.id),
+                  new Promise<typeof timeoutFallback>((resolve) =>
+                    setTimeout(() => resolve(timeoutFallback), profileFetchTimeoutMs)
+                  ),
               ]);
               const profileData = result?.data ?? null;
               const profileError = result?.error;
 
               if (profileError) {
-                console.warn('[SessionContext] Profile fetch for redirect:', profileError.message);
+                debugWarn('[SessionContext] Profile fetch for redirect:', profileError.message);
               }
 
               if (profileData) {
-                console.log('[SessionContext] Profile fetched, role:', profileData.role, 'onboarding_complete:', profileData.onboarding_complete);
+                debugLog('[SessionContext] Profile fetched, role:', profileData.role, 'onboarding_complete:', profileData.onboarding_complete);
                 const userEmail = session.user.email?.toLowerCase();
                 const isPratyush = userEmail === 'pratyushraj@outlook.com';
 
@@ -688,7 +770,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   targetPath = '/creator-dashboard';
                 } else if (p?.role === 'admin') {
                   targetPath = '/admin-dashboard';
-                  console.log('[SessionContext] Admin user detected, redirecting to admin dashboard');
+                  debugLog('[SessionContext] Admin user detected, redirecting to admin dashboard');
                 } else if (p?.role === 'brand') {
                   targetPath = '/brand-dashboard';
                 } else if (p?.role === 'chartered_accountant') {
@@ -696,15 +778,15 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 } else if (p?.role === 'lawyer') {
                   targetPath = '/lawyer-dashboard';
                 } else {
-                  targetPath = '/creator-dashboard';
-                  // Dashboard-first: creators land on dashboard, complete profile via banner
+                  targetPath = (p?.creator_stage === 'new' && !p?.onboarding_complete) ? '/creator-onboarding' : '/creator-dashboard';
                 }
               } else {
-                console.log('[SessionContext] No profile data / timeout, defaulting to dashboard');
+                debugLog('[SessionContext] No profile data / timeout, defaulting to creator-onboarding');
+                targetPath = '/creator-onboarding';
               }
             } catch (error) {
-              console.warn('[SessionContext] Profile fetch for redirect failed, redirecting to dashboard:', error);
-              targetPath = '/creator-dashboard';
+              debugWarn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-onboarding:', error);
+              targetPath = '/creator-onboarding';
             }
           }
 
@@ -713,12 +795,12 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
           const normalizedTargetPath = targetPath.replace(/\/$/, '');
 
           if (currentPath === normalizedTargetPath) {
-            console.log('[SessionContext] Already on target route, skipping navigation:', currentPath);
+            debugLog('[SessionContext] Already on target route, skipping navigation:', currentPath);
             setIsAuthInitializing(false);
             return;
           }
 
-          console.log('[SessionContext] Navigating after SIGNED_IN/OAuth:', targetPath);
+          debugLog('[SessionContext] Navigating after SIGNED_IN/OAuth:', targetPath);
           navigate(targetPath, { replace: true });
         }
       }
@@ -784,7 +866,7 @@ export const useSession = () => {
     // This should never happen if component is within SessionContextProvider
     // But during React's initial render or strict mode double-render, it might be temporarily undefined
     // Provide a fallback value instead of throwing to prevent crashes
-    console.error('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
+    debugError('[useSession] Context is undefined. This may indicate a component is outside SessionContextProvider or a timing issue.');
 
     // Return a safe fallback value to prevent crashes
     return {

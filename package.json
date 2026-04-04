@@ -23,9 +23,18 @@
   "scripts": {
     "dev": "vite",
     "build": "tsx scripts/generate-sitemap.ts && vite build",
-    "build:dev": "vite build --mode development",
+    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging",
+    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "analyze-bundle": "vite build --mode analyze",
+    "deploy:dev": "node scripts/deploy.js development",
+    "deploy:staging": "node scripts/deploy.js staging",
+    "deploy:prod": "node scripts/deploy.js production",
     "seed": "tsx scripts/seed-test-data.ts",
     "create-demo": "tsx scripts/create-demo-user.ts",
     "create-user": "tsx scripts/create-user-account.ts",
@@ -35,9 +44,7 @@
     "update-prateek-profile": "tsx scripts/update-prateek-profile.ts",
     "verify-migrations": "tsx scripts/verify-migrations.ts",
     "sync-brands": "tsx scripts/sync-brands.ts",
-    "validate-opportunities": "tsx scripts/validate-opportunities-db.ts",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "validate-opportunities": "tsx scripts/validate-opportunities-db.ts"
   },
   "dependencies": {
     "@cometchat-pro/chat": "^3.0.13",
@@ -62,7 +69,7 @@
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.74.0",
-    "@swc/core-win32-x64-msvc": "^1.15.21",
+
     "@tanstack/react-query": "^5.56.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/jszip": "^3.4.1",

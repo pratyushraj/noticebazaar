@@ -8,7 +8,9 @@
 export type DealStageKey =
   | 'details_submitted'
   | 'contract_ready'
-  | 'signed'
+  | 'brand_signed'
+  | 'fully_executed'
+  | 'live_deal'
   | 'needs_changes'
   | 'declined'
   | 'completed'
@@ -34,29 +36,43 @@ export interface StageDisplayConfig {
 /** Creator-facing labels and helper text per stage */
 export const DEAL_STAGE_DISPLAY: Record<DealStageKey, StageDisplayConfig> = {
   details_submitted: {
-    label: 'New Brand Request',
+    label: 'New brand message',
     shortLabel: 'New Request',
-    helperText: 'Waiting for your decision',
+    helperText: 'Open it and reply',
     colorClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   },
   contract_ready: {
-    label: 'Contract Sent',
-    shortLabel: 'Contract Sent',
-    helperText: 'Waiting for brand to sign',
+    label: 'Agreement sent',
+    shortLabel: 'Agreement sent',
+    helperText: 'Waiting for brand reply',
     colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   },
-  signed: {
-    label: 'Contract Signed',
-    shortLabel: 'Signed',
-    helperText: 'Payment expected before delivery',
-    helperTextPaid: 'Payment expected before delivery',
-    helperTextBarter: 'Product dispatch expected',
+  brand_signed: {
+    label: 'Brand signed',
+    shortLabel: 'Brand signed',
+    helperText: 'Sign to start the deal',
     colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
   },
+  fully_executed: {
+    label: 'Agreement signed',
+    shortLabel: 'Signed',
+    helperText: 'Deal started',
+    helperTextPaid: 'Waiting for payment',
+    helperTextBarter: 'Waiting for product delivery',
+    colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
+  },
+  live_deal: {
+    label: 'In progress',
+    shortLabel: 'Live Deal',
+    helperText: 'Make and upload your content',
+    helperTextPaid: 'Make and upload your content',
+    helperTextBarter: 'Product received · upload your content',
+    colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  },
   needs_changes: {
-    label: 'Action Required',
+    label: 'Your action needed',
     shortLabel: 'Action Required',
-    helperText: "We'll help you resolve this",
+    helperText: 'Open the deal to see what to do',
     colorClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   },
   declined: {
@@ -68,50 +84,50 @@ export const DEAL_STAGE_DISPLAY: Record<DealStageKey, StageDisplayConfig> = {
   completed: {
     label: 'Completed',
     shortLabel: 'Done',
-    helperText: 'Deal closed successfully',
+    helperText: 'This deal is finished',
     colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
   },
   awaiting_product_shipment: {
-    label: 'Accepted — Contract Generating',
-    shortLabel: 'Contract Generating',
-    helperText: "We're preparing your agreement",
+    label: 'Accepted — making the agreement',
+    shortLabel: 'Making agreement',
+    helperText: 'Please wait for a moment',
     colorClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   },
   negotiation: {
-    label: 'New Brand Request',
+    label: 'New brand message',
     shortLabel: 'New Request',
-    helperText: 'Waiting for your decision',
+    helperText: 'Open it and reply',
     colorClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
   },
   content_making: {
-    label: 'In Progress',
-    shortLabel: 'In Progress',
-    helperText: 'Deliverables in progress',
-    helperTextPaid: 'Deliverables in progress',
-    helperTextBarter: 'Product received · content pending',
+    label: 'Making content',
+    shortLabel: 'Making content',
+    helperText: 'Make and upload your content',
+    helperTextPaid: 'Make and upload your content',
+    helperTextBarter: 'Product received · upload your content',
     colorClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   },
   content_delivered: {
     label: 'Delivered',
     shortLabel: 'Delivered',
-    helperText: 'Waiting for confirmation / payment',
+    helperText: 'Waiting for brand reply / payment',
     colorClass: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
   },
 };
 
 /** Payment Secured (paid only) – use when payment_received_date is set */
 export const PAYMENT_SECURED_DISPLAY: StageDisplayConfig = {
-  label: 'Payment Secured',
+  label: 'Payment received',
   shortLabel: 'Paid',
-  helperText: 'Money is protected',
+  helperText: 'Payment is done',
   colorClass: 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
 /** Action Required (dispute / overdue) */
 export const ACTION_REQUIRED_DISPLAY: StageDisplayConfig = {
-  label: 'Action Required',
+  label: 'Your action needed',
   shortLabel: 'Action Required',
-  helperText: "We'll help you resolve this",
+  helperText: 'Open the deal to see what to do',
   colorClass: 'bg-red-500/20 text-red-400 border-red-500/30',
 };
 

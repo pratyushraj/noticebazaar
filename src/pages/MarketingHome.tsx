@@ -3,26 +3,37 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { Loader2, Check, Menu, X, Clock, IndianRupee, Star, ArrowRight, MessageSquare, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, FileText, Instagram } from 'lucide-react';
+import { Loader2, Check, Menu, X, Clock, IndianRupee, Star, ArrowRight, MessageSquare, ShieldCheck, Users, Lock, Award, Zap, AlertTriangle, Phone, Send, FileText, Instagram, Globe, Twitter } from 'lucide-react';
  // Replaced Tiktok with Globe
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils'; // Import cn for conditional class merging
 import { useParallax } from '@/lib/hooks/useParallax'; // Import the new hook
-
+import { trackEvent } from '@/lib/utils/analytics';
+import LeadCaptureForm from '@/components/LeadCaptureForm'; // Import the new component
 import NewsletterSignup from '@/components/NewsletterSignup'; // Import the new component
-
-import { CREATOR_PLAN_DETAILS } from '@/data/creatorPlanDetails'; // Import Creator plan details
+import CaseStudyCard from '@/components/CaseStudyCard'; // Import the new component
+import { CREATOR_PLAN_DETAILS, CreatorPlanName } from '@/data/creatorPlanDetails'; // Import Creator plan details
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scrollLock';
 
 // The Google Forms URL provided by the user (kept for other CTAs)
 const GOOGLE_FORMS_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdWyn_m5orgxNtxMhM7fginjoFnNDJM8KbbM-dcbCrC8E-ygg/viewform?usp=sharing";
 const CALENDLY_URL = 'https://calendly.com/creatorarmour/15-minute-legal-consultation'; // Define the new constant
 
+type MarketingWindow = Window & {
+  Calendly?: {
+    initPopupWidget: (options: { url: string }) => void;
+  };
+  AOS?: {
+    init: (options: { duration: number; once: boolean }) => void;
+  };
+};
+
 // Function to open the Calendly widget
 const openCalendly = (url: string) => {
-  if (typeof (window as any).Calendly !== 'undefined') {
-    (window as any).Calendly.initPopupWidget({ url });
+  const marketingWindow = window as MarketingWindow;
+  if (marketingWindow.Calendly) {
+    marketingWindow.Calendly.initPopupWidget({ url });
   } else {
     console.warn("Calendly script not loaded. Cannot open widget.");
     window.open(url, '_blank', 'noopener,noreferrer'); // Fallback to direct link
@@ -31,10 +42,181 @@ const openCalendly = (url: string) => {
 };
 
 const initializeExternalScripts = () => {
-  if (typeof (window as any).AOS !== 'undefined') {
-    (window as any).AOS.init({ duration: 600, once: true });
+  const marketingWindow = window as MarketingWindow;
+  if (marketingWindow.AOS) {
+    marketingWindow.AOS.init({ duration: 600, once: true });
   }
 };
+
+const heroProofPoints = [
+  'Contract-first workflows for brand deals',
+  'Payment recovery support when brands delay',
+  'Evidence vault for chats, files, and approvals',
+];
+
+const heroStats = [
+  { value: '24 hrs', label: 'Typical first legal action window' },
+  { value: '₹4.8L', label: 'Highest delayed payment highlighted by creators' },
+  { value: '1 place', label: 'Deals, proofs, contracts, and recovery status' },
+];
+
+const creatorWorkflow = [
+  {
+    step: '01',
+    title: 'Receive a structured offer',
+    description: 'Stop decoding messy DMs. Collect deliverables, timelines, usage rights, and payment terms in one clean flow.',
+    icon: MessageSquare,
+  },
+  {
+    step: '02',
+    title: 'Check risk before you agree',
+    description: 'Flag dangerous clauses, missing milestones, and vague approvals before the deal turns into a dispute.',
+    icon: ShieldCheck,
+  },
+  {
+    step: '03',
+    title: 'Track payout and proof',
+    description: 'Keep contracts, WhatsApp evidence, invoices, and payment status in one legal trail you can actually use.',
+    icon: Lock,
+  },
+];
+
+const trustHighlights = [
+  'Built for Indian creators handling brand deals, UGC, and retainers',
+  'Combines software workflows with real escalation support',
+  'Designed around disputes creators actually face: ghosting, delays, and vague contracts',
+];
+
+const processSteps = [
+  {
+    step: '01',
+    title: 'Collect the deal properly',
+    description: 'Get the brief, usage rights, deliverables, and payment terms out of scattered chats and into one structured record.',
+    icon: MessageSquare,
+  },
+  {
+    step: '02',
+    title: 'Review the contract before signing',
+    description: 'Catch vague deliverables, aggressive exclusivity, and missing payment protection before the brand has leverage.',
+    icon: FileText,
+  },
+  {
+    step: '03',
+    title: 'Track proof and recover if needed',
+    description: 'Keep invoices, approvals, WhatsApp messages, and payout status in one trail that supports escalation fast.',
+    icon: IndianRupee,
+  },
+];
+
+const caseStudies = [
+  {
+    creator: 'Riya S.',
+    role: 'Fashion creator',
+    audience: '150K followers',
+    result: '₹4.8 lakh recovered',
+    timeline: 'Paid within 14 days',
+    summary: 'A delayed brand payout had been stuck for 3 months. Creator Armour helped formalize the trail and push legal notice action.',
+  },
+  {
+    creator: 'Aryan K.',
+    role: 'Tech reviewer',
+    audience: '80K subscribers',
+    result: 'Bad exclusivity clause removed',
+    timeline: 'Terms renegotiated before signing',
+    summary: 'A one-sided agreement would have blocked future brand work. Risk review caught it early enough to negotiate from strength.',
+  },
+  {
+    creator: 'Pooja M.',
+    role: 'Lifestyle vlogger',
+    audience: '200K subscribers',
+    result: '₹2.5 lakh payment gap closed',
+    timeline: 'Recovered in the first month',
+    summary: 'Missed payments were tracked against deliverables and approvals, creating a cleaner path to recover what was owed.',
+  },
+];
+
+const comparisonRows = [
+  {
+    label: 'Offer clarity',
+    dm: 'Budget, scope, and rights are buried in chat threads.',
+    armour: 'Deliverables, timelines, and usage terms are captured in one structured flow.',
+  },
+  {
+    label: 'Contract visibility',
+    dm: 'Creators often sign fast without spotting risky clauses.',
+    armour: 'Contracts can be reviewed before approval pressure builds.',
+  },
+  {
+    label: 'Proof trail',
+    dm: 'Approvals and changes get lost across WhatsApp, email, and DMs.',
+    armour: 'Messages, files, invoices, and approvals stay in one evidence trail.',
+  },
+  {
+    label: 'Payment follow-up',
+    dm: 'Late payments depend on repeated manual nudging.',
+    armour: 'Payout status is tracked with a cleaner path to escalate.',
+  },
+];
+
+const pricingUseCases: Record<string, { heading: string; description: string }> = {
+  Essential: {
+    heading: 'For creators who want safer contracts',
+    description: 'Best when you want basic protection before signing paid or barter-led deals.',
+  },
+  Growth: {
+    heading: 'For creators tracking active brand revenue',
+    description: 'Best when you are handling repeat deals and need stronger visibility on approvals and payouts.',
+  },
+  Strategic: {
+    heading: 'For creators already dealing with disputes',
+    description: 'Best when delays, risky clauses, or recovery work need faster escalation support.',
+  },
+};
+
+const dashboardProofCards = [
+  {
+    image: '/pasted-image-2025-10-30T08-18-24-826Z.png',
+    alt: 'Contract scan preview',
+    title: 'Clause risk flagged',
+    description: 'Spot risky language before a vague contract turns into a one-sided obligation.',
+  },
+  {
+    image: '/pasted-image-2025-10-29T16-49-34-444Z.png',
+    alt: 'Deal tracking preview',
+    title: 'Payment overdue',
+    description: 'See which brand deals are slipping so follow-up is tied to dates and deliverables.',
+  },
+  {
+    image: '/Pixel-True-Mockup-(2)-(2).png',
+    alt: 'Payments due preview',
+    title: 'Evidence stored',
+    description: 'Keep approvals, invoices, and communications in one place instead of scattered chats.',
+  },
+  {
+    image: '/iPhone-12-PRO-localhost.png',
+    alt: 'Escalation workflow preview',
+    title: 'Escalation ready',
+    description: 'When a brand goes silent, your records are already organized for the next step.',
+  },
+];
+
+const trustPeople = [
+  {
+    name: 'Legal advisors',
+    role: 'Dispute and contract support',
+    description: 'Independent legal professionals help creators review terms, document disputes, and escalate cleanly.',
+  },
+  {
+    name: 'CA partners',
+    role: 'Tax and compliance support',
+    description: 'Compliance guidance is built around creator income realities, not generic small-business templates.',
+  },
+  {
+    name: 'Creator-first product team',
+    role: 'Workflow and evidence design',
+    description: 'The product is designed around delayed payments, vague approvals, and proof loss across chat tools.',
+  },
+];
 
 const MarketingHome = () => {
   const { session, loading, profile } = useSession();
@@ -146,12 +328,17 @@ const MarketingHome = () => {
 
   const getPriceSuffix = () => isYearly ? '/yr' : '/mo';
 
+  const trackMarketingCta = (label: string) => {
+    void trackEvent('marketing_cta_clicked', { label, page: 'marketing_home' });
+  };
+
   return (
     <div className="antialiased">
       <style>{`
         :root{
           --bg:#0B1325; /* Deep Navy Blue */
           --card:#131F3B; /* Slightly lighter Navy for cards */
+          --card-strong:#10182f;
           --muted: #9CA3AF;
           --accent-blue: #3B82F6;
           --accent-purple: #3B82F6; /* mapped to blue */
@@ -175,10 +362,36 @@ const MarketingHome = () => {
         .cta-secondary{background:linear-gradient(90deg,var(--accent-blue),#2563EB); color:white}
         .card{background:var(--card); border:1px solid rgba(255,255,255,0.08); box-shadow: 0 6px 18px rgba(3,7,18,0.6); border-radius: 0.75rem;} /* Increased border radius and subtle border */
         .glass{background:var(--glass); border:1px solid rgba(255,255,255,0.02)}
-        .hero-bg { background: linear-gradient(120deg, rgba(59,130,246,0.07), rgba(167,139,250,0.04)); backdrop-filter: blur(8px); }
+        .hero-bg {
+          background:
+            radial-gradient(circle at top left, rgba(96,165,250,0.18), transparent 34%),
+            radial-gradient(circle at bottom right, rgba(250,204,21,0.12), transparent 28%),
+            linear-gradient(135deg, rgba(11,19,37,0.96), rgba(13,27,55,0.92));
+          backdrop-filter: blur(8px);
+        }
         .cta-bg { background-image: url('/handshake_cta.png'); background-size: cover; background-position: center; position: relative; overflow: hidden; }
         .cta-overlay { position: absolute; inset: 0; background: rgba(23, 26, 51, 0.65); } /* Adjusted opacity to 0.65 */
         .badge {background: rgba(255,255,255,0.04); color: #D1FAE5; padding:6px 10px; border-radius:999px; font-weight:600; display:inline-flex; gap:.5rem; align-items:center}
+        .hero-shell {
+          position: relative;
+          isolation: isolate;
+          border: 1px solid rgba(148, 163, 184, 0.14);
+          box-shadow: 0 30px 90px rgba(2, 6, 23, 0.48);
+        }
+        .mesh-card {
+          background:
+            linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
+            linear-gradient(135deg, rgba(15,23,42,0.92), rgba(30,41,59,0.72));
+          border: 1px solid rgba(148, 163, 184, 0.18);
+          box-shadow: 0 18px 45px rgba(2, 6, 23, 0.3);
+        }
+        .section-kicker {
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+          font-size: 0.74rem;
+          color: rgba(191, 219, 254, 0.9);
+          font-weight: 800;
+        }
         /* Ensure all paragraphs and list items are legible */
         p, li { font-size: 1rem; line-height: 1.45; } /* Increased line height */
         @media (max-width: 768px) {
@@ -222,7 +435,7 @@ const MarketingHome = () => {
           <p className="text-sm font-semibold flex items-center gap-2">
             <Zap className="h-4 w-4" /> Free Legal Health Check — Takes &lt; 1 min
           </p>
-          <Link to="/free-legal-check" className="bg-black text-yellow-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-800 transition-colors">
+          <Link to="/free-legal-check" onClick={() => trackMarketingCta('sticky_top_free_legal_check')} className="bg-black text-yellow-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-800 transition-colors">
             Get Started
           </Link>
         </div>
@@ -233,7 +446,7 @@ const MarketingHome = () => {
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <span className="font-bold text-lg text-white uppercase font-black tracking-tighter">
-              CreatorArmour
+              Creator Armour
             </span>
           </div>
 
@@ -253,7 +466,7 @@ const MarketingHome = () => {
             >
               Book Free Call
             </button>
-            <a href="https://wa.me/919205376316?text=Hi%20CreatorArmour,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
+            <a href="https://wa.me/919205376316?text=Hi%20Creator%20Armour,%20I%20need%20help" target="_blank" rel="noopener" className="bg-green-500/95 hover:bg-green-600 px-3 py-2 rounded-lg text-sm font-semibold hidden md:inline-flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
               WhatsApp
             </a>
@@ -278,16 +491,30 @@ const MarketingHome = () => {
 
       <main className="container mx-auto px-6">
         {/* SECTION 1 — Creator-Focused Hero */}
-        <section className="grid md:grid-cols-2 gap-8 items-center py-20 hero-bg rounded-xl p-8 relative overflow-hidden" data-aos="fade-up">
-          <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 10% 10%, #3B82F6, transparent 50%), radial-gradient(circle at 90% 90%, #2563EB, transparent 50%)' }}></div>
+        <section className="hero-shell grid md:grid-cols-[1.1fr_0.9fr] gap-10 items-center py-16 md:py-20 hero-bg rounded-[2rem] px-6 md:px-10 relative overflow-hidden mt-6" data-aos="fade-up">
+          <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 10% 10%, #3B82F6, transparent 50%), radial-gradient(circle at 90% 90%, #FACC15, transparent 36%)' }}></div>
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
 
           <div className="relative z-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Protect Your Brand Deals. Get Paid On Time.
+            <div className="badge bg-blue-500/10 text-blue-100 border border-blue-300/20">
+              <ShieldCheck className="h-4 w-4 text-blue-300" />
+              Creator deal protection system
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black leading-[1.02] mt-5 max-w-3xl">
+              Stop losing money to vague brand deals.
             </h1>
-            <p className="mt-4 text-gray-300 max-w-xl text-lg">
-              CreatorArmour helps creators handle unpaid brand deals, risky contracts, and legal disputes — using software backed by real legal action.
+            <p className="mt-5 text-slate-300 max-w-2xl text-lg md:text-xl">
+              Creator Armour gives you a professional workflow for contracts, payout tracking, proof collection, and escalation so a deal does not fall apart the moment a brand goes silent.
             </p>
+
+            <ul className="mt-6 space-y-3 max-w-2xl">
+              {heroProofPoints.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-slate-100">
+                  <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               {/* Primary CTA copy variants for future tests (keep default active):
@@ -298,43 +525,124 @@ const MarketingHome = () => {
               */}
               <Link
                 to="/free-legal-check"
-                className="cta-primary nb-hero-cta inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg text-lg flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
+                onClick={() => trackMarketingCta('hero_free_legal_check')}
+                className="cta-primary nb-hero-cta inline-flex items-center justify-center gap-3 font-bold py-4 px-6 rounded-xl text-lg flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
               >
-                Protect My Deals
+                Start Free Legal Check
                 <ArrowRight className="h-5 w-5 transition-transform duration-150 ease-out group-hover:translate-x-1 group-active:translate-x-0.5" />
               </Link>
               <button type="button"
                 onClick={() => openCalendly(CALENDLY_URL)}
-                className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-3 px-5 rounded-lg shadow-md text-lg flex-1"
+                className="cta-secondary inline-flex items-center justify-center gap-3 font-bold py-4 px-6 rounded-xl shadow-md text-lg flex-1"
               >
-                See How It Works
+                Book Strategy Call
                 <Phone className="h-5 w-5" />
               </button>
             </div>
+
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {heroStats.map((stat) => (
+                <div key={stat.label} className="mesh-card rounded-2xl p-4">
+                  <p className="text-2xl font-black text-white">{stat.value}</p>
+                  <p className="mt-1 text-sm text-slate-300">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="relative flex items-center justify-center z-10">
-            <img
-              src="/mobile_team_and_cases.png"
-              alt="CreatorArmour creator dashboard on mobile"
-              className="rounded-[2.5rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10 rotate-3 md:rotate-2"
-              loading="lazy"
-              data-aos="zoom-in"
-              style={{ animation: 'fadeIn 1.8s ease-out' }}
-            />
+          <div className="relative z-10">
+            <div className="mesh-card rounded-[2rem] p-5 md:p-6">
+              <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div>
+                  <p className="section-kicker">Deal Command Center</p>
+                  <h2 className="text-2xl font-bold text-white mt-2">Know what is at risk before it hurts revenue.</h2>
+                </div>
+                <div className="badge bg-emerald-500/10 text-emerald-100 border border-emerald-300/20">
+                  <Lock className="h-4 w-4 text-emerald-300" />
+                  Proof locked
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4">
+                <div className="rounded-2xl border border-white/10 bg-[var(--card-strong)]/80 p-4">
+                  <div className="flex items-center justify-between text-sm text-slate-300">
+                    <span>Pending recovery</span>
+                    <span className="font-semibold text-amber-300">2 deals</span>
+                  </div>
+                  <p className="mt-2 text-3xl font-black text-white">₹7,30,000</p>
+                  <p className="mt-1 text-sm text-slate-400">One overdue invoice and one unsigned contract with missing usage terms.</p>
+                </div>
+
+                <div className="grid sm:grid-cols-[0.95fr_1.05fr] gap-4">
+                  <img
+                    src="/mobile_team_and_cases.png"
+                    alt="Creator Armour creator dashboard on mobile"
+                    className="rounded-[1.75rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full h-full object-cover border border-white/10"
+                    loading="lazy"
+                    data-aos="zoom-in"
+                    style={{ animation: 'fadeIn 1.8s ease-out' }}
+                  />
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                    {creatorWorkflow.map(({ step, title, description, icon: Icon }) => (
+                      <div key={step} className="rounded-2xl border border-white/8 bg-black/10 p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-200">
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-black tracking-[0.22em] text-blue-200/80">{step}</p>
+                            <p className="font-semibold text-white">{title}</p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm text-slate-300">{description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 1B — How It Works */}
+        <section className="py-10 md:py-14" data-aos="fade-up">
+          <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+            <div className="max-w-3xl">
+              <p className="section-kicker">How it works</p>
+              <h2 className="mt-3 text-3xl md:text-4xl font-bold text-white">A cleaner path from incoming brief to paid deal.</h2>
+              <p className="mt-3 text-lg text-slate-300">This is the workflow Creator Armour is built for: collect the right facts early, protect the contract, and keep a usable proof trail if payment slips.</p>
+            </div>
+            <div className="mt-8 grid gap-4 lg:grid-cols-3">
+              {processSteps.map(({ step, title, description, icon: Icon }) => (
+                <div key={step} className="mesh-card rounded-[1.5rem] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-100">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black tracking-[0.24em] text-blue-200/80">{step}</p>
+                      <h3 className="text-lg font-bold text-white">{title}</h3>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-slate-300">{description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* SECTION 2 — Creator Focus */}
         <section className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Everything You Need to Stay Protected</h2>
-            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Monitor deals, recover payments, and take legal action when brands don't pay.</p>
+            <p className="section-kicker justify-center">Why creators use it</p>
+            <h2 className="text-3xl md:text-4xl font-bold mt-3">Everything you need to stay protected</h2>
+            <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-lg">Creator Armour is strongest when used before the fight starts: clean briefs, clear contracts, proof trails, and escalation when payment slips.</p>
           </div>
-          <div className="max-w-2xl mx-auto">
-            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-xl shadow-lg border border-blue-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] flex flex-col justify-between">
+          <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 items-stretch">
+            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-[1.5rem] shadow-lg border border-blue-500/30 hover:border-blue-300/50 transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between">
               <div>
-                <h3 className="text-3xl font-bold text-blue-500 mb-4">For Creators & Influencers</h3>
+                <p className="section-kicker">For creators and influencers</p>
+                <h3 className="text-3xl font-bold text-blue-200 mt-3 mb-4">Run brand deals like a protected business, not a DM thread.</h3>
                 <ul className="space-y-2 text-gray-300 text-lg">
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Brand deal contract review</li>
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Payment recovery</li>
@@ -348,6 +656,23 @@ const MarketingHome = () => {
                 Explore Creator Plans <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
             </Link>
+
+            <div className="card p-8 rounded-[1.5rem]">
+              <p className="section-kicker">Why it feels different</p>
+              <h3 className="text-2xl font-bold text-white mt-3">The product is shaped around creator disputes, not generic CRM features.</h3>
+              <div className="mt-6 space-y-4">
+                {trustHighlights.map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-blue-300 mt-0.5 flex-shrink-0" />
+                    <p className="text-slate-200">{item}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-400/10 p-4">
+                <p className="text-sm font-semibold text-amber-200">Best fit</p>
+                <p className="mt-1 text-slate-200">Creators doing paid brand deals, barter-plus-cash campaigns, retainers, or UGC who need stronger terms and a recovery path.</p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -363,7 +688,7 @@ const MarketingHome = () => {
               />
             </div>
             <div className="space-y-6">
-              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside CreatorArmour</h2>
+              <h2 className="text-4xl font-extrabold leading-tight">What creators manage inside Creator Armour</h2>
               <p className="text-gray-300 text-lg">
                 Monitor deals, recover payments, and take legal action when brands don't pay. Every tool is built for Indian creators.
               </p>
@@ -408,10 +733,16 @@ const MarketingHome = () => {
             <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">A dedicated portal to manage your brand deals, payments, and content protection.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <img src="/pasted-image-2025-10-30T08-18-24-826Z.png" alt="Contract Scan Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
-            <img src="/pasted-image-2025-10-29T16-49-34-444Z.png" alt="Deal Tracking Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
-            <img src="/Pixel-True-Mockup-(2)-(2).png" alt="Payments Due Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
-            <img src="/iPhone-12-PRO-localhost.png" alt="Copyright Alerts Preview" className="rounded-xl shadow-lg border border-white/10" loading="lazy" />
+            {dashboardProofCards.map((card) => (
+              <div key={card.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] overflow-hidden shadow-lg">
+                <img src={card.image} alt={card.alt} className="w-full rounded-t-[1.5rem] border-b border-white/10" loading="lazy" />
+                <div className="p-4">
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-blue-200/75">Dashboard proof</p>
+                  <h3 className="mt-2 text-lg font-bold text-white">{card.title}</h3>
+                  <p className="mt-2 text-sm text-slate-300">{card.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -449,16 +780,41 @@ const MarketingHome = () => {
             </div>
           </div>
           <div className="text-center mt-8">
-            <h3 className="text-2xl font-bold text-green-400">CreatorArmour Solutions:</h3>
+            <h3 className="text-2xl font-bold text-green-400">Creator Armour solutions:</h3>
             <p className="text-gray-300 mt-2 text-lg">We turn your legal headaches into peace of mind.</p>
           </div>
         </section>
 
         {/* SECTION 6 — Creator Plans Section */}
         <section className="py-16">
+          <div className="mb-12" data-aos="fade-up">
+            <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+              <div className="max-w-3xl">
+                <p className="section-kicker">Why this beats DMs</p>
+                <h2 className="mt-3 text-3xl md:text-4xl font-bold text-white">Instagram DMs are where deals start. They should not be where they stay.</h2>
+                <p className="mt-3 text-lg text-slate-300">Creator Armour works best when it replaces vague chat-based deal management with clearer terms, better proof, and a recovery-ready workflow.</p>
+              </div>
+              <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-white/10">
+                <div className="grid grid-cols-[0.85fr_1fr_1fr] bg-white/[0.04] text-sm font-bold text-white">
+                  <div className="p-4">What matters</div>
+                  <div className="border-l border-white/10 p-4 text-slate-300">Instagram DMs</div>
+                  <div className="border-l border-white/10 p-4 text-blue-100">Creator Armour</div>
+                </div>
+                {comparisonRows.map((row, index) => (
+                  <div key={row.label} className={cn("grid grid-cols-[0.85fr_1fr_1fr]", index !== comparisonRows.length - 1 && "border-t border-white/10")}>
+                    <div className="bg-white/[0.02] p-4 font-semibold text-white">{row.label}</div>
+                    <div className="border-l border-white/10 p-4 text-slate-400">{row.dm}</div>
+                    <div className="border-l border-white/10 bg-blue-500/[0.07] p-4 text-slate-100">{row.armour}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div className="text-center mb-12" data-aos="fade-up">
-            <h2 className="text-3xl font-bold">Protection Plans for Every Creator</h2>
-            <p className="text-gray-400 text-lg">Monitor deals, recover payments, and escalate with legal action when needed.</p>
+            <p className="section-kicker">Plans by situation</p>
+            <h2 className="text-3xl font-bold mt-3">Choose the level of protection you actually need</h2>
+            <p className="text-gray-400 text-lg mt-3">The plans make more sense when mapped to the stage you are in: safer signing, stronger payout tracking, or active dispute support.</p>
           </div>
 
           {/* Monthly / Yearly Toggle */}
@@ -483,6 +839,11 @@ const MarketingHome = () => {
             {Object.values(CREATOR_PLAN_DETAILS).map((plan, index) => (
               <div key={plan.name} className={cn("card p-6 rounded-xl flex flex-col", plan.isPopular && 'border-2 border-purple-500 shadow-2xl')} data-aos="fade-up" data-aos-delay={index * 80}>
                 {plan.isPopular && <div className="absolute -top-4 right-6 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold">⭐ MOST POPULAR</div>}
+                <div className="mb-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-200/80">Best when</p>
+                  <p className="mt-2 font-semibold text-white">{pricingUseCases[plan.name]?.heading ?? 'For creators who need more support'}</p>
+                  <p className="mt-1 text-sm text-slate-300">{pricingUseCases[plan.name]?.description ?? 'Use this when your brand deal workflow needs more structure and protection.'}</p>
+                </div>
                 <h3 className="text-xl font-bold text-blue-300">{plan.name}</h3>
                 <div className="mt-4">
                   <div className="text-4xl font-extrabold">{getPrice(parseInt(plan.price.replace('₹', '').replace('/mo', '').replace(',', '')))}<span className="text-gray-400 text-base">{getPriceSuffix()}</span></div>
@@ -497,7 +858,7 @@ const MarketingHome = () => {
                   ))}
                 </ul>
                 <div className="mt-6">
-                  <Link to={plan.link} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
+                  <Link to={plan.link} onClick={() => trackMarketingCta(`pricing_card_${plan.name.toLowerCase()}`)} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
                     Get Started
                   </Link>
                   <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-blue-400 hover:text-blue-300 font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
@@ -511,38 +872,34 @@ const MarketingHome = () => {
         </section>
 
         {/* SECTION 7 — Creator Social Proof */}
-        <section className="py-16" data-aos="fade-up">
+        <section id="testimonials" className="py-16" data-aos="fade-up">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Trusted by Creators Across India</h2>
-            <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg">Real results from creators who recovered payments and avoided bad contracts.</p>
+            <p className="section-kicker">Creator outcomes</p>
+            <h2 className="text-3xl font-bold mt-3">Trusted by creators across India</h2>
+            <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-lg">Proof works better than generic praise, so this section now focuses on measurable outcomes and what changed in each case.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="card p-6 rounded-xl bg-gray-800/50 border-gray-700/50" data-aos="fade-up">
-              <div className="flex mb-3 text-yellow-400">
-                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
+            {caseStudies.map((study, index) => (
+              <div key={study.creator} className="card p-6 rounded-[1.5rem] bg-gray-800/50 border-gray-700/50" data-aos="fade-up" data-aos-delay={index * 80}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex text-yellow-400">
+                    <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
+                  </div>
+                  <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-200">
+                    {study.timeline}
+                  </span>
+                </div>
+                <p className="mt-5 text-2xl font-black text-white">{study.result}</p>
+                <p className="mt-3 text-gray-300 leading-relaxed">{study.summary}</p>
+                <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="font-bold text-white">{study.creator}</div>
+                  <div className="text-sm text-gray-400">{study.role} • {study.audience}</div>
+                </div>
               </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"A brand delayed my ₹4.8 Lakh payment for 3 months. CreatorArmour sent a legal notice and I got paid within 2 weeks. Worth every rupee!"</p>
-              <div className="mt-4 font-bold text-white">Riya S.</div>
-              <div className="text-sm text-gray-400">Fashion Influencer (150K followers)</div>
-            </div>
-            <div className="card p-6 rounded-xl bg-gray-800/50 border-gray-700/50" data-aos="fade-up" data-aos-delay="80">
-              <div className="flex mb-3 text-yellow-400">
-                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
-              </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"I almost signed a contract with a terrible exclusivity clause. CreatorArmour flagged it and helped me negotiate better terms. Saved me from a huge mistake."</p>
-              <div className="mt-4 font-bold text-white">Aryan K.</div>
-              <div className="text-sm text-gray-400">Tech Reviewer (80K subscribers)</div>
-            </div>
-            <div className="card p-6 rounded-xl bg-gray-800/50 border-gray-700/50" data-aos="fade-up" data-aos-delay="160">
-              <div className="flex mb-3 text-yellow-400">
-                <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
-              </div>
-              <p className="text-gray-300 text-lg leading-relaxed">"Recovered ₹2.5 Lakhs in missed payments within the first month. The payment tracking and legal notices actually work."</p>
-              <div className="mt-4 font-bold text-white">Pooja M.</div>
-              <div className="text-sm text-gray-400">Vlogger (200K subscribers)</div>
-            </div>
+            ))}
           </div>
         </section>
+
 
         {/* SECTION 10 — WhatsApp Legal Vault (New Highlight) */}
         <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">
@@ -576,12 +933,32 @@ const MarketingHome = () => {
           </div>
         </section>
 
+        {/* SECTION 11 — Human Trust */}
+        <section className="py-16" data-aos="fade-up">
+          <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+            <div className="max-w-3xl">
+              <p className="section-kicker">Who this is built with</p>
+              <h2 className="mt-3 text-3xl font-bold text-white">Software handles the workflow. Real specialists support the hard parts.</h2>
+              <p className="mt-3 text-lg text-slate-300">Creator Armour is not positioned as generic creator SaaS. The trust model is a product workflow backed by legal and compliance specialists when the situation needs real judgment.</p>
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {trustPeople.map((person) => (
+                <div key={person.name} className="mesh-card rounded-[1.5rem] p-5">
+                  <p className="text-lg font-bold text-white">{person.name}</p>
+                  <p className="mt-1 text-sm font-semibold text-blue-200">{person.role}</p>
+                  <p className="mt-3 text-slate-300">{person.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* SECTION 11 — Final CTA */}
         <section className="py-20 text-center" data-aos="fade-up">
           <h2 className="text-3xl font-bold mb-6">Don't Let Brands Delay Your Payment</h2>
           <p className="text-gray-400 mt-2 max-w-2xl mx-auto text-lg mb-8">Start free. Upgrade only if you need legal recovery.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link to="/free-legal-check" className="cta-primary px-8 py-4 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
+            <Link to="/free-legal-check" onClick={() => trackMarketingCta('final_cta_free_legal_check')} className="cta-primary px-8 py-4 rounded-lg font-bold text-xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
               Protect My Deals Now <ArrowRight className="h-6 w-6 ml-2" />
             </Link>
           </div>
@@ -607,7 +984,7 @@ const MarketingHome = () => {
 
             {/* Column 1 & 2 (Span 2 on desktop): Company Info & Newsletter */}
             <div className="md:col-span-2 space-y-6">
-              <div className="font-bold text-white text-xl">CreatorArmour</div>
+              <div className="font-bold text-white text-xl">Creator Armour</div>
               <p className="text-gray-500 text-sm max-w-xs">
                 India's first subscription-based legal and CA team for content creators and influencers. Expert contract review, payment recovery, and tax compliance.
               </p>
@@ -703,7 +1080,7 @@ const MarketingHome = () => {
 
           {/* Copyright */}
           <div className="mt-8 text-gray-500 text-center border-t border-white/5 pt-4">
-            © 2025 CreatorArmour. All rights reserved.
+            © 2025 Creator Armour. All rights reserved.
           </div>
         </div>
       </footer>
@@ -713,13 +1090,13 @@ const MarketingHome = () => {
         "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 md:hidden",
         showFloatingCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       )}>
-        <Link to="/free-legal-check" className="cta-primary px-6 py-3 rounded-lg font-bold text-lg shadow-2xl flex items-center gap-2">
+        <Link to="/free-legal-check" onClick={() => trackMarketingCta('mobile_floating_free_legal_check')} className="cta-primary px-6 py-3 rounded-lg font-bold text-lg shadow-2xl flex items-center gap-2">
           Get My Free Audit (No Payment Required) <ArrowRight className="h-5 w-5 ml-2" />
         </Link>
       </div>
 
       {/* Floating WhatsApp CTA (bottom-right) */}
-      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 flex items-center gap-2 transition-all duration-300 hover:scale-105">
+      <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
         <MessageSquare className="h-6 w-6 text-white" />
         <span className="text-white font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
       </a>

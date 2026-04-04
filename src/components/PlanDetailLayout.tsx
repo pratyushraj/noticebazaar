@@ -97,6 +97,21 @@ const PlanComparisonTable = ({ currentPlanName }: { currentPlanName: PlanName })
 
 
 const PlanDetailLayout: React.FC<PlanDetailLayoutProps> = ({ plan }) => {
+  const planFitCopy: Record<PlanName, { heading: string; body: string }> = {
+    Essential: {
+      heading: 'Best when you want safer deals before they turn messy',
+      body: 'Use Essential when you mostly need stronger contract clarity, cleaner scopes, and a more protected baseline for creator work.',
+    },
+    'Business Growth': {
+      heading: 'Best when brand work is active and recurring',
+      body: 'Use Business Growth when you are juggling multiple deals, payment timelines, and ongoing follow-up across several brands.',
+    },
+    'Strategic Partner': {
+      heading: 'Best when disputes or higher-stakes deals need stronger support',
+      body: 'Use Strategic Partner when you already need priority handling, deeper review, or more serious recovery and escalation support.',
+    },
+  };
+
   return (
     <div className="container mx-auto px-6 py-12 nb-screen-height bg-background">
       <Button variant="outline" asChild className="mb-8 text-primary border-border hover:bg-accent hover:text-foreground">
@@ -123,6 +138,11 @@ const PlanDetailLayout: React.FC<PlanDetailLayoutProps> = ({ plan }) => {
             <div className="md:col-span-2 space-y-4">
               <h2 className="text-2xl font-bold text-primary">Plan Overview</h2>
               <p className="text-muted-foreground">{plan.description}</p>
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-sm font-bold text-primary uppercase tracking-wider">When this is right for you</p>
+                <p className="mt-2 font-semibold text-foreground">{planFitCopy[plan.name].heading}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{planFitCopy[plan.name].body}</p>
+              </div>
             </div>
             <div className="md:col-span-1 flex flex-col justify-center">
               <Button asChild className="w-full cta-primary py-3 rounded-lg font-bold text-lg">

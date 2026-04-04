@@ -44,7 +44,18 @@ COMMENT ON COLUMN public.brand_deals.brand_contact_id IS 'Canonical brand (for a
 -- RLS: backend uses service role (bypasses RLS). Authenticated read for future agency dashboard.
 ALTER TABLE public.brand_contacts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated can read brand_contacts"
-ON public.brand_contacts FOR SELECT
-TO authenticated
-USING (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'brand_contacts'
+      AND policyname = 'Authenticated can read brand_contacts'
+  ) THEN
+    CREATE POLICY "Authenticated can read brand_contacts"
+    ON public.brand_contacts FOR SELECT
+    TO authenticated
+    USING (true);
+  END IF;
+END $$;

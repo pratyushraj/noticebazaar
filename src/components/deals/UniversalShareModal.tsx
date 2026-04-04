@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UniversalShareModalProps {
   open: boolean;
@@ -110,7 +111,6 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     try {
       const apiBaseUrl = getApiBaseUrl();
 
-      const { supabase } = await import('@/integrations/supabase/client');
       const { data: { session: authSession } } = await supabase.auth.getSession();
 
       if (!authSession?.access_token) {
@@ -360,4 +360,3 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
     </Dialog>
   );
 };
-

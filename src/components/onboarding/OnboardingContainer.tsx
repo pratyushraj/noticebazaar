@@ -7,6 +7,7 @@ interface OnboardingContainerProps {
   children: React.ReactNode;
   className?: string;
   theme?: 'light' | 'dark';
+  allowScroll?: boolean;
 }
 
 /**
@@ -23,9 +24,12 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
   children,
   className,
   theme,
+  allowScroll = false,
 }) => {
   // Lock body scroll on mount, unlock on unmount
   useEffect(() => {
+    if (allowScroll) return;
+
     const originalOverflow = window.getComputedStyle(document.body).overflow;
     const originalPosition = window.getComputedStyle(document.body).position;
 
@@ -47,14 +51,14 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
       document.documentElement.style.overscrollBehavior = '';
       document.body.style.overscrollBehavior = '';
     };
-  }, []);
+  }, [allowScroll]);
 
   return (
     <div
       className={cn(
-        // iOS 17 viewport - mandatory h-[100dvh]
-        "fixed inset-0 w-full h-[100dvh]",
-        "min-h-[100dvh] max-h-[100dvh]",
+        allowScroll
+          ? "relative w-full min-h-[100dvh]"
+          : "fixed inset-0 w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh]",
 
         // Background
         theme === 'dark'
@@ -75,8 +79,7 @@ export const OnboardingContainer: React.FC<OnboardingContainerProps> = ({
         "overscroll-none",
         "touch-pan-y",
 
-        // Keep container fixed; individual screens decide if they need scrolling.
-        "overflow-hidden",
+        allowScroll ? "overflow-y-auto" : "overflow-hidden",
 
         className
       )}

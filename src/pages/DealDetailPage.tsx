@@ -27,7 +27,6 @@ import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
 import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
-import { DealStatusCard } from '@/components/deals/DealStatusCard';
 import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
 import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
 
@@ -87,6 +86,90 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
     document.body.removeChild(textArea);
     return false;
   }
+};
+
+type GuidedDealState =
+  | 'OFFER_SENT'
+  | 'OFFER_ACCEPTED'
+  | 'CONTRACT_SENT'
+  | 'CONTRACT_SIGNED'
+  | 'CONTENT_IN_PROGRESS'
+  | 'REVISION_REQUESTED'
+  | 'CONTENT_SUBMITTED'
+  | 'APPROVED'
+  | 'PAYMENT_PENDING'
+  | 'PAID'
+  | 'COMPLETED';
+
+const GUIDED_PROGRESS_STEPS = ['Offer', 'Confirm', 'Make', 'Upload', 'Review', 'Payment', 'Complete'] as const;
+
+const getSimpleStatusLabel = (state: GuidedDealState) => {
+  switch (state) {
+    case 'OFFER_SENT':
+      return 'New offer';
+    case 'OFFER_ACCEPTED':
+      return 'Add your address';
+    case 'CONTRACT_SENT':
+      return 'Sign the agreement';
+    case 'CONTRACT_SIGNED':
+      return 'Make your content';
+    case 'CONTENT_IN_PROGRESS':
+      return 'Share your post link';
+    case 'REVISION_REQUESTED':
+      return 'Brand wants changes';
+    case 'CONTENT_SUBMITTED':
+      return 'Awaiting brand review';
+    case 'APPROVED':
+      return 'Waiting for payment';
+    case 'PAYMENT_PENDING':
+      return 'Payment incoming';
+    case 'PAID':
+      return 'Got the money? Confirm here';
+    case 'COMPLETED':
+      return 'Done!';
+    default:
+      return 'In progress';
+  }
+};
+
+const getTimelineEntryCopy = (eventName?: string) => {
+  const event = String(eventName || '').toLowerCase();
+
+  const mapped: Record<string, { action: string; type: 'other' | 'payment' | 'upload' | 'complete' | 'invoice' | 'issue' | 'update'; actor: 'You' | 'Brand' | 'System' }> = {
+    offer_sent: { action: 'Brand sent you an offer', type: 'other', actor: 'Brand' },
+    offer_accepted: { action: 'You accepted the offer', type: 'update', actor: 'You' },
+    contract_generated: { action: 'Agreement created', type: 'upload', actor: 'System' },
+    contract_signed: { action: 'You signed the agreement', type: 'complete', actor: 'You' },
+    delivery_details_added: { action: 'You added your address', type: 'update', actor: 'You' },
+    content_started: { action: 'You started making content', type: 'update', actor: 'You' },
+    content_submitted: { action: 'You shared your post link', type: 'upload', actor: 'You' },
+    revision_requested: { action: 'Brand wants changes', type: 'issue', actor: 'Brand' },
+    content_resubmitted: { action: 'You re-uploaded content', type: 'upload', actor: 'You' },
+    content_approved: { action: 'Brand approved your content', type: 'complete', actor: 'Brand' },
+    payment_marked: { action: 'Brand sent payment', type: 'payment', actor: 'Brand' },
+    payment_confirmed: { action: 'You confirmed payment', type: 'payment', actor: 'You' },
+    invoice_generated: { action: 'Invoice generated', type: 'invoice', actor: 'System' },
+    deal_completed: { action: 'Deal completed', type: 'complete', actor: 'System' },
+    contract_downloaded: { action: 'Agreement downloaded', type: 'upload', actor: 'You' },
+    issue_reported: { action: 'You reported an issue', type: 'issue', actor: 'You' },
+    created: { action: 'Brand sent you an offer', type: 'other', actor: 'Brand' },
+  };
+
+  if (mapped[event]) return mapped[event];
+
+  if (event.includes('accepted')) return { action: 'You accepted the offer', type: 'update', actor: 'You' };
+  if (event.includes('contract') && event.includes('generated')) return { action: 'Agreement was made', type: 'upload', actor: 'System' };
+  if (event.includes('signed')) return { action: 'Contract signed', type: 'complete', actor: 'You' };
+  if (event.includes('delivery')) return { action: 'Delivery address added', type: 'update', actor: 'You' };
+  if (event.includes('submitted') && event.includes('content')) return { action: 'You uploaded your content', type: 'upload', actor: 'You' };
+  if (event.includes('revision') || event.includes('changes_requested')) return { action: 'Brand requested changes', type: 'issue', actor: 'Brand' };
+  if (event.includes('approved')) return { action: 'Brand approved your content', type: 'complete', actor: 'Brand' };
+  if (event.includes('payment') && (event.includes('marked') || event.includes('released'))) return { action: 'Brand said payment is sent', type: 'payment', actor: 'Brand' };
+  if (event.includes('payment') && (event.includes('received') || event.includes('confirmed'))) return { action: 'You confirmed payment received', type: 'payment', actor: 'You' };
+  if (event.includes('invoice')) return { action: 'Invoice generated', type: 'invoice', actor: 'System' };
+  if (event.includes('complete')) return { action: 'Deal completed', type: 'complete', actor: 'System' };
+
+  return { action: 'Deal was updated', type: 'other', actor: 'System' };
 };
 
 // Main content component
@@ -168,6 +251,9 @@ function DealDetailPageContent() {
   const [creatorOTP, setCreatorOTP] = useState('');
   const [creatorSigningStep, setCreatorSigningStep] = useState<'send' | 'verify'>('send');
   const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
+  const [contentLinkInput, setContentLinkInput] = useState('');
+  const [contentNoteInput, setContentNoteInput] = useState('');
+  const [isSubmittingContentLink, setIsSubmittingContentLink] = useState(false);
   // Use hook for signatures (replaces old state)
   const { data: signatureData } = useDealSignatures(dealId);
   const isCreatorSigned = signatureData?.isCreatorSigned || false;
@@ -296,7 +382,7 @@ function DealDetailPageContent() {
     const status = (deal.status || '').toLowerCase();
     const hasDelivery = !!(deal as any)?.delivery_address?.trim();
     if (dealType === 'barter' && status === 'drafting' && !hasDelivery) {
-      navigate(`/creator-contracts/${dealId}/delivery-details`, { replace: true });
+      navigate(`/deal-delivery-details/${dealId}`, { replace: true });
     }
   }, [deal, dealId, isLoadingDeal, navigate]);
 
@@ -777,41 +863,124 @@ function DealDetailPageContent() {
     if (deal.created_at && deal.id) {
       entries.push({
         id: `action-${deal.id}-created`,
-        action: 'Deal created',
+        action: 'Brand sent you an offer',
         type: 'other',
         timestamp: deal.created_at,
-        user: profile?.first_name || 'You',
+        user: 'Brand',
       });
     }
 
     if (deal.contract_file_url && deal.id) {
       entries.push({
         id: `action-${deal.id}-contract`,
-        action: 'Contract uploaded',
+        action: 'Contract was generated',
         type: 'upload',
         timestamp: deal.created_at || new Date().toISOString(),
-        user: profile?.first_name || 'You',
+        user: 'System',
+      });
+    }
+
+    if ((deal as any)?.delivery_address && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-delivery-details`,
+        action: 'Delivery details added',
+        type: 'update',
+        timestamp: deal.updated_at || deal.created_at || new Date().toISOString(),
+        user: 'You',
+      });
+    }
+
+    if (deal.content_submitted_at && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-content-submitted`,
+        action: 'You uploaded content',
+        type: 'upload',
+        timestamp: deal.content_submitted_at,
+        user: 'You',
+      });
+    }
+
+    if ((deal as any)?.revision_requested_at && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-revision-requested`,
+        action: 'Brand requested changes',
+        type: 'issue',
+        timestamp: (deal as any).revision_requested_at,
+        user: 'Brand',
+      });
+    }
+
+    if ((deal as any)?.content_approved_at && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-content-approved`,
+        action: 'Brand approved your content',
+        type: 'complete',
+        timestamp: (deal as any).content_approved_at,
+        user: 'Brand',
+      });
+    }
+
+    if ((deal as any)?.payment_released_at && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-payment-marked`,
+        action: 'Brand marked payment sent',
+        type: 'payment',
+        timestamp: (deal as any).payment_released_at,
+        user: 'Brand',
+      });
+    }
+
+    if (deal.payment_received_date && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-payment-confirmed`,
+        action: 'You confirmed payment received',
+        type: 'payment',
+        timestamp: deal.payment_received_date,
+        user: 'You',
+      });
+    }
+
+    if ((deal as any)?.invoice_url && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-invoice-generated`,
+        action: 'Invoice generated',
+        type: 'invoice',
+        timestamp: deal.updated_at || deal.created_at || new Date().toISOString(),
+        user: 'System',
+      });
+    }
+
+    if (deal.payment_received_date && deal.id) {
+      entries.push({
+        id: `action-${deal.id}-completed`,
+        action: 'Deal completed',
+        type: 'complete',
+        timestamp: deal.payment_received_date,
+        user: 'System',
       });
     }
 
     if (logs && Array.isArray(logs)) {
-      // replaced-by-ultra-polish: replaced any with proper type
       logs.forEach((log: any) => {
+        const timelineCopy = getTimelineEntryCopy(log.event);
         entries.push({
           id: log.id,
-          action: log.event?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Action',
-          type: 'other' as const,
+          action: timelineCopy.action,
+          type: timelineCopy.type,
           timestamp: log.created_at || new Date().toISOString(),
-          user: profile?.first_name || 'You',
-          metadata: log.metadata,
+          user: timelineCopy.actor,
         });
       });
     }
 
-    return entries.sort((a, b) =>
+    const deduped = entries.filter((entry, index, array) => (
+      array.findIndex((candidate) => candidate.action === entry.action && candidate.timestamp === entry.timestamp) === index
+    ));
+
+    return deduped.sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
-  }, [deal, logs, profile]);
+  }, [deal, logs]);
 
   // Calculate days overdue - useCallback must be called unconditionally
   const calculateDaysOverdue = useCallback(() => {
@@ -956,17 +1125,262 @@ function DealDetailPageContent() {
   }, [deal?.contract_file_url, deal?.brand_name, profile?.first_name, profile?.last_name]);
 
   // Get contract status for badge display
-  const contractStatus = useMemo(() => getContractStatus(), [getContractStatus]);
-  const showContractExecutionSection =
-    !!deal &&
-    (brandResponseStatus === 'accepted_verified' ||
-      contractStatus === 'CONTRACT_READY' ||
-      (deal?.status?.toLowerCase() === 'drafting' && !!deal?.contract_file_url) ||
-      (deal?.status?.toLowerCase().includes('shipment') && !!deal?.contract_file_url) ||
-      (deal?.status?.toLowerCase().includes('transit') && !!deal?.contract_file_url) ||
-      (deal?.status?.toLowerCase().includes('received') && !!deal?.contract_file_url) ||
-      !!signedContractUrl ||
-      !!dealExecutionStatus);
+  const guidedDealState = useMemo<GuidedDealState>(() => {
+    const statusLower = String(deal?.status || '').toLowerCase();
+    const dealTypeLower = String((deal as any)?.deal_type || '').toLowerCase();
+    const approvalStatus = String((deal as any)?.brand_approval_status || '').toLowerCase();
+    const responseStatus = String((deal as any)?.brand_response_status || '').toLowerCase();
+    const executionStatus = String(dealExecutionStatus || '').toLowerCase();
+    const isBarterDeliveryPending = dealTypeLower === 'barter'
+      && statusLower === 'drafting'
+      && !(deal as any)?.delivery_address;
+    const isPaidDrafting = dealTypeLower !== 'barter' && statusLower === 'drafting';
+
+    if (deal?.payment_received_date) return 'COMPLETED';
+    if (statusLower.includes('paid') || statusLower.includes('payment_released') || statusLower.includes('payment sent')) return 'PAID';
+    if (statusLower.includes('payment pending') || (approvalStatus === 'approved' && !deal?.payment_received_date)) return approvalStatus === 'approved' ? 'APPROVED' : 'PAYMENT_PENDING';
+    if (approvalStatus === 'changes_requested') return 'REVISION_REQUESTED';
+    if (deal?.content_submitted_at && approvalStatus !== 'approved') return 'CONTENT_SUBMITTED';
+    if (isPaidDrafting) return 'CONTENT_IN_PROGRESS';
+    if (statusLower.includes('content') || statusLower.includes('live') || statusLower.includes('active')) return 'CONTENT_IN_PROGRESS';
+    if (executionStatus === 'signed' || executionStatus === 'completed' || bothSigned) return 'CONTRACT_SIGNED';
+    if (statusLower.includes('contract_ready') || statusLower.includes('signed_by_brand') || responseStatus === 'accepted_verified' || !!contractDocxUrl) return 'CONTRACT_SENT';
+    if (isBarterDeliveryPending) return 'OFFER_ACCEPTED';
+    return 'OFFER_SENT';
+  }, [deal, dealExecutionStatus, bothSigned, contractDocxUrl]);
+
+  const guidedProgressIndex = useMemo(() => {
+    switch (guidedDealState) {
+      case 'OFFER_SENT':
+        return 0;
+      case 'OFFER_ACCEPTED':
+      case 'CONTRACT_SENT':
+        return 1;
+      case 'CONTRACT_SIGNED':
+      case 'CONTENT_IN_PROGRESS':
+        return 2;
+      case 'REVISION_REQUESTED':
+      case 'CONTENT_SUBMITTED':
+        return 3;
+      case 'APPROVED':
+        return 4;
+      case 'PAYMENT_PENDING':
+        return 5;
+      case 'PAID':
+        return 6;
+      case 'COMPLETED':
+        return 7;
+      default:
+        return 0;
+    }
+  }, [guidedDealState]);
+
+  const guidedDealCard = useMemo(() => {
+    const dealIdValue = deal?.id;
+    const invoiceUrl = (deal as any)?.invoice_url as string | null | undefined;
+
+    switch (guidedDealState) {
+      case 'OFFER_SENT':
+        return {
+          title: 'Review this offer',
+          explanation: 'Check the brand brief, budget, and deadline before you decide.',
+          actionLabel: 'Review brief',
+          action: () => {
+            const target = document.getElementById('deal-brief-section');
+            target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+        };
+      case 'OFFER_ACCEPTED':
+        return {
+          title: 'Add your address',
+          explanation: 'The brand may need your delivery address to send products. Add it now to avoid delays.',
+          actionLabel: 'Add address',
+          action: () => dealIdValue && navigate(`/deal-delivery-details/${dealIdValue}`),
+        };
+      case 'CONTRACT_SENT':
+        return {
+          title: 'Sign Contract',
+          explanation: 'Your deal is confirmed. Review the contract and sign it to continue.',
+          actionLabel: 'Sign Contract',
+          action: () => setShowCreatorSigningModal(true),
+        };
+      case 'CONTRACT_SIGNED':
+        return {
+          title: 'Start making content',
+          explanation: 'Both sides have signed. Review the brief here and start creating the content for this deal.',
+          actionLabel: 'Review brief',
+          action: () => {
+            const target = document.getElementById('deal-brief-section');
+            target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+        };
+      case 'CONTENT_IN_PROGRESS':
+        return {
+          title: 'Share your post link',
+          explanation: 'Share your Instagram post link from this deal so the brand can review it.',
+          actionLabel: 'Share post link',
+          action: () => {
+            // Scroll to content submission panel
+            const target = document.getElementById('deal-brief-section');
+            target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+        };
+      case 'REVISION_REQUESTED':
+        return {
+          title: 'Brand wants changes',
+          explanation: 'The brand reviewed your content and requested changes. See their feedback below, then share your revised post link.',
+          actionLabel: 'See feedback',
+          action: () => {
+            const target = document.getElementById('brand-response-section') || document.getElementById('deal-brief-section');
+            target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
+        };
+      case 'CONTENT_SUBMITTED':
+        return {
+          title: 'Waiting for brand review',
+          explanation: 'The brand will review your post and either approve it or ask for changes. You will be notified here.',
+        };
+      case 'APPROVED':
+      case 'PAYMENT_PENDING':
+        return {
+          title: 'Waiting for payment',
+          explanation: 'Your content is approved. The brand sends payment next.',
+        };
+      case 'PAID':
+        return {
+          title: 'Confirm payment received',
+          explanation: 'Tap this only after the money reaches your bank account.',
+          actionLabel: 'Confirm payment',
+          action: () => dealIdValue && navigate(`/payment/${dealIdValue}`),
+        };
+      case 'COMPLETED':
+        return {
+          title: 'Deal completed',
+          explanation: 'This deal is done. Download the invoice, then share your collab link to get more offers.',
+          actionLabel: 'Download invoice',
+          action: () => invoiceUrl && window.open(invoiceUrl, '_blank', 'noopener,noreferrer'),
+          secondaryActionLabel: 'Copy collab link',
+          secondaryAction: () => {
+            const handle = profile?.instagram_handle || profile?.username;
+            if (handle) {
+              const link = `${window.location.origin}/${handle}`;
+              navigator.clipboard.writeText(link).then(() => {
+                toast.success('Collab link copied!');
+              }).catch(() => {
+                toast.error('Failed to copy link');
+              });
+            }
+          },
+        };
+      default:
+        return {
+          title: 'Check this deal',
+          explanation: 'Review the deal details and continue from here.',
+        };
+    }
+  }, [guidedDealState, deal, navigate]);
+
+  const guidedDealChecklist = useMemo(() => {
+    switch (guidedDealState) {
+      case 'CONTRACT_SIGNED':
+        return [
+          'Read the brief below once before you start shooting.',
+          'Make the content in the agreed format and timeline.',
+          'Come back here when your Instagram post is ready.',
+        ];
+      case 'CONTENT_IN_PROGRESS':
+        return [
+          'Open the deal summary below and match the brief.',
+          'Publish your Instagram post or story.',
+          'Share the post link from this deal once it is live.',
+        ];
+      case 'REVISION_REQUESTED':
+        return [
+          'Check what the brand asked to change.',
+          'Update the post or create the revised version.',
+          'Share the updated link from this same deal.',
+        ];
+      case 'CONTENT_SUBMITTED':
+        return [
+          'Your post link is already shared.',
+          'Wait for the brand to approve or request changes.',
+          'You will be notified here when they respond.',
+        ];
+      case 'APPROVED':
+      case 'PAYMENT_PENDING':
+        return [
+          'Your content is approved.',
+          'Wait for the brand to send payment.',
+          'Confirm only after the money reaches your account.',
+        ];
+      case 'PAID':
+        return [
+          'Check that the money reached your bank or UPI account.',
+          'Open the payment screen.',
+          'Confirm payment received once it is actually there.',
+        ];
+      case 'COMPLETED':
+        return [
+          'Download your invoice for your records.',
+          'Copy your collab link and share it to get your next deal.',
+        ];
+      default:
+        return [];
+    }
+  }, [guidedDealState]);
+
+  const showContentSubmissionPanel = guidedDealState === 'CONTRACT_SIGNED'
+    || guidedDealState === 'CONTENT_IN_PROGRESS'
+    || guidedDealState === 'REVISION_REQUESTED'
+    || guidedDealState === 'CONTENT_SUBMITTED';
+
+  const existingContentSubmissionUrl = String((deal as any)?.content_submission_url || '').trim();
+
+  useEffect(() => {
+    setContentLinkInput(existingContentSubmissionUrl);
+  }, [existingContentSubmissionUrl]);
+
+  const handleSubmitContentLink = useCallback(async () => {
+    if (!deal?.id || !session?.access_token) {
+      toast.error('Please log in again to submit your content');
+      return;
+    }
+
+    const trimmedLink = contentLinkInput.trim();
+    if (!/^https?:\/\//i.test(trimmedLink)) {
+      toast.error('Paste a full Instagram post or reel link');
+      return;
+    }
+
+    try {
+      setIsSubmittingContentLink(true);
+      const response = await fetch(`${getApiBaseUrl()}/api/deals/${deal.id}/submit-content`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contentUrl: trimmedLink,
+          messageToBrand: contentNoteInput.trim() || null,
+          contentStatus: 'posted',
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.success) {
+        toast.error(data?.error || 'Could not submit your post link');
+        return;
+      }
+
+      toast.success(guidedDealState === 'REVISION_REQUESTED' ? 'Updated post link shared.' : 'Post link shared.');
+      await refreshAll();
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not submit your post link');
+    } finally {
+      setIsSubmittingContentLink(false);
+    }
+  }, [contentLinkInput, contentNoteInput, deal?.id, guidedDealState, refreshAll, session?.access_token]);
 
   // ALL HANDLERS MUST BE DEFINED BEFORE EARLY RETURNS
   // Handlers (must be useCallback and defined before early returns)
@@ -1535,10 +1949,10 @@ Best regards`;
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
           <p className="text-white/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
           <button type="button"
-            onClick={() => navigate('/creator-contracts')}
+            onClick={() => navigate('/creator-dashboard')}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
           >
-            Back to Deals
+            Back to Dashboard
           </button>
         </div>
       </div>
@@ -1566,7 +1980,162 @@ Best regards`;
       }
     >
       {/* Content */}
-      <div className="space-y-6 md:p-6 pb-24">
+      <div className="space-y-4 md:space-y-6 pb-32 md:pb-24 md:p-6">
+
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">What is happening now</p>
+              <h2 className="mt-2 text-2xl font-bold text-white">{guidedDealCard.title}</h2>
+              <p className="mt-2 text-sm text-white/70">{guidedDealCard.explanation}</p>
+            </div>
+
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/80">
+              <Clock className="h-3.5 w-3.5 text-blue-300" />
+              {getSimpleStatusLabel(guidedDealState)}
+            </div>
+
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-7">
+              {GUIDED_PROGRESS_STEPS.map((step, index) => {
+                const isComplete = index < guidedProgressIndex;
+                const isCurrent = index === guidedProgressIndex;
+                return (
+                  <div key={step} className="space-y-2">
+                    <div className={`h-2 rounded-full ${isComplete || isCurrent ? 'bg-emerald-400' : 'bg-white/10'}`} />
+                    <p className={`text-[10px] md:text-[11px] font-bold uppercase tracking-[0.12em] leading-tight ${isCurrent ? 'text-white' : isComplete ? 'text-emerald-300' : 'text-white/40'}`}>
+                      {step}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {guidedDealCard.actionLabel && guidedDealCard.action && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={guidedDealCard.action}
+                  className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 h-12 w-full md:w-auto md:h-auto text-base md:text-sm font-bold text-slate-950 transition hover:bg-emerald-400 active:scale-[0.98]"
+                >
+                  {guidedDealCard.actionLabel}
+                </button>
+              </div>
+            )}
+            {guidedDealCard.secondaryActionLabel && guidedDealCard.secondaryAction && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={guidedDealCard.secondaryAction}
+                  className="inline-flex items-center justify-center rounded-xl bg-white/10 border border-white/20 px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-white transition hover:bg-white/20 active:scale-[0.98]"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  {guidedDealCard.secondaryActionLabel}
+                </button>
+              </div>
+            )}
+
+            {guidedDealChecklist.length > 0 && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">Do this next</p>
+                <div className="mt-3 space-y-2">
+                  {guidedDealChecklist.map((item, index) => (
+                    <div key={item} className="flex items-start gap-3 text-sm text-white/80">
+                      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[11px] font-black text-emerald-300">
+                        {index + 1}
+                      </span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {showContentSubmissionPanel && (
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+            <div className="flex flex-col gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Share your content</p>
+                <h2 className="mt-2 text-xl font-bold text-white">
+                  {guidedDealState === 'REVISION_REQUESTED' ? 'Share the updated post link' : 'Share your Instagram post link'}
+                </h2>
+                <p className="mt-2 text-sm text-white/70">
+                  {guidedDealState === 'CONTENT_SUBMITTED'
+                    ? 'You already shared a link. Update it here only if you need to replace it.'
+                    : guidedDealState === 'REVISION_REQUESTED'
+                      ? 'The brand asked for changes. Paste the revised reel, post, or story link here.'
+                      : 'Once your content is live, paste the reel, post, or story link here for brand review.'}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="deal-content-link" className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
+                  Instagram post link
+                </label>
+                <input
+                  id="deal-content-link"
+                  type="url"
+                  value={contentLinkInput}
+                  onChange={(e) => setContentLinkInput(e.target.value)}
+                  placeholder="https://instagram.com/reel/..."
+                  className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 focus:border-emerald-400/50 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="deal-content-note" className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
+                  Note to brand (optional)
+                </label>
+                <textarea
+                  id="deal-content-note"
+                  value={contentNoteInput}
+                  onChange={(e) => setContentNoteInput(e.target.value)}
+                  placeholder="Added the final reel here. Let me know if you need anything else."
+                  rows={3}
+                  className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-emerald-400/50 focus:outline-none resize-none"
+                />
+              </div>
+
+              {existingContentSubmissionUrl && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-white/50">Current shared link</p>
+                  <a
+                    href={existingContentSubmissionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-2 break-all text-sm text-emerald-300 hover:text-emerald-200"
+                  >
+                    <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                    {existingContentSubmissionUrl}
+                  </a>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-white/55">
+                  {guidedDealState === 'REVISION_REQUESTED'
+                    ? 'Replacing the link here lets the brand review the revised version.'
+                    : 'This sends the link to the brand and marks content as shared for review.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSubmitContentLink}
+                  disabled={isSubmittingContentLink}
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-500 px-5 text-sm font-bold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
+                >
+                  {isSubmittingContentLink
+                    ? 'Submitting...'
+                    : guidedDealState === 'REVISION_REQUESTED'
+                      ? 'Share updated link'
+                      : existingContentSubmissionUrl
+                        ? 'Update shared link'
+                        : 'Share post link'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Contract Generated Banner */}
         {(deal as any)?.contract_status === 'DraftGenerated' && deal?.contract_file_url && (
@@ -1581,13 +2150,13 @@ Best regards`;
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-white mb-1">
-                  Contract Generated 🎉
+                  Deal confirmed 🎉
                 </h3>
                 <p className="text-white/80 text-sm mb-2">
-                  We've prepared a protected agreement using the brand's submitted collaboration details.
+                  We prepared your agreement using the deal details shared by the brand.
                 </p>
                 <p className="text-white/60 text-xs mb-4">
-                  You can review, sign or request updates anytime.
+                  Review it now so you can sign and continue.
                 </p>
                 <button type="button"
                   onClick={handlePreviewContract}
@@ -1600,98 +2169,63 @@ Best regards`;
           </motion.div>
         )}
 
-        {/* Status Card - Replaces Header Section */}
-        {(() => {
-          const statusLower = deal?.status?.toLowerCase() || '';
-          const isContractReady = statusLower === 'contract_ready' ||
-            statusLower.includes('contract_ready') ||
-            brandResponseStatus === 'accepted_verified' ||
-            (statusLower === 'drafting' && !!contractDocxUrl) ||
-            (statusLower.includes('product shipment') && !!contractDocxUrl) ||
-            (statusLower.includes('awaiting shipment') && !!contractDocxUrl) ||
-            (statusLower.includes('in transit') && !!contractDocxUrl) ||
-            (statusLower.includes('product received') && !!contractDocxUrl);
-          const isSigned = statusLower === 'signed_by_brand' || statusLower.includes('signed_by_brand') ||
-            dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' ||
-            contractStatus === 'Signed';
-          const hasContract = !!contractDocxUrl;
-          const signedAtDate = signedAt || signedContractUploadedAt || (deal as any)?.brand_response_at;
-
-          // Consolidated Status Card logic covers: Contract Ready, Creator Signed (Waiting for Brand), and Fully Signed
-          const showContractCard = (isContractReady && hasContract) || (isSigned && isCreatorSigned) || ((isCreatorSigned || signedContractUrl) && hasContract);
-
-          if (showContractCard) {
-            return (
-              <DealStatusCard
-                deal={deal}
-                isContractReady={isContractReady}
-                hasContract={hasContract}
-                isSigned={isSigned}
-                isCreatorSigned={isCreatorSigned}
-                isBrandSigned={isBrandSigned}
-                bothSigned={bothSigned}
-                signedContractUrl={signedContractUrl}
-                contractDocxUrl={contractDocxUrl}
-                signedAtDate={signedAtDate}
-                dealAmount={dealAmount}
-                onSignCreator={() => {
-                  triggerHaptic(HapticPatterns.medium);
-                  setShowCreatorSigningModal(true);
-                }}
-                onDownloadContract={handleDownloadContract}
-                brandReplyLink={brandReplyLink}
-                generateBrandReplyLink={generateBrandReplyLink}
-                copyToClipboard={copyToClipboard}
-                onGenerateInvoice={() => setShowInvoiceGenerator(true)}
-              />
-            );
-          }
-          else {
-            // Default status card for other states
-            return (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-2xl font-bold flex-shrink-0">
-                    {deal.brand_name.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-xl font-bold mb-2 leading-tight">{dealTitle}</h1>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {contractStatus || deal.status || 'Active'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Deal Value */}
-                <div className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors">
-                  <div className="text-sm text-white/60 mb-1 flex items-center gap-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-green-400" />
-                    Deal Value
-                  </div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 text-transparent bg-clip-text">
-                    {(deal as any)?.deal_type === 'barter' || dealAmount === 0
-                      ? 'Barter Deal'
-                      : `₹${Math.round(dealAmount).toLocaleString('en-IN')}`}
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-white/40">Secure Settlement Asset</span>
-                  </div>
-                </div>
+        <div id="deal-brief-section" className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+          <div className="flex items-start gap-3 md:gap-4 mb-4">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl md:text-2xl font-bold flex-shrink-0">
+              {deal.brand_name.substring(0, 2).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg md:text-xl font-bold mb-2 leading-tight">{dealTitle}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-blue-500/20 text-blue-400 flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" />
+                  {getSimpleStatusLabel(guidedDealState)}
+                </span>
+                {(guidedDealState === 'PAYMENT_PENDING' || guidedDealState === 'PAID') && (
+                  <span className="px-3 py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-emerald-500/20 text-emerald-400 flex items-center gap-1.5">
+                    💰 Payment
+                  </span>
+                )}
               </div>
-            );
-          }
-        })()}
+            </div>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors">
+            <div className="text-sm text-white/60 mb-1 flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+              Deal Value
+            </div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 text-transparent bg-clip-text">
+              {(deal as any)?.deal_type === 'barter' || dealAmount === 0
+                ? 'Free products as payment'
+                : `₹${Math.round(dealAmount).toLocaleString('en-IN')}`}
+            </div>
+            {guidedDealState === 'PAYMENT_PENDING' && deal.payment_expected_date && (
+              <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm text-emerald-300">
+                  Payment expected{' '}
+                  <span className="font-semibold">
+                    {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Deal Progress Timeline & History */}
+        <div>
+          <div className="mb-3">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-white/40">Timeline</p>
+            <h2 className="mt-1 text-lg font-semibold text-white">Deal progress and activity</h2>
+          </div>
         <DealProgressTracker deal={deal} actionLogs={actionLogEntries} />
+        </div>
 
         {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) AND no contract generated yet */}
         {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && !(deal as any)?.contract_file_url && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+          <div id="brand-response-section" className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             {(() => {
               // Double-check that deal exists and has an ID
               if (!deal || !deal.id) {
@@ -1771,9 +2305,9 @@ Best regards`;
                   }
 
                   // Reminder message template
-                  const reminderMessage = `Hi, just following up on the contract revisions sent earlier.
+                  const reminderMessage = `Hi, just following up on the collaboration content I shared.
 
-Please review and confirm your decision here:
+Please review and let me know your feedback:
 
 ${link}`;
 
@@ -2194,7 +2728,7 @@ ${link}`;
                           </div>
 
                           <p className="text-xs text-white/50 text-center mt-3">
-                            This reply does not legally bind you until approved.
+                            This message is not final until the brand confirms.
                           </p>
                         </div>
                       );
@@ -2209,7 +2743,7 @@ ${link}`;
                         "bg-yellow-500/20 border-yellow-500/30"
                       )}>
                         <span className="text-sm font-semibold text-yellow-400">
-                          ⏳ Awaiting OTP Verification
+                          ⏳ Waiting for OTP verification
                         </span>
                       </div>
                     </div>
@@ -2251,7 +2785,7 @@ ${link}`;
             switch (normalizedStatus) {
               case 'sent':
               case 'pending':
-                return '⏳ Awaiting brand response';
+                return '⏳ Waiting for brand reply';
               case 'accepted_verified':
                 return '✅ Brand Identity Verified';
               case 'accepted':
@@ -2271,10 +2805,10 @@ ${link}`;
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 border-l-4 border-l-blue-500">
               <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-white/90">
                 <Bell className="w-5 h-5 text-blue-400" />
-                Requested Contract Clarifications
+                Agreement notes sent to brand
               </h2>
               <p className="text-sm text-white/60 mb-4">
-                These points have been shared with the brand for alignment and mutual transparency.
+                These points were shared with the brand so everyone is clear.
               </p>
 
               {/* Clarifications List */}
@@ -2321,7 +2855,7 @@ ${link}`;
                   </h2>
                   <p className="text-sm text-white/70 mb-4">
                     {bothSigned
-                      ? 'This agreement has been legally executed. CreatorArmour provides verification and audit records.'
+                      ? 'This deal is signed by both sides. You can download the final agreement here.'
                       : !isBrandSigned && !isCreatorSigned
                         ? 'This contract has been generated based on confirmed details. Both parties need to sign to finalize the deal.'
                         : !isBrandSigned
@@ -2577,7 +3111,7 @@ ${link}`;
                                   item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
                                     'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                                   }`}>
-                                  {item.status === 'completed' ? 'Completed' :
+                                  {item.status === 'completed' ? 'Done' :
                                     item.status === 'in_progress' ? 'In Progress' :
                                       'Pending'}
                                 </span>
@@ -2607,7 +3141,7 @@ ${link}`;
                         <Lock className="w-4 h-4 text-blue-400" />
                         Audit Trail & Verification
                       </h3>
-                      <p className="text-xs text-white/50 mt-1">Immutable record of all legal actions.</p>
+                      <p className="text-xs text-white/50 mt-1">Full history of what happened in this deal.</p>
                     </div>
                     {showAuditTrail ? (
                       <ChevronUp className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
@@ -2618,10 +3152,10 @@ ${link}`;
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <p className="text-sm text-white/70 mb-6 mt-4 pb-4 border-b border-white/5">
-                    A comprehensive timeline of system events, OTP verifications, and digital signatures for legal compliance.
+                    A full timeline of the important actions taken by you and the brand.
                   </p>
                   {actionLogEntries.length > 0 ? (
-                    <Suspense fallback={<div className="text-white/60 p-4">Syncing audit logs...</div>}>
+                    <Suspense fallback={<div className="text-white/60 p-4">Loading deal timeline...</div>}>
                       <ActionLog entries={actionLogEntries.filter(entry =>
                         entry.action?.toLowerCase().includes('signed') ||
                         entry.action?.toLowerCase().includes('verified') ||
@@ -3069,7 +3603,7 @@ ${link}`;
                   className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-500/20 file:text-blue-200 hover:file:bg-blue-500/30"
                 />
                 <p className="text-xs text-white/50 mt-1">
-                  PDF only. This helps with records and audits.
+                  PDF only. This helps keep your signed agreement clear and easy to save.
                 </p>
               </div>
 
@@ -3190,8 +3724,14 @@ ${link}`;
                         </div>
                       )}
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Deal Type</div>
-                        <div className="text-white font-medium capitalize">{brandSubmissionDetails.dealType || 'paid'}</div>
+                        <div className="text-sm text-white/60 mb-1">Deal type</div>
+                        <div className="text-white font-medium capitalize">
+                          {brandSubmissionDetails.dealType === 'barter'
+                            ? 'Free products as payment'
+                            : brandSubmissionDetails.dealType === 'hybrid'
+                              ? 'Paid + Product'
+                              : 'Paid'}
+                        </div>
                       </div>
                       <div>
                         <div className="text-sm text-white/60 mb-1">Deal Value</div>
@@ -3199,7 +3739,7 @@ ${link}`;
                           {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
                             ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
                             : brandSubmissionDetails.dealType === 'barter'
-                              ? 'Barter Deal'
+                              ? 'Free products as payment'
                               : 'Not specified'}
                         </div>
                       </div>
@@ -3365,12 +3905,12 @@ ${link}`;
                 </div>
               )}
 
-              {/* Barter Details Card */}
+              {/* Free products details */}
               {brandSubmissionDetails.dealType === 'barter' && (
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🎁</span>
-                    <h3 className="font-semibold text-lg">Barter Details</h3>
+                    <h3 className="font-semibold text-lg">Free products details</h3>
                   </div>
                   <div className="space-y-3">
                     {brandSubmissionDetails.productDescription && (
@@ -3381,25 +3921,25 @@ ${link}`;
                     )}
                     {brandSubmissionDetails.barterValue && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Barter Value</div>
+                        <div className="text-sm text-white/60 mb-1">Approx value</div>
                         <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterApproximateValue && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Approximate Value</div>
+                        <div className="text-sm text-white/60 mb-1">Approx value</div>
                         <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterShippingResponsibility && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Shipping Responsibility</div>
+                        <div className="text-sm text-white/60 mb-1">Who will ship?</div>
                         <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Replacement Allowed</div>
+                        <div className="text-sm text-white/60 mb-1">Replacement possible?</div>
                         <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
                       </div>
                     )}
@@ -3407,12 +3947,12 @@ ${link}`;
                 </div>
               )}
 
-              {/* Barter Product Shipping – Deal Timeline (barter only) */}
+              {/* Product shipping (free products deals only) */}
               {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <Package className="w-5 h-5 text-amber-400" />
-                    <h3 className="font-semibold text-lg">Product Shipping</h3>
+                    <h3 className="font-semibold text-lg">Product delivery</h3>
                   </div>
                   {(() => {
                     const shippingStatus = (deal as any)?.shipping_status || 'pending';
@@ -3444,13 +3984,13 @@ ${link}`;
                                 <AlertCircle className="w-4 h-4" />
                                 Report issue (e.g. brand has not shipped)
                               </button>
-                              <a
-                                href="/#/creator-contracts"
+                              <button
+                                onClick={() => navigate('/creator-dashboard')}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
                               >
                                 <Flag className="w-4 h-4" />
                                 Legal support
-                              </a>
+                              </button>
                             </div>
                           )}
                         </div>
@@ -3847,7 +4387,7 @@ ${link}`;
 
                       toast.success('Deal deleted successfully');
                       setShowDeleteConfirm(false);
-                      navigate('/creator-contracts');
+                      navigate('/creator-dashboard');
                     } catch (error: any) {
                       console.error('[DealDetailPage] Delete error:', error);
                       const errorMessage = error?.message || error?.error || 'Failed to delete deal';
@@ -3990,14 +4530,9 @@ ${link}`;
 // Main component with DealProvider wrapper
 export default function DealDetailPage() {
   const { dealId } = useParams<{ dealId: string }>();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (dealId) {
-      console.log('[DealDetailPage] Redirecting to new dashboard for deal:', dealId);
-      navigate(`/creator-dashboard?tab=collabs&subtab=active&dealId=${dealId}`, { replace: true });
-    }
-  }, [dealId, navigate]);
-
-  return null;
+  return (
+    <DealProvider dealId={dealId}>
+      <DealDetailPageContent />
+    </DealProvider>
+  );
 }

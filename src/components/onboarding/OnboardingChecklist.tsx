@@ -6,6 +6,7 @@ import { CheckCircle, Circle, Briefcase, FileText, MessageCircle, Shield, Trendi
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChecklistItem {
   id: string;
@@ -23,6 +24,8 @@ const OnboardingChecklist = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(true);
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
+  const [hasConversations, setHasConversations] = useState(false);
+  const [hasProtectionReport, setHasProtectionReport] = useState(false);
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -49,7 +52,7 @@ const OnboardingChecklist = () => {
       description: 'Connect with your legal advisor',
       icon: MessageCircle,
       route: '/messages',
-      checkFn: () => false, // TODO: Check if user has sent a message
+      checkFn: () => hasConversations,
       color: 'text-green-400'
     },
     {
@@ -58,7 +61,7 @@ const OnboardingChecklist = () => {
       description: 'Register your original content',
       icon: Shield,
       route: '/creator-content-protection',
-      checkFn: () => false, // TODO: Check if user has protected content
+      checkFn: () => hasProtectionReport,
       color: 'text-orange-400'
     },
     {
@@ -72,6 +75,35 @@ const OnboardingChecklist = () => {
     }
   ];
 
+  // Fetch conversation and protection report status for checklist
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const fetchStatus = async () => {
+      try {
+        // Check if user has any conversations
+        const { data: convData } = await supabase
+          .from('conversation_participants')
+          .select('id')
+          .eq('user_id', profile.id)
+          .limit(1);
+        setHasConversations(!!(convData && convData.length > 0));
+
+        // Check if user has any protection reports
+        const { data: protData } = await supabase
+          .from('protection_reports')
+          .select('id')
+          .eq('user_id', profile.id)
+          .limit(1);
+        setHasProtectionReport(!!(protData && protData.length > 0));
+      } catch (err) {
+        console.error('[OnboardingChecklist] Error fetching status:', err);
+      }
+    };
+
+    fetchStatus();
+  }, [profile?.id]);
+
   useEffect(() => {
     const completed = new Set<string>();
     checklistItems.forEach(item => {
@@ -80,7 +112,7 @@ const OnboardingChecklist = () => {
       }
     });
     setCompletedItems(completed);
-  }, [brandDeals]);
+  }, [brandDeals, hasConversations, hasProtectionReport]);
 
   const completionPercentage = (completedItems.size / checklistItems.length) * 100;
   const allCompleted = completedItems.size === checklistItems.length;

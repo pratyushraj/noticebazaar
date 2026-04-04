@@ -50,10 +50,12 @@ import gstRouter from './routes/gst.js';
 import aiRouter from './routes/ai.js';
 import creatorSignRouter from './routes/creatorSign.js';
 import otpRouter from './routes/otp.js';
+import profileRouter from './routes/profile.js';
 import dealsRouter from './routes/deals.js';
 import complaintsRouter from './routes/complaints.js';
 import influencersRouter from './routes/influencers.js';
 import collabRequestsRouter from './routes/collabRequests.js';
+import remindersRouter from './routes/reminders.js';
 import collabAnalyticsRouter from './routes/collabAnalytics.js';
 import creatorsRouter from './routes/creators.js';
 import pushNotificationsRouter from './routes/pushNotifications.js';
@@ -397,6 +399,7 @@ app.use('/api/conversations', authMiddleware, rateLimitMiddleware, conversations
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, messagesRouter);
 app.use('/api/conversations', authMiddleware, rateLimitMiddleware, attachmentsRouter);
 app.use('/api/payments', authMiddleware, rateLimitMiddleware, paymentsRouter);
+app.use('/api/profile', authMiddleware, rateLimitMiddleware, profileRouter);
 // Internal: allow Vercel api server to trigger collab push via Render's VAPID keys (no user auth)
 // MUST be registered before the auth-protected /api/push router
 app.post('/api/push/notify-collab', async (req: express.Request, res: express.Response) => {
@@ -643,6 +646,7 @@ app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
 app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
 app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
+app.use('/api/reminders', remindersRouter);
 app.use('/api/brand-dashboard', authMiddleware, rateLimitMiddleware, brandDashboardRouter);
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth

@@ -1,0 +1,21 @@
+import { lazy } from "react";
+import { Route, Navigate } from "react-router-dom";
+import ProtectedLayout from "@/components/ProtectedLayout";
+import { LazyRoute } from "./routeElements";
+
+const BrandDashboard = lazy(() => import("@/pages/BrandDashboard"));
+const BrandDealDetailPage = lazy(() => import("@/pages/BrandDealDetailPage"));
+const BrandNewDealPage = lazy(() => import("@/pages/BrandNewDealPage"));
+
+export const BrandRoutes = () => (
+  <>
+    <Route path="/brand-dashboard" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandDashboard /></ProtectedLayout></LazyRoute>} />
+    <Route path="/brand-deal/:dealId" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandDealDetailPage /></ProtectedLayout></LazyRoute>} />
+    <Route path="/brand-new-deal" element={<LazyRoute><ProtectedLayout allowedRoles={["brand"]}><BrandNewDealPage /></ProtectedLayout></LazyRoute>} />
+    <Route path="/brand-settings" element={<Navigate to="/brand-dashboard" replace />} />
+    <Route path="/upgrade" element={<Navigate to="/brand-dashboard" replace />} />
+    <Route path="/messages" element={<Navigate to="/brand-dashboard" replace />} />
+    <Route path="/messages/:conversationId" element={<Navigate to="/brand-dashboard" replace />} />
+    <Route path="/contract-upload" element={<Navigate to="/brand-dashboard" replace />} />
+  </>
+);

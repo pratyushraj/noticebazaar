@@ -5,19 +5,18 @@ import { cn } from '@/lib/utils';
 import { iconSizes, animations, spotlight, shadows, radius } from '@/lib/design-system';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { motion } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-type BrandBottomNavProps = {
-  activeTab: 'pipeline' | 'creators' | 'analytics';
-  onTabChange: (tab: 'pipeline' | 'creators' | 'analytics') => void;
-  isDark?: boolean;
-};
+const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const BrandBottomNav = ({ activeTab, onTabChange, isDark = true }: BrandBottomNavProps) => {
   const navItems = [
-    { id: 'pipeline' as const, label: 'Offers', icon: LayoutDashboard },
-    { id: 'creators' as const, label: 'Collaborations', icon: Briefcase },
-    { id: 'analytics' as const, label: 'Your Stats', icon: BarChart3 },
+    { id: 'pipeline' as const, label: 'Offers', icon: LayoutDashboard, path: '/brand-dashboard' },
+    { id: 'creators' as const, label: 'Collabs', icon: Briefcase, path: '/brand-dashboard' },
   ];
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
     <motion.div
@@ -25,7 +24,7 @@ const BrandBottomNav = ({ activeTab, onTabChange, isDark = true }: BrandBottomNa
       className={cn(
         "fixed bottom-0 left-0 right-0 xl:hidden",
         "backdrop-blur-2xl",
-        isDark ? "bg-white/5 border-t border-white/15" : "bg-white/85 border-t border-slate-200",
+        isDark ? "bg-[#0D0F1A]/90 border-t border-white/10" : "bg-white/85 border-t border-slate-200",
         shadows.depth,
         radius.xl,
         "progressive-blur transition-transform duration-300 ease-in-out",
@@ -60,29 +59,29 @@ const BrandBottomNav = ({ activeTab, onTabChange, isDark = true }: BrandBottomNa
       >
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = activeTab === item.id;
+          const active = isActive(item.path);
 
           return (
             <motion.button
               key={item.id}
               type="button"
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-2xl",
+                "flex flex-col items-center gap-1 px-4 py-2 rounded-2xl min-w-[64px]",
                 "transition-all duration-200 ease-in-out",
                 active
-                  ? (isDark ? "bg-white/10 text-white" : "bg-slate-900 text-white")
+                  ? (isDark ? "bg-purple-500/20 text-purple-400" : "bg-slate-900 text-white")
                   : (isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100")
               )}
               whileTap={{ scale: 0.96 }}
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
-                onTabChange(item.id);
+                navigate(item.path);
               }}
             >
-              <Icon className={cn(iconSizes.sm, active ? (isDark ? "text-white" : "text-white") : (isDark ? "text-white/60" : "text-slate-400"))} />
+              <Icon className={cn(iconSizes.sm, active ? (isDark ? "text-purple-400" : "text-white") : (isDark ? "text-white/60" : "text-slate-400"))} />
               <span className={cn(
-                "text-[10px] font-black uppercase tracking-widest",
-                active ? (isDark ? "text-white" : "text-white") : (isDark ? "text-white/50" : "text-slate-500")
+                "text-[10px] font-black uppercase tracking-wider",
+                active ? (isDark ? "text-purple-400" : "text-white") : (isDark ? "text-white/50" : "text-slate-500")
               )}>
                 {item.label}
               </span>

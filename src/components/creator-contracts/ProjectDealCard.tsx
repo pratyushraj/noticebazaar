@@ -55,12 +55,18 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   // Calculate progress percentage based on project stage
   const getProgressPercentage = (stage: DealStage): number => {
     switch (stage) {
-      case 'draft': return 10;
-      case 'awaiting_approval': return 25;
-      case 'in_progress': return 50;
-      case 'deliverables_due': return 75;
-      case 'review_pending': return 90;
+      case 'details_submitted': return 20;
+      case 'contract_ready': return 40;
+      case 'brand_signed': return 60;
+      case 'fully_executed': return 80;
+      case 'live_deal': return 85;
+      case 'content_making': return 85;
+      case 'content_delivered': return 95;
+      case 'awaiting_product_shipment': return 50;
+      case 'negotiation': return 30;
+      case 'needs_changes': return 40;
       case 'completed': return 100;
+      case 'declined': return 0;
       default: return 0;
     }
   };
@@ -82,18 +88,23 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   // Get next milestone (project-focused)
   const getNextMilestone = () => {
     switch (stage) {
-      case 'draft':
-        return 'Submit for approval';
-      case 'awaiting_approval':
-        return 'Awaiting client approval';
-      case 'in_progress':
+      case 'details_submitted':
+      case 'negotiation':
+        return 'Review deal terms';
+      case 'contract_ready':
+        return 'Awaiting brand signature';
+      case 'brand_signed':
+        return 'Add your signature';
+      case 'awaiting_product_shipment':
+        return 'Wait for product shipment';
+      case 'fully_executed':
+      case 'live_deal':
+      case 'content_making':
         if (deliverablesArray.length > 0) {
           return `Next: ${deliverablesArray[0]}`;
         }
         return 'Continue content creation';
-      case 'deliverables_due':
-        return 'Submit deliverables';
-      case 'review_pending':
+      case 'content_delivered':
         return 'Awaiting brand review';
       case 'completed':
         return 'Project completed';
@@ -110,10 +121,10 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
       if (stage === 'completed') {
         return { type: item, status: 'delivered' as const };
       }
-      if (stage === 'deliverables_due' && index === 0) {
+      if (stage === 'content_delivered' && index === 0) {
         return { type: item, status: 'overdue' as const };
       }
-      if (stage === 'in_progress' && index === 0) {
+      if ((stage === 'live_deal' || stage === 'content_making') && index === 0) {
         return { type: item, status: 'in_progress' as const };
       }
       return { type: item, status: 'pending' as const };
@@ -125,29 +136,28 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
   // Get primary action buttons based on stage
   const getPrimaryActions = () => {
     switch (stage) {
-      case 'draft':
+      case 'details_submitted':
+      case 'negotiation':
         return [
           { label: 'Edit Deal', onClick: () => onEdit(deal), icon: FileText },
           { label: 'View Contract', onClick: () => onViewContract(deal), icon: FileText },
         ];
-      case 'awaiting_approval':
+      case 'contract_ready':
+      case 'brand_signed':
         return [
           { label: 'View Contract', onClick: () => onViewContract(deal), icon: FileText },
           { label: 'Contact Brand', onClick: () => onContactBrand(deal), icon: MessageSquare },
         ];
-      case 'in_progress':
+      case 'fully_executed':
+      case 'live_deal':
+      case 'content_making':
         return [
           { label: 'Upload Content', onClick: () => onUploadContent(deal), icon: Upload },
           { label: 'Manage Deliverables', onClick: () => onManageDeliverables(deal), icon: Package },
         ];
-      case 'deliverables_due':
+      case 'content_delivered':
         return [
           { label: 'Submit Deliverables', onClick: () => onUploadContent(deal), icon: Upload },
-          { label: 'Contact Brand', onClick: () => onContactBrand(deal), icon: MessageSquare },
-        ];
-      case 'review_pending':
-        return [
-          { label: 'View Contract', onClick: () => onViewContract(deal), icon: FileText },
           { label: 'Contact Brand', onClick: () => onContactBrand(deal), icon: MessageSquare },
         ];
       case 'completed':
@@ -175,7 +185,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
       <Card
         className={cn(
           "bg-white/[0.08] backdrop-blur-lg border-l-4 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 transition-all cursor-pointer group hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5",
-          stage === 'deliverables_due' && 'border-orange-500/30 bg-orange-500/10',
+          stage === 'content_delivered' && 'border-orange-500/30 bg-orange-500/10',
           categoryStyle.borderColor
         )}
         onClick={() => onView(deal)}
@@ -257,10 +267,10 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
               className={cn(
                 "h-full transition-all",
                 stage === 'completed' ? 'bg-green-500' :
-                stage === 'deliverables_due' ? 'bg-orange-500' :
-                stage === 'review_pending' ? 'bg-purple-500' :
-                stage === 'in_progress' ? 'bg-blue-500' :
-                stage === 'awaiting_approval' ? 'bg-yellow-500' :
+                stage === 'content_delivered' ? 'bg-orange-500' :
+                stage === 'live_deal' || stage === 'content_making' ? 'bg-blue-500' :
+                stage === 'brand_signed' || stage === 'contract_ready' ? 'bg-yellow-500' :
+                stage === 'fully_executed' ? 'bg-purple-500' :
                 'bg-gray-400'
               )}
             />
@@ -310,4 +320,3 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
 };
 
 export default ProjectDealCard;
-

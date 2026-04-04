@@ -141,56 +141,8 @@ const CollabRequestsSection = ({ copyCollabLink, usernameForLink: usernameFromPa
     }
   };
 
-  const handleAccept = async (request: CollabRequest) => {
-    try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        toast.error('Please log in to accept requests');
-        return;
-      }
-
-      const response = await fetch(
-        `${getApiBaseUrl()}/api/collab-requests/${request.id}/accept`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${session.session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      const data = await parseApiResponse(response);
-      if (data.success) {
-        trackEvent('creator_accepted_request', {
-          deal_id: data.deal?.id,
-          creator_id: profile?.id,
-          collab_type: selectedRequest?.collab_type || 'paid',
-        });
-        if (data.needs_delivery_details) {
-          toast.success('Share delivery details to proceed');
-          fetchRequests();
-          setAction(null);
-          setSelectedRequest(null);
-          if (data.deal?.id) navigate(`/creator-contracts/${data.deal.id}/delivery-details`);
-        } else {
-          if (data.contract) {
-            toast.success('Contract generated and ready for signing');
-          } else {
-            toast.success('Collaboration request accepted! Deal created successfully.');
-          }
-          fetchRequests();
-          setAction(null);
-          setSelectedRequest(null);
-          // Keep creators inside the Collabs flow; deal details are accessible from Active.
-          navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
-        }
-      } else {
-        toast.error(data.error || 'Failed to accept request');
-      }
-    } catch (error) {
-      toast.error('Failed to accept request. Please try again.');
-    }
+  const handleAccept = (request: CollabRequest) => {
+    navigate(`/collab-requests/${request.id}/brief`, { state: { request } });
   };
 
   const handleCounter = async () => {

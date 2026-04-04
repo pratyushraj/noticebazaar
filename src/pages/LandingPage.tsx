@@ -1,18 +1,113 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X } from 'lucide-react';
+import { ArrowRight, ShieldCheck, CheckCircle2, Sparkles, Link as LinkIcon, ExternalLink, Instagram, Linkedin, Twitter, Menu, X, IndianRupee, FileText, BriefcaseBusiness, Clock3 } from 'lucide-react';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { cn } from '@/lib/utils';
 
-const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&fit=crop&auto=format&q=80";
-const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&fit=crop&auto=format&q=80";
-const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&fit=crop&auto=format&q=80";
-const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&fit=crop&auto=format&q=80";
-const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&fit=crop&auto=format&q=80";
+const AANYA_IMG = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&h=500&q=80";
+const PRIYA_IMG = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&h=500&q=80";
+const ARJUN_IMG = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&h=500&q=80";
+const NEHA_IMG = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&h=500&q=80";
+const ROHAN_IMG = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&h=500&q=80";
+
+const dashboardShowcase = [
+  {
+    eyebrow: 'Incoming Offers',
+    title: 'Know which brand is offering what',
+    description: 'Creators see live offer value, deliverables, and due dates instead of re-reading old chats.',
+    icon: BriefcaseBusiness,
+    accent: 'emerald',
+    body: (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-black text-slate-900">Nykaa Summer Drop</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">1 Reel + 3 stories • due in 4 days</p>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-emerald-700">Pending</span>
+          </div>
+          <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+            <span className="text-xs font-bold text-slate-500">Offer value</span>
+            <span className="text-lg font-black text-slate-900">₹18,000</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-slate-950 px-4 py-3 text-white">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Awaiting reply</p>
+            <p className="mt-2 text-2xl font-black">03</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Best-fit brand</p>
+            <p className="mt-2 text-sm font-black text-slate-900">Beauty / D2C</p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    eyebrow: 'Contract Clarity',
+    title: 'See risky deal terms before accepting',
+    description: 'Important clauses are highlighted so a creator who has only used DMs can still understand what matters.',
+    icon: FileText,
+    accent: 'blue',
+    body: (
+      <div className="space-y-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-black text-slate-900">Campaign agreement scan</p>
+            <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-amber-700">2 flags</span>
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">
+              Unlimited usage rights detected
+            </div>
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700">
+              No payment due date mentioned
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Suggested fix</p>
+          <p className="mt-2 text-sm font-bold text-slate-700">Add 50% advance, 30-day usage cap, and final payment within 7 days of posting.</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    eyebrow: 'Payout Tracking',
+    title: 'Track what is paid, late, or at risk',
+    description: 'The payout side should feel as visible as the storefront so creators know what to follow up on fast.',
+    icon: IndianRupee,
+    accent: 'teal',
+    body: (
+      <div className="space-y-3">
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 p-4 text-white shadow-lg shadow-emerald-500/20">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-100">This month</p>
+          <p className="mt-2 text-3xl font-black">₹42,500</p>
+          <p className="mt-1 text-sm font-medium text-emerald-50">2 paid deals, 1 overdue payout</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-black text-slate-900">Myntra festive edit</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">Final payment pending</p>
+            </div>
+            <span className="rounded-full bg-rose-50 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-rose-700">4 days late</span>
+          </div>
+          <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+            <span className="text-xs font-bold text-slate-500">Amount due</span>
+            <span className="text-lg font-black text-slate-900">₹12,000</span>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+];
 
 const LandingPage = () => {
   const { session, loading, profile } = useSession();
@@ -30,16 +125,16 @@ const LandingPage = () => {
   }, []);
 
   const canonicalUrl = 'https://creatorarmour.com/';
-  const seoTitle = 'Creator Armour - Get Paid Brand Deals Without DMs';
-  const seoDescription = 'Get a brand deal page where brands send you paid offers directly. No more lost DMs. Contracts, payments, and tracking — all in one place.';
+  const seoTitle = 'Creator Armour - Close Brand Deals Without Instagram DMs';
+  const seoDescription = 'Creator Armour gives you a professional collaboration page where brands send structured offers, contracts are generated automatically, and deals are tracked in your dashboard.';
   const seoKeywords = [
     'creator collab link',
     'brand deal management',
-    'brand deal management india',
+    'influencer collaboration platform',
     'creator marketplace india',
     'instagram creator brand deals',
     'creator portfolio for brands',
-    'brand deal page for instagram creators',
+    'structured brand offers for creators',
   ];
 
   useEffect(() => {
@@ -55,7 +150,35 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white sm:bg-[#FAFAFA] text-slate-900 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
-      <SEOHead title={seoTitle} description={seoDescription} keywords={seoKeywords} canonicalUrl={canonicalUrl} />
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        canonicalUrl={canonicalUrl}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'WebSite',
+              name: 'Creator Armour',
+              url: 'https://creatorarmour.com',
+              description: seoDescription,
+            },
+            {
+              '@type': 'SoftwareApplication',
+              name: 'Creator Armour',
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web',
+              description: seoDescription,
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'INR',
+              },
+            },
+          ],
+        }}
+      />
 
       {/* Modern Top Nav */}
       <nav className={cn(
@@ -94,9 +217,9 @@ const LandingPage = () => {
             <Link
               to="/signup?mode=creator"
               onClick={() => triggerHaptic(HapticPatterns.success)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-[14px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap max-w-[140px] sm:max-w-none truncate"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-[14px] sm:text-[15px] font-black shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:-translate-y-0.5 transition-all whitespace-nowrap min-h-[44px]"
             >
-              Get Your Brand Deal Page
+              Create Collab Link
             </Link>
             {/* Mobile menu button */}
             <button type="button"
@@ -132,18 +255,18 @@ const LandingPage = () => {
             <div className="flex-1 text-center lg:text-left pt-2 lg:pt-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-8 shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wide">Get Paid Deals Without DMs</span>
+                <span className="text-[13px] font-bold text-emerald-700 uppercase tracking-wide">The Operating System for Creators</span>
               </div>
 
               <h1 className="text-[42px] md:text-[68px] lg:text-[76px] font-black tracking-tight leading-[1.05] mb-6 text-slate-900 drop-shadow-sm">
-                Get Paid Brand Deals <br />
+                Close Brand Deals <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500 inline-block mt-2">
-                  Without <span className="whitespace-nowrap">Losing DMs</span>
+                  Without <span className="whitespace-nowrap">Instagram DMs</span>
                 </span>
               </h1>
 
               <p className="text-[17px] md:text-[20px] text-slate-600 font-medium mb-8 md:mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Share your deal page. Brands send you paid offers directly. Deals and payments — all protected.
+                Creator Armour gives creators a professional collaboration page where brands send structured offers, choose packages, and close deals without messy messages.
               </p>
 
 	              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
@@ -160,22 +283,6 @@ const LandingPage = () => {
                     I'm a Brand <ArrowRight className="w-5 h-5" />
                   </Link>
 	              </div>
-
-              {/* Social Proof Stats */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-3 mt-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    <img src={PRIYA_IMG} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" loading="lazy" />
-                    <img src={ARJUN_IMG} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" loading="lazy" />
-                    <img src={NEHA_IMG} alt="" className="w-7 h-7 rounded-full border-2 border-white object-cover" loading="lazy" />
-                  </div>
-                  <span className="text-[13px] font-bold text-slate-600">50+ creators</span>
-                </div>
-                <div className="w-px h-5 bg-slate-200" />
-                <span className="text-[13px] font-bold text-slate-600">120+ deals closed</span>
-                <div className="w-px h-5 bg-slate-200 hidden sm:block" />
-                <span className="text-[13px] font-bold text-emerald-600">₹8L+ earned by creators</span>
-              </div>
             </div>
 
             {/* Hero Mockup */}
@@ -200,6 +307,26 @@ const LandingPage = () => {
                 <div>
                   <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">New Offer Received</p>
                   <p className="text-base font-black text-slate-900">₹4,000 from Myntra</p>
+                </div>
+              </div>
+
+              <div className="hidden lg:flex absolute -left-8 bottom-10 z-30 rounded-3xl border border-slate-200 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur-sm items-center gap-4 animate-in fade-in slide-in-from-left-8 duration-1000 delay-500 hover:scale-105 transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Contract check</p>
+                  <p className="text-sm font-black text-slate-900">2 risky clauses flagged</p>
+                </div>
+              </div>
+
+              <div className="hidden xl:flex absolute -right-20 bottom-28 z-30 rounded-3xl border border-slate-200 bg-slate-950 px-4 py-3 text-white shadow-2xl items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-900 hover:scale-105 transition-transform">
+                <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center text-emerald-300">
+                  <Clock3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Payment follow-up</p>
+                  <p className="text-sm font-black text-white">₹12,000 overdue by 4 days</p>
                 </div>
               </div>
 
@@ -271,6 +398,51 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="px-4 sm:px-6 max-w-[1200px] mx-auto">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-[42px] font-black tracking-tight text-slate-900">
+              More than a collab page
+            </h2>
+            <p className="mt-4 text-lg text-slate-600 font-medium max-w-2xl mx-auto">
+              Show creators what happens after a brand clicks their link: offers arrive cleanly, contracts are easier to read, and payouts stay visible.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
+            {dashboardShowcase.map((panel) => {
+              const Icon = panel.icon;
+
+              return (
+                <div
+                  key={panel.title}
+                  className="rounded-[28px] border border-slate-200 bg-white p-6 md:p-7 shadow-sm hover:-translate-y-1 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className={cn(
+                      'w-11 h-11 rounded-2xl flex items-center justify-center',
+                      panel.accent === 'emerald' && 'bg-emerald-50 text-emerald-600',
+                      panel.accent === 'blue' && 'bg-blue-50 text-blue-600',
+                      panel.accent === 'teal' && 'bg-teal-50 text-teal-600',
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">{panel.eyebrow}</p>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-black tracking-tight text-slate-900 leading-tight">{panel.title}</h3>
+                    <p className="mt-3 text-sm font-medium leading-6 text-slate-600">{panel.description}</p>
+                  </div>
+
+                  <div className="rounded-[26px] border border-slate-200 bg-slate-50/80 p-4">
+                    {panel.body}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -349,7 +521,7 @@ const LandingPage = () => {
                   Add your link to your Instagram bio.
                 </h2>
                 <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-lg mx-auto lg:mx-0">
-                  Share your page link. Brands send you offers with budget, deliverables, and timeline — no more back-and-forth DMs.
+                  Stop losing deals in the noise. Let brands send structured collaboration offers directly through your personal Creator Armour page.
                 </p>
                 <div className="bg-white/5 border border-white/10 p-5 rounded-2xl inline-block mt-4 backdrop-blur-sm">
                   <p className="font-mono text-emerald-400 font-bold text-lg md:text-xl">creatorarmour.com/priyasharma</p>
@@ -480,7 +652,7 @@ const LandingPage = () => {
                 Turn your Instagram into a deal pipeline
               </h2>
               <p className="text-base md:text-xl font-medium text-emerald-50/90 mb-8 md:mb-10 leading-relaxed">
-                Share your deal page. Brands send you paid offers directly — no more lost DMs.
+                Stop negotiating in DMs. Create your collab link and receive structured brand offers.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
@@ -509,7 +681,7 @@ const LandingPage = () => {
                 <h3 className="text-[20px] font-black tracking-tight text-slate-900">Creator Armour</h3>
               </Link>
               <p className="mt-4 max-w-sm text-[15px] leading-relaxed font-medium text-slate-600">
-                Get paid brand deals without losing DMs.
+                Close brand deals without Instagram DMs.
               </p>
               <div className="mt-5 flex items-center gap-2">
                 <a href="https://instagram.com/creatorarmour" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-emerald-600 hover:border-emerald-200 inline-flex items-center justify-center transition-colors" aria-label="Creator Armour Instagram">
@@ -528,7 +700,7 @@ const LandingPage = () => {
               <div className="space-y-3">
                 <p className="text-sm font-black text-slate-900">Product</p>
                 <div className="space-y-2.5 text-sm font-medium text-slate-600">
-                  <Link to="/signup" className="block hover:text-emerald-700">Get Your Brand Deal Page</Link>
+                  <Link to="/signup" className="block hover:text-emerald-700">Create Collab Link</Link>
                   <Link to="/discover" className="block hover:text-emerald-700">Creator Marketplace</Link>
                   <Link to="/collab-requests" className="block hover:text-emerald-700">Brand Offers</Link>
                   <Link to="/plan/growth" className="block hover:text-emerald-700">Pricing</Link>
@@ -568,7 +740,7 @@ const LandingPage = () => {
             <details className="bg-white border border-slate-200 rounded-2xl px-4 py-3">
               <summary className="list-none cursor-pointer text-sm font-black text-slate-900 flex items-center justify-between">Product <span className="text-slate-400">▼</span></summary>
               <div className="pt-3 space-y-2 text-sm font-medium text-slate-600">
-                <Link to="/signup" className="block">Get Your Brand Deal Page</Link>
+                <Link to="/signup" className="block">Create Collab Link</Link>
                 <Link to="/discover" className="block">Creator Marketplace</Link>
                 <Link to="/collab-requests" className="block">Brand Offers</Link>
                 <Link to="/plan/growth" className="block">Pricing</Link>
@@ -605,7 +777,7 @@ const LandingPage = () => {
 
           <div className="mt-10 border-t border-slate-200 pt-6">
             <p className="text-sm font-medium text-slate-600 text-center">
-              <span className="font-semibold text-emerald-700">50+ creators</span> already using Creator Armour — <span className="font-semibold text-emerald-700">120+ deals</span> closed, <span className="font-semibold text-emerald-700">₹8L+ earned</span> by creators.
+              <span className="font-semibold text-emerald-700">50+ creators</span> already using Creator Armour to collaborate professionally with brands.
             </p>
           </div>
 
@@ -625,4 +797,3 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
-ndingPage;

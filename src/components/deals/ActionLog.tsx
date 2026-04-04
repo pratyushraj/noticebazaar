@@ -120,22 +120,7 @@ export const ActionLog: React.FC<ActionLogProps> = ({ entries }) => {
                 </div>
 
                 {entry.user && (
-                  <p className="text-xs text-purple-300 mb-2">by {entry.user}</p>
-                )}
-
-                {entry.metadata && Object.keys(entry.metadata).length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-white/10">
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(entry.metadata).map(([key, value]) => (
-                        <span
-                          key={key}
-                          className="text-xs px-2 py-1 bg-white/5 rounded-lg text-white/70"
-                        >
-                          {key}: {String(value)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  <p className="text-xs text-purple-300 mb-1">{entry.user}</p>
                 )}
               </div>
             </motion.div>
@@ -145,4 +130,3 @@ export const ActionLog: React.FC<ActionLogProps> = ({ entries }) => {
     </div>
   );
 };
-

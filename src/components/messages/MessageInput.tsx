@@ -45,7 +45,6 @@ export const MessageInput: React.FC<Props> = ({ onSend, isLoading = false, place
     <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-b from-transparent to-purple-900/70 backdrop-blur-xl px-3 py-2">
       <div className="flex items-center gap-2 bg-muted/20 border border-border/40 rounded-full px-3 py-2 shadow-sm transition-all duration-150">
         <button type="button"
-          type="button"
           className="p-2 rounded-full hover:bg-muted/40 transition-colors text-muted-foreground hover:text-foreground"
           onClick={() => {
             // TODO: Implement attachment functionality
@@ -66,7 +65,6 @@ export const MessageInput: React.FC<Props> = ({ onSend, isLoading = false, place
         />
 
         <button type="button"
-          type="button"
           onClick={handleSend}
           disabled={!value.trim() || isLoading}
           className={clsx(

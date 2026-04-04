@@ -510,12 +510,18 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
   // Calculate progress percentage
   const getProgressPercentage = (stage: DealStage): number => {
     switch (stage) {
-      case 'draft': return 10;
-      case 'active': return 40;
-      case 'payment_pending': return 70;
-      case 'paid': return 90;
+      case 'details_submitted': return 20;
+      case 'contract_ready': return 40;
+      case 'brand_signed': return 60;
+      case 'fully_executed': return 80;
+      case 'live_deal': return 85;
+      case 'content_making': return 85;
+      case 'content_delivered': return 95;
+      case 'awaiting_product_shipment': return 50;
+      case 'negotiation': return 30;
+      case 'needs_changes': return 40;
       case 'completed': return 100;
-      case 'overdue': return 70;
+      case 'declined': return 0;
       default: return 0;
     }
   };
@@ -541,7 +547,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
     // Mock deliverable statuses - in real app, this would come from the deal data
     return deliverablesArray.map((item, index) => {
       // Simple logic: first item delivered, others pending/overdue based on stage
-      if (index === 0 && (stage === 'paid' || stage === 'completed')) {
+      if (index === 0 && (stage === 'content_delivered' || stage === 'completed')) {
         return { type: item, status: 'delivered', date: deal.payment_received_date || deal.due_date };
       }
       if (isOverdue && index > 0) {
@@ -555,30 +561,25 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
 
   // Get status message
   const getStatusMessage = () => {
-    if (stage === 'overdue' && daysOverdue) {
+    if (isOverdue && daysOverdue) {
       return `Payment Pending (${daysOverdue} days overdue)`;
     }
-    if (stage === 'payment_pending') {
-      return 'Payment Pending';
-    }
-    if (stage === 'active') {
-      return 'Content Creation Phase';
-    }
-    if (stage === 'completed') {
-      return 'Completed';
-    }
-    if (stage === 'paid') {
-      return 'Payment Received';
-    }
-    return 'Draft';
+    if (stage === 'content_delivered') return 'Payment Pending';
+    if (stage === 'live_deal' || stage === 'content_making') return 'Content Creation Phase';
+    if (stage === 'completed') return 'Completed';
+    if (deal.payment_received_date) return 'Payment Received';
+    if (stage === 'fully_executed') return 'Contract Signed';
+    if (stage === 'brand_signed') return 'Awaiting Creator Signature';
+    if (stage === 'contract_ready') return 'Awaiting Brand Signature';
+    return 'Deal In Progress';
   };
 
   // Get next milestone
   const getNextMilestone = () => {
-    if (stage === 'overdue' || stage === 'payment_pending') {
+    if (isOverdue || stage === 'content_delivered') {
       return `Payment Due: ${new Date(deal.payment_expected_date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}`;
     }
-    if (stage === 'active' && formattedDeliverables.length > 0) {
+    if ((stage === 'live_deal' || stage === 'content_making' || stage === 'fully_executed') && formattedDeliverables.length > 0) {
       const nextPending = formattedDeliverables.find(d => d.status === 'pending');
       if (nextPending && nextPending.dueDate) {
         return `Next: ${nextPending.type} (Due ${new Date(nextPending.dueDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })})`;
@@ -740,10 +741,9 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
               className={cn(
                 "h-full transition-all",
                 stage === 'completed' ? 'bg-green-500' :
-                stage === 'paid' ? 'bg-blue-500' :
-                stage === 'payment_pending' ? 'bg-yellow-500' :
-                stage === 'overdue' ? 'bg-red-500' :
-                stage === 'active' ? 'bg-blue-400' :
+                stage === 'content_delivered' ? 'bg-yellow-500' :
+                isOverdue ? 'bg-red-500' :
+                stage === 'live_deal' || stage === 'content_making' || stage === 'fully_executed' ? 'bg-blue-400' :
                 'bg-gray-400'
               )}
             />
@@ -760,7 +760,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
-          {stage === 'overdue' || stage === 'payment_pending' ? (
+          {isOverdue || stage === 'content_delivered' ? (
             <>
               {onSendReminder && (
                 <Button
@@ -782,7 +782,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 Mark Paid
               </Button>
             </>
-          ) : stage === 'active' ? (
+          ) : stage === 'live_deal' || stage === 'content_making' || stage === 'fully_executed' ? (
             <>
               <Button
                 size="sm"
@@ -820,4 +820,3 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
 };
 
 export default EnhancedDealCard;
-

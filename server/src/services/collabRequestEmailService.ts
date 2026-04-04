@@ -739,14 +739,14 @@ export async function sendCollabRequestCreatorNotificationEmail(
     barterProductImageUrl: data.barterProductImageUrl ?? undefined,
     signal: {
       type: 'action',
-      message: 'Review the brand\'s proposal and lock in your decision.'
+      message: 'You have a new brand offer'
     }
   });
 
   // Subject line with budget
   const subject = budgetForSubject && budgetForSubject !== 'Not specified'
-    ? `New collaboration request from ${data.brandName} (${budgetForSubject})`
-    : `New collaboration request from ${data.brandName}`;
+    ? `You have a new brand offer (${budgetForSubject})`
+    : 'You have a new brand offer';
 
   /* 
   // Send WhatsApp notification if creatorId is provided

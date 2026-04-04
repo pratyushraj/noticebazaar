@@ -1,21 +1,21 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
+import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { trackEvent } from '@/lib/utils/analytics';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
-import { withRetry } from '@/lib/utils/retry';
 import { getCollabReadiness } from '@/lib/collab/readiness';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -80,6 +80,7 @@ interface Creator {
   collab_response_hours_override?: number | null;
   collab_cancellations_percent_override?: number | null;
   collab_region_label?: string | null;
+  collab_intro_line?: string | null;
   collab_audience_fit_note?: string | null;
   collab_recent_activity_note?: string | null;
   collab_audience_relevance_note?: string | null;
@@ -89,6 +90,17 @@ interface Creator {
   collab_cta_trust_note?: string | null;
   collab_cta_dm_note?: string | null;
   collab_cta_platform_note?: string | null;
+  collab_show_packages?: boolean | null;
+  collab_show_trust_signals?: boolean | null;
+  collab_show_audience_snapshot?: boolean | null;
+  collab_show_past_work?: boolean | null;
+  collab_past_work_items?: Array<{
+    id: string;
+    brand: string;
+    campaignType: string;
+    outcome: string;
+    proofLabel?: string | null;
+  }> | null;
   performance_proof?: {
     median_reel_views?: number | null;
     avg_likes?: number | null;
@@ -154,9 +166,6 @@ const toTitleCaseName = (value: string) =>
 interface FormErrors {
   brandName?: string;
   brandEmail?: string;
-  brandAddress?: string;
-  brandGstin?: string;
-  brandWebsite?: string;
   campaignDescription?: string;
   deliverables?: string;
   budget?: string;
@@ -327,6 +336,7 @@ const buildLocalPreviewCreator = (handle: string): Creator => ({
   collab_response_hours_override: 3,
   collab_cancellations_percent_override: 0,
   collab_region_label: 'NCR (Delhi Region)',
+  collab_intro_line: 'Lifestyle creator with clear package options for launches, reviews, and campaign bursts.',
   collab_audience_fit_note: 'Works best for targeted audience campaigns.',
   collab_recent_activity_note: 'Posting consistently',
   collab_audience_relevance_note: 'Strong relevance for North India audience',
@@ -405,6 +415,7 @@ const CollabLinkLanding = () => {
 
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWarmingUp, setIsWarmingUp] = useState(false);
@@ -418,16 +429,42 @@ const CollabLinkLanding = () => {
   // restore it (if the system prefers dark) when navigating away.
   useEffect(() => {
     const html = document.documentElement;
+    const body = document.body;
     const hadDark = html.classList.contains('dark');
+    const previousHtmlOverflow = html.style.overflow;
+    const previousHtmlOverflowY = html.style.overflowY;
+    const previousHtmlHeight = html.style.height;
+    const previousHtmlMinHeight = html.style.minHeight;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyOverflowY = body.style.overflowY;
+    const previousBodyHeight = body.style.height;
+    const previousBodyMinHeight = body.style.minHeight;
+    const previousBodyPosition = body.style.position;
     html.classList.remove('dark');
-    
-    // Safety check: ensure no prior components left the screen locked
-    document.body.style.overflow = '';
-    document.documentElement.style.overflow = '';
+
+    // Safety check: ensure no prior screens left the document scroll-locked.
+    html.style.overflow = '';
+    html.style.overflowY = 'auto';
+    html.style.height = 'auto';
+    html.style.minHeight = '100dvh';
+    body.style.overflow = '';
+    body.style.overflowY = 'auto';
+    body.style.height = 'auto';
+    body.style.minHeight = '100dvh';
+    body.style.position = 'static';
 
     return () => {
       // Restore dark if it was set before entering this page
       if (hadDark) html.classList.add('dark');
+      html.style.overflow = previousHtmlOverflow;
+      html.style.overflowY = previousHtmlOverflowY;
+      html.style.height = previousHtmlHeight;
+      html.style.minHeight = previousHtmlMinHeight;
+      body.style.overflow = previousBodyOverflow;
+      body.style.overflowY = previousBodyOverflowY;
+      body.style.height = previousBodyHeight;
+      body.style.minHeight = previousBodyMinHeight;
+      body.style.position = previousBodyPosition;
     };
   }, []);
 
@@ -442,23 +479,13 @@ const CollabLinkLanding = () => {
   const [collabType, setCollabType] = useState<CollabType>('paid');
   const [brandName, setBrandName] = useState('');
   const [brandEmail, setBrandEmail] = useState('');
-  const [brandAddress, setBrandAddress] = useState('');
-  const [brandGstin, setBrandGstin] = useState('');
-  const [isGstLookupLoading, setIsGstLookupLoading] = useState(false);
-  const [gstLookupError, setGstLookupError] = useState<string | null>(null);
-  const [brandPhone, setBrandPhone] = useState('');
-  const [brandWebsite, setBrandWebsite] = useState('');
   const [brandInstagram, setBrandInstagram] = useState('');
   const [budgetRange, setBudgetRange] = useState('');
   const [exactBudget, setExactBudget] = useState('');
   const [barterValue, setBarterValue] = useState('');
   const [barterProductName, setBarterProductName] = useState('');
   const [barterProductCategory, setBarterProductCategory] = useState('');
-  const [hybridCashBudget, setHybridCashBudget] = useState('');
-  const [hybridProductValue, setHybridProductValue] = useState('');
   const [campaignCategory, setCampaignCategory] = useState('General');
-  const [barterProductImageUrl, setBarterProductImageUrl] = useState<string | null>(null);
-  const [barterImageUploading, setBarterImageUploading] = useState(false);
 
   // If the visitor is already logged in as a brand, prefill the form from their profile.
   // We only fill blanks so we never overwrite what the user already typed.
@@ -471,40 +498,14 @@ const CollabLinkLanding = () => {
       'Brand';
 
     const inferredEmail = (profile.email || user?.email || '').trim();
-    const inferredAddress = ((profile as any).address || '').trim();
-    const inferredGstin = ((profile as any).gstin || (profile as any).gst_number || '').trim();
-    const inferredPhone = (profile.phone || '').trim();
 
     setBrandName((prev) => (prev.trim() ? prev : inferredBrandName));
     setBrandEmail((prev) => (prev.trim() ? prev : inferredEmail));
-    setBrandAddress((prev) => (prev.trim() ? prev : inferredAddress));
-    setBrandGstin((prev) => (prev.trim() ? prev : inferredGstin));
-    setBrandPhone((prev) => (prev.trim() ? prev : inferredPhone));
-
-    const signer =
-      [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() ||
-      inferredBrandName;
-    setAuthorizedSignerName((prev) => (prev.trim() ? prev : signer));
   }, [profile?.id, profile?.role, user?.email]);
-  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
-  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
   const [campaignDescription, setCampaignDescription] = useState('');
   const [deliverables, setDeliverables] = useState<string[]>([]);
   const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({});
-  const [usageRights, setUsageRights] = useState(false);
   const [deadline, setDeadline] = useState('');
-  const [offerExpiry, setOfferExpiry] = useState('');
-  const [authorizedSignerName, setAuthorizedSignerName] = useState('');
-  const [authorizedSignerRole, setAuthorizedSignerRole] = useState('');
-  const [usageDuration, setUsageDuration] = useState('');
-  const [paymentTerms, setPaymentTerms] = useState('');
-  const [approvalSlaHours, setApprovalSlaHours] = useState('');
-  const [requiresShipping, setRequiresShipping] = useState(false);
-  const [shippingTimelineDays, setShippingTimelineDays] = useState('');
-  const [cancellationPolicy, setCancellationPolicy] = useState('');
-  const [showCommercialTerms, setShowCommercialTerms] = useState(false);
-  const [showDetailedForm, setShowDetailedForm] = useState(false);
-  const [showOptionalBrandDetails, setShowOptionalBrandDetails] = useState(false);
   const [hasStartedOffer, setHasStartedOffer] = useState(false);
   const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
   const [openAccordionValue, setOpenAccordionValue] = useState<string | undefined>("item-1");
@@ -512,7 +513,6 @@ const CollabLinkLanding = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const formRef = useRef<HTMLFormElement | null>(null);
   const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
-  const hasTrackedFormStarted = useRef(false);
   const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
   const [profilePhotoError, setProfilePhotoError] = useState(false);
   const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -527,9 +527,8 @@ const CollabLinkLanding = () => {
     if (hasStartedOffer) return;
 
     setHasStartedOffer(true);
-    setShowDetailedForm(true);
     window.setTimeout(() => {
-      document.getElementById('detailed-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   }, [searchParams, hasStartedOffer]);
 
@@ -643,6 +642,7 @@ const CollabLinkLanding = () => {
     }
   }, [creator]);
 
+
   const isOwner = useMemo(() => {
     return Boolean(user?.id && creator?.id && user.id === creator.id);
   }, [user?.id, creator?.id]);
@@ -714,50 +714,38 @@ const CollabLinkLanding = () => {
   const isDeadlineProvided = Boolean(deadline);
   const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
 
-  const isStep1Ready = Boolean(collabType);
-  const isStep2Ready = deliverables.length > 0;
-  const isStep3Ready = isBudgetProvided;
-  const isStep4Ready = Boolean(campaignCategory && campaignDescription.trim().length >= 20 && isDeadlineProvided);
+  const isStep1Ready = Boolean(collabType && deliverables.length > 0);
   const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const isStep5Ready = Boolean(brandName.trim() && isValidBrandEmail && brandAddress.trim().length >= 15);
+  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail);
 
   const completionChecks = useMemo(() => ([
-    { label: 'Deal Type', complete: isStep1Ready },
-    { label: 'Content', complete: isStep2Ready },
-    { label: 'Budget', complete: isStep3Ready },
-    { label: 'Campaign Goal', complete: isStep4Ready },
-    { label: 'Brand Details', complete: isStep5Ready },
+    { label: 'Collab type', complete: isStep1Ready },
+    { label: 'Contact', complete: isStep2Ready },
   ]), [
     isStep1Ready,
     isStep2Ready,
-    isStep3Ready,
-    isStep4Ready,
-    isStep5Ready,
   ]);
 
   const [showSubmittingTrust, setShowSubmittingTrust] = useState(false);
   const submittingChecklist = [
-    'Verifying brand identity...',
-    'Reviewing deliverables set...',
-    'Generating secure contract...',
-    'Securing payload for transmission...',
+    'Sending offer...',
+    'Notifying creator...',
   ];
 
   const typeSectionTitle = 'bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent';
   const typeLabel = 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent';
-  const ctaStepStatus = !hasStartedOffer ? 'create' : currentStep < 5 ? 'next' : 'send';
-  const ctaLabel = ctaStepStatus === 'create' ? 'Send Collab Offer' : ctaStepStatus === 'next' ? (currentStep === 2 ? 'Continue to Deal Terms' : `Next: Step ${currentStep + 1}`) : 'Send Collab Offer';
+  const ctaStepStatus = !hasStartedOffer ? 'create' : currentStep < 2 ? 'next' : 'send';
+  const ctaLabel = ctaStepStatus === 'create' ? 'Choose a Service' : ctaStepStatus === 'next' ? 'Continue to Offer' : 'Send Offer';
   const ctaIcon = ctaStepStatus === 'send'
     ? <Send className="h-4 w-4" />
     : <Rocket className="h-4 w-4" />;
   const ctaHelper = ctaStepStatus === 'send'
-    ? 'Legally binding contract will be generated'
-    : '50+ brands have collaborated through Creator Armour';
+    ? 'Creator will be notified instantly'
+    : 'Takes less than 1 minute';
   const inputClass = 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-400 transition-all rounded-xl';
 
-  const isCampaignDescriptionValid = campaignDescription.trim().length >= 20;
-  const isContactReady = isStep5Ready;
-  const isCoreReady = isStep1Ready && isStep2Ready && isStep3Ready && isStep4Ready;
+  const isContactReady = isStep2Ready;
+  const isCoreReady = isStep1Ready && isStep2Ready;
 
   const typePageTitle = 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent';
 
@@ -933,33 +921,16 @@ const CollabLinkLanding = () => {
     collabType,
     brandName,
     brandEmail,
-    brandAddress,
-    brandGstin,
-    brandPhone,
-    brandWebsite,
     brandInstagram,
     budgetRange,
     exactBudget,
     barterValue,
     barterProductName,
     barterProductCategory,
-    hybridCashBudget,
-    hybridProductValue,
     campaignCategory,
-    barterProductImageUrl,
     campaignDescription,
     deliverables,
-    usageRights,
     deadline,
-    offerExpiry,
-    authorizedSignerName,
-    authorizedSignerRole,
-    usageDuration,
-    paymentTerms,
-    approvalSlaHours,
-    requiresShipping,
-    shippingTimelineDays,
-    cancellationPolicy,
   });
 
   const applyDraftFormData = (data: Record<string, unknown>) => {
@@ -968,43 +939,22 @@ const CollabLinkLanding = () => {
     }
     if (typeof data.brandName === 'string') setBrandName(data.brandName);
     if (typeof data.brandEmail === 'string') setBrandEmail(data.brandEmail);
-    if (typeof data.brandAddress === 'string') setBrandAddress(data.brandAddress);
-    if (typeof data.brandGstin === 'string') setBrandGstin(data.brandGstin);
-    if (typeof data.brandPhone === 'string') setBrandPhone(data.brandPhone);
-    if (typeof data.brandWebsite === 'string') setBrandWebsite(data.brandWebsite);
     if (typeof data.brandInstagram === 'string') setBrandInstagram(data.brandInstagram);
     if (typeof data.budgetRange === 'string') setBudgetRange(data.budgetRange);
     if (typeof data.exactBudget === 'string') setExactBudget(data.exactBudget);
     if (typeof data.barterValue === 'string') setBarterValue(data.barterValue);
     if (typeof data.barterProductName === 'string') setBarterProductName(data.barterProductName);
     if (typeof data.barterProductCategory === 'string') setBarterProductCategory(data.barterProductCategory);
-    if (typeof data.hybridCashBudget === 'string') setHybridCashBudget(data.hybridCashBudget);
-    if (typeof data.hybridProductValue === 'string') setHybridProductValue(data.hybridProductValue);
     if (typeof data.campaignCategory === 'string') setCampaignCategory(data.campaignCategory);
-    if (typeof data.barterProductImageUrl === 'string') setBarterProductImageUrl(data.barterProductImageUrl || null);
     if (typeof data.campaignDescription === 'string') setCampaignDescription(data.campaignDescription);
     if (Array.isArray(data.deliverables)) setDeliverables(data.deliverables.filter((d): d is string => typeof d === 'string'));
-    if (typeof data.usageRights === 'boolean') setUsageRights(data.usageRights);
     if (typeof data.deadline === 'string') setDeadline(data.deadline);
-    if (typeof data.offerExpiry === 'string') setOfferExpiry(data.offerExpiry);
-    if (typeof data.authorizedSignerName === 'string') setAuthorizedSignerName(data.authorizedSignerName);
-    if (typeof data.authorizedSignerRole === 'string') setAuthorizedSignerRole(data.authorizedSignerRole);
-    if (typeof data.usageDuration === 'string') setUsageDuration(data.usageDuration);
-    if (typeof data.paymentTerms === 'string') setPaymentTerms(data.paymentTerms);
-    if (typeof data.approvalSlaHours === 'string') setApprovalSlaHours(data.approvalSlaHours);
-    if (typeof data.requiresShipping === 'boolean') setRequiresShipping(data.requiresShipping);
-    if (typeof data.shippingTimelineDays === 'string') setShippingTimelineDays(data.shippingTimelineDays);
-    if (typeof data.cancellationPolicy === 'string') setCancellationPolicy(data.cancellationPolicy);
   };
 
   // Demo data prefill function
   const fillDemoData = () => {
     setBrandName('Demo Brand Co.');
     setBrandEmail('demo@brandco.com');
-    setBrandAddress('123 Business Park, Andheri East, Mumbai, Maharashtra 400069');
-    setBrandGstin('27AABCU9603R1ZX');
-    setBrandPhone('+91 98765 43210');
-    setBrandWebsite('https://www.demobrandco.com');
     setBrandInstagram('@demobrandco');
     setCollabType('paid');
     setCampaignCategory('Lifestyle');
@@ -1012,29 +962,12 @@ const CollabLinkLanding = () => {
     setExactBudget('15000');
     setCampaignDescription('We are launching a new sustainable fashion line and would love to collaborate with you on creating authentic content that showcases our eco-friendly products. Our campaign focuses on promoting conscious consumerism and we believe your content style aligns perfectly with our brand values.');
     setDeliverables(['Instagram Reel', 'Post', 'Story']);
-    setUsageRights(true);
-    setAuthorizedSignerName('Aman Gupta');
-    setAuthorizedSignerRole('Marketing Manager');
-    setUsageDuration('90 days');
-    setPaymentTerms('50% advance, 50% within 7 days of posting');
-    setApprovalSlaHours('48');
-    setShippingTimelineDays('3');
-    setCancellationPolicy('If canceled after signing, approved production costs are payable.');
     // Set deadline to 2 weeks from now
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + 14);
     setDeadline(futureDate.toISOString().split('T')[0]);
     setErrors({});
-    toast.success('Demo data filled! You can now test the form submission.');
-  };
-
-  const applyStandardTerms = () => {
-    setApprovalSlaHours((prev) => prev || '48');
-    setShippingTimelineDays((prev) => prev || '5');
-    setUsageDuration((prev) => prev || '90 days');
-    setPaymentTerms((prev) => prev || '50% advance, balance within 7 days of posting');
-    setCancellationPolicy((prev) => prev || 'If canceled after signing, approved production costs are payable.');
-    toast.success('Standard commercial terms applied');
+    toast.success('Demo data filled!');
   };
 
   // Auto-fill demo data for preview/design mode
@@ -1049,69 +982,6 @@ const CollabLinkLanding = () => {
 
   // No longer need local getApiBaseUrl helper as it's imported from @/lib/utils/api
 
-  // Fetch company name and address from GST by GSTIN
-  const handleGstLookup = async () => {
-    const gstin = brandGstin.trim().toUpperCase();
-    if (!gstin || gstin.length !== 15) {
-      setGstLookupError('Please enter a valid 15-digit GSTIN first');
-      return;
-    }
-    if (!/^[0-9A-Z]{15}$/.test(gstin)) {
-      setGstLookupError('GSTIN must be 15 characters (letters and numbers only)');
-      return;
-    }
-    setIsGstLookupLoading(true);
-    setGstLookupError(null);
-    try {
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/gst/lookup?gstin=${encodeURIComponent(gstin)}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      let data: { success?: boolean; data?: { legalName?: string; address?: string; state?: string }; error?: string } = {};
-      try {
-        data = await response.json();
-      } catch {
-        // Server returned non-JSON (e.g. 502/503 HTML from proxy)
-        if (response.status === 502 || response.status === 503) {
-          setGstLookupError('GST lookup is temporarily unavailable. Please enter company name and address manually.');
-          toast.error('GST lookup is temporarily unavailable. Please enter details manually.');
-        } else {
-          setGstLookupError('Failed to lookup GST data. Please try again or enter details manually.');
-          toast.error('Failed to lookup GST data. Please enter details manually.');
-        }
-        return;
-      }
-      if (!response.ok) {
-        const msg = data.error || (response.status === 502 || response.status === 503
-          ? 'GST lookup is temporarily unavailable. Please enter company name and address manually.'
-          : 'GST lookup failed. Enter details manually.');
-        setGstLookupError(msg);
-        toast.error(msg);
-        return;
-      }
-      if (!data.success || !data.data) {
-        setGstLookupError(data.error || 'GST lookup failed. Enter details manually.');
-        toast.error(data.error || 'GST lookup failed. Enter details manually.');
-        return;
-      }
-      const { legalName, address, state } = data.data;
-      if (legalName?.trim()) setBrandName(legalName.trim());
-      if (address?.trim()) {
-        const fullAddress = state?.trim() ? `${address.trim()}, ${state.trim()}` : address.trim();
-        setBrandAddress(fullAddress);
-      }
-      setBrandGstin(gstin);
-      setErrors((prev) => ({ ...prev, brandName: '', brandAddress: '', brandGstin: '' }));
-      toast.success('Company name and address filled from GST');
-    } catch (err: any) {
-      const msg = err?.message || 'Failed to lookup GST data. Please try again or enter details manually.';
-      setGstLookupError(msg);
-      toast.error(msg);
-    } finally {
-      setIsGstLookupLoading(false);
-    }
-  };
 
   // Upload barter product image and store public URL
   const handleBarterImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1223,15 +1093,7 @@ const CollabLinkLanding = () => {
       });
 
       try {
-        const response = await withRetry(() => fetch(apiUrl, { signal: controller.signal }), {
-          maxRetries: 2,
-          baseDelay: 2000,
-          shouldRetry: (error) => {
-            // Don't retry on 404
-            if (error instanceof Response && error.status === 404) return false;
-            return true;
-          },
-        });
+        const response = await fetch(apiUrl, { signal: controller.signal });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -1438,9 +1300,8 @@ const CollabLinkLanding = () => {
 
   const handleCreateOfferClick = () => {
     setHasStartedOffer(true);
-    setShowDetailedForm(true);
     window.setTimeout(() => {
-      document.getElementById('detailed-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
 
@@ -1458,7 +1319,7 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 1) {
       if (!isStep1Ready) {
-        toast.error('Please select a deal type');
+        toast.error('Please select a collaboration type');
         return;
       }
       setCurrentStep(2);
@@ -1468,37 +1329,7 @@ const CollabLinkLanding = () => {
 
     if (currentStep === 2) {
       if (!isStep2Ready) {
-        toast.error('Please select at least one deliverable');
-        return;
-      }
-      setCurrentStep(3);
-      scrollOfferFormIntoView();
-      return;
-    }
-
-    if (currentStep === 3) {
-      if (!isStep3Ready) {
-        toast.error('Please set a budget or product value');
-        return;
-      }
-      setCurrentStep(4);
-      scrollOfferFormIntoView();
-      return;
-    }
-
-    if (currentStep === 4) {
-      if (!isStep4Ready) {
-        toast.error('Please complete the campaign goal and deadline');
-        return;
-      }
-      setCurrentStep(5);
-      scrollOfferFormIntoView();
-      return;
-    }
-
-    if (currentStep === 5) {
-      if (!isStep5Ready) {
-        toast.error('Please provide brand and contact details');
+        toast.error('Please add your email');
         return;
       }
       formRef.current?.requestSubmit();
@@ -1509,55 +1340,34 @@ const CollabLinkLanding = () => {
     const newErrors: FormErrors = {};
 
     if (!brandName.trim()) {
-      newErrors.brandName = 'Brand name is required';
+      newErrors.brandName = 'Enter your brand name';
     }
 
     if (!brandEmail.trim()) {
-      newErrors.brandEmail = 'Email is required';
+      newErrors.brandEmail = 'Enter your email';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)) {
-      newErrors.brandEmail = 'Please enter a valid email address';
+      newErrors.brandEmail = 'Enter a valid email';
     }
 
-    if (!brandAddress.trim()) {
-      newErrors.brandAddress = 'Company / brand address is required for contract';
-    } else if (brandAddress.trim().length < 15) {
-      newErrors.brandAddress = 'Please enter full registered address (at least 15 characters)';
-    }
-
-    if (brandGstin.trim()) {
-      const gstin = brandGstin.trim().toUpperCase();
-      if (!/^[0-9A-Z]{15}$/.test(gstin)) {
-        newErrors.brandGstin = 'GSTIN must be 15 characters (letters and numbers only)';
-      }
-    }
+    // Address is optional for initial offer
 
     if (!campaignDescription.trim()) {
-      newErrors.campaignDescription = 'Campaign description is required';
-    } else if (campaignDescription.trim().length < 20) {
-      newErrors.campaignDescription = 'Please provide more details (at least 20 characters)';
+      newErrors.campaignDescription = 'Describe what you want';
+    } else if (campaignDescription.trim().length < 10) {
+      newErrors.campaignDescription = 'Add a bit more detail';
     }
 
     if (deliverables.length === 0) {
-      newErrors.deliverables = 'Please select at least one deliverable';
+      newErrors.deliverables = 'Please select at least one thing';
     }
 
     if (collabType === 'paid' && !budgetRange && !exactBudget) {
-      newErrors.budget = 'Please specify a budget range or exact amount';
+      newErrors.budget = 'Enter your budget';
     }
 
     if (isHybridCollab(collabType)) {
       if (!budgetRange && !exactBudget) {
         newErrors.budget = 'Please specify paid budget details';
-      }
-    }
-
-    // Validate website URL - accept with/without https:// and with/without www.
-    if (brandWebsite && brandWebsite.trim()) {
-      const website = brandWebsite.trim();
-      // Accept: example.com, www.example.com, http://example.com, https://example.com, etc.
-      const urlPattern = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?(\.[a-zA-Z]{2,})+(\/.*)?$/;
-      if (!urlPattern.test(website)) {
-        newErrors.brandWebsite = 'Please enter a valid website URL (e.g., example.com or www.example.com)';
       }
     }
 
@@ -1581,14 +1391,7 @@ const CollabLinkLanding = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error('Please fix the errors in the form');
-      return;
-    }
-
-    // Client-side cooldown: prevent rapid re-submissions
-    const lastSubmit = Number(localStorage.getItem('last_collab_submit') || 0);
-    if (Date.now() - lastSubmit < 30000) {
-      toast.error('Please wait a moment before submitting again');
+      toast.error('Please fix the errors above');
       return;
     }
 
@@ -1596,7 +1399,7 @@ const CollabLinkLanding = () => {
 
     try {
       const apiBaseUrl = getApiBaseUrl();
-      const response = await withRetry(() => fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
+      const response = await fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1604,52 +1407,47 @@ const CollabLinkLanding = () => {
         body: JSON.stringify({
           brand_name: brandName,
           brand_email: brandEmail,
-          brand_address: brandAddress.trim(),
-          brand_gstin: brandGstin.trim() ? brandGstin.trim().toUpperCase() : undefined,
-          brand_phone: brandPhone || undefined,
-          brand_website: brandWebsite ? normalizeWebsiteUrl(brandWebsite) : undefined,
-          brand_instagram: brandInstagram || undefined,
-          brand_logo_url: brandLogoUrl || undefined,
+          brand_address: null,
+          brand_gstin: null,
+          brand_phone: null,
+          brand_website: null,
+          brand_instagram: brandInstagram || null,
+          brand_logo_url: null,
           collab_type: collabType,
-          budget_range: budgetRange || undefined,
-          exact_budget: exactBudget ? parseFloat(exactBudget) : undefined,
-          campaign_category: campaignCategory || undefined,
-          barter_value: barterValue ? parseFloat(barterValue) : undefined,
-          barter_product_name: barterProductName || undefined,
-          barter_product_category: barterProductCategory || undefined,
-          barter_product_image_url: barterProductImageUrl || undefined,
+          budget_range: budgetRange || null,
+          exact_budget: exactBudget ? parseFloat(exactBudget) : null,
+          campaign_category: campaignCategory || null,
+          barter_value: barterValue ? parseFloat(barterValue) : null,
+          barter_product_name: barterProductName || null,
+          barter_product_category: barterProductCategory || null,
+          barter_product_image_url: null,
           campaign_description: campaignDescription,
           deliverables: deliverables.map(d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`),
-          usage_rights: usageRights,
-          deadline: deadline || undefined,
-          offer_expires_at: offerExpiry || undefined,
-          authorized_signer_name: authorizedSignerName || undefined,
-          authorized_signer_role: authorizedSignerRole || undefined,
-          usage_duration: usageDuration || undefined,
-          payment_terms: paymentTerms || undefined,
-          approval_sla_hours: approvalSlaHours ? Number(approvalSlaHours) : undefined,
-          requires_shipping: requiresShipping,
-          shipping_timeline_days: shippingTimelineDays ? Number(shippingTimelineDays) : undefined,
-          cancellation_policy: cancellationPolicy || undefined,
+          usage_rights: false,
+          deadline: deadline || null,
+          offer_expires_at: null,
+          authorized_signer_name: null,
+          authorized_signer_role: null,
+          usage_duration: null,
+          payment_terms: null,
+          approval_sla_hours: null,
+          requires_shipping: false,
+          shipping_timeline_days: null,
+          cancellation_policy: null,
         }),
-      }));
+      });
 
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem('last_collab_submit', String(Date.now()));
         trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
-        // Redirect to the proposal confirmation screen (install-first conversion moment)
-        const consoleToken = data.request.id;
-        navigate(`/proposal-sent/${consoleToken}?openApp=1&source=collab_submit`, {
-          state: {
-            creatorName: creator?.name || 'the creator',
-            submissionType: data.submission_type || (data.lead ? 'lead' : 'request'),
-            confirmationMessage: data.message,
-            profileLabel: creator?.profile_label || undefined,
-            isNewSubmission: true
-          },
+        toast.success('Offer sent! The creator will be notified.');
+        const successParams = new URLSearchParams({
+          type: collabType,
+          brand: brandName,
         });
+        if (deadline) successParams.set('deadline', deadline);
+        navigate(`/${username}/success?${successParams.toString()}`);
       } else {
         toast.error(data.error || 'Failed to submit request');
       }
@@ -1678,6 +1476,8 @@ const CollabLinkLanding = () => {
   const elevationLevel1 = 'bg-white/[0.05] border border-white/10 shadow-none';
   const elevationLevel2 = 'bg-white/[0.08] border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
   const elevationLevel3 = 'bg-white/[0.12] border border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
+
+
 
   // Readiness badge animation (must run before any conditional returns to preserve hook order)
 
@@ -1824,16 +1624,11 @@ const CollabLinkLanding = () => {
     'paid barter hybrid collaboration',
     ...pastBrands.slice(0, 4),
   ].filter(Boolean)));
+  const isSuccessView = location.pathname.endsWith('/success');
+  const successBrand = searchParams.get('brand')?.trim();
+  const successType = searchParams.get('type')?.trim();
+  const successDeadline = searchParams.get('deadline')?.trim();
 
-  const completedCount = completionChecks.filter((item) => item.complete).length;
-  // const completionPercent = Math.round((completionChecks.filter(c => c.complete).length / completionChecks.length) * 100);
-  const missingRequired = completionChecks.filter((item) => !item.complete).map((item) => item.label);
-  const formSteps = [
-    { label: 'Campaign', complete: isCoreReady },
-    { label: 'Terms', complete: !showCommercialTerms || Boolean(paymentTerms || approvalSlaHours || shippingTimelineDays || usageDuration) },
-    { label: 'Contact', complete: isContactReady },
-    { label: 'Review', complete: isCoreReady && isContactReady },
-  ];
   const displayBudget = exactBudget
     ? `₹${Number(exactBudget || 0).toLocaleString('en-IN')}`
     : budgetRange
@@ -1924,12 +1719,13 @@ const CollabLinkLanding = () => {
   const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities);
   const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
   const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
+  const collabIntroLine = creator.collab_intro_line?.trim() || creatorBio || 'Clear collaboration packages, fast response, and structured booking for brand campaigns.';
   const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
   const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
     ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
     : '~3 hrs';
-  const showEngagementConfidence = engagementRange !== 'Growing Audience';
-  const engagementConfidenceNote = 'Above-average engagement for creator size';
+  const showEngagementConfidence = engagementRange !== 'Growing Audience' || Boolean(creator.collab_engagement_confidence_note?.trim());
+  const engagementConfidenceNote = creator.collab_engagement_confidence_note?.trim() || 'Above-average engagement for creator size';
   const recentActivityNoteRaw = creator.past_brand_count === 0
     ? 'New Creator on Creator Armour'
     : (creator.collab_recent_activity_note?.trim() || 'Posting consistently');
@@ -2000,10 +1796,9 @@ const CollabLinkLanding = () => {
     toast.success(`${template.label} selected`);
     triggerHaptic(HapticPatterns.success);
 
-    // Auto-advance into customization. After package select, land on the
-    // campaign/shipping step so shipping requirements are always explicitly asked.
+    // Auto-advance into the minimal quick-offer form.
     setShowCustomFlow(true);
-    setCurrentStep(4);
+    setCurrentStep(2);
 
     // Make the next step obvious: bring the offer panel into view and nudge the header.
     setTemplateContinueNudge(Date.now());
@@ -2011,6 +1806,7 @@ const CollabLinkLanding = () => {
       document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   };
+
 
   const handleUpdateTemplate = (updated: DealTemplate) => {
     let updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
@@ -2031,11 +1827,34 @@ const CollabLinkLanding = () => {
 
   const dealTemplates = localDealTemplates;
   const selectedTemplate = dealTemplates.find((template) => template.id === selectedTemplateId) || null;
-  const recentCollaborations = [
-    { name: 'Priya Sharma', type: 'Reel campaign', price: '₹4,500' },
-    { name: 'Ajay Patel', type: 'Engagement package', price: '₹3,000 + product' },
-    { name: 'Neha Verma', type: 'Product review', price: 'Free products' },
-  ];
+  const pastWorkItems = Array.isArray(creator.collab_past_work_items)
+    ? creator.collab_past_work_items
+      .map((item, index) => ({
+        id: String(item?.id || `past-work-${index}`),
+        brand: String(item?.brand || '').trim(),
+        campaignType: String(item?.campaignType || '').trim(),
+        outcome: String(item?.outcome || '').trim(),
+        proofLabel: String(item?.proofLabel || '').trim(),
+      }))
+      .filter((item) => item.brand || item.campaignType || item.outcome || item.proofLabel)
+    : [];
+  const recentCollaborations = pastWorkItems.length > 0
+    ? pastWorkItems.slice(0, 3).map((item) => ({
+      id: item.id,
+      name: item.brand || 'Brand collaboration',
+      type: item.campaignType || 'Campaign',
+      outcome: item.outcome || 'Shared campaign proof',
+      proofLabel: item.proofLabel || 'Past Work',
+    }))
+    : [
+      { id: 'demo-1', name: 'boAt', type: 'Launch reel', outcome: '42K views in 5 days', proofLabel: 'Electronics' },
+      { id: 'demo-2', name: 'Mamaearth', type: 'Routine stories', outcome: 'High-intent skincare audience fit', proofLabel: 'Beauty' },
+      { id: 'demo-3', name: 'Lenskart', type: 'Review package', outcome: 'Strong click-through and saves', proofLabel: 'Lifestyle' },
+    ];
+  const showPackagesSection = creator.collab_show_packages !== false;
+  const showTrustSections = creator.collab_show_trust_signals !== false;
+  const showAudienceSections = creator.collab_show_audience_snapshot !== false;
+  const showPastWorkSection = creator.collab_show_past_work !== false;
   const creatorCollabSchema = (() => {
     const creatorId = creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-');
     const profilePageId = `${canonicalUrl}#profile-page`;
@@ -2148,6 +1967,92 @@ const CollabLinkLanding = () => {
     };
   })();
 
+  if (isSuccessView) {
+    return (
+      <>
+        <SEOHead
+          title={`Offer Sent to ${creatorName} | Creator Armour`}
+          description={`Your offer for ${creatorName} has been sent. The creator has been notified and can now accept, counter, or decline.`}
+          keywords={['creator offer sent', creatorName, creatorHandle].filter(Boolean)}
+          image={pageImage}
+          imageAlt={imageAlt}
+          type="website"
+          canonicalUrl={`https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}/success`}
+        />
+
+        <div className="light min-h-screen bg-[linear-gradient(180deg,#f7fafc_0%,#eef8f5_100%)] text-slate-900">
+          <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-12 sm:px-8">
+            <div className="rounded-[32px] border border-emerald-200/80 bg-white/95 p-6 shadow-[0_24px_80px_rgba(15,118,110,0.12)] sm:p-10">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+
+              <p className="mb-3 text-[11px] font-black uppercase tracking-[0.28em] text-emerald-700">Offer Sent</p>
+              <h1 className="mb-3 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
+                {creatorName} has your offer.
+              </h1>
+              <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                {successBrand ? `${successBrand}'s` : 'Your'} offer has been delivered. The creator can now review it, accept it, counter it, or decline it.
+              </p>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Creator</p>
+                  <p className="mt-2 text-lg font-black text-slate-900">{creatorName}</p>
+                  <p className="text-sm text-slate-500">{creatorHandle || creator.category || 'Brand collaborations'}</p>
+                </div>
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Offer Type</p>
+                  <p className="mt-2 text-lg font-black capitalize text-slate-900">{successType || collabType}</p>
+                  <p className="text-sm text-slate-500">Shared through Creator Armour</p>
+                </div>
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Deadline</p>
+                  <p className="mt-2 text-lg font-black text-slate-900">{successDeadline || 'Shared with creator'}</p>
+                  <p className="text-sm text-slate-500">Legal details come later if they are interested</p>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-[28px] border border-teal-100 bg-teal-50/70 p-5">
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-teal-700">What Happens Next</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl bg-white px-4 py-3">
+                    <p className="text-sm font-black text-slate-900">1. Creator reviews</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">They see your brief, budget or product value, and timeline.</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-4 py-3">
+                    <p className="text-sm font-black text-slate-900">2. They respond</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">They can accept, counter, or decline based on fit and availability.</p>
+                  </div>
+                  <div className="rounded-2xl bg-white px-4 py-3">
+                    <p className="text-sm font-black text-slate-900">3. Details follow</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">Contract, shipping, and payment details are collected only after interest is confirmed.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  onClick={() => navigate(`/${username}`)}
+                  className="h-12 rounded-full bg-teal-600 px-6 text-sm font-black text-white hover:bg-teal-700"
+                >
+                  Send Another Offer
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-slate-700 hover:bg-slate-50"
+                >
+                  Go to Homepage
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <SEOHead
@@ -2179,7 +2084,7 @@ const CollabLinkLanding = () => {
 
       {/* NOTE: `overflow-x-clip` breaks `position: sticky` in Chromium when applied on an ancestor.
           Keep it on mobile to avoid horizontal scroll, but disable it on desktop so the right panel can stick. */}
-      <div className="light min-h-screen selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
+      <div className="light min-h-screen overflow-x-hidden selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
         <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
         {isOwner && (
@@ -2351,7 +2256,7 @@ const CollabLinkLanding = () => {
 	                          <div className="flex items-center gap-2">
 	                            <TrendingUp className="h-3.5 w-3.5 text-slate-600" />
 	                            <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
-	                              Average campaign reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
+	                              Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
 	                            </span>
 	                          </div>
 	                        </div>
@@ -2362,21 +2267,33 @@ const CollabLinkLanding = () => {
 
                 <div className="max-w-xl relative">
                   <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-slate-900 mb-2.5 leading-[1.06]">
-                    Book a Collaboration with {creatorName.split(' ')[0]}
+                    Book {creatorName.split(' ')[0]} for brand collaborations
                   </h1>
                   <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
-                    Create a legally binding term sheet and launch your campaign with {creator.name.split(' ')[0]}.
+                    Choose a ready-made service and send an offer in under 1 minute.
                   </p>
+                  <div className="mt-4 flex flex-col items-start gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                      className="h-12 rounded-2xl bg-[#0FA47F] px-5 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_26px_rgba(15,164,127,0.20)] hover:bg-emerald-600"
+                    >
+                      Choose a Service
+                    </Button>
+                    <p className="text-[12px] font-semibold text-slate-500">
+                      No cold DM needed. Creator is notified instantly.
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* 1. Trust Indicators (Consolidated) */}
-	              <div className="mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">
+	              <div className={`mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 ${showTrustSections ? '' : 'hidden'}`}>
                 <div className="grid grid-cols-3 gap-2.5 px-0">
                   {[
-                    { label: 'Deal Agreement', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-generated' },
-                    { label: 'Safe Payments', icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />, desc: 'Protected' },
-                    { label: '50+ Brands Trust Us', icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />, desc: 'Verified' },
+                    { label: 'Legally Binding', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-contract' },
+                    { label: 'Secure Payment', icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />, desc: 'Dispute protected' },
+                    { label: 'Trusted by 50+ Brands', icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />, desc: 'Trust Armour' },
                   ].map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(15,23,42,0.06)] border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(15,23,42,0.10)] hover:border-slate-300 active:scale-[0.985]">
                       <div className={`shrink-0 rounded-xl p-2.5 border ${idx === 0 ? 'bg-emerald-100 border-emerald-200 text-emerald-700' :
@@ -2419,7 +2336,7 @@ const CollabLinkLanding = () => {
                 </div>
               )}
               {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-              <div ref={overviewSectionRef}>
+              <div ref={overviewSectionRef} className={showTrustSections || showAudienceSections ? '' : 'hidden'}>
                 <Accordion
                   type="single"
                   collapsible
@@ -2434,7 +2351,7 @@ const CollabLinkLanding = () => {
                         <TrendingUp className="w-4 h-4 text-teal-600" />
                       </div>
                       <div className="text-left">
-                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Creator Overview</h3>
+                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Why Brands Book</h3>
                         <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
                       </div>
                     </div>
@@ -2445,6 +2362,8 @@ const CollabLinkLanding = () => {
                     )}
                   </AccordionTrigger>
                   <AccordionContent className="p-4 space-y-8 bg-[#F7F9FB]">
+                    {showTrustSections && (
+                    <div className="space-y-8">
                     {/* 1. Creator Insights Grid */}
                     <div className="space-y-3">
                       <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Performance</h4>
@@ -2497,9 +2416,9 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
 
-                        {/* Reliability / Completion Rate */}
+                        {/* Delivery success / Completion Rate */}
                         <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Reliability</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Delivery success</p>
                           {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
                             <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
                           ) : (
@@ -2576,10 +2495,13 @@ const CollabLinkLanding = () => {
                         </div>
                       </div>
                     </div>
+                    </div>
+                    )}
 
                     {/* 4. Audience Insights Grid */}
+                    {showAudienceSections && (
                     <div className="space-y-3 pb-4">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Insights</h4>
+                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Snapshot</h4>
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Core Geo</p>
@@ -2606,14 +2528,15 @@ const CollabLinkLanding = () => {
                         </div>
                       </div>
                     </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
                 </Accordion>
               </div>
-	            {/* LEFT COLUMN continues below (packages + bio) */}
+	            {/* LEFT COLUMN continues below (services + bio) */}
 
-            {/* 1.5. Deal Templates (Moved higher for conversion speed) */}
-		            <div id="packages-section" ref={packagesSectionRef} className="deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl" style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
+            {/* 1.5. Services (Moved higher for conversion speed) */}
+		            <div id="packages-section" ref={packagesSectionRef} className={`deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl ${showPackagesSection ? '' : 'hidden'}`} style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
 	              <div className="flex items-center justify-between mb-3.5">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
@@ -2623,7 +2546,7 @@ const CollabLinkLanding = () => {
                   </div>
                   {isOwner && !previewAsBrand && (
                     <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit package name, deliverables, price, and mark one as Most Popular.
+                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit service name, deliverables, price, and mark one as Most Popular.
                     </p>
                   )}
                 </div>
@@ -2660,7 +2583,6 @@ const CollabLinkLanding = () => {
                         </div>
                       )}
 	                      <button type="button"
-	                        type="button"
 	                        onClick={() => handleTemplateSelect(template)}
 		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-amber-300 bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
 		                      >
@@ -2702,7 +2624,7 @@ const CollabLinkLanding = () => {
                             </div>
                             {template.type === 'barter' && (
                               <p className="mt-2 text-[11px] font-bold text-slate-600">
-                                Product exchange collaboration
+                                Free products as payment
                               </p>
                             )}
                             {template.addons && template.addons.length > 0 && (
@@ -2720,7 +2642,7 @@ const CollabLinkLanding = () => {
                             )}
                             <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
                               <Clock className="w-3 h-3 text-slate-400" />
-                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Delivery: {template.deadlineDays || 7} days</span>
+                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Days to make content: {template.deadlineDays || 7} days</span>
                             </div>
                           </div>
                         </div>
@@ -2732,14 +2654,14 @@ const CollabLinkLanding = () => {
                           )}
                           <div className="flex flex-col gap-2">
 	                            <p className={`leading-[0.92] tracking-tight drop-shadow-[0_1px_0_rgba(0,0,0,0.06)] ${template.type === 'barter' ? 'text-[26px] xl:text-[38px]' : 'text-[38px] md:text-[44px] xl:text-[54px]'} font-black ${template.isPopular ? 'text-[#0B8E6E]' : 'text-[#0FA47F]'}`}>
-                              {template.type === 'barter' ? 'Barter' : `₹${template.budget.toLocaleString()}`}
+                              {template.type === 'barter' ? 'Free products as payment' : `₹${template.budget.toLocaleString()}`}
                             </p>
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 -mt-1">Starting collaboration price</p>
+                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 -mt-1">Starting price</p>
 	                            <div className="w-full px-3 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center justify-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" }}>
 	                              {selectedTemplateId === template.id ? (
 	                                '✓ Selected'
 	                              ) : (
-	                                'Start collaboration →'
+	                                'Choose this service'
 	                              )}
 	                            </div>
                           </div>
@@ -2784,18 +2706,18 @@ const CollabLinkLanding = () => {
               )}
 
               {!showCustomFlow && (
-                <div className="mt-3.5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)] ${showPackagesSection ? '' : 'hidden'}`}>
                   <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
                   <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
                     How collaboration works
                   </h3>
                   <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
-                    Choose a package above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
+                    Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
                   </p>
 	                  <div className="mt-2.5 grid grid-cols-3 gap-2">
 	                    {[
-	                      { n: 1, title: 'Choose package', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
+	                      { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
 	                      { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
 	                      { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
 	                    ].map((step) => (
@@ -2812,21 +2734,26 @@ const CollabLinkLanding = () => {
 	                </div>
               )}
 
-              <div className="mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
+              <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-[14px] font-black text-slate-900 tracking-tight">
-                    Recent collaborations <span className="text-slate-400 font-black">(social proof)</span>
+                    Past Work <span className="text-slate-400 font-black">(social proof)</span>
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-	                  {recentCollaborations.map((item) => (
-	                    <div key={item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-2 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
-	                      <p className="text-[12px] font-black text-slate-900 leading-tight">{item.name}</p>
-	                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">{item.type}</p>
-	                      <p className="text-[11px] font-black text-slate-900 mt-0.5">{item.price}</p>
-	                    </div>
-	                  ))}
-                </div>
+	                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+		                  {recentCollaborations.map((item) => (
+		                    <div key={item.id || item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
+		                      <p className="text-[12px] font-black text-slate-900 leading-tight">{item.name}</p>
+		                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">{item.type}</p>
+                          {item.proofLabel && (
+                            <p className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                              {item.proofLabel}
+                            </p>
+                          )}
+		                      <p className="text-[11px] font-black text-slate-900 mt-2 leading-snug">{item.outcome}</p>
+		                    </div>
+		                  ))}
+	                </div>
               </div>
             </div>
 
@@ -2843,7 +2770,6 @@ const CollabLinkLanding = () => {
                     </div>
                     {!editMode && (
                       <button type="button"
-                        type="button"
                         aria-expanded={aboutCreatorOpen}
                         aria-controls="about-creator-panel"
                         onClick={() => setAboutCreatorOpen(v => !v)}
@@ -3118,27 +3044,7 @@ const CollabLinkLanding = () => {
 			            <div className="w-full md:w-[380px] md:max-w-[380px] md:justify-self-end md:pb-32 md:sticky md:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
-              {/* How it works for brands */}
-              <div className="mb-5 pb-5 border-b border-slate-100">
-                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2.5">How it works</p>
-                <div className="flex items-center gap-2">
-                  {[
-                    { n: 1, title: 'Fill your brief' },
-                    { n: 2, title: 'Creator reviews' },
-                    { n: 3, title: 'Deal starts' },
-                  ].map((step, idx) => (
-                    <div key={step.n} className="flex items-center gap-2 flex-1">
-                      <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center shrink-0">
-                        {step.n}
-                      </div>
-                      <p className="text-[11px] font-black text-slate-800 leading-tight">{step.title}</p>
-                      {idx < 2 && <ArrowRight className="w-3 h-3 text-slate-300 shrink-0 hidden sm:block" />}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {!showCustomFlow && (
+                {!showCustomFlow && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-5">
                     <div className="grid gap-3">
                       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -3146,8 +3052,8 @@ const CollabLinkLanding = () => {
                           <Package className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="text-[13px] font-black text-slate-900">Choose a package</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review templates are pre-optimized.</p>
+                          <p className="text-[13px] font-black text-slate-900">Choose a service</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review options are ready to use.</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -3165,12 +3071,12 @@ const CollabLinkLanding = () => {
                         </div>
                         <div>
                           <p className="text-[13px] font-black text-slate-900">Send secure proposal</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured, contract-ready collaboration request.</p>
+                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured offer with the deal details ready.</p>
                         </div>
                       </div>
                     </div>
 
-	                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-3">
 		                      <Button
 		                        type="button"
 		                        onClick={() => {
@@ -3178,24 +3084,24 @@ const CollabLinkLanding = () => {
 		                        }}
 		                        className="w-full min-w-0 h-12 rounded-2xl bg-[#0FA47F] text-white hover:bg-emerald-600 font-black text-[11px] uppercase tracking-widest shadow-[0_10px_26px_rgba(15,164,127,0.20)]"
 		                      >
-		                        Choose Package
+		                        Choose a Service
 		                      </Button>
-	                      <Button
-	                        type="button"
-	                        variant="outline"
+                      <button
+                        type="button"
                         onClick={() => {
                           setShowCustomFlow(true);
                           setCurrentStep(1);
                           setSelectedTemplateId(null);
                           triggerHaptic(HapticPatterns.success);
                         }}
-	                        className="w-full min-w-0 h-12 rounded-2xl border-slate-300 text-slate-700 hover:bg-slate-100 font-black text-[11px] uppercase tracking-widest"
-	                      >
-	                        Start Custom Deal
-	                      </Button>
+                        className="w-full text-center text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 hover:text-slate-900"
+                      >
+                        Need something custom? Create a custom deal
+                      </button>
 	                    </div>
                   </div>
                 )}
+
 
 	                {/* Step indicator (Now shows 5 steps) */}
 		                {showCustomFlow && (
@@ -3210,10 +3116,10 @@ const CollabLinkLanding = () => {
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Selected package</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Selected service</p>
                                 <p className="text-[15px] font-black text-slate-900 truncate">{selectedTemplate.label}</p>
                                 <p className="text-[12px] font-semibold text-slate-600 mt-0.5">
-                                  {selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
+                                  {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days to make content
                                 </p>
                               </div>
                               <div className="shrink-0 flex flex-col items-end gap-2">
@@ -3233,7 +3139,7 @@ const CollabLinkLanding = () => {
                                   }}
                                   className="h-9 px-3 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
                                 >
-                                  Change package
+                                  Change service
                                 </Button>
                               </div>
                             </div>
@@ -3242,18 +3148,14 @@ const CollabLinkLanding = () => {
 		                  <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
 		                    <div>
 		                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-		                        Step {currentStep} of 5
+		                        Step {currentStep} of 2
 		                      </p>
 		                      <h2 className={`mt-1 text-[17px] font-black tracking-tight text-slate-900 leading-tight ${typeSectionTitle}`}>
-		                        {currentStep === 1 ? 'Deal Type' :
-		                          currentStep === 2 ? 'Content' :
-		                            currentStep === 3 ? 'Budget' :
-		                              currentStep === 4 ? 'Campaign Goal' :
-		                                'Contact Info'}
+		                        {currentStep === 1 ? 'What you want' : 'Your contact details'}
 		                      </h2>
 		                    </div>
 	                    <div className="flex gap-1.5">
-	                      {[1, 2, 3, 4, 5].map((step) => (
+	                      {[1, 2].map((step) => (
 	                        <div
                           key={step}
                           className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-slate-900 shadow-[0_0_10px_rgba(0,0,0,0.1)]' : step < currentStep ? 'w-3 bg-emerald-500/40' : 'w-1.5 bg-slate-100'}`}
@@ -3264,544 +3166,369 @@ const CollabLinkLanding = () => {
                       </>
                 )}
 
-                {showCustomFlow && (
-                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-[300px]">
-                    {/* Step 1: Collaboration Type */}
+                 {showCustomFlow && (
+                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-[300px] pb-40 md:pb-0">
+                    {/* Step 1: Collaboration Type + Content Selection */}
                     {currentStep === 1 && (
-                      <div className="space-y-4">
-                        <label className={`block text-[15px] font-black text-slate-800 mb-6 ${typeLabel}`}>What type of collaboration?</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {[
-                            { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Fixed cash budget' },
-                            { id: 'barter', label: 'Free Products', icon: <Package className="h-5 w-5" />, sub: 'Free products as payment' },
-                            { id: 'hybrid', label: 'Hybrid', icon: <Zap className="h-5 w-5" />, sub: 'Cash + Product' },
-                            { id: 'affiliate', label: 'Affiliate', icon: <TrendingUp className="h-5 w-5" />, sub: 'Sales commission' },
-                          ].map((type) => (
-                            <button type="button"
-                              key={type.id}
-                              onClick={() => setCollabType(type.id as CollabType)}
-                              className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all group ${collabType === type.id ? 'border-slate-900 bg-slate-900 text-white shadow-xl scale-[1.02]' : 'border-slate-100 bg-white hover:border-slate-200 text-slate-600'}`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${collabType === type.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
+                      <div className="space-y-5">
+                        {/* Collab Type */}
+                        <div>
+                          <label className={`block text-base font-black text-slate-800 mb-3 ${typeLabel}`}>What type of collaboration?</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Cash' },
+                              { id: 'barter', label: 'Free products', icon: <Package className="h-5 w-5" />, sub: 'Product' },
+                              { id: 'hybrid', label: 'Paid + Product', icon: <Zap className="h-5 w-5" />, sub: 'Both' },
+                            ].map((type) => (
+                              <button type="button"
+                                key={type.id}
+                                onClick={() => setCollabType(type.id as CollabType)}
+                                className={`flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border-2 transition-all group min-h-[90px] md:min-h-[100px] ${collabType === type.id ? 'border-slate-900 bg-slate-900 text-white shadow-xl' : 'border-slate-100 bg-white hover:border-slate-200 text-slate-600'}`}
+                              >
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-1.5 ${collabType === type.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
                                   {type.icon}
                                 </div>
-                                <div className="text-left">
-                                  <p className="text-[13px] font-black uppercase tracking-tight">{type.label}</p>
-                                  <p className={`text-[10px] font-medium ${collabType === type.id ? 'text-white/60' : 'text-slate-400'}`}>{type.sub}</p>
-                                </div>
-                              </div>
-                              {collabType === type.id && <CheckCircle2 className="h-5 w-5 text-white" />}
-                            </button>
-                          ))}
+                                <p className="text-[12px] md:text-[13px] font-black uppercase tracking-tight leading-tight">{type.label}</p>
+                                <p className={`text-[10px] font-medium mt-0.5 ${collabType === type.id ? 'text-white/60' : 'text-slate-400'}`}>{type.sub}</p>
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
 
-                    {/* Step 2: Content (Deliverables) */}
-                    {currentStep === 2 && (
-                      <div className="space-y-6">
-                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
-                          <label className={`block text-[15px] font-black text-slate-800 mb-4 ${typeLabel} flex items-center gap-2`}>
+                        {/* Content Selection */}
+                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner">
+                          <label className={`block text-base font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
                             <Clapperboard className="h-5 w-5 text-slate-900" />
-                            What content do you need?
+                            What content?
                           </label>
-                          <p className="text-[11px] text-slate-500 font-semibold -mt-2 mb-4 px-1">
-                            e.g., 1 Instagram Reel, 3 Stories, 1 Product Review
-                          </p>
-                          <div className="flex flex-wrap gap-2.5">
-                            {DELIVERABLE_OPTIONS.map((option) => {
+                          <div className="grid grid-cols-2 gap-2">
+                            {DELIVERABLE_OPTIONS.slice(0, 6).map((option) => {
                               const isSelected = deliverables.includes(option.value);
                               return (
                                 <button type="button"
                                   key={option.value}
-                                  type="button"
                                   onClick={() => handleDeliverableToggle(option.value)}
-                                  className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-black transition-all border-2 ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
+                                  className={`flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-[13px] font-black transition-all border-2 min-h-[48px] ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
                                 >
                                   {option.icon}
                                   {option.label}
-                                  {isSelected && <CheckCircle2 className="h-3 w-3 text-white ml-1" />}
                                 </button>
                               );
                             })}
                           </div>
-
-	                          {deliverables.length > 0 && (
-	                            <div className="mt-8 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-	                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Adjust Quantities</label>
-	                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-	                                {deliverables.map((d) => (
-	                                  <div key={d} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200 shadow-sm group hover:border-slate-300 transition-all">
-                                    <span className="text-[12px] font-black text-slate-700">{d}</span>
-                                    <div className="flex items-center gap-3">
-                                      <button type="button"
-                                        onClick={() => updateDeliverableQuantity(d, (deliverableQuantities[d] || 1) - 1)}
-                                        className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-900 active:scale-90 transition-all font-bold"
-                                      >
-                                        −
-                                      </button>
-                                      <span className="w-6 text-center text-[13px] font-black text-slate-900">{deliverableQuantities[d] || 1}</span>
-                                      <button type="button"
-                                        onClick={() => updateDeliverableQuantity(d, (deliverableQuantities[d] || 1) + 1)}
-                                        className="w-8 h-8 rounded-full border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-900 active:scale-90 transition-all font-bold"
-                                      >
-                                        +
-                                      </button>
-                                    </div>
-                                  </div>
-	                                ))}
-	                              </div>
-	                            </div>
-	                          )}
-	                        </div>
-	                      </div>
-	                    )}
-
-                    {/* Step 3: Budget/Product Value */}
-                    {currentStep === 3 && (
-                      <div className="space-y-6">
-                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
-                          <label className={`block text-[15px] font-black text-slate-800 mb-6 ${typeLabel} flex items-center gap-2`}>
-                            <IndianRupee className="h-5 w-5 text-slate-900" />
-                            Budget (₹)
-                          </label>
-
-                          {collabType === 'paid' && (
-                            <div className="space-y-4">
-                              <div className="relative group">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
-                                <Input
-                                  type="number"
-                                  value={exactBudget}
-                                  onChange={(e) => setExactBudget(e.target.value)}
-                                  placeholder="Enter exact budget in INR"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
-                                />
-                              </div>
-                              <p className="px-1 text-[11px] text-slate-400 font-medium">Standard rate for this creator is ~₹{(creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000).toLocaleString()}.</p>
-                            </div>
-                          )}
-
-                          {(collabType === 'barter' || collabType === 'hybrid') && (
-                            <div className="space-y-5">
-                              <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 mb-2 block">Product Name / Offer</label>
-                                <Input
-                                  value={barterProductName}
-                                  onChange={(e) => setBarterProductName(e.target.value)}
-                                  placeholder="e.g. Wireless Noise Canceling Headphones"
-                                  className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
-                                />
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 mb-2 block">Market Value (₹)</label>
-                                  <Input
-                                    type="number"
-                                    value={barterValue}
-                                    onChange={(e) => setBarterValue(e.target.value)}
-                                    placeholder="Value in INR"
-                                    className="h-12 px-4 rounded-xl border-white bg-white font-black text-[14px] shadow-sm"
-                                  />
-                                </div>
-                                {collabType === 'hybrid' && (
-                                  <div>
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1 mb-2 block">Plus Cash (₹)</label>
-                                    <Input
-                                      type="number"
-                                      value={exactBudget}
-                                      onChange={(e) => setExactBudget(e.target.value)}
-                                      placeholder="Extra Cash"
-                                      className="h-12 px-4 rounded-xl border-white bg-white font-black text-[14px] shadow-sm"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                          {collabType === 'affiliate' && (
-                            <div className="p-10 text-center space-y-3">
-                              <TrendingUp className="h-10 w-10 text-slate-300 mx-auto" />
-                              <p className="text-[13px] font-black text-slate-500">Commission terms will be negotiated after brief review.</p>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
-                    {/* Step 4: Campaign Goal & Timeline */}
-                    {currentStep === 4 && (
-                      <div className="space-y-6">
-                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
-                          <div>
-                            <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Target className="h-5 w-5 text-slate-900" />Project Category</label>
-                            <div className="flex flex-wrap gap-2">
-                              {PRODUCT_CATEGORY_OPTIONS.slice(0, 10).map((option) => (
-                                <button type="button"
-                                  key={option.value}
-                                  type="button"
-                                  onClick={() => setCampaignCategory(option.label)}
-                                  className={`px-4 py-2.5 rounded-2xl text-[12px] font-black transition-all border-2 ${campaignCategory === option.label ? 'bg-slate-900 border-slate-900 text-white shadow-lg scale-105' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
-                                >
-                                  {option.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
 
-                          <div>
-                            <label className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}><FileText className="h-5 w-5 text-slate-900" />What do you want the creator to do?</label>
-                            <Textarea
-                              value={campaignDescription}
-                              onChange={(e) => setCampaignDescription(e.target.value)}
-                              placeholder="Be specific! Example: Review our summer skin serum focusing on lightweight texture. Mention our launch date June 15th."
-                              className="bg-white border-white rounded-2xl min-h-[120px] text-slate-900 placeholder:text-slate-400 focus:ring-slate-900/10 focus:border-slate-300 text-sm leading-relaxed shadow-sm p-4 font-medium"
-                            />
-                            <p className="text-[10px] text-slate-400 mt-2 px-1">Min. 20 characters • {campaignDescription.length} chars</p>
-                          </div>
-
-                          <div>
-                            <label className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}><Calendar className="h-5 w-5 text-slate-900" />When do you need this done?</label>
-                            <Input
-                              type="date"
-                              min={new Date().toISOString().split('T')[0]}
-                              value={deadline}
-                              onChange={(e) => setDeadline(e.target.value)}
-                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
-                            />
-                          </div>
-
-                          <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+                    {/* Step 2: Contact Details + Quick Info */}
+                    {currentStep === 2 && (
+                      <div className="space-y-4">
+                        {selectedTemplate && (
+                          <div className="rounded-[28px] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 shadow-[0_12px_28px_rgba(15,164,127,0.12)]">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Product Shipping</p>
-                                <p className="text-[12px] font-semibold text-slate-500 mt-0.5">
-                                  Turn this on if the brand will send a product or sample as part of the collaboration.
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Chosen service</p>
+                                <p className="text-[16px] font-black text-slate-900 truncate">{selectedTemplate.label}</p>
+                                <p className="text-[12px] font-semibold text-slate-600 mt-1">
+                                  {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
                                 </p>
                               </div>
-                              <button type="button"
+                              <Button
                                 type="button"
+                                variant="outline"
                                 onClick={() => {
-                                  const next = !requiresShipping;
-                                  setRequiresShipping(next);
-                                  if (!next) setShippingTimelineDays('');
+                                  setShowCustomFlow(false);
+                                  setCurrentStep(1);
+                                  triggerHaptic(HapticPatterns.selection);
+                                  requestAnimationFrame(() => {
+                                    document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                  });
                                 }}
-                                className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border transition-colors ${requiresShipping ? 'bg-emerald-600 border-emerald-600' : 'bg-slate-100 border-slate-200'}`}
-                                aria-pressed={requiresShipping}
+                                className="h-9 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
                               >
-                                <span
-                                  className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform ${requiresShipping ? 'translate-x-7' : 'translate-x-1'}`}
-                                />
-                              </button>
+                                Change
+                              </Button>
                             </div>
+                          </div>
+                        )}
 
-                            {requiresShipping && (
-                              <div>
-                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1 mb-2">Shipping timeline (days)</label>
+                        {/* Contact Section */}
+                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-3">
+                          <p className={`block text-base font-black text-slate-800 mb-1 ${typeLabel}`}>
+                            Send your offer
+                          </p>
+                          <p className="text-[12px] font-semibold text-slate-500">
+                            We only collect legal details if the creator is interested.
+                          </p>
+                          
+                          <div className="space-y-3">
+                            <label htmlFor="brand-name-input" className="sr-only">Brand name</label>
+                            <Input
+                              id="brand-name-input"
+                              value={brandName}
+                              onChange={(e) => setBrandName(e.target.value)}
+                              placeholder="Brand or company name"
+                              className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
+                            />
+                            <label htmlFor="brand-email-input" className="sr-only">Work email</label>
+                            <Input
+                              id="brand-email-input"
+                              type="email"
+                              value={brandEmail}
+                              onChange={(e) => setBrandEmail(e.target.value)}
+                              placeholder="your@email.com"
+                              className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
+                            />
+                            <label htmlFor="brand-instagram-input" className="sr-only">Brand Instagram</label>
+                            <Input
+                              id="brand-instagram-input"
+                              value={brandInstagram}
+                              onChange={(e) => setBrandInstagram(e.target.value)}
+                              placeholder="Brand Instagram (optional)"
+                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] shadow-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-3">
+                          <label htmlFor="campaign-description-input" className={`block text-base font-black text-slate-800 mb-1 ${typeLabel}`}>
+                            What do you want promoted?
+                          </label>
+                          <Textarea
+                            id="campaign-description-input"
+                            value={campaignDescription}
+                            onChange={(e) => setCampaignDescription(e.target.value)}
+                            placeholder="Launch a new product, drive installs, announce a sale, or review a product..."
+                            className="min-h-[110px] rounded-2xl border-white bg-white px-4 py-3 text-[14px] font-medium shadow-sm"
+                          />
+                        </div>
+
+                        {/* Budget (for paid deals) */}
+                        {collabType === 'paid' && (
+                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
+                            <label htmlFor="offer-budget-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
+                              <IndianRupee className="h-5 w-5 text-slate-900" />
+                              Your budget
+                            </label>
+                            <div className="relative group">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
+                              <Input
+                                id="offer-budget-input"
+                                type="number"
+                                value={exactBudget}
+                                onChange={(e) => setExactBudget(e.target.value)}
+                                placeholder="Enter your budget"
+                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Product details (for barter/hybrid) */}
+                        {(collabType === 'barter' || collabType === 'hybrid') && (
+                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
+                            <label htmlFor="barter-product-name-input" className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}>
+                              <Package className="h-5 w-5 text-slate-900" />
+                              Product details
+                            </label>
+                            <Input
+                              id="barter-product-name-input"
+                              value={barterProductName}
+                              onChange={(e) => setBarterProductName(e.target.value)}
+                              placeholder="Product name you'll send"
+                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                            />
+                            {collabType === 'hybrid' && (
+                              <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
                                 <Input
+                                  id="hybrid-cash-amount-input"
                                   type="number"
-                                  min="1"
-                                  value={shippingTimelineDays}
-                                  onChange={(e) => setShippingTimelineDays(e.target.value)}
-                                  placeholder="e.g. 5"
-                                  className="h-12 px-4 rounded-xl border-white bg-slate-50 font-bold text-[14px] shadow-sm"
+                                  value={exactBudget}
+                                  onChange={(e) => setExactBudget(e.target.value)}
+                                  placeholder="Plus cash amount (optional)"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
                                 />
                               </div>
                             )}
                           </div>
+                        )}
+
+                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner">
+                          <label htmlFor="offer-deadline-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
+                            <Calendar className="h-5 w-5 text-slate-900" />
+                            Deadline
+                          </label>
+                          <Input
+                            id="offer-deadline-input"
+                            type="date"
+                            value={deadline}
+                            onChange={(e) => setDeadline(e.target.value)}
+                            className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] shadow-sm"
+                          />
+                        </div>
+
+                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+                            <p className="text-[12px] font-semibold text-emerald-800">
+                              Creator reviews your offer, then accepts, counters, or declines.
+                            </p>
+                          </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Step 5: Contact Details */}
-                    {currentStep === 5 && (
-                      <div className="space-y-6">
-	                        {/* Selected package / offer summary */}
-	                        <div className="bg-slate-900 rounded-[32px] p-6 text-white shadow-2xl relative overflow-hidden group mb-6">
-	                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-white/10 transition-all" />
-	                          {selectedTemplate ? (
-	                            <>
-	                              <p className="text-[10px] font-black uppercase tracking-[2px] text-white/40 mb-4">Selected Package</p>
-	                              <div className="grid grid-cols-2 gap-6">
-	                                <div className="col-span-2">
-	                                  <p className="text-[16px] font-black leading-tight">{selectedTemplate.label}</p>
-	                                  <p className="mt-1 text-[11px] text-white/60 font-semibold">Pre-optimized deliverables and terms</p>
-	                                </div>
-	                                <div className="col-span-2 border-t border-white/10 pt-4">
-	                                  <p className="text-[10px] uppercase text-white/30 font-bold mb-2">Includes</p>
-	                                  <div className="flex flex-wrap gap-1.5">
-	                                    {selectedTemplate.deliverables.map((d) => (
-	                                      <span key={d} className="px-2.5 py-1 rounded-full bg-white/10 text-[10px] font-black text-white/90 border border-white/5">
-	                                        {selectedTemplate.quantities[d] || 1}x {d.replace('Instagram ', '')}
-	                                      </span>
-	                                    ))}
-	                                  </div>
-	                                </div>
-	                                <div className="col-span-2 border-t border-white/10 pt-4 flex items-center justify-between">
-	                                  <div>
-	                                    <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Price</p>
-	                                    <p className="text-[18px] font-black">{selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}</p>
-	                                  </div>
-	                                  <div className="text-right">
-	                                    <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Delivery</p>
-	                                    <p className="text-[12px] font-black">{selectedTemplate.deadlineDays || 7} days</p>
-	                                  </div>
-	                                </div>
-	                              </div>
-	                            </>
-	                          ) : (
-	                            <>
-	                              <p className="text-[10px] font-black uppercase tracking-[2px] text-white/40 mb-4">Brief Summary</p>
-	                              <div className="grid grid-cols-2 gap-6">
-	                                <div>
-	                                  <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Type</p>
-	                                  <p className="text-[14px] font-black capitalize">{collabType}</p>
-	                                </div>
-	                                <div>
-	                                  <p className="text-[10px] uppercase text-white/30 font-bold mb-0.5">Value</p>
-	                                  <p className="text-[14px] font-black">{displayBudget}</p>
-	                                </div>
-	                                <div className="col-span-2 border-t border-white/5 pt-4">
-	                                  <p className="text-[10px] uppercase text-white/30 font-bold mb-2">Scope</p>
-	                                  <div className="flex flex-wrap gap-1.5">
-	                                    {deliverables.length > 0 ? (
-	                                      deliverables.map(d => (
-	                                        <span key={d} className="px-2.5 py-1 rounded-full bg-white/10 text-[10px] font-black text-white/90 border border-white/5">{deliverableQuantities[d] || 1}x {d}</span>
-	                                      ))
-	                                    ) : (
-	                                      <span className="text-[11px] text-white/40 italic">No deliverables selected</span>
-	                                    )}
-	                                  </div>
-	                                </div>
-	                              </div>
-	                            </>
-	                          )}
-	                        </div>
-
-                        <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-6">
-                          <div className="flex items-center gap-2 mb-2 p-2 bg-emerald-50 rounded-2xl border border-emerald-100">
-                            <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                            <p className="text-[11px] font-black text-emerald-700 uppercase tracking-tight">Contract Protection Active</p>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-	                            <div className="space-y-2">
-	                              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Brand / Agency Name</label>
-	                              <Input
-	                                value={brandName}
-	                                onChange={(e) => setBrandName(e.target.value)}
-	                                onFocus={() => {
-	                                  if (!hasTrackedFormStarted.current) {
-	                                    hasTrackedFormStarted.current = true;
-	                                    trackEvent('collab_link_form_started', { username: username || '' });
-	                                  }
-	                                }}
-	                                placeholder="e.g. Acme Marketing Unit"
-	                                className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
-	                              />
-	                            </div>
-                            <div className="space-y-2">
-                              <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Contact Email</label>
-                              <Input
-                                type="email"
-                                value={brandEmail}
-                                onChange={(e) => setBrandEmail(e.target.value)}
-                                placeholder="name@company.com"
-                                className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
-                              />
-                            </div>
-                          </div>
-
-                          {(() => {
-                            const hasSavedLegalDetails = Boolean(authorizedSignerName.trim() || brandAddress.trim());
-                            const mustShowLegalDetails = !brandAddress.trim();
-                            const showLegalDetails = showOptionalBrandDetails || mustShowLegalDetails;
-
-                            if (!showLegalDetails) {
-                              return (
-                                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Legal details</p>
-                                    <p className="text-[12px] font-semibold text-slate-500 mt-0.5">
-                                      {hasSavedLegalDetails ? 'Saved on file (hidden for privacy)' : 'Not provided'}
-                                    </p>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowOptionalBrandDetails(true)}
-                                    className="h-9 rounded-xl border-slate-200 text-slate-700 font-black text-[10px] uppercase tracking-widest"
-                                  >
-                                    Edit
-                                  </Button>
-                                </div>
-                              );
-                            }
-
-                            return (
-                              <div className="rounded-3xl border border-slate-200 bg-white p-4 space-y-4 shadow-sm">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Legal details</p>
-                                    <p className="text-[12px] font-semibold text-slate-500 mt-0.5">
-                                      Used only for the contract. You can keep it private unless editing.
-                                    </p>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setShowOptionalBrandDetails(false)}
-                                    className="h-9 rounded-xl border-slate-200 text-slate-600 font-black text-[10px] uppercase tracking-widest"
-                                  >
-                                    Hide
-                                  </Button>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Authorized Person Name</label>
-                                  <Input
-                                    value={authorizedSignerName}
-                                    onChange={(e) => setAuthorizedSignerName(e.target.value)}
-                                    placeholder="Full name for contract signing"
-                                    className="h-12 px-4 rounded-xl border-white bg-slate-50 font-bold text-[14px] shadow-sm"
-                                  />
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest pl-1">Registered Address</label>
-                                  <Textarea
-                                    value={brandAddress}
-                                    onChange={(e) => setBrandAddress(e.target.value)}
-                                    placeholder="Enter full office address for the legal agreement..."
-                                    className="bg-slate-50 border-white rounded-xl min-h-[80px] shadow-sm p-4 font-medium text-sm"
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })()}
-
-	                          {/* Form confirmation panel is shown near the send button for consistency */}
-	                        </div>
-	                      </div>
-	                    )}
-
-			                    {/* Step Navigation Bar */}
-			                    <div className="mt-8">
-			                      {currentStep === 5 && isStep5Ready && (
-			                        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
-			                          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-700">
-			                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-			                            Ready to send securely
-			                          </div>
-			                          <div className="mt-2 space-y-1.5">
-			                            <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-800">
-			                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-			                              Contract protection active
-			                            </div>
-			                            <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-800">
-			                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-			                              Secure payment processing
-			                            </div>
-			                            <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-800">
-			                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-			                              Legally binding agreement
-			                            </div>
-			                          </div>
-			                        </div>
-			                      )}
-			                      <div className="flex flex-col sm:flex-row gap-3">
-			                      {!(selectedTemplate && currentStep === 5) && (
-			                        <Button
-			                          onClick={() => {
-			                            if (currentStep === 1) {
-		                              setShowCustomFlow(false);
-	                            } else {
-                              setCurrentStep(currentStep - 1);
-                            }
-                            triggerHaptic(HapticPatterns.light);
-                          }}
-                          variant="outline"
-                          className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
-                        >
-		                          {currentStep === 1 ? 'Go Back' : 'Previous Step'}
-		                        </Button>
-			                      )}
-
-		                      {currentStep < 5 ? (
-	                        <Button
-	                          onClick={() => {
-	                            let canProceed = false;
-	                            if (currentStep === 1 && isStep1Ready) canProceed = true;
-                            if (currentStep === 2 && isStep2Ready) canProceed = true;
-                            if (currentStep === 3 && isStep3Ready) canProceed = true;
-                            if (currentStep === 4 && isStep4Ready) canProceed = true;
+                  {/* Mobile sticky bottom CTA for the form */}
+                  <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-white via-white/95 to-transparent md:hidden">
+                    <div className="max-w-lg mx-auto">
+                    {currentStep < 2 ? (
+                        <Button
+                          onClick={() => {
+                            let canProceed = false;
+                            if (currentStep === 1 && isStep1Ready) canProceed = true;
 
                             if (canProceed) {
                               setCurrentStep(currentStep + 1);
                               triggerHaptic(HapticPatterns.success);
-                              scrollOfferFormIntoView();
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
                             } else {
-                              toast.error(`Please complete Step ${currentStep} first`);
+                              toast.error(`Please select collaboration type first`);
                             }
                           }}
-	                          className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-98"
+                          className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-base shadow-lg active:scale-[0.98] transition-all"
                         >
                           Continue
-                          <ArrowRight className="ml-2 h-4 w-4" />
-		                        </Button>
-		                      ) : (
-		                        <div className="flex flex-col gap-3 w-full">
-		                          <Button
-		                            type="button"
-		                            onClick={() => setShowSaveDraftModal(true)}
-		                            variant="outline"
-		                            className="h-14 w-full min-w-0 rounded-full border-slate-200 text-slate-600 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
-		                          >
-		                            <span className="flex items-center gap-2">
-		                              <Lock className="h-4 w-4" />
-		                              <span className="flex flex-col items-start leading-tight">
-		                                <span>Save draft & resume later</span>
-		                                <span className="text-[10px] font-bold text-slate-400 normal-case tracking-normal mt-0.5">Draft expires in 7 days</span>
-		                              </span>
-		                            </span>
-		                          </Button>
-		                          <Button
-		                            onClick={handleSubmit}
-		                            disabled={submitting || !isStep5Ready}
-	                            className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
-	                          >
-	                            <span className="flex items-center justify-center gap-2">
-	                              {submitting ? (
-	                                <>
-	                                  <Loader2 className="h-4 w-4 animate-spin" />
-	                                  Processing...
-	                                </>
-		                              ) : (
-		                                <>
-		                                  <Send className="h-4 w-4" />
-		                                  Send collaboration offer
-		                                  <ArrowRight className="h-4 w-4 ml-1" />
-		                                </>
-		                              )}
-		                            </span>
-		                          </Button>
-		                        </div>
-		                      )}
-		                      </div>
-		                      {currentStep === 5 && (
-		                        <p className="mt-2 text-[11px] font-semibold text-slate-500 text-center">
-		                          Creator will review and approve your request
-		                        </p>
-		                      )}
-		                    </div>
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                        {!(selectedTemplate && currentStep === 2) && (
+                          <Button
+                            onClick={() => {
+                              if (currentStep === 1) {
+                                setShowCustomFlow(false);
+                              } else {
+                                setCurrentStep(currentStep - 1);
+                              }
+                              triggerHaptic(HapticPatterns.light);
+                            }}
+                            variant="outline"
+                            className="h-12 w-full rounded-2xl border-slate-200 text-slate-500 font-black text-base"
+                          >
+                            Back
+                          </Button>
+                        )}
+                          <Button
+                            onClick={handleSubmit}
+                            disabled={submitting || !isStep2Ready}
+                            className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-base shadow-lg active:scale-[0.98] transition-all"
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              {submitting ? (
+                                <>
+                                  <Loader2 className="h-5 w-5 animate-spin" />
+                                  Sending...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="h-5 w-5" />
+                                  Send Offer
+                                </>
+                              )}
+                            </span>
+                          </Button>
+                        </div>
+                    )}
+                    </div>
+                  </div>
 
-		                    <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-8">
+                  {/* Desktop navigation only */}
+                  <div className="hidden md:block mt-8">
+                    {currentStep === 2 && isStep2Ready && (
+                      <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-700">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                          Ready to send
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                    {!(selectedTemplate && currentStep === 2) && (
+                      <Button
+                        onClick={() => {
+                          if (currentStep === 1) {
+                            setShowCustomFlow(false);
+                          } else {
+                            setCurrentStep(currentStep - 1);
+                          }
+                          triggerHaptic(HapticPatterns.light);
+                        }}
+                        variant="outline"
+                        className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
+                      >
+                        {currentStep === 1 ? 'Go Back' : 'Back'}
+                      </Button>
+                    )}
+
+                    {currentStep < 2 ? (
+                      <Button
+                        onClick={() => {
+                          let canProceed = false;
+                          if (currentStep === 1 && isStep1Ready) canProceed = true;
+
+                          if (canProceed) {
+                            setCurrentStep(currentStep + 1);
+                            triggerHaptic(HapticPatterns.success);
+                            scrollOfferFormIntoView();
+                          } else {
+                            toast.error(`Please select collaboration type first`);
+                          }
+                        }}
+                        className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-98"
+                      >
+                        Continue
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    ) : (
+                      <div className="flex flex-col gap-3 w-full">
+                        <Button
+                          onClick={handleSubmit}
+                          disabled={submitting || !isStep2Ready}
+                          className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            {submitting ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4" />
+                                Send Offer
+                                <ArrowRight className="h-4 w-4 ml-1" />
+                              </>
+                            )}
+                          </span>
+                        </Button>
+                      </div>
+                    )}
+                    </div>
+                    {currentStep === 2 && (
+                      <p className="mt-2 text-[11px] font-semibold text-slate-500 text-center">
+                        Creator will be notified instantly
+                      </p>
+                    )}
+                  </div>
+
+		                    <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-6">
 		                      <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
 		                        <Lock className="h-3 w-3" />
-		                        Drafts are private. Expires in 7 days
+		                        Secure & private
 		                      </div>
 
-	                      {currentStep < 5 && (
+	                      {currentStep < 2 && (
 	                        <Button
 	                          onClick={handleStickySubmit}
                           className="hidden md:flex w-auto h-12 px-8 rounded-2xl bg-slate-100 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
@@ -3816,7 +3543,6 @@ const CollabLinkLanding = () => {
                     {import.meta.env.DEV && (
                       <div className="mt-6 flex justify-center">
                         <button type="button"
-                          type="button"
                           onClick={fillDemoData}
                           className="text-[10px] text-slate-200 hover:text-slate-300 font-bold uppercase tracking-widest"
                         >
@@ -3835,7 +3561,6 @@ const CollabLinkLanding = () => {
           {isOwner && !previewAsBrand && hasIncompleteSetup && (
             <div className="fixed right-4 bottom-24 z-50 md:hidden">
               <button type="button"
-                type="button"
                 onClick={() => {
                   if (!editMode) setEditMode(true);
                   scrollToSetupSection();
@@ -3897,7 +3622,7 @@ const CollabLinkLanding = () => {
           </div>
 
           {/* Sticky Bottom CTA (mobile compact) */}
-          {!(showCustomFlow && currentStep === 5) && (
+          {!(showCustomFlow && currentStep === 2) && (
           <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
             <div className="relative">
               {isCoreReady && !hasStartedOffer && (
@@ -3909,7 +3634,7 @@ const CollabLinkLanding = () => {
 	                    ? () => {
 	                      if (selectedTemplate) {
 	                        setShowCustomFlow(true);
-	                        setCurrentStep(5);
+	                        setCurrentStep(2);
 	                        window.scrollTo({ top: 0, behavior: 'smooth' });
 	                        triggerHaptic(HapticPatterns.success);
 	                        return;
@@ -3918,7 +3643,7 @@ const CollabLinkLanding = () => {
 	                    }
 	                    : handleStickySubmit
 	                }
-	                disabled={submitting || (showCustomFlow && currentStep === 5 && hasStartedOffer && !isStep5Ready)}
+	                disabled={submitting || (showCustomFlow && currentStep === 2 && hasStartedOffer && !isStep2Ready)}
 	                className={[
 	                  'w-full rounded-2xl font-black active:scale-[0.98] transition-all duration-300',
 	                  !showCustomFlow
@@ -3932,31 +3657,31 @@ const CollabLinkLanding = () => {
                     Finalizing Security...
                   </span>
 		                ) : !showCustomFlow ? (
-			                  selectedTemplate ? (
+		                  selectedTemplate ? (
 			                    <span className="w-full flex flex-col items-center justify-center leading-tight">
 			                      <span className="text-[12px] font-black">
-			                        Selected Package — {selectedTemplate.type === 'barter' ? 'Barter' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
+			                        Chosen service — {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
 			                      </span>
 			                      <span className="mt-1 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
-			                        Continue
+			                        Continue to Offer
 			                        <ArrowRight className="h-4 w-4" />
 			                      </span>
 			                    </span>
 		                  ) : (
 		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      View collaboration packages
+		                      Choose a Service
 		                      <ArrowRight className="h-4 w-4" />
 		                    </span>
 		                  )
-		                ) : (
-		                  (currentStep === 5 && hasStartedOffer) ? (
+		                  ) : (
+		                  (currentStep === 2 && hasStartedOffer) ? (
 		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Send collaboration offer
+		                      Send Offer
 		                      <ArrowRight className="h-4 w-4" />
 		                    </span>
 		                  ) : (
 		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Next step
+		                      Continue
 		                      <ArrowRight className="h-4 w-4" />
 		                    </span>
 		                  )
@@ -3981,8 +3706,8 @@ const CollabLinkLanding = () => {
             )}
           </div>
           )}
-        </div >
-      </div >
+        </div>
+      </div>
 
       {/* Edit Deal Template Modal */}
       {
@@ -4015,7 +3740,7 @@ const EditDealTemplateModal = ({
       const isSelected = prev.deliverables.includes(val);
       if (isSelected) {
         if (prev.deliverables.length <= 1) {
-          toast.error('Packages must have at least 1 deliverable.');
+          toast.error('Your Services must have at least 1 deliverable.');
           return prev;
         }
         return {
@@ -4070,13 +3795,13 @@ const EditDealTemplateModal = ({
         <DialogHeader className="pt-2">
           <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
             <span className="text-2xl">{edited.icon}</span>
-            Edit Deal Template
+            Edit Service
           </DialogTitle>
-          <p className="text-xs text-slate-500 font-medium tracking-tight">Set your collaboration package to guide brands.</p>
+          <p className="text-xs text-slate-500 font-medium tracking-tight">Set your service details so brands can choose faster.</p>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Package Name</label>
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Service Name</label>
             <Input
               value={edited.label}
               onChange={(e) => setEdited({ ...edited, label: e.target.value })}
@@ -4128,8 +3853,8 @@ const EditDealTemplateModal = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
-                  <SelectItem value="paid" className="rounded-xl font-bold">💰 Paid Collab</SelectItem>
-                  <SelectItem value="barter" className="rounded-xl font-bold">📦 Barter Deal</SelectItem>
+                  <SelectItem value="paid" className="rounded-xl font-bold">💰 Paid</SelectItem>
+                  <SelectItem value="barter" className="rounded-xl font-bold">📦 Free products as payment</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -4147,7 +3872,7 @@ const EditDealTemplateModal = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Days to make content</label>
+            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Delivery Time</label>
             <div className="relative">
               <Input
                 type="number"

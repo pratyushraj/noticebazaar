@@ -12,6 +12,60 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { toast } from 'sonner';
 import { useSignOut } from '@/lib/hooks/useAuth';
 
+type ProfileRow = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
+
+type EmailRow = {
+  user_id: string;
+  email: string;
+};
+
+type DealRow = {
+  id: string;
+  creator_id: string | null;
+  brand_name: string | null;
+  status: string | null;
+  deal_type: string | null;
+  deal_amount: number | null;
+};
+
+type RealtimeMessageRow = {
+  id: string;
+  content: string;
+  sender_id: string;
+  sent_at: string;
+  is_read?: boolean | null;
+  conversation_id: string;
+};
+
+const getErrorMessage = (error: unknown, fallback = 'Unknown error') =>
+  error instanceof Error ? error.message : fallback;
+
+type ParticipantRow = {
+  conversation_id: string;
+  user_id: string;
+  role?: string;
+};
+
+type ConversationRow = {
+  id: string;
+  title: string | null;
+  risk_tag: string | null;
+  unread_count_creator: number;
+  unread_count_advisor: number;
+  last_message_at: string | null;
+  updated_at?: string | null;
+};
+
+type LastMessageRow = {
+  content: string;
+  sent_at: string;
+};
+
 interface Conversation {
   id: string;
   title: string | null;
@@ -131,7 +185,7 @@ const getConversationSubtitle = (conv: Conversation): { subtitle: string; meta?:
   const firstDeal = conv.creatorDeals && conv.creatorDeals.length > 0 ? conv.creatorDeals[0] : null;
   
   // Build subtitle: Issue type + Deal context
-  let subtitleParts: string[] = [];
+  const subtitleParts: string[] = [];
   
   if (issueType) {
     subtitleParts.push(issueType);
@@ -233,8 +287,14 @@ export default function LawyerDashboard() {
         
         // First, get conversations where user is a participant
         // IMPORTANT: conversation_participants.user_id should match auth.uid() (not profile.id)
-        const { data: participantData, error: participantError } = await supabase
-          .from('conversation_participants')
+        const conversationParticipantsTable = supabase.from('conversation_participants') as unknown as {
+          select: (columns: string) => {
+            eq: (column: string, value: string) => Promise<{ data: ParticipantRow[] | null; error: AppError | null }>;
+            in: (column: string, values: string[]) => Promise<{ data: ParticipantRow[] | null; error: AppError | null }>;
+          };
+        };
+
+        const { data: participantData, error: participantError } = await conversationParticipantsTable
           .select('conversation_id, user_id')
           .eq('user_id', authUserId);
 
@@ -272,11 +332,14 @@ export default function LawyerDashboard() {
         console.log('[LawyerDashboard] Conversation IDs to fetch:', participantConversationIds);
 
         // Try RPC function first (bypasses RLS issues)
-        let conversationsData: any[] = [];
-        let conversationsError: any = null;
+        let conversationsData: Array<{ id: string; title: string | null; risk_tag: string | null; unread_count_creator: number; unread_count_advisor: number; last_message_at: string | null }> = [];
+        let conversationsError: AppError | null = null;
 
         console.log('[LawyerDashboard] Trying RPC function first...');
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_conversations');
+        const { data: rpcData, error: rpcError } = await (supabase.rpc('get_user_conversations') as unknown as Promise<{
+          data: ConversationRow[] | null;
+          error: AppError | null;
+        }>);
         
         console.log('[LawyerDashboard] RPC function result:', {
           dataCount: rpcData?.length || 0,
@@ -291,8 +354,23 @@ export default function LawyerDashboard() {
         } else {
           // Fallback to direct query
           console.log('[LawyerDashboard] RPC failed, trying direct query...');
-          const { data: batchData, error: batchError } = await supabase
-            .from('conversations')
+          const conversationsTable = supabase.from('conversations') as unknown as {
+            select: (columns: string) => {
+              in: (column: string, values: string[]) => {
+                order: (column: string, options: { ascending: boolean; nullsFirst?: boolean }) => {
+                  order: (column: string, options: { ascending: boolean }) => Promise<{
+                    data: ConversationRow[] | null;
+                    error: AppError | null;
+                  }>;
+                };
+              };
+              eq: (column: string, value: string) => {
+                single: () => Promise<{ data: ConversationRow | null; error: AppError | null }>;
+              };
+            };
+          };
+
+          const { data: batchData, error: batchError } = await conversationsTable
             .select('*')
             .in('id', participantConversationIds)
             .order('last_message_at', { ascending: false, nullsFirst: false })
@@ -313,10 +391,9 @@ export default function LawyerDashboard() {
           // If batch query failed, try individual queries as fallback
           if (batchError && (!batchData || batchData.length === 0)) {
             console.warn('[LawyerDashboard] Batch query failed, trying individual queries:', batchError);
-            const individualResults: any[] = [];
+            const individualResults: Array<{ id: string; title: string | null; risk_tag: string | null; unread_count_creator: number; unread_count_advisor: number; last_message_at: string | null }> = [];
             for (const convId of participantConversationIds) {
-              const { data: singleData, error: singleError } = await supabase
-                .from('conversations')
+              const { data: singleData, error: singleError } = await conversationsTable
                 .select('*')
                 .eq('id', convId)
                 .single();
@@ -360,21 +437,24 @@ export default function LawyerDashboard() {
         }
 
         // Fetch all participants for these conversations
-        const filteredConversationIds = filteredConversations.map(c => c.id);
-        const { data: allParticipants, error: participantsError } = await supabase
-          .from('conversation_participants')
+        const filteredConversationIds = filteredConversations.map((c) => c.id);
+        const { data: allParticipants, error: participantsError } = await conversationParticipantsTable
           .select('conversation_id, user_id, role')
           .in('conversation_id', filteredConversationIds);
 
         if (participantsError) throw participantsError;
 
         // Get unique user IDs and fetch profiles + emails
-        const userIds = [...new Set(allParticipants?.map(p => p.user_id) || [])];
+        const userIds = [...new Set((allParticipants || []).map((p) => p.user_id))];
         
         // Fetch profiles (basic fields only - no social handles)
-        let profilesData: any[] = [];
-        const { data: basicProfiles, error: profilesError } = await supabase
-          .from('profiles')
+        let profilesData: ProfileRow[] = [];
+        const profilesTable = supabase.from('profiles') as unknown as {
+          select: (columns: string) => {
+            in: (column: string, values: string[]) => Promise<{ data: ProfileRow[] | null; error: AppError | null }>;
+          };
+        };
+        const { data: basicProfiles, error: profilesError } = await profilesTable
           .select('id, first_name, last_name, avatar_url')
           .in('id', userIds);
 
@@ -389,12 +469,12 @@ export default function LawyerDashboard() {
         const emailsMap = new Map<string, string>();
         if (userIds.length > 0) {
           try {
-            const { data: emailsData, error: emailsError } = await supabase.rpc('get_user_emails', {
+            const { data: emailsData, error: emailsError } = await (supabase.rpc('get_user_emails', {
               user_ids: userIds
-            });
+            }) as unknown as Promise<{ data: EmailRow[] | null; error: AppError | null }>);
             
             if (!emailsError && emailsData) {
-              emailsData.forEach((item: any) => {
+              (emailsData as EmailRow[]).forEach((item) => {
                 if (item.user_id && item.email) {
                   emailsMap.set(item.user_id, item.email);
                 }
@@ -412,15 +492,27 @@ export default function LawyerDashboard() {
 
         // Create a map of user_id (profile.id) -> profile
         // Note: profiles.id matches conversation_participants.user_id (both reference auth.users.id)
-        const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+        const profilesMap = new Map(profilesData.map((p) => [p.id, p]));
 
         // Fetch last messages for each conversation
         const lastMessagesMap = new Map<string, { content: string; sent_at: string }>();
-        const conversationIdsForMessages = filteredConversations.map(c => c.id);
+        const conversationIdsForMessages = filteredConversations.map((c) => c.id);
         if (conversationIdsForMessages.length > 0) {
           for (const convId of conversationIdsForMessages) {
-            const { data: lastMessage, error: msgError } = await supabase
-              .from('messages')
+            const messagesTable = supabase.from('messages') as unknown as {
+              select: (columns: string) => {
+                eq: (column: string, value: string | boolean) => {
+                  eq: (column: string, value: string | boolean) => {
+                    order: (column: string, options: { ascending: boolean }) => {
+                      limit: (count: number) => {
+                        single: () => Promise<{ data: LastMessageRow | null; error: AppError | null }>;
+                      };
+                    };
+                  };
+                };
+              };
+            };
+            const { data: lastMessage, error: msgError } = await messagesTable
               .select('content, sent_at')
               .eq('conversation_id', convId)
               .eq('is_deleted', false)
@@ -439,7 +531,7 @@ export default function LawyerDashboard() {
 
         // Get creator IDs from participants
         const creatorIds = new Set<string>();
-        allParticipants?.forEach(p => {
+        (allParticipants || []).forEach((p) => {
           if (p.role === 'creator') {
             creatorIds.add(p.user_id);
           }
@@ -449,8 +541,12 @@ export default function LawyerDashboard() {
         const dealsMap = new Map<string, Array<{ id: string; brand_name: string | null; status: string | null; deal_type: string | null; deal_amount: number | null }>>();
         if (creatorIds.size > 0) {
           console.log('[LawyerDashboard] Fetching deals for creators:', Array.from(creatorIds));
-          const { data: dealsData, error: dealsError } = await supabase
-            .from('brand_deals')
+          const brandDealsTable = supabase.from('brand_deals') as unknown as {
+            select: (columns: string) => {
+              in: (column: string, values: string[]) => Promise<{ data: DealRow[] | null; error: AppError | null }>;
+            };
+          };
+          const { data: dealsData, error: dealsError } = await brandDealsTable
             .select('id, creator_id, brand_name, status, deal_type, deal_amount')
             .in('creator_id', Array.from(creatorIds));
           
@@ -459,7 +555,7 @@ export default function LawyerDashboard() {
           } else {
             console.log('[LawyerDashboard] Fetched deals:', dealsData?.length || 0);
             if (dealsData && dealsData.length > 0) {
-              dealsData.forEach((deal: any) => {
+              (dealsData as DealRow[]).forEach((deal) => {
                 if (deal.creator_id) {
                   if (!dealsMap.has(deal.creator_id)) {
                     dealsMap.set(deal.creator_id, []);
@@ -480,7 +576,7 @@ export default function LawyerDashboard() {
         
         // Join conversations with participants, profiles, last messages, and deals
         const conversationsWithParticipants = filteredConversations.map(conv => {
-          const creatorParticipant = allParticipants?.find(
+          const creatorParticipant = (allParticipants || []).find(
             p => p.conversation_id === conv.id && p.role === 'creator'
           );
           const creatorDeals = creatorParticipant?.user_id 
@@ -501,16 +597,16 @@ export default function LawyerDashboard() {
           return {
           ...conv,
           last_message: lastMessagesMap.get(conv.id) || null,
-            creatorDeals: creatorDeals.map((deal: any) => ({
+            creatorDeals: creatorDeals.map((deal) => ({
               id: deal.id,
               brand_name: deal.brand_name,
               status: deal.status,
               deal_type: deal.deal_type,
               deal_amount: deal.deal_amount,
             })),
-          participants: allParticipants
-            ?.filter(p => p.conversation_id === conv.id)
-              .map(p => {
+          participants: (allParticipants || [])
+            .filter((p) => p.conversation_id === conv.id)
+              .map((p) => {
                 const profile = profilesMap.get(p.user_id);
                 const email = emailsMap.get(p.user_id) || null;
                 return {
@@ -559,9 +655,9 @@ export default function LawyerDashboard() {
             setSelectedConversation(firstConvId);
           }, 0);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[LawyerDashboard] Error in fetchConversations:', err);
-        toast.error('Failed to load conversations', { description: err.message });
+        toast.error('Failed to load conversations', { description: getErrorMessage(err) });
       } finally {
         setIsLoading(false);
       }
@@ -605,7 +701,7 @@ export default function LawyerDashboard() {
         schema: 'public',
         table: 'conversation_participants'
       }, async (payload) => {
-        const newParticipant = payload.new as any;
+        const newParticipant = payload.new as { conversation_id?: string };
         console.log('[LawyerDashboard] 🔔 New participant inserted:', {
           conversationId: newParticipant?.conversation_id,
           userId: newParticipant?.user_id,
@@ -654,7 +750,7 @@ export default function LawyerDashboard() {
         schema: 'public',
         table: 'messages'
       }, (payload) => {
-        const newMessage = payload.new as any;
+        const newMessage = payload.new as RealtimeMessageRow;
         console.log('[LawyerDashboard] New message inserted, refetching conversations...', {
           messageId: newMessage?.id,
           conversationId: newMessage?.conversation_id,
@@ -729,8 +825,16 @@ export default function LawyerDashboard() {
     const fetchMessages = async (retryCount = 0) => {
       try {
         console.log('[LawyerDashboard] Fetching messages for conversation:', selectedConversation, `(attempt ${retryCount + 1})`);
-        const { data, error } = await supabase
-          .from('messages')
+        const messagesTable = supabase.from('messages') as unknown as {
+          select: (columns: string) => {
+            eq: (column: string, value: string | boolean) => {
+              eq: (column: string, value: string | boolean) => {
+                order: (column: string, options: { ascending: boolean }) => Promise<{ data: Message[] | null; error: AppError | null }>;
+              };
+            };
+          };
+        };
+        const { data, error } = await messagesTable
           .select(`
             *,
             attachments:message_attachments(id, file_name, signed_download_url)
@@ -746,19 +850,17 @@ export default function LawyerDashboard() {
         
         console.log('[LawyerDashboard] Successfully fetched messages:', data?.length || 0);
         if (isMounted) {
-        setMessages(data || []);
+          setMessages((data || []) as Message[]);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[LawyerDashboard] Error fetching messages:', {
           error: err,
-          message: err?.message,
-          code: err?.code,
-          details: err?.details,
+          message: getErrorMessage(err),
           retryCount
         });
         
         // Retry on network errors (up to 2 retries)
-        if (retryCount < 2 && (err?.message?.includes('Load failed') || err?.message?.includes('Failed to fetch'))) {
+        if (retryCount < 2 && (getErrorMessage(err).includes('Load failed') || getErrorMessage(err).includes('Failed to fetch'))) {
           console.log('[LawyerDashboard] Retrying message fetch in 1 second...');
           setTimeout(() => {
             if (isMounted) {
@@ -771,7 +873,7 @@ export default function LawyerDashboard() {
         if (isMounted) {
           // Only show toast on final failure
           if (retryCount >= 2) {
-            toast.error('Failed to load messages', { description: err?.message || 'Network error' });
+            toast.error('Failed to load messages', { description: getErrorMessage(err, 'Network error') });
           }
         }
       }
@@ -811,7 +913,7 @@ export default function LawyerDashboard() {
         
         // Process INSERT
         if (payload.new) {
-          const newMessage = payload.new as any;
+          const newMessage = payload.new as RealtimeMessageRow;
           // Double-check conversation_id matches (safety check)
           if (newMessage.conversation_id !== selectedConversation) {
             console.log('[LawyerDashboard] ⚠️ Message conversation_id mismatch, ignoring');
@@ -932,7 +1034,7 @@ export default function LawyerDashboard() {
       }, (payload) => {
         if (!isMounted) return;
         
-        const newMessage = payload.new as any;
+        const newMessage = payload.new as RealtimeMessageRow;
         // Filter by conversation_id in callback
         if (newMessage?.conversation_id === selectedConversation) {
           console.log('[LawyerDashboard] 🔔 Fallback subscription caught message:', newMessage.id);
@@ -1086,15 +1188,16 @@ export default function LawyerDashboard() {
                   triggerHaptic(HapticPatterns.medium);
                   try {
                     // Analytics tracking
-                    if (typeof window !== 'undefined' && (window as any).gtag) {
-                      (window as any).gtag('event', 'logout', {
+                    const analyticsWindow = window as Window & { gtag?: (...args: unknown[]) => void };
+                    if (typeof window !== 'undefined' && analyticsWindow.gtag) {
+                      analyticsWindow.gtag('event', 'logout', {
                         event_category: 'engagement',
                         event_label: 'user_logout',
                         method: 'lawyer_dashboard'
                       });
                     }
                     await signOutMutation.mutateAsync();
-                  } catch (error: any) {
+                  } catch (error: unknown) {
                     console.error('Logout failed', error);
                   }
                 }}
@@ -1246,8 +1349,18 @@ export default function LawyerDashboard() {
               onBack={handleBack}
               onSendMessage={async (content) => {
                 if (!user?.id) return;
-                const { data, error } = await supabase
-                  .from('messages')
+                const messageMutationsTable = supabase.from('messages') as unknown as {
+                  insert: (values: {
+                    conversation_id: string;
+                    sender_id: string;
+                    content: string;
+                  }) => {
+                    select: (columns: string) => {
+                      single: () => Promise<{ data: Message | null; error: AppError | null }>;
+                    };
+                  };
+                };
+                const { data, error } = await messageMutationsTable
                   .insert({
                     conversation_id: selectedConversation,
                     sender_id: user.id,
@@ -1272,8 +1385,7 @@ export default function LawyerDashboard() {
                 // Also refetch to ensure we have the latest (triggers will update conversation metadata)
                 setTimeout(() => {
                   const fetchMessages = async () => {
-                    const { data: freshData } = await supabase
-                      .from('messages')
+                    const { data: freshData } = await messagesTable
                       .select(`
                         *,
                         attachments:message_attachments(id, file_name, signed_download_url)
@@ -1390,8 +1502,8 @@ function ConversationView({
           scrollToLast(true);
         }, 70);
       }, 30);
-    } catch (err: any) {
-      toast.error('Failed to send message', { description: err.message });
+    } catch (err: unknown) {
+      toast.error('Failed to send message', { description: getErrorMessage(err) });
     } finally {
       setIsSending(false);
     }
