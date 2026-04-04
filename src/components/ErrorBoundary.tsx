@@ -27,7 +27,8 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Track error for analytics
-    trackEvent('error_boundary_caught', {
+    trackEvent({
+      event: 'error_boundary_caught',
       error_message: error.message,
       error_stack: error.stack?.substring(0, 500), // Limit stack trace length
       component_name: this.props.name || 'unknown',
@@ -45,17 +46,17 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReload = () => {
-    trackEvent('error_boundary_reload', { error_id: this.state.errorId });
+    trackEvent({ event: 'error_boundary_reload', error_id: this.state.errorId });
     window.location.reload();
   };
 
   handleGoHome = () => {
-    trackEvent('error_boundary_go_home', { error_id: this.state.errorId });
+    trackEvent({ event: 'error_boundary_go_home', error_id: this.state.errorId });
     window.location.href = '/';
   };
 
   handleReportIssue = () => {
-    trackEvent('error_boundary_report_issue', { error_id: this.state.errorId });
+    trackEvent({ event: 'error_boundary_report_issue', error_id: this.state.errorId });
     const subject = encodeURIComponent(`App Error Report - ${this.state.errorId}`);
     const body = encodeURIComponent(`
 Error ID: ${this.state.errorId}
