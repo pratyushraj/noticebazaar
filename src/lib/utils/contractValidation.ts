@@ -12,8 +12,8 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
   const lowerText = text.toLowerCase();
   
   // Log extracted text for debugging (first 500 chars)
-  console.log('[ContractValidation] Extracted text sample (first 500 chars):', text.substring(0, 500));
-  console.log('[ContractValidation] Full text length:', text.length);
+  if (import.meta.env.DEV) { console.log('[ContractValidation] Extracted text sample (first 500 chars):', text.substring(0, 500)); }
+  if (import.meta.env.DEV) { console.log('[ContractValidation] Full text length:', text.length); }
   
   // FIRST: Check for strong brand deal title/header (within first 300 chars)
   // If document title clearly says "brand deal" or "influencer agreement", prioritize that
@@ -129,7 +129,7 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
   for (const { pattern, reason, skipIfStrongTitle, contextCheck } of rejectionPatterns) {
     // Skip context-sensitive patterns if we have a strong brand deal title
     if (hasStrongBrandDealTitle && skipIfStrongTitle) {
-      console.log(`[ContractValidation] Skipping pattern check for "${reason}" due to strong brand deal title`);
+      if (import.meta.env.DEV) { console.log(`[ContractValidation] Skipping pattern check for "${reason}" due to strong brand deal title`); }
       continue;
     }
     
@@ -143,7 +143,7 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
       if (contextCheck) {
         const shouldReject = contextCheck(matchText, text);
         if (!shouldReject) {
-          console.log(`[ContractValidation] Pattern matched "${matchText}" but context check passed - allowing`);
+          if (import.meta.env.DEV) { console.log(`[ContractValidation] Pattern matched "${matchText}" but context check passed - allowing`); }
           continue;
         }
       }
@@ -151,7 +151,7 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
       // If we have strong positive signals (payment + deliverables + collaboration),
       // be more lenient - only reject for very clear non-brand-deal documents
       if (hasStrongPositiveSignals && skipIfStrongTitle) {
-        console.log(`[ContractValidation] Pattern matched "${matchText}" but strong positive signals detected - allowing`);
+        if (import.meta.env.DEV) { console.log(`[ContractValidation] Pattern matched "${matchText}" but strong positive signals detected - allowing`); }
         continue;
       }
       
@@ -163,21 +163,21 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
         if (matchIndex !== -1) {
           const context = text.substring(Math.max(0, matchIndex - 30), Math.min(text.length, matchIndex + matchText.length + 30)).toLowerCase();
           if (/gst.*tds|gst\/tds|payment.*gst|tax.*gst|gst.*standard|tds.*standard|pan.*number/i.test(context)) {
-            console.log(`[ContractValidation] Pattern matched "${matchText}" but it's a contract tax clause - allowing`);
+            if (import.meta.env.DEV) { console.log(`[ContractValidation] Pattern matched "${matchText}" but it's a contract tax clause - allowing`); }
             continue;
           }
         }
       }
       
-      console.log('[ContractValidation] ❌ REJECTION PATTERN MATCHED:', reason);
-      console.log('[ContractValidation] Pattern:', pattern.toString());
-      console.log('[ContractValidation] Matching text found:', matchText);
-      console.log('[ContractValidation] Context around match:', text.substring(Math.max(0, text.indexOf(matchText) - 50), Math.min(text.length, text.indexOf(matchText) + 200)));
+      if (import.meta.env.DEV) { console.log('[ContractValidation] ❌ REJECTION PATTERN MATCHED:', reason); }
+      if (import.meta.env.DEV) { console.log('[ContractValidation] Pattern:', pattern.toString()); }
+      if (import.meta.env.DEV) { console.log('[ContractValidation] Matching text found:', matchText); }
+      if (import.meta.env.DEV) { console.log('[ContractValidation] Context around match:', text.substring(Math.max(0, text.indexOf(matchText) - 50), Math.min(text.length, text.indexOf(matchText) + 200))); }
       return { isValid: false, reason };
     }
   }
   
-  console.log('[ContractValidation] ✓ No rejection patterns found');
+  if (import.meta.env.DEV) { console.log('[ContractValidation] ✓ No rejection patterns found'); }
   
   // Smart check: Only reject "notice" if it's in legal notice context, not normal contract language
   // Normal contracts use "written notice", "30 days notice", etc. which are fine
@@ -202,7 +202,7 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     
     // Only reject if it looks like a legal notice (no contract indicators)
     if (hasContractIndicators < 2 && hasLegalNoticePhrases) {
-      console.log('[ContractValidation] Document contains legal notice phrases without contract indicators');
+      if (import.meta.env.DEV) { console.log('[ContractValidation] Document contains legal notice phrases without contract indicators'); }
       return { isValid: false, reason: 'legal notice' };
     }
   }
@@ -224,20 +224,20 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
     // If it's clearly a brand deal contract, don't reject based on legal notice phrases alone
     const isClearBrandDeal = /brand.*deal|influencer.*brand|creator.*brand|brand.*collaboration/i.test(text.substring(0, 500));
     if (!isClearBrandDeal) {
-      console.log('[ContractValidation] Legal notice phrase detected without clear brand deal context');
+      if (import.meta.env.DEV) { console.log('[ContractValidation] Legal notice phrase detected without clear brand deal context'); }
       return { isValid: false, reason: 'legal notice' };
     } else {
-      console.log('[ContractValidation] Legal notice phrase found but document is clearly a brand deal contract - allowing');
+      if (import.meta.env.DEV) { console.log('[ContractValidation] Legal notice phrase found but document is clearly a brand deal contract - allowing'); }
     }
   }
 
   // If we have a strong brand deal title, validate it quickly
   if (hasStrongBrandDealTitle) {
-    console.log('[ContractValidation] Strong brand deal title detected in document header');
+    if (import.meta.env.DEV) { console.log('[ContractValidation] Strong brand deal title detected in document header'); }
     // If it has a strong title, require at least ONE additional indicator
     const hasAnyIndicator = /payment|deliverable|posts|videos|reels|campaign|content|compensation|fee|collaboration|sponsorship/i.test(text);
     if (hasAnyIndicator) {
-      console.log('[ContractValidation] ✅ Valid brand deal contract - strong title + indicators');
+      if (import.meta.env.DEV) { console.log('[ContractValidation] ✅ Valid brand deal contract - strong title + indicators'); }
       return { isValid: true };
     }
   }
@@ -266,7 +266,7 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
   // If we have payment + deliverables + collaboration terms, it's very likely a valid brand deal
   // Even if rejection patterns matched something minor
   if (hasPayment && hasDeliverables && hasCollaboration) {
-    console.log('[ContractValidation] ✅ Strong positive signals: payment + deliverables + collaboration - valid brand deal');
+    if (import.meta.env.DEV) { console.log('[ContractValidation] ✅ Strong positive signals: payment + deliverables + collaboration - valid brand deal'); }
     return { isValid: true };
   }
 
@@ -275,19 +275,19 @@ export function isValidBrandDealContract(text: string): { isValid: boolean; reas
   if (indicatorCount < 2 && !hasStrongBrandDealTitle) {
     // But allow if we have the two strongest indicators: payment + deliverables
     if (hasPayment && hasDeliverables) {
-      console.log('[ContractValidation] ✅ Payment + Deliverables found - valid brand deal');
+      if (import.meta.env.DEV) { console.log('[ContractValidation] ✅ Payment + Deliverables found - valid brand deal'); }
       return { isValid: true };
     }
     
-    console.log('[ContractValidation] Insufficient brand deal indicators found:', indicatorCount);
-    console.log('[ContractValidation] Sample text:', text.substring(0, 500));
+    if (import.meta.env.DEV) { console.log('[ContractValidation] Insufficient brand deal indicators found:', indicatorCount); }
+    if (import.meta.env.DEV) { console.log('[ContractValidation] Sample text:', text.substring(0, 500)); }
     return { 
       isValid: false, 
       reason: 'Document does not contain sufficient brand deal contract indicators (requires at least 2)' 
     };
   }
 
-  console.log('[ContractValidation] Valid brand deal contract detected with', indicatorCount, 'indicators');
+  if (import.meta.env.DEV) { console.log('[ContractValidation] Valid brand deal contract detected with', indicatorCount, 'indicators'); }
   return { isValid: true };
 }
 
@@ -330,17 +330,17 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         
         if (GlobalWorkerOptions) {
           GlobalWorkerOptions.workerSrc = workerUrl;
-          console.log('[ContractValidation] PDF.js worker configured:', workerUrl);
+          if (import.meta.env.DEV) { console.log('[ContractValidation] PDF.js worker configured:', workerUrl); }
         } else {
           // Create GlobalWorkerOptions if it doesn't exist
           if (!pdfjsLib.GlobalWorkerOptions) {
             pdfjsLib.GlobalWorkerOptions = {};
           }
           pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-          console.log('[ContractValidation] PDF.js worker configured (created):', workerUrl);
+          if (import.meta.env.DEV) { console.log('[ContractValidation] PDF.js worker configured (created):', workerUrl); }
         }
         
-        console.log('[ContractValidation] Loading PDF, size:', arrayBuffer.byteLength, 'bytes');
+        if (import.meta.env.DEV) { console.log('[ContractValidation] Loading PDF, size:', arrayBuffer.byteLength, 'bytes'); }
         
         // Load PDF with error handling
         const loadingTask = getDocument({ 
@@ -349,7 +349,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         });
         
         const pdf = await loadingTask.promise;
-        console.log('[ContractValidation] PDF loaded, pages:', pdf.numPages);
+        if (import.meta.env.DEV) { console.log('[ContractValidation] PDF loaded, pages:', pdf.numPages); }
         
         // Extract text from all pages (limit to first 5 pages for performance)
         let fullText = '';
@@ -364,7 +364,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
               .filter((str: string) => str.trim().length > 0)
               .join(' ');
             fullText += pageText + '\n';
-            console.log(`[ContractValidation] Page ${i} extracted, text length:`, pageText.length);
+            if (import.meta.env.DEV) { console.log(`[ContractValidation] Page ${i} extracted, text length:`, pageText.length); }
           } catch (pageError) {
             console.warn(`[ContractValidation] Error extracting page ${i}:`, pageError);
             // Continue with other pages
@@ -375,7 +375,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
           throw new Error('No text could be extracted from PDF. The PDF may contain only images.');
         }
         
-        console.log('[ContractValidation] Total extracted text length:', fullText.length);
+        if (import.meta.env.DEV) { console.log('[ContractValidation] Total extracted text length:', fullText.length); }
         resolve(fullText);
       } catch (error: unknown) {
         console.error('[ContractValidation] PDF extraction error:', error);
@@ -429,7 +429,7 @@ export async function validateContractFile(file: File): Promise<{ isValid: boole
   
   // ✅ ALLOW ALL VALID FILE TYPES - AI will analyze everything
   // NO keyword-based, signal-based, or rule-based rejection
-  console.log('[ContractValidation] File type validated, allowing through for AI analysis:', file.name, file.type, file.size);
+  if (import.meta.env.DEV) { console.log('[ContractValidation] File type validated, allowing through for AI analysis:', file.name, file.type, file.size); }
   return { isValid: true };
 }
 

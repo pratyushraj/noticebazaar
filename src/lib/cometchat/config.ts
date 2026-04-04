@@ -26,7 +26,7 @@ export const initializeCometChat = async () => {
       .build();
 
     await CometChat.init(appID, appSetting);
-    console.log('CometChat initialized successfully');
+    if (import.meta.env.DEV) { console.log('CometChat initialized successfully'); }
     return true;
   } catch (error) {
     console.error('CometChat initialization failed:', error);
