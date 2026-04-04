@@ -101,12 +101,16 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
 
     setLinkingPlatform(platform);
     try {
-      console.log('Attempting to link platform:', platform);
+      if (import.meta.env.DEV) {
+        console.log('Attempting to link platform:', platform);
+      }
       const { data, error } = await supabase.functions.invoke('link-social-account', {
         body: { platform },
       });
 
-      console.log('Function response:', { data, error });
+      if (import.meta.env.DEV) {
+        console.log('Function response:', { data, error });
+      }
 
       // Check for errors in both error object and data.error (common pattern with Supabase Edge Functions)
       if (error) {
@@ -121,7 +125,6 @@ const SocialAccountLinkForm = ({ initialData, onSaveSuccess, onClose }: SocialAc
 
       if (data?.oauth_url) {
         // Redirect to OAuth URL
-        console.log('Redirecting to OAuth URL');
         window.location.href = data.oauth_url;
       } else {
         console.error('No OAuth URL in response:', data);

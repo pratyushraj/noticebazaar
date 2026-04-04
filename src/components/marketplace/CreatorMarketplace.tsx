@@ -674,8 +674,9 @@ const PostProjectDialog: React.FC<PostProjectDialogProps> = ({ isOpen, onClose }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle project posting
-    console.log('Posting project:', formData);
+    if (import.meta.env.DEV) {
+      console.log('Posting project:', formData);
+    }
     onClose();
   };
 

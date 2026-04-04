@@ -549,7 +549,9 @@ export const BrandCampaignManager: React.FC = () => {
         onClose={() => setShowCreateCampaign(false)}
         onCreate={(campaignData) => {
           // Handle campaign creation
-          console.log('Creating campaign:', campaignData);
+          if (import.meta.env.DEV) {
+            console.log('Creating campaign:', campaignData);
+          }
           setShowCreateCampaign(false);
         }}
       />

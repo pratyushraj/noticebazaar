@@ -20,7 +20,9 @@ const NewsletterSignup = () => {
     setIsLoading(true);
     
     // Mock Submission Logic
-    console.log(`Newsletter Signup: ${email}`);
+    if (import.meta.env.DEV) {
+      console.log(`Newsletter Signup: ${email}`);
+    }
     
     setTimeout(() => {
       setIsLoading(false);

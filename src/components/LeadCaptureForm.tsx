@@ -21,7 +21,9 @@ const LeadCaptureForm = () => {
     setIsLoading(true);
     
     // --- Mock Submission Logic ---
-    console.log(`Lead Captured: ${email}`);
+    if (import.meta.env.DEV) {
+      console.log(`Lead Captured: ${email}`);
+    }
     
     setTimeout(() => {
       setIsLoading(false);
