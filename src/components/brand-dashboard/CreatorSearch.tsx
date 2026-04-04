@@ -95,7 +95,7 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
 
       {/* Results Dropdown */}
       {showResults && !selectedCreator && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-[#1a1d2e] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden">
+        <div className="absolute z-50 top-full left-0 right-0 mt-2 bg-[#1a1d2e] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden max-h-[70vh] flex flex-col">
           {isSearching ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-5 h-5 text-white/40 animate-spin" />
@@ -107,7 +107,7 @@ const CreatorSearch: React.FC<CreatorSearchProps> = ({ onSelect, selectedCreator
               <p className="text-[12px] text-white/25 mt-1">Try a different Instagram handle or name</p>
             </div>
           ) : (
-            <ul>
+            <ul className="overflow-y-auto flex-1">
               {creators.map((creator) => (
                 <li key={creator.id}>
                   <button
