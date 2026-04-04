@@ -1080,6 +1080,11 @@ const CreatorDashboard = () => {
               {(() => {
                 const completionPct = profile?.profile_completion ?? 0;
                 if (!collabUrlShort || completionPct >= 60) return null;
+
+                // Dismiss for this session (persists across navigations within the same browser session)
+                const dismissedKey = `profile_nudge_dismissed_${profile?.id ?? 'unknown'}`;
+                if (typeof window !== 'undefined' && sessionStorage.getItem(dismissedKey)) return null;
+
                 const missingItems: string[] = [];
                 if (!(profile as any)?.instagram_handle) missingItems.push('Instagram handle');
                 if (!(profile as any)?.avg_rate_reel) missingItems.push('your rate');
@@ -1096,7 +1101,17 @@ const CreatorDashboard = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <p className="text-[13px] font-black text-amber-200">Your collab page is {completionPct}% complete</p>
-                          <span className="text-[11px] font-bold text-amber-300/70">Profile incomplete</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold text-amber-300/70">Profile incomplete</span>
+                            <button
+                              type="button"
+                              onClick={() => sessionStorage.setItem(dismissedKey, '1')}
+                              className="text-amber-300/50 hover:text-amber-300 text-[11px] font-medium ml-1"
+                              aria-label="Dismiss this session"
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
                         <div className="h-1.5 bg-amber-400/20 rounded-full overflow-hidden mb-2">
                           <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${completionPct}%` }} />
