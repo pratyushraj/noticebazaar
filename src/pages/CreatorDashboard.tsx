@@ -1076,6 +1076,49 @@ const CreatorDashboard = () => {
                 </div>
               </section>
 
+              {/* Profile Completeness Nudge — shown when link exists but profile is less than 60% complete */}
+              {(() => {
+                const completionPct = profile?.profile_completion ?? 0;
+                if (!collabUrlShort || completionPct >= 60) return null;
+                const missingItems: string[] = [];
+                if (!(profile as any)?.instagram_handle) missingItems.push('Instagram handle');
+                if (!(profile as any)?.avg_rate_reel) missingItems.push('your rate');
+                if (!profile?.avatar_url) missingItems.push('profile photo');
+                if (!profile?.intro_line) missingItems.push('bio / intro');
+                if (!profile?.packages_added) missingItems.push('pricing packages');
+
+                return (
+                  <section className="rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 md:p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-amber-400/20 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                        <AlertCircle className="w-4 h-4 text-amber-300" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <p className="text-[13px] font-black text-amber-200">Your collab page is {completionPct}% complete</p>
+                          <span className="text-[11px] font-bold text-amber-300/70">Profile incomplete</span>
+                        </div>
+                        <div className="h-1.5 bg-amber-400/20 rounded-full overflow-hidden mb-2">
+                          <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+                        </div>
+                        {missingItems.length > 0 && (
+                          <p className="text-[12px] text-amber-100/70 mb-2">
+                            Brands see these as blank: {missingItems.join(', ')}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => navigate('/creator-profile?section=profile')}
+                          className="text-[12px] font-bold text-amber-200 hover:text-amber-100 underline"
+                        >
+                          Complete your profile →
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
               <section 
                 className="rounded-[24px] md:rounded-[28px] border border-emerald-400/20 bg-emerald-500/10 p-4 md:p-5"
                 aria-labelledby="waiting-heading"
