@@ -19,7 +19,7 @@ export function useDealActionLogs(dealId: string | undefined, enabled = true) {
         .from('deal_action_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .eq('deal_id', dealId);
+        .eq('deal_id', dealId as any);
 
       const { data, error } = await query;
 
@@ -39,7 +39,7 @@ export function useDealActionLogs(dealId: string | undefined, enabled = true) {
         throw error;
       }
 
-      return (data || []) as DealActionLog[];
+      return (data as unknown as DealActionLog[]) || [];
     },
     {
       enabled: enabled && !!dealId,
@@ -58,7 +58,7 @@ export function useCreateActionLog() {
     async (variables) => {
       const { data, error } = await supabase
         .from('deal_action_logs')
-        .insert(variables)
+        .insert(variables as any)
         .select()
         .single();
 
@@ -66,7 +66,7 @@ export function useCreateActionLog() {
         throw error;
       }
 
-      return data as DealActionLog;
+      return data as unknown as DealActionLog;
     },
     {
       onSuccess: (data) => {
