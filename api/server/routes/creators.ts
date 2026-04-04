@@ -13,7 +13,7 @@ const router = express.Router();
  */
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { category, limit = '50', offset = '0' } = req.query;
+    const { category, limit = '50', offset = '0', q } = req.query;
 
     let query = supabase
       .from('profiles')
@@ -43,6 +43,14 @@ router.get('/', async (req: Request, res: Response) => {
 
     if (category && category !== 'all') {
       query = query.eq('creator_category', category as string);
+    }
+
+    // Search across username, instagram_handle, name fields
+    if (q && typeof q === 'string' && q.trim().length > 0) {
+      const searchTerm = q.trim().toLowerCase();
+      query = query.or(
+        `username.ilike.%${searchTerm}%,instagram_handle.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,business_name.ilike.%${searchTerm}%`
+      );
     }
 
     const { data: profiles, error } = await query;
