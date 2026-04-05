@@ -7,15 +7,15 @@ import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Clock, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type BrandTab = 'active' | 'all';
+type BrandTab = 'sent' | 'active' | 'completed';
 
 const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { profile } = useSession();
-  const [tab, setTab] = useState<BrandTab>('active');
+  const [tab, setTab] = useState<BrandTab>('sent');
   const [deals, setDeals] = useState<BrandDeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -44,30 +44,46 @@ const BrandDashboard: React.FC = () => {
       });
   }, [profile?.id, isBrandUser]);
 
-  // Filter deals by stage
+  // Sent = awaiting creator response (brand sent offer, waiting)
+  const sentDeals = deals.filter(deal => {
+    const s = (deal.status || '').toLowerCase();
+    return !s || s === 'pending' || s === 'sent' || s === 'awaiting response' ||
+      s.includes('awaiting') || s.includes('proposal') || s.includes('sent');
+  });
+
+  // Active = in progress (accepted, content being made, submitted, approved, payment pending)
   const activeDeals = deals.filter(deal => {
-    const stage = deal.status?.toLowerCase();
-    return !['completed', 'cancelled', 'declined'].includes(stage || '');
+    const s = (deal.status || '').toLowerCase();
+    return s.includes('accepted') || s.includes('in_progress') || s.includes('live') ||
+      s.includes('making') || s.includes('submitted') || s.includes('delivered') ||
+      s.includes('approved') || s.includes('revision') || s.includes('changes') ||
+      (s.includes('payment') && !s.includes('completed') && !s.includes('received'));
   });
 
+  // Completed = done
   const completedDeals = deals.filter(deal => {
-    const stage = deal.status?.toLowerCase();
-    return stage === 'completed';
+    const s = (deal.status || '').toLowerCase();
+    return s.includes('completed') || s.includes('vested') || s.includes('received');
   });
 
-  const displayedDeals = tab === 'active' ? activeDeals : deals;
+  const displayedDeals =
+    tab === 'sent' ? sentDeals :
+    tab === 'active' ? activeDeals :
+    completedDeals;
 
-  const getStageColor = (status: string | null) => {
-    if (!status) return 'bg-slate-500/20 text-slate-400';
+  const getStageColor = (status: string | null | undefined) => {
+    if (!status) return 'bg-yellow-500/20 text-yellow-400';
     const s = status.toLowerCase();
+    if (s.includes('awaiting') || (!s && tab === 'sent')) return 'bg-yellow-500/20 text-yellow-400';
     if (s.includes('content') && s.includes('making')) return 'bg-blue-500/20 text-blue-400';
     if (s.includes('delivered') || s.includes('submitted')) return 'bg-purple-500/20 text-purple-400';
-    if (s.includes('approved') || s.includes('signed')) return 'bg-emerald-500/20 text-emerald-400';
-    if (s.includes('payment') || s.includes('paid')) return 'bg-green-500/20 text-green-400';
-    if (s.includes('revision')) return 'bg-amber-500/20 text-amber-400';
-    if (s.includes('completed')) return 'bg-green-500/20 text-green-400';
-    if (s.includes('cancelled') || s.includes('declined')) return 'bg-red-500/20 text-red-400';
-    return 'bg-blue-500/20 text-blue-400';
+    if (s.includes('approved')) return 'bg-emerald-500/20 text-emerald-400';
+    if (s.includes('payment') && (s.includes('sent') || s.includes('pending'))) return 'bg-yellow-500/20 text-yellow-400';
+    if (s.includes('payment') && (s.includes('received') || s.includes('complete'))) return 'bg-green-500/20 text-green-400';
+    if (s.includes('revision') || s.includes('change')) return 'bg-amber-500/20 text-amber-400';
+    if (s.includes('completed') || s.includes('vested')) return 'bg-green-500/20 text-green-400';
+    if (s.includes('declined') || s.includes('rejected') || s.includes('cancelled')) return 'bg-red-500/20 text-red-400';
+    return 'bg-yellow-500/20 text-yellow-400';
   };
 
   const formatDate = (dateStr: string | null | undefined) => {
@@ -81,22 +97,31 @@ const BrandDashboard: React.FC = () => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
-  // Human-readable status labels (match CreatorDashboard)
-  const getStatusLabel = (status: string | null): string => {
-    if (!status) return 'Unknown';
+  const getStatusLabel = (status: string | null | undefined): string => {
+    if (!status) return 'Awaiting response';
     const s = status.toLowerCase();
-    if (s.includes('contract_ready')) return 'Contract ready';
-    if (s.includes('brand_signed') || s.includes('signed_by_brand')) return 'Brand signed';
-    if (s.includes('fully_executed') || s.includes('fully_signed') || s.includes('executed')) return 'Ready to start';
-    if (s.includes('live') || s.includes('in_progress')) return 'In progress';
-    if (s.includes('content') && s.includes('making')) return 'Making content';
-    if (s.includes('content_delivered') || s.includes('content delivered')) return 'Content delivered';
-    if (s.includes('needs_changes') || s.includes('brand_requested_changes')) return 'Changes needed';
+    if (s.includes('awaiting') && !s.includes('approved')) return 'Awaiting response';
+    if (s.includes('proposal') || s === 'pending' || s === 'sent') return 'Awaiting response';
+    if (s.includes('accepted')) return 'Accepted';
+    if (s.includes('content') && s.includes('making')) return 'Content in progress';
+    if (s.includes('delivered') || s.includes('submitted')) return 'Content submitted';
+    if (s.includes('approved')) return 'Approved';
+    if (s.includes('revision') || s.includes('changes')) return 'Changes requested';
+    if (s.includes('payment') && s.includes('sent')) return 'Payment sent';
+    if (s.includes('payment') && s.includes('received')) return 'Payment received';
+    if (s.includes('completed') || s.includes('vested')) return 'Completed';
     if (s.includes('declined') || s.includes('rejected')) return 'Declined';
-    if (s.includes('completed')) return 'Done';
-    if (s.includes('awaiting') && s.includes('product')) return 'Waiting for product';
-    // Clean up underscored status
     return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
+  const getTimeAgo = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    return 'Just now';
   };
 
   if (!isBrandUser) {
@@ -144,6 +169,16 @@ const BrandDashboard: React.FC = () => {
         {/* Tab Navigation */}
         <div className="flex gap-2 border-b border-white/10">
           <button
+            onClick={() => setTab('sent')}
+            className={cn(
+              'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5',
+              tab === 'sent' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+            )}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            Sent ({sentDeals.length})
+          </button>
+          <button
             onClick={() => setTab('active')}
             className={cn(
               'pb-3 px-1 text-sm font-semibold transition-colors',
@@ -153,13 +188,14 @@ const BrandDashboard: React.FC = () => {
             Active ({activeDeals.length})
           </button>
           <button
-            onClick={() => setTab('all')}
+            onClick={() => setTab('completed')}
             className={cn(
               'pb-3 px-1 text-sm font-semibold transition-colors',
-              tab === 'all' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+              tab === 'completed' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
             )}
           >
-            All ({deals.length})
+            <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+            Done ({completedDeals.length})
           </button>
         </div>
 
@@ -172,22 +208,24 @@ const BrandDashboard: React.FC = () => {
           <Card className="bg-white/5 border-white/10 rounded-2xl">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                <Plus className="h-8 w-8 text-purple-400" />
+                {tab === 'sent' ? <Clock className="h-8 w-8 text-purple-400" /> :
+                 tab === 'active' ? <Plus className="h-8 w-8 text-purple-400" /> :
+                 <CheckCircle2 className="h-8 w-8 text-purple-400" />}
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                {tab === 'active' ? 'No active deals' : 'No deals yet'}
+                {tab === 'sent' ? 'No pending offers' :
+                 tab === 'active' ? 'No active deals' : 'No completed deals'}
               </h3>
               <p className="text-sm text-white/60 mb-6">
-                {tab === 'active'
-                  ? "You don't have any active collaborations right now."
-                  : 'Start by sending an offer to a creator.'}
+                {tab === 'sent' ? "You haven't sent any offers yet. Find a creator to collaborate with." :
+                 tab === 'active' ? "You don't have any deals in progress." : "Your completed deals will appear here."}
               </p>
               <Button
                 onClick={() => navigate('/brand-new-deal')}
                 className="bg-purple-600 hover:bg-purple-500 font-bold"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Send First Offer
+                {tab === 'sent' ? 'Find Creators' : 'Send an Offer'}
               </Button>
             </CardContent>
           </Card>
@@ -215,6 +253,11 @@ const BrandDashboard: React.FC = () => {
                       <p className="text-sm text-white/60 mt-1">
                         {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
                       </p>
+                      {tab === 'sent' && (
+                        <p className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Sent {getTimeAgo(deal.created_at)}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-base font-bold text-white">
@@ -225,6 +268,17 @@ const BrandDashboard: React.FC = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Action hint for active deals */}
+                  {tab === 'active' && (
+                    <div className="mt-3 flex items-center gap-2">
+                      {deal.status?.toLowerCase().includes('submitted') || deal.status?.toLowerCase().includes('delivered') ? (
+                        <span className="text-xs text-purple-400 font-medium">Review content →</span>
+                      ) : deal.status?.toLowerCase().includes('approved') ? (
+                        <span className="text-xs text-emerald-400 font-medium">Pay creator →</span>
+                      ) : null}
+                    </div>
+                  )}
 
                   {/* Progress bar */}
                   {deal.progress_percentage != null && (
