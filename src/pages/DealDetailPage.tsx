@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import { toast } from 'sonner';
 import { useDealSignatures } from '@/lib/hooks/useDealSignatures';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
-import { useDeal } from '@/contexts/DealContext';
+import { useDeal, DealProvider } from '@/contexts/DealContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { useIssues } from '@/lib/hooks/useIssues';
 import { useDealActionLogs } from '@/lib/hooks/useActionLogs';
@@ -697,13 +697,13 @@ function DealDetailPageContent() {
           const { data: reports, error: reportError } = await supabase
             .from('protection_reports')
             .select('*')
-            .eq('deal_id', deal.id)
+            .eq('deal_id', deal.id as any)
             .order('created_at', { ascending: false })
             .limit(1);
 
           if (!reportError && reports && reports.length > 0) {
-            setProtectionReport(reports[0]);
-            reportId = reports[0].id;
+            setProtectionReport(reports[0] as any);
+            reportId = (reports[0] as any).id;
           }
         } else {
           // Fetch by analysis_report_id
@@ -966,7 +966,7 @@ function DealDetailPageContent() {
         entries.push({
           id: log.id,
           action: timelineCopy.action,
-          type: timelineCopy.type,
+          type: timelineCopy.type as 'other' | 'payment' | 'update' | 'issue' | 'upload' | 'complete' | 'invoice',
           timestamp: log.created_at || new Date().toISOString(),
           user: timelineCopy.actor,
         });
@@ -1389,6 +1389,11 @@ function DealDetailPageContent() {
 
     if (!previewUrl) {
       toast.error('No contract available');
+      return;
+    }
+
+    if (!deal) {
+      toast.error('Deal information not available');
       return;
     }
 
@@ -3495,7 +3500,7 @@ ${link}`;
                     <div className="flex-1 min-w-0 space-y-1.5">
                       {/* Clean display name with status badge */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-base text-white/95 truncate flex-1 min-w-0" title={displayContractName || contractFileName}>
+                        <h3 className="font-semibold text-base text-white/95 truncate flex-1 min-w-0" title={(displayContractName || contractFileName) ?? undefined}>
                           {displayContractName || contractFileName}
                         </h3>
                       </div>
@@ -3628,7 +3633,7 @@ ${link}`;
                       const { error } = await supabase
                         .from('brand_deals')
                         .update(updateData)
-                        .eq('id', deal.id);
+                        .eq('id', deal.id as any);
 
                       if (error) throw error;
 

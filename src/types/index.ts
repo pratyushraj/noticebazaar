@@ -154,6 +154,7 @@ export type Profile = Tables<'profiles'> & {
   storefront_completion?: number | null;
   manual_badge?: string | null;
   is_verified?: boolean | null;
+  auto_pricing_enabled?: boolean | null;
 };
 
 export type Message = Tables<'messages'> & {

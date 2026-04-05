@@ -66,7 +66,7 @@ export const useCometChat = (options: UseCometChatOptions) => {
         await CometChat.createUser(user, COMETCHAT_CONFIG.AUTH_KEY || '');
       } catch (createError) {
         // User might already exist, continue to login
-        console.log('User may already exist, proceeding to login');
+        if (import.meta.env.DEV) { console.log('User may already exist, proceeding to login'); }
       }
     } catch (error) {
       console.error('Failed to setup CometChat user:', error);
@@ -86,7 +86,7 @@ export const useCometChat = (options: UseCometChatOptions) => {
         // Login with UID (non-secure, for development)
         // In production, use auth token from your backend API
         const user = await CometChat.login(currentUserId, COMETCHAT_CONFIG.AUTH_KEY || '');
-        console.log('CometChat login successful:', user.getUid());
+        if (import.meta.env.DEV) { console.log('CometChat login successful:', user.getUid()); }
       } catch (error) {
         console.error('CometChat login failed:', error);
         // If login fails, CometChat features will be disabled

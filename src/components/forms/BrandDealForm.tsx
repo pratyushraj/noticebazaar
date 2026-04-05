@@ -345,7 +345,8 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
       return;
     }
 
-    const dealAmountNum = parseFloat(dealAmount);
+    const sanitizedAmount = dealAmount.replace(/[, ]/g, '').trim();
+    const dealAmountNum = parseFloat(sanitizedAmount);
     if (isNaN(dealAmountNum) || dealAmountNum <= 0) {
       toast.error('Please enter a valid deal amount.');
       return;

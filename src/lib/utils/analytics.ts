@@ -79,6 +79,7 @@ type AnalyticsEvent =
   | 'deal_completed'
   | 'creators_set_price'
   | 'creators_shared_link'
+  | 'creator_link_ready'
   | 'creators_received_first_offer'
   | 'creators_completed_first_deal'
   | 'onboarding_step_completed'
@@ -88,7 +89,11 @@ type AnalyticsEvent =
   | 'web_vitals_inp'
   | 'web_vitals_fcp'
   | 'web_vitals_lcp'
-  | 'web_vitals_ttfb';
+  | 'web_vitals_ttfb'
+  | 'contract_summary_pdf_downloaded'
+  | 'contract_downloaded'
+  | 'contract_downloaded_legacy'
+  | 'invoice_downloaded';
 
 /** Fire events once per deal. Attach deal_id, creator_id, collab_type where applicable. Contract/brand events (contract_generated, contract_viewed_by_brand, contract_signed_by_brand, contract_not_signed_48h, payment_*) are typically fired from the backend. */
 

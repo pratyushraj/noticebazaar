@@ -245,9 +245,9 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
       let query = (supabase
         .from('brand_deals')
         .select('*')
-        .eq('creator_id', creatorId)
+        .eq('creator_id', creatorId as any)
         // Filter to only show signed deals
-        .in('status', signedStatuses)
+        .in('status', signedStatuses as any)
         .order(sortBy, { ascending: sortOrder === 'asc' })) as any;
 
       // If a specific status filter is provided, apply it (but only if it's a signed status)
@@ -368,13 +368,13 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
             ? supabase
                 .from('brands')
                 .select('id, name, logo_url')
-                .in('id', brandIds as readonly string[])
+                .in('id', brandIds as any)
             : Promise.resolve({ data: [], error: null } as any),
           brandNames.length > 0
             ? supabase
                 .from('brands')
                 .select('id, name, logo_url')
-                .in('name', brandNames as readonly string[])
+                .in('name', brandNames as any)
             : Promise.resolve({ data: [], error: null } as any),
         ]);
 
@@ -764,7 +764,7 @@ export const useUpdateBrandDeal = () => {
       const { error } = await (supabase
         .from('brand_deals')
         .update(updatePayload as any)
-        .eq('id', id) as any);
+        .eq('id', id as any) as any);
 
       if (error) {
         throw new Error(error.message);
@@ -798,17 +798,18 @@ export const useUpdateBrandDeal = () => {
   );
 };
 
-export const useBrandDealById = (dealId: string | undefined, creatorId: string | undefined) => {
+export const useBrandDealById = (dealId: string | undefined, userId: string | undefined, role: 'creator' | 'brand' = 'creator') => {
+  const queryKey = ['brand_deal', dealId, userId, role];
   return useSupabaseQuery<BrandDeal | null, Error>(
-    ['brand_deal', dealId, creatorId],
+    queryKey,
     async () => {
-      if (!dealId || !creatorId) return null;
+      if (!dealId || !userId) return null;
 
       const { data, error } = await (supabase
         .from('brand_deals')
         .select('*')
-        .eq('id', dealId)
-        .eq('creator_id', creatorId)
+        .eq('id', dealId as any)
+        .eq(role === 'brand' ? 'brand_id' : 'creator_id', userId as any)
         .single() as any);
 
       if (error) {
@@ -829,7 +830,7 @@ export const useBrandDealById = (dealId: string | undefined, creatorId: string |
       return (data as unknown as BrandDeal) ?? null;
     },
     {
-      enabled: !!dealId && !!creatorId,
+      enabled: !!dealId && !!userId,
       errorMessage: 'Failed to fetch brand deal',
       retry: false,
     }
@@ -860,7 +861,7 @@ export const useDeleteBrandDeal = () => {
       const { error: dbError } = await (supabase
         .from('brand_deals')
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id as any) as any);
 
       if (dbError) {
         throw new Error(`Failed to delete brand deal record: ${dbError.message}`);
@@ -1043,7 +1044,7 @@ export const useUpdateDealProgress = () => {
       const { data: currentDeal, error: fetchError } = await supabase
         .from('brand_deals')
         .select('progress_percentage, status, creator_id')
-        .eq('id', dealId)
+        .eq('id', dealId as any)
         .single();
 
       if (fetchError) {
@@ -1105,8 +1106,8 @@ export const useUpdateDealProgress = () => {
 
       const { error } = await supabase
         .from('brand_deals')
-        .update(updatePayload)
-        .eq('id', dealId);
+        .update(updatePayload as any)
+        .eq('id', dealId as any);
 
       if (error) {
         throw new Error(error.message);

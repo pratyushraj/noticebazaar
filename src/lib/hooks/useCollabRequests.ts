@@ -70,7 +70,8 @@ export function useCollabRequests(creatorId: string | undefined) {
     staleTime: STALE_TIME_MS,
     refetchInterval: REFETCH_INTERVAL_MS,
     retry: (failureCount, error: unknown) => {
-      if (error?.message === 'Session expired' || error?.message === 'Not authenticated') return false;
+      const err = error as { message?: string };
+      if (err?.message === 'Session expired' || err?.message === 'Not authenticated') return false;
       return failureCount < 2;
     },
   });

@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, Loader2, Clock, CheckCircle2, XCircle, IndianRupee,
-  FileText, Copy, ExternalLink, Calendar
+  FileText, Copy, ExternalLink, Calendar, ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';

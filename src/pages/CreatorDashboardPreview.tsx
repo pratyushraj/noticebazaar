@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import ProjectDealCard from '@/components/creator-contracts/ProjectDealCard';
-import { DealStage, PaymentStatus } from '@/components/creator-contracts/DealStatusBadge';
+import { DealStage } from '@/components/creator-contracts/DealStatusBadge';
+import { PaymentStatus } from '@/components/payments/PaymentStatusChip';
 import EnhancedPaymentCard from '@/components/payments/EnhancedPaymentCard';
 import FinancialOverviewHeader from '@/components/payments/FinancialOverviewHeader';
 import PaymentQuickFilters from '@/components/payments/PaymentQuickFilters';
@@ -49,7 +50,7 @@ const getDealStage = (deal: BrandDeal): DealStage => {
 };
 
 const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
-  if (deal.payment_received_date) return 'paid';
+  if (deal.payment_received_date) return 'received';
   if (deal.status === 'Payment Pending') {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -57,7 +58,7 @@ const getPaymentStatus = (deal: BrandDeal): PaymentStatus => {
     dueDate.setHours(0, 0, 0, 0);
     return dueDate < today ? 'overdue' : 'pending';
   }
-  return 'not_due';
+  return 'pending';
 };
 
 // Pill Tab Button Component
@@ -764,7 +765,7 @@ const CreatorDashboardPreview = () => {
                 const daysLeft = dueDate && dueDate > now ? Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
                 
                 let status: 'overdue' | 'pending' | 'upcoming' | 'paid' = 'pending';
-                if (paymentStatus === 'paid') {
+                if (paymentStatus === 'received') {
                   status = 'paid';
                 } else if (paymentStatus === 'overdue') {
                   status = 'overdue';

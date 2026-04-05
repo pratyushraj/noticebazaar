@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DialogFooter } from '@/components/ui/dialog';
 
 import { Loader2, Bot, Send, Briefcase, Clock, CreditCard, MessageSquare } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -719,7 +720,7 @@ const AIAssistant = ({
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            {msg.sender === 'user' && (
+            {msg.sender === 'user' && profile && (
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src={profile.avatar_url || DEFAULT_AVATAR_URL} alt={profile.first_name || "You"} />
                 <AvatarFallback className="bg-primary text-primary-foreground">

@@ -44,7 +44,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ profile, user, profilePath })
           className="relative h-9 w-9 rounded-full p-0 hover:bg-accent/50 transition-all"
         >
           <Avatar className="h-9 w-9 ring-2 ring-border/50 hover:ring-primary/50 transition-all">
-            <AvatarImage src={profile?.avatar_url || DEFAULT_AVATAR_URL} alt={profile?.first_name || "User"} />
+            <AvatarImage src={profile?.avatar_url ?? DEFAULT_AVATAR_URL} alt={profile?.first_name ?? "User"} />
             <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
               {getInitials(profile?.first_name, profile?.last_name)}
             </AvatarFallback>

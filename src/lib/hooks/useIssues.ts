@@ -19,7 +19,7 @@ export function useIssues(dealId: string | undefined, enabled = true) {
         .from('issues')
         .select('*')
         .order('created_at', { ascending: false })
-        .eq('deal_id', dealId);
+        .eq('deal_id', dealId as any);
 
       const { data, error } = await query;
 
@@ -39,7 +39,7 @@ export function useIssues(dealId: string | undefined, enabled = true) {
         throw error;
       }
 
-      return (data || []) as Issue[];
+      return (data as unknown as Issue[]) || [];
     },
     {
       enabled: enabled && !!dealId,
@@ -60,14 +60,14 @@ export function useIssue(issueId: string | undefined, enabled = true) {
       const { data, error } = await supabase
         .from('issues')
         .select('*')
-        .eq('id', issueId)
+        .eq('id', issueId as any)
         .single();
 
       if (error) {
         throw error;
       }
 
-      return data as Issue | null;
+      return data as unknown as Issue | null;
     },
     {
       enabled: enabled && !!issueId,
@@ -88,14 +88,14 @@ export function useIssueHistory(issueId: string | undefined, enabled = true) {
       const { data, error } = await supabase
         .from('issue_history')
         .select('*')
-        .eq('issue_id', issueId)
+        .eq('issue_id', issueId as any)
         .order('created_at', { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      return (data || []) as IssueHistory[];
+      return (data as unknown as IssueHistory[]) || [];
     },
     {
       enabled: enabled && !!issueId,
@@ -110,11 +110,11 @@ export function useIssueHistory(issueId: string | undefined, enabled = true) {
 export function useCreateIssue() {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<Issue, CreateIssueInput>(
+  return useSupabaseMutation<Issue, Error, CreateIssueInput>(
     async (variables) => {
       const { data, error } = await supabase
         .from('issues')
-        .insert(variables)
+        .insert(variables as any)
         .select()
         .single();
 
@@ -122,7 +122,7 @@ export function useCreateIssue() {
         throw error;
       }
 
-      return data as Issue;
+      return data as unknown as Issue;
     },
     {
       onSuccess: (data, variables) => {
@@ -140,13 +140,13 @@ export function useCreateIssue() {
 export function useUpdateIssue() {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<Issue, UpdateIssueInput & { id: string }>(
+  return useSupabaseMutation<Issue, Error, UpdateIssueInput & { id: string }>(
     async (variables) => {
       const { id, ...updateData } = variables;
       const { data, error } = await supabase
         .from('issues')
-        .update(updateData)
-        .eq('id', id)
+        .update(updateData as any)
+        .eq('id', id as any)
         .select()
         .single();
 
@@ -154,11 +154,11 @@ export function useUpdateIssue() {
         throw error;
       }
 
-      return data as Issue;
+      return data as unknown as Issue;
     },
     {
       onSuccess: (data) => {
-        queryClient.invalidateQueries({ queryKey: ['issues', data.deal_id] });
+        queryClient.invalidateQueries({ queryKey: ['issues', (data as any).deal_id] });
         queryClient.invalidateQueries({ queryKey: ['issue', data.id] });
       },
       errorMessage: 'Failed to update issue',
@@ -172,11 +172,11 @@ export function useUpdateIssue() {
 export function useAddIssueHistory() {
   const queryClient = useQueryClient();
 
-  return useSupabaseMutation<IssueHistory, CreateIssueHistoryInput>(
+  return useSupabaseMutation<IssueHistory, Error, CreateIssueHistoryInput>(
     async (variables) => {
       const { data, error } = await supabase
         .from('issue_history')
-        .insert(variables)
+        .insert(variables as any)
         .select()
         .single();
 
@@ -184,7 +184,7 @@ export function useAddIssueHistory() {
         throw error;
       }
 
-      return data as IssueHistory;
+      return data as unknown as IssueHistory;
     },
     {
       onSuccess: (data) => {

@@ -90,7 +90,7 @@ export async function fetchPincodeData(pincode: string): Promise<PincodeData | n
 
     // Fallback to local data if API fails or returns no results
     if (commonNcrPincodes[cleanPincode]) {
-      console.log('[PincodeLookup] Using local fallback for:', cleanPincode);
+      if (import.meta.env.DEV) { console.log('[PincodeLookup] Using local fallback for:', cleanPincode); }
       return {
         pincode: cleanPincode,
         city: commonNcrPincodes[cleanPincode].city || 'City',
@@ -245,7 +245,9 @@ export function parseLocationString(location: string): {
   addressLine = addressLine.replace(/,\s*,+/g, ',').replace(/^,\s*|\s*,$/g, '').trim();
 
   // Log for debugging
-  console.log('[PincodeLookup] Parsed location:', {
+  if (import.meta.env.DEV) {
+    console.log('[PincodeLookup] Parsed location:', {
+  }
     original: trimmedLocation,
     addressLine,
     city,
