@@ -1994,7 +1994,7 @@ Best regards`;
   if (isLoadingDeal) {
     return (
       <>
-        <div className="nb-screen-height bg-[#0B0F14]" />
+        <div className="nb-screen-height bg-background" />
         <NativeLoadingSheet isOpen={true} message="Loading deal details..." />
       </>
     );
@@ -2003,7 +2003,7 @@ Best regards`;
   // Deal not found
   if (!deal) {
     return (
-      <div className="nb-screen-height bg-[#0B0F14] text-foreground flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-background text-foreground flex items-center justify-center p-4">
         <div className="text-center">
           <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/60" />
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
@@ -2032,7 +2032,7 @@ Best regards`;
             <button
               type="button"
               onClick={() => navigate(`/creator-deal/${prevDeal.id}`)}
-              className="p-2 hover:bg-card0 rounded-lg transition-colors active:scale-95"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors active:scale-95"
               aria-label={`Previous deal: ${prevDeal.brand_name}`}
               title={prevDeal.brand_name}
             >
@@ -2048,7 +2048,7 @@ Best regards`;
             <button
               type="button"
               onClick={() => navigate(`/creator-deal/${nextDeal.id}`)}
-              className="p-2 hover:bg-card0 rounded-lg transition-colors active:scale-95"
+              className="p-2 hover:bg-secondary rounded-lg transition-colors active:scale-95"
               aria-label={`Next deal: ${nextDeal.brand_name}`}
               title={nextDeal.brand_name}
             >
@@ -2082,7 +2082,7 @@ Best regards`;
         <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-info">What is happening now</p>
+              <p className="text-xs font-medium text-primary">What's happening</p>
               <h2 className="mt-2 text-2xl font-bold text-foreground">{guidedDealCard.title}</h2>
               <p className="mt-2 text-sm text-foreground/70">{guidedDealCard.explanation}</p>
             </div>
@@ -2108,15 +2108,15 @@ Best regards`;
                 return (
                   <Fragment key={step}>
                     <div className="flex flex-col items-center">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${isComplete ? 'bg-primary text-black' : isCurrent ? 'bg-card text-black' : 'bg-card0 text-foreground/40'}`}>
-                        {isComplete ? '✓' : index + 1}
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${isComplete ? 'bg-primary text-black' : isCurrent ? 'bg-card text-black' : 'bg-secondary text-foreground/40'}`}>
+                        {isComplete ? <Check className="h-3.5 w-3.5" /> : index + 1}
                       </div>
-                      <p className={`text-[10px] font-bold uppercase tracking-[0.1em] mt-1.5 text-center ${isCurrent ? 'text-foreground' : isComplete ? 'text-primary' : 'text-foreground/40'}`}>
+                      <p className={`text-[10px] font-medium mt-1.5 text-center ${isCurrent ? 'text-primary' : isComplete ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                         {step}
                       </p>
                     </div>
                     {index < GUIDED_PROGRESS_STEPS.length - 1 && (
-                      <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-primary' : 'bg-card0'}`} />
+                      <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-primary' : 'bg-secondary'}`} />
                     )}
                   </Fragment>
                 );
@@ -2128,7 +2128,7 @@ Best regards`;
                 <button
                   type="button"
                   onClick={guidedDealCard.action}
-                  className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 h-12 w-full md:w-auto md:h-auto text-base md:text-sm font-bold text-muted-foreground transition hover:bg-primary active:scale-[0.98]"
+                  className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
                 >
                   {guidedDealCard.actionLabel}
                 </button>
@@ -2139,7 +2139,7 @@ Best regards`;
                 <button
                   type="button"
                   onClick={guidedDealCard.secondaryAction}
-                  className="inline-flex items-center justify-center rounded-xl bg-card0 border border-border px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-foreground transition hover:bg-secondary/20 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center rounded-xl bg-secondary border border-border px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-foreground transition hover:bg-secondary active:scale-[0.98]"
                 >
                   <Copy className="h-4 w-4 mr-2" />
                   {guidedDealCard.secondaryActionLabel}
@@ -2149,7 +2149,7 @@ Best regards`;
 
             {guidedDealChecklist.length > 0 && (
               <div className="rounded-2xl border border-border bg-secondary/[0.03] p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground/50">Do this next</p>
+                <p className="text-xs font-medium text-foreground/50">Do this next</p>
                 <div className="mt-3 space-y-2">
                   {guidedDealChecklist.map((item, index) => (
                     <div key={item} className="flex items-start gap-3 text-sm text-foreground/80">
@@ -2169,7 +2169,7 @@ Best regards`;
           <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Share your content</p>
+                <p className="text-xs font-medium text-primary mb-1">Share your content</p>
                 <h2 className="mt-2 text-xl font-bold text-foreground">
                   {guidedDealState === 'REVISION_REQUESTED' ? 'Share the updated post link' : 'Share your Instagram post link'}
                 </h2>
@@ -2206,7 +2206,7 @@ Best regards`;
                     }
                   }}
                   placeholder="https://instagram.com/reel/..."
-                  className="h-12 w-full rounded-xl border border-border bg-card px-4 text-sm text-foreground placeholder:text-foreground/35 focus:border-primary/50 focus:outline-none"
+                  className="h-12 w-full rounded-xl border border-border bg-card px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/40 focus:outline-none"
                 />
               </div>
 
@@ -2219,7 +2219,7 @@ Best regards`;
                 <div className="px-3 pb-3 space-y-3">
                   {existingContentSubmissionUrl && (
                     <div className="rounded-lg border border-border bg-secondary/[0.03] p-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-foreground/50 mb-1.5">Current link on file</p>
+                      <p className="text-xs font-medium text-foreground/50 mb-1.5">Current link on file</p>
                       <a href={existingContentSubmissionUrl} target="_blank" rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary break-all">
                         <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
@@ -2228,7 +2228,7 @@ Best regards`;
                     </div>
                   )}
                   <div className="space-y-1.5">
-                    <label htmlFor="deal-content-note" className="text-[10px] font-black uppercase tracking-[0.16em] text-foreground/50">
+                    <label htmlFor="deal-content-note" className="text-xs font-medium text-foreground/50">
                       Note to brand (optional)
                     </label>
                     <textarea
@@ -2237,7 +2237,7 @@ Best regards`;
                       onChange={(e) => setContentNoteInput(e.target.value)}
                       placeholder="e.g. Added the final reel here..."
                       rows={2}
-                      className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-primary/50 focus:outline-none resize-none"
+                      className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/40 focus:outline-none resize-none"
                     />
                   </div>
                   <p className="text-[11px] text-foreground/40">
@@ -2269,12 +2269,12 @@ Best regards`;
 
         {/* Sticky submit bar — mobile only when content submission form is visible */}
         {(['CONTENT_IN_PROGRESS','OFFER_ACCEPTED','REVISION_REQUESTED'] as const).includes(guidedDealState) && (
-          <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 pb-4 px-4 md:hidden">
             <div className="max-w-lg mx-auto space-y-2">
               <button
                 type="button"
                 onClick={() => { document.getElementById('deal-content-link')?.focus(); document.getElementById('deal-content-link')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
-                className="w-full h-14 rounded-2xl bg-primary hover:bg-primary active:scale-[0.98] text-muted-foreground font-black text-base shadow-lg shadow-emerald-500/30 transition-all"
+                className="w-full h-14 rounded-2xl bg-primary hover:bg-primary active:scale-[0.98] text-muted-foreground font-black text-base shadow-lg shadow-primary/20 transition-all"
               >
                 {guidedDealState === 'REVISION_REQUESTED' ? 'Share updated link' : existingContentSubmissionUrl ? 'Update shared link' : 'Share post link'}
               </button>
@@ -2288,7 +2288,7 @@ Best regards`;
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-primary/30 rounded-2xl p-4 md:p-6 shadow-lg"
+            className="bg-primary/10 border border-primary/30 rounded-2xl p-4 md:p-6 shadow-lg"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -2326,7 +2326,7 @@ Best regards`;
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-2xl p-4 md:p-6 shadow-lg"
+            className="bg-primary/10 border border-green-400/30 rounded-2xl p-4 md:p-6 shadow-lg"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
@@ -2355,7 +2355,7 @@ Best regards`;
 
         <div id="deal-brief-section" className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex items-start gap-3 md:gap-4 mb-4">
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl md:text-2xl font-bold flex-shrink-0">
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-secondary flex items-center justify-center text-xl md:text-2xl font-bold flex-shrink-0">
               {deal.brand_name.substring(0, 2).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -2379,7 +2379,7 @@ Best regards`;
               <TrendingUp className="w-3.5 h-3.5 text-green-400" />
               Deal Value
             </div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 text-transparent bg-clip-text">
+            <div className="text-3xl font-bold text-primary font-bold">
               {(deal as any)?.deal_type === 'barter' || dealAmount === 0
                 ? 'Free products as payment'
                 : `₹${Math.round(dealAmount).toLocaleString('en-IN')}`}
@@ -3050,7 +3050,7 @@ ${link}`;
                   <div className="flex flex-col gap-3">
                     {/* Sign as Creator - Always show */}
                     {isCreatorSigned ? (
-                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-4 rounded-xl flex items-center justify-between group">
+                      <div className="w-full bg-primary/10 border border-green-400/30 px-6 py-4 rounded-xl flex items-center justify-between group">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
                             <CheckCircle className="w-5 h-5 text-green-400" />
@@ -3076,7 +3076,7 @@ ${link}`;
 
                     {/* Sign as Brand - Always show */}
                     {isBrandSigned ? (
-                      <div className="w-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 px-6 py-4 rounded-xl flex items-center justify-between group">
+                      <div className="w-full bg-primary/10 border border-green-400/30 px-6 py-4 rounded-xl flex items-center justify-between group">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
                             <CheckCircle className="w-5 h-5 text-green-400" />
@@ -3105,7 +3105,7 @@ ${link}`;
                         }}
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full bg-card hover:bg-card0 border border-border px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-3 group"
+                        className="w-full bg-card hover:bg-secondary border border-border px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-3 group"
                       >
                         <Share2 className="w-5 h-5 text-info group-hover:scale-110 transition-transform" />
                         Send for Brand Signature
@@ -3153,7 +3153,7 @@ ${link}`;
                               copyToClipboard(`CA-${deal?.id?.toUpperCase() || ''}`);
                               toast.success('Audit ID copied to clipboard');
                             }}
-                            className="p-2 hover:bg-card0 rounded-lg transition-colors text-foreground/40 hover:text-foreground"
+                            className="p-2 hover:bg-secondary rounded-lg transition-colors text-foreground/40 hover:text-foreground"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
@@ -3163,7 +3163,7 @@ ${link}`;
                           onClick={handleDownloadContract}
                           disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                           whileTap={{ scale: 0.98 }}
-                          className="w-full px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-900/20"
+                          className="w-full px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-primary/20"
                         >
                           {isDownloading ? (
                             <>
@@ -3199,7 +3199,7 @@ ${link}`;
                         onClick={handleDownloadContract}
                         disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full px-6 py-3 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-card0 hover:bg-secondary/20 border border-border"
+                        className="w-full px-6 py-3 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-secondary hover:bg-secondary border border-border"
                       >
                         {isDownloading ? (
                           <>
@@ -3253,7 +3253,7 @@ ${link}`;
                       "w-full px-4 py-2.5 border rounded-xl transition-all flex items-center justify-center gap-2 text-sm",
                       !bothSigned
                         ? "bg-card border-border/5 text-foreground/30 cursor-not-allowed"
-                        : "bg-card hover:bg-card0 border-border text-foreground active:scale-[0.98]"
+                        : "bg-card hover:bg-secondary border-border text-foreground active:scale-[0.98]"
                     )}
                   >
                     <Calendar className="w-4 h-4" />
@@ -3565,7 +3565,7 @@ ${link}`;
                               setIsEditingBrandPhone(true);
                             }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-1.5 hover:bg-card0 rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
                             title="Edit phone number"
                           >
                             <Edit className="w-4 h-4 text-foreground/60" />
@@ -3592,7 +3592,7 @@ ${link}`;
                               setBrandPhoneInput(value);
                             }}
                             placeholder="+91 9876543210"
-                            className="flex-1 bg-card0 border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                             autoFocus
                           />
                           <motion.button
@@ -3830,7 +3830,7 @@ ${link}`;
                 </button>
                 <button type="button"
                   onClick={() => setShowMarkSignedModal(false)}
-                  className="flex-1 bg-card0 hover:bg-secondary/20 px-4 py-2 rounded-xl font-medium transition-colors"
+                  className="flex-1 bg-secondary hover:bg-secondary px-4 py-2 rounded-xl font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -3880,7 +3880,7 @@ ${link}`;
           brandSubmissionDetails && (
             <div className="space-y-6">
               {/* Deal Summary Card - Collapsible by default */}
-              <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+              <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                 <Collapsible open={showDealSummaryFull} onOpenChange={setShowDealSummaryFull}>
                   <CollapsibleTrigger asChild>
                     <button type="button" className="w-full flex items-center justify-between items-center mb-4">
@@ -3953,7 +3953,7 @@ ${link}`;
 
               {/* Payment Details Card - Moved to position 4 */}
               {brandSubmissionDetails.dealType === 'paid' && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">💰</span>
                     <h3 className="font-semibold text-lg">Payment Details</h3>
@@ -3993,7 +3993,7 @@ ${link}`;
 
               {/* Rights & Usage Card - Moved to position 5 */}
               {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🧾</span>
                     <h3 className="font-semibold text-lg">Rights & Usage</h3>
@@ -4049,7 +4049,7 @@ ${link}`;
 
               {/* Approvals & Revisions Card - Moved to position 6 */}
               {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🛡️</span>
                     <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
@@ -4091,7 +4091,7 @@ ${link}`;
 
               {/* Free products details */}
               {brandSubmissionDetails.dealType === 'barter' && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🎁</span>
                     <h3 className="font-semibold text-lg">Free products details</h3>
@@ -4133,7 +4133,7 @@ ${link}`;
 
               {/* Product shipping (free products deals only) */}
               {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <Package className="w-5 h-5 text-warning" />
                     <h3 className="font-semibold text-lg">Product delivery</h3>
@@ -4163,14 +4163,14 @@ ${link}`;
                             <div className="flex flex-wrap gap-2">
                               <button type="button"
                                 onClick={() => setShowReportIssueModal(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
                               >
                                 <AlertCircle className="w-4 h-4" />
                                 Report issue (e.g. brand has not shipped)
                               </button>
                               <button
                                 onClick={() => navigate('/creator-dashboard')}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
                               >
                                 <Flag className="w-4 h-4" />
                                 Legal support
@@ -4200,7 +4200,7 @@ ${link}`;
                                 href={trackingUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/15 border border-border text-foreground font-medium"
                               >
                                 <ExternalLink className="w-4 h-4" />
                                 Track package
@@ -4239,7 +4239,7 @@ ${link}`;
                             <button type="button"
                               onClick={() => setShowReportIssueModal(true)}
                               disabled={isReportingIssue}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium"
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/15 border border-border text-foreground font-medium"
                             >
                               <AlertCircle className="w-4 h-4" />
                               Report Issue
@@ -4279,7 +4279,7 @@ ${link}`;
 
               {/* Legal Card */}
               {(brandSubmissionDetails.governingLaw || brandSubmissionDetails.companyState) && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">⚖️</span>
                     <h3 className="font-semibold text-lg">Legal</h3>
@@ -4303,7 +4303,7 @@ ${link}`;
 
               {/* Brand Details Card */}
               {(brandSubmissionDetails.companyLegalName || brandSubmissionDetails.companyGstin || brandSubmissionDetails.companyAddress || brandSubmissionDetails.authorizedSignatoryName || brandSubmissionDetails.companyEmail || brandSubmissionDetails.companyPhone) && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🏢</span>
                     <h3 className="font-semibold text-lg">Brand Details</h3>
@@ -4356,7 +4356,7 @@ ${link}`;
 
               {/* Next Steps - For Signed Agreements */}
               {isCreatorSigned && (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || signedContractUrl || signedAt || (deal?.status?.toLowerCase()?.includes('signed'))) && (
-                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
+                <div className="bg-card border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
                   <h3 className="font-semibold text-lg mb-4 text-foreground/90">Next steps:</h3>
                   <ul className="space-y-2 text-sm text-foreground/70">
                     <li className="flex items-start gap-2">
@@ -4438,7 +4438,7 @@ ${link}`;
             onChange={(e) => setReportIssueReason(e.target.value)}
             placeholder="Describe the issue..."
             rows={4}
-            className="w-full px-4 py-3 rounded-xl bg-card0 border border-border text-foreground placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+            className="w-full px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
           />
           <div className="flex gap-2 justify-end mt-4">
             <button type="button"
@@ -4446,7 +4446,7 @@ ${link}`;
                 setShowReportIssueModal(false);
                 setReportIssueReason('');
               }}
-              className="px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium"
+              className="px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/15 border border-border text-foreground font-medium"
             >
               Cancel
             </button>
@@ -4507,7 +4507,7 @@ ${link}`;
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-border shadow-2xl"
+              className="bg-card rounded-2xl p-6 max-w-md w-full border border-border shadow-2xl"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center">
@@ -4531,7 +4531,7 @@ ${link}`;
                     setShowDeleteConfirm(false);
                   }}
                   disabled={deleteDeal.isPending}
-                  className="flex-1 px-4 py-2.5 bg-card0 hover:bg-secondary/15 border border-border text-foreground rounded-xl font-medium transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-secondary hover:bg-secondary/15 border border-border text-foreground rounded-xl font-medium transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
