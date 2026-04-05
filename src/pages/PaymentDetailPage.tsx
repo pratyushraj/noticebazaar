@@ -45,6 +45,7 @@ const PaymentDetailPage = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingUpi, setPendingUpi] = useState(profile?.bank_upi || '');
   const [isSavingUpi, setIsSavingUpi] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Undo payment state
