@@ -247,13 +247,13 @@ export function parseLocationString(location: string): {
   // Log for debugging
   if (import.meta.env.DEV) {
     console.log('[PincodeLookup] Parsed location:', {
+      original: trimmedLocation,
+      addressLine,
+      city,
+      state,
+      pincode,
+    });
   }
-    original: trimmedLocation,
-    addressLine,
-    city,
-    state,
-    pincode
-  });
 
   return { addressLine, city, state, pincode };
 }
