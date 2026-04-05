@@ -697,7 +697,7 @@ const Signup = () => {
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   className="flex items-start gap-5"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-white/10 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <Icon className={`w-6 h-6 ${colorClass}`} />
                   </div>
                   <div>
@@ -751,7 +751,7 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'creator'
-                            ? 'bg-white/20 text-white border border-white/20'
+                            ? 'bg-white/20 text-white border border-white/20
                             : 'bg-transparent text-white/60 hover:text-white'
                         )}
                       >
@@ -767,7 +767,7 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'brand'
-                            ? 'bg-white/20 text-white border border-white/20'
+                            ? 'bg-white/20 text-white border border-white/20
                             : 'bg-transparent text-white/60 hover:text-white'
                         )}
                       >
@@ -1011,10 +1011,10 @@ const Signup = () => {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
+                <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-white px-4 text-slate-500">Or continue with</span>
+                <span className="bg-[#0B0F14] px-4 text-white/40">Or continue with</span>
               </div>
             </div>
 
@@ -1049,10 +1049,10 @@ const Signup = () => {
               </Button>
             </div>
 
-            <div className="text-center pt-6 border-t border-slate-200">
+            <div className="text-center pt-6 border-t border-white/10">
               <button type="button"
                 onClick={() => setShowLogin(!showLogin)}
-                className="text-slate-600 hover:text-slate-900 font-medium text-[13px] transition-all group inline-flex items-center gap-2"
+                className="text-white/50 hover:text-white font-medium text-[13px] transition-all group inline-flex items-center gap-2"
               >
                 {showLogin ? "Don't have an account?" : 'Already have an account?'}
                 <span className="text-emerald-500 font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
@@ -1060,8 +1060,8 @@ const Signup = () => {
             </div>
 
             {/* Back to Homepage */}
-            <div className="mt-8 text-center pt-6 border-t border-slate-200">
-              <Link to="/" className="text-slate-500 hover:text-emerald-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
+            <div className="mt-8 text-center pt-6 border-t border-white/10">
+              <Link to="/" className="text-white/40 hover:text-emerald-400 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
                 <ArrowLeft className="w-3 h-3" /> Back to Home
               </Link>
             </div>

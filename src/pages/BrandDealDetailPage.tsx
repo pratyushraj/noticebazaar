@@ -248,6 +248,28 @@ const BrandDealDetailPage: React.FC = () => {
                   Approve
                 </Button>
               </div>
+
+              {/* Sticky action bar — mobile only when content submitted */}
+              <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F1A] via-[#0B0F1A]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
+                <div className="flex gap-2 max-w-lg mx-auto">
+                  <button
+                    type="button"
+                    onClick={() => setShowChangesModal(true)}
+                    className="flex-1 h-12 rounded-xl bg-white/10 border border-white/20 text-white/80 font-bold text-sm flex items-center justify-center gap-2"
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowApproveModal(true)}
+                    className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2"
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    Approve
+                  </button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

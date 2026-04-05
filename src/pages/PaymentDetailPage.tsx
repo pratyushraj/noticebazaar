@@ -727,7 +727,21 @@ const PaymentDetailPage = () => {
                   )}
                 </motion.button>
                 <motion.button
-                  onClick={() => toast.info('Send Payment Reminder feature coming soon')}
+                  onClick={async () => {
+                    try {
+                      const { error } = await supabase.from('notifications').insert({
+                        user_id: paymentData.brandId,
+                        title: 'Payment reminder sent',
+                        body: `Creator ${paymentData.creatorName || ''} sent you a payment reminder for deal #${String(paymentData.dealId || '').slice(0,8)}. Please process payment.`,
+                        type: 'payment_reminder',
+                        deal_id: paymentData.dealId,
+                      });
+                      if (error) throw error;
+                      toast.success('Reminder sent to brand!');
+                    } catch {
+                      toast.error('Failed to send reminder');
+                    }
+                  }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
@@ -738,7 +752,21 @@ const PaymentDetailPage = () => {
             ) : paymentData.status === 'overdue' ? (
               <>
                 <motion.button
-                  onClick={() => toast.info('Send Payment Reminder feature coming soon')}
+                  onClick={async () => {
+                    try {
+                      const { error } = await supabase.from('notifications').insert({
+                        user_id: paymentData.brandId,
+                        title: 'Payment overdue — action required',
+                        body: `Payment for deal #${String(paymentData.dealId || '').slice(0,8)} is overdue. Please process immediately.`,
+                        type: 'payment_reminder',
+                        deal_id: paymentData.dealId,
+                      });
+                      if (error) throw error;
+                      toast.success('Urgent reminder sent to brand!');
+                    } catch {
+                      toast.error('Failed to send reminder');
+                    }
+                  }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
