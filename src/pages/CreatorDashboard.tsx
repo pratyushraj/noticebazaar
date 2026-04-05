@@ -182,15 +182,22 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
           <p className="mt-2 text-sm text-slate-300">
             {formatDealStageLabel(deal.status, deal.progress_percentage)} • {formatCurrency(deal.deal_amount)}
           </p>
+          <div className="mt-2 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-emerald-400 transition-all duration-500" 
+              style={{ width: `${progress}%` }} 
+            />
+          </div>
         </div>
         <div 
-          className="rounded-full border border-white/10 px-3 py-1 text-sm font-bold text-white"
+          className="rounded-full border border-white/10 px-3 py-1 text-sm font-bold text-white flex items-center gap-1.5"
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={`${progress}% complete`}
         >
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           {progress}%
         </div>
       </div>
