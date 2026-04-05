@@ -3571,7 +3571,11 @@ const CollabLinkLanding = () => {
                             </div>
                             <div className="flex items-start gap-2.5">
                               <Clock className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-slate-700">Payment expected within 7 days of content approval</p>
+                              <p className="text-xs text-slate-700">Payment due within 7 days of content approval</p>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-slate-700">Late payments incur <span className="font-semibold">18% p.a. interest</span> — standard in India</p>
                             </div>
                             <div className="flex items-start gap-2.5">
                               <ShieldCheck className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
@@ -3650,9 +3654,20 @@ const CollabLinkLanding = () => {
                     )}
                     </div>
                     {currentStep === 2 && (
-                      <p className="mt-2 text-[11px] font-semibold text-slate-500 text-center">
-                        Creator will be notified instantly
-                      </p>
+                      <div className="mt-2 space-y-1.5">
+                        <p className="text-[11px] font-semibold text-slate-500 text-center">
+                          Creator will be notified instantly
+                        </p>
+                        {(trustStats?.completed_deals ?? 0) > 0 && (
+                          <p className="text-[11px] text-emerald-600 text-center flex items-center justify-center gap-1.5">
+                            <CheckCircle2 className="h-3 w-3" />
+                            <span className="font-semibold">
+                              {trustStats?.completed_deals} deal{trustStats?.completed_deals !== 1 ? 's' : ''} completed
+                              {(trustStats?.brands_count ?? 0) > 0 && ` · ${trustStats?.brands_count} brand${trustStats?.brands_count !== 1 ? 's' : ''} worked with`}
+                            </span>
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
 
