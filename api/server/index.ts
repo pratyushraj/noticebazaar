@@ -65,6 +65,7 @@ import dealsRouter from './routes/deals';
 import complaintsRouter from './routes/complaints';
 import influencersRouter from './routes/influencers';
 import collabRequestsRouter from './routes/collabRequests';
+import brandCollabRequestsRouter from './routes/brandCollabRequests';
 import collabAnalyticsRouter from './routes/collabAnalytics';
 import creatorsRouter from './routes/creators';
 import shippingRouter from './routes/shipping';
@@ -545,6 +546,7 @@ app.use('/api/deals', authMiddleware, rateLimitMiddleware, dealsRouter);
 app.use('/api/complaints', authMiddleware, rateLimitMiddleware, complaintsRouter);
 app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRouter);
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
+app.use('/api/brand/collab-requests', authMiddleware, rateLimitMiddleware, brandCollabRequestsRouter); // Brand's own offers + counter responses
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);

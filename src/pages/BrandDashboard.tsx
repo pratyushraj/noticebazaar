@@ -7,10 +7,12 @@ import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Loader2, Clock, CheckCircle2 } from 'lucide-react';
+import { Plus, Loader2, Clock, CheckCircle2, ArrowRightLeft, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { useBrandCollabRequests, acceptCounterOffer, declineCounterOffer } from '@/lib/hooks/useBrandCollabRequests';
 
-type BrandTab = 'sent' | 'active' | 'completed';
+type BrandTab = 'sent' | 'countered' | 'active' | 'completed';
 
 const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -18,8 +20,52 @@ const BrandDashboard: React.FC = () => {
   const [tab, setTab] = useState<BrandTab>('sent');
   const [deals, setDeals] = useState<BrandDeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const isBrandUser = profile?.role === 'brand';
+  const { requests: brandRequests, invalidate: invalidateRequests } = useBrandCollabRequests();
+
+  // ── Counter offer actions ────────────────────────────────────────────
+
+  const handleAcceptCounter = async (requestId: string) => {
+    setActionLoading(requestId);
+    try {
+      const result = await acceptCounterOffer(requestId);
+      if (result.success) {
+        toast.success('Counter accepted! Deal created.');
+        await invalidateRequests();
+        if (result.deal_id) navigate(`/brand-deal/${result.deal_id}`);
+        else setTab('active');
+      } else {
+        toast.error(result.error || 'Failed to accept counter');
+      }
+    } catch {
+      toast.error('Failed to accept counter');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeclineCounter = async (requestId: string) => {
+    setActionLoading(requestId);
+    try {
+      const result = await declineCounterOffer(requestId);
+      if (result.success) {
+        toast.success('Counter declined');
+        await invalidateRequests();
+      } else {
+        toast.error(result.error || 'Failed to decline counter');
+      }
+    } catch {
+      toast.error('Failed to decline counter');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Derived: countered requests (need brand action)
+  const counteredRequests = brandRequests.filter(r => r.status === 'countered');
+  const pendingRequests = brandRequests.filter(r => r.status === 'pending');
 
   useEffect(() => {
     if (!profile?.id || !isBrandUser) {
@@ -179,21 +225,36 @@ const BrandDashboard: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-border">
+        <div className="flex gap-2 border-b border-border overflow-x-auto">
           <button
             onClick={() => setTab('sent')}
             className={cn(
-              'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5',
+              'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap',
               tab === 'sent' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
             )}
           >
             <Clock className="w-3.5 h-3.5" />
-            Sent ({sentDeals.length})
+            Sent ({pendingRequests.length})
+          </button>
+          <button
+            onClick={() => setTab('countered')}
+            className={cn(
+              'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5 whitespace-nowrap',
+              tab === 'countered' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
+            )}
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5" />
+            Counter ({counteredRequests.length})
+            {counteredRequests.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-warning/20 text-warning text-[10px] font-bold">
+                {counteredRequests.length}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setTab('active')}
             className={cn(
-              'pb-3 px-1 text-sm font-semibold transition-colors',
+              'pb-3 px-1 text-sm font-semibold transition-colors whitespace-nowrap',
               tab === 'active' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
             )}
           >
@@ -202,7 +263,7 @@ const BrandDashboard: React.FC = () => {
           <button
             onClick={() => setTab('completed')}
             className={cn(
-              'pb-3 px-1 text-sm font-semibold transition-colors',
+              'pb-3 px-1 text-sm font-semibold transition-colors whitespace-nowrap',
               tab === 'completed' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
             )}
           >
@@ -216,7 +277,245 @@ const BrandDashboard: React.FC = () => {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-secondary" />
           </div>
-        ) : displayedDeals.length === 0 ? (
+        ) : tab === 'countered' ? (
+          /* Countered offers — direct accept/decline */
+          counteredRequests.length === 0 ? (
+            <Card className="bg-card border-border rounded-2xl">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
+                  <ArrowRightLeft className="h-8 w-8 text-secondary" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No counter offers</h3>
+                <p className="text-sm text-foreground/60 mb-6">
+                  When a creator counters your offer, it will appear here for you to review.
+                </p>
+                <Button
+                  onClick={() => navigate('/brand-new-deal')}
+                  className="bg-secondary hover:bg-secondary font-bold"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Send New Offer
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {counteredRequests.map((request) => {
+                const isLoading = actionLoading === request.id;
+                return (
+                  <Card
+                    key={request.id}
+                    className="bg-card border-warning/40 rounded-2xl overflow-hidden"
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-warning/20 text-warning">
+                              Counter received
+                            </span>
+                          </div>
+                          <h3 className="text-base font-bold text-foreground truncate">
+                            {request.creator_name}
+                          </h3>
+                          {request.creator_instagram && (
+                            <p className="text-sm text-foreground/60">@{request.creator_instagram}</p>
+                          )}
+                          {request.counter_offer?.final_price && (
+                            <p className="text-sm font-semibold text-warning mt-1">
+                              Counter: ₹{request.counter_offer.final_price.toLocaleString('en-IN')}
+                            </p>
+                          )}
+                          {request.counter_offer?.notes && (
+                            <p className="text-xs text-foreground/60 mt-1 line-clamp-2">
+                              Note: {request.counter_offer.notes}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-base font-bold text-foreground">
+                            {request.collab_type === 'barter' ? 'Barter' : `₹${(request.exact_budget ?? 0).toLocaleString('en-IN')}`}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Accept / Decline CTAs — direct on dashboard */}
+                      <div className="mt-4 flex gap-2">
+                        <Button
+                          onClick={() => handleAcceptCounter(request.id)}
+                          disabled={isLoading}
+                          className="flex-1 h-10 bg-green-600 hover:bg-green-700 font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4" />
+                              Accept Counter
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleDeclineCounter(request.id)}
+                          disabled={isLoading}
+                          className="flex-1 h-10 border-border font-semibold text-foreground/70 hover:text-destructive hover:border-destructive/40 rounded-xl flex items-center justify-center gap-2"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <X className="h-4 w-4" />
+                              Decline
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )
+        ) : tab === 'sent' && pendingRequests.length > 0 ? (
+          /* Pending offers — from brandRequests (collab_requests) */
+          <div className="space-y-3">
+            {pendingRequests.map((request) => {
+              let deliverablesArray: string[] = [];
+              try {
+                deliverablesArray = typeof request.deliverables === 'string'
+                  ? JSON.parse(request.deliverables)
+                  : Array.isArray(request.deliverables)
+                    ? request.deliverables
+                    : [];
+              } catch { deliverablesArray = []; }
+
+              return (
+                <Card
+                  key={request.id}
+                  className="bg-card border-border rounded-2xl overflow-hidden hover:border-border transition-colors cursor-pointer"
+                  onClick={() => navigate(`/brand-request/${request.id}`)}
+                  role="article"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-base font-bold text-foreground truncate">
+                            {request.creator_name}
+                          </h3>
+                          {request.creator_instagram && (
+                            <span className="text-xs text-secondary">@{request.creator_instagram}</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-foreground/60 mt-1">
+                          {deliverablesArray.slice(0, 2).join(', ')}
+                          {deliverablesArray.length > 2 && ` +${deliverablesArray.length - 2}`}
+                        </p>
+                        <p className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Sent {getTimeAgo(request.created_at)}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-base font-bold text-foreground">
+                          {request.collab_type === 'barter' ? 'Barter' : `₹${(request.exact_budget ?? 0).toLocaleString('en-IN')}`}
+                        </p>
+                        <p className="text-xs text-foreground/40">awaiting response</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : tab === 'active' && activeDeals.length > 0 ? (
+          /* Active deals */
+          <div className="space-y-3">
+            {activeDeals.map((deal) => (
+              <Card
+                key={deal.id}
+                className="bg-card border-border rounded-2xl overflow-hidden hover:border-border transition-colors cursor-pointer"
+                onClick={() => navigate(`/brand-deal/${deal.id}`)}
+                role="article"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-foreground truncate">
+                          {deal.brand_name || 'Brand'}
+                        </h3>
+                        <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
+                          {getStatusLabel(deal.status)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground/60 mt-1">
+                        {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
+                      </p>
+                      {/* Action hint */}
+                      <div className="mt-3 flex items-center gap-2">
+                        {deal.status?.toLowerCase().includes('submitted') || deal.status?.toLowerCase().includes('delivered') ? (
+                          <span className="text-xs text-secondary font-medium">Review content →</span>
+                        ) : deal.status?.toLowerCase().includes('approved') ? (
+                          <span className="text-xs text-primary font-medium">Pay creator →</span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-base font-bold text-foreground">
+                        {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
+                      </p>
+                    </div>
+                  </div>
+                  {deal.progress_percentage != null && (
+                    <div className="mt-3">
+                      <div className="h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                        <div className="h-full bg-secondary rounded-full" style={{ width: `${deal.progress_percentage}%` }} />
+                      </div>
+                      <p className="text-[10px] text-foreground/40 mt-1">{deal.progress_percentage}% complete</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : tab === 'completed' && completedDeals.length > 0 ? (
+          /* Completed deals */
+          <div className="space-y-3">
+            {completedDeals.map((deal) => (
+              <Card
+                key={deal.id}
+                className="bg-card border-border rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => navigate(`/brand-deal/${deal.id}`)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-base font-bold text-foreground truncate">
+                          {deal.brand_name || 'Brand'}
+                        </h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-green-500/20 text-green-400">
+                          Done
+                        </span>
+                      </div>
+                      <p className="text-sm text-foreground/60 mt-1">
+                        {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-base font-bold text-foreground">
+                        {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          /* Empty state for all tabs */
           <Card className="bg-card border-border rounded-2xl">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
@@ -241,82 +540,6 @@ const BrandDashboard: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-3">
-            {displayedDeals.map((deal) => (
-              <Card
-                key={deal.id}
-                className="bg-card border-border rounded-2xl overflow-hidden hover:border-border transition-colors cursor-pointer"
-                onClick={() => navigate(`/brand-deal/${deal.id}`)}
-                role="article"
-                aria-label={`Deal with ${deal.brand_name || 'Brand'}, ${getStatusLabel(deal.status)}, ${deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-bold text-foreground truncate">
-                          {deal.brand_name || 'Brand'}
-                        </h3>
-                        <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
-                          {getStatusLabel(deal.status)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground/60 mt-1">
-                        {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
-                      </p>
-                      {tab === 'sent' && (
-                        <p className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Sent {getTimeAgo(deal.created_at)}
-                          {(() => {
-                            const exp = getExpiresIn((deal as any).expires_at);
-                            if (!exp) return null;
-                            return (
-                              <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${exp.tone === 'danger' ? 'bg-destructive/20 text-destructive' : exp.tone === 'warning' ? 'bg-warning/20 text-warning' : 'bg-secondary/50 text-foreground/60'}`}>
-                                {exp.label}
-                              </span>
-                            );
-                          })()}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-base font-bold text-foreground">
-                        {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
-                      </p>
-                      {deal.deal_type !== 'barter' && (
-                        <p className="text-xs text-foreground/40">deal value</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action hint for active deals */}
-                  {tab === 'active' && (
-                    <div className="mt-3 flex items-center gap-2">
-                      {deal.status?.toLowerCase().includes('submitted') || deal.status?.toLowerCase().includes('delivered') ? (
-                        <span className="text-xs text-secondary font-medium">Review content →</span>
-                      ) : deal.status?.toLowerCase().includes('approved') ? (
-                        <span className="text-xs text-primary font-medium">Pay creator →</span>
-                      ) : null}
-                    </div>
-                  )}
-
-                  {/* Progress bar */}
-                  {deal.progress_percentage != null && (
-                    <div className="mt-3">
-                      <div className="h-1.5 bg-secondary/50 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-secondary rounded-full transition-all"
-                          style={{ width: `${deal.progress_percentage}%` }}
-                        />
-                      </div>
-                      <p className="text-[10px] text-foreground/40 mt-1">{deal.progress_percentage}% complete</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
       </div>
 
