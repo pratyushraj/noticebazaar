@@ -198,6 +198,8 @@ const BrandDashboard: React.FC = () => {
                 key={deal.id}
                 className="bg-white/5 border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
                 onClick={() => navigate(`/brand-deal/${deal.id}`)}
+                role="article"
+                aria-label={`Deal with ${deal.brand_name || 'Brand'}, ${getStatusLabel(deal.status)}, ${deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}`}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
