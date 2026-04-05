@@ -605,6 +605,33 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
+        {/* How to get paid — shown only when payment is pending */}
+        {paymentData.status === 'pending' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+            className="relative rounded-2xl border border-white/10 bg-white/5 p-5"
+          >
+            <p className="text-[11px] font-black uppercase tracking-widest text-white/50 mb-3">How you'll get paid</p>
+            <div className="space-y-3">
+              {[
+                { step: '1', title: 'Brand transfers to your UPI', desc: 'They pay directly — outside Creator Armour' },
+                { step: '2', title: 'Brand marks payment sent', desc: 'You get notified automatically' },
+                { step: '3', title: 'You confirm receipt', desc: 'Tap "I received payment" to close the deal' },
+              ].map(item => (
+                <div key={item.step} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-black text-purple-300 flex-shrink-0 mt-0.5">{item.step}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{item.title}</p>
+                    <p className="text-xs text-white/50">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         {!paymentData.receivedAt && !hasSavedUpi && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -2307,28 +2307,6 @@ const CollabLinkLanding = () => {
                 </div>
               </div>
 
-              {/* 1. Trust Indicators (Consolidated) */}
-	              <div className={`mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 ${showTrustSections ? '' : 'hidden'}`}>
-                <div className="grid grid-cols-3 gap-2.5 px-0">
-                  {[
-                    { label: 'Legally Binding', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-contract' },
-                    { label: 'Secure Payment', icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />, desc: 'Dispute protected' },
-                    { label: 'Trusted by 50+ Brands', icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />, desc: 'Trust Armour' },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(15,23,42,0.06)] border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(15,23,42,0.10)] hover:border-slate-300 active:scale-[0.985]">
-                      <div className={`shrink-0 rounded-xl p-2.5 border ${idx === 0 ? 'bg-emerald-100 border-emerald-200 text-emerald-700' :
-                        idx === 1 ? 'bg-teal-100 border-teal-200 text-teal-700' :
-                          'bg-blue-100 border-blue-200 text-blue-700'
-                        }`}>{item.icon}</div>
-                      <div>
-                        <p className="text-[10px] md:text-[11px] font-black text-slate-900 leading-tight mb-0.5">{item.label}</p>
-                        <p className="text-[8px] md:text-[10px] text-slate-400 font-bold uppercase tracking-tight">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {isOwner && editMode && !previewAsBrand && (
                 <div className="mb-6 md:mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
                   <div className="flex items-center justify-between mb-3">
@@ -2754,6 +2732,23 @@ const CollabLinkLanding = () => {
 	                </div>
               )}
 
+
+              {/* Trust Indicators — shown below packages for brand context */}
+              <div className={`mt-3 rounded-2xl bg-white border border-slate-200 p-4 ${showTrustSections ? '' : 'hidden'}`}>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Why use this link</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Legally Binding', icon: <FileCheck className="h-4 w-4 text-emerald-700" />, bg: 'bg-emerald-100 border border-emerald-200' },
+                    { label: 'Secure Payment', icon: <ShieldCheck className="h-4 w-4 text-teal-700" />, bg: 'bg-teal-100 border border-teal-200' },
+                    { label: 'Creator Armour', icon: <BadgeCheck className="h-4 w-4 text-blue-700" />, bg: 'bg-blue-100 border border-blue-200' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-xl bg-white p-2 border border-slate-200">
+                      <div className={`shrink-0 rounded-lg p-2 ${item.bg}`}>{item.icon}</div>
+                      <p className="text-[10px] font-black text-slate-700 leading-tight">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-[14px] font-black text-slate-900 tracking-tight">

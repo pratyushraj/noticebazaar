@@ -2,124 +2,69 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Circle, Briefcase, FileText, MessageCircle, Shield, TrendingUp, Sparkles, X } from 'lucide-react';
+import { CheckCircle, Circle, Link2, MessageCircleMore, Sparkles, X, ArrowRight } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-
-interface ChecklistItem {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  route?: string;
-  checkFn: () => boolean;
-  color: string;
-}
+import { toast } from 'sonner';
 
 const OnboardingChecklist = () => {
   const { profile } = useSession();
   const { data: brandDeals = [] } = useBrandDeals({ creatorId: profile?.id, enabled: !!profile?.id });
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(true);
-  const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
-  const [hasConversations, setHasConversations] = useState(false);
-  const [hasProtectionReport, setHasProtectionReport] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  const checklistItems: ChecklistItem[] = [
-    {
-      id: 'add-deal',
-      title: 'Add Your First Deal',
-      description: 'Upload a contract to get started',
-      icon: Briefcase,
-      route: '/contract-upload',
-      checkFn: () => brandDeals.length > 0,
-      color: 'text-blue-400'
-    },
-    {
-      id: 'upload-contract',
-      title: 'Review a Contract',
-      description: 'Get AI-powered contract analysis',
-      icon: FileText,
-      route: '/contract-upload',
-      checkFn: () => brandDeals.some(deal => deal.status !== 'Drafting'),
-      color: 'text-purple-400'
-    },
-    {
-      id: 'chat-advisor',
-      title: 'Chat with Advisor',
-      description: 'Connect with your legal advisor',
-      icon: MessageCircle,
-      route: '/messages',
-      checkFn: () => hasConversations,
-      color: 'text-green-400'
-    },
-    {
-      id: 'protect-content',
-      title: 'Protect Your Content',
-      description: 'Register your original content',
-      icon: Shield,
-      route: '/creator-content-protection',
-      checkFn: () => hasProtectionReport,
-      color: 'text-orange-400'
-    },
-    {
-      id: 'track-earnings',
-      title: 'Track Your Earnings',
-      description: 'View your payment dashboard',
-      icon: TrendingUp,
-      route: '/creator-payments',
-      checkFn: () => brandDeals.some(deal => deal.payment_received_date),
-      color: 'text-pink-400'
-    }
-  ];
+  const hasOffers = brandDeals.length > 0;
+  const hasEarnings = brandDeals.some(deal => deal.payment_received_date);
+  const linkShared = !!profile?.link_shared_at;
 
-  // Fetch conversation and protection report status for checklist
-  useEffect(() => {
-    if (!profile?.id) return;
-
-    const fetchStatus = async () => {
-      try {
-        // Check if user has any conversations
-        const { data: convData } = await supabase
-          .from('conversation_participants')
-          .select('id')
-          .eq('user_id', profile.id)
-          .limit(1);
-        setHasConversations(!!(convData && convData.length > 0));
-
-        // Check if user has any protection reports
-        const { data: protData } = await supabase
-          .from('protection_reports')
-          .select('id')
-          .eq('user_id', profile.id)
-          .limit(1);
-        setHasProtectionReport(!!(protData && protData.length > 0));
-      } catch (err) {
-        console.error('[OnboardingChecklist] Error fetching status:', err);
-      }
-    };
-
-    fetchStatus();
-  }, [profile?.id]);
-
-  useEffect(() => {
-    const completed = new Set<string>();
-    checklistItems.forEach(item => {
-      if (item.checkFn()) {
-        completed.add(item.id);
-      }
-    });
-    setCompletedItems(completed);
-  }, [brandDeals, hasConversations, hasProtectionReport]);
-
-  const completionPercentage = (completedItems.size / checklistItems.length) * 100;
-  const allCompleted = completedItems.size === checklistItems.length;
+  const completionPercentage = ([linkShared, hasOffers, hasEarnings].filter(Boolean).length / 3) * 100;
+  const allCompleted = completionPercentage === 100;
 
   if (!isVisible || allCompleted) {
     return null;
   }
+
+  const copyLink = async () => {
+    if (profile?.username) {
+      const url = `${window.location.origin}/${profile.username}`;
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      toast.success('Collab link copied!');
+    }
+  };
+
+  const checklistItems = [
+    {
+      id: 'share-link',
+      title: 'Share your collab link',
+      description: 'Send it to brands on Instagram DM or WhatsApp',
+      icon: MessageCircleMore,
+      action: copyLink,
+      completed: linkCopied || linkShared,
+      cta: linkCopied ? 'Copied!' : 'Copy Link',
+      ctaIcon: linkCopied ? <CheckCircle className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />,
+    },
+    {
+      id: 'receive-offer',
+      title: 'Receive your first offer',
+      description: 'A brand sends you a deal through your link',
+      icon: Link2,
+      completed: hasOffers,
+      cta: hasOffers ? 'Deal received!' : 'Waiting...',
+      ctaIcon: hasOffers ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />,
+    },
+    {
+      id: 'get-paid',
+      title: 'Get paid',
+      description: 'Submit your content, brand approves, you confirm payment',
+      icon: CheckCircle,
+      completed: hasEarnings,
+      cta: hasEarnings ? 'Paid!' : 'In progress',
+      ctaIcon: hasEarnings ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />,
+    },
+  ];
 
   return (
     <AnimatePresence>
@@ -135,16 +80,16 @@ const OnboardingChecklist = () => {
               <Sparkles className="w-5 h-5 text-purple-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-[17px] text-white mb-1">Getting Started Checklist</h3>
+              <h3 className="font-semibold text-[17px] text-white mb-1">Your collab journey</h3>
               <p className="text-[13px] text-purple-200">
-                {completedItems.size} of {checklistItems.length} completed
+                {checklistItems.filter(i => i.completed).length} of {checklistItems.length} done
               </p>
             </div>
           </div>
           <button type="button"
             onClick={() => setIsVisible(false)}
             className="p-1 hover:bg-white/10 rounded-lg transition-colors"
-            aria-label="Dismiss checklist"
+            aria-label="Dismiss"
           >
             <X className="w-4 h-4 text-purple-300" />
           </button>
@@ -160,66 +105,53 @@ const OnboardingChecklist = () => {
               className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full"
             />
           </div>
-          <p className="text-[13px] text-purple-300 text-right">
-            {Math.round(completionPercentage)}% Complete
-          </p>
         </div>
 
         {/* Checklist Items */}
         <div className="space-y-2">
           {checklistItems.map((item, index) => {
             const Icon = item.icon;
-            const isCompleted = completedItems.has(item.id);
-            
             return (
-              <motion.button
+              <motion.div
                 key={item.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => item.route && navigate(item.route)}
-                disabled={isCompleted}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left ${
-                  isCompleted
-                    ? 'bg-green-500/10 border border-green-500/20 cursor-default'
-                    : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 cursor-pointer'
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                  item.completed
+                    ? 'bg-green-500/10 border border-green-500/20'
+                    : 'bg-white/5 border border-white/10'
                 }`}
               >
-                {isCompleted ? (
-                  <CheckCircle className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                {item.completed ? (
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                 ) : (
                   <Circle className="w-5 h-5 text-purple-400/50 flex-shrink-0" />
                 )}
-                <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                <Icon className={`w-5 h-5 text-purple-400 flex-shrink-0 ${item.completed ? 'opacity-40' : ''}`} />
                 <div className="flex-1 min-w-0">
-                  <div className={`font-medium text-[15px] ${isCompleted ? 'text-green-400 line-through' : 'text-white'}`}>
+                  <div className={`font-medium text-[15px] ${item.completed ? 'text-green-400' : 'text-white'}`}>
                     {item.title}
                   </div>
                   <div className="text-[13px] text-purple-200">{item.description}</div>
                 </div>
-                {!isCompleted && item.route && (
-                  <motion.div
-                    whileHover={{ x: 4 }}
-                    className="text-purple-400"
+                {item.action && !item.completed && (
+                  <button
+                    type="button"
+                    onClick={item.action}
+                    className="flex items-center gap-1.5 text-xs font-bold text-purple-300 hover:text-white transition-colors whitespace-nowrap"
                   >
-                    →
-                  </motion.div>
+                    {item.cta}
+                    {item.ctaIcon}
+                  </button>
                 )}
-              </motion.button>
+                {item.completed && (
+                  <span className="text-xs font-bold text-green-400 whitespace-nowrap">{item.cta}</span>
+                )}
+              </motion.div>
             );
           })}
         </div>
-
-        {allCompleted && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mt-4 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-500/30 text-center"
-          >
-            <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-            <p className="font-semibold text-green-400">All set! You're ready to go! 🎉</p>
-          </motion.div>
-        )}
       </motion.div>
     </AnimatePresence>
   );

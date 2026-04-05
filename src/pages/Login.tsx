@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label';
 const LOGIN_LOADING_TIMEOUT_MS = 4000;
 const DEMO_BRAND_EMAIL = 'brand-demo@noticebazaar.com';
 const DEMO_BRAND_PASSWORD = 'BrandDemo123!@#';
+// Demo brand account for exploring the brand experience
+const DEMO_MODE = true;
 const getErrorMessage = (error: unknown, fallback = 'An error occurred. Please try again.') =>
   error instanceof Error ? error.message : fallback;
 
@@ -323,13 +325,13 @@ const Login = () => {
                   onClick={() => {
                     setEmail(DEMO_BRAND_EMAIL);
                     setPassword(DEMO_BRAND_PASSWORD);
-                    toast.message('Demo brand credentials filled', {
-                      description: 'Sign in to preview the Brand Console UI.',
+                    toast.message('Demo credentials filled', {
+                      description: 'Sign in to preview Creator Armour.',
                     });
                   }}
                   className="w-full h-12 rounded-2xl border border-slate-800 bg-white/5 hover:bg-white/10 text-white/80 font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.99]"
                 >
-                  Use Demo Brand Login
+                  Try Demo Account
                 </button>
 	            </form>
 	          </div>

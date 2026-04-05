@@ -2000,16 +2000,25 @@ Best regards`;
               {getSimpleStatusLabel(guidedDealState)}
             </div>
 
-            <div className="grid gap-3 grid-cols-2 md:grid-cols-7">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
               {GUIDED_PROGRESS_STEPS.map((step, index) => {
                 const isComplete = index < guidedProgressIndex;
                 const isCurrent = index === guidedProgressIndex;
+                const isNext = index === guidedProgressIndex + 1;
+                if (!isComplete && !isCurrent && !isNext) return null; // hide future steps
                 return (
-                  <div key={step} className="space-y-2">
-                    <div className={`h-2 rounded-full ${isComplete || isCurrent ? 'bg-emerald-400' : 'bg-white/10'}`} />
-                    <p className={`text-[10px] md:text-[11px] font-bold uppercase tracking-[0.12em] leading-tight ${isCurrent ? 'text-white' : isComplete ? 'text-emerald-300' : 'text-white/40'}`}>
-                      {step}
-                    </p>
+                  <div key={step} className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${isComplete ? 'bg-emerald-400 text-black' : isCurrent ? 'bg-white text-black' : 'bg-white/10 text-white/40'}`}>
+                        {isComplete ? '✓' : index + 1}
+                      </div>
+                      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] mt-1.5 ${isCurrent ? 'text-white' : isComplete ? 'text-emerald-300' : 'text-white/40'}`}>
+                        {step}
+                      </p>
+                    </div>
+                    {index < GUIDED_PROGRESS_STEPS.length - 1 && (
+                      <div className={`w-8 h-0.5 rounded-full mb-5 ${index < guidedProgressIndex ? 'bg-emerald-400' : 'bg-white/10'}`} />
+                    )}
                   </div>
                 );
               })}

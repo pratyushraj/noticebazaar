@@ -259,15 +259,16 @@ export default function CreatorOnboarding() {
                     />
                   </div>
                 </div>
-                <p className="text-xs text-slate-500">This becomes your public link: `creatorarmour.com/{normalizedHandle || 'yourname'}`</p>
+                <p className="text-xs text-slate-500">Your link: creatorarmour.com/{normalizedHandle || 'yourname'}</p>
               </div>
 
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
                 <p className="text-sm font-bold text-slate-900">You will not be asked for a long profile now.</p>
                 <ul className="mt-2 space-y-1 text-sm text-slate-600">
-                  <li>Price is asked when you accept your first paid offer.</li>
-                  <li>Address is asked when you accept a product deal.</li>
-                  <li>UPI is asked when payment is about to happen.</li>
+                  <li>✅ Instagram username — that's all for now</li>
+                  <li>💰 Price is asked only when you accept your first paid offer</li>
+                  <li>📦 Address is asked only when you accept a product deal</li>
+                  <li>📲 UPI is asked only when payment is about to happen</li>
                 </ul>
               </div>
 
@@ -344,19 +345,22 @@ export default function CreatorOnboarding() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-              <p className="text-sm font-bold text-slate-900">What happens next</p>
+              <p className="text-sm font-bold text-slate-900">How brand deals work</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">1</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Brand sends offer</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">Brand opens your link</p>
+                  <p className="mt-1 text-xs text-slate-500">They pick a service and send an offer</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">2</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">You fill only missing info</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">You accept & create</p>
+                  <p className="mt-1 text-xs text-slate-500">Fill price/address only if needed</p>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">3</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">Deal starts smoothly</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">Submit & get paid</p>
+                  <p className="mt-1 text-xs text-slate-500">Brand approves, you confirm payment</p>
                 </div>
               </div>
             </div>
