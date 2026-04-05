@@ -189,7 +189,7 @@ const CollabRequestsPage = () => {
       <CreatorNavigationWrapper title="Collaboration Requests" subtitle="Manage incoming brand requests">
         <div className={cn(spacing.loose, "pb-24")}>
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-info" />
           </div>
         </div>
       </CreatorNavigationWrapper>
@@ -209,9 +209,9 @@ const CollabRequestsPage = () => {
   return (
     <CreatorNavigationWrapper title="Collaboration Requests" subtitle="Manage incoming brand requests">
       <div className={cn(spacing.loose, "pb-24")}>
-        <div className="mb-4 rounded-xl border border-white/15 bg-white/[0.05] px-4 py-3">
-          <p className="text-blue-100 text-sm font-medium">Requests from brands using your public link</p>
-          <p className="text-blue-200/75 text-xs mt-0.5">
+        <div className="mb-4 rounded-xl border border-border bg-secondary/[0.05] px-4 py-3">
+          <p className="text-info text-sm font-medium">Requests from brands using your public link</p>
+          <p className="text-info/75 text-xs mt-0.5">
             {pendingRequests.length} pending • newest first
           </p>
         </div>
@@ -219,20 +219,20 @@ const CollabRequestsPage = () => {
 
         {/* Empty state or request cards */}
         {pendingRequests.length === 0 ? (
-          <Card className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+          <Card className="rounded-2xl bg-card border border-border overflow-hidden">
             <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-5">
-                <Briefcase className="h-10 w-10 text-blue-300/80" />
+              <div className="w-20 h-20 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-5">
+                <Briefcase className="h-10 w-10 text-info/80" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">No brand requests yet</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No brand requests yet</h3>
               {hasUsername ? (
                 <>
-                  <p className="text-sm text-blue-200/80 mb-6 max-w-xs mx-auto">
+                  <p className="text-sm text-info/80 mb-6 max-w-xs mx-auto">
                     Share your collab link to receive protected deals
                   </p>
                   <Button
                     onClick={copyCollabLink}
-                    className="w-full min-h-[44px] font-medium bg-white/15 hover:bg-white/25 border border-white/20 text-white"
+                    className="w-full min-h-[44px] font-medium bg-secondary/15 hover:bg-secondary/25 border border-border text-foreground"
                   >
                     <Copy className="h-4 w-4 mr-2" />
                     Copy Collab Link
@@ -240,12 +240,12 @@ const CollabRequestsPage = () => {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-blue-200/80 mb-4 max-w-xs mx-auto">
+                  <p className="text-sm text-info/80 mb-4 max-w-xs mx-auto">
                     Add your Instagram handle to get your collab link.
                   </p>
                   <Button
                     onClick={() => navigate('/creator-profile?section=profile')}
-                    className="w-full min-h-[44px] font-medium bg-blue-600 hover:bg-blue-500 text-white"
+                    className="w-full min-h-[44px] font-medium bg-info hover:bg-info text-foreground"
                   >
                     Add Instagram handle
                   </Button>
@@ -263,14 +263,14 @@ const CollabRequestsPage = () => {
                 <Card
                   key={request.id}
                   className={cn(
-                    "rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex flex-col",
+                    "rounded-2xl bg-card border border-border overflow-hidden flex flex-col",
                     "select-none transition-all duration-200",
                     "backdrop-blur-[40px] saturate-[180%] shadow-[0_8px_32px_rgba(0,0,0,0.3)] group"
                   )}
                 >
                   {/* Header: Incoming Brand Request — darker purple band */}
-                  <div className="bg-gradient-to-r from-blue-800/90 to-blue-700/90 px-4 py-2 text-center border-b border-white/10">
-                    <h2 className="text-xs font-bold text-white tracking-wide uppercase">
+                  <div className="bg-gradient-to-r from-blue-800/90 to-blue-700/90 px-4 py-2 text-center border-b border-border">
+                    <h2 className="text-xs font-bold text-foreground tracking-wide uppercase">
                       Incoming Brand Request
                     </h2>
                   </div>
@@ -278,45 +278,45 @@ const CollabRequestsPage = () => {
                     {/* Brand name + Barter tag on same row; contact below */}
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-xl font-bold text-white leading-tight flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-foreground leading-tight flex items-center gap-2">
                           {request.brand_name ?? 'Brand'}
-                          {request.brand_verified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
+                          {request.brand_verified && <ShieldCheck className="h-5 w-5 text-info flex-shrink-0" aria-label="Verified brand" />}
                         </h3>
                         <span className={cn(
-                          "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-white shrink-0",
+                          "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold text-foreground shrink-0",
                           request.collab_type === 'paid' && "bg-green-500/30 border border-green-400/40",
-                          request.collab_type === 'barter' && "bg-blue-500/40 border border-blue-400/50",
-                          isHybrid(request.collab_type) && "bg-blue-500/40 border border-blue-400/50"
+                          request.collab_type === 'barter' && "bg-info/40 border border-info/50",
+                          isHybrid(request.collab_type) && "bg-info/40 border border-info/50"
                         )}>
                           {getCollabTypeLabel(request.collab_type)}
                         </span>
                       </div>
-                      <p className="text-sm text-white/80 mt-0.5 break-all">{request.brand_email}</p>
+                      <p className="text-sm text-foreground/80 mt-0.5 break-all">{request.brand_email}</p>
                     </div>
 
                     {/* Estimated value — gift icon + label + bold ₹ */}
                     <div className="flex items-center gap-2">
-                      <Gift className="h-4 w-4 text-blue-300/90 shrink-0" aria-hidden />
-                      <span className="text-sm text-white/85">Estimated value</span>
-                      <span className="text-lg font-bold text-white ml-auto">
+                      <Gift className="h-4 w-4 text-info/90 shrink-0" aria-hidden />
+                      <span className="text-sm text-foreground/85">Estimated value</span>
+                      <span className="text-lg font-bold text-foreground ml-auto">
                         {formatBudget(request)}
                       </span>
                     </div>
 
                     {/* Deadline */}
                     {request.deadline && (
-                      <div className="flex items-center gap-1.5 text-sm text-white/70">
-                        <Clock className="h-4 w-4 text-white/50 shrink-0" aria-hidden />
+                      <div className="flex items-center gap-1.5 text-sm text-foreground/70">
+                        <Clock className="h-4 w-4 text-foreground/50 shrink-0" aria-hidden />
                         <span>{new Date(request.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                       </div>
                     )}
 
                     {/* Product preview */}
                     {isBarterLike(request.collab_type) && (request.barter_product_image_url || failedBarterImages[request.id]) && (
-                      <div className="w-full rounded-lg overflow-hidden bg-white/[0.08] border border-white/10 aspect-[4/3] min-h-[120px] relative">
+                      <div className="w-full rounded-lg overflow-hidden bg-secondary/[0.08] border border-border aspect-[4/3] min-h-[120px] relative">
                         {request.barter_product_image_url && !failedBarterImages[request.id] ? (
                           <>
-                            <span className="absolute bottom-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-white/95 bg-black/50 backdrop-blur-sm">
+                            <span className="absolute bottom-2 left-2 z-10 px-2 py-1 rounded-lg text-[10px] font-medium text-foreground/95 bg-black/50 backdrop-blur-sm">
                               Product preview
                             </span>
                             <img
@@ -327,7 +327,7 @@ const CollabRequestsPage = () => {
                             />
                           </>
                         ) : (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center text-white/40 gap-2">
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-foreground/40 gap-2">
                             <ImageIcon className="h-10 w-10" aria-hidden />
                             <span className="text-xs">Product preview</span>
                           </div>
@@ -341,13 +341,13 @@ const CollabRequestsPage = () => {
                         {deliverablesList.slice(0, 3).map((d, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-white/95 bg-white/10 border border-white/20"
+                            className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-foreground/95 bg-secondary/50 border border-border"
                           >
                             {d}
                           </span>
                         ))}
                         {deliverablesList.length > 3 && (
-                          <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-white/75 bg-white/5 border border-white/15">
+                          <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-foreground/75 bg-card border border-border">
                             +{deliverablesList.length - 3} more
                           </span>
                         )}
@@ -356,12 +356,12 @@ const CollabRequestsPage = () => {
 
                     {/* Campaign Description - Now directly on card */}
                     {request.campaign_description && (
-                      <div className="pt-1.5 border-t border-white/10 mt-1">
-                        <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-1">
+                      <div className="pt-1.5 border-t border-border mt-1">
+                        <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-1">
                           Campaign details
                         </p>
                         <p className={cn(
-                          "text-sm text-blue-100/95 leading-relaxed whitespace-pre-wrap",
+                          "text-sm text-info/95 leading-relaxed whitespace-pre-wrap",
                           !isDescriptionExpanded && "[display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical] overflow-hidden"
                         )}>
                           {request.campaign_description}
@@ -369,7 +369,7 @@ const CollabRequestsPage = () => {
                         {request.campaign_description.length > 170 && (
                           <button type="button"
                             onClick={() => setExpandedDescriptions((prev) => ({ ...prev, [request.id]: !prev[request.id] }))}
-                            className="mt-1.5 inline-flex items-center gap-1 text-xs text-blue-200 hover:text-white"
+                            className="mt-1.5 inline-flex items-center gap-1 text-xs text-info hover:text-foreground"
                           >
                             {isDescriptionExpanded ? (
                               <>
@@ -392,30 +392,30 @@ const CollabRequestsPage = () => {
                           disabled={acceptingRequestId === request.id}
                           onClick={(e) => { e.stopPropagation(); acceptRequest(request); }}
                           className={cn(
-                            "w-full min-h-[44px] font-bold text-white rounded-xl text-sm transition-colors duration-200",
+                            "w-full min-h-[44px] font-bold text-foreground rounded-xl text-sm transition-colors duration-200",
                             "shadow-[0_2px_12px_rgba(16,185,129,0.25)] border-0",
                             acceptingRequestId === request.id
-                              ? "bg-emerald-900/60 text-emerald-300 opacity-70 cursor-not-allowed"
-                              : "bg-emerald-600 hover:bg-emerald-500"
+                              ? "bg-primary/60 text-primary opacity-70 cursor-not-allowed"
+                              : "bg-primary hover:bg-primary"
                           )}
                         >
                           {acceptingRequestId === request.id ? 'Generating contract…' : 'Accept offer'}
                         </Button>
-                        <p className="text-[11px] text-center text-white/55">
+                        <p className="text-[11px] text-center text-foreground/55">
                           By clicking Accept, a contract is auto-generated.
                         </p>
                       </div>
                       <div className="flex items-center justify-center gap-3 py-0.5">
                         <button type="button"
                           onClick={(e) => { e.stopPropagation(); navigate(`/collab-requests/${request.id}/brief`, { state: { request } }); }}
-                          className="text-sm font-medium text-indigo-200 hover:text-white min-h-[44px] px-1.5"
+                          className="text-sm font-medium text-indigo-200 hover:text-foreground min-h-[44px] px-1.5"
                         >
                           Counter offer
                         </button>
-                        <span className="w-px h-4 bg-white/30" />
+                        <span className="w-px h-4 bg-secondary/30" />
                         <button type="button"
                           onClick={(e) => { e.stopPropagation(); openDeclineConfirm(request); }}
-                          className="text-sm font-medium text-[#FCA5A5] hover:text-white min-h-[44px] px-1.5"
+                          className="text-sm font-medium text-[#FCA5A5] hover:text-foreground min-h-[44px] px-1.5"
                         >
                           Decline
                         </button>
@@ -430,28 +430,28 @@ const CollabRequestsPage = () => {
 
         {/* Counter sent section */}
         <div className="mt-8 space-y-4">
-          <p className="text-blue-200/80 text-sm">Counter sent — awaiting brand response</p>
+          <p className="text-info/80 text-sm">Counter sent — awaiting brand response</p>
           {counteredRequests.map((request) => (
-            <Card key={request.id} className="rounded-[20px] bg-white/5 border border-white/10 overflow-hidden">
+            <Card key={request.id} className="rounded-[20px] bg-card border border-border overflow-hidden">
               <CardContent className="p-4 sm:p-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                     {request.brand_name}
-                    {request.brand_verified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
+                    {request.brand_verified && <ShieldCheck className="h-5 w-5 text-info flex-shrink-0" aria-label="Verified brand" />}
                   </h3>
-                  <span className="text-[11px] font-medium bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-md">Counter Sent</span>
+                  <span className="text-[11px] font-medium bg-info/20 text-info px-2 py-0.5 rounded-md">Counter Sent</span>
                 </div>
                 {(request.counter_offer?.final_price || request.counter_offer?.notes) && (
-                  <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                  <div className="mt-3 pt-3 border-t border-border space-y-1.5">
                     {request.counter_offer.final_price && (
                       <p className="text-sm text-indigo-200">
-                        Your price: <span className="font-semibold text-white">₹{request.counter_offer.final_price.toLocaleString('en-IN')}</span>
+                        Your price: <span className="font-semibold text-foreground">₹{request.counter_offer.final_price.toLocaleString('en-IN')}</span>
                       </p>
                     )}
                     {request.counter_offer.notes && (
-                      <p className="text-sm text-white/60 truncate">{request.counter_offer.notes}</p>
+                      <p className="text-sm text-foreground/60 truncate">{request.counter_offer.notes}</p>
                     )}
-                    <p className="text-xs text-white/40">Waiting for brand response</p>
+                    <p className="text-xs text-foreground/40">Waiting for brand response</p>
                   </div>
                 )}
               </CardContent>
@@ -462,16 +462,16 @@ const CollabRequestsPage = () => {
 
         {/* Decline confirmation */}
         <AlertDialog open={showDeclineDialog} onOpenChange={(showDeclineDialog) => setShowDeclineDialog(showDeclineDialog)}>
-          <AlertDialogContent className="bg-[#0f172a] border-white/20 text-white">
+          <AlertDialogContent className="bg-[#0f172a] border-border text-foreground">
             <AlertDialogHeader>
               <AlertDialogTitle>Decline this offer?</AlertDialogTitle>
-              <AlertDialogDescription className="text-white/70">
+              <AlertDialogDescription className="text-foreground/70">
                 The brand will be notified. You cannot undo this action.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDecline} className="bg-red-600 hover:bg-red-500">Yes, decline</AlertDialogAction>
+              <AlertDialogAction onClick={handleDecline} className="bg-destructive hover:bg-destructive">Yes, decline</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

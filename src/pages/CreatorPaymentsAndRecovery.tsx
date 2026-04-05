@@ -415,12 +415,12 @@ const CreatorPaymentsAndRecovery = () => {
 
   return (
     <ContextualTipsProvider currentView="payments">
-      <div className={`min-h-full ${gradients.page} text-white ${spacing.page} pb-24 safe-area-fix`}>
+      <div className={`min-h-full ${gradients.page} text-foreground ${spacing.page} pb-24 safe-area-fix`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className={typography.h1 + " mb-1"}>Payments</h1>
-            <p className={typography.bodySmall + " text-white/70"}>Track pending payments and completed payouts</p>
+            <p className={typography.bodySmall + " text-foreground/70"}>Track pending payments and completed payouts</p>
           </div>
           <motion.button
             onClick={() => {
@@ -445,23 +445,23 @@ const CreatorPaymentsAndRecovery = () => {
         {/* Stats Overview - Refactored for Mobile */}
         <div className="mb-4 grid grid-cols-1 gap-3">
           {/* Primary Card: Pending Amount (Highlighted) */}
-          <div className="bg-white/10 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
-            <div className="text-sm text-white/70 mb-1">Pending Amount</div>
+          <div className="bg-secondary/50 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
+            <div className="text-sm text-foreground/70 mb-1">Pending Amount</div>
             <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(totalPending)}</div>
-            <div className="text-xs text-white/60">Across active signed deals</div>
+            <div className="text-xs text-foreground/60">Across active signed deals</div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {/* Paid This Month */}
-            <div className="bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3">
-              <div className="text-xs text-white/70 mb-1">Paid This Month</div>
+            <div className="bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3">
+              <div className="text-xs text-foreground/70 mb-1">Paid This Month</div>
               <div className="text-xl font-bold text-green-400">{formatIndianCurrency(stats.thisMonth)}</div>
             </div>
 
             {/* Total Earnings */}
-            <div className="bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3">
-              <div className="text-xs text-white/70 mb-1">Total Earnings</div>
-              <div className="text-lg font-semibold text-white/85">{formatIndianCurrency(stats.totalReceived)}</div>
+            <div className="bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3">
+              <div className="text-xs text-foreground/70 mb-1">Total Earnings</div>
+              <div className="text-lg font-semibold text-foreground/85">{formatIndianCurrency(stats.totalReceived)}</div>
             </div>
           </div>
         </div>
@@ -485,8 +485,8 @@ const CreatorPaymentsAndRecovery = () => {
                 <ArrowDownRight className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-left">
-                <div className="text-sm font-semibold text-white">Request Payment</div>
-                <div className="text-xs text-white/60">Send reminder</div>
+                <div className="text-sm font-semibold text-foreground">Request Payment</div>
+                <div className="text-xs text-foreground/60">Send reminder</div>
               </div>
             </div>
           </motion.button>
@@ -520,15 +520,15 @@ const CreatorPaymentsAndRecovery = () => {
               }
             }}
             whileTap={animations.microTap}
-            className="relative bg-white/8 backdrop-blur-xl rounded-2xl p-4 border border-white/15 hover:bg-white/12 transition-all"
+            className="relative bg-secondary/8 backdrop-blur-xl rounded-2xl p-4 border border-border hover:bg-secondary/12 transition-all"
           >
             <div className="flex items-center gap-3">
               <div className="bg-indigo-500/20 w-10 h-10 rounded-full flex items-center justify-center">
                 <Download className="w-5 h-5 text-indigo-400" />
               </div>
               <div className="text-left">
-                <div className="text-sm font-semibold text-white">Export Report</div>
-                <div className="text-xs text-white/60">Download PDF</div>
+                <div className="text-sm font-semibold text-foreground">Export Report</div>
+                <div className="text-xs text-foreground/60">Download PDF</div>
               </div>
             </div>
           </motion.button>
@@ -542,13 +542,13 @@ const CreatorPaymentsAndRecovery = () => {
               setShowAddExpense(true);
             }}
             whileTap={animations.microTap}
-            className="w-full bg-white/5 backdrop-blur-xl rounded-xl p-3 border border-white/10 hover:bg-white/8 transition-all text-left"
+            className="w-full bg-card backdrop-blur-xl rounded-xl p-3 border border-border hover:bg-secondary/8 transition-all text-left"
           >
             <div className="flex items-center gap-3">
-              <CreditCard className="w-4 h-4 flex-shrink-0 text-white/70" />
+              <CreditCard className="w-4 h-4 flex-shrink-0 text-foreground/70" />
               <div>
-                <div className="text-sm font-medium text-white/80">Add Expense</div>
-                <div className="text-xs text-white/50">Track all your business expenses</div>
+                <div className="text-sm font-medium text-foreground/80">Add Expense</div>
+                <div className="text-xs text-foreground/50">Track all your business expenses</div>
               </div>
             </div>
           </motion.button>
@@ -571,14 +571,14 @@ const CreatorPaymentsAndRecovery = () => {
               shadows.lg
             )}
           >
-            <Search className={cn(iconSizes.sm, "text-blue-300 mr-3 flex-shrink-0")} />
+            <Search className={cn(iconSizes.sm, "text-info mr-3 flex-shrink-0")} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search transactions..."
               className={cn(
-                "bg-transparent text-white placeholder:text-white/50 outline-none w-full",
+                "bg-transparent text-foreground placeholder:text-foreground/50 outline-none w-full",
                 typography.bodySmall,
                 "flex-1"
               )}
@@ -613,8 +613,8 @@ const CreatorPaymentsAndRecovery = () => {
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 whitespace-nowrap flex-shrink-0",
                     isActive
-                      ? 'bg-white/20 text-white border-2 border-white/25 shadow-lg shadow-white/10'
-                      : 'bg-white/8 text-white/70 border border-white/15 hover:bg-white/12'
+                      ? 'bg-secondary/20 text-foreground border-2 border-border/25 shadow-lg shadow-white/10'
+                      : 'bg-secondary/8 text-foreground/70 border border-border hover:bg-secondary/12'
                   )}
                 >
                   {filter.label}
@@ -689,30 +689,30 @@ const CreatorPaymentsAndRecovery = () => {
               />
             ) : activeFilter === 'pending' ? (
               <div className="space-y-3 text-center max-w-sm mx-auto">
-                <p className="text-base font-semibold text-white">No pending transactions</p>
-                <p className="text-sm text-white/60">You&apos;re all caught up on payments!</p>
+                <p className="text-base font-semibold text-foreground">No pending transactions</p>
+                <p className="text-sm text-foreground/60">You&apos;re all caught up on payments!</p>
                 <button type="button"
                   type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setActiveFilter('all');
                   }}
-                  className="text-sm font-medium text-blue-300 hover:text-blue-200 underline"
+                  className="text-sm font-medium text-info hover:text-info underline"
                 >
                   View all transactions
                 </button>
               </div>
             ) : activeFilter === 'received' ? (
               <div className="space-y-3 text-center max-w-sm mx-auto">
-                <p className="text-base font-semibold text-white">No paid transactions yet</p>
-                <p className="text-sm text-white/60">Completed payments will show here.</p>
+                <p className="text-base font-semibold text-foreground">No paid transactions yet</p>
+                <p className="text-sm text-foreground/60">Completed payments will show here.</p>
                 <button type="button"
                   type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     setActiveFilter('all');
                   }}
-                  className="text-sm font-medium text-blue-300 hover:text-blue-200 underline"
+                  className="text-sm font-medium text-info hover:text-info underline"
                 >
                   View all transactions
                 </button>

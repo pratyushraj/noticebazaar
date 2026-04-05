@@ -237,7 +237,7 @@ const CollabRequestBriefPage = () => {
         backIconOnly
       >
         <div className={cn(spacing.loose, "pb-24")}>
-          <div className="flex items-center justify-center py-14 text-white/70">
+          <div className="flex items-center justify-center py-14 text-foreground/70">
             <Loader2 className="h-6 w-6 animate-spin mr-3" />
             Loading...
           </div>
@@ -257,12 +257,12 @@ const CollabRequestBriefPage = () => {
         backIconOnly
       >
         <div className={cn(spacing.loose, "pb-24")}>
-          <div className="rounded-2xl bg-white/5 border border-white/10 p-5 text-white/80">
-            <p className="text-sm font-semibold text-white mb-1">Couldn't open this offer</p>
-            <p className="text-sm text-white/60">{loadError || 'Unknown error'}</p>
+          <div className="rounded-2xl bg-card border border-border p-5 text-foreground/80">
+            <p className="text-sm font-semibold text-foreground mb-1">Couldn't open this offer</p>
+            <p className="text-sm text-foreground/60">{loadError || 'Unknown error'}</p>
             <button type="button"
               onClick={() => navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true })}
-              className="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 transition-colors"
+              className="mt-4 inline-flex items-center justify-center rounded-xl bg-info hover:bg-info text-foreground text-sm font-semibold px-4 py-2 transition-colors"
             >
               Back to offers
             </button>
@@ -501,7 +501,7 @@ const CollabRequestBriefPage = () => {
   return (
     <>
       {!isOnline && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-foreground px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
           <WifiOff className="w-4 h-4 flex-shrink-0" />
           You're offline — changes will sync when you reconnect
         </div>
@@ -516,30 +516,30 @@ const CollabRequestBriefPage = () => {
       >
         <div className={cn(spacing.loose, "pb-32 md:pb-28")}>
         {/* Offer Snapshot */}
-        <div className="rounded-[24px] md:rounded-[22px] bg-white/5 backdrop-blur-md border border-white/10 p-4 md:p-5 space-y-4">
+        <div className="rounded-[24px] md:rounded-[22px] bg-card backdrop-blur-md border border-border p-4 md:p-5 space-y-4">
           <div className="flex items-start justify-between gap-3 min-w-0">
             <div className="min-w-0">
-              <h2 className="text-lg md:text-[18px] font-bold text-white tracking-tight break-words flex items-center gap-2">
+              <h2 className="text-lg md:text-[18px] font-bold text-foreground tracking-tight break-words flex items-center gap-2">
                 {request.brand_name ?? 'Brand'}
-                {brandVerified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
+                {brandVerified && <ShieldCheck className="h-5 w-5 text-info flex-shrink-0" aria-label="Verified brand" />}
               </h2>
-              <div className="flex items-center gap-2 mt-1.5 text-sm md:text-xs text-blue-300/70">
+              <div className="flex items-center gap-2 mt-1.5 text-sm md:text-xs text-info/70">
                 {request.brand_email ? <span className="truncate">{request.brand_email}</span> : <span>Protected offer</span>}
                 {brandInstagramHandle && (
                   <>
-                    <span className="text-blue-400/60">•</span>
+                    <span className="text-info/60">•</span>
                     <a
                       href={`https://instagram.com/${brandInstagramHandle}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-blue-200/80 hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-info/80 hover:text-foreground transition-colors"
                       aria-label={`Open ${request.brand_name || 'brand'} Instagram`}
                     >
                       <Instagram className="h-3.5 w-3.5" />
                     </a>
                   </>
                 )}
-                <span className="text-blue-400/60">•</span>
+                <span className="text-info/60">•</span>
                 <span className="inline-flex items-center gap-1">
                   <Lock className="h-3 w-3" /> Creator Armour protected
                 </span>
@@ -549,7 +549,7 @@ const CollabRequestBriefPage = () => {
               className={cn(
                 "flex-shrink-0 px-2.5 py-1 rounded-md text-[11px] font-semibold border",
                 request.collab_type === 'barter'
-                  ? "bg-blue-500/20 text-blue-200 border-blue-500/30"
+                  ? "bg-info/20 text-info border-info/30"
                   : request.collab_type === 'paid'
                     ? "bg-green-500/20 text-green-200 border-green-500/30"
                     : "bg-indigo-500/20 text-indigo-200 border-indigo-500/30"
@@ -559,21 +559,21 @@ const CollabRequestBriefPage = () => {
             </span>
           </div>
 
-          <div className="rounded-2xl bg-white/[0.06] border border-white/[0.08] p-4 md:p-4">
+          <div className="rounded-2xl bg-secondary/[0.06] border border-border/[0.08] p-4 md:p-4">
             <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider">They're paying</p>
-                <p className="text-xl md:text-2xl font-black text-white tracking-tight mt-1">{budgetLabel}</p>
+                <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider">They're paying</p>
+                <p className="text-xl md:text-2xl font-black text-foreground tracking-tight mt-1">{budgetLabel}</p>
               </div>
               {timeLeft && (
                 <div
                   className={cn(
                     "shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border",
                     timeLeft.tone === 'danger'
-                      ? "bg-red-500/10 text-red-300 border-red-500/20"
+                      ? "bg-destructive/10 text-destructive border-destructive/20"
                       : timeLeft.tone === 'warn'
-                        ? "bg-amber-500/10 text-amber-200 border-amber-500/20"
-                        : "bg-emerald-500/10 text-emerald-200 border-emerald-500/20"
+                        ? "bg-warning/10 text-warning border-warning/20"
+                        : "bg-primary/10 text-primary border-primary/20"
                   )}
                 >
                   <Clock className="h-3.5 w-3.5" />
@@ -588,19 +588,19 @@ const CollabRequestBriefPage = () => {
                 return (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-[13px] md:text-[12px] border border-white/10 text-white/90 bg-white/[0.04]"
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-[13px] md:text-[12px] border border-border text-foreground/90 bg-secondary/[0.04]"
                   >
                     <span aria-hidden>{chip.emoji}</span>
                     <span className="font-semibold">{chip.label}</span>
-                    {chip.count ? <span className="text-white/60 font-medium">×{chip.count}</span> : null}
+                    {chip.count ? <span className="text-foreground/60 font-medium">×{chip.count}</span> : null}
                   </span>
                 );
               })}
               {deadlineDate && !Number.isNaN(deadlineDate.getTime()) && (
-                <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-[13px] md:text-[12px] border border-white/10 text-blue-200/90 bg-white/[0.02]">
+                <span className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-[13px] md:text-[12px] border border-border text-info/90 bg-secondary/[0.02]">
                   <span aria-hidden>📅</span>
                   <span className="font-medium">Deadline</span>
-                  <span className="text-white/70">
+                  <span className="text-foreground/70">
                     {deadlineDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                   </span>
                 </span>
@@ -609,54 +609,54 @@ const CollabRequestBriefPage = () => {
           </div>
 
           {/* What the brand wants */}
-          <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-4">
-            <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-2">What the brand wants</p>
-            <p className="text-sm text-blue-200 leading-relaxed whitespace-pre-wrap">
+          <div className="rounded-2xl bg-secondary/[0.03] border border-border/[0.06] p-4">
+            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-2">What the brand wants</p>
+            <p className="text-sm text-info leading-relaxed whitespace-pre-wrap">
               {request.campaign_description || '-'}
             </p>
           </div>
 
           {/* Earnings Breakdown */}
-          <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-4">
-            <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-3">Deal value</p>
+          <div className="rounded-2xl bg-secondary/[0.03] border border-border/[0.06] p-4">
+            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-3">Deal value</p>
             <div className="space-y-3 text-base md:text-sm">
               {!isBarterLike(request.collab_type) && (
                 <>
-                  <div className="flex items-center justify-between text-white/85">
+                  <div className="flex items-center justify-between text-foreground/85">
                     <span>Offer budget</span>
-                    <span className="font-semibold text-white">{budgetLabel}</span>
+                    <span className="font-semibold text-foreground">{budgetLabel}</span>
                   </div>
-                  <div className="flex items-center justify-between text-white/70">
+                  <div className="flex items-center justify-between text-foreground/70">
                     <span>Platform fee</span>
-                    <span className="font-semibold text-white">₹0</span>
+                    <span className="font-semibold text-foreground">₹0</span>
                   </div>
-                  <div className="h-px bg-white/10 my-3" />
+                  <div className="h-px bg-secondary/50 my-3" />
                 </>
               )}
-              <div className="flex items-center justify-between text-white">
+              <div className="flex items-center justify-between text-foreground">
                 <span className="font-semibold">{isBarterLike(request.collab_type) ? "You'll receive" : "You'll get"}</span>
-                <span className="font-black text-emerald-300 text-lg md:text-base">{budgetLabel}</span>
+                <span className="font-black text-primary text-lg md:text-base">{budgetLabel}</span>
               </div>
               {!isBarterLike(request.collab_type) && (
-                <p className="text-[13px] md:text-[11px] text-white/55 mt-3">Paid via bank transfer or UPI.</p>
+                <p className="text-[13px] md:text-[11px] text-foreground/55 mt-3">Paid via bank transfer or UPI.</p>
               )}
             </div>
           </div>
 
           {/* Simple next-step explainer — extra bottom margin prevents overlap with sticky CTA */}
-          <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 mb-[160px] md:mb-0">
-            <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-3">If you accept</p>
-            <div className="grid grid-cols-1 gap-3 text-[13px] md:text-[12px] text-white/80">
+          <div className="rounded-2xl bg-secondary/[0.02] border border-border/[0.06] p-4 mb-[160px] md:mb-0">
+            <p className="text-[11px] font-medium text-info/60 uppercase tracking-wider mb-3">If you accept</p>
+            <div className="grid grid-cols-1 gap-3 text-[13px] md:text-[12px] text-foreground/80">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-300 flex-shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                 <span>The deal moves into your active workflow</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-300 flex-shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                 <span>You only add price, address, or UPI when needed</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-300 flex-shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
                 <span>You can still track content, payment, and updates in one place</span>
               </div>
             </div>
@@ -665,21 +665,21 @@ const CollabRequestBriefPage = () => {
           {/* Mobile Sticky CTA */}
           <div className="fixed inset-x-0 bottom-0 z-50 pb-safe md:hidden" role="region" aria-label="Offer actions">
             <div className="mx-auto max-w-lg px-4 pb-4">
-              <div className="rounded-2xl border border-white/10 bg-black/70 backdrop-blur-xl p-4 shadow-2xl">
+              <div className="rounded-2xl border border-border bg-black/70 backdrop-blur-xl p-4 shadow-2xl">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="min-w-0">
-                    <p className="text-base font-bold text-white" id="offer-action-heading">Do you want this offer?</p>
-                    <p className="text-sm text-white/70">Accept it, counter it, or decline it.</p>
+                    <p className="text-base font-bold text-foreground" id="offer-action-heading">Do you want this offer?</p>
+                    <p className="text-sm text-foreground/70">Accept it, counter it, or decline it.</p>
                     {timeLeft && (
-                      <p className="mt-1 text-xs text-white/60 flex items-center gap-1.5" aria-live="polite">
+                      <p className="mt-1 text-xs text-foreground/60 flex items-center gap-1.5" aria-live="polite">
                         <Clock className="h-3.5 w-3.5" aria-hidden="true" /> {timeLeft.label}
                       </p>
                     )}
                   </div>
                   <div className="shrink-0">
                     <div className="text-right">
-                      <p className="text-xs text-white/60">Deal value</p>
-                      <p className="text-lg font-black text-emerald-300" aria-label={`Payment amount: ${budgetLabel}`}>{budgetLabel}</p>
+                      <p className="text-xs text-foreground/60">Deal value</p>
+                      <p className="text-lg font-black text-primary" aria-label={`Payment amount: ${budgetLabel}`}>{budgetLabel}</p>
                     </div>
                   </div>
                 </div>
@@ -689,8 +689,8 @@ const CollabRequestBriefPage = () => {
                     onClick={() => handleAccept()}
                     disabled={isAccepting || isDeclining}
                     className={cn(
-                      "w-full h-14 rounded-2xl font-black text-base text-white transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black",
-                      isAccepting ? "bg-emerald-600/60" : "bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98]"
+                      "w-full h-14 rounded-2xl font-black text-base text-foreground transition-all shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black",
+                      isAccepting ? "bg-primary/60" : "bg-primary hover:bg-primary active:scale-[0.98]"
                     )}
                     aria-label={isAccepting ? 'Accepting deal, please wait' : 'Accept this offer'}
                     aria-describedby="accept-offer-description"
@@ -713,7 +713,7 @@ const CollabRequestBriefPage = () => {
                     <button type="button"
                       onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
                       disabled={isAccepting || isDeclining}
-                      className="flex-1 h-12 rounded-xl border border-blue-400/40 text-blue-200 hover:text-white hover:bg-blue-500/20 text-sm font-bold transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 focus:ring-offset-black"
+                      className="flex-1 h-12 rounded-xl border border-info/40 text-info hover:text-foreground hover:bg-info/20 text-sm font-bold transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 focus:ring-offset-black"
                       aria-label="Make a counter offer to negotiate terms"
                     >
                       Counter offer
@@ -722,7 +722,7 @@ const CollabRequestBriefPage = () => {
                       onClick={handleDecline}
                       disabled={isAccepting || isDeclining}
                       className={cn(
-                        "flex-1 h-12 rounded-xl border border-red-200/30 text-red-200 hover:text-red-100 hover:bg-red-900/20 text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-black",
+                        "flex-1 h-12 rounded-xl border border-destructive/30 text-destructive hover:text-destructive hover:bg-destructive/20 text-sm font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-red-400/50 focus:ring-offset-2 focus:ring-offset-black",
                         isDeclining ? "opacity-60" : ""
                       )}
                       aria-label={isDeclining ? 'Declining offer, please wait' : 'Decline this offer'}
@@ -743,7 +743,7 @@ const CollabRequestBriefPage = () => {
                 </div>
 
                 {timeLeft?.tone === 'danger' && (
-                  <div className="mt-2 flex items-start gap-2 text-[11px] text-red-200/80">
+                  <div className="mt-2 flex items-start gap-2 text-[11px] text-destructive/80">
                     <AlertTriangle className="h-4 w-4 mt-0.5" />
                     <p>Offer deadline is near — reply soon so you don't miss this.</p>
                   </div>
@@ -755,20 +755,20 @@ const CollabRequestBriefPage = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:block mt-6">
-            <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4">
+            <div className="rounded-2xl border border-border bg-card backdrop-blur-md p-4">
               <div className="flex items-center justify-between gap-4 mb-4">
                 <div>
-                  <p className="text-lg font-bold text-white">Do you want this offer?</p>
-                  <p className="text-sm text-white/70">Accept it now, or counter if you want different terms.</p>
+                  <p className="text-lg font-bold text-foreground">Do you want this offer?</p>
+                  <p className="text-sm text-foreground/70">Accept it now, or counter if you want different terms.</p>
                   {timeLeft && (
-                    <p className="mt-2 text-sm text-white/60 flex items-center gap-2">
+                    <p className="mt-2 text-sm text-foreground/60 flex items-center gap-2">
                       <Clock className="h-4 w-4" /> {timeLeft.label}
                     </p>
                   )}
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-white/60 uppercase tracking-wider">Deal value</p>
-                  <p className="text-2xl font-black text-emerald-300">{budgetLabel}</p>
+                  <p className="text-xs text-foreground/60 uppercase tracking-wider">Deal value</p>
+                  <p className="text-2xl font-black text-primary">{budgetLabel}</p>
                 </div>
               </div>
 
@@ -777,8 +777,8 @@ const CollabRequestBriefPage = () => {
                   onClick={() => handleAccept()}
                   disabled={isAccepting || isDeclining}
                   className={cn(
-                    "flex-1 h-14 rounded-xl font-black text-base uppercase tracking-wider text-white transition-colors shadow-lg",
-                    isAccepting ? "bg-emerald-600/60" : "bg-emerald-600 hover:bg-emerald-500"
+                    "flex-1 h-14 rounded-xl font-black text-base uppercase tracking-wider text-foreground transition-colors shadow-lg",
+                    isAccepting ? "bg-primary/60" : "bg-primary hover:bg-primary"
                   )}
                 >
                   {isAccepting ? 'Accepting...' : 'Accept offer'}
@@ -786,7 +786,7 @@ const CollabRequestBriefPage = () => {
                 <button type="button"
                   onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
                   disabled={isAccepting || isDeclining}
-                  className="h-14 px-6 rounded-xl border border-white/15 text-white/85 hover:text-white hover:bg-white/10 text-base font-bold transition-colors"
+                  className="h-14 px-6 rounded-xl border border-border text-foreground/85 hover:text-foreground hover:bg-secondary/50 text-base font-bold transition-colors"
                 >
                   Counter offer
                 </button>
@@ -794,7 +794,7 @@ const CollabRequestBriefPage = () => {
                   onClick={handleDecline}
                   disabled={isAccepting || isDeclining}
                   className={cn(
-                    "h-14 px-5 rounded-xl border border-red-200/30 text-red-200 hover:text-red-100 hover:bg-red-900/20 text-base font-bold transition-colors flex items-center gap-1.5",
+                    "h-14 px-5 rounded-xl border border-destructive/30 text-destructive hover:text-destructive hover:bg-destructive/20 text-base font-bold transition-colors flex items-center gap-1.5",
                     isDeclining ? "opacity-60" : ""
                   )}
                   aria-label="Decline offer"
@@ -807,38 +807,38 @@ const CollabRequestBriefPage = () => {
         </div>
       </CreatorNavigationWrapper>
       <Dialog open={showRequirementDialog} onOpenChange={setShowRequirementDialog}>
-        <DialogContent className="border-white/10 bg-[#121826] text-white">
+        <DialogContent className="border-border bg-[#121826] text-foreground">
           <DialogHeader>
             <DialogTitle>Add one missing detail</DialogTitle>
-            <DialogDescription className="text-white/70">
+            <DialogDescription className="text-foreground/70">
               We only ask for this now because this specific offer needs it.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             {isPaidLike(request.collab_type) && !(Number(profile?.avg_rate_reel || (profile as any)?.reel_price || 0) > 0) && (
               <div className="space-y-2">
-                <Label htmlFor="pending-reel-price" className="text-white/80">Your reel price</Label>
+                <Label htmlFor="pending-reel-price" className="text-foreground/80">Your reel price</Label>
                 <Input
                   id="pending-reel-price"
                   inputMode="numeric"
                   value={pendingReelPrice}
                   onChange={(e) => setPendingReelPrice(e.target.value)}
                   placeholder="Example: 5000"
-                  className="border-white/10 bg-white/5 text-white"
+                  className="border-border bg-card text-foreground"
                 />
               </div>
             )}
             {isBarterLike(request.collab_type) && !String(profile?.location || (profile as any)?.address || '').trim() && (
               <div className="space-y-2">
-                <Label htmlFor="pending-address" className="text-white/80">Your delivery address</Label>
+                <Label htmlFor="pending-address" className="text-foreground/80">Your delivery address</Label>
                 <Input
                   id="pending-address"
                   value={pendingAddress}
                   onChange={(e) => setPendingAddress(e.target.value)}
                   placeholder="Flat/House, Area, City, State, Pincode"
-                  className="border-white/10 bg-white/5 text-white"
+                  className="border-border bg-card text-foreground"
                 />
-                <p className="text-xs text-white/40">Include full address so the brand can ship products to you.</p>
+                <p className="text-xs text-foreground/40">Include full address so the brand can ship products to you.</p>
               </div>
             )}
           </div>
@@ -846,7 +846,7 @@ const CollabRequestBriefPage = () => {
             <button
               type="button"
               onClick={() => setShowRequirementDialog(false)}
-              className="h-11 rounded-xl border border-white/15 px-4 text-white/80 hover:bg-white/5"
+              className="h-11 rounded-xl border border-border px-4 text-foreground/80 hover:bg-card"
             >
               Go back
             </button>
@@ -854,7 +854,7 @@ const CollabRequestBriefPage = () => {
               type="button"
               onClick={handleSaveRequirementsAndAccept}
               disabled={isSavingRequirements}
-              className="h-11 rounded-xl bg-emerald-600 px-4 font-bold text-white hover:bg-emerald-500 disabled:opacity-60"
+              className="h-11 rounded-xl bg-primary px-4 font-bold text-foreground hover:bg-primary disabled:opacity-60"
             >
               {isSavingRequirements ? 'Saving...' : 'Save and accept'}
             </button>
@@ -864,48 +864,48 @@ const CollabRequestBriefPage = () => {
 
       {/* Counter Offer Dialog */}
       <Dialog open={showCounterDialog} onOpenChange={setShowCounterDialog}>
-        <DialogContent className="border-white/10 bg-[#121826] text-white">
+        <DialogContent className="border-border bg-[#121826] text-foreground">
           <DialogHeader>
             <DialogTitle>Send a counter offer</DialogTitle>
-            <DialogDescription className="text-white/70">
+            <DialogDescription className="text-foreground/70">
               Negotiate the terms with {request.brand_name}. They can accept, decline, or counter back.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             {!isBarterLike(request.collab_type) && (
               <div className="space-y-2">
-                <Label htmlFor="counter-price" className="text-white/80">Your price (₹)</Label>
+                <Label htmlFor="counter-price" className="text-foreground/80">Your price (₹)</Label>
                 <Input
                   id="counter-price"
                   inputMode="numeric"
                   value={counterPrice}
                   onChange={(e) => setCounterPrice(e.target.value)}
                   placeholder="e.g. 15000"
-                  className="border-white/10 bg-white/5 text-white"
+                  className="border-border bg-card text-foreground"
                 />
               </div>
             )}
             {isBarterLike(request.collab_type) && (
               <div className="space-y-2">
-                <Label htmlFor="counter-notes" className="text-white/80">What you want instead</Label>
+                <Label htmlFor="counter-notes" className="text-foreground/80">What you want instead</Label>
                 <Input
                   id="counter-notes"
                   value={counterNotes}
                   onChange={(e) => setCounterNotes(e.target.value)}
                   placeholder="e.g. A different product, more quantity, cash on top"
-                  className="border-white/10 bg-white/5 text-white"
+                  className="border-border bg-card text-foreground"
                 />
               </div>
             )}
             {!isBarterLike(request.collab_type) && (
               <div className="space-y-2">
-                <Label htmlFor="counter-notes" className="text-white/80">Notes for the brand <span className="text-white/40">(optional)</span></Label>
+                <Label htmlFor="counter-notes" className="text-foreground/80">Notes for the brand <span className="text-foreground/40">(optional)</span></Label>
                 <Input
                   id="counter-notes"
                   value={counterNotes}
                   onChange={(e) => setCounterNotes(e.target.value)}
                   placeholder="Any changes or conditions you want to mention"
-                  className="border-white/10 bg-white/5 text-white"
+                  className="border-border bg-card text-foreground"
                 />
               </div>
             )}
@@ -914,7 +914,7 @@ const CollabRequestBriefPage = () => {
             <button
               type="button"
               onClick={() => setShowCounterDialog(false)}
-              className="h-11 rounded-xl border border-white/15 px-4 text-white/80 hover:bg-white/5"
+              className="h-11 rounded-xl border border-border px-4 text-foreground/80 hover:bg-card"
             >
               Cancel
             </button>
@@ -922,7 +922,7 @@ const CollabRequestBriefPage = () => {
               type="button"
               onClick={handleCounter}
               disabled={isCounting}
-              className="h-11 rounded-xl bg-blue-600 px-4 font-bold text-white hover:bg-blue-500 disabled:opacity-60 flex items-center gap-2"
+              className="h-11 rounded-xl bg-info px-4 font-bold text-foreground hover:bg-info disabled:opacity-60 flex items-center gap-2"
             >
               {isCounting && <Loader2 className="h-4 w-4 animate-spin" />}
               {isCounting ? 'Sending...' : 'Send counter offer'}

@@ -2003,14 +2003,14 @@ Best regards`;
   // Deal not found
   if (!deal) {
     return (
-      <div className="nb-screen-height bg-[#0B0F14] text-white flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-[#0B0F14] text-foreground flex items-center justify-center p-4">
         <div className="text-center">
-          <FileText className="w-16 h-16 mx-auto mb-4 text-white/60" />
+          <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/60" />
           <h2 className="text-2xl font-bold mb-2">Deal not found</h2>
-          <p className="text-white/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
+          <p className="text-foreground/60 mb-4">The deal you're looking for doesn't exist or has been removed.</p>
           <button type="button"
             onClick={() => navigate('/creator-dashboard')}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors"
+            className="px-4 py-2 bg-info hover:bg-info rounded-xl transition-colors"
           >
             Back to Dashboard
           </button>
@@ -2032,15 +2032,15 @@ Best regards`;
             <button
               type="button"
               onClick={() => navigate(`/creator-deal/${prevDeal.id}`)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors active:scale-95"
               aria-label={`Previous deal: ${prevDeal.brand_name}`}
               title={prevDeal.brand_name}
             >
-              <ChevronLeft className="w-5 h-5 text-white/70" />
+              <ChevronLeft className="w-5 h-5 text-foreground/70" />
             </button>
           )}
           {activeDeals.length > 1 && (
-            <span className="text-xs text-white/40 font-medium px-1 select-none">
+            <span className="text-xs text-foreground/40 font-medium px-1 select-none">
               {currentIndex + 1}/{activeDeals.length}
             </span>
           )}
@@ -2048,11 +2048,11 @@ Best regards`;
             <button
               type="button"
               onClick={() => navigate(`/creator-deal/${nextDeal.id}`)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors active:scale-95"
               aria-label={`Next deal: ${nextDeal.brand_name}`}
               title={nextDeal.brand_name}
             >
-              <ChevronRight className="w-5 h-5 text-white/70" />
+              <ChevronRight className="w-5 h-5 text-foreground/70" />
             </button>
           )}
           <button type="button"
@@ -2060,10 +2060,10 @@ Best regards`;
               triggerHaptic(HapticPatterns.light);
               setShowDeleteConfirm(true);
             }}
-            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors active:scale-95"
+            className="p-2 hover:bg-destructive/20 rounded-lg transition-colors active:scale-95"
             aria-label="Delete Deal"
           >
-            <Trash2 className="w-6 h-6 text-red-400" />
+            <Trash2 className="w-6 h-6 text-destructive" />
           </button>
         </div>
       }
@@ -2073,27 +2073,27 @@ Best regards`;
 
         {/* Offline banner */}
         {!isOnline && (
-          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+          <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-foreground px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
             <WifiOff className="w-4 h-4 flex-shrink-0" />
             You're offline — changes will sync when you reconnect
           </div>
         )}
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+        <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">What is happening now</p>
-              <h2 className="mt-2 text-2xl font-bold text-white">{guidedDealCard.title}</h2>
-              <p className="mt-2 text-sm text-white/70">{guidedDealCard.explanation}</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-info">What is happening now</p>
+              <h2 className="mt-2 text-2xl font-bold text-foreground">{guidedDealCard.title}</h2>
+              <p className="mt-2 text-sm text-foreground/70">{guidedDealCard.explanation}</p>
             </div>
 
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white/80">
-              <Clock className="h-3.5 w-3.5 text-blue-300" />
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] text-foreground/80">
+              <Clock className="h-3.5 w-3.5 text-info" />
               {getSimpleStatusLabel(guidedDealState)}
             </div>
 
             {contentDeadline && (
-              <div className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] ${contentDeadline.tone === 'danger' ? 'border-red-500/30 bg-red-500/10 text-red-400' : contentDeadline.tone === 'warning' ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' : 'border-white/10 bg-white/5 text-white/60'}`}>
+              <div className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] ${contentDeadline.tone === 'danger' ? 'border-destructive/30 bg-destructive/10 text-destructive' : contentDeadline.tone === 'warning' ? 'border-warning/30 bg-warning/10 text-warning' : 'border-border bg-card text-foreground/60'}`}>
                 <Calendar className="h-3.5 w-3.5" />
                 {contentDeadline.label}
               </div>
@@ -2108,15 +2108,15 @@ Best regards`;
                 return (
                   <Fragment key={step}>
                     <div className="flex flex-col items-center">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${isComplete ? 'bg-emerald-400 text-black' : isCurrent ? 'bg-white text-black' : 'bg-white/10 text-white/40'}`}>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${isComplete ? 'bg-primary text-black' : isCurrent ? 'bg-white text-black' : 'bg-secondary/50 text-foreground/40'}`}>
                         {isComplete ? '✓' : index + 1}
                       </div>
-                      <p className={`text-[10px] font-bold uppercase tracking-[0.1em] mt-1.5 text-center ${isCurrent ? 'text-white' : isComplete ? 'text-emerald-300' : 'text-white/40'}`}>
+                      <p className={`text-[10px] font-bold uppercase tracking-[0.1em] mt-1.5 text-center ${isCurrent ? 'text-foreground' : isComplete ? 'text-primary' : 'text-foreground/40'}`}>
                         {step}
                       </p>
                     </div>
                     {index < GUIDED_PROGRESS_STEPS.length - 1 && (
-                      <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-emerald-400' : 'bg-white/10'}`} />
+                      <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-primary' : 'bg-secondary/50'}`} />
                     )}
                   </Fragment>
                 );
@@ -2128,7 +2128,7 @@ Best regards`;
                 <button
                   type="button"
                   onClick={guidedDealCard.action}
-                  className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 h-12 w-full md:w-auto md:h-auto text-base md:text-sm font-bold text-slate-950 transition hover:bg-emerald-400 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 h-12 w-full md:w-auto md:h-auto text-base md:text-sm font-bold text-muted-foreground transition hover:bg-primary active:scale-[0.98]"
                 >
                   {guidedDealCard.actionLabel}
                 </button>
@@ -2139,7 +2139,7 @@ Best regards`;
                 <button
                   type="button"
                   onClick={guidedDealCard.secondaryAction}
-                  className="inline-flex items-center justify-center rounded-xl bg-white/10 border border-white/20 px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-white transition hover:bg-white/20 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center rounded-xl bg-secondary/50 border border-border px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-foreground transition hover:bg-secondary/20 active:scale-[0.98]"
                 >
                   <Copy className="h-4 w-4 mr-2" />
                   {guidedDealCard.secondaryActionLabel}
@@ -2148,12 +2148,12 @@ Best regards`;
             )}
 
             {guidedDealChecklist.length > 0 && (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">Do this next</p>
+              <div className="rounded-2xl border border-border bg-secondary/[0.03] p-4">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-foreground/50">Do this next</p>
                 <div className="mt-3 space-y-2">
                   {guidedDealChecklist.map((item, index) => (
-                    <div key={item} className="flex items-start gap-3 text-sm text-white/80">
-                      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-400/15 text-[11px] font-black text-emerald-300">
+                    <div key={item} className="flex items-start gap-3 text-sm text-foreground/80">
+                      <span className="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 text-[11px] font-black text-primary">
                         {index + 1}
                       </span>
                       <span>{item}</span>
@@ -2166,14 +2166,14 @@ Best regards`;
         </div>
 
         {showContentSubmissionPanel && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+          <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Share your content</p>
-                <h2 className="mt-2 text-xl font-bold text-white">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Share your content</p>
+                <h2 className="mt-2 text-xl font-bold text-foreground">
                   {guidedDealState === 'REVISION_REQUESTED' ? 'Share the updated post link' : 'Share your Instagram post link'}
                 </h2>
-                <p className="mt-2 text-sm text-white/70">
+                <p className="mt-2 text-sm text-foreground/70">
                   {guidedDealState === 'CONTENT_SUBMITTED'
                     ? 'You already shared a link. Update it here only if you need to replace it.'
                     : guidedDealState === 'REVISION_REQUESTED'
@@ -2181,14 +2181,14 @@ Best regards`;
                       : 'Once your content is live, paste the reel, post, or story link here for brand review.'}
                 </p>
                 {guidedDealState !== 'CONTENT_SUBMITTED' && guidedDealState !== 'REVISION_REQUESTED' && (
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-foreground/40">
                     💡 The brand will review within 7 days. If changes are needed, you can resubmit.
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="deal-content-link" className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
+                <label htmlFor="deal-content-link" className="text-xs font-black uppercase tracking-[0.18em] text-foreground/60">
                   Instagram post link
                 </label>
                 <input
@@ -2206,29 +2206,29 @@ Best regards`;
                     }
                   }}
                   placeholder="https://instagram.com/reel/..."
-                  className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 focus:border-emerald-400/50 focus:outline-none"
+                  className="h-12 w-full rounded-xl border border-border bg-card px-4 text-sm text-foreground placeholder:text-foreground/35 focus:border-primary/50 focus:outline-none"
                 />
               </div>
 
               {/* Collapsed: note + current link + explanation */}
-              <details className="rounded-xl border border-white/10 bg-white/[0.03]">
-                <summary className="flex items-center justify-between px-3 py-2.5 cursor-pointer select-none text-xs text-white/50 hover:text-white/70">
+              <details className="rounded-xl border border-border bg-secondary/[0.03]">
+                <summary className="flex items-center justify-between px-3 py-2.5 cursor-pointer select-none text-xs text-foreground/50 hover:text-foreground/70">
                   <span className="font-black uppercase tracking-[0.16em]">Add a note or view submitted link</span>
                   <ChevronDown className="w-4 h-4 transition-transform details[open]_rotate-180" />
                 </summary>
                 <div className="px-3 pb-3 space-y-3">
                   {existingContentSubmissionUrl && (
-                    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/50 mb-1.5">Current link on file</p>
+                    <div className="rounded-lg border border-border bg-secondary/[0.03] p-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-foreground/50 mb-1.5">Current link on file</p>
                       <a href={existingContentSubmissionUrl} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200 break-all">
+                        className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary break-all">
                         <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                         {existingContentSubmissionUrl}
                       </a>
                     </div>
                   )}
                   <div className="space-y-1.5">
-                    <label htmlFor="deal-content-note" className="text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
+                    <label htmlFor="deal-content-note" className="text-[10px] font-black uppercase tracking-[0.16em] text-foreground/50">
                       Note to brand (optional)
                     </label>
                     <textarea
@@ -2237,10 +2237,10 @@ Best regards`;
                       onChange={(e) => setContentNoteInput(e.target.value)}
                       placeholder="e.g. Added the final reel here..."
                       rows={2}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400/50 focus:outline-none resize-none"
+                      className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-primary/50 focus:outline-none resize-none"
                     />
                   </div>
-                  <p className="text-[11px] text-white/40">
+                  <p className="text-[11px] text-foreground/40">
                     {guidedDealState === 'REVISION_REQUESTED'
                       ? 'Brand will review your revised link.'
                       : 'Brand reviews within 7 days. You can resubmit if changes are needed.'}
@@ -2252,7 +2252,7 @@ Best regards`;
                   type="button"
                   onClick={handleSubmitContentLink}
                   disabled={isSubmittingContentLink}
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-500 px-5 text-sm font-bold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-5 text-sm font-bold text-muted-foreground transition hover:bg-primary disabled:opacity-60"
                 >
                   {isSubmittingContentLink
                     ? 'Submitting...'
@@ -2274,11 +2274,11 @@ Best regards`;
               <button
                 type="button"
                 onClick={() => { document.getElementById('deal-content-link')?.focus(); document.getElementById('deal-content-link')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
-                className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-black text-base shadow-lg shadow-emerald-500/30 transition-all"
+                className="w-full h-14 rounded-2xl bg-primary hover:bg-primary active:scale-[0.98] text-muted-foreground font-black text-base shadow-lg shadow-emerald-500/30 transition-all"
               >
                 {guidedDealState === 'REVISION_REQUESTED' ? 'Share updated link' : existingContentSubmissionUrl ? 'Update shared link' : 'Share post link'}
               </button>
-              <p className="text-center text-[10px] text-white/30">Tap to open the form above</p>
+              <p className="text-center text-[10px] text-foreground/30">Tap to open the form above</p>
             </div>
           </div>
         )}
@@ -2288,17 +2288,17 @@ Best regards`;
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-2xl p-4 md:p-6 shadow-lg"
+            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-primary/30 rounded-2xl p-4 md:p-6 shadow-lg"
           >
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-6 h-6 text-emerald-400" />
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-1">
+                <h3 className="text-lg font-semibold text-foreground mb-1">
                   Content submitted ✅
                 </h3>
-                <p className="text-white/80 text-sm mb-2">
+                <p className="text-foreground/80 text-sm mb-2">
                   Your post link has been sent to the brand for review.
                 </p>
                 {existingContentSubmissionUrl && (
@@ -2306,15 +2306,15 @@ Best regards`;
                     href={existingContentSubmissionUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-emerald-300 hover:text-emerald-200 mb-3"
+                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary mb-3"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     View your submitted link
                   </a>
                 )}
-                <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <p className="text-xs text-white/60 mb-1">What happens next?</p>
-                  <p className="text-sm text-white/80">The brand will review your content within <strong className="text-white">7 days</strong>. If they want changes, you'll be notified here. If they approve, payment will be triggered.</p>
+                <div className="bg-card rounded-xl p-3 border border-border">
+                  <p className="text-xs text-foreground/60 mb-1">What happens next?</p>
+                  <p className="text-sm text-foreground/80">The brand will review your content within <strong className="text-foreground">7 days</strong>. If they want changes, you'll be notified here. If they approve, payment will be triggered.</p>
                 </div>
               </div>
             </div>
@@ -2333,18 +2333,18 @@ Best regards`;
                 <CheckCircle className="w-6 h-6 text-green-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-1">
+                <h3 className="text-lg font-semibold text-foreground mb-1">
                   Deal confirmed 🎉
                 </h3>
-                <p className="text-white/80 text-sm mb-2">
+                <p className="text-foreground/80 text-sm mb-2">
                   We prepared your agreement using the deal details shared by the brand.
                 </p>
-                <p className="text-white/60 text-xs mb-4">
+                <p className="text-foreground/60 text-xs mb-4">
                   Review it now so you can sign and continue.
                 </p>
                 <button type="button"
                   onClick={handlePreviewContract}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-xl text-sm font-medium transition-all duration-200 text-white active:scale-[0.98]"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-xl text-sm font-medium transition-all duration-200 text-foreground active:scale-[0.98]"
                 >
                   Review Contract
                 </button>
@@ -2353,7 +2353,7 @@ Best regards`;
           </motion.div>
         )}
 
-        <div id="deal-brief-section" className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+        <div id="deal-brief-section" className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex items-start gap-3 md:gap-4 mb-4">
             <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl md:text-2xl font-bold flex-shrink-0">
               {deal.brand_name.substring(0, 2).toUpperCase()}
@@ -2361,12 +2361,12 @@ Best regards`;
             <div className="flex-1 min-w-0">
               <h1 className="text-lg md:text-xl font-bold mb-2 leading-tight">{dealTitle}</h1>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-3 py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-blue-500/20 text-blue-400 flex items-center gap-1.5">
+                <span className="px-3 py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-info/20 text-info flex items-center gap-1.5">
                   <Clock className="w-3 h-3" />
                   {getSimpleStatusLabel(guidedDealState)}
                 </span>
                 {(guidedDealState === 'PAYMENT_PENDING' || guidedDealState === 'PAID') && (
-                  <span className="px-3 py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-emerald-500/20 text-emerald-400 flex items-center gap-1.5">
+                  <span className="px-3 py-1.5 rounded-full text-[11px] md:text-xs font-medium bg-primary/20 text-primary flex items-center gap-1.5">
                     💰 Payment
                   </span>
                 )}
@@ -2374,8 +2374,8 @@ Best regards`;
             </div>
           </div>
 
-          <div className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/10 transition-colors">
-            <div className="text-sm text-white/60 mb-1 flex items-center gap-1.5">
+          <div className="bg-card rounded-xl p-4 border border-border/5 hover:border-border transition-colors">
+            <div className="text-sm text-foreground/60 mb-1 flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-green-400" />
               Deal Value
             </div>
@@ -2385,9 +2385,9 @@ Best regards`;
                 : `₹${Math.round(dealAmount).toLocaleString('en-IN')}`}
             </div>
             {guidedDealState === 'PAYMENT_PENDING' && deal.payment_expected_date && (
-              <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm text-emerald-300">
+              <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm text-primary">
                   Payment expected{' '}
                   <span className="font-semibold">
                     {new Date(deal.payment_expected_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -2401,21 +2401,21 @@ Best regards`;
         {/* Deal Progress Timeline & History */}
         <div>
           <div className="mb-3">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-white/40">Timeline</p>
-            <h2 className="mt-1 text-lg font-semibold text-white">Deal progress and activity</h2>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-foreground/40">Timeline</p>
+            <h2 className="mt-1 text-lg font-semibold text-foreground">Deal progress and activity</h2>
           </div>
         <DealProgressTracker deal={deal} actionLogs={actionLogEntries} />
         </div>
 
         {/* Brand Response Tracker - Only show for pending/negotiating/rejected (not verified) AND no contract generated yet */}
         {deal && deal.id && (deal as any)?.brand_response_status && (deal as any)?.brand_response_status !== 'accepted_verified' && !(deal as any)?.contract_file_url && (
-          <div id="brand-response-section" className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+          <div id="brand-response-section" className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
             {(() => {
               // Double-check that deal exists and has an ID
               if (!deal || !deal.id) {
                 return (
-                  <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
-                    <p className="text-red-300 text-sm">Deal information not available. Please refresh the page.</p>
+                  <div className="p-4 bg-destructive/20 border border-destructive/50 rounded-xl">
+                    <p className="text-destructive text-sm">Deal information not available. Please refresh the page.</p>
                   </div>
                 );
               }
@@ -2642,9 +2642,9 @@ ${link}`;
                 rejected: {
                   icon: XCircle,
                   label: '❌ Rejected',
-                  color: 'text-red-400',
-                  bgColor: 'bg-red-500/20',
-                  borderColor: 'border-red-500/30',
+                  color: 'text-destructive',
+                  bgColor: 'bg-destructive/20',
+                  borderColor: 'border-destructive/30',
                 },
               };
 
@@ -2660,7 +2660,7 @@ ${link}`;
                         <Share2 className="w-5 h-5" />
                         Share with Brand to Finalize
                       </h2>
-                      <p className="text-sm text-white/70 mb-4">
+                      <p className="text-sm text-foreground/70 mb-4">
                         Send this secure link so the brand can confirm details and proceed.
                       </p>
                     </>
@@ -2670,10 +2670,10 @@ ${link}`;
                         <Clock className="w-5 h-5" />
                         Waiting for Brand Response
                       </h2>
-                      <p className="text-sm text-white/70 mb-2">
+                      <p className="text-sm text-foreground/70 mb-2">
                         The brand has received the agreement. We'll notify you as soon as they respond.
                       </p>
-                      <p className="text-xs text-white/60 mb-4">
+                      <p className="text-xs text-foreground/60 mb-4">
                         Brands usually reply within 24–48 hours.
                       </p>
                     </>
@@ -2684,7 +2684,7 @@ ${link}`;
                         {config.label}
                       </h2>
                       {responseAt && (
-                        <p className="text-sm text-white/70 mb-4">
+                        <p className="text-sm text-foreground/70 mb-4">
                           Responded on {new Date(responseAt).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -2710,7 +2710,7 @@ ${link}`;
                           {config.label}
                         </div>
                         {responseAt && (
-                          <div className="text-xs text-white/60 mt-1">
+                          <div className="text-xs text-foreground/60 mt-1">
                             Responded on {new Date(responseAt).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
@@ -2737,10 +2737,10 @@ ${link}`;
                   )}
 
                   {responseMessage && (
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-                      <div className="text-sm font-medium text-blue-300 mb-2">Brand's Message:</div>
-                      <div className="text-white/90 whitespace-pre-wrap">{responseMessage}</div>
-                      <p className="text-xs text-white/50 mt-1 italic">
+                    <div className="bg-info/10 border border-info/30 rounded-xl p-4">
+                      <div className="text-sm font-medium text-info mb-2">Brand's Message:</div>
+                      <div className="text-foreground/90 whitespace-pre-wrap">{responseMessage}</div>
+                      <p className="text-xs text-foreground/50 mt-1 italic">
                         This response was submitted via your secure Creator Armour link and is saved for records.
                       </p>
                     </div>
@@ -2748,14 +2748,14 @@ ${link}`;
 
                   {/* Next Step Highlight for accepted_verified */}
                   {normalizedStatus === 'accepted_verified' && (
-                    <div className="mt-4 bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-400/30 rounded-xl p-4">
+                    <div className="mt-4 bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-primary/30 rounded-xl p-4">
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <div className="text-sm font-semibold text-emerald-300 mb-1">
+                          <div className="text-sm font-semibold text-primary mb-1">
                             Next Step: Finalize Contract & Proceed
                           </div>
-                          <p className="text-xs text-white/70">
+                          <p className="text-xs text-foreground/70">
                             The brand has accepted and verified. You can now generate the final contract and proceed with content creation.
                           </p>
                         </div>
@@ -2812,8 +2812,8 @@ ${link}`;
                             className={cn(
                               "w-full py-4 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-3",
                               !isSendingReminder
-                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-xl shadow-blue-500/20"
-                                : "bg-blue-500/20 text-blue-300/50 border border-blue-400/20 cursor-not-allowed"
+                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-foreground shadow-xl shadow-blue-500/20"
+                                : "bg-info/20 text-info/50 border border-info/20 cursor-not-allowed"
                             )}
                           >
                             {isSendingReminder ? (
@@ -2828,7 +2828,7 @@ ${link}`;
                               </>
                             )}
                           </motion.button>
-                          <p className="text-xs text-white/50 text-center">
+                          <p className="text-xs text-foreground/50 text-center">
                             This reply does not legally bind you until approved.
                           </p>
                         </div>
@@ -2838,21 +2838,21 @@ ${link}`;
                       return (
                         <div className="mt-3 space-y-3">
                           {/* Brand Reply Link Display */}
-                          <div className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
-                            <label className="text-xs font-medium text-white/70">Brand Reply Link</label>
+                          <div className="bg-card border border-border rounded-xl p-3 space-y-2">
+                            <label className="text-xs font-medium text-foreground/70">Brand Reply Link</label>
                             <div className="flex items-center gap-2">
                               <input
                                 type="text"
                                 readOnly
                                 value={link || 'Link will be generated when you share.'}
-                                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                className="flex-1 px-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground/90 font-mono truncate focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                                 onClick={(e) => (e.target as HTMLInputElement).select()}
                               />
                               <motion.button
                                 onClick={handleTestLink}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 transition-all"
+                                className="p-2 rounded-lg bg-info/20 hover:bg-info/30 border border-info/30 text-info transition-all"
                                 title="Test link"
                               >
                                 <Link2 className="w-4 h-4" />
@@ -2861,7 +2861,7 @@ ${link}`;
                                 onClick={handleCopyLink}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="p-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 transition-all"
+                                className="p-2 rounded-lg bg-info/20 hover:bg-info/30 border border-info/30 text-info transition-all"
                                 title="Copy link"
                               >
                                 <Copy className="w-4 h-4" />
@@ -2904,14 +2904,14 @@ ${link}`;
                               onClick={handleCopyLink}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-blue-500/20 text-blue-300 border border-blue-400/30 hover:bg-blue-500/30"
+                              className="py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 bg-info/20 text-info border border-info/30 hover:bg-info/30"
                             >
                               <Link2 className="w-5 h-5" />
                               <span className="text-sm">Copy Link</span>
                             </motion.button>
                           </div>
 
-                          <p className="text-xs text-white/50 text-center mt-3">
+                          <p className="text-xs text-foreground/50 text-center mt-3">
                             This message is not final until the brand confirms.
                           </p>
                         </div>
@@ -2986,35 +2986,35 @@ ${link}`;
           const statusText = getStatusText();
 
           return (
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 border-l-4 border-l-blue-500">
-              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-white/90">
-                <Bell className="w-5 h-5 text-blue-400" />
+            <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 border-l-4 border-l-blue-500">
+              <h2 className="font-semibold text-lg mb-2 flex items-center gap-2 text-foreground/90">
+                <Bell className="w-5 h-5 text-info" />
                 Agreement notes sent to brand
               </h2>
-              <p className="text-sm text-white/60 mb-4">
+              <p className="text-sm text-foreground/60 mb-4">
                 These points were shared with the brand so everyone is clear.
               </p>
 
               {/* Clarifications List */}
               <div className="space-y-3 mb-6">
                 {requestedClarifications.map((clarification, index) => (
-                  <div key={index} className="flex items-start gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
+                  <div key={index} className="flex items-start gap-3 bg-card p-3 rounded-xl border border-border/5">
                     <div className="w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Check className="w-4 h-4 text-green-400" />
                     </div>
-                    <span className="text-sm text-white/80 leading-relaxed font-medium">{clarification}</span>
+                    <span className="text-sm text-foreground/80 leading-relaxed font-medium">{clarification}</span>
                   </div>
                 ))}
               </div>
 
               {/* Status Indicator */}
               {statusText && (
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                <div className="pt-4 border-t border-border flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-blue-400">{statusText}</p>
+                    <div className="w-2 h-2 rounded-full bg-info animate-pulse" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-info">{statusText}</p>
                   </div>
-                  <span className="text-[10px] text-white/30 uppercase font-bold">Auto-tracked</span>
+                  <span className="text-[10px] text-foreground/30 uppercase font-bold">Auto-tracked</span>
                 </div>
               )}
             </div>
@@ -3023,7 +3023,7 @@ ${link}`;
 
         {/* Final Contract Section - Disabled as Merged to Top Card */}
         {(false) && (
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg shadow-black/20 mb-6">
+          <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-6 shadow-lg shadow-black/20 mb-6">
             {(() => {
               const contractDocxUrl = deal?.contract_file_url as string | null | undefined;
 
@@ -3031,13 +3031,13 @@ ${link}`;
                 <>
                   <h2 className="font-semibold text-xl mb-2 flex items-center gap-2">
                     {bothSigned ? (
-                      <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                      <ShieldCheck className="w-6 h-6 text-primary" />
                     ) : (
-                      <FileText className="w-6 h-6 text-blue-400" />
+                      <FileText className="w-6 h-6 text-info" />
                     )}
                     {bothSigned ? 'Final Contract' : 'Final Agreement'}
                   </h2>
-                  <p className="text-sm text-white/70 mb-4">
+                  <p className="text-sm text-foreground/70 mb-4">
                     {bothSigned
                       ? 'This deal is signed by both sides. You can download the final agreement here.'
                       : !isBrandSigned && !isCreatorSigned
@@ -3056,7 +3056,7 @@ ${link}`;
                             <CheckCircle className="w-5 h-5 text-green-400" />
                           </div>
                           <div>
-                            <span className="font-bold text-white block">Creator Signed</span>
+                            <span className="font-bold text-foreground block">Creator Signed</span>
                             <span className="text-[10px] text-green-400/70 uppercase tracking-widest font-bold">Identity Verified via OTP</span>
                           </div>
                         </div>
@@ -3067,7 +3067,7 @@ ${link}`;
                         onClick={() => setShowCreatorSigningModal(true)}
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-500/25"
+                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-500/25"
                       >
                         <PenTool className="w-5 h-5" />
                         E-Sign Agreement as Creator
@@ -3082,7 +3082,7 @@ ${link}`;
                             <CheckCircle className="w-5 h-5 text-green-400" />
                           </div>
                           <div>
-                            <span className="font-bold text-white block">Brand Signed</span>
+                            <span className="font-bold text-foreground block">Brand Signed</span>
                             <span className="text-[10px] text-green-400/70 uppercase tracking-widest font-bold">Authorized Signatory Verified</span>
                           </div>
                         </div>
@@ -3105,9 +3105,9 @@ ${link}`;
                         }}
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-3 group"
+                        className="w-full bg-card hover:bg-secondary/50 border border-border px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-3 group"
                       >
-                        <Share2 className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
+                        <Share2 className="w-5 h-5 text-info group-hover:scale-110 transition-transform" />
                         Send for Brand Signature
                       </motion.button>
                     )}
@@ -3116,18 +3116,18 @@ ${link}`;
                     {bothSigned && (
                       <>
                         {/* Terms Locked Indicator */}
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-2 flex items-start gap-3">
-                          <Lock className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-2 flex items-start gap-3">
+                          <Lock className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                           <div>
-                            <p className="text-sm font-bold text-emerald-400">Terms are locked.</p>
-                            <p className="text-xs text-emerald-400/70 leading-relaxed">
+                            <p className="text-sm font-bold text-primary">Terms are locked.</p>
+                            <p className="text-xs text-primary/70 leading-relaxed">
                               Edits, counters, or overrides are disabled. Any changes require a new agreement.
                             </p>
                           </div>
                         </div>
 
                         {/* Audit ID Display */}
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-2 flex items-center justify-between group cursor-help"
+                        <div className="bg-card border border-border rounded-xl p-3 mb-2 flex items-center justify-between group cursor-help"
                           onClick={() => {
                             triggerHaptic(HapticPatterns.success);
                             toast.info("Audit Record CA-" + deal?.id?.slice(0, 8).toUpperCase() + " verified by Creator Armour ledger.", {
@@ -3136,15 +3136,15 @@ ${link}`;
                           }}
                         >
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                            <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Digital Audit ID</p>
-                                <span className="bg-emerald-500/20 text-emerald-400 text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border border-emerald-500/30">Verified</span>
+                                <p className="text-[10px] text-foreground/40 uppercase font-bold tracking-widest">Digital Audit ID</p>
+                                <span className="bg-primary/20 text-primary text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider border border-primary/30">Verified</span>
                               </div>
-                              <p className="text-sm font-mono text-white/80">CA-{deal?.id?.slice(0, 8).toUpperCase()}</p>
+                              <p className="text-sm font-mono text-foreground/80">CA-{deal?.id?.slice(0, 8).toUpperCase()}</p>
                             </div>
                           </div>
                           <button type="button"
@@ -3153,7 +3153,7 @@ ${link}`;
                               copyToClipboard(`CA-${deal?.id?.toUpperCase() || ''}`);
                               toast.success('Audit ID copied to clipboard');
                             }}
-                            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/40 hover:text-white"
+                            className="p-2 hover:bg-secondary/50 rounded-lg transition-colors text-foreground/40 hover:text-foreground"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
@@ -3163,7 +3163,7 @@ ${link}`;
                           onClick={handleDownloadContract}
                           disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                           whileTap={{ scale: 0.98 }}
-                          className="w-full px-6 py-4 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-900/20"
+                          className="w-full px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 shadow-lg shadow-green-900/20"
                         >
                           {isDownloading ? (
                             <>
@@ -3180,13 +3180,13 @@ ${link}`;
 
                         <button type="button"
                           onClick={() => setShowAuditTrail(true)}
-                          className="w-full text-sm text-white/50 hover:text-white transition-colors underline text-center py-2"
+                          className="w-full text-sm text-foreground/50 hover:text-foreground transition-colors underline text-center py-2"
                         >
                           View Full Audit Records
                         </button>
 
-                        <div className="pt-2 border-t border-white/5 mt-2">
-                          <p className="text-[10px] text-white/30 text-center uppercase tracking-tight font-medium">
+                        <div className="pt-2 border-t border-border/5 mt-2">
+                          <p className="text-[10px] text-foreground/30 text-center uppercase tracking-tight font-medium">
                             Actions on Creator Armour are recorded, timestamped, and legally enforceable.
                           </p>
                         </div>
@@ -3199,7 +3199,7 @@ ${link}`;
                         onClick={handleDownloadContract}
                         disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-white/10 hover:bg-white/20 border border-white/20"
+                        className="w-full px-6 py-3 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-secondary/50 hover:bg-secondary/20 border border-border"
                       >
                         {isDownloading ? (
                           <>
@@ -3226,12 +3226,12 @@ ${link}`;
           {/* Left Column */}
           <div className="space-y-6">
             {/* Deliverables */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+            <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
               <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-white/70" />
+                <FileText className="w-5 h-5 text-foreground/70" />
                 Deliverables
               </h2>
-              <p className="text-xs text-white/50 mb-4">
+              <p className="text-xs text-foreground/50 mb-4">
                 Deliverables are auto-tracked and marked completed on their due dates.
               </p>
 
@@ -3252,8 +3252,8 @@ ${link}`;
                     className={cn(
                       "w-full px-4 py-2.5 border rounded-xl transition-all flex items-center justify-center gap-2 text-sm",
                       !bothSigned
-                        ? "bg-white/5 border-white/5 text-white/30 cursor-not-allowed"
-                        : "bg-white/5 hover:bg-white/10 border-white/10 text-white active:scale-[0.98]"
+                        ? "bg-card border-border/5 text-foreground/30 cursor-not-allowed"
+                        : "bg-card hover:bg-secondary/50 border-border text-foreground active:scale-[0.98]"
                     )}
                   >
                     <Calendar className="w-4 h-4" />
@@ -3266,25 +3266,25 @@ ${link}`;
                 <div className="relative">
                   {/* Status-aware Deliverables state */}
                   {!bothSigned && (
-                    <div className="mb-3 flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-2.5">
-                      <Lock className="w-4 h-4 text-white/50 mt-0.5 flex-shrink-0" />
+                    <div className="mb-3 flex items-start gap-2 rounded-lg border border-border bg-card p-2.5">
+                      <Lock className="w-4 h-4 text-foreground/50 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-xs font-semibold text-white/80">Locked until signed</p>
-                        <p className="text-[11px] text-white/55">Unlocks automatically after both signatures.</p>
+                        <p className="text-xs font-semibold text-foreground/80">Locked until signed</p>
+                        <p className="text-[11px] text-foreground/55">Unlocks automatically after both signatures.</p>
                       </div>
                     </div>
                   )}
 
                   <div className={cn("space-y-2", !bothSigned && "opacity-60 pointer-events-none select-none")}>
                     {deliverables.map((item: any, index: number) => (
-                      <div key={index} className="bg-white/5 rounded-xl p-3 border border-white/10">
+                      <div key={index} className="bg-card rounded-xl p-3 border border-border">
                         <div className="flex items-start gap-3">
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-white/90 break-words mb-1">
+                            <div className="font-medium text-foreground/90 break-words mb-1">
                               {item.title || item.name || `Deliverable ${index + 1}`}
                             </div>
                             {item.dueDate && (
-                              <div className="text-xs text-white/60 mt-1.5 flex items-center gap-1.5">
+                              <div className="text-xs text-foreground/60 mt-1.5 flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
                                 <span>Due: {item.dueDate}</span>
                               </div>
@@ -3292,7 +3292,7 @@ ${link}`;
                             {item.status && (
                               <div className="mt-2">
                                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${item.status === 'completed' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                                  item.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                  item.status === 'in_progress' ? 'bg-info/20 text-info border border-info/30' :
                                     'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                                   }`}>
                                   {item.status === 'completed' ? 'Done' :
@@ -3308,38 +3308,38 @@ ${link}`;
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-white/60 py-4 flex flex-col items-center gap-2">
-                  <Package className="w-8 h-8 text-white/20" />
+                <div className="text-sm text-foreground/60 py-4 flex flex-col items-center gap-2">
+                  <Package className="w-8 h-8 text-foreground/20" />
                   No deliverables specified
                 </div>
               )}
             </div>
 
             {/* Audit Trail (Advanced) - Collapsed by default */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 overflow-hidden relative">
+            <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20 overflow-hidden relative">
               <Collapsible open={showAuditTrail} onOpenChange={setShowAuditTrail}>
                 <CollapsibleTrigger asChild>
                   <button type="button" className="w-full flex items-center justify-between group">
                     <div className="text-left">
                       <h3 className="font-semibold text-lg flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-blue-400" />
+                        <Lock className="w-4 h-4 text-info" />
                         Audit Trail & Verification
                       </h3>
-                      <p className="text-xs text-white/50 mt-1">Full history of what happened in this deal.</p>
+                      <p className="text-xs text-foreground/50 mt-1">Full history of what happened in this deal.</p>
                     </div>
                     {showAuditTrail ? (
-                      <ChevronUp className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                      <ChevronUp className="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                      <ChevronDown className="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors" />
                     )}
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <p className="text-sm text-white/70 mb-6 mt-4 pb-4 border-b border-white/5">
+                  <p className="text-sm text-foreground/70 mb-6 mt-4 pb-4 border-b border-border/5">
                     A full timeline of the important actions taken by you and the brand.
                   </p>
                   {actionLogEntries.length > 0 ? (
-                    <Suspense fallback={<div className="text-white/60 p-4">Loading deal timeline...</div>}>
+                    <Suspense fallback={<div className="text-foreground/60 p-4">Loading deal timeline...</div>}>
                       <ActionLog entries={actionLogEntries.filter(entry =>
                         entry.action?.toLowerCase().includes('signed') ||
                         entry.action?.toLowerCase().includes('verified') ||
@@ -3348,11 +3348,11 @@ ${link}`;
                     </Suspense>
                   ) : (
                     <div className="py-8 text-center px-6">
-                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
-                        <ShieldCheck className="w-6 h-6 text-white/20" />
+                      <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center mx-auto mb-3">
+                        <ShieldCheck className="w-6 h-6 text-foreground/20" />
                       </div>
-                      <p className="text-sm font-medium text-white/60">No legal events recorded yet.</p>
-                      <p className="text-[11px] text-white/40 mt-1">All actions will be cryptographically logged once the brand interaction begins.</p>
+                      <p className="text-sm font-medium text-foreground/60">No legal events recorded yet.</p>
+                      <p className="text-[11px] text-foreground/40 mt-1">All actions will be cryptographically logged once the brand interaction begins.</p>
                     </div>
                   )}
                 </CollapsibleContent>
@@ -3364,8 +3364,8 @@ ${link}`;
           <div className="space-y-6">
             {/* Issue Status Card */}
             {latestIssue && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <Suspense fallback={<div className="text-white/60 p-4">Loading issue status...</div>}>
+              <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 shadow-lg shadow-black/20">
+                <Suspense fallback={<div className="text-foreground/60 p-4">Loading issue status...</div>}>
                   <IssueStatusCard
                     issue={{
                       id: latestIssue.id,
@@ -3389,8 +3389,8 @@ ${link}`;
 
             {/* Overdue Payment Card */}
             {isPaymentOverdue && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
-                <Suspense fallback={<div className="text-white/60 p-4">Loading payment info...</div>}>
+              <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 shadow-lg shadow-black/20">
+                <Suspense fallback={<div className="text-foreground/60 p-4">Loading payment info...</div>}>
                   <OverduePaymentCard
                     dealTitle={dealTitle}
                     brandName={deal.brand_name}
@@ -3404,7 +3404,7 @@ ${link}`;
             )}
 
             {/* Brand Info */}
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+            <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
               <Collapsible open={showBrandContact} onOpenChange={setShowBrandContact}>
                 <CollapsibleTrigger asChild>
                   <button type="button" className="w-full flex items-center justify-between mb-2 group">
@@ -3413,14 +3413,14 @@ ${link}`;
                         <Building2 className="w-5 h-5" />
                         Brand Contact
                       </h2>
-                      <p className="text-xs text-white/60 mt-1">
+                      <p className="text-xs text-foreground/60 mt-1">
                         Verified brand contact details used for this agreement.
                       </p>
                     </div>
                     {showBrandContact ? (
-                      <ChevronUp className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                      <ChevronUp className="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
+                      <ChevronDown className="w-5 h-5 text-foreground/60 group-hover:text-foreground transition-colors" />
                     )}
                   </button>
                 </CollapsibleTrigger>
@@ -3456,7 +3456,7 @@ ${link}`;
                           }
                         }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-3 py-1.5 text-xs bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg transition-colors text-blue-300"
+                        className="px-3 py-1.5 text-xs bg-info/20 hover:bg-info/30 border border-info/30 rounded-lg transition-colors text-info"
                         title="Auto-fill from contract analysis"
                       >
                         ✨ Auto-fill
@@ -3465,12 +3465,12 @@ ${link}`;
                   </div>
 
                   <div className="space-y-4 text-sm">
-                    <div className="flex items-center gap-2 text-white/80">
+                    <div className="flex items-center gap-2 text-foreground/80">
                       <span className="font-medium">{deal.brand_name}</span>
                     </div>
                     {deal.brand_email && (
-                      <div className="flex items-center gap-2 text-white/60 break-words">
-                        <Mail className="w-4 h-4 text-white/40 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-foreground/60 break-words">
+                        <Mail className="w-4 h-4 text-foreground/40 flex-shrink-0" />
                         <span className="flex-1">{deal.brand_email}</span>
                         <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                           Verified
@@ -3485,14 +3485,14 @@ ${link}`;
                       return (
                         <>
                           {contactInfo.brandLegalContact && (
-                            <div className="flex items-center gap-2 text-white/60">
-                              <span className="text-white/40">Legal Contact:</span>
+                            <div className="flex items-center gap-2 text-foreground/60">
+                              <span className="text-foreground/40">Legal Contact:</span>
                               <span>{contactInfo.brandLegalContact}</span>
                             </div>
                           )}
                           {contactInfo.brandAddress && (
-                            <div className="flex items-start gap-2 text-white/60">
-                              <span className="text-white/40 flex-shrink-0">Address:</span>
+                            <div className="flex items-start gap-2 text-foreground/60">
+                              <span className="text-foreground/40 flex-shrink-0">Address:</span>
                               <span className="break-words">{contactInfo.brandAddress}</span>
                             </div>
                           )}
@@ -3500,7 +3500,7 @@ ${link}`;
                       );
                     })()}
                     {deal.contact_person && (
-                      <div className="flex items-center gap-2 text-white/60">
+                      <div className="flex items-center gap-2 text-foreground/60">
                         <span>Contact: {deal.contact_person}</span>
                       </div>
                     )}
@@ -3534,13 +3534,13 @@ ${link}`;
                             }
 
                             return phoneNumber ? (
-                              <div className="flex items-center gap-2 text-white/60 flex-1">
-                                <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                              <div className="flex items-center gap-2 text-foreground/60 flex-1">
+                                <Phone className="w-4 h-4 text-foreground/40 flex-shrink-0" />
                                 <span>{phoneNumber}</span>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-2 text-white/40 flex-1">
-                                <Phone className="w-4 h-4 text-white/30 flex-shrink-0" />
+                              <div className="flex items-center gap-2 text-foreground/40 flex-1">
+                                <Phone className="w-4 h-4 text-foreground/30 flex-shrink-0" />
                                 <span className="text-xs">No phone added (optional)</span>
                               </div>
                             );
@@ -3565,15 +3565,15 @@ ${link}`;
                               setIsEditingBrandPhone(true);
                             }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-secondary/50 rounded-lg transition-colors"
                             title="Edit phone number"
                           >
-                            <Edit className="w-4 h-4 text-white/60" />
+                            <Edit className="w-4 h-4 text-foreground/60" />
                           </motion.button>
                         </>
                       ) : (
                         <div className="flex items-center gap-2 flex-1">
-                          <Phone className="w-4 h-4 text-white/40 flex-shrink-0" />
+                          <Phone className="w-4 h-4 text-foreground/40 flex-shrink-0" />
                           <input
                             type="tel"
                             value={brandPhoneInput}
@@ -3592,7 +3592,7 @@ ${link}`;
                               setBrandPhoneInput(value);
                             }}
                             placeholder="+91 9876543210"
-                            className="flex-1 bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            className="flex-1 bg-secondary/50 border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                             autoFocus
                           />
                           <motion.button
@@ -3651,10 +3651,10 @@ ${link}`;
                               setBrandPhoneInput('');
                             }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-destructive/20 rounded-lg transition-colors"
                             title="Cancel"
                           >
-                            <X className="w-4 h-4 text-red-400" />
+                            <X className="w-4 h-4 text-destructive" />
                           </motion.button>
                         </div>
                       )}
@@ -3666,7 +3666,7 @@ ${link}`;
 
             {/* Contract Info */}
             {contractDocxUrl && (
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+              <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 shadow-lg shadow-black/20">
                 <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Contract
@@ -3679,19 +3679,19 @@ ${link}`;
                     <div className="flex-1 min-w-0 space-y-1.5">
                       {/* Clean display name with status badge */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-base text-white/95 truncate flex-1 min-w-0" title={(displayContractName || contractFileName) ?? undefined}>
+                        <h3 className="font-semibold text-base text-foreground/95 truncate flex-1 min-w-0" title={(displayContractName || contractFileName) ?? undefined}>
                           {displayContractName || contractFileName}
                         </h3>
                       </div>
                       {/* Original filename as secondary metadata - truncated */}
                       {contractFileName && displayContractName && (
-                        <div className="text-xs text-white/50 truncate" title={contractFileName}>
+                        <div className="text-xs text-foreground/50 truncate" title={contractFileName}>
                           Original file: <span className="font-mono">{contractFileName}</span>
                         </div>
                       )}
                       {/* Upload date */}
                       {deal.created_at && (
-                        <div className="text-xs text-white/60">
+                        <div className="text-xs text-foreground/60">
                           Uploaded {new Date(deal.created_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -3708,7 +3708,7 @@ ${link}`;
                       onClick={handleDownloadContractSummary}
                       disabled={isGeneratingPDF}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium text-white shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full mt-4 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium text-foreground shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isGeneratingPDF ? (
                         <>
@@ -3732,21 +3732,21 @@ ${link}`;
 
         {/* Confirm Signed Contract Received Modal */}
         < Dialog open={showMarkSignedModal} onOpenChange={setShowMarkSignedModal} >
-          <DialogContent className="bg-blue-950/95 backdrop-blur-xl border border-white/10 text-white max-w-md">
+          <DialogContent className="bg-info/95 backdrop-blur-xl border border-border text-foreground max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold">Confirm Signed Contract Received</DialogTitle>
-              <DialogDescription className="text-white/70">
+              <DialogDescription className="text-foreground/70">
                 Have you received the signed contract from both parties?
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 mt-4">
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-foreground/80">
                 This will update the deal status to "Signed" for organizational purposes. This is not a legal validation.
               </p>
 
               {/* Optional: Upload signed contract */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-white/70">
+                <label className="block text-sm font-medium mb-2 text-foreground/70">
                   Upload Signed Contract (Optional)
                 </label>
                 <input
@@ -3784,9 +3784,9 @@ ${link}`;
                       setIsUploadingSignedContract(false);
                     }
                   }}
-                  className="w-full text-sm text-white/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-blue-500/20 file:text-blue-200 hover:file:bg-blue-500/30"
+                  className="w-full text-sm text-foreground/60 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-info/20 file:text-info hover:file:bg-info/30"
                 />
-                <p className="text-xs text-white/50 mt-1">
+                <p className="text-xs text-foreground/50 mt-1">
                   PDF only. This helps keep your signed agreement clear and easy to save.
                 </p>
               </div>
@@ -3830,7 +3830,7 @@ ${link}`;
                 </button>
                 <button type="button"
                   onClick={() => setShowMarkSignedModal(false)}
-                  className="flex-1 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl font-medium transition-colors"
+                  className="flex-1 bg-secondary/50 hover:bg-secondary/20 px-4 py-2 rounded-xl font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -3842,17 +3842,17 @@ ${link}`;
         {/* Invoice Ready */}
         {
           (deal as any)?.invoice_url && (
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-lg shadow-black/20">
+            <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-4 shadow-lg shadow-black/20">
               <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 🧾 Invoice Ready
               </h2>
               <div className="space-y-3">
-                <p className="text-sm text-white/80">
+                <p className="text-sm text-foreground/80">
                   Download your invoice for this campaign
                 </p>
                 {(deal as any)?.invoice_number && (
-                  <p className="text-xs text-white/60">
+                  <p className="text-xs text-foreground/60">
                     Invoice #: {(deal as any).invoice_number}
                   </p>
                 )}
@@ -3865,7 +3865,7 @@ ${link}`;
                   }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-blue-300 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-info/20 hover:bg-info/30 border border-info/30 text-info px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                 >
                   <Download className="w-5 h-5" />
                   Download Invoice
@@ -3880,7 +3880,7 @@ ${link}`;
           brandSubmissionDetails && (
             <div className="space-y-6">
               {/* Deal Summary Card - Collapsible by default */}
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+              <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                 <Collapsible open={showDealSummaryFull} onOpenChange={setShowDealSummaryFull}>
                   <CollapsibleTrigger asChild>
                     <button type="button" className="w-full flex items-center justify-between items-center mb-4">
@@ -3889,27 +3889,27 @@ ${link}`;
                         <h3 className="font-semibold text-lg">Deal Summary</h3>
                       </div>
                       {showDealSummaryFull ? (
-                        <ChevronUp className="w-5 h-5 text-white/60" />
+                        <ChevronUp className="w-5 h-5 text-foreground/60" />
                       ) : (
-                        <ChevronDown className="w-5 h-5 text-white/60" />
+                        <ChevronDown className="w-5 h-5 text-foreground/60" />
                       )}
                     </button>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Brand</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Brand</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.brandName || 'Not provided'}</div>
                       </div>
                       {brandSubmissionDetails.campaignName && (
                         <div>
-                          <div className="text-sm text-white/60 mb-1">Campaign</div>
-                          <div className="text-white font-medium">{brandSubmissionDetails.campaignName}</div>
+                          <div className="text-sm text-foreground/60 mb-1">Campaign</div>
+                          <div className="text-foreground font-medium">{brandSubmissionDetails.campaignName}</div>
                         </div>
                       )}
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Deal type</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Deal type</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.dealType === 'barter'
                             ? 'Free products as payment'
                             : brandSubmissionDetails.dealType === 'hybrid'
@@ -3918,8 +3918,8 @@ ${link}`;
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Deal Value</div>
-                        <div className="text-white font-semibold text-lg">
+                        <div className="text-sm text-foreground/60 mb-1">Deal Value</div>
+                        <div className="text-foreground font-semibold text-lg">
                           {brandSubmissionDetails.dealType === 'paid' && brandSubmissionDetails.paymentAmount
                             ? `₹${parseFloat(brandSubmissionDetails.paymentAmount.toString()).toLocaleString('en-IN')}`
                             : brandSubmissionDetails.dealType === 'barter'
@@ -3929,8 +3929,8 @@ ${link}`;
                       </div>
                       {brandSubmissionDetails.deadline && (
                         <div className="md:col-span-2">
-                          <div className="text-sm text-white/60 mb-1">Timeline</div>
-                          <div className="text-white font-medium">
+                          <div className="text-sm text-foreground/60 mb-1">Timeline</div>
+                          <div className="text-foreground font-medium">
                             {(() => {
                               try {
                                 const date = new Date(brandSubmissionDetails.deadline);
@@ -3953,7 +3953,7 @@ ${link}`;
 
               {/* Payment Details Card - Moved to position 4 */}
               {brandSubmissionDetails.dealType === 'paid' && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">💰</span>
                     <h3 className="font-semibold text-lg">Payment Details</h3>
@@ -3961,30 +3961,30 @@ ${link}`;
                   <div className="space-y-3">
                     {brandSubmissionDetails.paymentAmount && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Amount</div>
-                        <div className="text-white font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Amount</div>
+                        <div className="text-foreground font-semibold text-lg">₹{parseFloat(brandSubmissionDetails.paymentAmount).toLocaleString('en-IN')}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.paymentTrigger && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Payment Trigger</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Payment Trigger</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.paymentTrigger.replace(/_/g, ' ')}
                         </div>
                       </div>
                     )}
                     {brandSubmissionDetails.paymentTimeline && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Payment Timeline</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Payment Timeline</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.paymentTimeline.replace(/_/g, ' ')}
                         </div>
                       </div>
                     )}
                     {brandSubmissionDetails.paymentMethod && brandSubmissionDetails.paymentMethod.length > 0 && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Method</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Method</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.paymentMethod.join(', ')}</div>
                       </div>
                     )}
                   </div>
@@ -3993,7 +3993,7 @@ ${link}`;
 
               {/* Rights & Usage Card - Moved to position 5 */}
               {(brandSubmissionDetails.usageRightsDuration || brandSubmissionDetails.paidAdsAllowed !== undefined || brandSubmissionDetails.whitelistingAllowed !== undefined || brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity || brandSubmissionDetails.usageRights || brandSubmissionDetails.cancellationTerms) && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🧾</span>
                     <h3 className="font-semibold text-lg">Rights & Usage</h3>
@@ -4001,34 +4001,34 @@ ${link}`;
                   <div className="space-y-3">
                     {brandSubmissionDetails.usageRightsDuration && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Usage Duration</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Usage Duration</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.usageRightsDuration.replace(/_/g, ' ')}
                         </div>
                       </div>
                     )}
                     {brandSubmissionDetails.usageRights && !brandSubmissionDetails.usageRightsDuration && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Usage Rights</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.usageRights}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Usage Rights</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.usageRights}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.paidAdsAllowed !== undefined && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Paid Ads Allowed?</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.paidAdsAllowed ? 'Yes' : 'No'}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Paid Ads Allowed?</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.paidAdsAllowed ? 'Yes' : 'No'}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.whitelistingAllowed !== undefined && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Whitelisting Allowed?</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.whitelistingAllowed ? 'Yes' : 'No'}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Whitelisting Allowed?</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.whitelistingAllowed ? 'Yes' : 'No'}</div>
                       </div>
                     )}
                     {(brandSubmissionDetails.exclusivityPeriod || brandSubmissionDetails.exclusivity) && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Exclusivity Period</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Exclusivity Period</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.exclusivityPeriod === 'none' ? 'None' :
                             brandSubmissionDetails.exclusivityPeriod ? brandSubmissionDetails.exclusivityPeriod.replace(/_/g, ' ') :
                               brandSubmissionDetails.exclusivity}
@@ -4037,8 +4037,8 @@ ${link}`;
                     )}
                     {brandSubmissionDetails.cancellationTerms && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Cancellation Terms</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Cancellation Terms</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.cancellationTerms.replace(/_/g, ' ')}
                         </div>
                       </div>
@@ -4049,7 +4049,7 @@ ${link}`;
 
               {/* Approvals & Revisions Card - Moved to position 6 */}
               {(brandSubmissionDetails.approvalProcess || brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.approvalTurnaroundTime || brandSubmissionDetails.revisions || brandSubmissionDetails.postingWindow) && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🛡️</span>
                     <h3 className="font-semibold text-lg">Approvals & Revisions</h3>
@@ -4057,32 +4057,32 @@ ${link}`;
                   <div className="space-y-3">
                     {brandSubmissionDetails.approvalProcess && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Approval Rule</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Approval Rule</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.approvalProcess.replace(/_/g, ' ')}
                         </div>
                       </div>
                     )}
                     {brandSubmissionDetails.approvalTurnaroundTime && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Turnaround Time</div>
-                        <div className="text-white font-medium capitalize">
+                        <div className="text-sm text-foreground/60 mb-1">Turnaround Time</div>
+                        <div className="text-foreground font-medium capitalize">
                           {brandSubmissionDetails.approvalTurnaroundTime.replace(/_/g, ' ')}
                         </div>
                       </div>
                     )}
                     {(brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions) && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Revisions Count</div>
-                        <div className="text-white font-medium">
+                        <div className="text-sm text-foreground/60 mb-1">Revisions Count</div>
+                        <div className="text-foreground font-medium">
                           {brandSubmissionDetails.numberOfRevisions || brandSubmissionDetails.revisions}
                         </div>
                       </div>
                     )}
                     {brandSubmissionDetails.postingWindow && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Posting Window</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.postingWindow}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Posting Window</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.postingWindow}</div>
                       </div>
                     )}
                   </div>
@@ -4091,7 +4091,7 @@ ${link}`;
 
               {/* Free products details */}
               {brandSubmissionDetails.dealType === 'barter' && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🎁</span>
                     <h3 className="font-semibold text-lg">Free products details</h3>
@@ -4099,32 +4099,32 @@ ${link}`;
                   <div className="space-y-3">
                     {brandSubmissionDetails.productDescription && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Product Description</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.productDescription}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Product Description</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.productDescription}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterValue && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Approx value</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.barterValue}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Approx value</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.barterValue}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterApproximateValue && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Approx value</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Approx value</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.barterApproximateValue}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterShippingResponsibility && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Who will ship?</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Who will ship?</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.barterShippingResponsibility}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.barterReplacementAllowed !== undefined && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Replacement possible?</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Replacement possible?</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.barterReplacementAllowed ? 'Yes' : 'No'}</div>
                       </div>
                     )}
                   </div>
@@ -4133,9 +4133,9 @@ ${link}`;
 
               {/* Product shipping (free products deals only) */}
               {(deal as any)?.deal_type === 'barter' && (deal as any)?.shipping_required && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
-                    <Package className="w-5 h-5 text-amber-400" />
+                    <Package className="w-5 h-5 text-warning" />
                     <h3 className="font-semibold text-lg">Product delivery</h3>
                   </div>
                   {(() => {
@@ -4146,13 +4146,13 @@ ${link}`;
                       const isDelayed = daysPending >= 7;
                       return (
                         <div className="space-y-3">
-                          <div className={`flex items-center gap-3 p-3 rounded-xl border ${isDelayed ? 'bg-red-500/10 border-red-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+                          <div className={`flex items-center gap-3 p-3 rounded-xl border ${isDelayed ? 'bg-destructive/10 border-destructive/20' : 'bg-warning/10 border-warning/20'}`}>
                             <span className="text-2xl">⏳</span>
                             <div>
-                              <p className="font-medium text-white">
+                              <p className="font-medium text-foreground">
                                 {isDelayed ? 'Shipping delayed' : 'Waiting for brand to ship product'}
                               </p>
-                              <p className="text-sm text-white/60">
+                              <p className="text-sm text-foreground/60">
                                 {isDelayed
                                   ? 'The brand has not updated shipping after 7 days. You can report an issue or seek legal support.'
                                   : 'The brand will receive a link to add courier and tracking details.'}
@@ -4163,14 +4163,14 @@ ${link}`;
                             <div className="flex flex-wrap gap-2">
                               <button type="button"
                                 onClick={() => setShowReportIssueModal(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
                               >
                                 <AlertCircle className="w-4 h-4" />
                                 Report issue (e.g. brand has not shipped)
                               </button>
                               <button
                                 onClick={() => navigate('/creator-dashboard')}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
                               >
                                 <Flag className="w-4 h-4" />
                                 Legal support
@@ -4186,12 +4186,12 @@ ${link}`;
                       const trackingUrl = (deal as any)?.tracking_url;
                       return (
                         <div className="space-y-4">
-                          <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
                             <span className="text-2xl">📦</span>
                             <div>
-                              <p className="font-medium text-white">Product shipped</p>
-                              {courier && <p className="text-sm text-white/70">Courier: {courier}</p>}
-                              {tracking && <p className="text-sm text-white/70">Tracking: {tracking}</p>}
+                              <p className="font-medium text-foreground">Product shipped</p>
+                              {courier && <p className="text-sm text-foreground/70">Courier: {courier}</p>}
+                              {tracking && <p className="text-sm text-foreground/70">Tracking: {tracking}</p>}
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -4200,7 +4200,7 @@ ${link}`;
                                 href={trackingUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium"
                               >
                                 <ExternalLink className="w-4 h-4" />
                                 Track package
@@ -4231,7 +4231,7 @@ ${link}`;
                                 }
                               }}
                               disabled={isConfirmingReceived}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium disabled:opacity-50"
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary text-foreground font-medium disabled:opacity-50"
                             >
                               {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                               Confirm Product Received
@@ -4239,7 +4239,7 @@ ${link}`;
                             <button type="button"
                               onClick={() => setShowReportIssueModal(true)}
                               disabled={isReportingIssue}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium"
                             >
                               <AlertCircle className="w-4 h-4" />
                               Report Issue
@@ -4253,8 +4253,8 @@ ${link}`;
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
                           <CheckCircle className="w-6 h-6 text-green-400" />
                           <div>
-                            <p className="font-medium text-white">Product delivered</p>
-                            <p className="text-sm text-white/60">You confirmed receipt. Deliverables timeline can proceed.</p>
+                            <p className="font-medium text-foreground">Product delivered</p>
+                            <p className="text-sm text-foreground/60">You confirmed receipt. Deliverables timeline can proceed.</p>
                           </div>
                         </div>
                       );
@@ -4262,12 +4262,12 @@ ${link}`;
                     if (shippingStatus === 'issue_reported') {
                       const reason = (deal as any)?.shipping_issue_reason;
                       return (
-                        <div className="flex items-start gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                          <AlertCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                          <AlertCircle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-medium text-white">Issue reported</p>
-                            {reason && <p className="text-sm text-white/70 mt-1">{reason}</p>}
-                            <p className="text-sm text-white/50 mt-2">The brand has been notified. You can use legal support if needed.</p>
+                            <p className="font-medium text-foreground">Issue reported</p>
+                            {reason && <p className="text-sm text-foreground/70 mt-1">{reason}</p>}
+                            <p className="text-sm text-foreground/50 mt-2">The brand has been notified. You can use legal support if needed.</p>
                           </div>
                         </div>
                       );
@@ -4279,7 +4279,7 @@ ${link}`;
 
               {/* Legal Card */}
               {(brandSubmissionDetails.governingLaw || brandSubmissionDetails.companyState) && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">⚖️</span>
                     <h3 className="font-semibold text-lg">Legal</h3>
@@ -4287,14 +4287,14 @@ ${link}`;
                   <div className="space-y-3">
                     {brandSubmissionDetails.governingLaw && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Jurisdiction Country</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.governingLaw}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Jurisdiction Country</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.governingLaw}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.companyState && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">State</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.companyState}</div>
+                        <div className="text-sm text-foreground/60 mb-1">State</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.companyState}</div>
                       </div>
                     )}
                   </div>
@@ -4303,7 +4303,7 @@ ${link}`;
 
               {/* Brand Details Card */}
               {(brandSubmissionDetails.companyLegalName || brandSubmissionDetails.companyGstin || brandSubmissionDetails.companyAddress || brandSubmissionDetails.authorizedSignatoryName || brandSubmissionDetails.companyEmail || brandSubmissionDetails.companyPhone) && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-xl">🏢</span>
                     <h3 className="font-semibold text-lg">Brand Details</h3>
@@ -4316,38 +4316,38 @@ ${link}`;
                   <div className="space-y-4">
                     {brandSubmissionDetails.companyGstin && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">GSTIN</div>
-                        <div className="text-white font-medium font-mono">{brandSubmissionDetails.companyGstin}</div>
+                        <div className="text-sm text-foreground/60 mb-1">GSTIN</div>
+                        <div className="text-foreground font-medium font-mono">{brandSubmissionDetails.companyGstin}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.companyLegalName && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Legal Company Name</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.companyLegalName}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Legal Company Name</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.companyLegalName}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.companyAddress && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Registered Address</div>
-                        <div className="text-white font-medium whitespace-pre-line">{brandSubmissionDetails.companyAddress}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Registered Address</div>
+                        <div className="text-foreground font-medium whitespace-pre-line">{brandSubmissionDetails.companyAddress}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.authorizedSignatoryName && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Authorized Signatory Name</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.authorizedSignatoryName}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Authorized Signatory Name</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.authorizedSignatoryName}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.companyEmail && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Contact Email</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.companyEmail}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Contact Email</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.companyEmail}</div>
                       </div>
                     )}
                     {brandSubmissionDetails.companyPhone && (
                       <div>
-                        <div className="text-sm text-white/60 mb-1">Phone Number</div>
-                        <div className="text-white font-medium">{brandSubmissionDetails.companyPhone}</div>
+                        <div className="text-sm text-foreground/60 mb-1">Phone Number</div>
+                        <div className="text-foreground font-medium">{brandSubmissionDetails.companyPhone}</div>
                       </div>
                     )}
                   </div>
@@ -4356,19 +4356,19 @@ ${link}`;
 
               {/* Next Steps - For Signed Agreements */}
               {isCreatorSigned && (dealExecutionStatus === 'signed' || dealExecutionStatus === 'completed' || signedContractUrl || signedAt || (deal?.status?.toLowerCase()?.includes('signed'))) && (
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
-                  <h3 className="font-semibold text-lg mb-4 text-white/90">Next steps:</h3>
-                  <ul className="space-y-2 text-sm text-white/70">
+                <div className="bg-card backdrop-blur-xl border border-border rounded-2xl p-5 md:p-6 shadow-lg shadow-black/20 mt-6">
+                  <h3 className="font-semibold text-lg mb-4 text-foreground/90">Next steps:</h3>
+                  <ul className="space-y-2 text-sm text-foreground/70">
                     <li className="flex items-start gap-2">
-                      <span className="text-white/50 mt-0.5">•</span>
+                      <span className="text-foreground/50 mt-0.5">•</span>
                       <span>Creator delivers content as per agreed timeline</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-white/50 mt-0.5">•</span>
+                      <span className="text-foreground/50 mt-0.5">•</span>
                       <span>Brand completes payment as agreed</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-white/50 mt-0.5">•</span>
+                      <span className="text-foreground/50 mt-0.5">•</span>
                       <span>Audit trail remains available for disputes or compliance</span>
                     </li>
                   </ul>
@@ -4426,10 +4426,10 @@ ${link}`;
 
       {/* Barter Shipping: Report Issue Modal */}
       <Dialog open={showReportIssueModal} onOpenChange={setShowReportIssueModal}>
-        <DialogContent className="bg-gray-900 border-white/10 text-white max-w-md">
+        <DialogContent className="bg-gray-900 border-border text-foreground max-w-md">
           <DialogHeader>
             <DialogTitle>Report shipping issue</DialogTitle>
-            <DialogDescription className="text-white/70">
+            <DialogDescription className="text-foreground/70">
               Describe the issue (e.g. damaged product, wrong item, not received). The brand will be notified.
             </DialogDescription>
           </DialogHeader>
@@ -4438,7 +4438,7 @@ ${link}`;
             onChange={(e) => setReportIssueReason(e.target.value)}
             placeholder="Describe the issue..."
             rows={4}
-            className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+            className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
           />
           <div className="flex gap-2 justify-end mt-4">
             <button type="button"
@@ -4446,7 +4446,7 @@ ${link}`;
                 setShowReportIssueModal(false);
                 setReportIssueReason('');
               }}
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium"
+              className="px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium"
             >
               Cancel
             </button>
@@ -4481,7 +4481,7 @@ ${link}`;
                 }
               }}
               disabled={isReportingIssue || !reportIssueReason.trim()}
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-destructive hover:bg-destructive text-foreground font-medium disabled:opacity-50 flex items-center gap-2"
             >
               {isReportingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               Report Issue
@@ -4507,19 +4507,19 @@ ${link}`;
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-border shadow-2xl"
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                  <Trash2 className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-destructive" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white">Delete Deal</h3>
-                  <p className="text-sm text-white/60">This action cannot be undone</p>
+                  <h3 className="text-lg font-semibold text-foreground">Delete Deal</h3>
+                  <p className="text-sm text-foreground/60">This action cannot be undone</p>
                 </div>
               </div>
 
-              <p className="text-white/80 mb-6">
+              <p className="text-foreground/80 mb-6">
                 Are you sure you want to delete <span className="font-semibold">"{deal.brand_name}"</span>?
                 This will permanently remove the deal and all associated data.
               </p>
@@ -4531,7 +4531,7 @@ ${link}`;
                     setShowDeleteConfirm(false);
                   }}
                   disabled={deleteDeal.isPending}
-                  className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground rounded-xl font-medium transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -4581,7 +4581,7 @@ ${link}`;
                   }}
                   disabled={deleteDeal.isPending}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-destructive hover:bg-destructive text-foreground rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {deleteDeal.isPending ? (
                     <>
@@ -4599,10 +4599,10 @@ ${link}`;
       }
       {/* Creator Signing Modal */}
       <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
-        <DialogContent className="sm:max-w-[440px] bg-neutral-950/98 border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60">
+        <DialogContent className="sm:max-w-[440px] bg-neutral-950/98 border-border text-foreground rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight">
-              <FileText className="w-5 h-5 text-sky-400" />
+              <FileText className="w-5 h-5 text-info" />
               Sign Agreement
             </DialogTitle>
             <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
@@ -4615,12 +4615,12 @@ ${link}`;
           <div className="px-6 py-5">
             {creatorSigningStep === 'send' ? (
               <div className="space-y-4">
-                <div className="p-4 bg-sky-500/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-sky-300 mt-0.5" />
+                <div className="p-4 bg-info/12 border border-sky-400/35 rounded-xl flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-info mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-sky-200">OTP Verification</p>
-                    <p className="text-xs text-sky-100/80 mt-1">
-                      Signing as: <span className="text-white">{profile?.email}</span>
+                    <p className="text-sm font-semibold text-info">OTP Verification</p>
+                    <p className="text-xs text-info/80 mt-1">
+                      Signing as: <span className="text-foreground">{profile?.email}</span>
                     </p>
                   </div>
                 </div>
@@ -4628,7 +4628,7 @@ ${link}`;
                   onClick={handleSendCreatorOTP}
                   disabled={isSendingCreatorOTP}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                  className="w-full bg-info hover:bg-info py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
                 >
                   {isSendingCreatorOTP ? (
                     <>
@@ -4655,7 +4655,7 @@ ${link}`;
                     onChange={(e) => setCreatorOTP(e.target.value.replace(/\D/g, ''))}
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                    className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-foreground focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
                   />
                   <p className="text-xs text-neutral-400 mt-2">Code expires in 10 minutes.</p>
                 </div>
@@ -4665,7 +4665,7 @@ ${link}`;
                     onClick={handleVerifyCreatorOTP}
                     disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                    className="w-full bg-primary hover:bg-primary py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
                   >
                     {isVerifyingCreatorOTP || isSigningAsCreator ? (
                       <>
@@ -4695,7 +4695,7 @@ ${link}`;
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+          <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-border px-6 py-4">
             <Lock className="w-3.5 h-3.5" />
             <span>Secure Enterprise-grade E-signature powered by Creator Armour Armor</span>
           </div>

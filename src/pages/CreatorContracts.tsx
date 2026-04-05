@@ -295,12 +295,12 @@ const CreatorContracts = () => {
 
     // Awaiting Product Shipment (barter) → amber
     if (statusLower.includes('awaiting product shipment') || statusLower === 'awaiting_product_shipment') {
-      return { label: 'Awaiting Product Shipment', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
+      return { label: 'Awaiting Product Shipment', color: 'bg-warning/20 text-warning border-warning/30' };
     }
 
     // Contract Ready (sent, draft ready) → blue
     if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready') || statusLower.includes('agreement_prepared')) {
-      return { label: 'Contract Ready', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' };
+      return { label: 'Contract Ready', color: 'bg-info/20 text-info border-blue-500/30' };
     }
 
     // Negotiation → yellow (includes barter "Drafting" = Delivery Details Pending)
@@ -605,37 +605,37 @@ const CreatorContracts = () => {
               ) : (
                 <div className="mb-4 grid grid-cols-1 gap-3">
                   {/* Primary Card: Total Value Protected */}
-                  <div className="bg-white/10 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
-                    <div className="text-sm text-white/70 mb-1">Total Value Protected</div>
+                  <div className="bg-secondary/50 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
+                    <div className="text-sm text-foreground/70 mb-1">Total Value Protected</div>
                     <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(stats.totalValue)}</div>
-                    <div className="text-xs text-white/60">Across active protected deals</div>
+                    <div className="text-xs text-foreground/60">Across active protected deals</div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     {/* Secondary Card: Active Deals */}
-                    <div className="bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3">
-                      <div className="text-xs text-white/70 mb-1">Active Deals</div>
-                      <div className="text-xl font-bold text-white">{stats.active.toLocaleString('en-IN')}</div>
+                    <div className="bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3">
+                      <div className="text-xs text-foreground/70 mb-1">Active Deals</div>
+                      <div className="text-xl font-bold text-foreground">{stats.active.toLocaleString('en-IN')}</div>
                     </div>
 
                     {/* Secondary Card: Payments at Risk */}
                     <div
                       className={cn(
-                        "bg-white/6 backdrop-blur-xl border border-white/12 rounded-2xl p-3",
+                        "bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3",
                         stats.paymentsAtRisk > 0 && "bg-orange-500/15 border-orange-500/30"
                       )}
                     >
-                      <div className="text-xs text-white/70 mb-1">Payments at Risk</div>
+                      <div className="text-xs text-foreground/70 mb-1">Payments at Risk</div>
                       <div
                         className={cn(
                           "text-lg font-semibold",
-                          stats.paymentsAtRisk > 0 ? "text-orange-300" : "text-white/80"
+                          stats.paymentsAtRisk > 0 ? "text-orange-300" : "text-foreground/80"
                         )}
                       >
                         {formatIndianCurrency(stats.paymentsAtRisk)}
                       </div>
                       {stats.paymentsAtRisk === 0 && (
-                        <div className="text-[11px] text-white/60 mt-0.5">All payments secure</div>
+                        <div className="text-[11px] text-foreground/60 mt-0.5">All payments secure</div>
                       )}
                     </div>
                   </div>
@@ -656,16 +656,16 @@ const CreatorContracts = () => {
                   "relative bg-gradient-to-r from-blue-600/30 to-indigo-600/20",
                   "backdrop-blur-xl rounded-2xl p-4",
                   "border border-blue-400/40 shadow-lg shadow-blue-500/20",
-                  "hover:bg-white/12 transition-all"
+                  "hover:bg-secondary/12 transition-all"
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/30 w-10 h-10 rounded-full flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-blue-200" />
+                  <div className="bg-info/30 w-10 h-10 rounded-full flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-info" />
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-semibold text-white">Protect a New Deal</div>
-                    <div className="text-xs text-white/60">Contract is reviewed and you&apos;re covered</div>
+                    <div className="text-sm font-semibold text-foreground">Protect a New Deal</div>
+                    <div className="text-xs text-foreground/60">Contract is reviewed and you&apos;re covered</div>
                   </div>
                 </div>
               </motion.button>
@@ -706,15 +706,15 @@ const CreatorContracts = () => {
                           "text-sm px-3 py-1.5",
                           "flex-shrink-0 font-semibold snap-start",
                           isActive
-                            ? "bg-white/20 text-white border-2 border-white/25 shadow-sm"
-                            : "bg-white/8 text-white/70 border border-white/15 hover:bg-white/12"
+                            ? "bg-secondary/20 text-foreground border-2 border-border/25 shadow-sm"
+                            : "bg-secondary/8 text-foreground/70 border border-border hover:bg-secondary/12"
                         )}
                       >
                         {filter.label}
                         {filter.id === 'action_needed' && filter.count !== undefined && filter.count > 0 && (
                           <span className={cn(
                             "ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-semibold",
-                            isActive ? "bg-white/25 text-white" : "bg-white/10 text-white/80"
+                            isActive ? "bg-secondary/25 text-foreground" : "bg-secondary/50 text-foreground/80"
                           )}>
                             {filter.count}
                           </span>
@@ -735,15 +735,15 @@ const CreatorContracts = () => {
                     whileTap={animations.microTap}
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
-                      "bg-white/8 text-white border-white/15 hover:bg-white/12",
-                      hasActiveAdvancedFilters && "bg-blue-500/20 border-blue-400/30 text-blue-300",
+                      "bg-secondary/8 text-foreground border-border hover:bg-secondary/12",
+                      hasActiveAdvancedFilters && "bg-info/20 border-blue-400/30 text-info",
                       "text-sm h-9"
                     )}
                   >
                     <Filter className="w-4 h-4" />
                     <span className="hidden sm:inline">Filters</span>
                     {hasActiveAdvancedFilters && (
-                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-blue-500/30 text-xs font-semibold">
+                      <span className="ml-1 px-1.5 py-0.5 rounded-full bg-info/30 text-xs font-semibold">
                         {[statusFilter !== 'all', brandFilter !== 'all', minAmount || maxAmount, dateRangeFilter !== 'all'].filter(Boolean).length}
                       </span>
                     )}
@@ -759,16 +759,16 @@ const CreatorContracts = () => {
                   >
                     <SelectTrigger className={cn(
                       "w-full sm:w-[180px]",
-                      "bg-white/8 text-white border-white/15",
-                      "hover:bg-white/12 focus:ring-2 focus:ring-blue-500/50",
+                      "bg-secondary/8 text-foreground border-border",
+                      "hover:bg-secondary/12 focus:ring-2 focus:ring-blue-500/50",
                       "h-9 text-sm"
                     )}>
                       <div className="flex items-center gap-2">
-                        <ArrowUpDown className="w-4 h-4 text-white/60" />
+                        <ArrowUpDown className="w-4 h-4 text-foreground/60" />
                         <SelectValue placeholder="Sort by" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1C1C1E] border-white/10 text-white">
+                    <SelectContent className="bg-card border-border text-foreground">
                       <SelectItem value="newest">Newest First</SelectItem>
                       <SelectItem value="oldest">Oldest First</SelectItem>
                       <SelectItem value="amount_high">Amount: High to Low</SelectItem>
@@ -788,26 +788,26 @@ const CreatorContracts = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className={cn(
-                    "bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6",
+                    "bg-card border border-border rounded-2xl p-4 md:p-6",
                     "space-y-4"
                   )}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-white">Advanced Filters</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Advanced Filters</h3>
                     <div className="flex items-center gap-2">
                       {hasActiveAdvancedFilters && (
                         <button type="button"
                           onClick={clearAdvancedFilters}
-                          className="text-sm text-blue-300 hover:text-blue-200 underline"
+                          className="text-sm text-info hover:text-info underline"
                         >
                           Clear All
                         </button>
                       )}
                       <button type="button"
                         onClick={() => setShowAdvancedFilters(false)}
-                        className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                        className="p-1 hover:bg-secondary/50 rounded-lg transition-colors"
                       >
-                        <X className="w-4 h-4 text-white/60" />
+                        <X className="w-4 h-4 text-foreground/60" />
                       </button>
                     </div>
                   </div>
@@ -815,12 +815,12 @@ const CreatorContracts = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Status Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-2">Status</label>
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">Status</label>
                       <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="bg-white/5 text-white border-white/10 h-9 text-sm">
+                        <SelectTrigger className="bg-card text-foreground border-border h-9 text-sm">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1C1C1E] border-white/10 text-white">
+                        <SelectContent className="bg-card border-border text-foreground">
                           <SelectItem value="all">All Statuses</SelectItem>
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="sent">Sent</SelectItem>
@@ -835,12 +835,12 @@ const CreatorContracts = () => {
 
                     {/* Brand Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-2">Brand</label>
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">Brand</label>
                       <Select value={brandFilter} onValueChange={setBrandFilter}>
-                        <SelectTrigger className="bg-white/5 text-white border-white/10 h-9 text-sm">
+                        <SelectTrigger className="bg-card text-foreground border-border h-9 text-sm">
                           <SelectValue placeholder="All Brands" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1C1C1E] border-white/10 text-white max-h-[200px]">
+                        <SelectContent className="bg-card border-border text-foreground max-h-[200px]">
                           <SelectItem value="all">All Brands</SelectItem>
                           {uniqueBrands.map(brand => (
                             <SelectItem key={brand} value={brand}>{brand}</SelectItem>
@@ -851,34 +851,34 @@ const CreatorContracts = () => {
 
                     {/* Amount Range */}
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-2">Amount Range (₹)</label>
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">Amount Range (₹)</label>
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
                           placeholder="Min"
                           value={minAmount}
                           onChange={(e) => setMinAmount(e.target.value)}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         />
-                        <span className="text-white/60">-</span>
+                        <span className="text-foreground/60">-</span>
                         <input
                           type="number"
                           placeholder="Max"
                           value={maxAmount}
                           onChange={(e) => setMaxAmount(e.target.value)}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         />
                       </div>
                     </div>
 
                     {/* Date Range Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-white/70 mb-2">Date Range</label>
+                      <label className="block text-sm font-medium text-foreground/70 mb-2">Date Range</label>
                       <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
-                        <SelectTrigger className="bg-white/5 text-white border-white/10 h-9 text-sm">
+                        <SelectTrigger className="bg-card text-foreground border-border h-9 text-sm">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1C1C1E] border-white/10 text-white">
+                        <SelectContent className="bg-card border-border text-foreground">
                           <SelectItem value="all">All Time</SelectItem>
                           <SelectItem value="today">Today</SelectItem>
                           <SelectItem value="this_week">This Week</SelectItem>
@@ -932,7 +932,7 @@ const CreatorContracts = () => {
                         transition={{ ...motionTokens.slide.up.transition, delay: index * 0.05 }}
                         whileHover={{ y: -2 }}
                         whileTap={animations.microTap}
-                        className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
+                        className="relative bg-card backdrop-blur-xl rounded-xl p-3.5 border border-border cursor-pointer transition-all duration-200 hover:bg-secondary/7 hover:border-border"
                         role="button"
                         tabIndex={0}
 	                        aria-label={`Deal: ${deal.brand} - ${statusPill.label}`}
@@ -949,18 +949,18 @@ const CreatorContracts = () => {
 	                      >
 	                        <div className="flex items-center justify-between gap-3">
 	                          <div className="flex-1 min-w-0">
-	                            <h3 className="text-base font-bold text-white truncate">{deal.brand}</h3>
+	                            <h3 className="text-base font-bold text-foreground truncate">{deal.brand}</h3>
 	                          </div>
                           <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
-                            <div className="text-lg font-bold text-white">
+                            <div className="text-lg font-bold text-foreground">
                               ₹{Math.round(deal.value).toLocaleString('en-IN')}
                             </div>
                             <span className={cn(
                               "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
                               daysUntil !== null && daysUntil < 0
-                                ? "bg-red-500/20 text-red-400 border-red-500/30"
+                                ? "bg-destructive/20 text-destructive border-destructive/30"
                                 : daysUntil === 0
-                                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                                  ? "bg-warning/20 text-warning border-warning/30"
                                   : statusPill.color
                             )}>
                               {dueLabel}
@@ -1005,15 +1005,15 @@ const CreatorContracts = () => {
                       />
                     ) : activeFilter === 'action_needed' ? (
                       <div className="space-y-3">
-                        <p className="text-base font-semibold text-white">No deals need action right now</p>
-                        <p className="text-sm text-white/60">When a deal needs your attention, it will show up here.</p>
+                        <p className="text-base font-semibold text-foreground">No deals need action right now</p>
+                        <p className="text-sm text-foreground/60">When a deal needs your attention, it will show up here.</p>
                         <button type="button"
                           type="button"
                           onClick={() => {
                             triggerHaptic(HapticPatterns.light);
                             setActiveFilter('all');
                           }}
-                          className="text-sm font-medium text-blue-300 hover:text-blue-200 underline"
+                          className="text-sm font-medium text-info hover:text-info underline"
                         >
                           View all deals
                         </button>

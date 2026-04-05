@@ -272,9 +272,9 @@ export default function DealDeliveryDetailsPage() {
 
   // Force readable input contrast across webviews/browsers where input backgrounds may be normalized to white.
   const fieldClass =
-    "h-11 sm:h-12 !bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-blue-400 focus:ring-2 focus:ring-blue-400/20";
+    "h-11 sm:h-12 !bg-white !text-neutral-900 !caret-neutral-900 border-border placeholder:!text-neutral-500 focus:!border-info focus:ring-2 focus:ring-blue-400/20";
   const textAreaFieldClass =
-    "!bg-white !text-neutral-900 !caret-neutral-900 border-white/20 placeholder:!text-neutral-500 focus:!border-blue-400 focus:ring-2 focus:ring-blue-400/20";
+    "!bg-white !text-neutral-900 !caret-neutral-900 border-border placeholder:!text-neutral-500 focus:!border-info focus:ring-2 focus:ring-blue-400/20";
 
   if (isSubmitted) {
     return (
@@ -299,9 +299,9 @@ export default function DealDeliveryDetailsPage() {
       subtitle="Only needed for product deals."
       showBackButton
     >
-      <div className="bg-white/6 border-b border-white/12">
-        <div className="max-w-xl mx-auto px-4 py-3 flex items-start gap-2 text-xs font-semibold text-white/80">
-          <span className="mt-0.5 text-white/70" aria-hidden>
+      <div className="bg-secondary/6 border-b border-border/12">
+        <div className="max-w-xl mx-auto px-4 py-3 flex items-start gap-2 text-xs font-semibold text-foreground/80">
+          <span className="mt-0.5 text-foreground/70" aria-hidden>
             <Lock className="h-4 w-4" />
           </span>
           Your address is shared only after contract signing and only with this brand.
@@ -320,7 +320,7 @@ export default function DealDeliveryDetailsPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6 pb-24">
           <div className="space-y-2">
-            <Label htmlFor="delivery_name" className="text-white/70">Your name</Label>
+            <Label htmlFor="delivery_name" className="text-foreground/70">Your name</Label>
             <Input
               id="delivery_name"
               value={deliveryName}
@@ -340,7 +340,7 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="delivery_phone" className="text-white/70">Phone number</Label>
+            <Label htmlFor="delivery_phone" className="text-foreground/70">Phone number</Label>
             <Input
               id="delivery_phone"
               type="tel"
@@ -356,7 +356,7 @@ export default function DealDeliveryDetailsPage() {
               required
               autoComplete="tel"
             />
-            <p className="text-[11px] leading-tight text-white/55">
+            <p className="text-[11px] leading-tight text-foreground/55">
               Used only for delivery updates.
             </p>
             {touched.phone && !phoneValid && deliveryPhone.length > 0 && (
@@ -365,10 +365,10 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-4">
-            <Label className="text-white/70">Delivery address</Label>
+            <Label className="text-foreground/70">Delivery address</Label>
 
             <div className="space-y-2">
-              <Label className="text-xs text-white/55">Address line 1</Label>
+              <Label className="text-xs text-foreground/55">Address line 1</Label>
               <Input
                 value={addressLine}
                 onChange={(e) => setAddressLine(e.target.value)}
@@ -386,7 +386,7 @@ export default function DealDeliveryDetailsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-white/55">Address line 2 (optional)</Label>
+              <Label className="text-xs text-foreground/55">Address line 2 (optional)</Label>
               <Input
                 value={addressLine2}
                 onChange={(e) => setAddressLine2(e.target.value)}
@@ -397,7 +397,7 @@ export default function DealDeliveryDetailsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs text-white/55">City</Label>
+                <Label className="text-xs text-foreground/55">City</Label>
                 <Input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -414,7 +414,7 @@ export default function DealDeliveryDetailsPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label className="text-xs text-white/55">Pincode</Label>
+                <Label className="text-xs text-foreground/55">Pincode</Label>
                 <Input
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
@@ -434,7 +434,7 @@ export default function DealDeliveryDetailsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs text-white/55">State</Label>
+              <Label className="text-xs text-foreground/55">State</Label>
               <Input
                 value={state}
                 onChange={(e) => setState(e.target.value)}
@@ -453,7 +453,7 @@ export default function DealDeliveryDetailsPage() {
           </div>
 
           <div className="space-y-2 pt-2">
-            <Label htmlFor="delivery_notes" className="text-sm text-white/70">Delivery notes (optional)</Label>
+            <Label htmlFor="delivery_notes" className="text-sm text-foreground/70">Delivery notes (optional)</Label>
             <Textarea
               id="delivery_notes"
               value={deliveryNotes}
@@ -464,9 +464,9 @@ export default function DealDeliveryDetailsPage() {
             />
           </div>
 
-          <div className="sticky bottom-0 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14]/95 to-transparent backdrop-blur border-t border-white/10 space-y-3">
+          <div className="sticky bottom-0 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14]/95 to-transparent backdrop-blur border-t border-border space-y-3">
             {submitError && (
-              <div className="rounded-xl border border-red-400/40 bg-red-500/10 text-red-200 text-sm px-3 py-2">
+              <div className="rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-sm px-3 py-2">
                 {submitError}
               </div>
             )}
@@ -476,7 +476,7 @@ export default function DealDeliveryDetailsPage() {
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="h-4 w-4 border-2 border-border border-t-white rounded-full animate-spin" />
                   Saving address...
                 </span>
               ) : (

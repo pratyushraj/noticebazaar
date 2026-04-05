@@ -209,7 +209,7 @@ const DELIVERABLE_OPTIONS = [
   { label: 'Review', value: 'Review Post', icon: <span className="mr-1.5">⭐</span> },
   { label: 'Giveaway', value: 'Giveaway', icon: <span className="mr-1.5">🎁</span> },
   { label: 'YouTube', value: 'YouTube Video', icon: <span className="mr-1.5">▶</span> },
-  { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-slate-400 inline-block" /> },
+  { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-muted-foreground inline-block" /> },
 ];
 
 const PRODUCT_CATEGORY_OPTIONS = [
@@ -736,8 +736,8 @@ const CollabLinkLanding = () => {
     'Notifying creator...',
   ];
 
-  const typeSectionTitle = 'bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent';
-  const typeLabel = 'bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent';
+  const typeSectionTitle = 'bg-gradient-to-r from-background to-slate-700 bg-clip-text text-transparent';
+  const typeLabel = 'bg-gradient-to-r from-background to-slate-600 bg-clip-text text-transparent';
   const ctaStepStatus = !hasStartedOffer ? 'create' : currentStep < 2 ? 'next' : 'send';
   const ctaLabel = ctaStepStatus === 'create' ? 'Choose a Service' : ctaStepStatus === 'next' ? 'Continue to Offer' : 'Send Offer';
   const ctaIcon = ctaStepStatus === 'send'
@@ -746,12 +746,12 @@ const CollabLinkLanding = () => {
   const ctaHelper = ctaStepStatus === 'send'
     ? 'Creator will be notified instantly'
     : 'Takes less than 1 minute';
-  const inputClass = 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-teal-400 transition-all rounded-xl';
+  const inputClass = 'bg-card border-border text-muted-foreground placeholder:text-muted-foreground focus:bg-card focus:border-teal-400 transition-all rounded-xl';
 
   const isContactReady = isStep2Ready;
   const isCoreReady = isStep1Ready && isStep2Ready;
 
-  const typePageTitle = 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent';
+  const typePageTitle = 'bg-gradient-to-r from-background via-background to-slate-900 bg-clip-text text-transparent';
 
   useEffect(() => {
     if (!showSubmittingTrust) {
@@ -1481,9 +1481,9 @@ const CollabLinkLanding = () => {
     }
   };
 
-  const elevationLevel1 = 'bg-white/[0.05] border border-white/10 shadow-none';
-  const elevationLevel2 = 'bg-white/[0.08] border border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
-  const elevationLevel3 = 'bg-white/[0.12] border border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
+  const elevationLevel1 = 'bg-secondary/[0.05] border border-border shadow-none';
+  const elevationLevel2 = 'bg-secondary/[0.08] border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
+  const elevationLevel3 = 'bg-secondary/[0.12] border border-border shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
 
 
 
@@ -1495,8 +1495,8 @@ const CollabLinkLanding = () => {
         <Loader2 className="h-10 w-10 animate-spin text-teal-600 mb-6" />
         {isWarmingUp && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 max-w-xs">
-            <h3 className="text-white font-bold text-lg mb-2">Waking up server...</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <h3 className="text-foreground font-bold text-lg mb-2">Waking up server...</h3>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Our secure server is spinning up to verify this creator's profile. This usually takes 30-40 seconds on the first load.
             </p>
           </div>
@@ -1509,11 +1509,11 @@ const CollabLinkLanding = () => {
     const isNotFoundError = /not found/i.test(error);
     const errorTitle = isNotFoundError ? 'Creator Not Found' : 'Unable to Load Profile';
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-black text-foreground flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-8">
+          <div className="bg-secondary/50 backdrop-blur-md border border-border rounded-lg p-8">
             <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
-            <p className="text-slate-400 mb-6 leading-relaxed">
+            <p className="text-muted-foreground mb-6 leading-relaxed">
               {error.toLowerCase().includes('timeout')
                 ? "The profile server is taking unusually long to wake up. This is common on the first load—clicking 'Try Again' usually works immediately."
                 : error}
@@ -1522,7 +1522,7 @@ const CollabLinkLanding = () => {
               <Button
                 onClick={() => navigate('/')}
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="bg-secondary/50 border-border text-foreground hover:bg-secondary/20"
               >
                 Go to Homepage
               </Button>
@@ -1532,7 +1532,7 @@ const CollabLinkLanding = () => {
                   setLoading(true);
                   window.location.reload();
                 }}
-                className="bg-white text-black hover:bg-slate-200"
+                className="bg-card text-black hover:bg-background"
               >
                 Try Again
               </Button>
@@ -1988,53 +1988,53 @@ const CollabLinkLanding = () => {
           canonicalUrl={`https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}/success`}
         />
 
-        <div className="light min-h-screen bg-[linear-gradient(180deg,#f7fafc_0%,#eef8f5_100%)] text-slate-900">
+        <div className="light min-h-screen bg-[linear-gradient(180deg,#f7fafc_0%,#eef8f5_100%)] text-muted-foreground">
           <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-12 sm:px-8">
-            <div className="rounded-[32px] border border-emerald-200/80 bg-white/95 p-6 shadow-[0_24px_80px_rgba(15,118,110,0.12)] sm:p-10">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+            <div className="rounded-[32px] border border-primary/80 bg-secondary/95 p-6 shadow-[0_24px_80px_rgba(15,118,110,0.12)] sm:p-10">
+              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
 
-              <p className="mb-3 text-[11px] font-black uppercase tracking-[0.28em] text-emerald-700">Offer Sent</p>
-              <h1 className="mb-3 text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">
+              <p className="mb-3 text-[11px] font-black uppercase tracking-[0.28em] text-primary">Offer Sent</p>
+              <h1 className="mb-3 text-4xl font-black tracking-tight text-muted-foreground sm:text-5xl">
                 {creatorName} has your offer.
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
                 {successBrand ? `${successBrand}'s` : 'Your'} offer has been delivered. The creator can now review it, accept it, counter it, or decline it.
               </p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Creator</p>
-                  <p className="mt-2 text-lg font-black text-slate-900">{creatorName}</p>
-                  <p className="text-sm text-slate-500">{creatorHandle || creator.category || 'Brand collaborations'}</p>
+                <div className="rounded-3xl border border-border bg-background p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">Creator</p>
+                  <p className="mt-2 text-lg font-black text-muted-foreground">{creatorName}</p>
+                  <p className="text-sm text-muted-foreground">{creatorHandle || creator.category || 'Brand collaborations'}</p>
                 </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Offer Type</p>
-                  <p className="mt-2 text-lg font-black capitalize text-slate-900">{successType || collabType}</p>
-                  <p className="text-sm text-slate-500">Shared through Creator Armour</p>
+                <div className="rounded-3xl border border-border bg-background p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">Offer Type</p>
+                  <p className="mt-2 text-lg font-black capitalize text-muted-foreground">{successType || collabType}</p>
+                  <p className="text-sm text-muted-foreground">Shared through Creator Armour</p>
                 </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">Deadline</p>
-                  <p className="mt-2 text-lg font-black text-slate-900">{successDeadline || 'Shared with creator'}</p>
-                  <p className="text-sm text-slate-500">Legal details come later if they are interested</p>
+                <div className="rounded-3xl border border-border bg-background p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">Deadline</p>
+                  <p className="mt-2 text-lg font-black text-muted-foreground">{successDeadline || 'Shared with creator'}</p>
+                  <p className="text-sm text-muted-foreground">Legal details come later if they are interested</p>
                 </div>
               </div>
 
               <div className="mt-8 rounded-[28px] border border-teal-100 bg-teal-50/70 p-5">
                 <p className="text-[11px] font-black uppercase tracking-[0.24em] text-teal-700">What Happens Next</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-white px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">1. Creator reviews</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">They see your brief, budget or product value, and timeline.</p>
+                  <div className="rounded-2xl bg-card px-4 py-3">
+                    <p className="text-sm font-black text-muted-foreground">1. Creator reviews</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">They see your brief, budget or product value, and timeline.</p>
                   </div>
-                  <div className="rounded-2xl bg-white px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">2. They respond</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">They can accept, counter, or decline based on fit and availability.</p>
+                  <div className="rounded-2xl bg-card px-4 py-3">
+                    <p className="text-sm font-black text-muted-foreground">2. They respond</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">They can accept, counter, or decline based on fit and availability.</p>
                   </div>
-                  <div className="rounded-2xl bg-white px-4 py-3">
-                    <p className="text-sm font-black text-slate-900">3. Details follow</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">Contract, shipping, and payment details are collected only after interest is confirmed.</p>
+                  <div className="rounded-2xl bg-card px-4 py-3">
+                    <p className="text-sm font-black text-muted-foreground">3. Details follow</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">Contract, shipping, and payment details are collected only after interest is confirmed.</p>
                   </div>
                 </div>
               </div>
@@ -2042,14 +2042,14 @@ const CollabLinkLanding = () => {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
                   onClick={() => navigate(`/${username}`)}
-                  className="h-12 rounded-full bg-teal-600 px-6 text-sm font-black text-white hover:bg-teal-700"
+                  className="h-12 rounded-full bg-teal-600 px-6 text-sm font-black text-foreground hover:bg-teal-700"
                 >
                   Send Another Offer
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => navigate('/')}
-                  className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-slate-700 hover:bg-slate-50"
+                  className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-muted-foreground hover:bg-background"
                 >
                   Go to Homepage
                 </Button>
@@ -2092,18 +2092,18 @@ const CollabLinkLanding = () => {
 
       {/* NOTE: `overflow-x-clip` breaks `position: sticky` in Chromium when applied on an ancestor.
           Keep it on mobile to avoid horizontal scroll, but disable it on desktop so the right panel can stick. */}
-      <div className="light min-h-screen overflow-x-hidden selection:bg-teal-500/30 text-slate-900 relative" style={{ backgroundColor: "#F7F9FB" }}>
+      <div className="light min-h-screen overflow-x-hidden selection:bg-teal-500/30 text-muted-foreground relative" style={{ backgroundColor: "#F7F9FB" }}>
         <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
-        <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-info/10 blur-3xl" />
         {isOwner && (
-          <div className="bg-[#004D40] text-emerald-50 px-4 py-2 flex flex-wrap items-center justify-between gap-y-2 sticky top-0 z-[100] shadow-lg border-b border-emerald-400/20 backdrop-blur-md bg-opacity-90">
+          <div className="bg-[#004D40] text-primary px-4 py-2 flex flex-wrap items-center justify-between gap-y-2 sticky top-0 z-[100] shadow-lg border-b border-primary/20 backdrop-blur-md bg-opacity-90">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="bg-emerald-400/20 p-1.5 rounded-full">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <div className="bg-primary/20 p-1.5 rounded-full">
+                <ShieldCheck className="w-4 h-4 text-primary" />
               </div>
               <div className="hidden sm:block">
                 <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">Owner View</p>
-                <p className="text-[10px] text-emerald-300/80 font-medium">
+                <p className="text-[10px] text-primary/80 font-medium">
                   {previewAsBrand ? 'Brand preview mode is active.' : 'You are viewing your own collab link as brands see it.'}
                 </p>
               </div>
@@ -2116,8 +2116,8 @@ const CollabLinkLanding = () => {
                 <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${profileSaveStatus === 'error'
                   ? 'bg-rose-100 text-rose-700 border border-rose-200'
                   : profileSaveStatus === 'saving'
-                    ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                    : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                    ? 'bg-warning text-warning border border-warning'
+                    : 'bg-primary text-primary border border-primary'
                   }`}>
                   {profileSaveStatus === 'saving' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
                   {profileSaveStatusLabel}
@@ -2136,7 +2136,7 @@ const CollabLinkLanding = () => {
                 }}
                 size="sm"
                 variant="outline"
-                className={`${previewAsBrand ? 'bg-white text-slate-900' : 'bg-white/10 text-white'} border-white/30 transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
+                className={`${previewAsBrand ? 'bg-card text-muted-foreground' : 'bg-secondary/50 text-foreground'} border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
               >
                 {previewAsBrand ? 'Back to Owner View' : 'Preview as Brand'}
               </Button>
@@ -2145,7 +2145,7 @@ const CollabLinkLanding = () => {
                 size="sm"
                 disabled={signOutMutation.isPending}
                 variant="outline"
-                className="bg-white/10 text-white hover:bg-white/20 border-white/30 transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
+                className="bg-secondary/50 text-foreground hover:bg-secondary/20 border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
               >
                 {signOutMutation.isPending ? (
                   <>
@@ -2160,7 +2160,7 @@ const CollabLinkLanding = () => {
                 onClick={handleEditModeToggle}
                 size="sm"
                 disabled={previewAsBrand}
-                className={`${editMode ? 'bg-white text-emerald-900 hover:bg-slate-100' : 'bg-emerald-500 text-white hover:bg-emerald-400'} border-none transition-all text-[11px] font-bold h-7 px-4 rounded-full shadow-sm`}
+                className={`${editMode ? 'bg-card text-primary hover:bg-background' : 'bg-primary text-foreground hover:bg-primary'} border-none transition-all text-[11px] font-bold h-7 px-4 rounded-full shadow-sm`}
               >
                 {editMode ? 'Finish Editing' : 'Edit Profile'}
               </Button>
@@ -2175,11 +2175,11 @@ const CollabLinkLanding = () => {
 
               {/* Header - Hero */}
               <div ref={headerSectionRef} className="mb-5 pt-2 lg:mb-0 lg:pt-0 relative">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-teal-500/8 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
                   <div className="relative shrink-0">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg mt-0.5">
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-border shadow-lg mt-0.5">
                       {creator.profile_photo && !profilePhotoError ? (
                         <img
                           src={creator.profile_photo}
@@ -2193,20 +2193,20 @@ const CollabLinkLanding = () => {
                         </div>
                       )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-50" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full border-2 border-slate-50" />
                   </div>
 
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1.5">
                       {editMode ? (
                         <Input
-                          className="h-7 text-[17px] font-black text-slate-900 w-auto min-w-[120px] px-2 bg-white/50 border-slate-300 border-dashed focus:border-teal-500 transition-all"
+                          className="h-7 text-[17px] font-black text-muted-foreground w-auto min-w-[120px] px-2 bg-card0 border-slate-300 border-dashed focus:border-teal-500 transition-all"
                           defaultValue={creator.name}
                           onBlur={(e) => handleInlineProfileUpdate('name', e.target.value)}
                           placeholder="Your Name"
                         />
                       ) : (
-                        <h2 className="text-[17px] font-black text-slate-900 leading-tight">{creator.name}</h2>
+                        <h2 className="text-[17px] font-black text-muted-foreground leading-tight">{creator.name}</h2>
                       )}
                       <div className="flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
                         <CheckCircle2 className="h-3 w-3 text-teal-600" />
@@ -2214,21 +2214,21 @@ const CollabLinkLanding = () => {
                       </div>
                       {/* Trust badges for brands */}
                       <div className="hidden sm:flex items-center gap-1.5 ml-1">
-                        <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                          <FileCheck className="h-3 w-3 text-emerald-600" />
-                          <span className="text-[9px] font-bold text-emerald-700 uppercase">Contract-backed</span>
+                        <div className="flex items-center gap-1 bg-primary border border-primary rounded-full px-2 py-0.5">
+                          <FileCheck className="h-3 w-3 text-primary" />
+                          <span className="text-[9px] font-bold text-primary uppercase">Contract-backed</span>
                         </div>
-                        <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2 py-0.5">
-                          <ShieldCheck className="h-3 w-3 text-blue-600" />
-                          <span className="text-[9px] font-bold text-blue-700 uppercase">Pay after approval</span>
+                        <div className="flex items-center gap-1 bg-info border border-blue-200 rounded-full px-2 py-0.5">
+                          <ShieldCheck className="h-3 w-3 text-info" />
+                          <span className="text-[9px] font-bold text-info uppercase">Pay after approval</span>
                         </div>
                       </div>
                     </div>
                     {editMode ? (
                       <div className="mt-1 flex gap-2 items-center">
-                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Category:</span>
+                        <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">Category:</span>
                         <Input
-                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-white/50 border-slate-300 border-dashed w-32"
+                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-card0 border-slate-300 border-dashed w-32"
                           defaultValue={creator.category || ''}
                           onBlur={(e) => handleInlineProfileUpdate('creator_category', e.target.value)}
                           placeholder="e.g. Lifestyle"
@@ -2245,29 +2245,29 @@ const CollabLinkLanding = () => {
                           @{normalizedHandle}
                         </a>
 
-	                        <div className="mt-0.5 flex flex-col gap-0.5 text-[11px] font-medium text-slate-500 leading-snug">
+	                        <div className="mt-0.5 flex flex-col gap-0.5 text-[11px] font-medium text-muted-foreground leading-snug">
 	                          <p>
 	                            {formatFollowers(primaryFollowers)} followers
 	                            {avgReelViews ? (
-	                              <>{' '}<span className="text-slate-300">•</span>{' '}{Math.round(Number(avgReelViews) * 0.8 / 1000)}K–{Math.round(Number(avgReelViews) * 1.6 / 1000)}K avg views</>
+	                              <>{' '}<span className="text-muted-foreground">•</span>{' '}{Math.round(Number(avgReelViews) * 0.8 / 1000)}K–{Math.round(Number(avgReelViews) * 1.6 / 1000)}K avg views</>
 	                            ) : null}
 	                          </p>
 	                          <p>
 	                            {Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || '—'}% reliability
 	                            {!isDemoAnalytics.avgResponseTimeHours && (
-	                              <>{' '}<span className="text-slate-300">•</span>{' '}replies in {displayResponseLine.replace('~', '')}</>
+	                              <>{' '}<span className="text-muted-foreground">•</span>{' '}replies in {displayResponseLine.replace('~', '')}</>
 	                            )}
 	                          </p>
 	                          <p>
-	                            {creator.category || creator.content_niches?.slice(0, 2).join(' / ') || 'Creator'} <span className="text-slate-300">•</span>{' '}
+	                            {creator.category || creator.content_niches?.slice(0, 2).join(' / ') || 'Creator'} <span className="text-muted-foreground">•</span>{' '}
 	                            {audienceRegionLabel || 'India'}
 	                          </p>
 	                        </div>
 	                        {!isDemoAnalytics.brandsContactedThisWeek && !isDemoAnalytics.avgResponseTimeHours && !isDemoAnalytics.avgCampaignReach ? (
-	                          <div className="mt-2 flex flex-col gap-1.5 text-[10.5px] font-semibold text-slate-500">
+	                          <div className="mt-2 flex flex-col gap-1.5 text-[10.5px] font-semibold text-muted-foreground">
 	                            {!isDemoAnalytics.brandsContactedThisWeek && (
 	                              <div className="flex items-center gap-2">
-	                                <Zap className="h-3.5 w-3.5 text-amber-600" />
+	                                <Zap className="h-3.5 w-3.5 text-warning" />
 	                                <span title={isDemoAnalytics.brandsContactedThisWeek ? estimatedAnalyticsTooltip : undefined}>
 	                                  {displayAnalytics.brandsContactedThisWeek} brands contacted this creator this week
 	                                </span>
@@ -2283,7 +2283,7 @@ const CollabLinkLanding = () => {
 	                            )}
 	                            {!isDemoAnalytics.avgCampaignReach && (
 	                              <div className="flex items-center gap-2">
-	                                <TrendingUp className="h-3.5 w-3.5 text-slate-600" />
+	                                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
 	                                <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
 	                                  Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
 	                                </span>
@@ -2297,21 +2297,21 @@ const CollabLinkLanding = () => {
                 </div>
 
                 <div className="max-w-xl relative">
-                  <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-slate-900 mb-2.5 leading-[1.06]">
+                  <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-muted-foreground mb-2.5 leading-[1.06]">
                     Book {creatorName.split(' ')[0]} for brand collaborations
                   </h1>
-                  <p className="text-[14px] lg:text-[18px] font-medium text-slate-500 leading-relaxed max-w-xl">
+                  <p className="text-[14px] lg:text-[18px] font-medium text-muted-foreground leading-relaxed max-w-xl">
                     Choose a ready-made service and send an offer in under 1 minute.
                   </p>
                   <div className="mt-4 flex flex-col items-start gap-2">
                     <Button
                       type="button"
                       onClick={() => document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                      className="h-12 rounded-2xl bg-[#0FA47F] px-5 text-[11px] font-black uppercase tracking-[0.16em] text-white shadow-[0_10px_26px_rgba(15,164,127,0.20)] hover:bg-emerald-600"
+                      className="h-12 rounded-2xl bg-[#0FA47F] px-5 text-[11px] font-black uppercase tracking-[0.16em] text-foreground shadow-[0_10px_26px_rgba(15,164,127,0.20)] hover:bg-primary"
                     >
                       Choose a Service
                     </Button>
-                    <p className="text-[12px] font-semibold text-slate-500">
+                    <p className="text-[12px] font-semibold text-muted-foreground">
                       No cold DM needed. Creator is notified instantly.
                     </p>
                   </div>
@@ -2319,24 +2319,24 @@ const CollabLinkLanding = () => {
               </div>
 
               {isOwner && editMode && !previewAsBrand && (
-                <div className="mb-6 md:mb-8 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
+                <div className="mb-6 md:mb-8 rounded-2xl border border-primary bg-primary/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-emerald-700">Setup Checklist</p>
-                    <span className="text-[11px] font-black text-emerald-700">{setupCompletedCount}/{effectiveSetupChecklist.length} Complete</span>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-primary">Setup Checklist</p>
+                    <span className="text-[11px] font-black text-primary">{setupCompletedCount}/{effectiveSetupChecklist.length} Complete</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {effectiveSetupChecklist.map((item) => (
                       <div
                         key={item.key}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${item.complete
-                          ? 'border-emerald-200 bg-white text-emerald-700'
-                          : 'border-slate-200 bg-white text-slate-500'
+                          ? 'border-primary bg-card text-primary'
+                          : 'border-border bg-card text-muted-foreground'
                           }`}
                       >
                         {item.complete ? (
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                         ) : (
-                          <Clock className="h-4 w-4 shrink-0 text-slate-400" />
+                          <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                         )}
                         <span className="text-[12px] font-bold">{item.label}</span>
                       </div>
@@ -2354,14 +2354,14 @@ const CollabLinkLanding = () => {
                   onValueChange={setOpenAccordionValue}
                 >
                 <AccordionItem value="item-1" className="rounded-2xl overflow-hidden border-b-0" style={{ border: "1.5px solid #DDE8E6", background: "#FDFFFE", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
-                  <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-slate-100 hover:no-underline">
+                  <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-border hover:no-underline">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
                         <TrendingUp className="w-4 h-4 text-teal-600" />
                       </div>
                       <div className="text-left">
-                        <h3 className="text-[16px] font-black text-slate-900 leading-tight">Why Brands Book</h3>
-                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
+                        <h3 className="text-[16px] font-black text-muted-foreground leading-tight">Why Brands Book</h3>
+                        <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
                       </div>
                     </div>
                     {audienceRegionLabel && (
@@ -2375,63 +2375,63 @@ const CollabLinkLanding = () => {
                     <div className="space-y-8">
                     {/* 1. Creator Insights Grid */}
                     <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Performance</h4>
+                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Creator Performance</h4>
                       <div className="grid grid-cols-2 gap-2.5">
                         {/* Avg Reel Views */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Engagement</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Engagement</p>
                           {editMode ? (
                             <Input
                               type="number"
-                              className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
+                              className="h-7 text-[16px] font-black text-muted-foreground px-1 bg-background border-border border-dashed"
                               defaultValue={creator.avg_reel_views || ''}
                               onBlur={(e) => handleInlineProfileUpdate('avg_reel_views', Number(e.target.value))}
                               placeholder="0"
                             />
                           ) : avgReelViews ? (
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">
+                            <p className="text-[18px] font-black text-muted-foreground leading-tight">
                               {Number(avgReelViews) >= 1000 ? `${Math.round(Number(avgReelViews) / 1000)}K+` : avgReelViews}
                             </p>
                           ) : (
-                            <p className="text-[18px] font-black text-slate-300">—</p>
+                            <p className="text-[18px] font-black text-muted-foreground">—</p>
                           )}
                         </div>
 
                         {/* Response Time */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Response Time</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Response Time</p>
                           {(avgResponseHours && avgResponseHours > 0) ? (
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(avgResponseHours)}h`}</p>
+                            <p className="text-[18px] font-black text-muted-foreground leading-tight">{`${Math.round(avgResponseHours)}h`}</p>
                           ) : (
-                            <p className="text-[18px] font-black text-slate-300">—</p>
+                            <p className="text-[18px] font-black text-muted-foreground">—</p>
                           )}
                         </div>
 
                         {/* Brands Worked */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Brands Worked</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Brands Worked</p>
                           {editMode ? (
                             <Input
                               type="number"
-                              className="h-7 text-[16px] font-black text-slate-900 px-1 bg-slate-50 border-slate-200 border-dashed"
+                              className="h-7 text-[16px] font-black text-muted-foreground px-1 bg-background border-border border-dashed"
                               defaultValue={creator.past_brand_count || ''}
                               onBlur={(e) => handleInlineProfileUpdate('past_brand_count', Number(e.target.value))}
                               placeholder="0"
                             />
                           ) : (creator.trust_stats?.brands_count != null && creator.trust_stats.brands_count > 0) ? (
-                            <p className="text-[18px] font-black text-emerald-600 leading-tight">{creator.trust_stats.brands_count}</p>
+                            <p className="text-[18px] font-black text-primary leading-tight">{creator.trust_stats.brands_count}</p>
                           ) : (
-                            <p className="text-[18px] font-black text-slate-400 leading-tight">New</p>
+                            <p className="text-[18px] font-black text-muted-foreground leading-tight">New</p>
                           )}
                         </div>
 
                         {/* Delivery success / Completion Rate */}
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Delivery success</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Delivery success</p>
                           {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
-                            <p className="text-[18px] font-black text-slate-900 leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
+                            <p className="text-[18px] font-black text-muted-foreground leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
                           ) : (
-                            <p className="text-[18px] font-black text-slate-300">—</p>
+                            <p className="text-[18px] font-black text-muted-foreground">—</p>
                           )}
                         </div>
                       </div>
@@ -2439,37 +2439,37 @@ const CollabLinkLanding = () => {
 
                     {/* 2. Creator Logistics Grid */}
                     <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Creator Logistics</h4>
+                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Creator Logistics</h4>
                       <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Availability</p>
-                          <p className="text-[13px] font-black text-emerald-600 leading-tight">Open this month</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Availability</p>
+                          <p className="text-[13px] font-black text-primary leading-tight">Open this month</p>
                         </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Base City</p>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{audienceRegionLabel || 'Global'}</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Base City</p>
+                          <p className="text-[13px] font-black text-muted-foreground leading-tight truncate">{audienceRegionLabel || 'Global'}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* 3. Typical Collab Rate (Anchor) */}
                     <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Typical Collab Rate</h4>
-                      <div className="bg-white p-4 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3">
+                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Typical Collab Rate</h4>
+                      <div className="bg-card p-4 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3">
                         <div>
                           {editMode ? (
                             <div className="flex items-center gap-2">
-                              <span className="text-[14px] font-black text-slate-900 leading-tight">₹</span>
+                              <span className="text-[14px] font-black text-muted-foreground leading-tight">₹</span>
                               <Input
                                 type="number"
-                                className="h-8 text-[16px] font-black text-slate-900 px-2 bg-slate-50 border-slate-200 border-dashed w-32"
+                                className="h-8 text-[16px] font-black text-muted-foreground px-2 bg-background border-border border-dashed w-32"
                                 defaultValue={creator.suggested_reel_rate || ''}
                                 onBlur={(e) => handleInlineProfileUpdate('suggested_reel_rate', Number(e.target.value))}
                                 placeholder="Base Rate"
                               />
                             </div>
                           ) : (
-                            <p className="text-[20px] font-black text-slate-900 leading-tight">
+                            <p className="text-[20px] font-black text-muted-foreground leading-tight">
                               {(() => {
                                 const reelRate = creator.suggested_reel_rate;
                                 const paidMin = creator.suggested_paid_range_min;
@@ -2486,18 +2486,18 @@ const CollabLinkLanding = () => {
                           )}
                         </div>
                         <div className="pt-3 border-t border-[#EEF2F5]">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Includes</p>
+                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">Includes</p>
                           <ul className="space-y-1.5">
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
-                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                            <li className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
                               1 Reel
                             </li>
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
-                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                            <li className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
                               Stories usually included
                             </li>
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-slate-700">
-                              <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.5} />
+                            <li className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground">
+                              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
                               Delivery: 3–5 days
                             </li>
                           </ul>
@@ -2510,28 +2510,28 @@ const CollabLinkLanding = () => {
                     {/* 4. Audience Insights Grid */}
                     {showAudienceSections && (
                     <div className="space-y-3 pb-4">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Audience Snapshot</h4>
+                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Audience Snapshot</h4>
                       <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Core Geo</p>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight truncate">{audienceCities[0] || 'India'}</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Core Geo</p>
+                          <p className="text-[13px] font-black text-muted-foreground leading-tight truncate">{audienceCities[0] || 'India'}</p>
                         </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Age Group</p>
-                          <p className="text-[13px] font-black text-slate-900 leading-tight">{creator.audience_age_range || '18–34'}</p>
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Age Group</p>
+                          <p className="text-[13px] font-black text-muted-foreground leading-tight">{creator.audience_age_range || '18–34'}</p>
                         </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Reel Views</p>
-                          <p className="text-[15px] font-black text-slate-900 leading-tight">
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Reel Views</p>
+                          <p className="text-[15px] font-black text-muted-foreground leading-tight">
                             {avgReelViews
                               ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
                               : '3K–10K'
                             }
                           </p>
                         </div>
-                        <div className="bg-white p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Story Reach</p>
-                          <p className="text-[15px] font-black text-slate-900 leading-tight">
+                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Story Reach</p>
+                          <p className="text-[15px] font-black text-muted-foreground leading-tight">
                             {`${Math.round(primaryFollowers * 0.04 / 1000)}K–${Math.round(primaryFollowers * 0.09 / 1000)}K`}
                           </p>
                         </div>
@@ -2550,19 +2550,19 @@ const CollabLinkLanding = () => {
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                    <span className="text-[15px] font-black text-slate-800 tracking-tight">Choose how you'd like to collaborate</span>
+                    <Sparkles className="h-4 w-4 text-warning" />
+                    <span className="text-[15px] font-black text-muted-foreground tracking-tight">Choose how you'd like to collaborate</span>
                   </div>
                   {isOwner && !previewAsBrand && (
-                    <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                      Tip: Use <span className="text-slate-700 font-black">Manage</span> to edit service name, deliverables, price, and mark one as Most Popular.
+                    <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
+                      Tip: Use <span className="text-muted-foreground font-black">Manage</span> to edit service name, deliverables, price, and mark one as Most Popular.
                     </p>
                   )}
                 </div>
                 {isOwner && (
                   <button type="button"
                     onClick={() => setIsEditingTemplates(!isEditingTemplates)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200 transition-all text-slate-600 active:scale-95"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/80 hover:bg-background transition-all text-muted-foreground active:scale-95"
                   >
                     <Edit className="h-3 w-3" />
                     <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
@@ -2585,7 +2585,7 @@ const CollabLinkLanding = () => {
 	                    >
                       {template.isPopular && (
 	                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                          <div className="bg-gradient-to-r from-amber-200 via-amber-300 to-orange-300 text-[#3D2602] text-[10px] font-black px-4 py-1.5 rounded-full border border-amber-200 shadow-[0_20px_44px_rgba(245,158,11,0.55)] uppercase tracking-wider flex items-center gap-1.5 scale-[1.02]">
+                          <div className="bg-gradient-to-r from-amber-200 via-amber-300 to-orange-300 text-[#3D2602] text-[10px] font-black px-4 py-1.5 rounded-full border border-warning shadow-[0_20px_44px_rgba(245,158,11,0.55)] uppercase tracking-wider flex items-center gap-1.5 scale-[1.02]">
                             <Sparkles className="h-3 w-3" />
                             Most Popular
                           </div>
@@ -2593,32 +2593,32 @@ const CollabLinkLanding = () => {
                       )}
 	                      <button type="button"
 	                        onClick={() => handleTemplateSelect(template)}
-		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-amber-300 bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
+		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-warning bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-border bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
 		                      >
 	                        {selectedTemplateId === template.id && (
 	                          <div className="absolute top-3 right-3 z-10">
-	                            <div className="flex items-center gap-1.5 bg-[#0FA47F] text-white px-2.5 py-1 rounded-full shadow-[0_10px_22px_rgba(15,164,127,0.28)] border border-white/20">
+	                            <div className="flex items-center gap-1.5 bg-[#0FA47F] text-foreground px-2.5 py-1 rounded-full shadow-[0_10px_22px_rgba(15,164,127,0.28)] border border-border">
 	                              <Check className="w-3.5 h-3.5" strokeWidth={3} />
 	                              <span className="text-[10px] font-black uppercase tracking-wider">Selected</span>
 	                            </div>
 	                          </div>
 	                        )}
                         <div className="flex items-center justify-between mb-2.5">
-                          <div className={`w-9 h-9 rounded-2xl ${template.isPopular ? 'bg-white/80 border-amber-200' : 'bg-white border-slate-100'} border flex items-center justify-center shadow-sm text-lg`}>
+                          <div className={`w-9 h-9 rounded-2xl ${template.isPopular ? 'bg-secondary/80 border-warning' : 'bg-card border-border'} border flex items-center justify-center shadow-sm text-lg`}>
                             {template.icon}
                           </div>
 	                          {selectedTemplateId === template.id ? (
-	                            <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm animate-in zoom-in duration-300 opacity-0">
+	                            <div className="bg-[#0FA47F] text-foreground rounded-full p-1 shadow-sm animate-in zoom-in duration-300 opacity-0">
 	                              <CheckCircle2 className="w-5 h-5" />
 	                            </div>
 	                          ) : (
-	                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
+	                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
 	                          )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-[14px] lg:text-[16px] font-black text-slate-900 mb-0.5">{template.label}</p>
+                          <p className="text-[14px] lg:text-[16px] font-black text-muted-foreground mb-0.5">{template.label}</p>
                           <div className="mb-1.5">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Includes</p>
+                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Includes</p>
                             <div className="space-y-1">
                               {template.deliverables.map((d, di) => {
                                 const qty = template.quantities[d] || 1;
@@ -2626,38 +2626,38 @@ const CollabLinkLanding = () => {
                                 return (
                                   <div key={di} className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0FA47F", opacity: 0.7 }} />
-                                    <span className="text-[11px] lg:text-[13px] font-bold text-slate-600">{qty} {label}</span>
+                                    <span className="text-[11px] lg:text-[13px] font-bold text-muted-foreground">{qty} {label}</span>
                                   </div>
                                 );
                               })}
                             </div>
                             {template.type === 'barter' && (
-                              <p className="mt-2 text-[11px] font-bold text-slate-600">
+                              <p className="mt-2 text-[11px] font-bold text-muted-foreground">
                                 Free products as payment
                               </p>
                             )}
                             {template.addons && template.addons.length > 0 && (
                               <div className="mt-2.5">
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Add-ons Available</p>
+                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Add-ons Available</p>
                                 <div className="space-y-1">
                                   {template.addons.map((addon, ai) => (
-                                    <div key={addon.id || ai} className="flex items-center justify-between gap-1.5 bg-slate-50 border border-slate-100/60 rounded px-2 py-1">
-                                      <span className="text-[10px] lg:text-[11px] font-bold text-slate-600 truncate">{addon.label}</span>
+                                    <div key={addon.id || ai} className="flex items-center justify-between gap-1.5 bg-background border border-border/60 rounded px-2 py-1">
+                                      <span className="text-[10px] lg:text-[11px] font-bold text-muted-foreground truncate">{addon.label}</span>
                                       <span className="text-[10px] lg:text-[11px] font-black text-teal-600">+₹{addon.price}</span>
                                     </div>
                                   ))}
                                 </div>
                               </div>
                             )}
-                            <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100/50 rounded-lg w-fit">
-                              <Clock className="w-3 h-3 text-slate-400" />
-                              <span className="text-[10px] lg:text-[11px] font-black text-slate-500 uppercase tracking-tight">Days to make content: {template.deadlineDays || 7} days</span>
+                            <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 bg-background border border-border/50 rounded-lg w-fit">
+                              <Clock className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-[10px] lg:text-[11px] font-black text-muted-foreground uppercase tracking-tight">Days to make content: {template.deadlineDays || 7} days</span>
                             </div>
                           </div>
                         </div>
-                        <div className={`mt-auto pt-2.5 border-t flex flex-col gap-2 ${template.isPopular ? 'border-amber-200/80' : 'border-slate-100/60'}`}>
+                        <div className={`mt-auto pt-2.5 border-t flex flex-col gap-2 ${template.isPopular ? 'border-warning/80' : 'border-border/60'}`}>
                           {template.isPopular && (
-                            <p className="text-[9px] font-bold text-amber-700 italic leading-tight">
+                            <p className="text-[9px] font-bold text-warning italic leading-tight">
                               Most brands choose this package for higher engagement
                             </p>
                           )}
@@ -2665,7 +2665,7 @@ const CollabLinkLanding = () => {
 	                            <p className={`leading-[0.92] tracking-tight drop-shadow-[0_1px_0_rgba(0,0,0,0.06)] ${template.type === 'barter' ? 'text-[26px] xl:text-[38px]' : 'text-[38px] md:text-[44px] xl:text-[54px]'} font-black ${template.isPopular ? 'text-[#0B8E6E]' : 'text-[#0FA47F]'}`}>
                               {template.type === 'barter' ? 'Free products as payment' : `₹${template.budget.toLocaleString()}`}
                             </p>
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500 -mt-1">Starting price</p>
+                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground -mt-1">Starting price</p>
 	                            <div className="w-full px-3 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center justify-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" }}>
 	                              {selectedTemplateId === template.id ? (
 	                                '✓ Selected'
@@ -2684,7 +2684,7 @@ const CollabLinkLanding = () => {
                               e.stopPropagation();
                               setEditingTemplate(template);
                             }}
-                            className="p-1.5 rounded-full bg-white border border-slate-200 shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
+                            className="p-1.5 rounded-full bg-card border border-border shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
                           >
                             <Edit className="h-3 w-3" />
                           </button>
@@ -2696,8 +2696,8 @@ const CollabLinkLanding = () => {
               </div>
 
               {!showCustomFlow && (
-                <div className="mt-5 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/65 px-4 py-4">
-                  <p className="text-[12px] text-slate-500 font-black uppercase tracking-[0.14em] mb-3">OR CREATE CUSTOM DEAL</p>
+                <div className="mt-5 text-center rounded-2xl border border-dashed border-slate-300 bg-background/65 px-4 py-4">
+                  <p className="text-[12px] text-muted-foreground font-black uppercase tracking-[0.14em] mb-3">OR CREATE CUSTOM DEAL</p>
                   <Button
                     onClick={() => {
                       setShowCustomFlow(true);
@@ -2717,26 +2717,26 @@ const CollabLinkLanding = () => {
               {!showCustomFlow && showPackagesSection && (
                 <>
                   {/* Mobile: collapsible "more info" */}
-                  <details className="rounded-2xl border border-slate-200 bg-white overflow-hidden lg:hidden">
-                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none text-sm font-bold text-slate-700">
+                  <details className="rounded-2xl border border-border bg-card overflow-hidden lg:hidden">
+                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none text-sm font-bold text-muted-foreground">
                       <span>More info — past work, audience, reviews</span>
-                      <ChevronDown className="w-4 h-4 text-slate-500 transition-transform details[open]_rotate-180" />
+                      <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform details[open]_rotate-180" />
                     </summary>
                     <div className="px-4 pb-4 space-y-3">
 
                       {/* How it works */}
-                      <div className="rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 p-4">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
-                        <p className="text-sm font-black text-slate-900 mb-2">How collaboration works</p>
-                        <p className="text-[11px] text-slate-600 mb-3">Choose a service, customize, and send. Creator approves and you track everything.</p>
+                      <div className="rounded-xl bg-gradient-to-br from-background to-white border border-border p-4">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">How It Works</p>
+                        <p className="text-sm font-black text-muted-foreground mb-2">How collaboration works</p>
+                        <p className="text-[11px] text-muted-foreground mb-3">Choose a service, customize, and send. Creator approves and you track everything.</p>
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { n: 1, title: 'Choose service' },
                             { n: 2, title: 'Customize' },
                             { n: 3, title: 'Send proposal' },
                           ].map((step) => (
-                            <div key={step.n} className="rounded-lg bg-slate-50 border border-slate-200 px-2 py-1.5 text-center">
-                              <p className="text-[10px] font-black text-slate-800">{step.n}. {step.title}</p>
+                            <div key={step.n} className="rounded-lg bg-background border border-border px-2 py-1.5 text-center">
+                              <p className="text-[10px] font-black text-muted-foreground">{step.n}. {step.title}</p>
                             </div>
                           ))}
                         </div>
@@ -2744,9 +2744,9 @@ const CollabLinkLanding = () => {
 
                       {/* Past Work preview — show if exists */}
                       {showPastWorkSection && (
-                        <div className="rounded-xl border border-slate-200 bg-white p-3">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Past collaborations</p>
-                          <p className="text-xs text-slate-600">See creator's past brand work on their profile page.</p>
+                        <div className="rounded-xl border border-border bg-card p-3">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Past collaborations</p>
+                          <p className="text-xs text-muted-foreground">See creator's past brand work on their profile page.</p>
                         </div>
                       )}
                     </div>
@@ -2754,26 +2754,26 @@ const CollabLinkLanding = () => {
 
                   {/* Desktop: always visible full sections */}
                   <div className="hidden lg:block">
-                    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
-                      <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
-                      <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
+                    <div className="rounded-2xl border border-border bg-gradient-to-br from-background via-white to-slate-100 p-4 lg:p-5 text-muted-foreground relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                      <div className="absolute -top-12 -right-8 w-28 h-28 bg-background/20 blur-2xl rounded-full" />
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">How It Works</p>
+                      <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-muted-foreground mb-2">
                         How collaboration works
                       </h3>
-                      <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
+                      <p className="text-[12px] lg:text-[13px] text-muted-foreground font-semibold leading-relaxed max-w-xl">
                         Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
                       </p>
 	                      <div className="mt-2.5 grid grid-cols-3 gap-2">
 	                        {[
-	                          { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
-	                          { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
-	                          { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
+	                          { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-muted-foreground" /> },
+	                          { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-muted-foreground" /> },
+	                          { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-muted-foreground" /> },
 	                        ].map((step) => (
-	                          <div key={step.n} className="rounded-xl bg-white border border-slate-200 px-2 py-1.5 flex flex-col gap-0.5">
+	                          <div key={step.n} className="rounded-xl bg-card border border-border px-2 py-1.5 flex flex-col gap-0.5">
 	                            <div className="flex items-center justify-end">
-	                              <span className="w-5 h-5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center">{step.icon}</span>
+	                              <span className="w-5 h-5 rounded-lg bg-background border border-border flex items-center justify-center">{step.icon}</span>
 	                            </div>
-	                            <p className="text-[10.5px] font-black text-slate-800 leading-tight">
+	                            <p className="text-[10.5px] font-black text-muted-foreground leading-tight">
 	                              0{step.n} {step.title}
 	                            </p>
 	                          </div>
@@ -2786,17 +2786,17 @@ const CollabLinkLanding = () => {
 
 
               {/* Trust Indicators — shown below packages for brand context */}
-              <div className={`mt-3 rounded-2xl bg-white border border-slate-200 p-4 ${showTrustSections ? '' : 'hidden'}`}>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Why use this link</p>
+              <div className={`mt-3 rounded-2xl bg-card border border-border p-4 ${showTrustSections ? '' : 'hidden'}`}>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Why use this link</p>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label: 'Legally Binding', icon: <FileCheck className="h-4 w-4 text-emerald-700" />, bg: 'bg-emerald-100 border border-emerald-200' },
+                    { label: 'Legally Binding', icon: <FileCheck className="h-4 w-4 text-primary" />, bg: 'bg-primary border border-primary' },
                     { label: 'Secure Payment', icon: <ShieldCheck className="h-4 w-4 text-teal-700" />, bg: 'bg-teal-100 border border-teal-200' },
-                    { label: 'Creator Armour', icon: <BadgeCheck className="h-4 w-4 text-blue-700" />, bg: 'bg-blue-100 border border-blue-200' },
+                    { label: 'Creator Armour', icon: <BadgeCheck className="h-4 w-4 text-info" />, bg: 'bg-info border border-blue-200' },
                   ].map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-xl bg-white p-2 border border-slate-200">
+                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-xl bg-card p-2 border border-border">
                       <div className={`shrink-0 rounded-lg p-2 ${item.bg}`}>{item.icon}</div>
-                      <p className="text-[10px] font-black text-slate-700 leading-tight">{item.label}</p>
+                      <p className="text-[10px] font-black text-muted-foreground leading-tight">{item.label}</p>
                     </div>
                   ))}
                 </div>
@@ -2804,12 +2804,12 @@ const CollabLinkLanding = () => {
 
               {/* Sticky offer bar — mobile only, appears after package is selected */}
               {selectedTemplate && !showCustomFlow && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-white via-white to-white/95 pt-8 pb-4 px-4 md:hidden border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+                <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-white via-white to-white/95 pt-8 pb-4 px-4 md:hidden border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
                   <div className="flex items-center gap-3 max-w-lg mx-auto">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Selected</p>
-                      <p className="text-sm font-black text-slate-900 truncate">{selectedTemplate.label}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Selected</p>
+                      <p className="text-sm font-black text-muted-foreground truncate">{selectedTemplate.label}</p>
+                      <p className="text-xs text-muted-foreground">
                         {selectedTemplate.type === 'barter' ? 'Free products' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
                         {' · '}{selectedTemplate.deadlineDays || 7} days
                       </p>
@@ -2823,7 +2823,7 @@ const CollabLinkLanding = () => {
                           document.getElementById('offer-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 100);
                       }}
-                      className="shrink-0 h-12 px-5 rounded-2xl bg-[#0FA47F] text-white font-black text-[11px] uppercase tracking-widest shadow-lg hover:bg-emerald-600 active:scale-[0.98] transition-all whitespace-nowrap"
+                      className="shrink-0 h-12 px-5 rounded-2xl bg-[#0FA47F] text-foreground font-black text-[11px] uppercase tracking-widest shadow-lg hover:bg-primary active:scale-[0.98] transition-all whitespace-nowrap"
                     >
                       Continue →
                     </button>
@@ -2831,23 +2831,23 @@ const CollabLinkLanding = () => {
                 </div>
               )}
 
-              <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
+              <div className={`mt-3.5 rounded-2xl border border-border bg-card p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="text-[14px] font-black text-slate-900 tracking-tight">
-                    Past Work <span className="text-slate-400 font-black">(social proof)</span>
+                  <h3 className="text-[14px] font-black text-muted-foreground tracking-tight">
+                    Past Work <span className="text-muted-foreground font-black">(social proof)</span>
                   </h3>
                 </div>
 	                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
 		                  {recentCollaborations.map((item) => (
-		                    <div key={item.id || item.name} className="rounded-2xl border border-slate-200/70 bg-white px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
-		                      <p className="text-[12px] font-black text-slate-900 leading-tight">{item.name}</p>
-		                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">{item.type}</p>
+		                    <div key={item.id || item.name} className="rounded-2xl border border-border/70 bg-card px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
+		                      <p className="text-[12px] font-black text-muted-foreground leading-tight">{item.name}</p>
+		                      <p className="text-[11px] font-semibold text-muted-foreground mt-0.5">{item.type}</p>
                           {item.proofLabel && (
-                            <p className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                            <p className="mt-2 inline-flex rounded-full border border-border bg-background px-2 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                               {item.proofLabel}
                             </p>
                           )}
-		                      <p className="text-[11px] font-black text-slate-900 mt-2 leading-snug">{item.outcome}</p>
+		                      <p className="text-[11px] font-black text-muted-foreground mt-2 leading-snug">{item.outcome}</p>
 		                    </div>
 		                  ))}
 	                </div>
@@ -2856,21 +2856,21 @@ const CollabLinkLanding = () => {
 
 	            {/* About Creator (desktop expanded, mobile collapsed with "Read more") */}
 		            <div className="space-y-6">
-	              <div className="bg-white rounded-xl p-4 lg:p-6 border border-slate-200 shadow-sm relative overflow-hidden">
+	              <div className="bg-card rounded-xl p-4 lg:p-6 border border-border shadow-sm relative overflow-hidden">
 	                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
 
                   {/* Mobile header + disclosure */}
                   <div className="md:hidden flex items-start justify-between gap-3 mb-4">
                     <div className="min-w-0">
-                      <h2 className="text-[14px] font-black text-slate-900 tracking-tight">About the creator</h2>
-                      <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Bio and active platforms</p>
+                      <h2 className="text-[14px] font-black text-muted-foreground tracking-tight">About the creator</h2>
+                      <p className="text-[11px] text-muted-foreground font-semibold mt-0.5">Bio and active platforms</p>
                     </div>
                     {!editMode && (
                       <button type="button"
                         aria-expanded={aboutCreatorOpen}
                         aria-controls="about-creator-panel"
                         onClick={() => setAboutCreatorOpen(v => !v)}
-                        className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center gap-1"
+                        className="shrink-0 rounded-full border border-border bg-card px-3 py-2 text-[11px] font-black text-muted-foreground hover:bg-background active:scale-[0.98] transition-all flex items-center gap-1"
                       >
                         {aboutCreatorOpen ? 'Show less' : 'Read more'}
                         <ChevronDown className={`h-4 w-4 transition-transform ${aboutCreatorOpen ? 'rotate-180' : ''}`} />
@@ -2882,7 +2882,7 @@ const CollabLinkLanding = () => {
                   {!editMode && !aboutCreatorOpen && (
                     <div className="md:hidden">
                       {creatorBio && (
-                        <p className="text-slate-700 leading-relaxed font-medium line-clamp-4">
+                        <p className="text-muted-foreground leading-relaxed font-medium line-clamp-4">
                           {creatorBio}
                         </p>
                       )}
@@ -2895,7 +2895,7 @@ const CollabLinkLanding = () => {
                             href={`https://instagram.com/${handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                            className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-muted-foreground hover:text-muted-foreground transition-colors"
                           >
                             Active on Instagram <span className="font-black">@{handle}</span>
                             <ExternalLink className="h-3.5 w-3.5 opacity-60" />
@@ -2913,52 +2913,52 @@ const CollabLinkLanding = () => {
 	                {editMode ? (
 	                  <div className="mb-6 relative">
 	                    <div className="absolute -top-6 left-0 flex items-center gap-1">
-	                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Creator Bio</p>
+	                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none">Creator Bio</p>
 			            </div>
                     <Textarea
-                      className="bg-slate-50 border-slate-300 border-dashed text-slate-700 leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
+                      className="bg-background border-slate-300 border-dashed text-muted-foreground leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
                       defaultValue={creator.bio || ''}
                       onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
                       placeholder="Brief introduction for brands..."
                     />
-                    <p className="text-[9px] text-slate-400 mt-1">Updates immediately when you click outside</p>
+                    <p className="text-[9px] text-muted-foreground mt-1">Updates immediately when you click outside</p>
                   </div>
 	                ) : creatorBio && (
-	                  <p className="text-slate-700 leading-relaxed mb-6 font-medium">
+	                  <p className="text-muted-foreground leading-relaxed mb-6 font-medium">
 	                    {creatorBio}
 	                  </p>
 	                )}
 
 	                {creator.platforms.length > 0 && (
                   <div className="space-y-3">
-                    <h2 className="text-xl font-semibold text-slate-900 mb-3">
+                    <h2 className="text-xl font-semibold text-muted-foreground mb-3">
                       Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                       {creator.platforms.map((platform, idx) => {
                         const isInstagram = platform.name.toLowerCase() === 'instagram';
                         return (
-                          <div key={idx} className="flex items-center gap-3 text-slate-100/85">
+                          <div key={idx} className="flex items-center gap-3 text-muted-foreground/85">
                             {getPlatformIcon(platform.name)}
                             <div className="flex-1">
-                              <p className="font-medium text-slate-900">{platform.name}</p>
+                              <p className="font-medium text-muted-foreground">{platform.name}</p>
                               {isInstagram && platform.handle ? (
                                 <a
                                   href={`https://instagram.com/${platform.handle.replace('@', '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
+                                  className="text-sm text-muted-foreground hover:text-muted-foreground transition-colors flex items-center gap-1"
                                 >
                                   @{platform.handle.replace('@', '')}
                                   <ExternalLink className="h-3 w-3 opacity-60" />
                                 </a>
                               ) : (
-                                <p className="text-sm text-slate-200/90">
+                                <p className="text-sm text-muted-foreground/90">
                                   {platform.handle}
                                 </p>
                               )}
                               {platform.followers && (
-                                <p className="text-xs text-slate-200/65 mt-1">
+                                <p className="text-xs text-muted-foreground/65 mt-1">
                                   {platform.followers >= 1000
                                     ? `${(platform.followers / 1000).toFixed(1)}K followers`
                                     : `${platform.followers} followers`}
@@ -2974,18 +2974,18 @@ const CollabLinkLanding = () => {
 
                 {/* Open to collabs + niches + media kit (creator readiness for brands) */}
 	                {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-	                  <div ref={nichesSectionRef} className="mt-8 pt-6 border-t border-slate-200 space-y-3">
+	                  <div ref={nichesSectionRef} className="mt-8 pt-6 border-t border-border space-y-3">
                     {creator.open_to_collabs !== false && (
-                      <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+                      <p className="text-sm text-primary font-medium flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
                         Actively open to collaborations
                       </p>
                     )}
                     {editMode ? (
-                      <div className="mt-4 pt-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center justify-between">
                           Content Niches
-                          <span className="text-[8px] font-bold text-slate-300 italic normal-case tracking-normal">Add relevant tags for your profile</span>
+                          <span className="text-[8px] font-bold text-muted-foreground italic normal-case tracking-normal">Add relevant tags for your profile</span>
                         </p>
                         <div className="flex flex-wrap gap-2 mb-3">
                           {creator.content_niches?.map((niche, i) => (
@@ -3022,7 +3022,7 @@ const CollabLinkLanding = () => {
                                 }
                               }
                             }}
-                            className="h-8 text-xs border-dashed bg-slate-50"
+                            className="h-8 text-xs border-dashed bg-background"
                           />
                           <Button
                             size="sm"
@@ -3043,10 +3043,10 @@ const CollabLinkLanding = () => {
                       </div>
                     ) : creator.content_niches && creator.content_niches.length > 0 && (
                       <div>
-                        <p className="text-xs text-slate-400 mb-1">Content niches</p>
+                        <p className="text-xs text-muted-foreground mb-1">Content niches</p>
                         <div className="flex flex-wrap gap-2">
                           {creator.content_niches.map((niche, i) => (
-                            <Badge key={i} variant="secondary" className="bg-slate-100 text-slate-600 border-slate-200">
+                            <Badge key={i} variant="secondary" className="bg-background text-muted-foreground border-border">
                               {niche}
                             </Badge>
                           ))}
@@ -3054,10 +3054,10 @@ const CollabLinkLanding = () => {
                       </div>
                     )}
                     {editMode ? (
-                      <div className="mt-4 pt-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
                         <Input
-                          className="h-8 text-xs bg-slate-50 border-dashed"
+                          className="h-8 text-xs bg-background border-dashed"
                           defaultValue={creator.media_kit_url || ''}
                           onBlur={(e) => handleInlineProfileUpdate('media_kit_url', e.target.value)}
                           placeholder="e.g. https://canva.com/your-media-kit"
@@ -3069,12 +3069,12 @@ const CollabLinkLanding = () => {
                           href={creator.media_kit_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-slate-600 hover:text-slate-900 inline-flex items-center gap-1"
+                          className="text-sm text-muted-foreground hover:text-muted-foreground inline-flex items-center gap-1"
                         >
                           <ExternalLink className="h-4 w-4 shrink-0" />
                           Media kit
                         </a>
-                        <p className="text-xs text-slate-100/70 mt-1">Ready for brand collaborations</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Ready for brand collaborations</p>
                       </div>
                     )}
 	                  </div>
@@ -3082,11 +3082,11 @@ const CollabLinkLanding = () => {
 
                   {/* NEW: Public Portfolio & Past Brands */}
                   {(!editMode && ((creator.portfolio_links && creator.portfolio_links.length > 0) || (creator.past_brands && creator.past_brands.length > 0))) && (
-                    <div className="mt-8 pt-6 border-t border-slate-200 space-y-6">
+                    <div className="mt-8 pt-6 border-t border-border space-y-6">
                       {creator.portfolio_links && creator.portfolio_links.length > 0 && (
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                            <Link2 className="h-4 w-4 text-emerald-600" />
+                          <h3 className="text-sm font-bold text-muted-foreground mb-3 flex items-center gap-2">
+                            <Link2 className="h-4 w-4 text-primary" />
                             Featured Portfolio
                           </h3>
                           <div className="flex flex-col gap-2">
@@ -3096,12 +3096,12 @@ const CollabLinkLanding = () => {
                                 href={link.startsWith('http') ? link : `https://${link}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-all group"
+                                className="flex items-center gap-2 p-3 rounded-xl border border-border bg-background hover:bg-background hover:border-slate-300 transition-all group"
                               >
-                                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                                  {link.includes('instagram.com') ? <Instagram className="w-4 h-4 text-pink-600" /> : <ExternalLink className="w-4 h-4 text-slate-400" />}
+                                <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                                  {link.includes('instagram.com') ? <Instagram className="w-4 h-4 text-pink-600" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
                                 </div>
-                                <span className="text-[13px] font-semibold text-slate-700 truncate flex-1 leading-snug">
+                                <span className="text-[13px] font-semibold text-muted-foreground truncate flex-1 leading-snug">
                                   {link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                                 </span>
                               </a>
@@ -3112,15 +3112,15 @@ const CollabLinkLanding = () => {
 
                       {creator.past_brands && creator.past_brands.length > 0 && (
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-emerald-600" />
+                          <h3 className="text-sm font-bold text-muted-foreground mb-3 flex items-center gap-2">
+                            <Briefcase className="h-4 w-4 text-primary" />
                             Trusted By Brands
                           </h3>
                           <div className="flex flex-wrap gap-2">
                             {creator.past_brands.map((brand, idx) => (
                               <div
                                 key={idx}
-                                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white shadow-sm text-[12px] font-black uppercase tracking-wider text-slate-700"
+                                className="px-3 py-1.5 rounded-lg border border-border bg-card shadow-sm text-[12px] font-black uppercase tracking-wider text-muted-foreground"
                               >
                                 {brand}
                               </div>
@@ -3140,35 +3140,35 @@ const CollabLinkLanding = () => {
 	            {/* RIGHT COLUMN - Offer Form */}
 			            <div className="w-full md:w-[380px] md:max-w-[380px] md:justify-self-end md:pb-32 md:sticky md:top-24 self-start">
               {/* 4. The main offer formation form (Unified for desktop/mobile) */}
-              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
+              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-muted-foreground bg-card relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
                 {!showCustomFlow && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-5">
                     <div className="grid gap-3">
-                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4">
+                        <div className="w-7 h-7 rounded-full bg-background text-foreground text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
                           <Package className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="text-[13px] font-black text-slate-900">Choose a service</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review options are ready to use.</p>
+                          <p className="text-[13px] font-black text-muted-foreground">Choose a service</p>
+                          <p className="text-[12px] text-muted-foreground font-medium">Starter, Engagement, or Product Review options are ready to use.</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4">
+                        <div className="w-7 h-7 rounded-full bg-background text-foreground text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
                           <PenLine className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="text-[13px] font-black text-slate-900">Customize campaign details</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Adjust deliverables, budget, and deadline before sending.</p>
+                          <p className="text-[13px] font-black text-muted-foreground">Customize campaign details</p>
+                          <p className="text-[12px] text-muted-foreground font-medium">Adjust deliverables, budget, and deadline before sending.</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4">
+                        <div className="w-7 h-7 rounded-full bg-background text-foreground text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
                           <Send className="w-3.5 h-3.5" />
                         </div>
                         <div>
-                          <p className="text-[13px] font-black text-slate-900">Send secure proposal</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured offer with the deal details ready.</p>
+                          <p className="text-[13px] font-black text-muted-foreground">Send secure proposal</p>
+                          <p className="text-[12px] text-muted-foreground font-medium">Creator receives a structured offer with the deal details ready.</p>
                         </div>
                       </div>
                     </div>
@@ -3179,7 +3179,7 @@ const CollabLinkLanding = () => {
 		                        onClick={() => {
 		                          document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		                        }}
-		                        className="w-full min-w-0 h-12 rounded-2xl bg-[#0FA47F] text-white hover:bg-emerald-600 font-black text-[11px] uppercase tracking-widest shadow-[0_10px_26px_rgba(15,164,127,0.20)]"
+		                        className="w-full min-w-0 h-12 rounded-2xl bg-[#0FA47F] text-foreground hover:bg-primary font-black text-[11px] uppercase tracking-widest shadow-[0_10px_26px_rgba(15,164,127,0.20)]"
 		                      >
 		                        Choose a Service
 		                      </Button>
@@ -3191,7 +3191,7 @@ const CollabLinkLanding = () => {
                           setSelectedTemplateId(null);
                           triggerHaptic(HapticPatterns.success);
                         }}
-                        className="w-full text-center text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 hover:text-slate-900"
+                        className="w-full text-center text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground hover:text-muted-foreground"
                       >
                         Need something custom? Create a custom deal
                       </button>
@@ -3205,7 +3205,7 @@ const CollabLinkLanding = () => {
                       <>
                         {selectedTemplate && (
                           <div
-                            className="mb-6 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 shadow-[0_14px_30px_rgba(15,164,127,0.16)]"
+                            className="mb-6 rounded-3xl border border-primary bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 shadow-[0_14px_30px_rgba(15,164,127,0.16)]"
                             style={{
                               transform: templateContinueNudge ? 'translateZ(0)' : undefined,
                               animation: templateContinueNudge ? 'nbPulse 900ms ease-out 1' : undefined,
@@ -3213,14 +3213,14 @@ const CollabLinkLanding = () => {
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Selected service</p>
-                                <p className="text-[15px] font-black text-slate-900 truncate">{selectedTemplate.label}</p>
-                                <p className="text-[12px] font-semibold text-slate-600 mt-0.5">
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary/80 mb-1">Selected service</p>
+                                <p className="text-[15px] font-black text-muted-foreground truncate">{selectedTemplate.label}</p>
+                                <p className="text-[12px] font-semibold text-muted-foreground mt-0.5">
                                   {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days to make content
                                 </p>
                               </div>
                               <div className="shrink-0 flex flex-col items-end gap-2">
-                                <div className="bg-[#0FA47F] text-white rounded-full p-1 shadow-sm">
+                                <div className="bg-[#0FA47F] text-foreground rounded-full p-1 shadow-sm">
                                   <CheckCircle2 className="w-5 h-5" />
                                 </div>
                                 <Button
@@ -3234,7 +3234,7 @@ const CollabLinkLanding = () => {
                                       document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     });
                                   }}
-                                  className="h-9 px-3 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
+                                  className="h-9 px-3 rounded-2xl border-primary text-primary hover:bg-primary font-black text-[10px] uppercase tracking-widest"
                                 >
                                   Change service
                                 </Button>
@@ -3244,10 +3244,10 @@ const CollabLinkLanding = () => {
                         )}
 		                  <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
 		                    <div>
-		                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+		                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
 		                        Step {currentStep} of 2
 		                      </p>
-		                      <h2 className={`mt-1 text-[17px] font-black tracking-tight text-slate-900 leading-tight ${typeSectionTitle}`}>
+		                      <h2 className={`mt-1 text-[17px] font-black tracking-tight text-muted-foreground leading-tight ${typeSectionTitle}`}>
 		                        {currentStep === 1 ? 'What you want' : 'Your contact details'}
 		                      </h2>
 		                    </div>
@@ -3255,7 +3255,7 @@ const CollabLinkLanding = () => {
 	                      {[1, 2].map((step) => (
 	                        <div
                           key={step}
-                          className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-slate-900 shadow-[0_0_10px_rgba(0,0,0,0.1)]' : step < currentStep ? 'w-3 bg-emerald-500/40' : 'w-1.5 bg-slate-100'}`}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-background shadow-[0_0_10px_rgba(0,0,0,0.1)]' : step < currentStep ? 'w-3 bg-primary/40' : 'w-1.5 bg-background'}`}
                         />
                       ))}
                     </div>
@@ -3270,7 +3270,7 @@ const CollabLinkLanding = () => {
                       <div className="space-y-5">
                         {/* Collab Type */}
                         <div>
-                          <label className={`block text-base font-black text-slate-800 mb-3 ${typeLabel}`}>What type of collaboration?</label>
+                          <label className={`block text-base font-black text-muted-foreground mb-3 ${typeLabel}`}>What type of collaboration?</label>
                           <div className="grid grid-cols-3 gap-2">
                             {[
                               { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Cash' },
@@ -3280,22 +3280,22 @@ const CollabLinkLanding = () => {
                               <button type="button"
                                 key={type.id}
                                 onClick={() => setCollabType(type.id as CollabType)}
-                                className={`flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border-2 transition-all group min-h-[90px] md:min-h-[100px] ${collabType === type.id ? 'border-slate-900 bg-slate-900 text-white shadow-xl' : 'border-slate-100 bg-white hover:border-slate-200 text-slate-600'}`}
+                                className={`flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border-2 transition-all group min-h-[90px] md:min-h-[100px] ${collabType === type.id ? 'border-foreground bg-background text-foreground shadow-xl' : 'border-border bg-card hover:border-border text-muted-foreground'}`}
                               >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-1.5 ${collabType === type.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-1.5 ${collabType === type.id ? 'bg-secondary/20 text-foreground' : 'bg-background text-muted-foreground group-hover:bg-background'}`}>
                                   {type.icon}
                                 </div>
                                 <p className="text-[12px] md:text-[13px] font-black uppercase tracking-tight leading-tight">{type.label}</p>
-                                <p className={`text-[10px] font-medium mt-0.5 ${collabType === type.id ? 'text-white/60' : 'text-slate-400'}`}>{type.sub}</p>
+                                <p className={`text-[10px] font-medium mt-0.5 ${collabType === type.id ? 'text-foreground/60' : 'text-muted-foreground'}`}>{type.sub}</p>
                               </button>
                             ))}
                           </div>
                         </div>
 
                         {/* Content Selection */}
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner">
-                          <label className={`block text-base font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
-                            <Clapperboard className="h-5 w-5 text-slate-900" />
+                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner">
+                          <label className={`block text-base font-black text-muted-foreground mb-3 ${typeLabel} flex items-center gap-2`}>
+                            <Clapperboard className="h-5 w-5 text-muted-foreground" />
                             What content?
                           </label>
                           <div className="grid grid-cols-2 gap-2">
@@ -3305,7 +3305,7 @@ const CollabLinkLanding = () => {
                                 <button type="button"
                                   key={option.value}
                                   onClick={() => handleDeliverableToggle(option.value)}
-                                  className={`flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-[13px] font-black transition-all border-2 min-h-[48px] ${isSelected ? 'bg-slate-900 border-slate-900 text-white shadow-lg' : 'bg-white border-white text-slate-500 hover:border-slate-200 shadow-sm'}`}
+                                  className={`flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-[13px] font-black transition-all border-2 min-h-[48px] ${isSelected ? 'bg-background border-foreground text-foreground shadow-lg' : 'bg-card border-white text-muted-foreground hover:border-border shadow-sm'}`}
                                 >
                                   {option.icon}
                                   {option.label}
@@ -3321,12 +3321,12 @@ const CollabLinkLanding = () => {
                     {currentStep === 2 && (
                       <div className="space-y-4">
                         {selectedTemplate && (
-                          <div className="rounded-[28px] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 shadow-[0_12px_28px_rgba(15,164,127,0.12)]">
+                          <div className="rounded-[28px] border border-primary bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 shadow-[0_12px_28px_rgba(15,164,127,0.12)]">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700/80 mb-1">Chosen service</p>
-                                <p className="text-[16px] font-black text-slate-900 truncate">{selectedTemplate.label}</p>
-                                <p className="text-[12px] font-semibold text-slate-600 mt-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary/80 mb-1">Chosen service</p>
+                                <p className="text-[16px] font-black text-muted-foreground truncate">{selectedTemplate.label}</p>
+                                <p className="text-[12px] font-semibold text-muted-foreground mt-1">
                                   {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
                                 </p>
                               </div>
@@ -3341,7 +3341,7 @@ const CollabLinkLanding = () => {
                                     document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                   });
                                 }}
-                                className="h-9 rounded-2xl border-emerald-200 text-emerald-800 hover:bg-emerald-50 font-black text-[10px] uppercase tracking-widest"
+                                className="h-9 rounded-2xl border-primary text-primary hover:bg-primary font-black text-[10px] uppercase tracking-widest"
                               >
                                 Change
                               </Button>
@@ -3350,11 +3350,11 @@ const CollabLinkLanding = () => {
                         )}
 
                         {/* Contact Section */}
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-3">
-                          <p className={`block text-base font-black text-slate-800 mb-1 ${typeLabel}`}>
+                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner space-y-3">
+                          <p className={`block text-base font-black text-muted-foreground mb-1 ${typeLabel}`}>
                             Send your offer
                           </p>
-                          <p className="text-[12px] font-semibold text-slate-500">
+                          <p className="text-[12px] font-semibold text-muted-foreground">
                             We only collect legal details if the creator is interested.
                           </p>
                           
@@ -3365,7 +3365,7 @@ const CollabLinkLanding = () => {
                               value={brandName}
                               onChange={(e) => setBrandName(e.target.value)}
                               placeholder="Brand or company name"
-                              className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
+                              className="h-14 px-4 rounded-xl border-white bg-card font-bold text-base shadow-sm"
                             />
                             <label htmlFor="brand-email-input" className="sr-only">Work email</label>
                             <Input
@@ -3374,7 +3374,7 @@ const CollabLinkLanding = () => {
                               value={brandEmail}
                               onChange={(e) => setBrandEmail(e.target.value)}
                               placeholder="your@email.com"
-                              className="h-14 px-4 rounded-xl border-white bg-white font-bold text-base shadow-sm"
+                              className="h-14 px-4 rounded-xl border-white bg-card font-bold text-base shadow-sm"
                             />
                             <label htmlFor="brand-instagram-input" className="sr-only">Brand Instagram</label>
                             <Input
@@ -3382,13 +3382,13 @@ const CollabLinkLanding = () => {
                               value={brandInstagram}
                               onChange={(e) => setBrandInstagram(e.target.value)}
                               placeholder="Brand Instagram (optional)"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-semibold text-[14px] shadow-sm"
+                              className="h-12 px-4 rounded-xl border-white bg-card font-semibold text-[14px] shadow-sm"
                             />
                           </div>
                         </div>
 
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner space-y-3">
-                          <label htmlFor="campaign-description-input" className={`block text-base font-black text-slate-800 mb-1 ${typeLabel}`}>
+                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner space-y-3">
+                          <label htmlFor="campaign-description-input" className={`block text-base font-black text-muted-foreground mb-1 ${typeLabel}`}>
                             What do you want promoted?
                           </label>
                           <Textarea
@@ -3396,37 +3396,37 @@ const CollabLinkLanding = () => {
                             value={campaignDescription}
                             onChange={(e) => setCampaignDescription(e.target.value)}
                             placeholder="Launch a new product, drive installs, announce a sale, or review a product..."
-                            className="min-h-[110px] rounded-2xl border-white bg-white px-4 py-3 text-[14px] font-medium shadow-sm"
+                            className="min-h-[110px] rounded-2xl border-white bg-card px-4 py-3 text-[14px] font-medium shadow-sm"
                           />
                         </div>
 
                         {/* Budget (for paid deals) */}
                         {collabType === 'paid' && (
-                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner">
-                            <label htmlFor="offer-budget-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
-                              <IndianRupee className="h-5 w-5 text-slate-900" />
+                          <div className="bg-background rounded-[32px] p-6 border border-border shadow-inner">
+                            <label htmlFor="offer-budget-input" className={`block text-[15px] font-black text-muted-foreground mb-3 ${typeLabel} flex items-center gap-2`}>
+                              <IndianRupee className="h-5 w-5 text-muted-foreground" />
                               Your budget
                             </label>
                             <div className="relative group">
-                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-[15px] group-focus-within:text-muted-foreground transition-colors">₹</div>
                               <Input
                                 id="offer-budget-input"
                                 type="number"
                                 value={exactBudget}
                                 onChange={(e) => setExactBudget(e.target.value)}
                                 placeholder="Enter your exact budget"
-                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
                               />
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-2">Enter the exact amount you'd pay. The creator will see this directly.</p>
+                            <p className="text-[11px] text-muted-foreground mt-2">Enter the exact amount you'd pay. The creator will see this directly.</p>
                           </div>
                         )}
 
                         {/* Product details (for barter/hybrid) */}
                         {(collabType === 'barter' || collabType === 'hybrid') && (
-                          <div className="bg-slate-50 rounded-[32px] p-6 border border-slate-200 shadow-inner space-y-4">
-                            <label htmlFor="barter-product-name-input" className={`block text-[15px] font-black text-slate-800 mb-2 ${typeLabel} flex items-center gap-2`}>
-                              <Package className="h-5 w-5 text-slate-900" />
+                          <div className="bg-background rounded-[32px] p-6 border border-border shadow-inner space-y-4">
+                            <label htmlFor="barter-product-name-input" className={`block text-[15px] font-black text-muted-foreground mb-2 ${typeLabel} flex items-center gap-2`}>
+                              <Package className="h-5 w-5 text-muted-foreground" />
                               Product details
                             </label>
                             <Input
@@ -3434,27 +3434,27 @@ const CollabLinkLanding = () => {
                               value={barterProductName}
                               onChange={(e) => setBarterProductName(e.target.value)}
                               placeholder="Product name you'll send"
-                              className="h-12 px-4 rounded-xl border-white bg-white font-bold text-[14px] shadow-sm"
+                              className="h-12 px-4 rounded-xl border-white bg-card font-bold text-[14px] shadow-sm"
                             />
                             {collabType === 'hybrid' && (
                               <div className="relative group">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[15px] group-focus-within:text-slate-900 transition-colors">₹</div>
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-[15px] group-focus-within:text-muted-foreground transition-colors">₹</div>
                                 <Input
                                   id="hybrid-cash-amount-input"
                                   type="number"
                                   value={exactBudget}
                                   onChange={(e) => setExactBudget(e.target.value)}
                                   placeholder="Plus cash amount (optional)"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
                                 />
                               </div>
                             )}
                           </div>
                         )}
 
-                        <div className="bg-slate-50 rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-slate-200 shadow-inner">
-                          <label htmlFor="offer-deadline-input" className={`block text-[15px] font-black text-slate-800 mb-3 ${typeLabel} flex items-center gap-2`}>
-                            <Calendar className="h-5 w-5 text-slate-900" />
+                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner">
+                          <label htmlFor="offer-deadline-input" className={`block text-[15px] font-black text-muted-foreground mb-3 ${typeLabel} flex items-center gap-2`}>
+                            <Calendar className="h-5 w-5 text-muted-foreground" />
                             Deadline
                           </label>
                           <Input
@@ -3463,20 +3463,20 @@ const CollabLinkLanding = () => {
                             value={deadline}
                             onChange={(e) => setDeadline(e.target.value)}
                             min={new Date().toISOString().split('T')[0]}
-                            className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] shadow-sm"
+                            className="h-14 rounded-2xl border-white bg-card px-4 font-bold text-[15px] shadow-sm"
                           />
                           {isDeadlineTooSoon && (
-                            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                            <p className="text-xs text-warning mt-1 flex items-center gap-1">
                               <AlertTriangle className="h-3.5 w-3.5" />
                               Creator needs {creator.min_lead_time_days} days notice — choose a later date.
                             </p>
                           )}
                         </div>
 
-                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                        <div className="rounded-2xl border border-primary bg-primary/70 px-4 py-3">
                           <div className="flex items-start gap-2">
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
-                            <p className="text-[12px] font-semibold text-emerald-800">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                            <p className="text-[12px] font-semibold text-primary">
                               Creator reviews your offer, then accepts, counters, or declines.
                             </p>
                           </div>
@@ -3485,7 +3485,7 @@ const CollabLinkLanding = () => {
                     )}
 
                   {/* Mobile sticky bottom CTA for the form */}
-                  <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-white via-white/95 to-transparent md:hidden">
+                  <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-background via-background/95 to-transparent md:hidden">
                     <div className="max-w-lg mx-auto">
                     {currentStep < 2 ? (
                         <Button
@@ -3501,7 +3501,7 @@ const CollabLinkLanding = () => {
                               toast.error(`Please select collaboration type first`);
                             }
                           }}
-                          className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-base shadow-lg active:scale-[0.98] transition-all"
+                          className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-base shadow-lg active:scale-[0.98] transition-all"
                         >
                           Continue
                           <ArrowRight className="ml-2 h-5 w-5" />
@@ -3519,7 +3519,7 @@ const CollabLinkLanding = () => {
                               triggerHaptic(HapticPatterns.light);
                             }}
                             variant="outline"
-                            className="h-12 w-full rounded-2xl border-slate-200 text-slate-500 font-black text-base"
+                            className="h-12 w-full rounded-2xl border-border text-muted-foreground font-black text-base"
                           >
                             Back
                           </Button>
@@ -3527,7 +3527,7 @@ const CollabLinkLanding = () => {
                           <Button
                             onClick={handleSubmit}
                             disabled={submitting || !isStep2Ready}
-                            className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-base shadow-lg active:scale-[0.98] transition-all"
+                            className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-base shadow-lg active:scale-[0.98] transition-all"
                           >
                             <span className="flex items-center justify-center gap-2">
                               {submitting ? (
@@ -3553,16 +3553,16 @@ const CollabLinkLanding = () => {
                     {currentStep === 2 && isStep2Ready && (
                       <>
                         {/* Contract summary - what happens when you send */}
-                        <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-4">
-                          <p className="text-[11px] font-black uppercase tracking-widest text-blue-700 mb-3">What you're agreeing to</p>
+                        <div className="mb-4 rounded-2xl border border-blue-200 bg-info/70 px-4 py-4">
+                          <p className="text-[11px] font-black uppercase tracking-widest text-info mb-3">What you're agreeing to</p>
                           <div className="space-y-2.5">
                             <div className="flex items-start gap-2.5">
-                              <FileText className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-slate-700">A legally binding contract under Indian Contract Act, 1872</p>
+                              <FileText className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-muted-foreground">A legally binding contract under Indian Contract Act, 1872</p>
                             </div>
                             <div className="flex items-start gap-2.5">
-                              <IndianRupee className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-slate-700">
+                              <IndianRupee className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-muted-foreground">
                                 {collabType === 'barter' 
                                   ? 'Product/experience in exchange for deliverables (no monetary payment)'
                                   : `Payment of ₹${exactBudget || budgetRange || 'agreed amount'} after creator delivers content`
@@ -3570,22 +3570,22 @@ const CollabLinkLanding = () => {
                               </p>
                             </div>
                             <div className="flex items-start gap-2.5">
-                              <Clock className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-slate-700">Payment due within 7 days of content approval</p>
+                              <Clock className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-muted-foreground">Payment due within 7 days of content approval</p>
                             </div>
                             <div className="flex items-start gap-2.5">
-                              <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-slate-700">Late payments incur <span className="font-semibold">18% p.a. interest</span> — standard in India</p>
+                              <AlertCircle className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-muted-foreground">Late payments incur <span className="font-semibold">18% p.a. interest</span> — standard in India</p>
                             </div>
                             <div className="flex items-start gap-2.5">
-                              <ShieldCheck className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-slate-700">If creator doesn't deliver, you get a full refund. If payment is delayed, we help you take action.</p>
+                              <ShieldCheck className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-muted-foreground">If creator doesn't deliver, you get a full refund. If payment is delayed, we help you take action.</p>
                             </div>
                           </div>
                         </div>
-                        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
-                          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-700">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                        <div className="mb-3 rounded-2xl border border-primary bg-primary/70 px-4 py-3">
+                          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-primary">
+                            <CheckCircle2 className="h-4 w-4 text-primary" />
                             Ready to send
                           </div>
                         </div>
@@ -3603,7 +3603,7 @@ const CollabLinkLanding = () => {
                           triggerHaptic(HapticPatterns.light);
                         }}
                         variant="outline"
-                        className="h-14 rounded-full border-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-900 transition-all active:scale-95"
+                        className="h-14 rounded-full border-border text-muted-foreground font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-muted-foreground transition-all active:scale-95"
                       >
                         {currentStep === 1 ? 'Go Back' : 'Back'}
                       </Button>
@@ -3623,7 +3623,7 @@ const CollabLinkLanding = () => {
                             toast.error(`Please select collaboration type first`);
                           }
                         }}
-                        className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-98"
+                        className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-98"
                       >
                         Continue
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -3633,7 +3633,7 @@ const CollabLinkLanding = () => {
                         <Button
                           onClick={handleSubmit}
                           disabled={submitting || !isStep2Ready}
-                          className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-white hover:bg-emerald-600 hover:border-emerald-600 font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
+                          className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
                         >
                           <span className="flex items-center justify-center gap-2">
                             {submitting ? (
@@ -3655,11 +3655,11 @@ const CollabLinkLanding = () => {
                     </div>
                     {currentStep === 2 && (
                       <div className="mt-2 space-y-1.5">
-                        <p className="text-[11px] font-semibold text-slate-500 text-center">
+                        <p className="text-[11px] font-semibold text-muted-foreground text-center">
                           Creator will be notified instantly
                         </p>
                         {(trustStats?.completed_deals ?? 0) > 0 && (
-                          <p className="text-[11px] text-emerald-600 text-center flex items-center justify-center gap-1.5">
+                          <p className="text-[11px] text-primary text-center flex items-center justify-center gap-1.5">
                             <CheckCircle2 className="h-3 w-3" />
                             <span className="font-semibold">
                               {trustStats?.completed_deals} deal{trustStats?.completed_deals !== 1 ? 's' : ''} completed
@@ -3671,8 +3671,8 @@ const CollabLinkLanding = () => {
                     )}
                   </div>
 
-		                    <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-6">
-		                      <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+		                    <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border pt-6">
+		                      <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
 		                        <Lock className="h-3 w-3" />
 		                        Secure & private
 		                      </div>
@@ -3680,7 +3680,7 @@ const CollabLinkLanding = () => {
 	                      {currentStep < 2 && (
 	                        <Button
 	                          onClick={handleStickySubmit}
-                          className="hidden md:flex w-auto h-12 px-8 rounded-2xl bg-slate-100 text-slate-400 font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all"
+                          className="hidden md:flex w-auto h-12 px-8 rounded-2xl bg-background text-muted-foreground font-black text-[11px] uppercase tracking-widest hover:bg-background transition-all"
                         >
                           Next Step: Step {currentStep + 1}
                         </Button>
@@ -3693,7 +3693,7 @@ const CollabLinkLanding = () => {
                       <div className="mt-6 flex justify-center">
                         <button type="button"
                           onClick={fillDemoData}
-                          className="text-[10px] text-slate-200 hover:text-slate-300 font-bold uppercase tracking-widest"
+                          className="text-[10px] text-muted-foreground hover:text-muted-foreground font-bold uppercase tracking-widest"
                         >
                           Fill demo data
                         </button>
@@ -3714,7 +3714,7 @@ const CollabLinkLanding = () => {
                   if (!editMode) setEditMode(true);
                   scrollToSetupSection();
                 }}
-                className="flex items-center gap-2 rounded-full bg-emerald-600 text-white px-4 py-2.5 shadow-[0_10px_24px_rgba(16,185,129,0.35)] hover:bg-emerald-700 transition-all"
+                className="flex items-center gap-2 rounded-full bg-primary text-foreground px-4 py-2.5 shadow-[0_10px_24px_rgba(16,185,129,0.35)] hover:bg-primary transition-all"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="text-[11px] font-black uppercase tracking-wider">
@@ -3727,11 +3727,11 @@ const CollabLinkLanding = () => {
           <div className="px-4">
             {/* Save and continue later modal */}
             <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-              <DialogContent className="bg-slate-900/95 border-white/20 text-white">
+              <DialogContent className="bg-background/95 border-border text-foreground">
                 <DialogHeader>
                   <DialogTitle>Save and continue later</DialogTitle>
                 </DialogHeader>
-                <p className="text-sm text-slate-100/85">
+                <p className="text-sm text-muted-foreground/85">
                   Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
                 </p>
                 <Input
@@ -3746,7 +3746,7 @@ const CollabLinkLanding = () => {
                     type="button"
                     variant="outline"
                     onClick={() => setShowSaveDraftModal(false)}
-                    className="border-white/20 text-white hover:bg-white/10"
+                    className="border-border text-foreground hover:bg-secondary/50"
                   >
                     Cancel
                   </Button>
@@ -3754,7 +3754,7 @@ const CollabLinkLanding = () => {
                     type="button"
                     onClick={handleSaveDraftSubmit}
                     disabled={saveDraftSubmitting}
-                    className="bg-white text-black hover:bg-slate-200 text-white"
+                    className="bg-card text-black hover:bg-background text-foreground"
                   >
                     {saveDraftSubmitting ? (
                       <>
@@ -3772,7 +3772,7 @@ const CollabLinkLanding = () => {
 
           {/* Sticky Bottom CTA (mobile compact) */}
           {!(showCustomFlow && currentStep === 2) && (
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-md border-t border-slate-100">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-background via-background/95 to-transparent backdrop-blur-md border-t border-border">
             <div className="relative">
               {isCoreReady && !hasStartedOffer && (
                 <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
@@ -3796,13 +3796,13 @@ const CollabLinkLanding = () => {
 	                className={[
 	                  'w-full rounded-2xl font-black active:scale-[0.98] transition-all duration-300',
 	                  !showCustomFlow
-	                    ? 'h-14 bg-[#0FA47F] text-white shadow-[0_10px_34px_rgba(15,164,127,0.24)] border border-emerald-500/20'
-	                    : 'h-16 bg-[#0FA47F] text-white shadow-[0_10px_34px_rgba(15,164,127,0.28)] border-t border-white/20'
+	                    ? 'h-14 bg-[#0FA47F] text-foreground shadow-[0_10px_34px_rgba(15,164,127,0.24)] border border-primary/20'
+	                    : 'h-16 bg-[#0FA47F] text-foreground shadow-[0_10px_34px_rgba(15,164,127,0.28)] border-t border-border'
 	                ].join(' ')}
 	              >
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    <Loader2 className="h-5 w-5 text-foreground animate-spin" />
                     Finalizing Security...
                   </span>
 		                ) : !showCustomFlow ? (
@@ -3837,16 +3837,16 @@ const CollabLinkLanding = () => {
 		                )}
               </Button>
             </div>
-            <p className="text-center text-[10px] font-semibold text-slate-500 mt-1.5">
+            <p className="text-center text-[10px] font-semibold text-muted-foreground mt-1.5">
               {showSubmittingTrust ? 'Your offer is being processed securely' : '50+ brands have collaborated through Creator Armour'}
             </p>
             {showSubmittingTrust && (
-              <div className="mt-2 space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+              <div className="mt-2 space-y-1.5 rounded-xl border border-border bg-background px-3 py-2">
                 {submittingChecklist.map((step, idx) => {
                   const complete = idx <= submitChecklistStep;
                   return (
-                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-emerald-700 opacity-100 translate-y-0' : 'text-slate-400 opacity-70 translate-y-0.5'}`}>
-                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-emerald-500' : 'text-slate-300'}`} />
+                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-primary opacity-100 translate-y-0' : 'text-muted-foreground opacity-70 translate-y-0.5'}`}>
+                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-primary' : 'text-muted-foreground'}`} />
                       <span>{step}</span>
                     </div>
                   );
@@ -3939,50 +3939,50 @@ const EditDealTemplateModal = ({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-[32px] p-6 bg-white border-none shadow-2xl overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-md rounded-[32px] p-6 bg-card border-none shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-emerald-500" />
         <DialogHeader className="pt-2">
-          <DialogTitle className="text-xl font-black text-slate-900 flex items-center gap-2">
+          <DialogTitle className="text-xl font-black text-muted-foreground flex items-center gap-2">
             <span className="text-2xl">{edited.icon}</span>
             Edit Service
           </DialogTitle>
-          <p className="text-xs text-slate-500 font-medium tracking-tight">Set your service details so brands can choose faster.</p>
+          <p className="text-xs text-muted-foreground font-medium tracking-tight">Set your service details so brands can choose faster.</p>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Service Name</label>
+            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Service Name</label>
             <Input
               value={edited.label}
               onChange={(e) => setEdited({ ...edited, label: e.target.value })}
-              className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all"
+              className="rounded-2xl border-border bg-background h-12 font-bold focus:bg-card transition-all"
               placeholder="e.g. Pro Reel Package"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1 flex justify-between">
+            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1 flex justify-between">
               Deliverables Included
-              <span className="text-[9px] text-slate-300">Required</span>
+              <span className="text-[9px] text-muted-foreground">Required</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {DELIVERABLE_OPTIONS.filter(o => o.value !== 'Custom').map((opt) => {
                 const isSelected = edited.deliverables.includes(opt.value);
                 return (
-                  <div key={opt.value} className={`border rounded-xl p-2 flex items-center justify-between transition-colors ${isSelected ? 'border-teal-500 bg-teal-50/30' : 'border-slate-100 bg-slate-50'}`}>
-                    <label className="flex items-center gap-2 cursor-pointer text-[12px] font-bold text-slate-700 w-full">
+                  <div key={opt.value} className={`border rounded-xl p-2 flex items-center justify-between transition-colors ${isSelected ? 'border-teal-500 bg-teal-50/30' : 'border-border bg-background'}`}>
+                    <label className="flex items-center gap-2 cursor-pointer text-[12px] font-bold text-muted-foreground w-full">
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleDeliverableToggleModal(opt.value)}
-                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 bg-white"
+                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 bg-card"
                       />
                       {opt.label}
                     </label>
                     {isSelected && (
-                      <div className="flex items-center gap-1.5 shrink-0 bg-white rounded-lg border border-slate-200 px-1 py-0.5 shadow-sm">
-                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">−</button>
-                        <span className="text-[12px] font-black w-3 text-center text-slate-800">{edited.quantities[opt.value] || 1}</span>
-                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 transition-colors">+</button>
+                      <div className="flex items-center gap-1.5 shrink-0 bg-card rounded-lg border border-border px-1 py-0.5 shadow-sm">
+                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-background flex items-center justify-center font-bold text-muted-foreground transition-colors">−</button>
+                        <span className="text-[12px] font-black w-3 text-center text-muted-foreground">{edited.quantities[opt.value] || 1}</span>
+                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-background flex items-center justify-center font-bold text-muted-foreground transition-colors">+</button>
                       </div>
                     )}
                   </div>
@@ -3993,12 +3993,12 @@ const EditDealTemplateModal = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Deal Type</label>
+              <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Deal Type</label>
               <Select
                 value={edited.type}
                 onValueChange={(v: any) => setEdited({ ...edited, type: v })}
               >
-                <SelectTrigger className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all">
+                <SelectTrigger className="rounded-2xl border-border bg-background h-12 font-bold focus:bg-card transition-all">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
@@ -4008,85 +4008,85 @@ const EditDealTemplateModal = ({
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">
+              <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">
                 {edited.type === 'paid' ? 'Price (₹)' : 'Value (₹)'}
               </label>
               <Input
                 type="number"
                 value={edited.budget}
                 onChange={(e) => setEdited({ ...edited, budget: Number(e.target.value) })}
-                className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-black text-teal-600 focus:bg-white transition-all"
+                className="rounded-2xl border-border bg-background h-12 font-black text-teal-600 focus:bg-card transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Delivery Time</label>
+            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Delivery Time</label>
             <div className="relative">
               <Input
                 type="number"
                 value={edited.deadlineDays || ''}
                 onChange={(e) => setEdited({ ...edited, deadlineDays: Number(e.target.value) })}
                 placeholder="e.g. 7"
-                className="rounded-2xl border-slate-200 bg-slate-50 h-12 font-bold focus:bg-white transition-all pr-12"
+                className="rounded-2xl border-border bg-background h-12 font-bold focus:bg-card transition-all pr-12"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-bold text-slate-400 pointer-events-none">
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-bold text-muted-foreground pointer-events-none">
                 Days
               </span>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1 flex justify-between">
+            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1 flex justify-between">
               Package Description
-              <span className="text-[9px] text-slate-300 normal-case">{edited.description?.length || 0}/120</span>
+              <span className="text-[9px] text-muted-foreground normal-case">{edited.description?.length || 0}/120</span>
             </label>
             <Textarea
               maxLength={120}
               value={edited.description}
               onChange={(e) => setEdited({ ...edited, description: e.target.value })}
               placeholder="e.g. Best for product launches. Includes 1 reel + 2 story mentions."
-              className="rounded-2xl border-slate-200 bg-slate-50 min-h-[80px] font-medium focus:bg-white transition-all py-3 px-4 resize-none"
+              className="rounded-2xl border-border bg-background min-h-[80px] font-medium focus:bg-card transition-all py-3 px-4 resize-none"
             />
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-slate-100">
+          <div className="space-y-4 pt-4 border-t border-border">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest pl-1">Optional Add-ons</label>
+              <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Optional Add-ons</label>
               <button type="button" onClick={handleAddAddon} className="flex items-center gap-1 text-[10px] font-black uppercase text-teal-600 bg-teal-50 px-2 py-1 rounded hover:bg-teal-100 transition-colors">
                 <span className="text-xl leading-none -mt-0.5">+</span> Add Item
               </button>
             </div>
             {edited.addons?.map((addon, index) => (
-              <div key={addon.id} className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
+              <div key={addon.id} className="flex items-center gap-2 bg-background p-2 rounded-xl border border-border">
                 <Input
-                  className="flex-1 rounded-lg border-slate-200 bg-white h-10 font-bold focus:bg-white transition-all text-[12px]"
+                  className="flex-1 rounded-lg border-border bg-card h-10 font-bold focus:bg-card transition-all text-[12px]"
                   placeholder="e.g. + Extra Story"
                   value={addon.label}
                   onChange={(e) => handleUpdateAddon(index, { label: e.target.value })}
                 />
                 <div className="relative w-24 shrink-0">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-black text-[11px]">₹</span>
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-[11px]">₹</span>
                   <Input
                     type="number"
-                    className="w-full rounded-lg border-slate-200 bg-white h-10 font-black text-teal-600 focus:bg-white transition-all pl-6 text-[12px]"
+                    className="w-full rounded-lg border-border bg-card h-10 font-black text-teal-600 focus:bg-card transition-all pl-6 text-[12px]"
                     placeholder="200"
                     value={addon.price || ''}
                     onChange={(e) => handleUpdateAddon(index, { price: Number(e.target.value) })}
                   />
                 </div>
-                <button type="button" onClick={() => handleRemoveAddon(index)} className="p-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Remove add-on">
+                <button type="button" onClick={() => handleRemoveAddon(index)} className="p-2.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive transition-colors" aria-label="Remove add-on">
                   <X className="w-5 h-5" />
                 </button>
               </div>
             ))}
             {(!edited.addons || edited.addons.length === 0) && (
-              <p className="text-[10px] font-bold text-slate-400 italic text-center py-2">No add-ons created. Offer extras to clear upsell deals.</p>
+              <p className="text-[10px] font-bold text-muted-foreground italic text-center py-2">No add-ons created. Offer extras to clear upsell deals.</p>
             )}
           </div>
 
-          <div className="py-2 pt-4 border-t border-slate-100">
-            <label className="flex items-center gap-2 cursor-pointer bg-amber-50/50 hover:bg-amber-50 p-3 rounded-xl border border-amber-100 transition-colors">
+          <div className="py-2 pt-4 border-t border-border">
+            <label className="flex items-center gap-2 cursor-pointer bg-warning/50 hover:bg-warning p-3 rounded-xl border border-warning transition-colors">
               <input
                 type="checkbox"
                 checked={edited.isPopular || false}
@@ -4095,9 +4095,9 @@ const EditDealTemplateModal = ({
                   // We'll trust the parent to handle exclusivity if needed, or we just rely on state.
                   setEdited({ ...edited, isPopular: e.target.checked })
                 }}
-                className="rounded border-amber-300 text-[#FFA000] focus:ring-[#FFA000] h-4 w-4"
+                className="rounded border-warning text-[#FFA000] focus:ring-[#FFA000] h-4 w-4"
               />
-              <span className="text-[13px] font-bold text-amber-700 flex items-center gap-1.5">
+              <span className="text-[13px] font-bold text-warning flex items-center gap-1.5">
                 <Sparkles className="h-4 w-4" />
                 Mark as most popular
               </span>
@@ -4105,10 +4105,10 @@ const EditDealTemplateModal = ({
           </div>
         </div>
         <DialogFooter className="gap-2 sm:gap-3">
-          <Button variant="ghost" onClick={onClose} className="rounded-full font-black text-slate-400 text-xs uppercase tracking-widest h-11 hover:bg-slate-50">Cancel</Button>
+          <Button variant="ghost" onClick={onClose} className="rounded-full font-black text-muted-foreground text-xs uppercase tracking-widest h-11 hover:bg-background">Cancel</Button>
           <Button
             onClick={() => onSave(edited)}
-            className="flex-1 rounded-full bg-slate-900 hover:bg-black text-white font-black text-xs uppercase tracking-widest h-11 shadow-xl active:scale-[0.98] transition-all"
+            className="flex-1 rounded-full bg-background hover:bg-black text-foreground font-black text-xs uppercase tracking-widest h-11 shadow-xl active:scale-[0.98] transition-all"
           >
             Update Template
           </Button>
