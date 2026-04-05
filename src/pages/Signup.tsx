@@ -645,7 +645,7 @@ const Signup = () => {
 
   return (
     <div
-      className="nb-screen-height bg-[#F4F7FB] relative flex items-start justify-start md:items-center md:justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
+      className="nb-screen-height bg-[#0B0F14] relative flex items-start justify-start md:items-center md:justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
@@ -666,7 +666,7 @@ const Signup = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="hidden md:block text-slate-900 space-y-12"
+          className="hidden md:block text-white space-y-12"
         >
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-10">
@@ -680,7 +680,7 @@ const Signup = () => {
               Protect and scale<br />
               your creator business
             </h2>
-            <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
+            <p className="text-xl text-white/70 font-medium leading-relaxed max-w-md">
               Create your creator link, get brand offers, and track active deals in one place.
             </p>
           </div>
@@ -702,21 +702,21 @@ const Signup = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg mb-1">{feature.title}</h3>
-                    <p className="text-slate-600 text-sm font-medium">{feature.description}</p>
+                    <p className="text-white/60 text-sm font-medium">{feature.description}</p>
                   </div>
                 </motion.div>
               );
             })}
           </div>
 
-          <div className="pt-10 border-t border-slate-200 flex gap-10">
+          <div className="pt-10 border-t border-white/10 flex gap-10">
             <div>
-              <p className="text-slate-900 text-xl font-black">10,000+</p>
-              <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Contracts Analyzed</p>
+              <p className="text-white text-xl font-black">10,000+</p>
+              <p className="text-white/40 text-[11px] font-black uppercase tracking-widest mt-1">Contracts Analyzed</p>
             </div>
             <div>
-              <p className="text-slate-900 text-xl font-black">₹2Cr+</p>
-              <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Value Protected</p>
+              <p className="text-white text-xl font-black">₹2Cr+</p>
+              <p className="text-white/40 text-[11px] font-black uppercase tracking-widest mt-1">Value Protected</p>
             </div>
           </div>
         </motion.div>
@@ -728,19 +728,19 @@ const Signup = () => {
           transition={{ duration: 0.5 }}
           className="w-full"
         >
-          <div className="bg-white shadow-xl rounded-[2.5rem] p-10 border border-slate-200">
+          <div className="bg-[#0B0F14]/90 backdrop-blur-xl shadow-xl rounded-[2.5rem] p-10 border border-white/10">
             {/* Mobile Logo */}
             <div className="md:hidden flex items-center gap-3 mb-10">
               <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
                 <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</h1>
+              <h1 className="text-lg font-black text-white tracking-tight">Creator Armour</h1>
 	            </div>
 	
 	            <div className="mb-10">
                 {!showLogin && (
                   <div className="mb-6">
-                    <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 w-full">
+                    <div className="inline-flex rounded-2xl border border-white/10 bg-white/5 p-1 w-full">
                       <button
                         type="button"
                         onClick={() => {
@@ -751,8 +751,8 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'creator'
-                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                            : 'bg-transparent text-slate-600 hover:text-slate-900'
+                            ? 'bg-white/20 text-white border border-white/20'
+                            : 'bg-transparent text-white/60 hover:text-white'
                         )}
                       >
                         Creator
@@ -767,8 +767,8 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'brand'
-                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                            : 'bg-transparent text-slate-600 hover:text-slate-900'
+                            ? 'bg-white/20 text-white border border-white/20'
+                            : 'bg-transparent text-white/60 hover:text-white'
                         )}
                       >
                         Brand
@@ -778,7 +778,7 @@ const Signup = () => {
                 )}
 
 	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
-	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create your page'}
+	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create my collab link'}
 	              </h2>
 	              <p className="text-slate-600 font-medium leading-relaxed">
 	                {showLogin
@@ -795,7 +795,7 @@ const Signup = () => {
               <div className="mb-8">
                 <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                    <Label htmlFor="email" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
                       Email
                     </Label>
                     <Input
@@ -804,7 +804,7 @@ const Signup = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="email"
                     />
@@ -828,7 +828,7 @@ const Signup = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="current-password"
                     />
@@ -836,7 +836,7 @@ const Signup = () => {
                   <Button
                     type="submit"
                     disabled={isLoading || !email.trim() || !password.trim()}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
                   </Button>
@@ -849,7 +849,7 @@ const Signup = () => {
               <div className="mb-8">
 	                <form onSubmit={handleEmailPasswordSignup} className="space-y-4">
 	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+	                    <Label htmlFor="signup-name" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
 	                      {accountMode === 'brand' ? 'Your Name' : 'Name'}
 	                    </Label>
 	                    <Input
@@ -858,14 +858,14 @@ const Signup = () => {
 	                      placeholder="e.g. Pratyush Raj"
 	                      value={name}
 	                      onChange={(e) => setName(e.target.value)}
-	                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+	                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5"
 	                      required
 	                      autoComplete="name"
 	                    />
 	                  </div>
                     {accountMode === 'creator' && (
                       <div className="space-y-2">
-                        <Label htmlFor="signup-instagram-handle" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                        <Label htmlFor="signup-instagram-handle" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
                           Your Instagram username
                         </Label>
                         <Input
@@ -874,7 +874,7 @@ const Signup = () => {
                           placeholder="sana.reels.delhi"
                           value={instagramHandle}
                           onChange={(e) => setInstagramHandle(e.target.value)}
-                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5"
                           required
                           autoComplete="username"
                         />
@@ -886,7 +886,7 @@ const Signup = () => {
                     {accountMode === 'brand' && (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="signup-brand-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                          <Label htmlFor="signup-brand-name" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
                             Brand Name
                           </Label>
                           <Input
@@ -895,13 +895,13 @@ const Signup = () => {
                             placeholder="e.g. Demo Brand Co"
                             value={brandName}
                             onChange={(e) => setBrandName(e.target.value)}
-                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5"
                             required
                             autoComplete="organization"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="signup-brand-industry" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                          <Label htmlFor="signup-brand-industry" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
                             Industry
                           </Label>
                           <Input
@@ -910,13 +910,13 @@ const Signup = () => {
                             placeholder="e.g. Fashion"
                             value={brandIndustry}
                             onChange={(e) => setBrandIndustry(e.target.value)}
-                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5"
                           />
                         </div>
                       </>
                     )}
 	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+	                    <Label htmlFor="signup-email" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
 	                      {accountMode === 'brand' ? 'Work Email' : 'Email'}
 	                    </Label>
 	                    <Input
@@ -934,7 +934,7 @@ const Signup = () => {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                    <Label htmlFor="signup-password" className="text-white/50 text-[11px] font-black uppercase tracking-widest ml-1">
                       Password
                     </Label>
                     <div className="relative">
@@ -944,7 +944,7 @@ const Signup = () => {
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5 pr-12"
                         required
                         autoComplete="new-password"
                         minLength={6}
@@ -952,16 +952,42 @@ const Signup = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+
+                    {/* Password strength */}
+                    {password.length > 0 && (
+                      <div className="mt-1.5 space-y-1">
+                        <div className="flex gap-1">
+                          {[1,2,3,4].map((level) => (
+                            <div
+                              key={level}
+                              className={`h-1 flex-1 rounded-full transition-all ${
+                                level <= getPasswordStrength(password).strength
+                                  ? getPasswordStrength(password).color
+                                  : 'bg-white/10'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className={`text-[10px] font-black ${
+                          getPasswordStrength(password).strength <= 1 ? 'text-red-400' :
+                          getPasswordStrength(password).strength === 2 ? 'text-yellow-400' :
+                          getPasswordStrength(password).strength === 3 ? 'text-emerald-400' :
+                          'text-green-400'
+                        }`}>
+                          {getPasswordStrength(password).label}
+                        </p>
+                      </div>
+                    )}
 	                  </div>
 	                  <Button
 	                    type="submit"
 	                    disabled={isLoading || !name.trim() || (accountMode === 'creator' && !instagramHandle.trim()) || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
-	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
 	                  >
 	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
 	                    {isLoading
@@ -1011,7 +1037,7 @@ const Signup = () => {
 	                  } catch (err) { toast.error('Failed to start Google sign-up'); }
 	                }}
                 variant="outline"
-                className="w-full bg-white border-slate-300 text-slate-900 hover:bg-slate-50 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
+                className="w-full bg-white/10 border-white/20 text-white hover:bg-white/15 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

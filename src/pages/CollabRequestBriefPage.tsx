@@ -586,7 +586,7 @@ const CollabRequestBriefPage = () => {
           {/* What the brand wants */}
           <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-4">
             <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-2">What the brand wants</p>
-            <p className="text-base md:text-sm text-blue-200 leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm text-blue-200 leading-relaxed whitespace-pre-wrap">
               {request.campaign_description || '-'}
             </p>
           </div>
