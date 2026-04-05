@@ -1985,7 +1985,7 @@ Best regards`;
       }
     >
       {/* Content */}
-      <div className="space-y-4 md:space-y-6 pb-32 md:pb-24 md:p-6">
+      <div className="space-y-4 md:space-y-6 pb-40 md:pb-24 md:p-6">
 
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex flex-col gap-4">
@@ -2152,6 +2152,22 @@ Best regards`;
                         : 'Share post link'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sticky submit bar — mobile only when content submission form is visible */}
+        {(['CONTENT_IN_PROGRESS','OFFER_ACCEPTED','REVISION_REQUESTED'] as const).includes(guidedDealState) && (
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F14] via-[#0B0F14]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
+            <div className="max-w-lg mx-auto space-y-2">
+              <button
+                type="button"
+                onClick={() => { document.getElementById('deal-content-link')?.focus(); document.getElementById('deal-content-link')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                className="w-full h-14 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-black text-base shadow-lg shadow-emerald-500/30 transition-all"
+              >
+                {guidedDealState === 'REVISION_REQUESTED' ? 'Share updated link' : existingContentSubmissionUrl ? 'Update shared link' : 'Share post link'}
+              </button>
+              <p className="text-center text-[10px] text-white/30">Tap to open the form above</p>
             </div>
           </div>
         )}

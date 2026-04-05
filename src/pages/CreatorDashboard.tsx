@@ -1174,27 +1174,27 @@ const CreatorDashboard = () => {
           {/* Sticky bottom CTA for new creators */}
           {(creatorStage === 'new' || creatorStage === 'link_shared') && (
             <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent md:hidden">
-              <div className="flex flex-col gap-3 max-w-lg mx-auto">
+              <div className="flex flex-row gap-2 max-w-lg mx-auto">
                 <Button
                   type="button"
-                  className="bg-emerald-600 text-white hover:bg-emerald-500 h-14 text-base font-black rounded-2xl shadow-lg"
+                  className="flex-1 bg-emerald-600 text-white hover:bg-emerald-500 h-12 text-sm font-black rounded-2xl shadow-lg gap-1.5"
                   onClick={() => void handleShareWhatsApp()}
                   disabled={!collabUrl}
                 >
-                  <MessageCircleMore className="mr-2 h-5 w-5" />
-                  Share on WhatsApp
+                  <MessageCircleMore className="h-4 w-4" />
+                  WhatsApp
                 </Button>
                 <Button
                   type="button"
-                  className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 h-14 text-base font-black rounded-2xl"
+                  className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400 h-12 text-sm font-black rounded-2xl gap-1.5"
                   onClick={() => {
                     void copyText(collabUrl, 'Link copied. Paste it in DM');
                     void trackEvent('collab_link_copied', { creator_id: profile?.id });
                   }}
                   disabled={!collabUrl}
                 >
-                  <Copy className="mr-2 h-5 w-5" />
-                  Copy Link
+                  <Copy className="h-4 w-4" />
+                  Copy
                 </Button>
               </div>
             </div>
