@@ -285,6 +285,17 @@ const BrandDealDetailPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Brand trust signal */}
+              <div className="bg-emerald-500/10 border border-emerald-400/20 rounded-xl p-3 mb-4">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-300">Your payment is protected</p>
+                    <p className="text-[11px] text-emerald-300/70 mt-0.5">You only pay after approving content. If creator doesn't deliver, contact support for a resolution.</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-white/5 rounded-xl p-4 mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-white/60">Amount to pay</span>

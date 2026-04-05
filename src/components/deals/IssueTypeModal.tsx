@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, FileText, AlertTriangle, DollarSign, HelpCircle } from 'lucide-react';
+import { X, CreditCard, FileText, AlertTriangle, DollarSign, HelpCircle, Clock, MessageSquare, Scale } from 'lucide-react';
 
 export type IssueType = 
   | 'payment_delay'
@@ -129,6 +129,33 @@ export const IssueTypeModal: React.FC<IssueTypeModalProps> = ({
                   </button>
                 );
               })}
+            </div>
+
+            {/* What happens next - trust signal */}
+            <div className="px-5 pb-5">
+              <div className="bg-emerald-500/10 border border-emerald-400/20 rounded-xl p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 mb-3">What happens next</p>
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-3 w-3 text-emerald-400" />
+                    </div>
+                    <p className="text-xs text-white/80">Our team reviews within 24 hours</p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="h-3 w-3 text-emerald-400" />
+                    </div>
+                    <p className="text-xs text-white/80">We contact the brand on your behalf</p>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <Scale className="h-3 w-3 text-emerald-400" />
+                    </div>
+                    <p className="text-xs text-white/80">If unresolved after 7 days, we help with legal notice</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         </>

@@ -2212,6 +2212,17 @@ const CollabLinkLanding = () => {
                         <CheckCircle2 className="h-3 w-3 text-teal-600" />
                         <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
                       </div>
+                      {/* Trust badges for brands */}
+                      <div className="hidden sm:flex items-center gap-1.5 ml-1">
+                        <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                          <FileCheck className="h-3 w-3 text-emerald-600" />
+                          <span className="text-[9px] font-bold text-emerald-700 uppercase">Contract-backed</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2 py-0.5">
+                          <ShieldCheck className="h-3 w-3 text-blue-600" />
+                          <span className="text-[9px] font-bold text-blue-700 uppercase">Pay after approval</span>
+                        </div>
+                      </div>
                     </div>
                     {editMode ? (
                       <div className="mt-1 flex gap-2 items-center">
@@ -3540,12 +3551,41 @@ const CollabLinkLanding = () => {
                   {/* Desktop navigation only */}
                   <div className="hidden md:block mt-8">
                     {currentStep === 2 && isStep2Ready && (
-                      <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
-                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-700">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                          Ready to send
+                      <>
+                        {/* Contract summary - what happens when you send */}
+                        <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-4">
+                          <p className="text-[11px] font-black uppercase tracking-widest text-blue-700 mb-3">What you're agreeing to</p>
+                          <div className="space-y-2.5">
+                            <div className="flex items-start gap-2.5">
+                              <FileText className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-slate-700">A legally binding contract under Indian Contract Act, 1872</p>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <IndianRupee className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-slate-700">
+                                {collabType === 'barter' 
+                                  ? 'Product/experience in exchange for deliverables (no monetary payment)'
+                                  : `Payment of ₹${exactBudget || budgetRange || 'agreed amount'} after creator delivers content`
+                                }
+                              </p>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <Clock className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-slate-700">Payment expected within 7 days of content approval</p>
+                            </div>
+                            <div className="flex items-start gap-2.5">
+                              <ShieldCheck className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-slate-700">If creator doesn't deliver, you get a full refund. If payment is delayed, we help you take action.</p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                        <div className="mb-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-700">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            Ready to send
+                          </div>
+                        </div>
+                      </>
                     )}
                     <div className="flex flex-col sm:flex-row gap-3">
                     {!(selectedTemplate && currentStep === 2) && (

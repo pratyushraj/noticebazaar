@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { WifiOff, ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info } from 'lucide-react';
+import { WifiOff, ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info, ShieldCheck } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -672,6 +672,52 @@ const PaymentDetailPage = () => {
                   </div>
                 </div>
               ))}
+            </div>
+            {/* Payment protection messaging */}
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="flex items-start gap-2.5">
+                <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-white">Contract-backed payment</p>
+                  <p className="text-[11px] text-white/50 mt-0.5">If payment is 7+ days late, you can escalate and we'll help you take action — including sending a legal notice.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Payment overdue warning with escalation */}
+        {paymentData.status === 'overdue' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05, duration: 0.3 }}
+            className="relative rounded-2xl border border-red-400/30 bg-red-500/10 p-5"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-full bg-red-400/20 p-2">
+                <AlertCircle className="h-4 w-4 text-red-300" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">Payment is overdue</p>
+                <p className="mt-1 text-sm text-white/70">
+                  Contact the brand directly first. If they don't respond within 48 hours, you can:
+                </p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-white/60">
+                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">1</span>
+                    <span>Send a payment reminder</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-white/60">
+                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">2</span>
+                    <span>Report the issue — we'll contact the brand</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-white/60">
+                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">3</span>
+                    <span>After 30 days: request a legal notice (automated)</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
