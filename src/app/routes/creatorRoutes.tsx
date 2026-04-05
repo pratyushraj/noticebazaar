@@ -10,6 +10,7 @@ const DealDeliveryDetailsPage = lazy(() => import("@/pages/DealDeliveryDetailsPa
 const PaymentDetailPage = lazy(() => import("@/pages/PaymentDetailPage"));
 const CreatorOnboarding = lazy(() => import("@/pages/CreatorOnboarding"));
 const DealDetailPage = lazy(() => import("@/pages/DealDetailPage"));
+const DesignSystem = lazy(() => import("@/pages/DesignSystem"));
 
 export const CreatorRoutes = () => (
   <>
@@ -26,5 +27,6 @@ export const CreatorRoutes = () => (
     <Route path="/creator-contracts/:dealId/delivery-details" element={<Navigate to="/deal-delivery-details/:dealId" replace />} />
     <Route path="/brand-deal-console" element={<Navigate to="/creator-dashboard" replace />} />
     <Route path="/notifications" element={<Navigate to="/creator-dashboard" replace />} />
+    <Route path="/design-system" element={<LazyRoute><DesignSystem /></LazyRoute>} />
   </>
 );
