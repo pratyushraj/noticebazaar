@@ -48,7 +48,7 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          className="fixed top-16 left-0 right-0 z-[99] bg-secondary/90 backdrop-blur-xl border-b border-purple-500/30 shadow-lg"
+          className="fixed top-16 left-0 right-0 z-[99] bg-secondary/90 backdrop-blur-xl border-b border-border"
         >
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -66,7 +66,7 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          className="fixed top-16 left-0 right-0 z-[99] bg-green-600/90 backdrop-blur-xl border-b border-green-500/30 shadow-lg"
+          className="fixed top-16 left-0 right-0 z-[99] bg-primary/90 backdrop-blur-xl border-b border-primary"
         >
           <div className="container mx-auto px-4 py-3 flex items-center gap-3">
             <RefreshCw className="w-5 h-5 text-foreground animate-spin" />

@@ -57,11 +57,11 @@ const NavTabs: React.FC<NavTabsProps> = ({ tabs, role }) => {
             <Icon className="h-4 w-4" />
             <span>{tab.label}</span>
             
-            {/* Active indicator with pink underline */}
+            {/* Active indicator with green underline */}
             {active && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF4DAA] rounded-full"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
                 initial={false}
                 transition={{
                   type: "spring",

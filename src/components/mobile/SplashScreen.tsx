@@ -53,7 +53,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
             className="text-center"
           >
             <div className="w-24 h-24 rounded-3xl bg-background border border-border flex items-center justify-center mb-4 mx-auto shadow-2xl">
-              <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-slate-400 bg-clip-text text-transparent">
+              <span className="text-4xl font-bold bg-clip-text text-transparent font-semibold text-primary">
                 CA
               </span>
             </div>

@@ -46,16 +46,22 @@ const Layout = ({ children }: LayoutProps) => {
           <main
             id="main"
             className={cn(
-              "relative flex-1 w-full py-6 px-4 md:px-6 lg:px-8 transition-all duration-300 ease-in-out",
+              "relative flex-1 w-full transition-all duration-300",
+              // Mobile: generous horizontal padding, bottom safe area for nav
+              "px-4 pb-24 pt-4",
+              // Tablet
+              "md:px-6 md:pb-8 md:pt-6",
+              // Desktop: sidebar offset when open
+              "lg:px-8 lg:py-6",
               isFullScreen ? "overflow-hidden p-0" : "overflow-y-auto overscroll-contain",
-              isOpen && "md:ml-[280px]"
+              isOpen && "md:ml-[320px]"
             )}
           >
             {children}
           </main>
 
-          <div className="hidden md:block text-center py-4 text-sm text-foreground/30 mt-auto">
-            <span>© 2026 Creator Armour</span>
+          <div className="hidden md:block text-center py-4 text-xs text-muted-foreground">
+            © 2026 Creator Armour
           </div>
         </div>
 

@@ -2,10 +2,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Settings, LogOut } from 'lucide-react';
-import AppsGridIcon from '@/components/icons/AppsGridIcon';
+import { Settings, LogOut, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
@@ -31,20 +29,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
   const signOutMutation = useSignOut();
   const [open, setOpen] = React.useState(false);
 
-  const getPlanName = () => (profile?.role === 'creator' ? 'Creator' : 'Standard');
+  const isActive = (path: string) =>
+    path === '/creator-dashboard'
+      ? location.pathname === path
+      : location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const isActive = (path: string) => {
-    if (path === '/creator-dashboard') {
-      return location.pathname === path || location.pathname === '/creator-dashboard';
-    }
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
-
-  // Filter tabs based on role
-  const visibleTabs = tabs.filter(tab => {
-    if (!tab.roles) return true;
-    return tab.roles.includes(profile?.role || '');
-  });
+  const visibleTabs = tabs.filter(tab =>
+    !tab.roles || tab.roles.includes(profile?.role || '')
+  );
 
   const handleLogout = async () => {
     await signOutMutation.mutateAsync();
@@ -53,127 +45,111 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
 
   const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'User';
   const email = user?.email || '';
-  const role = profile?.role === 'creator' ? 'Creator' : profile?.role === 'admin' ? 'Admin' : profile?.role === 'chartered_accountant' ? 'CA' : 'Client';
-  const plan = getPlanName();
+  const role = profile?.role === 'creator' ? 'Creator' : profile?.role === 'admin' ? 'Admin' : 'Client';
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <div 
-          className="lg:hidden w-[38px] h-[38px] rounded-full hover:bg-secondary active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center"
+        <button
+          type="button"
+          className="lg:hidden w-9 h-9 rounded-xl hover:bg-secondary active:scale-95 transition-all duration-150 flex items-center justify-center"
+          aria-label="Open menu"
         >
-          <AppsGridIcon />
-        </div>
+          <div className="w-5 h-5 flex flex-col justify-center gap-[5px]">
+            <div className="h-px bg-foreground w-full rounded-full" />
+            <div className="h-px bg-foreground w-full rounded-full" />
+            <div className="h-px bg-foreground w-2/3 rounded-full ml-auto" />
+          </div>
+        </button>
       </SheetTrigger>
 
       <SheetContent
         side="left"
-        className="w-[84%] sm:w-[320px] bg-[#0C111C] backdrop-blur-xl border-r border-border p-4 transition-all duration-300 ease-in-out flex flex-col rounded-r-2xl"
+        className="w-[85%] sm:w-80 bg-card border-r border-border p-0 flex flex-col rounded-r-2xl"
       >
-        {/* Profile Header at Top */}
-        <div className="mb-6 flex-shrink-0">
+        {/* Profile Header */}
+        <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3 mb-4">
-            <Avatar className="h-12 w-12 ring-2 ring-blue-500/40 border-2 border-info/20 rounded-full flex-shrink-0">
-              <AvatarImage 
-                src={profile?.avatar_url || DEFAULT_AVATAR_URL} 
-                alt={fullName}
-              />
-              <AvatarFallback className="bg-info/20 text-info text-sm font-semibold">
+            <Avatar className="h-11 w-11 ring-2 ring-border rounded-xl">
+              <AvatarImage src={profile?.avatar_url || DEFAULT_AVATAR_URL} alt={fullName} />
+              <AvatarFallback className="bg-secondary text-muted-foreground text-sm font-medium">
                 {getInitials(profile?.first_name, profile?.last_name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-foreground truncate mb-0.5">
-                {fullName}
-              </h3>
-              <p className="text-sm text-muted-foreground truncate">
-                {email}
-              </p>
+              <h3 className="text-sm font-semibold text-foreground truncate">{fullName}</h3>
+              <p className="text-xs text-muted-foreground truncate">{email}</p>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2 flex-wrap">
+
+          <div className="flex items-center gap-2">
             <span className={cn(
-              "px-2.5 py-1 rounded-full text-xs font-medium",
-              profile?.role === 'creator' 
-                ? "bg-[#6740FF] text-foreground" 
-                : "bg-[#363636] text-gray-300"
+              "px-2.5 py-0.5 rounded-full text-xs font-medium",
+              profile?.role === 'creator'
+                ? "bg-primary/15 text-primary"
+                : "bg-secondary text-muted-foreground"
             )}>
               {role}
-            </span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#363636] text-gray-300">
-              {plan}
             </span>
           </div>
         </div>
 
-        {/* Divider after Profile */}
-        <div className="h-[1px] bg-secondary mb-4" />
-
-        {/* Main Navigation - Scrollable */}
-        <nav className="flex-1 flex flex-col space-y-1 overflow-y-auto min-h-0 -mx-2 px-2">
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-2 px-3">
           {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab.to);
-            
-              return (
-                <Link
-                  key={tab.to}
-                  to={tab.to}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150",
-                    "hover:bg-secondary active:scale-[0.98]",
-                    active
-                      ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-foreground"
-                      : "text-[#9FA8B7] hover:text-foreground"
-                  )}
-                >
-                  <Icon className={cn(
-                    "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-all duration-150",
-                    active ? "text-foreground" : "text-[#A8B0C0] group-hover:text-foreground"
-                  )} />
-                  <span className="flex-1 relative z-10">{tab.label}</span>
-                </Link>
-              );
+            return (
+              <Link
+                key={tab.to}
+                to={tab.to}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 mb-0.5",
+                  active
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1">{tab.label}</span>
+                {active && <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
+              </Link>
+            );
           })}
 
-          {/* Divider before Settings */}
-          <div className="h-[1px] bg-secondary my-3" />
-          
+          <div className="h-px bg-border my-3" />
+
           <Link
             to={profilePath}
             onClick={() => setOpen(false)}
             className={cn(
-              "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150",
-              "hover:bg-secondary active:scale-[0.98]",
+              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 mb-0.5",
               isActive(profilePath)
-                ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-foreground"
-                : "text-[#9FA8B7] hover:text-foreground"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
-            <Settings className={cn(
-              "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-all duration-150",
-              isActive(profilePath) ? "text-foreground" : "text-[#A8B0C0] group-hover:text-foreground"
-            )} />
-            <span className="relative z-10">Settings</span>
+            <Settings className="h-4 w-4 shrink-0" />
+            <span className="flex-1">Settings</span>
           </Link>
+        </nav>
 
-          {/* Divider before Logout */}
-          <div className="h-[1px] bg-secondary my-3" />
-
-          <button type="button"
+        {/* Footer */}
+        <div className="p-3 border-t border-border">
+          <button
+            type="button"
             onClick={handleLogout}
             disabled={signOutMutation.isPending}
-            className="group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium text-destructive hover:bg-destructive/10 active:scale-[0.98] w-full text-left transition-all duration-150 disabled:opacity-50"
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium w-full transition-all duration-150",
+              "text-destructive hover:bg-destructive/10 disabled:opacity-50"
+            )}
           >
-            <LogOut className="h-[18px] w-[18px] flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5" />
-            <span>Logout</span>
+            <LogOut className="h-4 w-4 shrink-0" />
+            <span>{signOutMutation.isPending ? 'Signing out...' : 'Sign out'}</span>
           </button>
-
-          {/* Bottom Safe Padding for Thumb Reach */}
-          <div className="h-10 flex-shrink-0" />
-        </nav>
+        </div>
       </SheetContent>
     </Sheet>
   );
