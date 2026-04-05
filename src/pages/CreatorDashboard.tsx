@@ -446,6 +446,9 @@ const CreatorDashboard = () => {
   const { profile, session, loading: sessionLoading } = useSession();
   const updateProfileMutation = useUpdateProfile();
   
+  // Deals tab state
+  const [dealsTab, setDealsTab] = useState<'pending' | 'active' | 'completed'>('active');
+
   // State
   const [pendingCollabRequestsCount, setPendingCollabRequestsCount] = useState(0);
   const [totalOffersReceived, setTotalOffersReceived] = useState(0);
@@ -1314,28 +1317,117 @@ const CreatorDashboard = () => {
               </section>
 
               {/* Active deals and offers */}
-              {(collabRequestsPreview.length > 0 || dealsForFirstView.length > 0) && (
+              {(collabRequestsPreview.length > 0 || dealsForFirstView.length > 0 || completedDealsCount > 0) && (
                 <section aria-labelledby="active-heading">
-                  <h2 id="active-heading" className="text-2xl font-black text-white mb-4">Active</h2>
-                  <div className="grid gap-4 lg:grid-cols-2" role="list">
-                    {collabRequestsPreview.map((request) => (
-                    <CollabRequestCard
-                      key={request.id}
-                      request={request}
-                      onReview={() => navigate(`/collab-requests/${request.id}/brief`, { state: { request } })}
-                      onDecline={() => {
-                        const button = document.activeElement as HTMLButtonElement;
-                        handleDeclineClick(request.id, button);
-                        }}
-                      />
-                    ))}
-                    {dealsForFirstView.map((deal) => (
-                      <DealCard
-                        key={deal.id}
-                        deal={deal}
-                        onOpenDeal={handleOpenDeal}
-                      />
-                    ))}
+                  {/* Tab Navigation */}
+                  <div className="flex items-center gap-1 mb-4 border-b border-white/10">
+                    <button
+                      onClick={() => setDealsTab('active')}
+                      className={cn(
+                        'pb-3 px-1 pr-4 text-sm font-semibold transition-colors flex items-center gap-1.5',
+                        dealsTab === 'active' ? 'text-white border-b-2 border-emerald-400' : 'text-white/50 hover:text-white/70'
+                      )}
+                    >
+                      Active
+                      {dealsForFirstView.length > 0 && (
+                        <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{dealsForFirstView.length}</span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setDealsTab('pending')}
+                      className={cn(
+                        'pb-3 px-1 pr-4 text-sm font-semibold transition-colors flex items-center gap-1.5',
+                        dealsTab === 'pending' ? 'text-white border-b-2 border-amber-400' : 'text-white/50 hover:text-white/70'
+                      )}
+                    >
+                      Pending
+                      {collabRequestsPreview.length > 0 && (
+                        <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{collabRequestsPreview.length}</span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setDealsTab('completed')}
+                      className={cn(
+                        'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5',
+                        dealsTab === 'completed' ? 'text-white border-b-2 border-blue-400' : 'text-white/50 hover:text-white/70'
+                      )}
+                    >
+                      Done
+                      {completedDealsCount > 0 && (
+                        <span className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{completedDealsCount}</span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  <div role="tabpanel">
+                    {/* Pending Offers */}
+                    {dealsTab === 'pending' && (
+                      <div>
+                        {collabRequestsPreview.length === 0 ? (
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
+                            <p className="text-sm text-white/60">No pending offers. Share your collab link to get brand deals!</p>
+                          </div>
+                        ) : (
+                          <div className="grid gap-4 lg:grid-cols-2" role="list">
+                            {collabRequestsPreview.map((request) => (
+                              <CollabRequestCard
+                                key={request.id}
+                                request={request}
+                                onReview={() => navigate(`/collab-requests/${request.id}/brief`, { state: { request } })}
+                                onDecline={() => {
+                                  const button = document.activeElement as HTMLButtonElement;
+                                  handleDeclineClick(request.id, button);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Active Deals */}
+                    {dealsTab === 'active' && (
+                      <div>
+                        {dealsForFirstView.length === 0 ? (
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
+                            <p className="text-sm text-white/60">No active deals. Accept an offer to get started!</p>
+                          </div>
+                        ) : (
+                          <div className="grid gap-4 lg:grid-cols-2" role="list">
+                            {dealsForFirstView.map((deal) => (
+                              <DealCard
+                                key={deal.id}
+                                deal={deal}
+                                onOpenDeal={handleOpenDeal}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Completed Deals */}
+                    {dealsTab === 'completed' && (
+                      <div>
+                        {completedDealsCount === 0 ? (
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
+                            <p className="text-sm text-white/60">No completed deals yet. Keep going!</p>
+                          </div>
+                        ) : (
+                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                            <p className="text-sm text-white/60">{completedDealsCount} deal{completedDealsCount === 1 ? '' : 's'} completed. Great work!</p>
+                            <Button
+                              type="button"
+                              className="mt-4 bg-purple-600 hover:bg-purple-500 text-white h-10 text-sm font-semibold"
+                              onClick={() => navigate('/creator-payments')}
+                            >
+                              View Payment History
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </section>
               )}

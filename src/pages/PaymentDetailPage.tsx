@@ -505,7 +505,26 @@ const PaymentDetailPage = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
+        {/* Deal Complete Celebration Banner */}
+        {paymentData.status === 'received' && paymentData.receivedAt && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-2xl p-4 md:p-5 shadow-lg"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-white">Deal Complete! 🎉</p>
+                <p className="text-xs text-white/70 mt-0.5">You earned ₹{paymentData.amount.toLocaleString('en-IN')} from {paymentData.brandName}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* SECTION 1: Payment Status Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

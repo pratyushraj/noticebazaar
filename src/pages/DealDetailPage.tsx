@@ -2147,6 +2147,44 @@ Best regards`;
           </div>
         )}
 
+        {/* Content Submitted Confirmation Banner */}
+        {guidedDealState === 'CONTENT_SUBMITTED' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-2xl p-4 md:p-6 shadow-lg"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  Content submitted ✅
+                </h3>
+                <p className="text-white/80 text-sm mb-2">
+                  Your post link has been sent to the brand for review.
+                </p>
+                {existingContentSubmissionUrl && (
+                  <a
+                    href={existingContentSubmissionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-emerald-300 hover:text-emerald-200 mb-3"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    View your submitted link
+                  </a>
+                )}
+                <div className="bg-white/5 rounded-xl p-3 border border-white/10">
+                  <p className="text-xs text-white/60 mb-1">What happens next?</p>
+                  <p className="text-sm text-white/80">The brand will review your content within <strong className="text-white">7 days</strong>. If they want changes, you'll be notified here. If they approve, payment will be triggered.</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Contract Generated Banner */}
         {(deal as any)?.contract_status === 'DraftGenerated' && deal?.contract_file_url && (
           <motion.div
