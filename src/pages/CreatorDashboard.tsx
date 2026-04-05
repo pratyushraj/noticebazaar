@@ -569,7 +569,12 @@ const CreatorDashboard = () => {
   ), [brandDeals]);
 
   const totalEarnings = useMemo(() => (
-    brandDeals.reduce((sum, deal) => sum + (Number(deal.deal_amount || 0) || 0), 0)
+    brandDeals
+      .filter((deal) => {
+        const status = String(deal.status || '').toLowerCase();
+        return status === 'completed' || status === 'fully_executed' || Boolean(deal.payment_received_date);
+      })
+      .reduce((sum, deal) => sum + (Number(deal.deal_amount || 0) || 0), 0)
   ), [brandDeals]);
 
   const collabHandle = useMemo(() =>

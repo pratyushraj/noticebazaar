@@ -2236,38 +2236,50 @@ const CollabLinkLanding = () => {
 
 	                        <div className="mt-0.5 flex flex-col gap-0.5 text-[11px] font-medium text-slate-500 leading-snug">
 	                          <p>
-	                            {formatFollowers(primaryFollowers)} followers <span className="text-slate-300">•</span>{' '}
-	                            {avgReelViews ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K` : '3K–10K'} avg views
+	                            {formatFollowers(primaryFollowers)} followers
+	                            {avgReelViews ? (
+	                              <>{' '}<span className="text-slate-300">•</span>{' '}{Math.round(Number(avgReelViews) * 0.8 / 1000)}K–{Math.round(Number(avgReelViews) * 1.6 / 1000)}K avg views</>
+	                            ) : null}
 	                          </p>
 	                          <p>
-	                            {Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || '—'}% reliability <span className="text-slate-300">•</span>{' '}
-	                            replies in {displayResponseLine.replace('~', '')}
+	                            {Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || '—'}% reliability
+	                            {!isDemoAnalytics.avgResponseTimeHours && (
+	                              <>{' '}<span className="text-slate-300">•</span>{' '}replies in {displayResponseLine.replace('~', '')}</>
+	                            )}
 	                          </p>
 	                          <p>
 	                            {creator.category || creator.content_niches?.slice(0, 2).join(' / ') || 'Creator'} <span className="text-slate-300">•</span>{' '}
 	                            {audienceRegionLabel || 'India'}
 	                          </p>
 	                        </div>
-	                        <div className="mt-2 flex flex-col gap-1.5 text-[10.5px] font-semibold text-slate-500">
-	                          <div className="flex items-center gap-2">
-	                            <Zap className="h-3.5 w-3.5 text-amber-600" />
-	                            <span title={isDemoAnalytics.brandsContactedThisWeek ? estimatedAnalyticsTooltip : undefined}>
-	                              {displayAnalytics.brandsContactedThisWeek} brands contacted this creator this week
-	                            </span>
+	                        {!isDemoAnalytics.brandsContactedThisWeek && !isDemoAnalytics.avgResponseTimeHours && !isDemoAnalytics.avgCampaignReach ? (
+	                          <div className="mt-2 flex flex-col gap-1.5 text-[10.5px] font-semibold text-slate-500">
+	                            {!isDemoAnalytics.brandsContactedThisWeek && (
+	                              <div className="flex items-center gap-2">
+	                                <Zap className="h-3.5 w-3.5 text-amber-600" />
+	                                <span title={isDemoAnalytics.brandsContactedThisWeek ? estimatedAnalyticsTooltip : undefined}>
+	                                  {displayAnalytics.brandsContactedThisWeek} brands contacted this creator this week
+	                                </span>
+	                              </div>
+	                            )}
+	                            {!isDemoAnalytics.avgResponseTimeHours && (
+	                              <div className="flex items-center gap-2">
+	                                <Zap className="h-3.5 w-3.5 text-teal-600" />
+	                                <span title={isDemoAnalytics.avgResponseTimeHours ? estimatedAnalyticsTooltip : undefined}>
+	                                  Responds in {displayResponseLine.replace('~', '')}
+	                                </span>
+	                              </div>
+	                            )}
+	                            {!isDemoAnalytics.avgCampaignReach && (
+	                              <div className="flex items-center gap-2">
+	                                <TrendingUp className="h-3.5 w-3.5 text-slate-600" />
+	                                <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
+	                                  Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
+	                                </span>
+	                              </div>
+	                            )}
 	                          </div>
-	                          <div className="flex items-center gap-2">
-	                            <Zap className="h-3.5 w-3.5 text-teal-600" />
-	                            <span title={isDemoAnalytics.avgResponseTimeHours ? estimatedAnalyticsTooltip : undefined}>
-	                              Responds in {displayResponseLine.replace('~', '')}
-	                            </span>
-	                          </div>
-	                          <div className="flex items-center gap-2">
-	                            <TrendingUp className="h-3.5 w-3.5 text-slate-600" />
-	                            <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
-	                              Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
-	                            </span>
-	                          </div>
-	                        </div>
+	                        ) : null}
 	                      </div>
 	                    )}
                   </div>
