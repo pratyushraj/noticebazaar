@@ -110,7 +110,7 @@ const BrandDashboard: React.FC = () => {
 
       <div className="px-4 py-6 space-y-6">
         {/* Stats */}
-        <BrandDealsStats allDeals={deals} isLoading={isInitiallyLoading} />
+        <BrandDealsStats allDeals={deals} isLoading={isLoading} />
 
         {/* Primary Actions */}
         <div className="flex gap-3">
