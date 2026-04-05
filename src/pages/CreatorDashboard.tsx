@@ -12,6 +12,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { useBrandDeals, getDealStageFromStatus, STAGE_TO_PROGRESS } from '@/lib/hooks/useBrandDeals';
 import { useNotifications } from '@/lib/hooks/useNotifications';
+import { useCreatorDashboardState, mapStateToLegacyStage } from '@/lib/hooks/useCreatorDashboardState';
 import { supabase } from '@/integrations/supabase/client';
 import { trackEvent } from '@/lib/utils/analytics';
 import { getApiBaseUrl } from '@/lib/utils/api';
@@ -425,6 +426,88 @@ const EarningsSummary = ({
   </section>
 );
 
+// ── Onboarding Checklist ───────────────────────────────────────────────
+
+const OnboardingChecklist = ({
+  hasUrl,
+  profileCompletion,
+  onAddInstagram,
+}: {
+  hasUrl: boolean;
+  profileCompletion: number;
+  onAddInstagram: () => void;
+}) => {
+  const steps = [
+    { id: 'instagram', label: 'Add Instagram', done: hasUrl },
+    { id: 'profile', label: 'Complete profile', done: profileCompletion >= 80 },
+    { id: 'share', label: 'Share your link', done: false },
+  ];
+
+  const doneCount = steps.filter(s => s.done).length;
+
+  return (
+    <section className="rounded-2xl border border-border bg-card p-6">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs font-medium text-muted-foreground">Getting started</p>
+        <span className="text-xs text-muted-foreground">{doneCount}/{steps.length} done</span>
+      </div>
+      <div className="space-y-3">
+        {steps.map((step) => (
+          <div key={step.id} className="flex items-center gap-3">
+            <div className={cn(
+              "flex h-5 w-5 items-center justify-center rounded-full border",
+              step.done ? "border-primary bg-primary/15" : "border-border"
+            )}>
+              {step.done && <CheckCircle className="h-3 w-3 text-primary" />}
+            </div>
+            <span className={cn(
+              "text-sm",
+              step.done ? "text-muted-foreground line-through" : "text-foreground"
+            )}>
+              {step.label}
+            </span>
+          </div>
+        ))}
+      </div>
+      {!hasUrl && (
+        <Button onClick={onAddInstagram} variant="outline" size="sm" className="mt-4 w-full">
+          Add Instagram →
+        </Button>
+      )}
+    </section>
+  );
+};
+
+// ── Payment Reminder Card ───────────────────────────────────────────────
+
+const PaymentReminderCard = ({
+  deal,
+  onConfirm,
+}: {
+  deal: BrandDeal;
+  onConfirm: () => void;
+}) => (
+  <section className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
+    <div className="flex items-start gap-3 mb-4">
+      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+        <CheckCircle className="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <p className="text-xs font-medium text-primary">Payment sent</p>
+        <h2 className="text-base font-semibold text-foreground mt-0.5">
+          {deal.brand_name} sent you ₹{deal.deal_amount?.toLocaleString('en-IN')}
+        </h2>
+      </div>
+    </div>
+    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+      The brand says they've sent the payment. Tap below once you see it in your account.
+    </p>
+    <Button onClick={onConfirm} className="w-full sm:w-auto">
+      Confirm payment received
+    </Button>
+  </section>
+);
+
 // ── Activity Timeline ─────────────────────────────────────────────────────
 
 const ActivityTimelineItem = ({
@@ -654,6 +737,17 @@ const CreatorDashboard = () => {
   });
   const { notifications: creatorNotifications, markAsRead } = useNotifications({ enabled: !!creatorId, limit: 5, filter: { read: false } });
 
+  // ── Dashboard State Machine ────────────────────────────────────────────
+
+  const dashboardState = useCreatorDashboardState({
+    deals: brandDeals,
+    offersCount: collabRequestsPreview.length,
+    hasUrl,
+    linkSharedAt: profile?.link_shared_at,
+  });
+
+  const { state: creatorState, nextAction, sections, stickyCta } = dashboardState;
+
   // ── Computed ───────────────────────────────────────────────────────────
 
   const completedDealsCount = useMemo(() =>
@@ -672,28 +766,19 @@ const CreatorDashboard = () => {
 
   const hasUrl = Boolean(collabUrlShort);
 
-  const creatorStage = useMemo((): string => {
-    if (completedDealsCount > 0) return 'completed';
-    if (brandDeals.some(d => !['completed', 'fully_executed'].includes(String(d.status || '').toLowerCase()))) return 'active_deal';
-    if (collabRequestsPreview.length > 0) return 'has_offer';
-    if (profile?.link_shared_at) return 'link_shared';
-    return 'new';
-  }, [completedDealsCount, brandDeals, collabRequestsPreview.length, profile?.link_shared_at]);
-
   const activeDeals = useMemo(() =>
     brandDeals.filter(d => !['completed', 'fully_executed'].includes(String(d.status || '').toLowerCase()))
       .slice(0, DEAL_CARDS_LIMIT),
   [brandDeals]);
 
-  const dealsNeedingAction = useMemo(() =>
-    activeDeals.filter(d => ['contract_sent', 'revision_requested'].includes(String(d.status || '').toLowerCase())),
-  [activeDeals]);
-
   const unreadNotifications = useMemo(() =>
     creatorNotifications.slice(0, 5),
   [creatorNotifications]);
 
-  // ── Next step logic ────────────────────────────────────────────────────
+  // Legacy stage for WelcomeHeader
+  const creatorStage = useMemo(() => mapStateToLegacyStage(creatorState), [creatorState]);
+
+  // ── Next step from state machine ───────────────────────────────────────
 
   const nextStepData = useMemo<NextStepCardData>(() => {
     const openDeal = (id: string) => navigate(`/creator-deal/${id}`);
@@ -701,90 +786,88 @@ const CreatorDashboard = () => {
     const openPayment = (id: string) => navigate(`/payment/${id}`);
     const openDelivery = (id: string) => navigate(`/deal-delivery-details/${id}`);
 
-    const paymentConfirm = brandDeals.find(d =>
-      !d.payment_received_date && ['payment_pending', 'payment_released', 'payment_sent'].includes(String(d.status || '').toLowerCase())
-    );
-    if (paymentConfirm) return {
-      state: 'payment_confirmation_needed',
-      title: 'Confirm payment received',
-      helper: 'The brand says they sent the money. Confirm when it hits your account.',
-      primaryLabel: "I've been paid",
-      primaryAction: () => openPayment(paymentConfirm.id),
-      deal: paymentConfirm,
-    };
+    if (!nextAction) {
+      return {
+        state: 'no_deals',
+        title: hasUrl ? 'Share your link' : 'Add your Instagram',
+        helper: hasUrl
+          ? 'Send your collab link to brands. Their offers will appear here.'
+          : 'Add your Instagram to get your collab link.',
+      };
+    }
 
-    const revisionNeeded = brandDeals.find(d => String(d.brand_approval_status || '').toLowerCase() === 'changes_requested');
-    if (revisionNeeded) return {
-      state: 'revision_requested',
-      title: 'Changes requested',
-      helper: 'The brand has asked for some changes to your content.',
-      primaryLabel: 'View deal',
-      primaryAction: () => openDeal(revisionNeeded.id),
-      deal: revisionNeeded,
-    };
+    switch (nextAction.type) {
+      case 'confirm_payment':
+        return {
+          state: 'payment_confirmation_needed',
+          title: 'Confirm payment received',
+          helper: 'The brand says they sent the money. Confirm when it hits your account.',
+          primaryLabel: nextAction.label,
+          primaryAction: () => openPayment(nextAction.targetId!),
+          deal: nextAction.deal,
+        };
 
-    const awaitingContent = brandDeals.find(d => {
-      const s = String(d.status || '').toLowerCase();
-      return !d.content_submitted_at && (s.includes('content') || s.includes('active') || s.includes('live'));
-    });
-    if (awaitingContent) return {
-      state: 'content_upload_needed',
-      title: 'Submit your content',
-      helper: 'Share your post link for the brand to review.',
-      primaryLabel: 'Open deal',
-      primaryAction: () => openDeal(awaitingContent.id),
-      deal: awaitingContent,
-    };
+      case 'view_revision':
+        return {
+          state: 'revision_requested',
+          title: 'Changes requested',
+          helper: 'The brand has asked for some changes to your content.',
+          primaryLabel: nextAction.label,
+          primaryAction: () => openDeal(nextAction.targetId!),
+          deal: nextAction.deal,
+        };
 
-    const needsAddress = brandDeals.find(d =>
-      String(d.deal_type || '').toLowerCase() === 'barter' && String(d.status || '').toLowerCase() === 'drafting'
-    );
-    if (needsAddress) return {
-      state: 'delivery_details_needed',
-      title: 'Add your shipping address',
-      helper: 'Add your address so the brand can send the product.',
-      primaryLabel: 'Add address',
-      primaryAction: () => openDelivery(needsAddress.id),
-      deal: needsAddress,
-    };
+      case 'submit_content':
+        return {
+          state: 'content_upload_needed',
+          title: 'Submit your content',
+          helper: 'Share your post link for the brand to review.',
+          primaryLabel: nextAction.label,
+          primaryAction: () => openDeal(nextAction.targetId!),
+          deal: nextAction.deal,
+        };
 
-    const readyToStart = brandDeals.find(d => {
-      const s = String(d.status || '').toLowerCase();
-      return !d.content_submitted_at && (s.includes('signed') || s.includes('confirmed') || s.includes('executed'));
-    });
-    if (readyToStart) return {
-      state: 'content_not_started',
-      title: 'Deal confirmed — start making content',
-      helper: 'Review the brief and start creating your content.',
-      primaryLabel: 'Open deal',
-      primaryAction: () => openDeal(readyToStart.id),
-      deal: readyToStart,
-    };
+      case 'review_offer': {
+        const firstOffer = collabRequestsPreview[0];
+        return {
+          state: 'offer_received',
+          title: 'You have a new offer',
+          helper: 'Review the brief and decide if you want to accept, counter, or decline.',
+          primaryLabel: nextAction.label,
+          primaryAction: () => openOffer(firstOffer.id),
+          request: firstOffer,
+        };
+      }
 
-    const firstOffer = collabRequestsPreview[0];
-    if (firstOffer) return {
-      state: 'offer_received',
-      title: 'You have a new offer',
-      helper: 'Review the brief and decide if you want to accept, counter, or decline.',
-      primaryLabel: 'Review offer',
-      primaryAction: () => openOffer(firstOffer.id),
-      request: firstOffer,
-    };
+      case 'view_deal':
+        return {
+          state: 'no_deals',
+          title: 'Track your active deal',
+          helper: 'Your deal is in progress. Keep an eye on the timeline below.',
+          primaryLabel: nextAction.label,
+          primaryAction: () => openDeal(nextAction.targetId!),
+          deal: nextAction.deal,
+        };
 
-    if (activeDeals.length > 0) return {
-      state: 'no_deals',
-      title: 'Track your active deal',
-      helper: 'Your deal is in progress. Keep an eye on the timeline below.',
-    };
+      case 'share_link':
+        return {
+          state: 'no_deals',
+          title: hasUrl ? 'Share your link' : 'Add your Instagram',
+          helper: hasUrl
+            ? 'Send your collab link to brands. Their offers will appear here.'
+            : 'Add your Instagram to get your collab link.',
+        };
 
-    return {
-      state: 'no_deals',
-      title: 'Share your link',
-      helper: hasUrl
-        ? 'Send your collab link to brands. Their offers will appear here.'
-        : 'Add your Instagram to get your collab link.',
-    };
-  }, [brandDeals, collabRequestsPreview, navigate, hasUrl, activeDeals.length]);
+      default:
+        return {
+          state: 'no_deals',
+          title: 'Get started',
+          helper: hasUrl
+            ? 'Share your link with brands to receive offers.'
+            : 'Add your Instagram to get your collab link.',
+        };
+    }
+  }, [nextAction, hasUrl, collabRequestsPreview, navigate]);
 
   // ── Handlers ───────────────────────────────────────────────────────────
 
@@ -892,9 +975,11 @@ const CreatorDashboard = () => {
 
   // ── Render ────────────────────────────────────────────────────────────
 
-  const showOffers = collabRequestsPreview.length > 0;
-  const showEarnings = totalEarnings > 0 || completedDealsCount > 0 || activeDeals.length > 0;
-  const showTimeline = activeDeals.length > 0 || unreadNotifications.length > 0;
+  const showOffers = sections.offers && collabRequestsPreview.length > 0;
+  const showEarnings = sections.earnings && (totalEarnings > 0 || completedDealsCount > 0);
+  const showTimeline = sections.timeline && (activeDeals.length > 0 || unreadNotifications.length > 0);
+  const showActiveDeals = sections.activeDeals && activeDeals.length > 0;
+  const showOnboarding = sections.onboarding;
 
   return (
     <ErrorBoundary>
@@ -910,28 +995,42 @@ const CreatorDashboard = () => {
             hasUrl={hasUrl}
           />
 
-          {/* Section 1: Your Link — always visible */}
-          <div className="mb-6">
-            <CollabLinkCard
-              collabUrlShort={collabUrlShort}
-              collabUrl={collabUrl}
-              storefrontViews={storefrontViews}
-              hasUrl={hasUrl}
-              profileCompletion={profile?.profile_completion ?? 0}
-              onCopy={() => void copyText(collabUrl, 'Link copied')}
-              onShareWhatsApp={handleShareWhatsApp}
-              onPreview={() => window.open(`${collabUrl}?preview=1`, '_blank')}
-              onAddInstagram={() => navigate('/creator-profile?section=profile')}
-              onCompleteProfile={() => navigate('/creator-profile?section=profile')}
-            />
-          </div>
+          {/* Section 1: Your Link */}
+          {sections.linkCard !== 'hidden' && (
+            <div className="mb-6">
+              <CollabLinkCard
+                collabUrlShort={collabUrlShort}
+                collabUrl={collabUrl}
+                storefrontViews={storefrontViews}
+                hasUrl={hasUrl}
+                profileCompletion={profile?.profile_completion ?? 0}
+                onCopy={() => void copyText(collabUrl, 'Link copied')}
+                onShareWhatsApp={handleShareWhatsApp}
+                onPreview={() => window.open(`${collabUrl}?preview=1`, '_blank')}
+                onAddInstagram={() => navigate('/creator-profile?section=profile')}
+                onCompleteProfile={() => navigate('/creator-profile?section=profile')}
+              />
+            </div>
+          )}
 
-          {/* Section 2: Next Step — always visible, adapts to state */}
-          <div className="mb-6">
-            <NextStepCard data={nextStepData} />
-          </div>
+          {/* Section 2: Next Step — always visible */}
+          {sections.nextStep && (
+            <div className="mb-6">
+              <NextStepCard data={nextStepData} />
+            </div>
+          )}
 
-          {/* Section 3: Offers — when pending */}
+          {/* Section 3: Payment Reminder — when payment pending */}
+          {sections.payment && dashboardState.urgentDeal && (
+            <div className="mb-6">
+              <PaymentReminderCard
+                deal={dashboardState.urgentDeal}
+                onConfirm={() => navigate(`/payment/${dashboardState.urgentDeal!.id}`)}
+              />
+            </div>
+          )}
+
+          {/* Section 4: Offers — when pending */}
           {showOffers && (
             <div className="mb-6">
               <h2 className="text-sm font-medium text-foreground mb-3">
@@ -953,8 +1052,8 @@ const CreatorDashboard = () => {
             </div>
           )}
 
-          {/* Section 4: Deals — when active */}
-          {activeDeals.length > 0 && (
+          {/* Section 5: Deals — when active */}
+          {showActiveDeals && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-medium text-foreground">
@@ -979,8 +1078,8 @@ const CreatorDashboard = () => {
             </div>
           )}
 
-          {/* Section 5: Empty state — when nothing exists */}
-          {!showOffers && activeDeals.length === 0 && (
+          {/* Section 6: Empty state — when nothing exists */}
+          {!showOffers && !showActiveDeals && creatorState === 'new' && (
             <div className="mb-6">
               <EmptyState
                 hasUrl={hasUrl}
@@ -990,7 +1089,7 @@ const CreatorDashboard = () => {
             </div>
           )}
 
-          {/* Section 6: Earnings — when deals exist */}
+          {/* Section 7: Earnings — when deals exist */}
           {showEarnings && (
             <div className="mb-6">
               <EarningsSummary
@@ -1002,7 +1101,7 @@ const CreatorDashboard = () => {
             </div>
           )}
 
-          {/* Section 7: Activity Timeline */}
+          {/* Section 8: Activity Timeline */}
           {showTimeline && (
             <div className="mb-6">
               <ActivityTimeline
@@ -1014,12 +1113,23 @@ const CreatorDashboard = () => {
             </div>
           )}
 
+          {/* Section 9: Onboarding Checklist */}
+          {showOnboarding && (
+            <div className="mb-6">
+              <OnboardingChecklist
+                hasUrl={hasUrl}
+                profileCompletion={profile?.profile_completion ?? 0}
+                onAddInstagram={() => navigate('/creator-profile?section=profile')}
+              />
+            </div>
+          )}
+
           {/* Bottom spacer for sticky CTA on mobile */}
           <div className="h-24 md:hidden" />
         </main>
 
-        {/* Sticky CTA — mobile only, when new user */}
-        {(creatorStage === 'new' || creatorStage === 'link_shared') && hasUrl && (
+        {/* Sticky CTA — mobile only, for new creators */}
+        {stickyCta && (
           <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-background via-background/95 to-transparent md:hidden">
             <div className="flex gap-2 max-w-lg mx-auto">
               <Button
