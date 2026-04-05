@@ -179,8 +179,8 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
   return (
     <article 
       className={cn(
-        "rounded-[24px] border bg-white/5 p-5 transition-all duration-200 hover:bg-white/[0.07] focus-within:ring-2 focus-within:ring-emerald-400/50",
-        needsAction ? "border-amber-500/40" : waitingOnBrand ? "border-blue-500/30" : "border-white/10"
+        "rounded-[24px] border bg-card p-5 transition-all duration-200 hover:bg-card/80 focus-within:ring-2 focus-within:ring-primary/50",
+        needsAction ? "border-warning/40" : waitingOnBrand ? "border-info/30" : "border-border"
       )}
       role="article"
       aria-labelledby={`deal-title-${deal.id}`}
@@ -188,13 +188,13 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
       {/* Urgency label */}
       {needsAction && (
         <div className="flex items-center gap-1.5 mb-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-400">
+          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-warning">
             ⚡ Your action needed
           </span>
           {deadlineUrgency && (
             <span className={cn(
               "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-              deadlineUrgency.tone === 'danger' ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"
+              deadlineUrgency.tone === 'danger' ? "bg-destructive/20 text-destructive" : "bg-warning/20 text-warning"
             )}>
               {deadlineUrgency.label}
             </span>
@@ -203,7 +203,7 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
       )}
       {waitingOnBrand && (
         <div className="flex items-center gap-1.5 mb-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-400">
+          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-info">
             👀 Waiting on brand
           </span>
         </div>
@@ -212,24 +212,24 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
       {/* Brand + stage */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h3 id={`deal-title-${deal.id}`} className="text-xl font-black text-white flex items-center gap-2">
+          <h3 id={`deal-title-${deal.id}`} className="text-xl font-black text-foreground flex items-center gap-2">
             {deal.brand_name}
-            {(deal as any).brand_verified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
+            {(deal as any).brand_verified && <ShieldCheck className="h-5 w-5 text-info flex-shrink-0" aria-label="Verified brand" />}
           </h3>
-          <p className="mt-1.5 text-sm text-slate-300">
+          <p className="mt-1.5 text-sm text-muted-foreground">
             {formatDealStageLabel(deal.status, deal.progress_percentage)} • {formatCurrency(deal.deal_amount)}
           </p>
-          <div className="mt-2 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+          <div className="mt-2 h-1.5 w-full bg-secondary/50 rounded-full overflow-hidden">
             <div 
               className={cn("h-full transition-all duration-500", 
-                needsAction ? "bg-amber-400" : waitingOnBrand ? "bg-blue-400" : "bg-emerald-400"
+                needsAction ? "bg-warning" : waitingOnBrand ? "bg-info" : "bg-primary"
               )}
               style={{ width: `${progress}%` }} 
             />
           </div>
         </div>
         <div 
-          className="rounded-full border border-white/10 px-3 py-1 text-sm font-bold text-white flex items-center gap-1.5 flex-shrink-0"
+          className="rounded-full border border-border px-3 py-1 text-sm font-bold text-foreground flex items-center gap-1.5 flex-shrink-0"
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
@@ -237,7 +237,7 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
           aria-label={`${progress}% complete`}
         >
           <div className={cn("w-2 h-2 rounded-full animate-pulse", 
-            needsAction ? "bg-amber-400" : waitingOnBrand ? "bg-blue-400" : "bg-emerald-400"
+            needsAction ? "bg-warning" : waitingOnBrand ? "bg-info" : "bg-primary"
           )} />
           {progress}%
         </div>
@@ -248,8 +248,8 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
         <div className={cn(
           "mt-3 rounded-xl border px-3 py-2.5 text-sm font-semibold",
           needsAction 
-            ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
-            : "bg-blue-500/10 border-blue-500/30 text-blue-300"
+            ? "bg-warning/10 border-warning/30 text-warning"
+            : "bg-info/10 border-info/30 text-info"
         )}>
           👉 {actionLabel}
         </div>
@@ -258,9 +258,9 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
       {/* Footer */}
       <div className="mt-3 flex items-center justify-between text-sm">
         <span className={cn(
-          deadlineUrgency?.tone === 'danger' ? "text-red-400 font-semibold" 
-            : deadlineUrgency?.tone === 'warn' ? "text-amber-400 font-semibold" 
-            : "text-slate-400"
+          deadlineUrgency?.tone === 'danger' ? "text-destructive font-semibold" 
+            : deadlineUrgency?.tone === 'warn' ? "text-warning font-semibold" 
+            : "text-muted-foreground"
         )}>
           {deadlineUrgency ? deadlineUrgency.label 
             : deal.due_date ? `Due ${formatDeadline(deal.due_date)}` 
@@ -269,10 +269,10 @@ const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
         <button
           type="button"
           className={cn(
-            "font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded px-3 py-1.5",
+            "font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded px-3 py-1.5",
             needsAction
-              ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
-              : "text-emerald-300 hover:text-emerald-200"
+              ? "bg-primary text-foreground hover:bg-primary"
+              : "text-primary hover:text-primary"
           )}
           onClick={onOpenDeal}
           aria-label={`Open deal with ${deal.brand_name}`}
@@ -293,20 +293,20 @@ interface CollabRequestCardProps {
 const CollabRequestCard = ({ request, onReview, onDecline }: CollabRequestCardProps) => {
   return (
     <article 
-      className="rounded-[24px] border border-amber-300/20 bg-white/5 p-5 transition-all duration-200 hover:bg-white/[0.07]"
+      className="rounded-[24px] border border-warning/20 bg-card p-5 transition-all duration-200 hover:bg-card/80"
       role="article"
       aria-labelledby={`request-title-${request.id}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">New Offer</p>
-          <h3 id={`request-title-${request.id}`} className="mt-2 text-xl font-black text-white flex items-center gap-2">
+          <p className="text-xs font-black uppercase tracking-[0.16em] text-warning">New Offer</p>
+          <h3 id={`request-title-${request.id}`} className="mt-2 text-xl font-black text-foreground flex items-center gap-2">
             {request.brand_name}
             {request.brand_verified && (
-              <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />
+              <ShieldCheck className="h-5 w-5 text-info flex-shrink-0" aria-label="Verified brand" />
             )}
           </h3>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="mt-2 text-sm text-muted-foreground">
             {formatDealType(request.collab_type)} • {formatCurrency(request.exact_budget || request.barter_value)}
             {request.deadline ? ` • Deadline ${formatDeadline(request.deadline)}` : ''}
           </p>
@@ -315,7 +315,7 @@ const CollabRequestCard = ({ request, onReview, onDecline }: CollabRequestCardPr
       <div className="mt-4 flex gap-3">
         <Button
           type="button"
-          className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          className="bg-primary text-foreground hover:bg-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           onClick={onReview}
           aria-label={`Review request from ${request.brand_name}`}
         >
@@ -324,7 +324,7 @@ const CollabRequestCard = ({ request, onReview, onDecline }: CollabRequestCardPr
         <Button
           type="button"
           variant="outline"
-          className="border-white/15 bg-white/5 text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          className="border-border bg-card text-foreground hover:bg-secondary/50 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           onClick={onDecline}
           aria-label={`Decline request from ${request.brand_name}`}
         >
@@ -341,13 +341,13 @@ interface EmptyStateProps {
 
 const EmptyState = ({ hasUrl }: EmptyStateProps) => (
   <div 
-    className="rounded-[24px] border border-dashed border-white/15 bg-white/[0.03] p-8 text-center lg:col-span-2"
+    className="rounded-[24px] border border-dashed border-border bg-secondary/[0.03] p-8 text-center lg:col-span-2"
     role="status"
     aria-label="No deals or requests"
   >
-    <AlertCircle className="mx-auto h-12 w-12 text-slate-500 mb-4" aria-hidden="true" />
-    <p className="text-lg font-black text-white">Your offers will appear here</p>
-    <p className="mt-2 text-sm text-slate-300">
+    <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" aria-hidden="true" />
+    <p className="text-lg font-black text-foreground">Your offers will appear here</p>
+    <p className="mt-2 text-sm text-muted-foreground">
       {hasUrl
         ? 'Share your creator link on WhatsApp or in DMs. New offers will show up here.'
         : 'Add your Instagram first.'
@@ -357,20 +357,20 @@ const EmptyState = ({ hasUrl }: EmptyStateProps) => (
 );
 
 const ProgressiveSetupCard = () => (
-  <section className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5" aria-labelledby="progressive-setup-heading">
-    <p id="progressive-setup-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">How setup works now</p>
+  <section className="rounded-[24px] border border-border bg-secondary/[0.04] p-5" aria-labelledby="progressive-setup-heading">
+    <p id="progressive-setup-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">How setup works now</p>
     <div className="mt-4 grid gap-3 sm:grid-cols-3">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-300">Paid offer</p>
-        <p className="mt-2 text-sm font-semibold text-white">We ask your price only when you accept it.</p>
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-primary">Paid offer</p>
+        <p className="mt-2 text-sm font-semibold text-foreground">We ask your price only when you accept it.</p>
       </div>
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">Product deal</p>
-        <p className="mt-2 text-sm font-semibold text-white">We ask your address only if shipping is needed.</p>
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-warning">Product deal</p>
+        <p className="mt-2 text-sm font-semibold text-foreground">We ask your address only if shipping is needed.</p>
       </div>
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-300">Payment</p>
-        <p className="mt-2 text-sm font-semibold text-white">We only ask for your UPI when payment is about to be made.</p>
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-info">Payment</p>
+        <p className="mt-2 text-sm font-semibold text-foreground">We only ask for your UPI when payment is about to be made.</p>
       </div>
     </div>
   </section>
@@ -392,13 +392,13 @@ const DashboardAlerts = ({ notifications, onOpen }: DashboardAlertsProps) => {
   if (notifications.length === 0) return null;
 
   return (
-    <section className="mb-6 rounded-[24px] border border-amber-300/20 bg-amber-400/10 p-5" aria-labelledby="dashboard-alerts-heading">
+    <section className="mb-6 rounded-[24px] border border-warning/20 bg-warning/10 p-5" aria-labelledby="dashboard-alerts-heading">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p id="dashboard-alerts-heading" className="text-xs font-black uppercase tracking-[0.2em] text-amber-200">Updates</p>
-          <p className="mt-2 text-sm text-amber-50/85">Deal updates show here.</p>
+          <p id="dashboard-alerts-heading" className="text-xs font-black uppercase tracking-[0.2em] text-warning">Updates</p>
+          <p className="mt-2 text-sm text-warning/85">Deal updates show here.</p>
         </div>
-        <Button type="button" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => window.location.assign('/#/notifications')}>
+        <Button type="button" variant="outline" className="border-border bg-card text-foreground hover:bg-secondary/50" onClick={() => window.location.assign('/#/notifications')}>
           See all
         </Button>
       </div>
@@ -408,19 +408,19 @@ const DashboardAlerts = ({ notifications, onOpen }: DashboardAlertsProps) => {
             key={notification.id}
             type="button"
             onClick={() => onOpen(notification)}
-            className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+            className="rounded-2xl border border-border bg-card p-4 text-left transition hover:bg-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-warning"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-black text-white">{notification.title}</p>
-                {notification.message && <p className="mt-1 text-sm text-slate-200">{notification.message}</p>}
+                <p className="text-sm font-black text-foreground">{notification.title}</p>
+                {notification.message && <p className="mt-1 text-sm text-muted-foreground">{notification.message}</p>}
                 {notification.action_label && (
-                  <p className="mt-3 inline-flex items-center rounded-full border border-amber-200/20 bg-amber-200/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-amber-100">
+                  <p className="mt-3 inline-flex items-center rounded-full border border-warning/20 bg-warning/10 px-3 py-1 text-xs font-black uppercase tracking-[0.16em] text-warning">
                     {notification.action_label}
                   </p>
                 )}
               </div>
-              <span className="text-xs font-semibold text-amber-100/80">{formatNotificationTime(notification.created_at)}</span>
+              <span className="text-xs font-semibold text-warning/80">{formatNotificationTime(notification.created_at)}</span>
             </div>
           </button>
         ))}
@@ -457,31 +457,31 @@ interface NextStepCardProps {
 }
 
 const NextStepCard = ({ data }: NextStepCardProps) => (
-  <section className="mb-6 rounded-[28px] border border-emerald-400/25 bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.45))] p-5 shadow-[0_22px_60px_rgba(16,185,129,0.12)]">
+  <section className="mb-6 rounded-[28px] border border-primary/25 bg-card p-5 shadow-md">
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-200">Next step</p>
-        <h2 className="mt-2 text-2xl font-black text-white">{data.title}</h2>
-        <p className="mt-2 max-w-2xl text-sm text-emerald-50/85">{data.helper}</p>
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Next step</p>
+        <h2 className="mt-2 text-2xl font-black text-foreground">{data.title}</h2>
+        <p className="mt-2 max-w-2xl text-sm text-primary/85">{data.helper}</p>
         {data.request && (
-          <p className="mt-3 text-sm font-semibold text-white/90">
+          <p className="mt-3 text-sm font-semibold text-foreground/90">
             Brand: {data.request.brand_name} • {formatDealType(data.request.collab_type)}
           </p>
         )}
         {data.deal && (
-          <p className="mt-3 text-sm font-semibold text-white/90">
+          <p className="mt-3 text-sm font-semibold text-foreground/90">
             Deal: {data.deal.brand_name} • {formatDealStageLabel(data.deal.status, data.deal.progress_percentage)}
           </p>
         )}
       </div>
       <div className="flex flex-wrap gap-3">
         {data.primaryLabel && data.primaryAction && (
-          <Button type="button" className="bg-emerald-400 text-slate-950 hover:bg-emerald-300" onClick={data.primaryAction}>
+          <Button type="button" className="bg-primary text-foreground hover:bg-primary" onClick={data.primaryAction}>
             {data.primaryLabel}
           </Button>
         )}
         {data.secondaryLabel && data.secondaryAction && (
-          <Button type="button" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={data.secondaryAction}>
+          <Button type="button" variant="outline" className="border-border bg-card text-foreground hover:bg-secondary/50" onClick={data.secondaryAction}>
             {data.secondaryLabel}
           </Button>
         )}
@@ -1049,21 +1049,21 @@ const CreatorDashboard = () => {
   // Enhanced error state with retry and reporting
   if (brandDealsError) {
     return (
-      <div className="nb-screen-height bg-slate-950 text-white flex items-center justify-center p-4">
+      <div className="nb-screen-height bg-background text-foreground flex items-center justify-center p-4">
         <div className="text-center max-w-sm mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/20 mb-6">
-            <AlertCircle className="w-8 h-8 text-red-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/20 mb-6">
+            <AlertCircle className="w-8 h-8 text-destructive" />
           </div>
           <h2 className="text-xl font-bold mb-3">Unable to load deals</h2>
-          <p className="text-white/70 mb-6 leading-relaxed">
+          <p className="text-foreground/70 mb-6 leading-relaxed">
             We couldn't load your collaboration deals. This might be a temporary network issue.
           </p>
 
           {/* Error details in development */}
           {process.env.NODE_ENV === 'development' && (
-            <div className="bg-white/5 rounded-lg p-3 mb-6 text-left">
-              <p className="text-xs text-white/50 mb-2">Error Details (Dev Mode):</p>
-              <p className="text-xs text-red-300 font-mono break-all">
+            <div className="bg-card rounded-lg p-3 mb-6 text-left">
+              <p className="text-xs text-foreground/50 mb-2">Error Details (Dev Mode):</p>
+              <p className="text-xs text-destructive font-mono break-all">
                 {brandDealsError.message || 'Unknown error'}
               </p>
             </div>
@@ -1073,7 +1073,7 @@ const CreatorDashboard = () => {
             <button
               type="button"
               onClick={() => refetchBrandDeals()}
-              className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              className="w-full h-12 bg-primary hover:bg-primary text-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             >
               <Loader2 className="w-4 h-4 animate-spin" />
               Try Again
@@ -1082,7 +1082,7 @@ const CreatorDashboard = () => {
             <button
               type="button"
               onClick={() => window.location.href = '/'}
-              className="w-full h-12 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+              className="w-full h-12 bg-secondary/50 hover:bg-secondary/20 text-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
             >
               Go Home
             </button>
@@ -1094,9 +1094,9 @@ const CreatorDashboard = () => {
 
   if (!profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white" role="status" aria-label="Loading">
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground" role="status" aria-label="Loading">
         <div className="text-center">
-          <Loader2 className="mx-auto mb-3 h-10 w-10 animate-spin text-emerald-400" aria-hidden="true" />
+          <Loader2 className="mx-auto mb-3 h-10 w-10 animate-spin text-primary" aria-hidden="true" />
           <p>Loading your deals...</p>
         </div>
       </div>
@@ -1105,14 +1105,14 @@ const CreatorDashboard = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,#1e293b_0%,#0f172a_45%,#020617_100%)] text-white">
+      <div className="min-h-screen bg-background text-foreground">
         
         
         <main id="main-content" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           <header className="mb-6 flex flex-col gap-2">
-            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-300">Creator Armour</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-primary">Creator Armour</p>
             {profile?.first_name && (
-              <p className="text-sm text-white/50">
+              <p className="text-sm text-foreground/50">
                 Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {profile.first_name}
               </p>
             )}
@@ -1122,7 +1122,7 @@ const CreatorDashboard = () => {
                creatorStage === 'active_deal' ? 'Active Deal' :
                'Completed Deals'}
             </h1>
-            <p className="max-w-2xl text-sm text-slate-300 sm:text-base">
+            <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
               {creatorStage === 'new' || creatorStage === 'link_shared' ? 'Share your link. Brand offers appear here.' :
                creatorStage === 'has_offer' ? 'A brand is waiting for your response.' :
                creatorStage === 'active_deal' ? 'This deal is in progress. Follow the next step below.' :
@@ -1136,28 +1136,28 @@ const CreatorDashboard = () => {
           {(creatorStage === 'new' || creatorStage === 'link_shared') && (
             <div className="space-y-4 pb-32 md:pb-6">
               <section 
-                className="rounded-[24px] md:rounded-[28px] border border-white/10 bg-white/5 p-4 md:p-5 shadow-[0_20px_60px_rgba(15,23,42,0.35)]"
+                className="rounded-[24px] md:rounded-[28px] border border-border bg-card p-4 md:p-5 shadow-[0_20px_60px_rgba(15,23,42,0.35)]"
                 aria-labelledby="collab-page-heading"
               >
                 <div>
-                  <p id="collab-page-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">Your link</p>
+                  <p id="collab-page-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Your link</p>
                   {collabUrlShort ? (
                     <>
-                      <p className="mt-2 break-all text-xl md:text-2xl font-black text-white">{collabUrlShort}</p>
-                      <p className="mt-2 text-sm text-slate-300">
+                      <p className="mt-2 break-all text-xl md:text-2xl font-black text-foreground">{collabUrlShort}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
                         Send this when a brand DMs you.
                       </p>
                       <div className="mt-3 flex flex-wrap items-center gap-3">
                         <button
                           type="button"
                           onClick={() => window.open(`${collabUrl}?preview=1`, '_blank')}
-                          className="flex items-center gap-1.5 text-sm font-bold text-emerald-300 hover:text-emerald-200"
+                          className="flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           Preview your page
                         </button>
                         {storefrontViews > 0 && (
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-muted-foreground">
                             {storefrontViews.toLocaleString('en-IN')} profile view{storefrontViews === 1 ? '' : 's'}
                           </span>
                         )}
@@ -1165,14 +1165,14 @@ const CreatorDashboard = () => {
                     </>
                   ) : (
                     <>
-                      <p className="mt-2 text-xl md:text-2xl font-black text-white/60">Not set up yet</p>
-                      <p className="mt-2 text-sm text-slate-300">
+                      <p className="mt-2 text-xl md:text-2xl font-black text-foreground/60">Not set up yet</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
                         Add your Instagram handle to get your collab link.
                       </p>
                       <button
                         type="button"
                         onClick={() => navigate('/creator-profile?section=profile')}
-                        className="mt-3 text-sm font-bold text-emerald-300 hover:text-emerald-200 underline"
+                        className="mt-3 text-sm font-bold text-primary hover:text-primary underline"
                       >
                         Add Instagram →
                       </button>
@@ -1198,38 +1198,38 @@ const CreatorDashboard = () => {
                 if (!profile?.packages_added) missingItems.push('pricing packages');
 
                 return (
-                  <section className="rounded-[24px] border border-amber-400/20 bg-amber-500/10 p-4 md:p-5">
+                  <section className="rounded-[24px] border border-warning/20 bg-warning/10 p-4 md:p-5">
                     <div className="flex items-start gap-3">
-                      <div className="bg-amber-400/20 p-2 rounded-xl flex-shrink-0 mt-0.5">
-                        <AlertCircle className="w-4 h-4 text-amber-300" />
+                      <div className="bg-warning/20 p-2 rounded-xl flex-shrink-0 mt-0.5">
+                        <AlertCircle className="w-4 h-4 text-warning" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <p className="text-[13px] font-black text-amber-200">Your collab page is {completionPct}% complete</p>
+                          <p className="text-[13px] font-black text-warning">Your collab page is {completionPct}% complete</p>
                           <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-bold text-amber-300/70">Profile incomplete</span>
+                            <span className="text-[11px] font-bold text-warning/70">Profile incomplete</span>
                             <button
                               type="button"
                               onClick={() => sessionStorage.setItem(dismissedKey, '1')}
-                              className="text-amber-300/50 hover:text-amber-300 text-[11px] font-medium ml-1"
+                              className="text-warning/50 hover:text-warning text-[11px] font-medium ml-1"
                               aria-label="Dismiss this session"
                             >
                               ✕
                             </button>
                           </div>
                         </div>
-                        <div className="h-1.5 bg-amber-400/20 rounded-full overflow-hidden mb-2">
-                          <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+                        <div className="h-1.5 bg-warning/20 rounded-full overflow-hidden mb-2">
+                          <div className="h-full bg-warning rounded-full transition-all" style={{ width: `${completionPct}%` }} />
                         </div>
                         {missingItems.length > 0 && (
-                          <p className="text-[12px] text-amber-100/70 mb-2">
+                          <p className="text-[12px] text-warning/70 mb-2">
                             Brands see these as blank: {missingItems.join(', ')}
                           </p>
                         )}
                         <button
                           type="button"
                           onClick={() => navigate('/creator-profile?section=profile')}
-                          className="text-[12px] font-bold text-amber-200 hover:text-amber-100 underline"
+                          className="text-[12px] font-bold text-warning hover:text-warning underline"
                         >
                           Complete your profile →
                         </button>
@@ -1240,18 +1240,18 @@ const CreatorDashboard = () => {
               })()}
 
               <section 
-                className="rounded-[24px] md:rounded-[28px] border border-emerald-400/20 bg-emerald-500/10 p-4 md:p-5"
+                className="rounded-[24px] md:rounded-[28px] border border-primary/20 bg-primary/10 p-4 md:p-5"
                 aria-labelledby="waiting-heading"
               >
-                <p id="waiting-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200">Waiting for your first offer</p>
-                <p className="mt-2 text-base md:text-lg font-black text-white">
+                <p id="waiting-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Waiting for your first offer</p>
+                <p className="mt-2 text-base md:text-lg font-black text-foreground">
                   Share your link to start receiving offers.
                 </p>
-                <p className="mt-1 text-sm text-emerald-50/85">
+                <p className="mt-1 text-sm text-primary/85">
                   When a brand sends an offer, it shows up here.
                 </p>
                 {storefrontViews > 0 && (
-                  <p className="mt-2 text-xs text-emerald-200/60">
+                  <p className="mt-2 text-xs text-primary/60">
                     {storefrontViews.toLocaleString('en-IN')} people have viewed your collab page
                   </p>
                 )}
@@ -1263,11 +1263,11 @@ const CreatorDashboard = () => {
 
           {/* Sticky bottom CTA for new creators */}
           {(creatorStage === 'new' || creatorStage === 'link_shared') && (
-            <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent md:hidden">
+            <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-background via-background/95 to-transparent md:hidden">
               <div className="flex flex-row gap-2 max-w-lg mx-auto">
                 <Button
                   type="button"
-                  className="flex-1 bg-emerald-600 text-white hover:bg-emerald-500 h-12 text-sm font-black rounded-2xl shadow-lg gap-1.5"
+                  className="flex-1 bg-primary text-foreground hover:bg-primary h-12 text-sm font-black rounded-2xl shadow-lg gap-1.5"
                   onClick={() => void handleShareWhatsApp()}
                   disabled={!collabUrl}
                 >
@@ -1276,7 +1276,7 @@ const CreatorDashboard = () => {
                 </Button>
                 <Button
                   type="button"
-                  className="flex-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400 h-12 text-sm font-black rounded-2xl gap-1.5"
+                  className="flex-1 bg-primary text-foreground hover:bg-primary h-12 text-sm font-black rounded-2xl gap-1.5"
                   onClick={() => {
                     void copyText(collabUrl, 'Link copied. Paste it in DM');
                     void trackEvent('collab_link_copied', { creator_id: profile?.id });
@@ -1296,7 +1296,7 @@ const CreatorDashboard = () => {
               <NextStepCard data={nextStepData} />
               
               <section aria-labelledby="offers-heading">
-                <h2 id="offers-heading" className="text-2xl font-black text-white mb-4">Your offers</h2>
+                <h2 id="offers-heading" className="text-2xl font-black text-foreground mb-4">Your offers</h2>
                 <div className="grid gap-4 lg:grid-cols-2" role="list">
                   {collabRequestsPreview.map((request) => (
                     <CollabRequestCard
@@ -1313,16 +1313,16 @@ const CreatorDashboard = () => {
               </section>
 
               {/* Show link smaller at bottom */}
-              <section className="rounded-[28px] border border-white/10 bg-white/5 p-4">
+              <section className="rounded-[28px] border border-border bg-card p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-slate-400">Your link</p>
-                    <p className="text-sm font-bold text-white">{collabUrlShort}</p>
+                    <p className="text-xs text-muted-foreground">Your link</p>
+                    <p className="text-sm font-bold text-foreground">{collabUrlShort}</p>
                   </div>
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-white/15 bg-white/5 text-white hover:bg-white/10 text-xs"
+                    className="border-border bg-card text-foreground hover:bg-secondary/50 text-xs"
                     onClick={() => {
                       void copyText(collabUrl, 'Link copied');
                     }}
@@ -1343,12 +1343,12 @@ const CreatorDashboard = () => {
 
               {/* Action Required Summary */}
               {actionRequiredDeals.length > 0 && (
-                <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-4">
+                <section className="rounded-2xl border border-warning/30 bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-400">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-warning">
                       ⚡ Do this first
                     </p>
-                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full">
+                    <span className="text-[10px] font-bold bg-warning/20 text-warning px-2 py-1 rounded-full">
                       {actionRequiredDeals.length}
                     </span>
                   </div>
@@ -1358,15 +1358,15 @@ const CreatorDashboard = () => {
                         key={deal.id}
                         type="button"
                         onClick={() => navigate(`/creator-deal/${deal.id}`)}
-                        className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-left transition-colors"
+                        className="w-full flex items-center justify-between bg-card hover:bg-secondary/50 border border-border rounded-xl px-3 py-2.5 text-left transition-colors"
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{deal.brand_name}</p>
-                          <p className="text-xs text-amber-400 font-medium">
+                          <p className="text-sm font-semibold text-foreground truncate">{deal.brand_name}</p>
+                          <p className="text-xs text-warning font-medium">
                             {String(deal.status || '').toLowerCase() === 'contract_sent' ? 'Sign agreement' : 'Make requested changes'}
                           </p>
                         </div>
-                        <span className="text-emerald-400 text-sm font-semibold flex-shrink-0 ml-2">→</span>
+                        <span className="text-primary text-sm font-semibold flex-shrink-0 ml-2">→</span>
                       </button>
                     ))}
                   </div>
@@ -1374,7 +1374,7 @@ const CreatorDashboard = () => {
               )}
               
               <section aria-labelledby="deals-heading">
-                <h2 id="deals-heading" className="text-2xl font-black text-white mb-4">Your deal</h2>
+                <h2 id="deals-heading" className="text-2xl font-black text-foreground mb-4">Your deal</h2>
                 <div className="grid gap-4 lg:grid-cols-2" role="list">
                   {dealsForFirstView.map((deal) => (
                     <DealCard
@@ -1387,16 +1387,16 @@ const CreatorDashboard = () => {
               </section>
 
               {/* Show link smaller at bottom */}
-              <section className="rounded-[28px] border border-white/10 bg-white/5 p-4">
+              <section className="rounded-[28px] border border-border bg-card p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-slate-400">Your link</p>
-                    <p className="text-sm font-bold text-white">{collabUrlShort}</p>
+                    <p className="text-xs text-muted-foreground">Your link</p>
+                    <p className="text-sm font-bold text-foreground">{collabUrlShort}</p>
                   </div>
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-white/15 bg-white/5 text-white hover:bg-white/10 text-xs"
+                    className="border-border bg-card text-foreground hover:bg-secondary/50 text-xs"
                     onClick={() => {
                       void copyText(collabUrl, 'Link copied');
                     }}
@@ -1417,12 +1417,12 @@ const CreatorDashboard = () => {
 
               {/* Action Required Summary — shown when deals need attention */}
               {(actionRequiredDeals.length > 0 || collabRequestsPreview.length > 0) && (
-                <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-4">
+                <section className="rounded-2xl border border-warning/30 bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-400">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-warning">
                       ⚡ Things to do right now
                     </p>
-                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full">
+                    <span className="text-[10px] font-bold bg-warning/20 text-warning px-2 py-1 rounded-full">
                       {actionRequiredDeals.length + collabRequestsPreview.length}
                     </span>
                   </div>
@@ -1432,15 +1432,15 @@ const CreatorDashboard = () => {
                         key={deal.id}
                         type="button"
                         onClick={() => navigate(`/creator-deal/${deal.id}`)}
-                        className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-left transition-colors"
+                        className="w-full flex items-center justify-between bg-card hover:bg-secondary/50 border border-border rounded-xl px-3 py-2.5 text-left transition-colors"
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{deal.brand_name}</p>
-                          <p className="text-xs text-amber-400 font-medium">
+                          <p className="text-sm font-semibold text-foreground truncate">{deal.brand_name}</p>
+                          <p className="text-xs text-warning font-medium">
                             {String(deal.status || '').toLowerCase() === 'contract_sent' ? 'Sign agreement' : 'Make requested changes'}
                           </p>
                         </div>
-                        <span className="text-emerald-400 text-sm font-semibold flex-shrink-0 ml-2">→</span>
+                        <span className="text-primary text-sm font-semibold flex-shrink-0 ml-2">→</span>
                       </button>
                     ))}
                     {collabRequestsPreview.slice(0, 2 - Math.min(actionRequiredDeals.length, 1)).map(request => (
@@ -1448,13 +1448,13 @@ const CreatorDashboard = () => {
                         key={request.id}
                         type="button"
                         onClick={() => navigate(`/collab-requests/${request.id}/brief`, { state: { request } })}
-                        className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-left transition-colors"
+                        className="w-full flex items-center justify-between bg-card hover:bg-secondary/50 border border-border rounded-xl px-3 py-2.5 text-left transition-colors"
                       >
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{request.brand_name}</p>
-                          <p className="text-xs text-amber-400 font-medium">Review offer — expires soon</p>
+                          <p className="text-sm font-semibold text-foreground truncate">{request.brand_name}</p>
+                          <p className="text-xs text-warning font-medium">Review offer — expires soon</p>
                         </div>
-                        <span className="text-emerald-400 text-sm font-semibold flex-shrink-0 ml-2">→</span>
+                        <span className="text-primary text-sm font-semibold flex-shrink-0 ml-2">→</span>
                       </button>
                     ))}
                   </div>
@@ -1463,23 +1463,23 @@ const CreatorDashboard = () => {
 
               {/* Earnings summary */}
               <section 
-                className="rounded-[28px] border border-sky-400/20 bg-sky-500/10 p-5"
+                className="rounded-[28px] border border-info/20 bg-info/10 p-5"
                 aria-labelledby="earnings-heading"
               >
-                <p id="earnings-heading" className="text-xs font-black uppercase tracking-[0.2em] text-sky-200">Your earnings</p>
-                <p className="mt-2 text-3xl font-black text-white">₹{totalEarnings.toLocaleString('en-IN')}</p>
+                <p id="earnings-heading" className="text-xs font-black uppercase tracking-[0.2em] text-info">Your earnings</p>
+                <p className="mt-2 text-3xl font-black text-foreground">₹{totalEarnings.toLocaleString('en-IN')}</p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-300">Completed</p>
-                    <p className="mt-2 text-2xl font-black text-white">{completedDealsCount}</p>
+                  <div className="rounded-2xl border border-border bg-card p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">Completed</p>
+                    <p className="mt-2 text-2xl font-black text-foreground">{completedDealsCount}</p>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-300">Active</p>
-                    <p className="mt-2 text-2xl font-black text-white">{dealsForFirstView.length}</p>
+                  <div className="rounded-2xl border border-border bg-card p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">Active</p>
+                    <p className="mt-2 text-2xl font-black text-foreground">{dealsForFirstView.length}</p>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-300">Offers</p>
-                    <p className="mt-2 text-2xl font-black text-white">{pendingCollabRequestsCount}</p>
+                  <div className="rounded-2xl border border-border bg-card p-4">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">Offers</p>
+                    <p className="mt-2 text-2xl font-black text-foreground">{pendingCollabRequestsCount}</p>
                   </div>
                 </div>
               </section>
@@ -1488,41 +1488,41 @@ const CreatorDashboard = () => {
               {(collabRequestsPreview.length > 0 || dealsForFirstView.length > 0 || completedDealsCount > 0) && (
                 <section aria-labelledby="active-heading">
                   {/* Tab Navigation */}
-                  <div className="flex items-center gap-1 mb-4 border-b border-white/10">
+                  <div className="flex items-center gap-1 mb-4 border-b border-border">
                     <button
                       onClick={() => setDealsTab('active')}
                       className={cn(
                         'pb-3 px-1 pr-4 text-sm font-semibold transition-colors flex items-center gap-1.5',
-                        dealsTab === 'active' ? 'text-white border-b-2 border-emerald-400' : 'text-white/50 hover:text-white/70'
+                        dealsTab === 'active' ? 'text-foreground border-b-2 border-primary' : 'text-foreground/50 hover:text-foreground/70'
                       )}
                     >
                       Active
                       {dealsForFirstView.length > 0 && (
-                        <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{dealsForFirstView.length}</span>
+                        <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">{dealsForFirstView.length}</span>
                       )}
                     </button>
                     <button
                       onClick={() => setDealsTab('pending')}
                       className={cn(
                         'pb-3 px-1 pr-4 text-sm font-semibold transition-colors flex items-center gap-1.5',
-                        dealsTab === 'pending' ? 'text-white border-b-2 border-amber-400' : 'text-white/50 hover:text-white/70'
+                        dealsTab === 'pending' ? 'text-foreground border-b-2 border-warning' : 'text-foreground/50 hover:text-foreground/70'
                       )}
                     >
                       Pending
                       {collabRequestsPreview.length > 0 && (
-                        <span className="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{collabRequestsPreview.length}</span>
+                        <span className="bg-warning/20 text-warning text-[10px] font-bold px-1.5 py-0.5 rounded-full">{collabRequestsPreview.length}</span>
                       )}
                     </button>
                     <button
                       onClick={() => setDealsTab('completed')}
                       className={cn(
                         'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5',
-                        dealsTab === 'completed' ? 'text-white border-b-2 border-blue-400' : 'text-white/50 hover:text-white/70'
+                        dealsTab === 'completed' ? 'text-foreground border-b-2 border-info' : 'text-foreground/50 hover:text-foreground/70'
                       )}
                     >
                       Done
                       {completedDealsCount > 0 && (
-                        <span className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{completedDealsCount}</span>
+                        <span className="bg-info/20 text-info text-[10px] font-bold px-1.5 py-0.5 rounded-full">{completedDealsCount}</span>
                       )}
                     </button>
                   </div>
@@ -1533,8 +1533,8 @@ const CreatorDashboard = () => {
                     {dealsTab === 'pending' && (
                       <div>
                         {collabRequestsPreview.length === 0 ? (
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
-                            <p className="text-sm text-white/60">No pending offers. Share your collab link to get brand deals!</p>
+                          <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                            <p className="text-sm text-foreground/60">No pending offers. Share your collab link to get brand deals!</p>
                           </div>
                         ) : (
                           <div className="grid gap-4 lg:grid-cols-2" role="list">
@@ -1558,8 +1558,8 @@ const CreatorDashboard = () => {
                     {dealsTab === 'active' && (
                       <div>
                         {dealsForFirstView.length === 0 ? (
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
-                            <p className="text-sm text-white/60">No active deals. Accept an offer to get started!</p>
+                          <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                            <p className="text-sm text-foreground/60">No active deals. Accept an offer to get started!</p>
                           </div>
                         ) : (
                           <div className="grid gap-4 lg:grid-cols-2" role="list">
@@ -1579,15 +1579,15 @@ const CreatorDashboard = () => {
                     {dealsTab === 'completed' && (
                       <div>
                         {completedDealsCount === 0 ? (
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
-                            <p className="text-sm text-white/60">No completed deals yet. Keep going!</p>
+                          <div className="rounded-2xl border border-border bg-card p-6 text-center">
+                            <p className="text-sm text-foreground/60">No completed deals yet. Keep going!</p>
                           </div>
                         ) : (
-                          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                            <p className="text-sm text-white/60">{completedDealsCount} deal{completedDealsCount === 1 ? '' : 's'} completed. Great work!</p>
+                          <div className="rounded-2xl border border-border bg-card p-6">
+                            <p className="text-sm text-foreground/60">{completedDealsCount} deal{completedDealsCount === 1 ? '' : 's'} completed. Great work!</p>
                             <Button
                               type="button"
-                              className="mt-4 bg-purple-600 hover:bg-purple-500 text-white h-10 text-sm font-semibold"
+                              className="mt-4 bg-secondary hover:bg-secondary text-foreground h-10 text-sm font-semibold"
                               onClick={() => navigate('/creator-payments')}
                             >
                               View Payment History
@@ -1602,13 +1602,13 @@ const CreatorDashboard = () => {
 
               {/* Collab link + profile */}
               <div className="grid gap-6 lg:grid-cols-2">
-                <section className="rounded-[28px] border border-white/10 bg-white/5 p-5">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Your link</p>
-                  <p className="mt-2 break-all text-xl font-black text-white">{collabUrlShort}</p>
+                <section className="rounded-[28px] border border-border bg-card p-5">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Your link</p>
+                  <p className="mt-2 break-all text-xl font-black text-foreground">{collabUrlShort}</p>
                   <div className="mt-4 flex flex-col sm:flex-row gap-3">
                     <Button
                       type="button"
-                      className="bg-emerald-500 text-slate-950 hover:bg-emerald-400 h-12 sm:h-auto text-base sm:text-sm"
+                      className="bg-primary text-foreground hover:bg-primary h-12 sm:h-auto text-base sm:text-sm"
                       onClick={() => {
                         void copyText(collabUrl, 'Link copied');
                       }}
@@ -1619,7 +1619,7 @@ const CreatorDashboard = () => {
                     </Button>
                     <Button
                       type="button"
-                      className="bg-emerald-600 text-white hover:bg-emerald-500 h-12 sm:h-auto text-base sm:text-sm"
+                      className="bg-primary text-foreground hover:bg-primary h-12 sm:h-auto text-base sm:text-sm"
                       onClick={() => void handleShareWhatsApp()}
                       disabled={!collabUrl}
                     >
@@ -1629,14 +1629,14 @@ const CreatorDashboard = () => {
                   </div>
                 </section>
 
-                <section className="rounded-[28px] border border-white/10 bg-white/5 p-5">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Your profile</p>
-                  <p className="mt-2 text-sm text-slate-300">Keep your profile updated to attract more brands.</p>
+                <section className="rounded-[28px] border border-border bg-card p-5">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">Your profile</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Keep your profile updated to attract more brands.</p>
                   <div className="mt-4">
                     <Button
                       type="button"
                       variant="outline"
-                      className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+                      className="border-border bg-card text-foreground hover:bg-secondary/50"
                       onClick={() => navigate('/creator-profile?section=profile')}
                     >
                       Edit Profile
@@ -1652,7 +1652,7 @@ const CreatorDashboard = () => {
       {/* Decline Confirmation Dialog */}
       <AlertDialog open={showDeclineRequestDialog} onOpenChange={setShowDeclineRequestDialog}>
         <AlertDialogContent 
-          className="bg-[#1C1C1E] border-white/10 text-white shadow-2xl"
+          className="bg-card border-border text-foreground shadow-2xl"
           onOpenAutoFocus={(e) => {
             e.preventDefault();
             declineButtonRef.current?.focus();
@@ -1660,20 +1660,20 @@ const CreatorDashboard = () => {
         >
           <AlertDialogHeader>
             <AlertDialogTitle>Decline this request?</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
+            <AlertDialogDescription className="text-foreground/60">
               The brand will be notified that you declined this request.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel 
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/50"
+              className="bg-card border-border text-foreground hover:bg-secondary/50 focus-visible:ring-2 focus-visible:ring-white/50"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
               ref={declineButtonRef}
               onClick={declineCollabRequest} 
-              className="bg-red-500 hover:bg-red-600 text-white border-none focus-visible:ring-2 focus-visible:ring-red-400"
+              className="bg-destructive hover:bg-destructive text-foreground border-none focus-visible:ring-2 focus-visible:ring-red-400"
             >
               Decline
             </AlertDialogAction>

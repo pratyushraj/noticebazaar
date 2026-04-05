@@ -63,23 +63,43 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        "accent-gold": { // Renamed to match new yellow accent
-          DEFAULT: "#FACC15", // Updated to #FACC15
-          foreground: "#1F2125", // Dark text for the gold button
+        // Emerald green (primary accent)
+        emerald: {
+          50: "#ecfdf5",
+          100: "#d1fae5",
+          200: "#a7f3d0",
+          300: "#6ee7b7",
+          400: "#34d399",
+          500: "#22c55e",
+          600: "#16a34a",
+          700: "#15803d",
+          800: "#166534",
+          900: "#14532d",
+          950: "#052e16",
         },
-        "success": { // New success color for badges
-          DEFAULT: "#22C55E", // Green from new palette
-          foreground: "#FFFFFF",
-        },
-        "purple-accent": { // New purple accent color
-          DEFAULT: "#8B5CF6",
-          foreground: "#FFFFFF",
-        },
+        // Semantic
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        destructive: "hsl(var(--destructive))",
       },
       borderRadius: {
-        lg: "0.75rem", // Increased to 12px
-        md: "calc(0.75rem - 2px)",
-        sm: "calc(0.75rem - 4px)",
+        lg: "0.75rem",
+        md: "0.5rem",
+        sm: "0.375rem",
+        xl: "1rem",
+        "2xl": "1.25rem",
+      },
+      boxShadow: {
+        "subtle": "0 1px 2px rgba(0,0,0,0.05)",
+        "sm": "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)",
+        "DEFAULT": "0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.06)",
+        "md": "0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.06)",
+        "lg": "0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.06)",
+        "xl": "0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.05)",
+        "2xl": "0 25px 50px -12px rgba(0,0,0,0.15)",
+        "inner": "inset 0 2px 4px 0 rgba(0,0,0,0.05)",
+        "green": "0 0 0 3px rgba(34,197,94,0.25)",
+        "green-lg": "0 0 0 4px rgba(34,197,94,0.30)",
       },
       keyframes: {
         "accordion-down": {
