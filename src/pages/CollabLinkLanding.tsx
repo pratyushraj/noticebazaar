@@ -1,4120 +1,564 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+"use client";
+
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Instagram, Youtube, YoutubeIcon, ExternalLink, Check, ChevronDown, Star, ShieldCheck, MessageCircleMore, X, Loader2, ArrowRight } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Edit, Plus, Instagram, Youtube, Twitter, Facebook, CheckCircle2, Loader2, ExternalLink, ChevronDown, ShieldCheck, Rocket, Target, IndianRupee, Package, MapPin, FileText, Wallet, Calendar, TrendingUp, Lock, Clapperboard, Send, FileCheck, BadgeCheck, Clock, PenLine, Zap, ArrowRight, ChevronRight, Sparkles, X, Check, Link2, Briefcase } from 'lucide-react';
 import { toast } from 'sonner';
-import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
-import { trackEvent } from '@/lib/utils/analytics';
-import { SEOHead } from '@/components/seo/SEOHead';
-import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
 import { getApiBaseUrl } from '@/lib/utils/api';
-import { getCollabReadiness } from '@/lib/collab/readiness';
-import { useSession } from '@/contexts/SessionContext';
-import { useUpdateProfile } from '@/lib/hooks/useProfiles';
-import { useSignOut } from '@/lib/hooks/useAuth';
+import { formatCurrency } from '@/lib/utils/currency';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
-// Generic JSON-LD injector for page-specific schema markup
-const JsonLdSchema = ({ schema, schemaKey }: { schema: any; schemaKey: string }) => {
-  useEffect(() => {
-    const existingScript = document.querySelector(`script[data-schema="${schemaKey}"]`);
-    if (existingScript) {
-      existingScript.remove();
-    }
+// ============================================
+// TYPES
+// ============================================
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.setAttribute('data-schema', schemaKey);
-    script.textContent = JSON.stringify(schema);
-    document.head.appendChild(script);
-
-    return () => {
-      const scriptToRemove = document.querySelector(`script[data-schema="${schemaKey}"]`);
-      if (scriptToRemove) {
-        scriptToRemove.remove();
-      }
-    };
-  }, [schema, schemaKey]);
-
-  return null;
-};
-
-interface Creator {
-  id: string;
-  name: string;
-  username: string;
-  is_registered?: boolean;
-  profile_type?: 'verified' | 'public';
-  profile_label?: string;
-  submission_flow?: 'direct_request' | 'lead_capture';
-  category: string | null;
-  profile_photo?: string | null;
-  followers?: number | null;
-  last_instagram_sync?: string | null;
-  platforms: Array<{ name: string; handle: string; followers?: number }>;
-  bio: string | null;
-  open_to_collabs?: boolean;
-  content_niches?: string[];
-  media_kit_url?: string | null;
-  past_brands?: string[];
-  portfolio_links?: string[];
-  recent_campaign_types?: string[];
-  avg_reel_views?: number | null;
-  avg_likes?: number | null;
-  past_brand_count?: number | null;
-  audience_gender_split?: string | null;
-  top_cities?: string[];
-  audience_age_range?: string | null;
-  primary_audience_language?: string | null;
-  posting_frequency?: string | null;
-  active_brand_collabs_month?: number | null;
-  campaign_slot_note?: string | null;
-  collab_brands_count_override?: number | null;
-  collab_response_hours_override?: number | null;
-  collab_cancellations_percent_override?: number | null;
-  collab_region_label?: string | null;
-  collab_intro_line?: string | null;
-  collab_audience_fit_note?: string | null;
-  collab_recent_activity_note?: string | null;
-  collab_audience_relevance_note?: string | null;
-  collab_delivery_reliability_note?: string | null;
-  collab_engagement_confidence_note?: string | null;
-  collab_response_behavior_note?: string | null;
-  collab_cta_trust_note?: string | null;
-  collab_cta_dm_note?: string | null;
-  collab_cta_platform_note?: string | null;
-  collab_show_packages?: boolean | null;
-  collab_show_trust_signals?: boolean | null;
-  collab_show_audience_snapshot?: boolean | null;
-  collab_show_past_work?: boolean | null;
-  collab_past_work_items?: Array<{
-    id: string;
-    brand: string;
-    campaignType: string;
-    outcome: string;
-    proofLabel?: string | null;
-  }> | null;
-  performance_proof?: {
-    median_reel_views?: number | null;
-    avg_likes?: number | null;
-    captured_at?: string | null;
-  } | null;
-  suggested_reel_rate?: number | null;
-  suggested_paid_range_min?: number | null;
-  suggested_paid_range_max?: number | null;
-  suggested_barter_value_min?: number | null;
-  suggested_barter_value_max?: number | null;
-  trust_stats?: {
-    brands_count: number;
-    completed_deals: number;
-    total_deals: number;
-    completion_rate: number | null;
-    avg_response_hours: number | null;
-  };
-  // NEW: Qualification & Deal Rules
-  min_deal_value?: number | null;
-  min_lead_time_days?: number | null;
-  typical_story_rate?: number | null;
-  typical_post_rate?: number | null;
-  premium_production_multiplier?: number | null;
-  brand_type_preferences?: string[] | null;
-  campaign_type_support?: string[] | null;
-  revision_policy?: string | null;
-  allow_negotiation?: boolean | null;
-  allow_counter_offer?: boolean | null;
-  onboarding_complete?: boolean | null;
-  // Deal preference: 'paid_only' | 'barter_only' | 'open_to_both'
-  collab_deal_preference?: 'paid_only' | 'barter_only' | 'open_to_both' | null;
-  deal_templates?: DealTemplate[] | null;
+interface CollabPackage { id: string; name: string; description: string; price: number; delivery_days: number; revisions: number; }
+interface SocialStat { platform: 'instagram' | 'youtube' | 'twitter' | 'other'; handle: string; followers: number; }
+interface PastWork { id: string; title: string; thumbnail_url?: string; url?: string; platform?: string; likes?: number; }
+interface Testimonial { id: string; brand_name: string; text: string; avatar_url?: string; }
+interface FAQItem { q: string; a: string; }
+interface CreatorProfile {
+  id: string; first_name: string; last_name: string; username: string; avatar_url?: string;
+  intro_line?: string; bio?: string; instagram_handle?: string; instagram_followers?: number;
+  youtube_handle?: string; youtube_subscribers?: number; twitter_handle?: string;
+  packages?: CollabPackage[]; past_work?: PastWork[]; testimonials?: Testimonial[];
+  faqs?: FAQItem[]; avg_rate_reel?: number; avg_rate_story?: number;
+  verified?: boolean; brand_deal_count?: number; completed_deal_count?: number;
 }
 
-interface DealTemplate {
-  id: string;
-  label: string;
-  icon: string;
-  budget: number; // For paid: ₹ amount, for barter: ₹ product value
-  type: 'paid' | 'barter';
-  category: string;
-  description: string;
-  deliverables: string[];
-  quantities: Record<string, number>;
-  deadlineDays: number;
-  notes?: string;
-  isPopular?: boolean;
-  addons?: { id: string, label: string, price: number }[];
-}
+// ============================================
+// UTILITIES
+// ============================================
 
-type CollabType = 'paid' | 'barter' | 'hybrid' | 'both' | 'affiliate';
-
-const isHybridCollab = (value: CollabType) => value === 'hybrid' || value === 'both';
-
-const toTitleCaseName = (value: string) =>
-  value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(' ');
-
-interface FormErrors {
-  brandName?: string;
-  brandEmail?: string;
-  campaignDescription?: string;
-  deliverables?: string;
-  budget?: string;
-}
-
-// Reserved usernames that should not be used for collab links
-const RESERVED_USERNAMES = [
-  'admin', 'api', 'blog', 'login', 'signup', 'reset-password', 'about', 'careers',
-  'pricing-comparison', 'privacy-policy', 'terms-of-service', 'refund-policy',
-  'delete-data', 'sitemap', 'free-legal-check', 'thank-you', 'free-influencer-contract',
-  'collaboration-agreement-generator', 'plan', 'creators', 'creator', 'collab',
-  'dashboard-white-preview', 'dashboard-preview', 'p', 'old-home', 'home',
-  'consumer-complaints', 'creator-dashboard', 'creator-profile', 'creator-analytics',
-  'creator-contracts', 'creator-payments', 'creator-tax', 'creator-onboarding',
-  'brand-directory', 'brand-opportunities', 'partner-program', 'ai-pitch-generator',
-  'documents-vault', 'insights', 'messages', 'notifications', 'client-dashboard',
-  'client-profile', 'client-subscription', 'client-cases', 'client-documents',
-  'client-consultations', 'admin-dashboard', 'admin-documents', 'admin-cases',
-  'admin-clients', 'admin-consultations', 'admin-subscriptions', 'admin-activity-log',
-  'admin-profile', 'admin-influencers', 'admin-discovery', 'ca-dashboard'
-];
-
-const isGeneratedCreatorHandle = (value?: string | null) =>
-  Boolean(value && /^creator-[a-z0-9]{6,}$/i.test(value.trim()));
-
-const getPreferredPublicHandle = (...candidates: Array<string | null | undefined>) => {
-  for (const candidate of candidates) {
-    const normalized = (candidate || '').replace(/^@/, '').trim();
-    if (!normalized) continue;
-    if (isGeneratedCreatorHandle(normalized)) continue;
-    return normalized;
-  }
-  return '';
+const formatFollowers = (n?: number) => {
+  if (!n) return '';
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return n.toString();
 };
 
-const DELIVERABLE_OPTIONS = [
-  { label: 'Reel', value: 'Instagram Reel', icon: <span className="mr-1.5">🎬</span> },
-  { label: 'Story', value: 'Story', icon: <span className="mr-1.5">📱</span> },
-  { label: 'Post', value: 'Post', icon: <span className="mr-1.5">📷</span> },
-  { label: 'Unboxing', value: 'Unboxing Video', icon: <span className="mr-1.5">📦</span> },
-  { label: 'Review', value: 'Review Post', icon: <span className="mr-1.5">⭐</span> },
-  { label: 'Giveaway', value: 'Giveaway', icon: <span className="mr-1.5">🎁</span> },
-  { label: 'YouTube', value: 'YouTube Video', icon: <span className="mr-1.5">▶</span> },
-  { label: 'Custom', value: 'Custom', icon: <Target className="h-3.5 w-3.5 text-muted-foreground inline-block" /> },
-];
+// ============================================
+// SUB-COMPONENTS
+// ============================================
 
-const PRODUCT_CATEGORY_OPTIONS = [
-  { value: 'fashion', label: '👗 Fashion & Clothing' },
-  { value: 'beauty', label: '💄 Beauty & Skincare' },
-  { value: 'food', label: '🍕 Food & Beverage' },
-  { value: 'tech', label: '📱 Tech & Gadgets' },
-  { value: 'app', label: '💻 App / Software' },
-  { value: 'fitness', label: '💪 Fitness & Health' },
-  { value: 'home', label: '🏠 Home & Living' },
-  { value: 'travel', label: '✈️ Travel & Hospitality' },
-  { value: 'finance', label: '💰 Finance & BFSI' },
-  { value: 'gaming', label: '🎮 Gaming' },
-  { value: 'kids', label: '🧸 Kids & Parenting' },
-  { value: 'other', label: '📦 Other' },
-];
+// ── Hero Section ─────────────────────────────────────────────────────
 
-// const CAMPAIGN_CATEGORY_OPTIONS = [
-//   'Fashion',
-//   'Beauty',
-//   'Tech',
-//   'Food',
-//   'Travel',
-//   'Fitness',
-//   'Finance',
-//   'Lifestyle',
-//   'Education',
-//   'Entertainment',
-//   'Gaming',
-//   'Parenting',
-//   'General',
-// ];
-
-const getEngagementRange = (followers?: number | null, avgReelViews?: number | null) => {
-  if (!followers || followers <= 0 || !avgReelViews || avgReelViews < 0) {
-    return 'Growing Audience';
-  }
-  const engagementRate = avgReelViews / followers;
-  if (engagementRate < 0.1) return 'Growing Audience';
-  if (engagementRate <= 0.25) return 'Engaged Audience';
-  return 'High Viewer Interaction';
-};
-
-const formatAudienceGender = (value?: string | null) => {
-  if (!value) return null;
-  const normalized = value.trim();
-  if (!normalized) return null;
-
-  const womenMatch = normalized.match(/(\d+)\s*%?\s*women?/i);
-  const menMatch = normalized.match(/(\d+)\s*%?\s*men?/i);
-  const women = womenMatch ? Number(womenMatch[1]) : null;
-  const men = menMatch ? Number(menMatch[1]) : null;
-
-  if (women !== null && men !== null) {
-    return [`${women}% Women`, `${men}% Men`];
-  }
-  if (women !== null) {
-    const inferredMen = Math.max(0, 100 - women);
-    return [`${women}% Women`, `${inferredMen}% Men`];
-  }
-  if (men !== null) {
-    const inferredWomen = Math.max(0, 100 - men);
-    return [`${inferredWomen}% Women`, `${men}% Men`];
-  }
-  return [normalized];
-};
-
-const toTitleCase = (value: string) => {
-  return value
-    .toLowerCase()
-    .split(/[\s-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-};
-
-const formatAudienceLanguage = (value?: string | null) => {
-  if (!value) return null;
-  const normalized = value.trim();
-  if (!normalized) return null;
-  return normalized
-    .split(/[,/]+/)
-    .map((part) => toTitleCase(part.trim()))
-    .filter(Boolean)
-    .join(' / ');
-};
-
-const formatAudienceCities = (cities?: string[] | null) => {
-  if (!Array.isArray(cities)) return [];
-  return cities
-    .map((city) => toTitleCase((city || '').trim()))
-    .filter(Boolean);
-};
-
-const buildLocalPreviewCreator = (handle: string): Creator => ({
-  id: 'local-preview-creator',
-  name: 'Pratyush',
-  username: handle,
-  is_registered: true,
-  profile_type: 'verified',
-  profile_label: 'Verified Creator Profile',
-  submission_flow: 'direct_request',
-  category: 'Lifestyle',
-  profile_photo: null,
-  followers: 10200,
-  platforms: [{ name: 'Instagram', handle, followers: 10200 }],
-  bio: 'Creator profile preview mode (local only)',
-  open_to_collabs: true,
-  content_niches: ['Food', 'Lifestyle', 'Gaming'],
-  media_kit_url: 'https://example.com/media-kit',
-  past_brands: ['Sample Brand'],
-  recent_campaign_types: ['Product Launch'],
-  avg_reel_views: 12200,
-  avg_likes: 800,
-  past_brand_count: 11,
-  audience_gender_split: '70 women',
-  top_cities: ['noida', 'delhi', 'ghaziabad'],
-  audience_age_range: '18-24',
-  primary_audience_language: 'hindi',
-  posting_frequency: '3-4 times/week',
-  active_brand_collabs_month: 2,
-  campaign_slot_note: 'Limited slots this month',
-  collab_brands_count_override: 11,
-  collab_response_hours_override: 3,
-  collab_cancellations_percent_override: 0,
-  collab_region_label: 'NCR (Delhi Region)',
-  collab_intro_line: 'Lifestyle creator with clear package options for launches, reviews, and campaign bursts.',
-  collab_audience_fit_note: 'Works best for targeted audience campaigns.',
-  collab_recent_activity_note: 'Posting consistently',
-  collab_audience_relevance_note: 'Strong relevance for North India audience',
-  collab_delivery_reliability_note: 'Proven delivery across past campaigns',
-  collab_engagement_confidence_note: 'Above-average engagement for creator size',
-  collab_response_behavior_note: 'Most brands receive response same day',
-  collab_cta_trust_note: 'Creator notified instantly — no DM required.',
-  collab_cta_dm_note: 'No DMs required — creator replies here.',
-  collab_cta_platform_note: 'Direct collaboration — no agency middle layer',
-  trust_stats: {
-    brands_count: 11,
-    completed_deals: 11,
-    total_deals: 11,
-    completion_rate: 98,
-    avg_response_hours: 3,
-  },
-});
-
-const getAudienceRegionLabel = (cities: string[]) => {
-  if (!cities.length) return null;
-  const normalized = cities.map((city) => city.toLowerCase());
-  const hasNcr = normalized.some((city) =>
-    ['delhi', 'new delhi', 'noida', 'gurgaon', 'gurugram', 'ghaziabad', 'faridabad'].some((key) => city.includes(key))
-  );
-  const hasTier1 = normalized.some((city) =>
-    ['mumbai', 'bengaluru', 'bangalore', 'chennai', 'hyderabad', 'pune', 'kolkata', 'ahmedabad'].some((key) => city.includes(key))
-  );
-
-  if (hasNcr && hasTier1) return 'NCR (Delhi Region) / Tier 1';
-  if (hasNcr) return 'NCR (Delhi Region)';
-  if (hasTier1) return 'Tier 1';
-  return null;
-};
-
-const isScrapedInstagramBio = (bio?: string | null) => {
-  if (!bio) return false;
-  const normalized = bio.toLowerCase();
-  return (
-    (normalized.includes('followers') &&
-      normalized.includes('following') &&
-      normalized.includes('posts')) ||
-    normalized.includes('see instagram photos and videos')
-  );
-};
-
-const withNeutralPrefix = (text: string, prefix: string) => {
-  const normalized = text.trim();
-  if (!normalized) return normalized;
-  if (/^(currently|works with|typically|open to|reviewing|prefer)/i.test(normalized)) {
-    return normalized;
-  }
-  return `${prefix}${normalized}`;
-};
-
-const CollabLinkLanding = () => {
-  const { user, profile } = useSession();
-  const updateProfileMutation = useUpdateProfile();
-  const signOutMutation = useSignOut();
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [editMode, setEditMode] = useState(() => searchParams.get('edit') === 'true');
-  const [aboutCreatorOpen, setAboutCreatorOpen] = useState(false);
-
-  useEffect(() => {
-    if (editMode && searchParams.get('edit') !== 'true') {
-      setSearchParams(prev => { prev.set('edit', 'true'); return prev; }, { replace: true });
-    } else if (!editMode && searchParams.get('edit') === 'true') {
-      setSearchParams(prev => { prev.delete('edit'); return prev; }, { replace: true });
-    }
-  }, [editMode, setSearchParams, searchParams]);
-
-  useEffect(() => {
-    // In edit mode we should never hide profile fields behind a collapsed panel.
-    if (editMode) setAboutCreatorOpen(true);
-  }, [editMode]);
-
-  const { username } = useParams<{ username: string }>();
+const HeroSection = ({ creator, collabUrl }: { creator: CreatorProfile; collabUrl: string }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [creator, setCreator] = useState<Creator | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isWarmingUp, setIsWarmingUp] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [submitChecklistStep, setSubmitChecklistStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  // ── Force light mode while this page is mounted ──────────────────────────
-  // The creator dashboard may set `dark` on <html> via class-based dark mode.
-  // CollabLinkLanding is a light-only page. Remove dark class on mount and
-  // restore it (if the system prefers dark) when navigating away.
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const hadDark = html.classList.contains('dark');
-    const previousHtmlOverflow = html.style.overflow;
-    const previousHtmlOverflowY = html.style.overflowY;
-    const previousHtmlHeight = html.style.height;
-    const previousHtmlMinHeight = html.style.minHeight;
-    const previousBodyOverflow = body.style.overflow;
-    const previousBodyOverflowY = body.style.overflowY;
-    const previousBodyHeight = body.style.height;
-    const previousBodyMinHeight = body.style.minHeight;
-    const previousBodyPosition = body.style.position;
-    html.classList.remove('dark');
+  const fullName = `${creator.first_name} ${creator.last_name}`.trim();
+  const initials = `${creator.first_name?.[0] || ''}${creator.last_name?.[0] || ''}`.toUpperCase();
 
-    // Safety check: ensure no prior screens left the document scroll-locked.
-    html.style.overflow = '';
-    html.style.overflowY = 'auto';
-    html.style.height = 'auto';
-    html.style.minHeight = '100dvh';
-    body.style.overflow = '';
-    body.style.overflowY = 'auto';
-    body.style.height = 'auto';
-    body.style.minHeight = '100dvh';
-    body.style.position = 'static';
+  return (
+    <section className="text-center px-5 pt-12 pb-8">
+      {/* Avatar */}
+      <div className="mx-auto w-20 h-20 rounded-2xl overflow-hidden mb-5 bg-secondary flex items-center justify-center">
+        {creator.avatar_url ? (
+          <img src={creator.avatar_url} alt={fullName} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-xl font-semibold text-muted-foreground">{initials}</span>
+        )}
+      </div>
 
-    return () => {
-      // Restore dark if it was set before entering this page
-      if (hadDark) html.classList.add('dark');
-      html.style.overflow = previousHtmlOverflow;
-      html.style.overflowY = previousHtmlOverflowY;
-      html.style.height = previousHtmlHeight;
-      html.style.minHeight = previousHtmlMinHeight;
-      body.style.overflow = previousBodyOverflow;
-      body.style.overflowY = previousBodyOverflowY;
-      body.style.height = previousBodyHeight;
-      body.style.minHeight = previousBodyMinHeight;
-      body.style.position = previousBodyPosition;
-    };
-  }, []);
+      {/* Name + verified */}
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">{fullName}</h1>
+        {creator.verified && <ShieldCheck className="h-5 w-5 text-primary shrink-0" />}
+      </div>
 
-  // Check if username is reserved (redirect to 404 if so)
-  useEffect(() => {
-    if (username && RESERVED_USERNAMES.includes(username.toLowerCase())) {
-      navigate('/404', { replace: true });
-    }
-  }, [username, navigate]);
+      {/* Tagline */}
+      {creator.intro_line && (
+        <p className="text-base text-foreground/70 max-w-sm mx-auto leading-relaxed">{creator.intro_line}</p>
+      )}
 
-  // Form state
-  const [collabType, setCollabType] = useState<CollabType>('paid');
-  const [brandName, setBrandName] = useState('');
-  const [brandEmail, setBrandEmail] = useState('');
-  const [brandInstagram, setBrandInstagram] = useState('');
-  const [budgetRange, setBudgetRange] = useState('');
-  const [exactBudget, setExactBudget] = useState('');
-  const [barterValue, setBarterValue] = useState('');
-  const [barterProductName, setBarterProductName] = useState('');
-  const [barterProductCategory, setBarterProductCategory] = useState('');
-  const [campaignCategory, setCampaignCategory] = useState('General');
+      {/* Social links */}
+      <div className="flex items-center justify-center gap-3 mt-4">
+        {creator.instagram_handle && (
+          <a
+            href={`https://instagram.com/${creator.instagram_handle.replace('@', '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Instagram className="h-4 w-4" />
+            {formatFollowers(creator.instagram_followers)}
+          </a>
+        )}
+        {creator.youtube_handle && (
+          <a
+            href={`https://youtube.com/@${creator.youtube_handle.replace('@', '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Youtube className="h-4 w-4" />
+            {formatFollowers(creator.youtube_subscribers)}
+          </a>
+        )}
+        {creator.brand_deal_count !== undefined && (
+          <span className="text-xs text-muted-foreground">
+            {creator.brand_deal_count} brand{creator.brand_deal_count !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
 
-  // If the visitor is already logged in as a brand, prefill the form from their profile.
-  // We only fill blanks so we never overwrite what the user already typed.
-  useEffect(() => {
-    if (!profile || profile.role !== 'brand') return;
+      {/* Primary CTA */}
+      <Button
+        onClick={() => document.getElementById('offer-form')?.scrollIntoView({ behavior: 'smooth' })}
+        className="mt-6 w-full sm:w-auto"
+      >
+        Send offer <ArrowRight className="ml-1.5 h-4 w-4" />
+      </Button>
 
-    const inferredBrandName =
-      (profile.business_name || '').trim() ||
-      [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() ||
-      'Brand';
+      {/* Divider */}
+      <div className="flex items-center gap-3 mt-8 max-w-xs mx-auto">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground">or scroll to learn more</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+    </section>
+  );
+};
 
-    const inferredEmail = (profile.email || user?.email || '').trim();
+// ── Stats Section ─────────────────────────────────────────────────────
 
-    setBrandName((prev) => (prev.trim() ? prev : inferredBrandName));
-    setBrandEmail((prev) => (prev.trim() ? prev : inferredEmail));
-  }, [profile?.id, profile?.role, user?.email]);
-  const [campaignDescription, setCampaignDescription] = useState('');
-  const [deliverables, setDeliverables] = useState<string[]>([]);
-  const [deliverableQuantities, setDeliverableQuantities] = useState<Record<string, number>>({});
-  const [deadline, setDeadline] = useState('');
-  const [hasStartedOffer, setHasStartedOffer] = useState(false);
-  const [showMobileAudienceDetails, setShowMobileAudienceDetails] = useState(false);
-  const [openAccordionValue, setOpenAccordionValue] = useState<string | undefined>("item-1");
-  // const [showAdvancedMobileOptions, setShowAdvancedMobileOptions] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const readinessBadgeRef = useRef<HTMLDivElement | null>(null);
-  const [readinessBadgeSparkle, setReadinessBadgeSparkle] = useState(false);
-  const [profilePhotoError, setProfilePhotoError] = useState(false);
-  const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [lastProfileSaveAt, setLastProfileSaveAt] = useState<Date | null>(null);
-  const [previewAsBrand, setPreviewAsBrand] = useState(false);
-  const [barterProductImageUrl, setBarterProductImageUrl] = useState<string>('');
-  const [barterImageUploading, setBarterImageUploading] = useState(false);
-  const [brandLogoUrl, setBrandLogoUrl] = useState<string>('');
-  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
-
-  // If the brand came here via "Send offer", auto-open the offer flow.
-  useEffect(() => {
-    const offerParam = (searchParams.get('offer') || '').toLowerCase();
-    const shouldStartOffer = offerParam === 'true' || offerParam === '1' || offerParam === 'yes';
-    if (!shouldStartOffer) return;
-    if (hasStartedOffer) return;
-
-    setHasStartedOffer(true);
-    window.setTimeout(() => {
-      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  }, [searchParams, hasStartedOffer]);
-
-  // Save and continue later
-  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
-  const [draftEmail, setDraftEmail] = useState('');
-  const [saveDraftSubmitting, setSaveDraftSubmitting] = useState(false);
-  const [newNicheInput, setNewNicheInput] = useState('');
-  const [showCustomFlow, setShowCustomFlow] = useState(false);
-  const [templateContinueNudge, setTemplateContinueNudge] = useState(0);
-
-  // Deal Templates State (Moved up to fix Hook Order violations)
-  const [localDealTemplates, setLocalDealTemplates] = useState<DealTemplate[]>([]);
-  const [isEditingTemplates, setIsEditingTemplates] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<DealTemplate | null>(null);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const headerSectionRef = useRef<HTMLDivElement | null>(null);
-  const overviewSectionRef = useRef<HTMLDivElement | null>(null);
-  const packagesSectionRef = useRef<HTMLDivElement | null>(null);
-  const nichesSectionRef = useRef<HTMLDivElement | null>(null);
-
-  // Entering the form implies the brand has started an offer.
-  useEffect(() => {
-    if (showCustomFlow) {
-      setHasStartedOffer(true);
-    }
-  }, [showCustomFlow]);
-
-  useEffect(() => {
-    if (creator) {
-      if (creator.deal_templates && creator.deal_templates.length > 0) {
-        // Validate saved templates have reasonable prices, regenerate any with ₹0
-        const roundToCleanPrice = (n: number): number => {
-          if (n >= 10000) return Math.round(n / 1000) * 1000;
-          if (n >= 5000) return Math.round(n / 500) * 500;
-          if (n >= 1000) return Math.round(n / 100) * 100;
-          return Math.round(n / 50) * 50;
-        };
-        const fallbackRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
-        const validatedTemplates = creator.deal_templates.slice(0, 3).map((t, i) => {
-          if (t.budget > 0) return t;
-          // Fix ₹0 templates with sensible defaults
-          const fallbackBudgets = [
-            roundToCleanPrice(Math.max(fallbackRate, 1000)),
-            roundToCleanPrice(Math.max(fallbackRate * 1.5, 1500)),
-            roundToCleanPrice(Math.max(fallbackRate * 0.5, 2000)),
-          ];
-          return { ...t, budget: fallbackBudgets[i] || roundToCleanPrice(fallbackRate) };
-        });
-        setLocalDealTemplates(validatedTemplates);
-      } else {
-        // Generate Default Templates based on reel rate
-        const suggestedRate = creator.suggested_reel_rate || (creator as any).avg_rate_reel || 5000;
-        const reelRate = suggestedRate;
-
-        const roundToCleanPrice = (n: number): number => {
-          if (n >= 10000) return Math.round(n / 1000) * 1000;
-          if (n >= 5000) return Math.round(n / 500) * 500;
-          if (n >= 1000) return Math.round(n / 100) * 100;
-          return Math.round(n / 50) * 50;
-        };
-
-        const defaultTemplates: DealTemplate[] = [
-          {
-            id: 'starter_package',
-            label: 'Starter Creator Package',
-            icon: '🎬',
-            budget: roundToCleanPrice(Math.max(reelRate, 1000)),
-            type: 'paid',
-            category: creator.category || 'Lifestyle',
-            description: '1 High-quality Instagram Reel with professional hooks and brand tagging.',
-            deliverables: ['Reel'],
-            quantities: { 'Reel': 1 },
-            deadlineDays: creator.min_lead_time_days || 7,
-            notes: 'Includes 1 revision. Collaborative post included.',
-            addons: [
-              { id: 'addon_story', label: '+ Extra Story', price: 200 },
-              { id: 'addon_revision', label: '+ Extra revision', price: 300 }
-            ]
-          },
-          {
-            id: 'engagement_package',
-            label: 'Engagement Package',
-            icon: '🔥',
-            budget: roundToCleanPrice(Math.max(reelRate * 1.5, 1500)),
-            type: 'paid',
-            category: creator.category || 'Lifestyle',
-            description: '1 Reel + 2 Engagement Stories to maximize reach and drive action.',
-            deliverables: ['Reel', 'Story'],
-            quantities: { 'Reel': 1, 'Story': 2 },
-            deadlineDays: creator.min_lead_time_days || 10,
-            notes: 'Stories include direct link + Polls for engagement.',
-            isPopular: true
-          },
-          {
-            id: 'product_review',
-            label: 'Product Review',
-            icon: '📦',
-            budget: roundToCleanPrice(Math.max(reelRate * 0.5, 2000)),
-            type: 'barter',
-            category: creator.category || 'Lifestyle',
-            description: 'In-depth product unboxing and review with 1 story mention.',
-            deliverables: ['Unboxing Video', 'Story'],
-            quantities: { 'Unboxing Video': 1, 'Story': 1 },
-            deadlineDays: creator.min_lead_time_days || 14,
-            notes: 'Product must be shipped before shoot. Honest review only.'
-          }
-        ];
-        setLocalDealTemplates(defaultTemplates);
-      }
-    }
-  }, [creator]);
-
-
-  const isOwner = useMemo(() => {
-    return Boolean(user?.id && creator?.id && user.id === creator.id);
-  }, [user?.id, creator?.id]);
-
-  // Keep owner preview aligned with latest profile edits even if public API fields lag behind.
-  useEffect(() => {
-    if (!creator || !user?.id || creator.id !== user.id) return;
-
-    const latestHandle = getPreferredPublicHandle(profile?.instagram_handle, profile?.username, creator.username);
-    const latestName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
-    const latestFollowers = Number((profile as any)?.instagram_followers || 0) || null;
-    const latestProfilePhoto = (profile as any)?.instagram_profile_photo || profile?.avatar_url || creator.profile_photo || null;
-
-    const nextPlatforms = Array.isArray(creator.platforms)
-      ? creator.platforms.map((platform) =>
-        platform.name.toLowerCase() === 'instagram'
-          ? {
-            ...platform,
-            handle: latestHandle || platform.handle,
-            followers: latestFollowers || platform.followers || undefined,
-          }
-          : platform
-      )
-      : [];
-
-    const hasInstagramPlatform = nextPlatforms.some((platform) => platform.name.toLowerCase() === 'instagram');
-    if (!hasInstagramPlatform && latestHandle) {
-      nextPlatforms.unshift({
-        name: 'Instagram',
-        handle: latestHandle,
-        followers: latestFollowers || undefined,
-      });
-    }
-
-    const nextName = latestName || creator.name;
-    const nextUsername = latestHandle || creator.username;
-    const nextFollowers = latestFollowers || creator.followers || null;
-    const nextProfilePhoto = latestProfilePhoto;
-
-    const instagramHandle = nextPlatforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '';
-    const isSameName = nextName === creator.name;
-    const isSameUsername = nextUsername === creator.username;
-    const isSameInstagramHandle = instagramHandle === (creator.platforms.find((platform) => platform.name.toLowerCase() === 'instagram')?.handle || '');
-    const isSameFollowers = nextFollowers === creator.followers;
-    const isSamePhoto = nextProfilePhoto === creator.profile_photo;
-
-    if (isSameName && isSameUsername && isSameInstagramHandle && isSameFollowers && isSamePhoto) return;
-
-    setCreator((prev) => prev ? {
-      ...prev,
-      name: nextName,
-      username: nextUsername,
-      platforms: nextPlatforms,
-      followers: nextFollowers,
-      profile_photo: nextProfilePhoto,
-    } : prev);
-  }, [
-    creator,
-    user?.id,
-    profile?.first_name,
-    profile?.last_name,
-    profile?.instagram_handle,
-    profile?.username,
-    profile?.avatar_url,
-    (profile as any)?.instagram_profile_photo,
-    (profile as any)?.instagram_followers,
-  ]);
-
-  const isDeadlineProvided = Boolean(deadline);
-  const isBudgetProvided = collabType === 'affiliate' ? true : collabType === 'paid' ? Number(exactBudget) > 0 : collabType === 'barter' ? Number(barterValue) > 0 : collabType === 'hybrid' ? (Number(exactBudget) > 0 && Number(barterValue) > 0) : true;
-
-  const isStep1Ready = Boolean(collabType && deliverables.length > 0);
-  const isValidBrandEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail);
-  const isStep2Ready = Boolean(brandEmail.trim() && isValidBrandEmail);
-
-  const completionChecks = useMemo(() => ([
-    { label: 'Collab type', complete: isStep1Ready },
-    { label: 'Contact', complete: isStep2Ready },
-  ]), [
-    isStep1Ready,
-    isStep2Ready,
-  ]);
-
-  const [showSubmittingTrust, setShowSubmittingTrust] = useState(false);
-  const submittingChecklist = [
-    'Sending offer...',
-    'Notifying creator...',
+const StatsSection = ({ creator }: { creator: CreatorProfile }) => {
+  const stats = [
+    ...(creator.instagram_followers ? [{ label: 'Instagram followers', value: formatFollowers(creator.instagram_followers), icon: Instagram }] : []),
+    ...(creator.youtube_subscribers ? [{ label: 'YouTube subscribers', value: formatFollowers(creator.youtube_subscribers), icon: Youtube }] : []),
+    ...(creator.brand_deal_count !== undefined ? [{ label: 'Brand deals', value: String(creator.brand_deal_count), icon: Check }] : []),
+    ...(creator.completed_deal_count !== undefined ? [{ label: 'Completed', value: String(creator.completed_deal_count), icon: Check }] : []),
   ];
 
-  const typeSectionTitle = 'bg-gradient-to-r from-background to-slate-700 bg-clip-text text-transparent';
-  const typeLabel = 'bg-gradient-to-r from-background to-slate-600 bg-clip-text text-transparent';
-  const ctaStepStatus = !hasStartedOffer ? 'create' : currentStep < 2 ? 'next' : 'send';
-  const ctaLabel = ctaStepStatus === 'create' ? 'Choose a Service' : ctaStepStatus === 'next' ? 'Continue to Offer' : 'Send Offer';
-  const ctaIcon = ctaStepStatus === 'send'
-    ? <Send className="h-4 w-4" />
-    : <Rocket className="h-4 w-4" />;
-  const ctaHelper = ctaStepStatus === 'send'
-    ? 'Creator will be notified instantly'
-    : 'Takes less than 1 minute';
-  const inputClass = 'bg-card border-border text-muted-foreground placeholder:text-muted-foreground focus:bg-card focus:border-teal-400 transition-all rounded-xl';
-
-  const isContactReady = isStep2Ready;
-  const isCoreReady = isStep1Ready && isStep2Ready;
-
-  const typePageTitle = 'bg-gradient-to-r from-background via-background to-slate-900 bg-clip-text text-transparent';
-
-  useEffect(() => {
-    if (!showSubmittingTrust) {
-      setSubmitChecklistStep(0);
-      return;
-    }
-    setSubmitChecklistStep(0);
-    const interval = window.setInterval(() => {
-      setSubmitChecklistStep((prev) => (prev < submittingChecklist.length - 1 ? prev + 1 : prev));
-    }, 220);
-    return () => window.clearInterval(interval);
-  }, [showSubmittingTrust]);
-
-  // Readiness badge animation (must run before any conditional returns to preserve hook order)
-  useEffect(() => {
-    if (!creator || !readinessBadgeRef.current || typeof window === 'undefined') return;
-
-    const badgeEl = readinessBadgeRef.current;
-    const keyId = creator.username || creator.id;
-    if (!keyId) return;
-
-    const previewAvgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
-    const previewAvgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
-    const previewAudienceCities = (creator.top_cities || []);
-    const previewAudienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(formatAudienceCities(previewAudienceCities));
-    const previewTrustStats = creator.trust_stats;
-
-    const readiness = getCollabReadiness({
-      instagramHandle: getPreferredPublicHandle(
-        creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
-        creator.username
-      ),
-      instagramLinked: Boolean(creator.last_instagram_sync),
-      category: creator.category,
-      niches: creator.content_niches,
-      topCities: creator.top_cities,
-      audienceGenderSplit: creator.audience_gender_split,
-      primaryAudienceLanguage: creator.primary_audience_language,
-      postingFrequency: creator.posting_frequency,
-      avgReelViews: previewAvgReelViews,
-      avgLikes: previewAvgLikes,
-      openToCollabs: creator.open_to_collabs,
-      avgRateReel: (creator as any).avg_rate_reel || (creator as any).avg_reel_rate,
-      suggestedReelRate: creator.suggested_reel_rate,
-      suggestedBarterValueMin: creator.suggested_barter_value_min,
-      suggestedBarterValueMax: creator.suggested_barter_value_max,
-      regionLabel: creator.collab_region_label || previewAudienceRegionLabel,
-      mediaKitUrl: creator.media_kit_url,
-      firstDealCount: creator.past_brand_count || creator.collab_brands_count_override || previewTrustStats?.completed_deals || 0,
-    });
-
-    const currentRank = readiness.rank;
-    const lastRankKey = `ca:readiness:last:${keyId}`;
-    const seenStateKey = `ca:readiness:seen:${keyId}:${readiness.stageKey}`;
-    const storedRank = Number(window.localStorage.getItem(lastRankKey) || '0');
-    const seenCurrentState = window.localStorage.getItem(seenStateKey) === '1';
-    const shouldAnimate = currentRank > storedRank || !seenCurrentState;
-
-    if (!shouldAnimate) return;
-
-    if (storedRank >= 3 && currentRank === 4) {
-      setReadinessBadgeSparkle(true);
-      window.setTimeout(() => setReadinessBadgeSparkle(false), 800);
-      badgeEl.animate(
-        [
-          { opacity: 0.4, transform: 'translateY(8px) scale(0.97)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
-          { opacity: 1, transform: 'translateY(0) scale(1.02)', boxShadow: '0 0 30px rgba(139,92,246,0.35)' },
-          { opacity: 1, transform: 'translateY(0) scale(1)', boxShadow: '0 0 0 rgba(0,0,0,0)' },
-        ],
-        { duration: 560, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-      );
-    } else if (storedRank >= 2 && currentRank === 3) {
-      badgeEl.animate(
-        [
-          { opacity: 0.5, transform: 'translateY(6px) scale(0.98)' },
-          { opacity: 1, transform: 'translateY(-1px) scale(1.03)' },
-          { opacity: 1, transform: 'translateY(0) scale(1)' },
-        ],
-        { duration: 420, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-      );
-    } else {
-      badgeEl.animate(
-        [
-          { opacity: 0.3, transform: 'scale(0.97)' },
-          { opacity: 1, transform: 'scale(1.03)' },
-          { opacity: 1, transform: 'scale(1)' },
-        ],
-        { duration: 360, easing: 'ease-out' }
-      );
-    }
-
-    window.localStorage.setItem(lastRankKey, String(Math.max(storedRank, currentRank)));
-    window.localStorage.setItem(seenStateKey, '1');
-  }, [creator]);
-
-  const handleInlineProfileUpdate = async (field: string, value: any) => {
-    if (!creator?.id) return;
-
-    // Update local state for immediate feedback
-    setCreator(prev => prev ? { ...prev, [field]: value } : null);
-    setProfileSaveStatus('saving');
-
-    try {
-      let updatePayload: any = { id: creator.id };
-
-      if (field === 'name') {
-        const nameStr = toTitleCaseName(String(value || ''));
-        setCreator(prev => prev ? { ...prev, name: nameStr } : null);
-        const spaceIndex = nameStr.indexOf(' ');
-        if (spaceIndex === -1) {
-          updatePayload.first_name = nameStr;
-          updatePayload.last_name = '';
-        } else {
-          updatePayload.first_name = nameStr.substring(0, spaceIndex);
-          updatePayload.last_name = nameStr.substring(spaceIndex + 1);
-        }
-      } else {
-        updatePayload[field] = value;
-      }
-
-      await updateProfileMutation.mutateAsync(updatePayload);
-      setProfileSaveStatus('saved');
-      setLastProfileSaveAt(new Date());
-      window.setTimeout(() => {
-        setProfileSaveStatus((prev) => (prev === 'saved' ? 'idle' : prev));
-      }, 2200);
-      toast.success('Field updated successfully');
-    } catch (error) {
-      console.error(`Failed to update ${field}:`, error);
-      setProfileSaveStatus('error');
-      toast.error(`Failed to update ${field}`);
-    }
-  };
-
-  const scrollToSetupSection = (key?: string) => {
-    const lookupKey = key || firstIncompleteSetupKey;
-    const targetRef =
-      lookupKey === 'instagram' || lookupKey === 'photo' || lookupKey === 'followers'
-        ? headerSectionRef
-        : lookupKey === 'niches'
-          ? nichesSectionRef
-          : lookupKey === 'rates'
-            ? overviewSectionRef
-            : packagesSectionRef;
-
-    targetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const handleEditModeToggle = () => {
-    if (!editMode) {
-      setPreviewAsBrand(false);
-      setEditMode(true);
-      return;
-    }
-
-    if (hasIncompleteSetup) {
-      const proceed = window.confirm(
-        'Your setup is incomplete. Brands may see missing profile details. Finish editing anyway?'
-      );
-      if (!proceed) {
-        scrollToSetupSection();
-        return;
-      }
-    }
-
-    setEditMode(false);
-  };
-
-  // Build form payload for save-draft / resume
-  const getDraftFormData = () => ({
-    collabType,
-    brandName,
-    brandEmail,
-    brandInstagram,
-    budgetRange,
-    exactBudget,
-    barterValue,
-    barterProductName,
-    barterProductCategory,
-    campaignCategory,
-    campaignDescription,
-    deliverables,
-    deadline,
-  });
-
-  const applyDraftFormData = (data: Record<string, unknown>) => {
-    if (typeof data.collabType === 'string' && ['paid', 'barter', 'hybrid', 'both'].includes(data.collabType)) {
-      setCollabType(data.collabType as CollabType);
-    }
-    if (typeof data.brandName === 'string') setBrandName(data.brandName);
-    if (typeof data.brandEmail === 'string') setBrandEmail(data.brandEmail);
-    if (typeof data.brandInstagram === 'string') setBrandInstagram(data.brandInstagram);
-    if (typeof data.budgetRange === 'string') setBudgetRange(data.budgetRange);
-    if (typeof data.exactBudget === 'string') setExactBudget(data.exactBudget);
-    if (typeof data.barterValue === 'string') setBarterValue(data.barterValue);
-    if (typeof data.barterProductName === 'string') setBarterProductName(data.barterProductName);
-    if (typeof data.barterProductCategory === 'string') setBarterProductCategory(data.barterProductCategory);
-    if (typeof data.campaignCategory === 'string') setCampaignCategory(data.campaignCategory);
-    if (typeof data.campaignDescription === 'string') setCampaignDescription(data.campaignDescription);
-    if (Array.isArray(data.deliverables)) setDeliverables(data.deliverables.filter((d): d is string => typeof d === 'string'));
-    if (typeof data.deadline === 'string') setDeadline(data.deadline);
-  };
-
-  // Demo data prefill function
-  const fillDemoData = () => {
-    setBrandName('Demo Brand Co.');
-    setBrandEmail('demo@brandco.com');
-    setBrandInstagram('@demobrandco');
-    setCollabType('paid');
-    setCampaignCategory('Lifestyle');
-    setBudgetRange('10000-25000');
-    setExactBudget('15000');
-    setCampaignDescription('We are launching a new sustainable fashion line and would love to collaborate with you on creating authentic content that showcases our eco-friendly products. Our campaign focuses on promoting conscious consumerism and we believe your content style aligns perfectly with our brand values.');
-    setDeliverables(['Instagram Reel', 'Post', 'Story']);
-    // Set deadline to 2 weeks from now
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + 14);
-    setDeadline(futureDate.toISOString().split('T')[0]);
-    setErrors({});
-    toast.success('Demo data filled!');
-  };
-
-  // Auto-fill demo data for preview/design mode
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const normalizedUsername = (username || '').toLowerCase().trim();
-    const isPreviewRoute = normalizedUsername === 'preview' || urlParams.get('preview') === '1';
-    if (urlParams.get('demo') === 'true' || isPreviewRoute) {
-      fillDemoData();
-    }
-  }, [username]);
-
-  // No longer need local getApiBaseUrl helper as it's imported from @/lib/utils/api
-
-
-  // Upload barter product image and store public URL
-  const handleBarterImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !username) return;
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowed.includes(file.type)) {
-      toast.error('Please upload a JPEG, PNG, WebP, or GIF image.');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be under 5MB.');
-      return;
-    }
-    setBarterImageUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const apiBaseUrl = getApiBaseUrl();
-      const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(username)}/upload-barter-image`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (data.success && data.url) {
-        setBarterProductImageUrl(data.url);
-        toast.success('Product image uploaded.');
-      } else {
-        toast.error(data.error || 'Failed to upload image.');
-      }
-    } catch {
-      toast.error('Failed to upload image.');
-    } finally {
-      setBarterImageUploading(false);
-      if (e.target) e.target.value = '';
-    }
-  };
-
-  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !username) return;
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
-    if (!allowed.includes(file.type)) {
-      toast.error('Please upload a valid image (JPEG, PNG, WebP, SVG, or GIF).');
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Logo must be under 2MB.');
-      return;
-    }
-    setBrandLogoUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const apiBaseUrl = getApiBaseUrl();
-      const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(username)}/upload-brand-logo`, {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (data.success && data.url) {
-        setBrandLogoUrl(data.url);
-        toast.success('Brand logo uploaded.');
-      } else {
-        toast.error(data.error || 'Failed to upload logo.');
-      }
-    } catch {
-      toast.error('Failed to upload logo.');
-    } finally {
-      setBrandLogoUploading(false);
-      if (e.target) e.target.value = '';
-    }
-  };
-
-  // Fetch creator profile (with timeout so page doesn't stay stuck on spinner)
-  const CREATOR_FETCH_TIMEOUT_MS = 55000;
-
-  useEffect(() => {
-    if (!username) return;
-
-    const normalizedUsername = decodeURIComponent(username).trim().toLowerCase();
-    const previewMode = searchParams.get('preview') === '1' || normalizedUsername === 'preview';
-    if (previewMode) {
-      setCreator(buildLocalPreviewCreator(normalizedUsername || 'preview'));
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), CREATOR_FETCH_TIMEOUT_MS);
-
-    // Track if it's taking unusually long (typical for Render cold starts)
-    const warmingTimer = setTimeout(() => {
-      setIsWarmingUp(true);
-    }, 10000);
-
-    const fetchCreator = async () => {
-      const normalizedUsername = decodeURIComponent(username).trim();
-      const apiBaseUrl = getApiBaseUrl();
-      const apiUrl = `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
-
-      if (import.meta.env.DEV) {
-        console.log('[CollabLinkLanding] Fetching creator:', {
-        originalUsername: username,
-        normalizedUsername,
-        apiUrl,
-        currentUrl: window.location.href,
-        hash: window.location.hash,
-      });
-      }
-
-      try {
-        const response = await fetch(apiUrl, { signal: controller.signal });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-          console.error('[CollabLinkLanding] API error:', {
-            status: response.status,
-            statusText: response.statusText,
-            errorData,
-            username: normalizedUsername,
-            apiUrl,
-          });
-
-          if (response.status === 404) {
-            // Don't redirect immediately - show error state instead
-            setLoading(false);
-            setError(`Creator "${normalizedUsername}" not found. Please check the username and try again.`);
-            toast.error(`Creator "${normalizedUsername}" not found. Please check the username and try again.`);
-            return;
-          }
-
-          // For other errors, show error but don't redirect
-          let errorMessage = errorData.error || 'Failed to load creator profile';
-          if (response.status === 503 || errorData?.code === 'UPSTREAM_CONNECTIVITY_ISSUE') {
-            errorMessage = 'Profile service is temporarily unreachable. Please retry in a minute, or switch DNS/VPN.';
-          }
-          console.error('[CollabLinkLanding] Error:', errorMessage);
-          setLoading(false);
-          setError(errorMessage);
-          toast.error(errorMessage);
-          return;
-        }
-
-        const data = await response.json();
-
-        if (data.success && data.creator) {
-          if (import.meta.env.DEV) {
-            console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
-          }
-          setCreator(data.creator);
-          trackEvent('collab_link_viewed', { username: normalizedUsername });
-          // Track page view event (anonymous, no auth required)
-          try {
-            // Extract UTM parameters from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const utmSource = urlParams.get('utm_source');
-            const utmMedium = urlParams.get('utm_medium');
-            const utmCampaign = urlParams.get('utm_campaign');
-
-            const apiBaseUrl = getApiBaseUrl();
-            const trackResponse = await fetch(`${apiBaseUrl}/api/collab-analytics/track`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                creator_username: normalizedUsername,
-                event_type: 'view',
-                utm_source: utmSource || null,
-                utm_medium: utmMedium || null,
-                utm_campaign: utmCampaign || null,
-              }),
-            });
-
-            if (!trackResponse.ok) {
-              const trackErrorData = await trackResponse.json().catch(() => ({ error: 'Unknown error' }));
-              console.error('[CollabLinkLanding] View tracking failed:', trackResponse.status, trackErrorData);
-            } else {
-              const trackData = await trackResponse.json().catch(() => null);
-              if (import.meta.env.DEV) {
-                console.log('[CollabLinkLanding] View tracked successfully:', trackData);
-              }
-            }
-          } catch (trackError) {
-            // Log error but don't break the user experience
-            console.error('[CollabLinkLanding] Failed to track view:', trackError);
-          }
-        } else {
-          console.error('[CollabLinkLanding] Invalid response:', data);
-          setLoading(false);
-          const errorMsg = data.error || 'Creator not found';
-          setError(errorMsg);
-          toast.error(errorMsg);
-        }
-      } catch (error: any) {
-        if (error?.name === 'AbortError') {
-          setError('Request timed out. Make sure the server is running at ' + apiBaseUrl + ' and try again.');
-          toast.error('Request timed out. Check that the API server is running.');
-        } else {
-          console.error('[CollabLinkLanding] Fetch error:', {
-            error,
-            message: error?.message,
-            username: normalizedUsername,
-            apiUrl,
-          });
-          let errorMsg = 'Failed to load creator profile. Please try again later.';
-          if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
-            errorMsg = 'Unable to connect. Is the server running at ' + apiBaseUrl + '?';
-          }
-          setError(errorMsg);
-          toast.error(errorMsg);
-        }
-      } finally {
-        clearTimeout(timeoutId);
-        clearTimeout(warmingTimer);
-        setLoading(false);
-      }
-    };
-
-    fetchCreator();
-    return () => {
-      controller.abort();
-      clearTimeout(timeoutId);
-      clearTimeout(warmingTimer);
-    };
-  }, [username, searchParams]);
-
-  // Resume draft from ?resume= token (after creator is loaded)
-  useEffect(() => {
-    const resumeToken = searchParams.get('resume');
-    const normalizedUsername = username?.toLowerCase().trim();
-    if (!resumeToken || !normalizedUsername || !creator) return;
-
-    const loadDraft = async () => {
-      try {
-        const apiBaseUrl = getApiBaseUrl();
-        const res = await fetch(
-          `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}/resume?token=${encodeURIComponent(resumeToken)}`
-        );
-        const data = await res.json();
-        if (data.success && data.formData && typeof data.formData === 'object') {
-          applyDraftFormData(data.formData);
-          toast.success('Form restored. You can continue where you left off.');
-          setSearchParams((prev) => {
-            const next = new URLSearchParams(prev);
-            next.delete('resume');
-            return next;
-          }, { replace: true });
-        } else if (res.status === 410) {
-          toast.error('This link has expired.');
-          setSearchParams((prev) => {
-            const next = new URLSearchParams(prev);
-            next.delete('resume');
-            return next;
-          }, { replace: true });
-        } else if (!res.ok) {
-          toast.error(data.error || 'Could not load saved draft.');
-        }
-      } catch {
-        toast.error('Could not load saved draft.');
-      }
-    };
-    loadDraft();
-  }, [creator, username, searchParams, setSearchParams]);
-
-  const handleSaveDraftSubmit = async () => {
-    const emailStr = draftEmail.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
-      toast.error('Please enter a valid email address.');
-      return;
-    }
-    if (!username?.trim()) return;
-    setSaveDraftSubmitting(true);
-    try {
-      const apiBaseUrl = getApiBaseUrl();
-      const res = await fetch(`${apiBaseUrl}/api/collab/${encodeURIComponent(username.toLowerCase().trim())}/save-draft`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailStr, formData: getDraftFormData() }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success('Check your email for a link to continue your request.');
-        setShowSaveDraftModal(false);
-        setDraftEmail('');
-      } else {
-        toast.error(data.error || 'Failed to save draft.');
-      }
-    } catch {
-      toast.error('Failed to save draft. Please try again.');
-    } finally {
-      setSaveDraftSubmitting(false);
-    }
-  };
-
-  const handleDeliverableToggle = (deliverable: string) => {
-    setDeliverables(prev => {
-      const isSelected = prev.includes(deliverable);
-      if (isSelected) {
-        const next = prev.filter(d => d !== deliverable);
-        const nextQuantities = { ...deliverableQuantities };
-        delete nextQuantities[deliverable];
-        setDeliverableQuantities(nextQuantities);
-        return next;
-      } else {
-        setDeliverableQuantities(prev => ({ ...prev, [deliverable]: 1 }));
-        return [...prev, deliverable];
-      }
-    });
-  };
-
-  const updateDeliverableQuantity = (deliverable: string, quantity: number) => {
-    setDeliverableQuantities(prev => ({
-      ...prev,
-      [deliverable]: Math.max(1, quantity)
-    }));
-  };
-
-  const handleCreateOfferClick = () => {
-    setHasStartedOffer(true);
-    window.setTimeout(() => {
-      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
-
-  const scrollOfferFormIntoView = () => {
-    window.setTimeout(() => {
-      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 40);
-  };
-
-  const handleStickySubmit = () => {
-    if (!hasStartedOffer) {
-      handleCreateOfferClick();
-      return;
-    }
-
-    if (currentStep === 1) {
-      if (!isStep1Ready) {
-        toast.error('Please select a collaboration type');
-        return;
-      }
-      setCurrentStep(2);
-      scrollOfferFormIntoView();
-      return;
-    }
-
-    if (currentStep === 2) {
-      if (!isStep2Ready) {
-        toast.error('Please add your email');
-        return;
-      }
-      formRef.current?.requestSubmit();
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    if (!brandName.trim()) {
-      newErrors.brandName = 'Enter your brand name';
-    }
-
-    if (!brandEmail.trim()) {
-      newErrors.brandEmail = 'Enter your email';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(brandEmail)) {
-      newErrors.brandEmail = 'Enter a valid email';
-    }
-
-    // Address is optional for initial offer
-
-    if (!campaignDescription.trim()) {
-      newErrors.campaignDescription = 'Describe what you want';
-    } else if (campaignDescription.trim().length < 10) {
-      newErrors.campaignDescription = 'Add a bit more detail';
-    }
-
-    if (deliverables.length === 0) {
-      newErrors.deliverables = 'Please select at least one thing';
-    }
-
-    if (collabType === 'paid' && !budgetRange && !exactBudget) {
-      newErrors.budget = 'Enter your budget';
-    }
-
-    if (isHybridCollab(collabType)) {
-      if (!budgetRange && !exactBudget) {
-        newErrors.budget = 'Please specify paid budget details';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Normalize website URL - add https:// if missing
-  const normalizeWebsiteUrl = (url: string): string => {
-    if (!url || !url.trim()) return url;
-    const trimmed = url.trim();
-    // If it already has http:// or https://, return as is
-    if (/^https?:\/\//i.test(trimmed)) {
-      return trimmed;
-    }
-    // Otherwise, add https://
-    return `https://${trimmed}`;
-  };
+  if (stats.length === 0) return null;
+
+  return (
+    <section className="px-5 py-6">
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div key={stat.label} className="text-center">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 mx-auto mb-2">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-lg font-semibold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ── Packages Section ───────────────────────────────────────────────────
+
+const PackagesSection = ({ packages }: { packages: CollabPackage[] }) => {
+  if (!packages || packages.length === 0) return null;
+
+  return (
+    <section className="px-5 py-6">
+      <h2 className="text-lg font-semibold text-foreground mb-4">Packages</h2>
+      <div className="space-y-3">
+        {packages.map((pkg) => (
+          <div
+            key={pkg.id}
+            className="rounded-2xl border border-border bg-card p-5"
+          >
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">{pkg.name}</h3>
+                {pkg.description && (
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{pkg.description}</p>
+                )}
+              </div>
+              <p className="text-lg font-semibold text-foreground shrink-0">
+                {pkg.price > 0 ? formatCurrency(pkg.price) : 'Free'}
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-muted-foreground">{pkg.delivery_days} day delivery</span>
+              <span className="text-xs text-muted-foreground">{pkg.revisions} revisions</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+// ── Past Work Section ─────────────────────────────────────────────────
+
+const PastWorkSection = ({ work }: { work: PastWork[] }) => {
+  if (!work || work.length === 0) return null;
+
+  return (
+    <section className="px-5 py-6">
+      <h2 className="text-lg font-semibold text-foreground mb-4">Past work</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {work.map((item) => (
+          <a
+            key={item.id}
+            href={item.url || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group rounded-2xl overflow-hidden bg-secondary aspect-square flex items-center justify-center relative"
+          >
+            {item.thumbnail_url ? (
+              <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            ) : (
+              <span className="text-xs text-muted-foreground text-center px-3">{item.title}</span>
+            )}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+              <ExternalLink className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+// ── Trust Section ─────────────────────────────────────────────────────
+
+const TrustSection = ({ creator, testimonials }: { creator: CreatorProfile; testimonials?: Testimonial[] }) => (
+  <section className="px-5 py-6">
+    {/* Verified badge */}
+    {creator.verified && (
+      <div className="rounded-2xl border border-border bg-card p-5 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Verified creator</p>
+            <p className="text-xs text-muted-foreground">Identity and deal history confirmed</p>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Testimonials */}
+    {testimonials && testimonials.length > 0 && (
+      <div className="space-y-3">
+        {testimonials.map((t) => (
+          <div key={t.id} className="rounded-2xl border border-border bg-card p-5">
+            <div className="flex items-center gap-1 mb-2">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} className="h-3 w-3 fill-primary text-primary" />
+              ))}
+            </div>
+            <p className="text-sm text-foreground leading-relaxed">"{t.text}"</p>
+            <p className="text-xs text-muted-foreground mt-2">— {t.brand_name}</p>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+);
+
+// ── Offer Form ─────────────────────────────────────────────────────────
+
+const OfferForm = ({ creator, collabUrl }: { creator: CreatorProfile; collabUrl: string }) => {
+  const [step, setStep] = useState<'type' | 'details' | 'done'>('type');
+  const [collabType, setCollabType] = useState<'paid' | 'barter' | ''>('');
+  const [formData, setFormData] = useState({ brand_name: '', contact_email: '', budget: '', message: '' });
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error('Please fix the errors above');
-      return;
-    }
-
-    setSubmitting(true);
-
+    if (!collabType) { toast.error('Select a deal type'); return; }
+    if (!formData.brand_name || !formData.contact_email) { toast.error('Fill in required fields'); return; }
+    setLoading(true);
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/collab/${username}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          brand_name: brandName,
-          brand_email: brandEmail,
-          brand_address: null,
-          brand_gstin: null,
-          brand_phone: null,
-          brand_website: null,
-          brand_instagram: brandInstagram || null,
-          brand_logo_url: null,
-          collab_type: collabType,
-          budget_range: budgetRange || null,
-          exact_budget: exactBudget ? parseFloat(exactBudget) : null,
-          campaign_category: campaignCategory || null,
-          barter_value: barterValue ? parseFloat(barterValue) : null,
-          barter_product_name: barterProductName || null,
-          barter_product_category: barterProductCategory || null,
-          barter_product_image_url: null,
-          campaign_description: campaignDescription,
-          deliverables: deliverables.map(d => `${d}${deliverableQuantities[d] > 1 ? ` (x${deliverableQuantities[d]})` : ''}`),
-          usage_rights: false,
-          deadline: deadline || null,
-          offer_expires_at: null,
-          authorized_signer_name: null,
-          authorized_signer_role: null,
-          usage_duration: null,
-          payment_terms: null,
-          approval_sla_hours: null,
-          requires_shipping: false,
-          shipping_timeline_days: null,
-          cancellation_policy: null,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        trackEvent('collab_link_form_submitted', { username: username || '', collab_type: collabType });
-        toast.success('Offer sent! The creator will be notified.');
-        const successParams = new URLSearchParams({
-          type: collabType,
-          brand: brandName,
-        });
-        if (deadline) successParams.set('deadline', deadline);
-        navigate(`/${username}/success?${successParams.toString()}`);
-      } else {
-        toast.error(data.error || 'Failed to submit request');
-      }
-    } catch (error: any) {
-      toast.error('Failed to submit request. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const getPlatformIcon = (platformName: string) => {
-    switch (platformName.toLowerCase()) {
-      case 'instagram':
-        return <Instagram className="h-4 w-4" />;
-      case 'youtube':
-        return <Youtube className="h-4 w-4" />;
-      case 'twitter':
-        return <Twitter className="h-4 w-4" />;
-      case 'facebook':
-        return <Facebook className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
-  const elevationLevel1 = 'bg-secondary/[0.05] border border-border shadow-none';
-  const elevationLevel2 = 'bg-secondary/[0.08] border border-border shadow-[0_1px_2px_rgba(0,0,0,0.04)]';
-  const elevationLevel3 = 'bg-secondary/[0.12] border border-border shadow-[0_8px_24px_rgba(0,0,0,0.08)]';
-
-
-
-  // Readiness badge animation (must run before any conditional returns to preserve hook order)
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
-        <Loader2 className="h-10 w-10 animate-spin text-teal-600 mb-6" />
-        {isWarmingUp && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-700 max-w-xs">
-            <h3 className="text-foreground font-bold text-lg mb-2">Waking up server...</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Our secure server is spinning up to verify this creator's profile. This usually takes 30-40 seconds on the first load.
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  if (error) {
-    const isNotFoundError = /not found/i.test(error);
-    const errorTitle = isNotFoundError ? 'Creator Not Found' : 'Unable to Load Profile';
-    return (
-      <div className="min-h-screen bg-black text-foreground flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-card0 backdrop-blur-md border border-border rounded-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
-            <p className="text-muted-foreground mb-6 leading-relaxed">
-              {error.toLowerCase().includes('timeout')
-                ? "The profile server is taking unusually long to wake up. This is common on the first load—clicking 'Try Again' usually works immediately."
-                : error}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={() => navigate('/')}
-                variant="outline"
-                className="bg-card0 border-border text-foreground hover:bg-secondary/20"
-              >
-                Go to Homepage
-              </Button>
-              <Button
-                onClick={() => {
-                  setError(null);
-                  setLoading(true);
-                  window.location.reload();
-                }}
-                className="bg-card text-black hover:bg-background"
-              >
-                Try Again
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!creator) {
-    return null;
-  }
-
-  // Generate SEO meta tags
-  const creatorName = toTitleCaseName(creator.name || 'Creator');
-  const normalizedHandle = getPreferredPublicHandle(
-    creator.platforms?.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
-    creator.username,
-    username
-  );
-  const creatorHandle = normalizedHandle ? `@${normalizedHandle}` : '';
-  const metaTitle = `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Link | Creator Armour`;
-  // const platformNames = platforms.map(p => p.name).join(', ');
-  const followerCount = creator.platforms.reduce((sum, p) => sum + (p.followers || 0), 0);
-  const trustStats = creator.trust_stats;
-  const pastBrands = Array.isArray(creator.past_brands)
-    ? creator.past_brands.map((b) => (typeof b === 'string' ? b.trim() : '')).filter(Boolean)
-    : [];
-  const trustedBrands = trustStats?.brands_count ?? 0;
-  const avgResponseHours = trustStats?.avg_response_hours ?? 3;
-  const completionRate = trustStats?.completion_rate ?? 98;
-  const recentCampaignTypes = Array.isArray(creator.recent_campaign_types)
-    ? creator.recent_campaign_types.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)
-    : [];
-  // const completedDeals = creator.past_brand_count || 0;(trustedBrands > 0 ? trustedBrands : pastBrands.length);
-  const pastBrandCount = creator.past_brand_count ?? (trustedBrands > 0 ? trustedBrands : pastBrands.length);
-
-  // Creator analytics (demo-to-real bridge)
-  // Null means we don't yet have real analytics values for this creator.
-  // When the API starts providing these, only this object needs to be populated.
-  const creatorAnalytics: {
-    brandsContactedThisWeek: number | null;
-    avgResponseTimeHours: number | null;
-    avgCampaignReach: number | null;
-  } = {
-    brandsContactedThisWeek: null,
-    avgResponseTimeHours: null,
-    avgCampaignReach: null,
-  };
-
-  const demoAnalytics = {
-    brandsContactedThisWeek: 12,
-    avgResponseTimeHours: 3,
-    avgCampaignReach: 76000,
-  };
-
-  const displayAnalytics = {
-    brandsContactedThisWeek:
-      creatorAnalytics.brandsContactedThisWeek ?? demoAnalytics.brandsContactedThisWeek,
-    avgResponseTimeHours:
-      creatorAnalytics.avgResponseTimeHours ?? demoAnalytics.avgResponseTimeHours,
-    avgCampaignReach:
-      creatorAnalytics.avgCampaignReach ?? demoAnalytics.avgCampaignReach,
-  };
-
-  const estimatedAnalyticsTooltip =
-    'Estimated metric — real data will appear as the creator completes campaigns on CreatorArmour.';
-
-  const isDemoAnalytics = {
-    brandsContactedThisWeek: creatorAnalytics.brandsContactedThisWeek === null,
-    avgResponseTimeHours: creatorAnalytics.avgResponseTimeHours === null,
-    avgCampaignReach: creatorAnalytics.avgCampaignReach === null,
-  };
-
-  // Backwards-compatible formatting for existing UI copy (keep layout unchanged).
-  const displayResponseLine = `~${displayAnalytics.avgResponseTimeHours} hrs`;
-  const followerText = followerCount > 0
-    ? `${followerCount >= 1000 ? `${(followerCount / 1000).toFixed(1)}K` : followerCount} followers`
-    : '';
-  const metaDescription = `Book ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}${creator.category ? `, ${creator.category} creator` : ''}${followerText ? ` • ${followerText}` : ''}. Share paid, barter, or hybrid briefs with contract-first protection via Creator Armour.`.substring(0, 158);
-
-  // Use clean URL for SEO (no hash)
-  const canonicalUrl = `https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}`;
-  const pageImage = creator.profile_photo && /^https?:\/\//i.test(creator.profile_photo)
-    ? creator.profile_photo
-    : 'https://creatorarmour.com/og-preview.png';
-  const imageAlt = `Collaborate with ${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''}`;
-  const seoKeywords = Array.from(new Set([
-    `collaborate with ${creatorName}`,
-    creatorHandle,
-    `${creatorName} brand collaboration`,
-    creator.category ? `${creator.category} creator` : 'content creator',
-    `${creatorName} collab link`,
-    'influencer marketing India',
-    'creator collaboration',
-    'paid barter hybrid collaboration',
-    ...pastBrands.slice(0, 4),
-  ].filter(Boolean)));
-  const isSuccessView = location.pathname.endsWith('/success');
-  const successBrand = searchParams.get('brand')?.trim();
-  const successType = searchParams.get('type')?.trim();
-  const successDeadline = searchParams.get('deadline')?.trim();
-
-  const displayBudget = exactBudget
-    ? `₹${Number(exactBudget || 0).toLocaleString('en-IN')}`
-    : budgetRange
-      ? budgetRange.replace('-', ' – ').replace('under', 'Under ₹').replace('+', '+')
-      : collabType === 'barter'
-        ? (barterValue ? `Barter • ₹${Number(barterValue).toLocaleString('en-IN')} value` : 'Barter')
-        : isHybridCollab(collabType)
-          ? `Hybrid${barterValue ? ` • ₹${Number(barterValue).toLocaleString('en-IN')} barter value` : ''}${exactBudget ? ` • ₹${Number(exactBudget).toLocaleString('en-IN')} paid` : ''}`
-          : 'Not set';
-  const displayDeadline = deadline
-    ? new Date(deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    : 'Not set';
-  const formatFollowers = (n?: number | null) => {
-    if (n === null || n === undefined || Number.isNaN(n) || n === 0) return 'Verified Account';
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-    return `${n}`;
-  };
-  const primaryFollowers = creator.followers ?? followerCount;
-  const setupChecklist = [
-    {
-      key: 'instagram',
-      label: 'Instagram handle set',
-      complete: Boolean(normalizedHandle && normalizedHandle.length >= 3),
-    },
-    {
-      key: 'followers',
-      label: 'Followers added',
-      complete: Number(primaryFollowers || (creator as any)?.instagram_followers || 0) > 0,
-    },
-    {
-      key: 'niches',
-      label: 'Content niches selected',
-      complete: Boolean(creator.content_niches && creator.content_niches.length > 0),
-    },
-    {
-      key: 'audience',
-      label: 'Audience signals added',
-      complete: Boolean(
-        (creator.audience_gender_split && String(creator.audience_gender_split).trim().length > 0) ||
-        (creator.primary_audience_language && String(creator.primary_audience_language).trim().length > 0)
-      ),
-    },
-    {
-      key: 'rates',
-      label: 'Typical rate added',
-      complete: Boolean((creator as any).avg_rate_reel || creator.suggested_reel_rate),
-    },
-    {
-      key: 'packages',
-      label: '3 packages configured',
-      complete: (localDealTemplates?.length || 0) >= 3,
-    },
-  ];
-  const onboardingAlreadyCompleted = Boolean(
-    (isOwner && profile?.onboarding_complete === true) || creator.onboarding_complete === true
-  );
-  const effectiveSetupChecklist = onboardingAlreadyCompleted
-    ? setupChecklist.map((item) => ({ ...item, complete: true }))
-    : setupChecklist;
-  const setupCompletedCount = effectiveSetupChecklist.filter((item) => item.complete).length;
-  const hasIncompleteSetup = setupCompletedCount < effectiveSetupChecklist.length;
-  const firstIncompleteSetupKey = effectiveSetupChecklist.find((item) => !item.complete)?.key;
-  const profileSaveStatusLabel = profileSaveStatus === 'saving'
-    ? 'Saving...'
-    : profileSaveStatus === 'saved'
-      ? `Saved${lastProfileSaveAt ? ` ${lastProfileSaveAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : ''}`
-      : profileSaveStatus === 'error'
-        ? 'Save failed'
-        : '';
-  const avgReelViews = creator.avg_reel_views ?? creator.performance_proof?.median_reel_views ?? null;
-  const avgLikes = creator.avg_likes ?? creator.performance_proof?.avg_likes ?? null;
-
-  const isViewsVerified = Boolean(creator.performance_proof?.median_reel_views &&
-    (Number(avgReelViews) === Number(creator.performance_proof.median_reel_views)));
-  const isLikesVerified = Boolean(creator.performance_proof?.avg_likes &&
-    (Number(avgLikes) === Number(creator.performance_proof.avg_likes)));
-
-  // Qualification Warnings
-  const minDeadlineDate = new Date();
-  if (creator.min_lead_time_days) minDeadlineDate.setDate(minDeadlineDate.getDate() + creator.min_lead_time_days);
-  const isDeadlineTooSoon = Boolean(creator.min_lead_time_days && deadline && new Date(deadline) < minDeadlineDate);
-
-  const engagementRange = getEngagementRange(primaryFollowers, avgReelViews);
-  const genderRows = formatAudienceGender(creator.audience_gender_split);
-  const audienceCities = formatAudienceCities(creator.top_cities);
-  const audienceLanguage = formatAudienceLanguage(creator.primary_audience_language);
-  const audienceRegionLabel = creator.collab_region_label?.trim() || getAudienceRegionLabel(audienceCities);
-  const audienceRelevanceNote = creator.collab_audience_relevance_note?.trim() || 'Strong relevance for North India audience';
-  const creatorBio = isScrapedInstagramBio(creator.bio) ? null : creator.bio;
-  const collabIntroLine = creator.collab_intro_line?.trim() || creatorBio || 'Clear collaboration packages, fast response, and structured booking for brand campaigns.';
-  const audienceFitLine = creator.collab_audience_fit_note?.trim() || 'Works best for targeted audience campaigns.';
-  const sameDayResponseLine = avgResponseHours && avgResponseHours <= 20
-    ? `~${Math.round(avgResponseHours)} hr${Math.round(avgResponseHours) > 1 ? 's' : ''}`
-    : '~3 hrs';
-  const showEngagementConfidence = engagementRange !== 'Growing Audience' || Boolean(creator.collab_engagement_confidence_note?.trim());
-  const engagementConfidenceNote = creator.collab_engagement_confidence_note?.trim() || 'Above-average engagement for creator size';
-  const recentActivityNoteRaw = creator.past_brand_count === 0
-    ? 'New Creator on Creator Armour'
-    : (creator.collab_recent_activity_note?.trim() || 'Posting consistently');
-  const recentActivityNote = withNeutralPrefix(recentActivityNoteRaw, 'Currently ');
-  const campaignSlotNoteRaw = creator.past_brand_count === 0
-    ? 'Actively accepting collaborations'
-    : (creator.campaign_slot_note?.trim() || 'Selective partnerships');
-  const campaignSlotNoteText = withNeutralPrefix(campaignSlotNoteRaw, 'Works with ');
-  const deliveryReliabilityNote = creator.collab_delivery_reliability_note?.trim() || 'Reliable delivery across past collaborations.'; // const responseCtaLine = collabResponseBehaviorPreset
-  //   ? `Usually responds ${collabResponseBehaviorPreset.toLowerCase()}`
-  //   : `Ready to review offers`;
-  const responseBehaviorNoteRaw = creator.collab_response_behavior_note?.trim() || 'Most brands receive response within same day';
-  const responseBehaviorNote = withNeutralPrefix(responseBehaviorNoteRaw, 'Typically ');
-  const ctaTrustNote = creator.collab_cta_trust_note?.trim() || 'Creator notified instantly — no DM required.';
-  // const ctaTrustNote = creator.collab_cta_trust_note;
-  const ctaDmNote = creator.collab_cta_dm_note?.trim() || 'No DMs required — creator replies here.';
-  const ctaPlatformNote = creator.collab_cta_platform_note?.trim() || 'Direct collaboration — no agency middle layer';
-  const mobileEngagementLabel = engagementRange === 'Growing Audience' ? 'Consistent viewer engagement' : engagementRange;
-
-  const collabReadiness = getCollabReadiness({
-    instagramHandle: getPreferredPublicHandle(
-      creator.platforms.find((p) => p.name.toLowerCase() === 'instagram')?.handle,
-      creator.username
-    ),
-    instagramLinked: Boolean(creator.last_instagram_sync),
-    category: creator.category,
-    niches: creator.content_niches,
-    topCities: creator.top_cities,
-    audienceGenderSplit: creator.audience_gender_split,
-    primaryAudienceLanguage: creator.primary_audience_language,
-    postingFrequency: creator.posting_frequency,
-    avgReelViews,
-    avgLikes,
-    openToCollabs: creator.open_to_collabs,
-    avgRateReel: (creator as any).avg_rate_reel || (creator as any).avg_reel_rate,
-    suggestedReelRate: creator.suggested_reel_rate,
-    suggestedBarterValueMin: creator.suggested_barter_value_min,
-    suggestedBarterValueMax: creator.suggested_barter_value_max,
-    regionLabel: creator.collab_region_label || audienceRegionLabel,
-    mediaKitUrl: creator.media_kit_url,
-    firstDealCount: creator.past_brand_count || creator.collab_brands_count_override || trustStats?.completed_deals || 0,
-  });
-
-  const isBudgetTooLow = Boolean(
-    creator.min_deal_value &&
-    ((collabType === 'paid' && Number(exactBudget) > 0 && Number(exactBudget) < creator.min_deal_value) ||
-      (collabType === 'barter' && Number(barterValue) > 0 && Number(barterValue) < creator.min_deal_value))
-  );
-
-  const handleTemplateSelect = (template: DealTemplate) => {
-    setCollabType(template.type || 'paid');
-    if (template.type === 'paid') {
-      setExactBudget(template.budget.toString());
-    } else {
-      setBarterValue(template.budget.toString());
-    }
-
-    if (template.category) setCampaignCategory(template.category);
-    setCampaignDescription(template.description);
-    setDeliverables(template.deliverables);
-    setDeliverableQuantities(template.quantities);
-
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + (template.deadlineDays || 7));
-    setDeadline(targetDate.toISOString().split('T')[0]);
-
-    setSelectedTemplateId(template.id);
-    toast.success(`${template.label} selected`);
-    triggerHaptic(HapticPatterns.success);
-
-    // Auto-advance into the minimal quick-offer form.
-    setShowCustomFlow(true);
-    setCurrentStep(2);
-
-    // Make the next step obvious: bring the offer panel into view and nudge the header.
-    setTemplateContinueNudge(Date.now());
-    requestAnimationFrame(() => {
-      document.getElementById('core-offer-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  };
-
-
-  const handleUpdateTemplate = (updated: DealTemplate) => {
-    let updatedList = localDealTemplates.map(t => t.id === updated.id ? updated : t);
-
-    // Ensure only one package has the "isPopular" badge
-    if (updated.isPopular) {
-      updatedList = updatedList.map(t => t.id === updated.id ? t : { ...t, isPopular: false });
-    }
-
-    setLocalDealTemplates(updatedList);
-    setEditingTemplate(null);
-
-    // PERSIST: Save the updated template list to the database
-    handleInlineProfileUpdate('deal_templates', updatedList);
-
-    triggerHaptic(HapticPatterns.success);
-  };
-
-  const dealTemplates = localDealTemplates;
-  const selectedTemplate = dealTemplates.find((template) => template.id === selectedTemplateId) || null;
-  const pastWorkItems = Array.isArray(creator.collab_past_work_items)
-    ? creator.collab_past_work_items
-      .map((item, index) => ({
-        id: String(item?.id || `past-work-${index}`),
-        brand: String(item?.brand || '').trim(),
-        campaignType: String(item?.campaignType || '').trim(),
-        outcome: String(item?.outcome || '').trim(),
-        proofLabel: String(item?.proofLabel || '').trim(),
-      }))
-      .filter((item) => item.brand || item.campaignType || item.outcome || item.proofLabel)
-    : [];
-  const recentCollaborations = pastWorkItems.length > 0
-    ? pastWorkItems.slice(0, 3).map((item) => ({
-      id: item.id,
-      name: item.brand || 'Brand collaboration',
-      type: item.campaignType || 'Campaign',
-      outcome: item.outcome || 'Shared campaign proof',
-      proofLabel: item.proofLabel || 'Past Work',
-    }))
-    : [
-      { id: 'demo-1', name: 'boAt', type: 'Launch reel', outcome: '42K views in 5 days', proofLabel: 'Electronics' },
-      { id: 'demo-2', name: 'Mamaearth', type: 'Routine stories', outcome: 'High-intent skincare audience fit', proofLabel: 'Beauty' },
-      { id: 'demo-3', name: 'Lenskart', type: 'Review package', outcome: 'Strong click-through and saves', proofLabel: 'Lifestyle' },
-    ];
-  const showPackagesSection = creator.collab_show_packages !== false;
-  const showTrustSections = creator.collab_show_trust_signals !== false;
-  const showAudienceSections = creator.collab_show_audience_snapshot !== false;
-  const showPastWorkSection = creator.collab_show_past_work !== false;
-  const creatorCollabSchema = (() => {
-    const creatorId = creator.id || normalizedHandle || creatorName.toLowerCase().replace(/\s+/g, '-');
-    const profilePageId = `${canonicalUrl}#profile-page`;
-    const personId = `${canonicalUrl}#creator`;
-    const serviceId = `${canonicalUrl}#collab-service`;
-    const orgId = 'https://creatorarmour.com/#organization';
-
-    const sameAs = creator.platforms
-      .map((p) => {
-        const handle = (p.handle || '').replace(/^@/, '');
-        switch (p.name.toLowerCase()) {
-          case 'instagram':
-            return handle ? `https://instagram.com/${handle}` : null;
-          case 'youtube':
-            return handle ? `https://youtube.com/${handle}` : null;
-          case 'twitter':
-          case 'x':
-            return handle ? `https://x.com/${handle}` : null;
-          case 'facebook':
-            return p.handle || null;
-          default:
-            return null;
-        }
-      })
-      .filter(Boolean);
-
-    const offerItems = (dealTemplates || []).slice(0, 8).map((template, index) => {
-      const isPaid = template.type === 'paid';
-      const offerDescriptionParts = [
-        template.description?.trim(),
-        Array.isArray(template.deliverables) && template.deliverables.length > 0
-          ? `Includes: ${template.deliverables.join(', ')}`
-          : null,
-      ].filter(Boolean);
-
-      return {
-        '@type': 'Offer',
-        '@id': `${canonicalUrl}#offer-${template.id || index + 1}`,
-        name: template.label || `Creator package ${index + 1}`,
-        category: template.category || 'Creator Collaboration',
-        description: offerDescriptionParts.join(' • '),
-        priceCurrency: 'INR',
-        price: isPaid ? String(template.budget || 0) : '0',
-        availability: 'https://schema.org/InStock',
-        url: canonicalUrl,
-        eligibleRegion: 'IN',
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sess = sessionData.session;
+      const body: Record<string, unknown> = {
+        brand_name: formData.brand_name,
+        contact_email: formData.contact_email,
+        collab_type: collabType,
+        budget_range: formData.budget || null,
+        message: formData.message || null,
+        creator_id: creator.id,
       };
-    });
+      if (sess?.access_token) {
+        await fetch(`${getApiBaseUrl()}/api/collab-requests`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sess.access_token}` },
+          body: JSON.stringify(body),
+        });
+      }
+      setStep('done');
+    } catch { toast.error('Failed to send offer'); }
+    finally { setLoading(false); }
+  };
 
-    const audienceDescriptionParts = [
-      creator.category ? `${creator.category} creator` : null,
-      followerText || null,
-      audienceRegionLabel || null,
-      audienceLanguage ? `Language: ${audienceLanguage}` : null,
-    ].filter(Boolean);
-
-    return {
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'Organization',
-          '@id': orgId,
-          name: 'Creator Armour',
-          alternateName: 'CreatorArmour',
-          url: 'https://creatorarmour.com',
-          logo: 'https://creatorarmour.com/logo.png',
-        },
-        {
-          '@type': 'ProfilePage',
-          '@id': profilePageId,
-          url: canonicalUrl,
-          name: `${creatorName}${creatorHandle ? ` (${creatorHandle})` : ''} Collab Profile`,
-          isPartOf: { '@id': 'https://creatorarmour.com/#website' },
-          about: { '@id': personId },
-          mainEntity: { '@id': personId },
-        },
-        {
-          '@type': 'Person',
-          '@id': personId,
-          identifier: creatorId,
-          name: creatorName,
-          alternateName: creatorHandle || creator.username || creatorName,
-          description: metaDescription,
-          image: pageImage,
-          url: canonicalUrl,
-          jobTitle: creator.category ? `${creator.category} Creator` : 'Content Creator',
-          knowsAbout: creator.content_niches?.length ? creator.content_niches : [creator.category || 'Content Creation'],
-          sameAs,
-          worksFor: { '@id': orgId },
-          interactionStatistic: primaryFollowers
-            ? {
-                '@type': 'InteractionCounter',
-                interactionType: 'https://schema.org/FollowAction',
-                userInteractionCount: Number(primaryFollowers),
-              }
-            : undefined,
-        },
-        {
-          '@type': 'Service',
-          '@id': serviceId,
-          name: `${creatorName} Collaboration Services`,
-          description: audienceDescriptionParts.join(' • ') || metaDescription,
-          provider: { '@id': personId },
-          serviceType: 'Creator Brand Collaboration',
-          areaServed: audienceRegionLabel || 'India',
-          offers: offerItems,
-          termsOfService: 'https://creatorarmour.com/terms-of-service',
-        },
-      ],
-    };
-  })();
-
-  if (isSuccessView) {
+  if (step === 'done') {
     return (
-      <>
-        <SEOHead
-          title={`Offer Sent to ${creatorName} | Creator Armour`}
-          description={`Your offer for ${creatorName} has been sent. The creator has been notified and can now accept, counter, or decline.`}
-          keywords={['creator offer sent', creatorName, creatorHandle].filter(Boolean)}
-          image={pageImage}
-          imageAlt={imageAlt}
-          type="website"
-          canonicalUrl={`https://creatorarmour.com/${encodeURIComponent(normalizedHandle)}/success`}
-        />
-
-        <div className="light min-h-screen bg-[linear-gradient(180deg,#f7fafc_0%,#eef8f5_100%)] text-muted-foreground">
-          <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-12 sm:px-8">
-            <div className="rounded-[32px] border border-primary/80 bg-secondary/95 p-6 shadow-[0_24px_80px_rgba(15,118,110,0.12)] sm:p-10">
-              <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary">
-                <CheckCircle2 className="h-8 w-8" />
-              </div>
-
-              <p className="mb-3 text-[11px] font-black uppercase tracking-[0.28em] text-primary">Offer Sent</p>
-              <h1 className="mb-3 text-4xl font-black tracking-tight text-muted-foreground sm:text-5xl">
-                {creatorName} has your offer.
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                {successBrand ? `${successBrand}'s` : 'Your'} offer has been delivered. The creator can now review it, accept it, counter it, or decline it.
-              </p>
-
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-3xl border border-border bg-background p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">Creator</p>
-                  <p className="mt-2 text-lg font-black text-muted-foreground">{creatorName}</p>
-                  <p className="text-sm text-muted-foreground">{creatorHandle || creator.category || 'Brand collaborations'}</p>
-                </div>
-                <div className="rounded-3xl border border-border bg-background p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">Offer Type</p>
-                  <p className="mt-2 text-lg font-black capitalize text-muted-foreground">{successType || collabType}</p>
-                  <p className="text-sm text-muted-foreground">Shared through Creator Armour</p>
-                </div>
-                <div className="rounded-3xl border border-border bg-background p-4">
-                  <p className="text-[11px] font-black uppercase tracking-[0.22em] text-muted-foreground">Deadline</p>
-                  <p className="mt-2 text-lg font-black text-muted-foreground">{successDeadline || 'Shared with creator'}</p>
-                  <p className="text-sm text-muted-foreground">Legal details come later if they are interested</p>
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-[28px] border border-teal-100 bg-teal-50/70 p-5">
-                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-teal-700">What Happens Next</p>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-card px-4 py-3">
-                    <p className="text-sm font-black text-muted-foreground">1. Creator reviews</p>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">They see your brief, budget or product value, and timeline.</p>
-                  </div>
-                  <div className="rounded-2xl bg-card px-4 py-3">
-                    <p className="text-sm font-black text-muted-foreground">2. They respond</p>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">They can accept, counter, or decline based on fit and availability.</p>
-                  </div>
-                  <div className="rounded-2xl bg-card px-4 py-3">
-                    <p className="text-sm font-black text-muted-foreground">3. Details follow</p>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">Contract, shipping, and payment details are collected only after interest is confirmed.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  onClick={() => navigate(`/${username}`)}
-                  className="h-12 rounded-full bg-teal-600 px-6 text-sm font-black text-foreground hover:bg-teal-700"
-                >
-                  Send Another Offer
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/')}
-                  className="h-12 rounded-full border-border px-6 text-sm font-black text-muted-foreground hover:bg-background"
-                >
-                  Go to Homepage
-                </Button>
-              </div>
-            </div>
+      <section id="offer-form" className="px-5 py-6">
+        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-4">
+            <Check className="h-6 w-6 text-primary" />
           </div>
+          <p className="text-base font-semibold text-foreground">Offer sent!</p>
+          <p className="text-sm text-muted-foreground mt-1">You'll hear back soon.</p>
         </div>
-      </>
+      </section>
     );
   }
 
   return (
-    <>
-      <SEOHead
-        title={metaTitle}
-        description={metaDescription}
-        keywords={seoKeywords}
-        image={pageImage}
-        imageAlt={imageAlt}
-        type="website"
-        canonicalUrl={canonicalUrl}
-      />
-
-      <BreadcrumbSchema
-        items={[
-          { name: 'Creator Armour', url: 'https://creatorarmour.com' },
-          { name: creatorHandle || creatorName, url: canonicalUrl },
-        ]}
-      />
-
-      <JsonLdSchema schemaKey="creator-collab-graph" schema={creatorCollabSchema} />
-
-      <style>{`
-        @keyframes nbPulse {
-          0% { transform: scale(1); box-shadow: 0 14px 30px rgba(15,164,127,0.16); }
-          45% { transform: scale(1.012); box-shadow: 0 18px 44px rgba(15,164,127,0.22); }
-          100% { transform: scale(1); box-shadow: 0 14px 30px rgba(15,164,127,0.16); }
-        }
-      `}</style>
-
-      {/* NOTE: `overflow-x-clip` breaks `position: sticky` in Chromium when applied on an ancestor.
-          Keep it on mobile to avoid horizontal scroll, but disable it on desktop so the right panel can stick. */}
-      <div className="light min-h-screen overflow-x-hidden selection:bg-teal-500/30 text-muted-foreground relative" style={{ backgroundColor: "#F7F9FB" }}>
-        <div className="hidden lg:block pointer-events-none absolute -top-24 -left-20 w-[420px] h-[420px] rounded-full bg-teal-500/10 blur-3xl" />
-        <div className="hidden lg:block pointer-events-none absolute top-[18%] -right-24 w-[380px] h-[380px] rounded-full bg-info/10 blur-3xl" />
-        {isOwner && (
-          <div className="bg-[#004D40] text-primary px-4 py-2 flex flex-wrap items-center justify-between gap-y-2 sticky top-0 z-[100] shadow-lg border-b border-primary/20 backdrop-blur-md bg-opacity-90">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="bg-primary/20 p-1.5 rounded-full">
-                <ShieldCheck className="w-4 h-4 text-primary" />
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-0.5">Owner View</p>
-                <p className="text-[10px] text-primary/80 font-medium">
-                  {previewAsBrand ? 'Brand preview mode is active.' : 'You are viewing your own collab link as brands see it.'}
-                </p>
-              </div>
-              <div className="sm:hidden">
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Your Collab Link</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap justify-end">
-              {editMode && profileSaveStatusLabel && (
-                <div className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${profileSaveStatus === 'error'
-                  ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                  : profileSaveStatus === 'saving'
-                    ? 'bg-warning text-warning border border-warning'
-                    : 'bg-primary text-primary border border-primary'
-                  }`}>
-                  {profileSaveStatus === 'saving' ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
-                  {profileSaveStatusLabel}
-                </div>
-              )}
-              <Button
-                onClick={() => {
-                  setPreviewAsBrand((prev) => {
-                    const next = !prev;
-                    if (next) setEditMode(false);
-                    if (next && hasIncompleteSetup) {
-                      toast.warning('Setup is incomplete. Brands may see missing details.');
-                    }
-                    return next;
-                  });
-                }}
-                size="sm"
-                variant="outline"
-                className={`${previewAsBrand ? 'bg-card text-muted-foreground' : 'bg-card0 text-foreground'} border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
-              >
-                {previewAsBrand ? 'Back to Owner View' : 'Preview as Brand'}
-              </Button>
-              <Button
-                onClick={() => signOutMutation.mutate()}
-                size="sm"
-                disabled={signOutMutation.isPending}
-                variant="outline"
-                className="bg-card0 text-foreground hover:bg-secondary/20 border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
-              >
-                {signOutMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                    Logging out...
-                  </>
-                ) : (
-                  'Log out'
-                )}
-              </Button>
-              <Button
-                onClick={handleEditModeToggle}
-                size="sm"
-                disabled={previewAsBrand}
-                className={`${editMode ? 'bg-card text-primary hover:bg-background' : 'bg-primary text-foreground hover:bg-primary'} border-none transition-all text-[11px] font-bold h-7 px-4 rounded-full shadow-sm`}
-              >
-                {editMode ? 'Finish Editing' : 'Edit Profile'}
-              </Button>
-            </div>
-          </div>
-        )}
-	        <div className="container mx-auto px-4 md:px-6 pt-4 pb-36 md:pb-10 md:pt-10 max-w-lg md:max-w-4xl lg:max-w-[1280px] relative">
-	          <div className="flex flex-col md:grid md:grid-cols-[minmax(0,1fr)_380px] items-start gap-7 md:gap-8 w-full">
-
-            {/* LEFT COLUMN - Creator Context */}
-		            <div className="w-full shrink-0 space-y-3 lg:space-y-5 z-10">
-
-              {/* Header - Hero */}
-              <div ref={headerSectionRef} className="mb-5 pt-2 lg:mb-0 lg:pt-0 relative">
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="flex items-center gap-3.5 mb-5 md:mb-7 relative">
-                  <div className="relative shrink-0">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-border shadow-lg mt-0.5">
-                      {creator.profile_photo && !profilePhotoError ? (
-                        <img
-                          src={creator.profile_photo}
-                          alt={`${creator.name} profile`}
-                          className="w-full h-full object-cover"
-                          onError={() => setProfilePhotoError(true)}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-500/20 to-emerald-600/20 text-teal-700 font-black text-xl">
-                          {creator.name.slice(0, 1).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full border-2 border-border" />
-                  </div>
-
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      {editMode ? (
-                        <Input
-                          className="h-7 text-[17px] font-black text-muted-foreground w-auto min-w-[120px] px-2 bg-card0 border-border border-dashed focus:border-teal-500 transition-all"
-                          defaultValue={creator.name}
-                          onBlur={(e) => handleInlineProfileUpdate('name', e.target.value)}
-                          placeholder="Your Name"
-                        />
-                      ) : (
-                        <h2 className="text-[17px] font-black text-muted-foreground leading-tight">{creator.name}</h2>
-                      )}
-                      <div className="flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
-                        <CheckCircle2 className="h-3 w-3 text-teal-600" />
-                        <span className="text-[10px] font-black text-teal-700 uppercase tracking-wider">Verified</span>
-                      </div>
-                      {/* Trust badges for brands */}
-                      <div className="hidden sm:flex items-center gap-1.5 ml-1">
-                        <div className="flex items-center gap-1 bg-primary border border-primary rounded-full px-2 py-0.5">
-                          <FileCheck className="h-3 w-3 text-primary" />
-                          <span className="text-[9px] font-bold text-primary uppercase">Contract-backed</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-info border border-info rounded-full px-2 py-0.5">
-                          <ShieldCheck className="h-3 w-3 text-info" />
-                          <span className="text-[9px] font-bold text-info uppercase">Pay after approval</span>
-                        </div>
-                      </div>
-                    </div>
-                    {editMode ? (
-                      <div className="mt-1 flex gap-2 items-center">
-                        <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">Category:</span>
-                        <Input
-                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-card0 border-border border-dashed w-32"
-                          defaultValue={creator.category || ''}
-                          onBlur={(e) => handleInlineProfileUpdate('creator_category', e.target.value)}
-                          placeholder="e.g. Lifestyle"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-1 mt-1">
-                        <a
-                          href={`https://instagram.com/${normalizedHandle}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[13px] text-teal-600 font-bold hover:underline w-fit"
-                        >
-                          @{normalizedHandle}
-                        </a>
-
-	                        <div className="mt-0.5 flex flex-col gap-0.5 text-[11px] font-medium text-muted-foreground leading-snug">
-	                          <p>
-	                            {formatFollowers(primaryFollowers)} followers
-	                            {avgReelViews ? (
-	                              <>{' '}<span className="text-muted-foreground">•</span>{' '}{Math.round(Number(avgReelViews) * 0.8 / 1000)}K–{Math.round(Number(avgReelViews) * 1.6 / 1000)}K avg views</>
-	                            ) : null}
-	                          </p>
-	                          <p>
-	                            {Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || '—'}% reliability
-	                            {!isDemoAnalytics.avgResponseTimeHours && (
-	                              <>{' '}<span className="text-muted-foreground">•</span>{' '}replies in {displayResponseLine.replace('~', '')}</>
-	                            )}
-	                          </p>
-	                          <p>
-	                            {creator.category || creator.content_niches?.slice(0, 2).join(' / ') || 'Creator'} <span className="text-muted-foreground">•</span>{' '}
-	                            {audienceRegionLabel || 'India'}
-	                          </p>
-	                        </div>
-	                        {!isDemoAnalytics.brandsContactedThisWeek && !isDemoAnalytics.avgResponseTimeHours && !isDemoAnalytics.avgCampaignReach ? (
-	                          <div className="mt-2 flex flex-col gap-1.5 text-[10.5px] font-semibold text-muted-foreground">
-	                            {!isDemoAnalytics.brandsContactedThisWeek && (
-	                              <div className="flex items-center gap-2">
-	                                <Zap className="h-3.5 w-3.5 text-warning" />
-	                                <span title={isDemoAnalytics.brandsContactedThisWeek ? estimatedAnalyticsTooltip : undefined}>
-	                                  {displayAnalytics.brandsContactedThisWeek} brands contacted this creator this week
-	                                </span>
-	                              </div>
-	                            )}
-	                            {!isDemoAnalytics.avgResponseTimeHours && (
-	                              <div className="flex items-center gap-2">
-	                                <Zap className="h-3.5 w-3.5 text-teal-600" />
-	                                <span title={isDemoAnalytics.avgResponseTimeHours ? estimatedAnalyticsTooltip : undefined}>
-	                                  Responds in {displayResponseLine.replace('~', '')}
-	                                </span>
-	                              </div>
-	                            )}
-	                            {!isDemoAnalytics.avgCampaignReach && (
-	                              <div className="flex items-center gap-2">
-	                                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-	                                <span title={isDemoAnalytics.avgCampaignReach ? estimatedAnalyticsTooltip : undefined}>
-	                                  Performance reach {Math.round(displayAnalytics.avgCampaignReach / 1000)}K
-	                                </span>
-	                              </div>
-	                            )}
-	                          </div>
-	                        ) : null}
-	                      </div>
-	                    )}
-                  </div>
-                </div>
-
-                <div className="max-w-xl relative">
-                  <h1 className="text-[28px] md:text-4xl lg:text-[52px] font-[900] tracking-tight text-muted-foreground mb-2.5 leading-[1.06]">
-                    Book {creatorName.split(' ')[0]} for brand collaborations
-                  </h1>
-                  <p className="text-[14px] lg:text-[18px] font-medium text-muted-foreground leading-relaxed max-w-xl">
-                    Choose a ready-made service and send an offer in under 1 minute.
-                  </p>
-                  <div className="mt-4 flex flex-col items-start gap-2">
-                    <Button
-                      type="button"
-                      onClick={() => document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                      className="h-12 rounded-2xl bg-[#0FA47F] px-5 text-[11px] font-black uppercase tracking-[0.16em] text-foreground shadow-[0_10px_26px_rgba(15,164,127,0.20)] hover:bg-primary"
-                    >
-                      Choose a Service
-                    </Button>
-                    <p className="text-[12px] font-semibold text-muted-foreground">
-                      No cold DM needed. Creator is notified instantly.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {isOwner && editMode && !previewAsBrand && (
-                <div className="mb-6 md:mb-8 rounded-2xl border border-primary bg-primary/60 p-4 shadow-[0_4px_14px_rgba(16,185,129,0.08)]">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-primary">Setup Checklist</p>
-                    <span className="text-[11px] font-black text-primary">{setupCompletedCount}/{effectiveSetupChecklist.length} Complete</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {effectiveSetupChecklist.map((item) => (
-                      <div
-                        key={item.key}
-                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${item.complete
-                          ? 'border-primary bg-card text-primary'
-                          : 'border-border bg-card text-muted-foreground'
-                          }`}
-                      >
-                        {item.complete ? (
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
-                        ) : (
-                          <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        )}
-                        <span className="text-[12px] font-bold">{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* 3. Creator Snapshot Accordion (Premium Indian Context) */}
-              <div ref={overviewSectionRef} className={showTrustSections || showAudienceSections ? '' : 'hidden'}>
-                <Accordion
-                  type="single"
-                  collapsible
-	                  className="w-full mb-3 relative z-20"
-                  value={openAccordionValue}
-                  onValueChange={setOpenAccordionValue}
+    <section id="offer-form" className="px-5 py-6">
+      <h2 className="text-lg font-semibold text-foreground mb-4">Send an offer</h2>
+      <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card p-5 space-y-4">
+        {/* Step 1: Type */}
+        {step === 'type' && (
+          <>
+            <p className="text-sm text-muted-foreground">What kind of deal?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {[{ id: 'paid', label: 'Paid collaboration', desc: 'Cash payment' }, { id: 'barter', label: 'Product sent', desc: 'Free products' }].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => { setCollabType(opt.id as 'paid' | 'barter'); setStep('details'); }}
+                  className={cn(
+                    "rounded-xl border p-4 text-left transition-all",
+                    collabType === opt.id
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-secondary hover:border-primary/40"
+                  )}
                 >
-                <AccordionItem value="item-1" className="rounded-2xl overflow-hidden border-b-0" style={{ border: "1.5px solid #DDE8E6", background: "#FDFFFE", boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}>
-                  <AccordionTrigger className="flex items-center justify-between px-5 py-4 border-b border-border hover:no-underline">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-teal-600" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="text-[16px] font-black text-muted-foreground leading-tight">Why Brands Book</h3>
-                        <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">Performance & Trust</p>
-                      </div>
-                    </div>
-                    {audienceRegionLabel && (
-                      <span className="flex items-center gap-1 text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 rounded-full px-2.5 py-1 uppercase tracking-wide mr-2">
-                        <MapPin className="w-3 h-3" />{audienceRegionLabel}
-                      </span>
-                    )}
-                  </AccordionTrigger>
-                  <AccordionContent className="p-4 space-y-8 bg-[#F7F9FB]">
-                    {showTrustSections && (
-                    <div className="space-y-8">
-                    {/* 1. Creator Insights Grid */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Creator Performance</h4>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {/* Avg Reel Views */}
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Engagement</p>
-                          {editMode ? (
-                            <Input
-                              type="number"
-                              className="h-7 text-[16px] font-black text-muted-foreground px-1 bg-background border-border border-dashed"
-                              defaultValue={creator.avg_reel_views || ''}
-                              onBlur={(e) => handleInlineProfileUpdate('avg_reel_views', Number(e.target.value))}
-                              placeholder="0"
-                            />
-                          ) : avgReelViews ? (
-                            <p className="text-[18px] font-black text-muted-foreground leading-tight">
-                              {Number(avgReelViews) >= 1000 ? `${Math.round(Number(avgReelViews) / 1000)}K+` : avgReelViews}
-                            </p>
-                          ) : (
-                            <p className="text-[18px] font-black text-muted-foreground">—</p>
-                          )}
-                        </div>
+                  <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-                        {/* Response Time */}
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Response Time</p>
-                          {(avgResponseHours && avgResponseHours > 0) ? (
-                            <p className="text-[18px] font-black text-muted-foreground leading-tight">{`${Math.round(avgResponseHours)}h`}</p>
-                          ) : (
-                            <p className="text-[18px] font-black text-muted-foreground">—</p>
-                          )}
-                        </div>
+        {/* Step 2: Details */}
+        {step === 'details' && (
+          <>
+            <button type="button" onClick={() => setStep('type')} className="text-xs text-muted-foreground hover:text-foreground">
+              ← Change deal type
+            </button>
 
-                        {/* Brands Worked */}
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Brands Worked</p>
-                          {editMode ? (
-                            <Input
-                              type="number"
-                              className="h-7 text-[16px] font-black text-muted-foreground px-1 bg-background border-border border-dashed"
-                              defaultValue={creator.past_brand_count || ''}
-                              onBlur={(e) => handleInlineProfileUpdate('past_brand_count', Number(e.target.value))}
-                              placeholder="0"
-                            />
-                          ) : (creator.trust_stats?.brands_count != null && creator.trust_stats.brands_count > 0) ? (
-                            <p className="text-[18px] font-black text-primary leading-tight">{creator.trust_stats.brands_count}</p>
-                          ) : (
-                            <p className="text-[18px] font-black text-muted-foreground leading-tight">New</p>
-                          )}
-                        </div>
-
-                        {/* Delivery success / Completion Rate */}
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Delivery success</p>
-                          {(creator.trust_stats?.completion_rate != null && creator.trust_stats.completion_rate > 0) ? (
-                            <p className="text-[18px] font-black text-muted-foreground leading-tight">{`${Math.round(creator.trust_stats.completion_rate)}%`}</p>
-                          ) : (
-                            <p className="text-[18px] font-black text-muted-foreground">—</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 2. Creator Logistics Grid */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Creator Logistics</h4>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Availability</p>
-                          <p className="text-[13px] font-black text-primary leading-tight">Open this month</p>
-                        </div>
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Base City</p>
-                          <p className="text-[13px] font-black text-muted-foreground leading-tight truncate">{audienceRegionLabel || 'Global'}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3. Typical Collab Rate (Anchor) */}
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Typical Collab Rate</h4>
-                      <div className="bg-card p-4 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)] flex flex-col gap-3">
-                        <div>
-                          {editMode ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-[14px] font-black text-muted-foreground leading-tight">₹</span>
-                              <Input
-                                type="number"
-                                className="h-8 text-[16px] font-black text-muted-foreground px-2 bg-background border-border border-dashed w-32"
-                                defaultValue={creator.suggested_reel_rate || ''}
-                                onBlur={(e) => handleInlineProfileUpdate('suggested_reel_rate', Number(e.target.value))}
-                                placeholder="Base Rate"
-                              />
-                            </div>
-                          ) : (
-                            <p className="text-[20px] font-black text-muted-foreground leading-tight">
-                              {(() => {
-                                const reelRate = creator.suggested_reel_rate;
-                                const paidMin = creator.suggested_paid_range_min;
-                                const paidMax = creator.suggested_paid_range_max;
-                                if (paidMin && paidMax) {
-                                  return `₹${Math.round(paidMin / 1000)}K – ₹${Math.round(paidMax / 1000)}K`;
-                                }
-                                if (reelRate) {
-                                  return `₹${Math.round(reelRate / 1000)}K+`;
-                                }
-                                return '—';
-                              })()}
-                            </p>
-                          )}
-                        </div>
-                        <div className="pt-3 border-t border-[#EEF2F5]">
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">Includes</p>
-                          <ul className="space-y-1.5">
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
-                              1 Reel
-                            </li>
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
-                              Stories usually included
-                            </li>
-                            <li className="flex items-center gap-2 text-[12px] font-bold text-muted-foreground">
-                              <Check className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
-                              Delivery: 3–5 days
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-                    )}
-
-                    {/* 4. Audience Insights Grid */}
-                    {showAudienceSections && (
-                    <div className="space-y-3 pb-4">
-                      <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest pl-1">Audience Snapshot</h4>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Core Geo</p>
-                          <p className="text-[13px] font-black text-muted-foreground leading-tight truncate">{audienceCities[0] || 'India'}</p>
-                        </div>
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Age Group</p>
-                          <p className="text-[13px] font-black text-muted-foreground leading-tight">{creator.audience_age_range || '18–34'}</p>
-                        </div>
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Reel Views</p>
-                          <p className="text-[15px] font-black text-muted-foreground leading-tight">
-                            {avgReelViews
-                              ? `${Math.round(Number(avgReelViews) * 0.8 / 1000)}K–${Math.round(Number(avgReelViews) * 1.6 / 1000)}K`
-                              : '3K–10K'
-                            }
-                          </p>
-                        </div>
-                        <div className="bg-card p-3.5 rounded-xl border border-[#EEF2F5] shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-                          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Story Reach</p>
-                          <p className="text-[15px] font-black text-muted-foreground leading-tight">
-                            {`${Math.round(primaryFollowers * 0.04 / 1000)}K–${Math.round(primaryFollowers * 0.09 / 1000)}K`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-                </Accordion>
-              </div>
-	            {/* LEFT COLUMN continues below (services + bio) */}
-
-            {/* 1.5. Services (Moved higher for conversion speed) */}
-		            <div id="packages-section" ref={packagesSectionRef} className={`deal-templates-section mb-2 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 w-full p-4 lg:p-6 rounded-3xl ${showPackagesSection ? '' : 'hidden'}`} style={{ background: "linear-gradient(180deg,#F0FBF7 0%,#F7F9FB 100%)", border: "1px solid #D4EDDF", boxShadow: "0 16px 40px rgba(15,23,42,0.06)" }}>
-	              <div className="flex items-center justify-between mb-3.5">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest mb-1 px-1" style={{ color: "#0FA47F" }}>Fastest way to collaborate</span>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-warning" />
-                    <span className="text-[15px] font-black text-muted-foreground tracking-tight">Choose how you'd like to collaborate</span>
-                  </div>
-                  {isOwner && !previewAsBrand && (
-                    <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
-                      Tip: Use <span className="text-muted-foreground font-black">Manage</span> to edit service name, deliverables, price, and mark one as Most Popular.
-                    </p>
-                  )}
-                </div>
-                {isOwner && (
-                  <button type="button"
-                    onClick={() => setIsEditingTemplates(!isEditingTemplates)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background/80 hover:bg-background transition-all text-muted-foreground active:scale-95"
-                  >
-                    <Edit className="h-3 w-3" />
-                    <span className="text-[10px] font-black uppercase tracking-tight">Manage</span>
-                  </button>
-                )}
-              </div>
-
-	              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-stretch">
-	                {dealTemplates.map((template, idx) => {
-                  const deliverablesList = template.deliverables.map(d => {
-                    const qty = template.quantities[d] || 1;
-                    if (d === 'Unboxing Video') return `${qty} Unboxing`;
-                    return `${qty} ${d.replace('Instagram ', '')}`;
-                  }).join(' + ');
-
-                  return (
-	                    <div
-	                      key={template.id}
-	                      className={`relative group/card ${idx === 2 ? 'md:col-span-2' : ''}`}
-	                    >
-                      {template.isPopular && (
-	                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap">
-                          <div className="bg-gradient-to-r from-amber-200 via-amber-300 to-orange-300 text-[#3D2602] text-[10px] font-black px-4 py-1.5 rounded-full border border-warning shadow-[0_20px_44px_rgba(245,158,11,0.55)] uppercase tracking-wider flex items-center gap-1.5 scale-[1.02]">
-                            <Sparkles className="h-3 w-3" />
-                            Most Popular
-                          </div>
-                        </div>
-                      )}
-	                      <button type="button"
-	                        onClick={() => handleTemplateSelect(template)}
-		                        className={`w-full h-full text-left p-3 lg:p-3.5 rounded-3xl border transition-all duration-300 group min-h-[292px] md:min-h-[318px] lg:min-h-[324px] flex flex-col relative hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] ${selectedTemplateId === template.id ? 'border-[#0FA47F] border-2 bg-[linear-gradient(180deg,#F4FCF8_0%,#ECF8F5_100%)] shadow-[0_22px_48px_rgba(15,164,127,0.24)] scale-[1.02] ring-2 ring-emerald-200/80' : template.isPopular ? 'border-2 border-warning bg-[linear-gradient(180deg,#FFF7DA_0%,#FDEFC7_100%)] shadow-[0_22px_56px_rgba(245,158,11,0.22)] ring-1 ring-amber-200/60 scale-[1.02]' : 'border-border bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FBFA_100%)] hover:border-teal-400 hover:bg-teal-50/70 shadow-[0_10px_24px_rgba(15,23,42,0.12)] hover:shadow-[0_22px_44px_rgba(15,23,42,0.18)]'}`}
-		                      >
-	                        {selectedTemplateId === template.id && (
-	                          <div className="absolute top-3 right-3 z-10">
-	                            <div className="flex items-center gap-1.5 bg-[#0FA47F] text-foreground px-2.5 py-1 rounded-full shadow-[0_10px_22px_rgba(15,164,127,0.28)] border border-border">
-	                              <Check className="w-3.5 h-3.5" strokeWidth={3} />
-	                              <span className="text-[10px] font-black uppercase tracking-wider">Selected</span>
-	                            </div>
-	                          </div>
-	                        )}
-                        <div className="flex items-center justify-between mb-2.5">
-                          <div className={`w-9 h-9 rounded-2xl ${template.isPopular ? 'bg-secondary/80 border-warning' : 'bg-card border-border'} border flex items-center justify-center shadow-sm text-lg`}>
-                            {template.icon}
-                          </div>
-	                          {selectedTemplateId === template.id ? (
-	                            <div className="bg-[#0FA47F] text-foreground rounded-full p-1 shadow-sm animate-in zoom-in duration-300 opacity-0">
-	                              <CheckCircle2 className="w-5 h-5" />
-	                            </div>
-	                          ) : (
-	                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all" />
-	                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[14px] lg:text-[16px] font-black text-muted-foreground mb-0.5">{template.label}</p>
-                          <div className="mb-1.5">
-                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Includes</p>
-                            <div className="space-y-1">
-                              {template.deliverables.map((d, di) => {
-                                const qty = template.quantities[d] || 1;
-                                const label = d === 'Unboxing Video' ? 'Unboxing' : d.replace('Instagram ', '');
-                                return (
-                                  <div key={di} className="flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0FA47F", opacity: 0.7 }} />
-                                    <span className="text-[11px] lg:text-[13px] font-bold text-muted-foreground">{qty} {label}</span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            {template.type === 'barter' && (
-                              <p className="mt-2 text-[11px] font-bold text-muted-foreground">
-                                Free products as payment
-                              </p>
-                            )}
-                            {template.addons && template.addons.length > 0 && (
-                              <div className="mt-2.5">
-                                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Add-ons Available</p>
-                                <div className="space-y-1">
-                                  {template.addons.map((addon, ai) => (
-                                    <div key={addon.id || ai} className="flex items-center justify-between gap-1.5 bg-background border border-border/60 rounded px-2 py-1">
-                                      <span className="text-[10px] lg:text-[11px] font-bold text-muted-foreground truncate">{addon.label}</span>
-                                      <span className="text-[10px] lg:text-[11px] font-black text-teal-600">+₹{addon.price}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            <div className="mt-2.5 flex items-center gap-1.5 py-1 px-2 bg-background border border-border/50 rounded-lg w-fit">
-                              <Clock className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-[10px] lg:text-[11px] font-black text-muted-foreground uppercase tracking-tight">Days to make content: {template.deadlineDays || 7} days</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={`mt-auto pt-2.5 border-t flex flex-col gap-2 ${template.isPopular ? 'border-warning/80' : 'border-border/60'}`}>
-                          {template.isPopular && (
-                            <p className="text-[9px] font-bold text-warning italic leading-tight">
-                              Most brands choose this package for higher engagement
-                            </p>
-                          )}
-                          <div className="flex flex-col gap-2">
-	                            <p className={`leading-[0.92] tracking-tight drop-shadow-[0_1px_0_rgba(0,0,0,0.06)] ${template.type === 'barter' ? 'text-[26px] xl:text-[38px]' : 'text-[38px] md:text-[44px] xl:text-[54px]'} font-black ${template.isPopular ? 'text-[#0B8E6E]' : 'text-[#0FA47F]'}`}>
-                              {template.type === 'barter' ? 'Free products as payment' : `₹${template.budget.toLocaleString()}`}
-                            </p>
-                            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-muted-foreground -mt-1">Starting price</p>
-	                            <div className="w-full px-3 py-1.5 rounded-xl transition-all border font-black uppercase tracking-wider group-active:scale-95 flex items-center justify-center gap-1.5 text-[10px] lg:text-[11px]" style={selectedTemplateId === template.id ? { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" } : { backgroundColor: "#0FA47F", color: "white", borderColor: "#0FA47F" }}>
-	                              {selectedTemplateId === template.id ? (
-	                                '✓ Selected'
-	                              ) : (
-	                                'Choose this service'
-	                              )}
-	                            </div>
-                          </div>
-                        </div>
-                      </button>
-
-                      {isOwner && isEditingTemplates && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <button type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingTemplate(template);
-                            }}
-                            className="p-1.5 rounded-full bg-card border border-border shadow-sm hover:border-teal-500 hover:text-teal-600 transition-all active:scale-90"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {!showCustomFlow && (
-                <div className="mt-5 text-center rounded-2xl border border-dashed border-border bg-background/65 px-4 py-4">
-                  <p className="text-[12px] text-muted-foreground font-black uppercase tracking-[0.14em] mb-3">OR CREATE CUSTOM DEAL</p>
-                  <Button
-                    onClick={() => {
-                      setShowCustomFlow(true);
-                      setCurrentStep(1);
-                      setSelectedTemplateId(null);
-                      triggerHaptic(HapticPatterns.success);
-                    }}
-                    variant="outline"
-                    className="w-full h-12 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]" style={{ background: "white", border: "1.5px solid #CBD5E1", color: "#334155" }}
-                  >
-                    Propose Custom Deal
-                    <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </div>
-              )}
-
-              {!showCustomFlow && showPackagesSection && (
-                <>
-                  {/* Mobile: collapsible "more info" */}
-                  <details className="rounded-2xl border border-border bg-card overflow-hidden lg:hidden">
-                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none text-sm font-bold text-muted-foreground">
-                      <span>More info — past work, audience, reviews</span>
-                      <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform details[open]_rotate-180" />
-                    </summary>
-                    <div className="px-4 pb-4 space-y-3">
-
-                      {/* How it works */}
-                      <div className="rounded-xl bg-gradient-to-br from-background to-white border border-border p-4">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">How It Works</p>
-                        <p className="text-sm font-black text-muted-foreground mb-2">How collaboration works</p>
-                        <p className="text-[11px] text-muted-foreground mb-3">Choose a service, customize, and send. Creator approves and you track everything.</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[
-                            { n: 1, title: 'Choose service' },
-                            { n: 2, title: 'Customize' },
-                            { n: 3, title: 'Send proposal' },
-                          ].map((step) => (
-                            <div key={step.n} className="rounded-lg bg-background border border-border px-2 py-1.5 text-center">
-                              <p className="text-[10px] font-black text-muted-foreground">{step.n}. {step.title}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Past Work preview — show if exists */}
-                      {showPastWorkSection && (
-                        <div className="rounded-xl border border-border bg-card p-3">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Past collaborations</p>
-                          <p className="text-xs text-muted-foreground">See creator's past brand work on their profile page.</p>
-                        </div>
-                      )}
-                    </div>
-                  </details>
-
-                  {/* Desktop: always visible full sections */}
-                  <div className="hidden lg:block">
-                    <div className="rounded-2xl border border-border bg-gradient-to-br from-background via-white to-slate-100 p-4 lg:p-5 text-muted-foreground relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
-                      <div className="absolute -top-12 -right-8 w-28 h-28 bg-background/20 blur-2xl rounded-full" />
-                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">How It Works</p>
-                      <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-muted-foreground mb-2">
-                        How collaboration works
-                      </h3>
-                      <p className="text-[12px] lg:text-[13px] text-muted-foreground font-semibold leading-relaxed max-w-xl">
-                        Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
-                      </p>
-	                      <div className="mt-2.5 grid grid-cols-3 gap-2">
-	                        {[
-	                          { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-muted-foreground" /> },
-	                          { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-muted-foreground" /> },
-	                          { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-muted-foreground" /> },
-	                        ].map((step) => (
-	                          <div key={step.n} className="rounded-xl bg-card border border-border px-2 py-1.5 flex flex-col gap-0.5">
-	                            <div className="flex items-center justify-end">
-	                              <span className="w-5 h-5 rounded-lg bg-background border border-border flex items-center justify-center">{step.icon}</span>
-	                            </div>
-	                            <p className="text-[10.5px] font-black text-muted-foreground leading-tight">
-	                              0{step.n} {step.title}
-	                            </p>
-	                          </div>
-	                        ))}
-	                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-
-              {/* Trust Indicators — shown below packages for brand context */}
-              <div className={`mt-3 rounded-2xl bg-card border border-border p-4 ${showTrustSections ? '' : 'hidden'}`}>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Why use this link</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: 'Legally Binding', icon: <FileCheck className="h-4 w-4 text-primary" />, bg: 'bg-primary border border-primary' },
-                    { label: 'Secure Payment', icon: <ShieldCheck className="h-4 w-4 text-teal-700" />, bg: 'bg-teal-100 border border-teal-200' },
-                    { label: 'Creator Armour', icon: <BadgeCheck className="h-4 w-4 text-info" />, bg: 'bg-info border border-info' },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-xl bg-card p-2 border border-border">
-                      <div className={`shrink-0 rounded-lg p-2 ${item.bg}`}>{item.icon}</div>
-                      <p className="text-[10px] font-black text-muted-foreground leading-tight">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Sticky offer bar — mobile only, appears after package is selected */}
-              {selectedTemplate && !showCustomFlow && (
-                <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-white via-white to-white/95 pt-8 pb-4 px-4 md:hidden border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-                  <div className="flex items-center gap-3 max-w-lg mx-auto">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Selected</p>
-                      <p className="text-sm font-black text-muted-foreground truncate">{selectedTemplate.label}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {selectedTemplate.type === 'barter' ? 'Free products' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
-                        {' · '}{selectedTemplate.deadlineDays || 7} days
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowCustomFlow(true);
-                        setCurrentStep(2);
-                        setTimeout(() => {
-                          document.getElementById('offer-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                      }}
-                      className="shrink-0 h-12 px-5 rounded-2xl bg-[#0FA47F] text-foreground font-black text-[11px] uppercase tracking-widest shadow-lg hover:bg-primary active:scale-[0.98] transition-all whitespace-nowrap"
-                    >
-                      Continue →
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className={`mt-3.5 rounded-2xl border border-border bg-card p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
-                <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="text-[14px] font-black text-muted-foreground tracking-tight">
-                    Past Work <span className="text-muted-foreground font-black">(social proof)</span>
-                  </h3>
-                </div>
-	                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-		                  {recentCollaborations.map((item) => (
-		                    <div key={item.id || item.name} className="rounded-2xl border border-border/70 bg-card px-3 py-3 shadow-[0_6px_16px_rgba(15,23,42,0.05)]">
-		                      <p className="text-[12px] font-black text-muted-foreground leading-tight">{item.name}</p>
-		                      <p className="text-[11px] font-semibold text-muted-foreground mt-0.5">{item.type}</p>
-                          {item.proofLabel && (
-                            <p className="mt-2 inline-flex rounded-full border border-border bg-background px-2 py-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                              {item.proofLabel}
-                            </p>
-                          )}
-		                      <p className="text-[11px] font-black text-muted-foreground mt-2 leading-snug">{item.outcome}</p>
-		                    </div>
-		                  ))}
-	                </div>
-              </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">Brand name *</label>
+              <Input
+                value={formData.brand_name}
+                onChange={(e) => setFormData({ ...formData, brand_name: e.target.value })}
+                placeholder="Your brand"
+                required
+              />
             </div>
 
-	            {/* About Creator (desktop expanded, mobile collapsed with "Read more") */}
-		            <div className="space-y-6">
-	              <div className="bg-card rounded-xl p-4 lg:p-6 border border-border shadow-sm relative overflow-hidden">
-	                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500" />
-
-                  {/* Mobile header + disclosure */}
-                  <div className="md:hidden flex items-start justify-between gap-3 mb-4">
-                    <div className="min-w-0">
-                      <h2 className="text-[14px] font-black text-muted-foreground tracking-tight">About the creator</h2>
-                      <p className="text-[11px] text-muted-foreground font-semibold mt-0.5">Bio and active platforms</p>
-                    </div>
-                    {!editMode && (
-                      <button type="button"
-                        aria-expanded={aboutCreatorOpen}
-                        aria-controls="about-creator-panel"
-                        onClick={() => setAboutCreatorOpen(v => !v)}
-                        className="shrink-0 rounded-full border border-border bg-card px-3 py-2 text-[11px] font-black text-muted-foreground hover:bg-background active:scale-[0.98] transition-all flex items-center gap-1"
-                      >
-                        {aboutCreatorOpen ? 'Show less' : 'Read more'}
-                        <ChevronDown className={`h-4 w-4 transition-transform ${aboutCreatorOpen ? 'rotate-180' : ''}`} />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Mobile preview (collapsed) */}
-                  {!editMode && !aboutCreatorOpen && (
-                    <div className="md:hidden">
-                      {creatorBio && (
-                        <p className="text-muted-foreground leading-relaxed font-medium line-clamp-4">
-                          {creatorBio}
-                        </p>
-                      )}
-                      {(() => {
-                        const ig = creator.platforms.find(p => p.name?.toLowerCase() === 'instagram');
-                        if (!ig?.handle) return null;
-                        const handle = ig.handle.replace('@', '');
-                        return (
-                          <a
-                            href={`https://instagram.com/${handle}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-muted-foreground hover:text-muted-foreground transition-colors"
-                          >
-                            Active on Instagram <span className="font-black">@{handle}</span>
-                            <ExternalLink className="h-3.5 w-3.5 opacity-60" />
-                          </a>
-                        );
-                      })()}
-                    </div>
-                  )}
-
-                  {/* Full content (always shown on desktop, toggled on mobile) */}
-                  <div
-                    id="about-creator-panel"
-                    className={(aboutCreatorOpen || editMode) ? '' : 'hidden md:block'}
-                  >
-	                {editMode ? (
-	                  <div className="mb-6 relative">
-	                    <div className="absolute -top-6 left-0 flex items-center gap-1">
-	                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none">Creator Bio</p>
-			            </div>
-                    <Textarea
-                      className="bg-background border-border border-dashed text-muted-foreground leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
-                      defaultValue={creator.bio || ''}
-                      onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
-                      placeholder="Brief introduction for brands..."
-                    />
-                    <p className="text-[9px] text-muted-foreground mt-1">Updates immediately when you click outside</p>
-                  </div>
-	                ) : creatorBio && (
-	                  <p className="text-muted-foreground leading-relaxed mb-6 font-medium">
-	                    {creatorBio}
-	                  </p>
-	                )}
-
-	                {creator.platforms.length > 0 && (
-                  <div className="space-y-3">
-                    <h2 className="text-xl font-semibold text-muted-foreground mb-3">
-                      Active on {creator.platforms.length > 1 ? 'Platforms' : 'Platform'}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                      {creator.platforms.map((platform, idx) => {
-                        const isInstagram = platform.name.toLowerCase() === 'instagram';
-                        return (
-                          <div key={idx} className="flex items-center gap-3 text-muted-foreground/85">
-                            {getPlatformIcon(platform.name)}
-                            <div className="flex-1">
-                              <p className="font-medium text-muted-foreground">{platform.name}</p>
-                              {isInstagram && platform.handle ? (
-                                <a
-                                  href={`https://instagram.com/${platform.handle.replace('@', '')}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-sm text-muted-foreground hover:text-muted-foreground transition-colors flex items-center gap-1"
-                                >
-                                  @{platform.handle.replace('@', '')}
-                                  <ExternalLink className="h-3 w-3 opacity-60" />
-                                </a>
-                              ) : (
-                                <p className="text-sm text-muted-foreground/90">
-                                  {platform.handle}
-                                </p>
-                              )}
-                              {platform.followers && (
-                                <p className="text-xs text-muted-foreground/65 mt-1">
-                                  {platform.followers >= 1000
-                                    ? `${(platform.followers / 1000).toFixed(1)}K followers`
-                                    : `${platform.followers} followers`}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Open to collabs + niches + media kit (creator readiness for brands) */}
-	                {(creator.open_to_collabs !== false || (creator.content_niches && creator.content_niches.length > 0) || creator.media_kit_url) && (
-	                  <div ref={nichesSectionRef} className="mt-8 pt-6 border-t border-border space-y-3">
-                    {creator.open_to_collabs !== false && (
-                      <p className="text-sm text-primary font-medium flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 shrink-0" />
-                        Actively open to collaborations
-                      </p>
-                    )}
-                    {editMode ? (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center justify-between">
-                          Content Niches
-                          <span className="text-[8px] font-bold text-muted-foreground italic normal-case tracking-normal">Add relevant tags for your profile</span>
-                        </p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {creator.content_niches?.map((niche, i) => (
-                            <Badge
-                              key={i}
-                              variant="secondary"
-                              className="bg-teal-50 text-teal-700 border-teal-100 pl-3 pr-1 py-1 flex items-center gap-1 group"
-                            >
-                              {niche}
-                              <button type="button"
-                                onClick={() => {
-                                  const updated = creator.content_niches?.filter(n => n !== niche);
-                                  handleInlineProfileUpdate('content_niches', updated);
-                                }}
-                                className="hover:bg-teal-200/50 rounded-full p-0.5 transition-colors"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="New niche..."
-                            value={newNicheInput}
-                            onChange={(e) => setNewNicheInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                const val = newNicheInput.trim();
-                                if (val) {
-                                  const updated = [...(creator.content_niches || []), val];
-                                  handleInlineProfileUpdate('content_niches', updated);
-                                  setNewNicheInput('');
-                                }
-                              }
-                            }}
-                            className="h-8 text-xs border-dashed bg-background"
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 text-xs border-dashed border-teal-200 text-teal-600 hover:bg-teal-50"
-                            onClick={() => {
-                              const val = newNicheInput.trim();
-                              if (val) {
-                                const updated = [...(creator.content_niches || []), val];
-                                handleInlineProfileUpdate('content_niches', updated);
-                                setNewNicheInput('');
-                              }
-                            }}
-                          >
-                            Add
-                          </Button>
-                        </div>
-                      </div>
-                    ) : creator.content_niches && creator.content_niches.length > 0 && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Content niches</p>
-                        <div className="flex flex-wrap gap-2">
-                          {creator.content_niches.map((niche, i) => (
-                            <Badge key={i} variant="secondary" className="bg-background text-muted-foreground border-border">
-                              {niche}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {editMode ? (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Media Kit Link (URL)</p>
-                        <Input
-                          className="h-8 text-xs bg-background border-dashed"
-                          defaultValue={creator.media_kit_url || ''}
-                          onBlur={(e) => handleInlineProfileUpdate('media_kit_url', e.target.value)}
-                          placeholder="e.g. https://canva.com/your-media-kit"
-                        />
-                      </div>
-                    ) : creator.media_kit_url && (
-                      <div>
-                        <a
-                          href={creator.media_kit_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-muted-foreground hover:text-muted-foreground inline-flex items-center gap-1"
-                        >
-                          <ExternalLink className="h-4 w-4 shrink-0" />
-                          Media kit
-                        </a>
-                        <p className="text-xs text-muted-foreground/70 mt-1">Ready for brand collaborations</p>
-                      </div>
-                    )}
-	                  </div>
-	                )}
-
-                  {/* NEW: Public Portfolio & Past Brands */}
-                  {(!editMode && ((creator.portfolio_links && creator.portfolio_links.length > 0) || (creator.past_brands && creator.past_brands.length > 0))) && (
-                    <div className="mt-8 pt-6 border-t border-border space-y-6">
-                      {creator.portfolio_links && creator.portfolio_links.length > 0 && (
-                        <div>
-                          <h3 className="text-sm font-bold text-muted-foreground mb-3 flex items-center gap-2">
-                            <Link2 className="h-4 w-4 text-primary" />
-                            Featured Portfolio
-                          </h3>
-                          <div className="flex flex-col gap-2">
-                            {creator.portfolio_links.map((link, idx) => (
-                              <a
-                                key={idx}
-                                href={link.startsWith('http') ? link : `https://${link}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 p-3 rounded-xl border border-border bg-background hover:bg-background hover:border-border transition-all group"
-                              >
-                                <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                                  {link.includes('instagram.com') ? <Instagram className="w-4 h-4 text-pink-600" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
-                                </div>
-                                <span className="text-[13px] font-semibold text-muted-foreground truncate flex-1 leading-snug">
-                                  {link.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
-                                </span>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {creator.past_brands && creator.past_brands.length > 0 && (
-                        <div>
-                          <h3 className="text-sm font-bold text-muted-foreground mb-3 flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 text-primary" />
-                            Trusted By Brands
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            {creator.past_brands.map((brand, idx) => (
-                              <div
-                                key={idx}
-                                className="px-3 py-1.5 rounded-lg border border-border bg-card shadow-sm text-[12px] font-black uppercase tracking-wider text-muted-foreground"
-                              >
-                                {brand}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  </div>
-	              </div>
-		            </div>
-
-	            </div> {/* END LEFT COLUMN */}
-
-	            {/* RIGHT COLUMN - Offer Form */}
-			            <div className="w-full md:w-[380px] md:max-w-[380px] md:justify-self-end md:pb-32 md:sticky md:top-24 self-start">
-              {/* 4. The main offer formation form (Unified for desktop/mobile) */}
-              <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-muted-foreground bg-card relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
-                {!showCustomFlow && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-5">
-                    <div className="grid gap-3">
-                      <div className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-background text-foreground text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                          <Package className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-muted-foreground">Choose a service</p>
-                          <p className="text-[12px] text-muted-foreground font-medium">Starter, Engagement, or Product Review options are ready to use.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-background text-foreground text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                          <PenLine className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-muted-foreground">Customize campaign details</p>
-                          <p className="text-[12px] text-muted-foreground font-medium">Adjust deliverables, budget, and deadline before sending.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-background text-foreground text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                          <Send className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-muted-foreground">Send secure proposal</p>
-                          <p className="text-[12px] text-muted-foreground font-medium">Creator receives a structured offer with the deal details ready.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-		                      <Button
-		                        type="button"
-		                        onClick={() => {
-		                          document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		                        }}
-		                        className="w-full min-w-0 h-12 rounded-2xl bg-[#0FA47F] text-foreground hover:bg-primary font-black text-[11px] uppercase tracking-widest shadow-[0_10px_26px_rgba(15,164,127,0.20)]"
-		                      >
-		                        Choose a Service
-		                      </Button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowCustomFlow(true);
-                          setCurrentStep(1);
-                          setSelectedTemplateId(null);
-                          triggerHaptic(HapticPatterns.success);
-                        }}
-                        className="w-full text-center text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground hover:text-muted-foreground"
-                      >
-                        Need something custom? Create a custom deal
-                      </button>
-	                    </div>
-                  </div>
-                )}
-
-
-	                {/* Step indicator (Now shows 5 steps) */}
-		                {showCustomFlow && (
-                      <>
-                        {selectedTemplate && (
-                          <div
-                            className="mb-6 rounded-3xl border border-primary bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 shadow-[0_14px_30px_rgba(15,164,127,0.16)]"
-                            style={{
-                              transform: templateContinueNudge ? 'translateZ(0)' : undefined,
-                              animation: templateContinueNudge ? 'nbPulse 900ms ease-out 1' : undefined,
-                            }}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary/80 mb-1">Selected service</p>
-                                <p className="text-[15px] font-black text-muted-foreground truncate">{selectedTemplate.label}</p>
-                                <p className="text-[12px] font-semibold text-muted-foreground mt-0.5">
-                                  {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days to make content
-                                </p>
-                              </div>
-                              <div className="shrink-0 flex flex-col items-end gap-2">
-                                <div className="bg-[#0FA47F] text-foreground rounded-full p-1 shadow-sm">
-                                  <CheckCircle2 className="w-5 h-5" />
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setShowCustomFlow(false);
-                                    setCurrentStep(1);
-                                    triggerHaptic(HapticPatterns.selection);
-                                    requestAnimationFrame(() => {
-                                      document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                    });
-                                  }}
-                                  className="h-9 px-3 rounded-2xl border-primary text-primary hover:bg-primary font-black text-[10px] uppercase tracking-widest"
-                                >
-                                  Change service
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-		                  <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-		                    <div>
-		                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-		                        Step {currentStep} of 2
-		                      </p>
-		                      <h2 className={`mt-1 text-[17px] font-black tracking-tight text-muted-foreground leading-tight ${typeSectionTitle}`}>
-		                        {currentStep === 1 ? 'What you want' : 'Your contact details'}
-		                      </h2>
-		                    </div>
-	                    <div className="flex gap-1.5">
-	                      {[1, 2].map((step) => (
-	                        <div
-                          key={step}
-                          className={`h-1.5 rounded-full transition-all duration-300 ${step === currentStep ? 'w-8 bg-background shadow-[0_0_10px_rgba(0,0,0,0.1)]' : step < currentStep ? 'w-3 bg-primary/40' : 'w-1.5 bg-background'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                      </>
-                )}
-
-                 {showCustomFlow && (
-                  <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 min-h-[300px] pb-40 md:pb-0">
-                    {/* Step 1: Collaboration Type + Content Selection */}
-                    {currentStep === 1 && (
-                      <div className="space-y-5">
-                        {/* Collab Type */}
-                        <div>
-                          <label className={`block text-base font-black text-muted-foreground mb-3 ${typeLabel}`}>What type of collaboration?</label>
-                          <div className="grid grid-cols-3 gap-2">
-                            {[
-                              { id: 'paid', label: 'Paid', icon: <Wallet className="h-5 w-5" />, sub: 'Cash' },
-                              { id: 'barter', label: 'Free products', icon: <Package className="h-5 w-5" />, sub: 'Product' },
-                              { id: 'hybrid', label: 'Paid + Product', icon: <Zap className="h-5 w-5" />, sub: 'Both' },
-                            ].map((type) => (
-                              <button type="button"
-                                key={type.id}
-                                onClick={() => setCollabType(type.id as CollabType)}
-                                className={`flex flex-col items-center justify-center p-3 md:p-4 rounded-2xl border-2 transition-all group min-h-[90px] md:min-h-[100px] ${collabType === type.id ? 'border-foreground bg-background text-foreground shadow-xl' : 'border-border bg-card hover:border-border text-muted-foreground'}`}
-                              >
-                                <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-1.5 ${collabType === type.id ? 'bg-secondary/20 text-foreground' : 'bg-background text-muted-foreground group-hover:bg-background'}`}>
-                                  {type.icon}
-                                </div>
-                                <p className="text-[12px] md:text-[13px] font-black uppercase tracking-tight leading-tight">{type.label}</p>
-                                <p className={`text-[10px] font-medium mt-0.5 ${collabType === type.id ? 'text-foreground/60' : 'text-muted-foreground'}`}>{type.sub}</p>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Content Selection */}
-                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner">
-                          <label className={`block text-base font-black text-muted-foreground mb-3 ${typeLabel} flex items-center gap-2`}>
-                            <Clapperboard className="h-5 w-5 text-muted-foreground" />
-                            What content?
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
-                            {DELIVERABLE_OPTIONS.slice(0, 6).map((option) => {
-                              const isSelected = deliverables.includes(option.value);
-                              return (
-                                <button type="button"
-                                  key={option.value}
-                                  onClick={() => handleDeliverableToggle(option.value)}
-                                  className={`flex items-center justify-center gap-2 px-3 py-3.5 rounded-xl text-[13px] font-black transition-all border-2 min-h-[48px] ${isSelected ? 'bg-background border-foreground text-foreground shadow-lg' : 'bg-card border-white text-muted-foreground hover:border-border shadow-sm'}`}
-                                >
-                                  {option.icon}
-                                  {option.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 2: Contact Details + Quick Info */}
-                    {currentStep === 2 && (
-                      <div className="space-y-4">
-                        {selectedTemplate && (
-                          <div className="rounded-[28px] border border-primary bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-5 shadow-[0_12px_28px_rgba(15,164,127,0.12)]">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-primary/80 mb-1">Chosen service</p>
-                                <p className="text-[16px] font-black text-muted-foreground truncate">{selectedTemplate.label}</p>
-                                <p className="text-[12px] font-semibold text-muted-foreground mt-1">
-                                  {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`} • {selectedTemplate.deliverables.length} deliverable{selectedTemplate.deliverables.length === 1 ? '' : 's'} • {selectedTemplate.deadlineDays || 7} days
-                                </p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                  setShowCustomFlow(false);
-                                  setCurrentStep(1);
-                                  triggerHaptic(HapticPatterns.selection);
-                                  requestAnimationFrame(() => {
-                                    document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                  });
-                                }}
-                                className="h-9 rounded-2xl border-primary text-primary hover:bg-primary font-black text-[10px] uppercase tracking-widest"
-                              >
-                                Change
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Contact Section */}
-                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner space-y-3">
-                          <p className={`block text-base font-black text-muted-foreground mb-1 ${typeLabel}`}>
-                            Send your offer
-                          </p>
-                          <p className="text-[12px] font-semibold text-muted-foreground">
-                            We only collect legal details if the creator is interested.
-                          </p>
-                          
-                          <div className="space-y-3">
-                            <label htmlFor="brand-name-input" className="sr-only">Brand name</label>
-                            <Input
-                              id="brand-name-input"
-                              value={brandName}
-                              onChange={(e) => setBrandName(e.target.value)}
-                              placeholder="Brand or company name"
-                              className="h-14 px-4 rounded-xl border-white bg-card font-bold text-base shadow-sm"
-                            />
-                            <label htmlFor="brand-email-input" className="sr-only">Work email</label>
-                            <Input
-                              id="brand-email-input"
-                              type="email"
-                              value={brandEmail}
-                              onChange={(e) => setBrandEmail(e.target.value)}
-                              placeholder="your@email.com"
-                              className="h-14 px-4 rounded-xl border-white bg-card font-bold text-base shadow-sm"
-                            />
-                            <label htmlFor="brand-instagram-input" className="sr-only">Brand Instagram</label>
-                            <Input
-                              id="brand-instagram-input"
-                              value={brandInstagram}
-                              onChange={(e) => setBrandInstagram(e.target.value)}
-                              placeholder="Brand Instagram (optional)"
-                              className="h-12 px-4 rounded-xl border-white bg-card font-semibold text-[14px] shadow-sm"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner space-y-3">
-                          <label htmlFor="campaign-description-input" className={`block text-base font-black text-muted-foreground mb-1 ${typeLabel}`}>
-                            What do you want promoted?
-                          </label>
-                          <Textarea
-                            id="campaign-description-input"
-                            value={campaignDescription}
-                            onChange={(e) => setCampaignDescription(e.target.value)}
-                            placeholder="Launch a new product, drive installs, announce a sale, or review a product..."
-                            className="min-h-[110px] rounded-2xl border-white bg-card px-4 py-3 text-[14px] font-medium shadow-sm"
-                          />
-                        </div>
-
-                        {/* Budget (for paid deals) */}
-                        {collabType === 'paid' && (
-                          <div className="bg-background rounded-[32px] p-6 border border-border shadow-inner">
-                            <label htmlFor="offer-budget-input" className={`block text-[15px] font-black text-muted-foreground mb-3 ${typeLabel} flex items-center gap-2`}>
-                              <IndianRupee className="h-5 w-5 text-muted-foreground" />
-                              Your budget
-                            </label>
-                            <div className="relative group">
-                              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-[15px] group-focus-within:text-muted-foreground transition-colors">₹</div>
-                              <Input
-                                id="offer-budget-input"
-                                type="number"
-                                value={exactBudget}
-                                onChange={(e) => setExactBudget(e.target.value)}
-                                placeholder="Enter your exact budget"
-                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-border transition-all"
-                              />
-                            </div>
-                            <p className="text-[11px] text-muted-foreground mt-2">Enter the exact amount you'd pay. The creator will see this directly.</p>
-                          </div>
-                        )}
-
-                        {/* Product details (for barter/hybrid) */}
-                        {(collabType === 'barter' || collabType === 'hybrid') && (
-                          <div className="bg-background rounded-[32px] p-6 border border-border shadow-inner space-y-4">
-                            <label htmlFor="barter-product-name-input" className={`block text-[15px] font-black text-muted-foreground mb-2 ${typeLabel} flex items-center gap-2`}>
-                              <Package className="h-5 w-5 text-muted-foreground" />
-                              Product details
-                            </label>
-                            <Input
-                              id="barter-product-name-input"
-                              value={barterProductName}
-                              onChange={(e) => setBarterProductName(e.target.value)}
-                              placeholder="Product name you'll send"
-                              className="h-12 px-4 rounded-xl border-white bg-card font-bold text-[14px] shadow-sm"
-                            />
-                            {collabType === 'hybrid' && (
-                              <div className="relative group">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-[15px] group-focus-within:text-muted-foreground transition-colors">₹</div>
-                                <Input
-                                  id="hybrid-cash-amount-input"
-                                  type="number"
-                                  value={exactBudget}
-                                  onChange={(e) => setExactBudget(e.target.value)}
-                                  placeholder="Plus cash amount (optional)"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-border transition-all"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        <div className="bg-background rounded-[24px] md:rounded-[32px] p-4 md:p-6 border border-border shadow-inner">
-                          <label htmlFor="offer-deadline-input" className={`block text-[15px] font-black text-muted-foreground mb-3 ${typeLabel} flex items-center gap-2`}>
-                            <Calendar className="h-5 w-5 text-muted-foreground" />
-                            Deadline
-                          </label>
-                          <Input
-                            id="offer-deadline-input"
-                            type="date"
-                            value={deadline}
-                            onChange={(e) => setDeadline(e.target.value)}
-                            min={new Date().toISOString().split('T')[0]}
-                            className="h-14 rounded-2xl border-white bg-card px-4 font-bold text-[15px] shadow-sm"
-                          />
-                          {isDeadlineTooSoon && (
-                            <p className="text-xs text-warning mt-1 flex items-center gap-1">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              Creator needs {creator.min_lead_time_days} days notice — choose a later date.
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="rounded-2xl border border-primary bg-primary/70 px-4 py-3">
-                          <div className="flex items-start gap-2">
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
-                            <p className="text-[12px] font-semibold text-primary">
-                              Creator reviews your offer, then accepts, counters, or declines.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Mobile sticky bottom CTA for the form */}
-                  <div className="fixed bottom-0 left-0 right-0 z-50 p-3 bg-gradient-to-t from-background via-background/95 to-transparent md:hidden">
-                    <div className="max-w-lg mx-auto">
-                    {currentStep < 2 ? (
-                        <Button
-                          onClick={() => {
-                            let canProceed = false;
-                            if (currentStep === 1 && isStep1Ready) canProceed = true;
-
-                            if (canProceed) {
-                              setCurrentStep(currentStep + 1);
-                              triggerHaptic(HapticPatterns.success);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            } else {
-                              toast.error(`Please select collaboration type first`);
-                            }
-                          }}
-                          className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-base shadow-lg active:scale-[0.98] transition-all"
-                        >
-                          Continue
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                        {!(selectedTemplate && currentStep === 2) && (
-                          <Button
-                            onClick={() => {
-                              if (currentStep === 1) {
-                                setShowCustomFlow(false);
-                              } else {
-                                setCurrentStep(currentStep - 1);
-                              }
-                              triggerHaptic(HapticPatterns.light);
-                            }}
-                            variant="outline"
-                            className="h-12 w-full rounded-2xl border-border text-muted-foreground font-black text-base"
-                          >
-                            Back
-                          </Button>
-                        )}
-                          <Button
-                            onClick={handleSubmit}
-                            disabled={submitting || !isStep2Ready}
-                            className="h-14 w-full rounded-2xl bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-base shadow-lg active:scale-[0.98] transition-all"
-                          >
-                            <span className="flex items-center justify-center gap-2">
-                              {submitting ? (
-                                <>
-                                  <Loader2 className="h-5 w-5 animate-spin" />
-                                  Sending...
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="h-5 w-5" />
-                                  Send Offer
-                                </>
-                              )}
-                            </span>
-                          </Button>
-                        </div>
-                    )}
-                    </div>
-                  </div>
-
-                  {/* Desktop navigation only */}
-                  <div className="hidden md:block mt-8">
-                    {currentStep === 2 && isStep2Ready && (
-                      <>
-                        {/* Contract summary - what happens when you send */}
-                        <div className="mb-4 rounded-2xl border border-info bg-info/70 px-4 py-4">
-                          <p className="text-[11px] font-black uppercase tracking-widest text-info mb-3">What you're agreeing to</p>
-                          <div className="space-y-2.5">
-                            <div className="flex items-start gap-2.5">
-                              <FileText className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-muted-foreground">A legally binding contract under Indian Contract Act, 1872</p>
-                            </div>
-                            <div className="flex items-start gap-2.5">
-                              <IndianRupee className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-muted-foreground">
-                                {collabType === 'barter' 
-                                  ? 'Product/experience in exchange for deliverables (no monetary payment)'
-                                  : `Payment of ₹${exactBudget || budgetRange || 'agreed amount'} after creator delivers content`
-                                }
-                              </p>
-                            </div>
-                            <div className="flex items-start gap-2.5">
-                              <Clock className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-muted-foreground">Payment due within 7 days of content approval</p>
-                            </div>
-                            <div className="flex items-start gap-2.5">
-                              <AlertCircle className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-muted-foreground">Late payments incur <span className="font-semibold">18% p.a. interest</span> — standard in India</p>
-                            </div>
-                            <div className="flex items-start gap-2.5">
-                              <ShieldCheck className="h-4 w-4 text-info flex-shrink-0 mt-0.5" />
-                              <p className="text-xs text-muted-foreground">If creator doesn't deliver, you get a full refund. If payment is delayed, we help you take action.</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mb-3 rounded-2xl border border-primary bg-primary/70 px-4 py-3">
-                          <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-primary">
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
-                            Ready to send
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                    {!(selectedTemplate && currentStep === 2) && (
-                      <Button
-                        onClick={() => {
-                          if (currentStep === 1) {
-                            setShowCustomFlow(false);
-                          } else {
-                            setCurrentStep(currentStep - 1);
-                          }
-                          triggerHaptic(HapticPatterns.light);
-                        }}
-                        variant="outline"
-                        className="h-14 rounded-full border-border text-muted-foreground font-black text-xs uppercase tracking-widest hover:border-border hover:text-muted-foreground transition-all active:scale-95"
-                      >
-                        {currentStep === 1 ? 'Go Back' : 'Back'}
-                      </Button>
-                    )}
-
-                    {currentStep < 2 ? (
-                      <Button
-                        onClick={() => {
-                          let canProceed = false;
-                          if (currentStep === 1 && isStep1Ready) canProceed = true;
-
-                          if (canProceed) {
-                            setCurrentStep(currentStep + 1);
-                            triggerHaptic(HapticPatterns.success);
-                            scrollOfferFormIntoView();
-                          } else {
-                            toast.error(`Please select collaboration type first`);
-                          }
-                        }}
-                        className="h-14 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] flex-1 active:scale-98"
-                      >
-                        Continue
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <div className="flex flex-col gap-3 w-full">
-                        <Button
-                          onClick={handleSubmit}
-                          disabled={submitting || !isStep2Ready}
-                          className="h-14 w-full min-w-0 rounded-full bg-[#0FA47F] border-2 border-[#0FA47F] text-foreground hover:bg-primary hover:border-primary font-black text-xs uppercase tracking-widest transition-all shadow-[0_14px_34px_rgba(15,164,127,0.22)] active:scale-95 group relative overflow-hidden"
-                        >
-                          <span className="flex items-center justify-center gap-2">
-                            {submitting ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Sending...
-                              </>
-                            ) : (
-                              <>
-                                <Send className="h-4 w-4" />
-                                Send Offer
-                                <ArrowRight className="h-4 w-4 ml-1" />
-                              </>
-                            )}
-                          </span>
-                        </Button>
-                      </div>
-                    )}
-                    </div>
-                    {currentStep === 2 && (
-                      <div className="mt-2 space-y-1.5">
-                        <p className="text-[11px] font-semibold text-muted-foreground text-center">
-                          Creator will be notified instantly
-                        </p>
-                        {(trustStats?.completed_deals ?? 0) > 0 && (
-                          <p className="text-[11px] text-primary text-center flex items-center justify-center gap-1.5">
-                            <CheckCircle2 className="h-3 w-3" />
-                            <span className="font-semibold">
-                              {trustStats?.completed_deals} deal{trustStats?.completed_deals !== 1 ? 's' : ''} completed
-                              {(trustStats?.brands_count ?? 0) > 0 && ` · ${trustStats?.brands_count} brand${trustStats?.brands_count !== 1 ? 's' : ''} worked with`}
-                            </span>
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-		                    <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border pt-6">
-		                      <div className="text-[11px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-		                        <Lock className="h-3 w-3" />
-		                        Secure & private
-		                      </div>
-
-	                      {currentStep < 2 && (
-	                        <Button
-	                          onClick={handleStickySubmit}
-                          className="hidden md:flex w-auto h-12 px-8 rounded-2xl bg-background text-muted-foreground font-black text-[11px] uppercase tracking-widest hover:bg-background transition-all"
-                        >
-                          Next Step: Step {currentStep + 1}
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Demo Fill Button */}
-                    {/* Demo Fill Button */}
-                    {import.meta.env.DEV && (
-                      <div className="mt-6 flex justify-center">
-                        <button type="button"
-                          onClick={fillDemoData}
-                          className="text-[10px] text-muted-foreground hover:text-muted-foreground font-bold uppercase tracking-widest"
-                        >
-                          Fill demo data
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div> {/* END core-offer-form */}
-            </div> {/* END RIGHT COLUMN */}
-	          </div> {/* END flex-row container */}
-
-	          <div className="md:hidden h-36" />
-
-          {isOwner && !previewAsBrand && hasIncompleteSetup && (
-            <div className="fixed right-4 bottom-24 z-50 md:hidden">
-              <button type="button"
-                onClick={() => {
-                  if (!editMode) setEditMode(true);
-                  scrollToSetupSection();
-                }}
-                className="flex items-center gap-2 rounded-full bg-primary text-foreground px-4 py-2.5 shadow-[0_10px_24px_rgba(16,185,129,0.35)] hover:bg-primary transition-all"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="text-[11px] font-black uppercase tracking-wider">
-                  Complete Setup ({effectiveSetupChecklist.length - setupCompletedCount} left)
-                </span>
-              </button>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">Email *</label>
+              <Input
+                type="email"
+                value={formData.contact_email}
+                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                placeholder="contact@brand.com"
+                required
+              />
             </div>
-          )}
 
-          <div className="px-4">
-            {/* Save and continue later modal */}
-            <Dialog open={showSaveDraftModal} onOpenChange={setShowSaveDraftModal}>
-              <DialogContent className="bg-background/95 border-border text-foreground">
-                <DialogHeader>
-                  <DialogTitle>Save and continue later</DialogTitle>
-                </DialogHeader>
-                <p className="text-sm text-muted-foreground/85">
-                  Enter your email. We&apos;ll send you a link to continue this request (valid for 7 days).
-                </p>
-                <Input
-                  type="email"
-                  placeholder="you@company.com"
-                  value={draftEmail}
-                  onChange={(e) => setDraftEmail(e.target.value)}
-                  className={inputClass}
-                />
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowSaveDraftModal(false)}
-                    className="border-border text-foreground hover:bg-card0"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSaveDraftSubmit}
-                    disabled={saveDraftSubmitting}
-                    className="bg-card text-black hover:bg-background text-foreground"
-                  >
-                    {saveDraftSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Sending…
-                      </>
-                    ) : (
-                      'Send link'
-                    )}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Sticky Bottom CTA (mobile compact) */}
-          {!(showCustomFlow && currentStep === 2) && (
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-3 pt-2.5 pb-[max(env(safe-area-inset-bottom),0.75rem)] bg-gradient-to-t from-background via-background/95 to-transparent backdrop-blur-md border-t border-border">
-            <div className="relative">
-              {isCoreReady && !hasStartedOffer && (
-                <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl border border-teal-300/30 animate-ping" />
-              )}
-	              <Button
-	                onClick={
-	                  !showCustomFlow
-	                    ? () => {
-	                      if (selectedTemplate) {
-	                        setShowCustomFlow(true);
-	                        setCurrentStep(2);
-	                        window.scrollTo({ top: 0, behavior: 'smooth' });
-	                        triggerHaptic(HapticPatterns.success);
-	                        return;
-	                      }
-	                      document.getElementById('packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	                    }
-	                    : handleStickySubmit
-	                }
-	                disabled={submitting || (showCustomFlow && currentStep === 2 && hasStartedOffer && !isStep2Ready)}
-	                className={[
-	                  'w-full rounded-2xl font-black active:scale-[0.98] transition-all duration-300',
-	                  !showCustomFlow
-	                    ? 'h-14 bg-[#0FA47F] text-foreground shadow-[0_10px_34px_rgba(15,164,127,0.24)] border border-primary/20'
-	                    : 'h-16 bg-[#0FA47F] text-foreground shadow-[0_10px_34px_rgba(15,164,127,0.28)] border-t border-border'
-	                ].join(' ')}
-	              >
-                {submitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-5 w-5 text-foreground animate-spin" />
-                    Finalizing Security...
-                  </span>
-		                ) : !showCustomFlow ? (
-		                  selectedTemplate ? (
-			                    <span className="w-full flex flex-col items-center justify-center leading-tight">
-			                      <span className="text-[12px] font-black">
-			                        Chosen service — {selectedTemplate.type === 'barter' ? 'Free products as payment' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
-			                      </span>
-			                      <span className="mt-1 text-[12px] font-black uppercase tracking-widest flex items-center gap-2">
-			                        Continue to Offer
-			                        <ArrowRight className="h-4 w-4" />
-			                      </span>
-			                    </span>
-		                  ) : (
-		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Choose a Service
-		                      <ArrowRight className="h-4 w-4" />
-		                    </span>
-		                  )
-		                  ) : (
-		                  (currentStep === 2 && hasStartedOffer) ? (
-		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Send Offer
-		                      <ArrowRight className="h-4 w-4" />
-		                    </span>
-		                  ) : (
-		                    <span className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-widest">
-		                      Continue
-		                      <ArrowRight className="h-4 w-4" />
-		                    </span>
-		                  )
-		                )}
-              </Button>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">Budget (optional)</label>
+              <Input
+                value={formData.budget}
+                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                placeholder="e.g. ₹5,000 – ₹15,000"
+              />
             </div>
-            <p className="text-center text-[10px] font-semibold text-muted-foreground mt-1.5">
-              {showSubmittingTrust ? 'Your offer is being processed securely' : '50+ brands have collaborated through Creator Armour'}
-            </p>
-            {showSubmittingTrust && (
-              <div className="mt-2 space-y-1.5 rounded-xl border border-border bg-background px-3 py-2">
-                {submittingChecklist.map((step, idx) => {
-                  const complete = idx <= submitChecklistStep;
-                  return (
-                    <div key={step} className={`flex items-center gap-2 text-xs transition-all duration-200 ${complete ? 'text-primary opacity-100 translate-y-0' : 'text-muted-foreground opacity-70 translate-y-0.5'}`}>
-                      <CheckCircle2 className={`h-3.5 w-3.5 ${complete ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <span>{step}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          )}
-        </div>
-      </div>
 
-      {/* Edit Deal Template Modal */}
-      {
-        editingTemplate && (
-          <EditDealTemplateModal
-            template={editingTemplate!}
-            onSave={handleUpdateTemplate}
-            onClose={() => setEditingTemplate(null)}
-          />
-        )
-      }
-    </>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground block mb-1.5">Message (optional)</label>
+              <textarea
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                placeholder="Tell them about your brand and what you have in mind..."
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring/40 transition-all resize-none"
+                rows={3}
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</> : 'Send offer'}
+            </Button>
+          </>
+        )}
+      </form>
+    </section>
   );
 };
 
-// Component helper for editing templates
-const EditDealTemplateModal = ({
-  template,
-  onSave,
-  onClose,
-}: {
-  template: DealTemplate;
-  onSave: (updated: DealTemplate) => void;
-  onClose: () => void;
-}) => {
-  const [edited, setEdited] = useState<DealTemplate>({ ...template });
+// ── FAQ Section ───────────────────────────────────────────────────────
 
-  const handleDeliverableToggleModal = (val: string) => {
-    setEdited(prev => {
-      const isSelected = prev.deliverables.includes(val);
-      if (isSelected) {
-        if (prev.deliverables.length <= 1) {
-          toast.error('Your Services must have at least 1 deliverable.');
-          return prev;
-        }
-        return {
-          ...prev,
-          deliverables: prev.deliverables.filter(d => d !== val),
-        };
-      } else {
-        return {
-          ...prev,
-          deliverables: [...prev.deliverables, val],
-          quantities: { ...prev.quantities, [val]: 1 }
-        };
-      }
-    });
-  };
+const FAQSection = ({ faqs }: { faqs?: FAQItem[] }) => {
+  const [open, setOpen] = useState<string | null>(null);
 
-  const updateDeliverableQuantityModal = (val: string, qty: number) => {
-    if (qty < 1) return;
-    setEdited(prev => ({
-      ...prev,
-      quantities: { ...prev.quantities, [val]: qty }
-    }));
-  };
-
-  const handleAddAddon = () => {
-    setEdited(prev => ({
-      ...prev,
-      addons: [...(prev.addons || []), { id: `addon_${Date.now()}`, label: '', price: 0 }]
-    }));
-  };
-
-  const handleUpdateAddon = (index: number, update: Partial<{ label: string, price: number }>) => {
-    setEdited(prev => {
-      const addons = [...(prev.addons || [])];
-      addons[index] = { ...addons[index], ...update };
-      return { ...prev, addons };
-    });
-  };
-
-  const handleRemoveAddon = (index: number) => {
-    setEdited(prev => {
-      const addons = [...(prev.addons || [])];
-      addons.splice(index, 1);
-      return { ...prev, addons };
-    });
-  };
+  if (!faqs || faqs.length === 0) return null;
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-[32px] p-6 bg-card border-none shadow-2xl overflow-y-auto max-h-[90vh]">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-emerald-500" />
-        <DialogHeader className="pt-2">
-          <DialogTitle className="text-xl font-black text-muted-foreground flex items-center gap-2">
-            <span className="text-2xl">{edited.icon}</span>
-            Edit Service
-          </DialogTitle>
-          <p className="text-xs text-muted-foreground font-medium tracking-tight">Set your service details so brands can choose faster.</p>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Service Name</label>
-            <Input
-              value={edited.label}
-              onChange={(e) => setEdited({ ...edited, label: e.target.value })}
-              className="rounded-2xl border-border bg-background h-12 font-bold focus:bg-card transition-all"
-              placeholder="e.g. Pro Reel Package"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1 flex justify-between">
-              Deliverables Included
-              <span className="text-[9px] text-muted-foreground">Required</span>
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {DELIVERABLE_OPTIONS.filter(o => o.value !== 'Custom').map((opt) => {
-                const isSelected = edited.deliverables.includes(opt.value);
-                return (
-                  <div key={opt.value} className={`border rounded-xl p-2 flex items-center justify-between transition-colors ${isSelected ? 'border-teal-500 bg-teal-50/30' : 'border-border bg-background'}`}>
-                    <label className="flex items-center gap-2 cursor-pointer text-[12px] font-bold text-muted-foreground w-full">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleDeliverableToggleModal(opt.value)}
-                        className="rounded border-border text-teal-600 focus:ring-teal-500 bg-card"
-                      />
-                      {opt.label}
-                    </label>
-                    {isSelected && (
-                      <div className="flex items-center gap-1.5 shrink-0 bg-card rounded-lg border border-border px-1 py-0.5 shadow-sm">
-                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) - 1)} className="w-5 h-5 rounded hover:bg-background flex items-center justify-center font-bold text-muted-foreground transition-colors">−</button>
-                        <span className="text-[12px] font-black w-3 text-center text-muted-foreground">{edited.quantities[opt.value] || 1}</span>
-                        <button type="button" onClick={() => updateDeliverableQuantityModal(opt.value, (edited.quantities[opt.value] || 1) + 1)} className="w-5 h-5 rounded hover:bg-background flex items-center justify-center font-bold text-muted-foreground transition-colors">+</button>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Deal Type</label>
-              <Select
-                value={edited.type}
-                onValueChange={(v: any) => setEdited({ ...edited, type: v })}
-              >
-                <SelectTrigger className="rounded-2xl border-border bg-background h-12 font-bold focus:bg-card transition-all">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl">
-                  <SelectItem value="paid" className="rounded-xl font-bold">💰 Paid</SelectItem>
-                  <SelectItem value="barter" className="rounded-xl font-bold">📦 Free products as payment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">
-                {edited.type === 'paid' ? 'Price (₹)' : 'Value (₹)'}
-              </label>
-              <Input
-                type="number"
-                value={edited.budget}
-                onChange={(e) => setEdited({ ...edited, budget: Number(e.target.value) })}
-                className="rounded-2xl border-border bg-background h-12 font-black text-teal-600 focus:bg-card transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Delivery Time</label>
-            <div className="relative">
-              <Input
-                type="number"
-                value={edited.deadlineDays || ''}
-                onChange={(e) => setEdited({ ...edited, deadlineDays: Number(e.target.value) })}
-                placeholder="e.g. 7"
-                className="rounded-2xl border-border bg-background h-12 font-bold focus:bg-card transition-all pr-12"
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[12px] font-bold text-muted-foreground pointer-events-none">
-                Days
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1 flex justify-between">
-              Package Description
-              <span className="text-[9px] text-muted-foreground normal-case">{edited.description?.length || 0}/120</span>
-            </label>
-            <Textarea
-              maxLength={120}
-              value={edited.description}
-              onChange={(e) => setEdited({ ...edited, description: e.target.value })}
-              placeholder="e.g. Best for product launches. Includes 1 reel + 2 story mentions."
-              className="rounded-2xl border-border bg-background min-h-[80px] font-medium focus:bg-card transition-all py-3 px-4 resize-none"
-            />
-          </div>
-
-          <div className="space-y-4 pt-4 border-t border-border">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-black uppercase text-muted-foreground tracking-widest pl-1">Optional Add-ons</label>
-              <button type="button" onClick={handleAddAddon} className="flex items-center gap-1 text-[10px] font-black uppercase text-teal-600 bg-teal-50 px-2 py-1 rounded hover:bg-teal-100 transition-colors">
-                <span className="text-xl leading-none -mt-0.5">+</span> Add Item
-              </button>
-            </div>
-            {edited.addons?.map((addon, index) => (
-              <div key={addon.id} className="flex items-center gap-2 bg-background p-2 rounded-xl border border-border">
-                <Input
-                  className="flex-1 rounded-lg border-border bg-card h-10 font-bold focus:bg-card transition-all text-[12px]"
-                  placeholder="e.g. + Extra Story"
-                  value={addon.label}
-                  onChange={(e) => handleUpdateAddon(index, { label: e.target.value })}
-                />
-                <div className="relative w-24 shrink-0">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-[11px]">₹</span>
-                  <Input
-                    type="number"
-                    className="w-full rounded-lg border-border bg-card h-10 font-black text-teal-600 focus:bg-card transition-all pl-6 text-[12px]"
-                    placeholder="200"
-                    value={addon.price || ''}
-                    onChange={(e) => handleUpdateAddon(index, { price: Number(e.target.value) })}
-                  />
-                </div>
-                <button type="button" onClick={() => handleRemoveAddon(index)} className="p-2.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive transition-colors" aria-label="Remove add-on">
-                  <X className="w-5 h-5" />
-                </button>
+    <section className="px-5 py-6">
+      <h2 className="text-lg font-semibold text-foreground mb-4">FAQ</h2>
+      <div className="space-y-2">
+        {faqs.map((faq) => (
+          <div key={faq.q} className="rounded-xl border border-border bg-card overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setOpen(open === faq.q ? null : faq.q)}
+              className="w-full flex items-center justify-between gap-4 px-4 py-3.5 text-left"
+            >
+              <span className="text-sm font-medium text-foreground">{faq.q}</span>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground shrink-0 transition-transform", open === faq.q && "rotate-180")} />
+            </button>
+            {open === faq.q && (
+              <div className="px-4 pb-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
               </div>
-            ))}
-            {(!edited.addons || edited.addons.length === 0) && (
-              <p className="text-[10px] font-bold text-muted-foreground italic text-center py-2">No add-ons created. Offer extras to clear upsell deals.</p>
             )}
           </div>
+        ))}
+      </div>
+    </section>
+  );
+};
 
-          <div className="py-2 pt-4 border-t border-border">
-            <label className="flex items-center gap-2 cursor-pointer bg-warning/50 hover:bg-warning p-3 rounded-xl border border-warning transition-colors">
-              <input
-                type="checkbox"
-                checked={edited.isPopular || false}
-                onChange={(e) => {
-                  // Update current logic for exclusive highlight marking if necessary, or just mark this.
-                  // We'll trust the parent to handle exclusivity if needed, or we just rely on state.
-                  setEdited({ ...edited, isPopular: e.target.checked })
-                }}
-                className="rounded border-warning text-[#FFA000] focus:ring-[#FFA000] h-4 w-4"
-              />
-              <span className="text-[13px] font-bold text-warning flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4" />
-                Mark as most popular
-              </span>
-            </label>
-          </div>
-        </div>
-        <DialogFooter className="gap-2 sm:gap-3">
-          <Button variant="ghost" onClick={onClose} className="rounded-full font-black text-muted-foreground text-xs uppercase tracking-widest h-11 hover:bg-background">Cancel</Button>
-          <Button
-            onClick={() => onSave(edited)}
-            className="flex-1 rounded-full bg-background hover:bg-black text-foreground font-black text-xs uppercase tracking-widest h-11 shadow-xl active:scale-[0.98] transition-all"
-          >
-            Update Template
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+// ── Footer ─────────────────────────────────────────────────────────────
+
+const Footer = ({ creator }: { creator: CreatorProfile }) => (
+  <footer className="px-5 py-8 border-t border-border">
+    <p className="text-xs text-muted-foreground text-center">
+      Powered by <span className="font-medium text-foreground">Creator Armour</span>
+    </p>
+    <p className="text-xs text-muted-foreground/60 text-center mt-1">
+      Safe brand collaborations
+    </p>
+  </footer>
+);
+
+// ── Loading Skeleton ───────────────────────────────────────────────────
+
+const LoadingSkeleton = () => (
+  <div className="min-h-screen bg-background">
+    <div className="max-w-xl mx-auto">
+      <div className="text-center px-5 pt-12 pb-8">
+        <div className="w-20 h-20 rounded-2xl bg-secondary mx-auto mb-5 animate-pulse" />
+        <div className="h-7 w-40 bg-secondary rounded-xl mx-auto mb-3 animate-pulse" />
+        <div className="h-4 w-64 bg-secondary rounded-lg mx-auto animate-pulse" />
+        <div className="h-11 w-40 bg-secondary rounded-xl mx-auto mt-6 animate-pulse" />
+      </div>
+      <div className="px-5 py-6 space-y-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-24 bg-secondary rounded-2xl animate-pulse" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ── Error State ────────────────────────────────────────────────────────
+
+const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
+  <div className="min-h-screen bg-background flex items-center justify-center px-5">
+    <div className="text-center">
+      <p className="text-base font-medium text-foreground">Page not found</p>
+      <p className="text-sm text-muted-foreground mt-1">This creator link may be invalid or expired.</p>
+      <Button onClick={onRetry} variant="outline" className="mt-4">Try again</Button>
+    </div>
+  </div>
+);
+
+// ============================================
+// MAIN PAGE
+// ============================================
+
+const CollabLinkLanding = () => {
+  const { handle } = useParams<{ handle: string }>();
+  const [searchParams] = useSearchParams();
+  const previewMode = searchParams.get('preview') === '1';
+  const navigate = useNavigate();
+
+  const [creator, setCreator] = useState<CreatorProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchCreator = useCallback(async () => {
+    if (!handle) { setLoading(false); return; }
+    setLoading(true); setError(false);
+    try {
+      const cleanHandle = handle.replace('@', '');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sess = sessionData.session;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (sess?.access_token) headers['Authorization'] = `Bearer ${sess.access_token}`;
+
+      const res = await fetch(`${getApiBaseUrl()}/api/creator-profile/${cleanHandle}`, { headers });
+      if (!res.ok) { setError(true); setLoading(false); return; }
+      const data = await res.json();
+      if (!data.success) { setError(true); setLoading(false); return; }
+      setCreator(data.profile as CreatorProfile);
+    } catch { setError(true); }
+    finally { setLoading(false); }
+  }, [handle]);
+
+  useEffect(() => { void fetchCreator(); }, [fetchCreator]);
+
+  const collabUrl = useMemo(() =>
+    creator ? `${window.location.origin}/${creator.username}` : '',
+  [creator?.username]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error || !creator) return <ErrorState onRetry={() => void fetchCreator()} />;
+
+  const testimonialData: Testimonial[] = creator.testimonials || [];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Mobile sticky CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-background via-background/95 to-transparent pt-8 pb-4 px-4 md:hidden">
+        <Button
+          onClick={() => document.getElementById('offer-form')?.scrollIntoView({ behavior: 'smooth' })}
+          className="w-full"
+        >
+          Send offer <ArrowRight className="ml-1.5 h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="max-w-xl mx-auto pb-24 md:pb-0">
+        {/* Hero — always first, above fold */}
+        <HeroSection creator={creator} collabUrl={collabUrl} />
+
+        {/* Stats */}
+        <StatsSection creator={creator} />
+
+        {/* Packages */}
+        <PackagesSection packages={creator.packages || []} />
+
+        {/* Past work */}
+        <PastWorkSection work={creator.past_work || []} />
+
+        {/* Trust */}
+        <TrustSection creator={creator} testimonials={testimonialData} />
+
+        {/* Offer form */}
+        <OfferForm creator={creator} collabUrl={collabUrl} />
+
+        {/* FAQ */}
+        <FAQSection faqs={creator.faqs} />
+
+        {/* Footer */}
+        <Footer creator={creator} />
+      </div>
+    </div>
   );
 };
 
