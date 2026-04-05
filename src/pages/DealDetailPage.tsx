@@ -253,6 +253,7 @@ function DealDetailPageContent() {
   const [isSigningAsCreator, setIsSigningAsCreator] = useState(false);
   const [contentLinkInput, setContentLinkInput] = useState('');
   const [contentNoteInput, setContentNoteInput] = useState('');
+  const [showNoteForm, setShowNoteForm] = useState(false);
   const [isSubmittingContentLink, setIsSubmittingContentLink] = useState(false);
   // Use hook for signatures (replaces old state)
   const { data: signatureData } = useDealSignatures(dealId);
@@ -2102,41 +2103,44 @@ Best regards`;
                 />
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="deal-content-note" className="text-xs font-black uppercase tracking-[0.18em] text-white/60">
-                  Note to brand (optional)
-                </label>
-                <textarea
-                  id="deal-content-note"
-                  value={contentNoteInput}
-                  onChange={(e) => setContentNoteInput(e.target.value)}
-                  placeholder="Added the final reel here. Let me know if you need anything else."
-                  rows={3}
-                  className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-emerald-400/50 focus:outline-none resize-none"
-                />
-              </div>
-
-              {existingContentSubmissionUrl && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-white/50">Current shared link</p>
-                  <a
-                    href={existingContentSubmissionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-2 break-all text-sm text-emerald-300 hover:text-emerald-200"
-                  >
-                    <ExternalLink className="h-4 w-4 flex-shrink-0" />
-                    {existingContentSubmissionUrl}
-                  </a>
+              {/* Collapsed: note + current link + explanation */}
+              <details className="rounded-xl border border-white/10 bg-white/[0.03]">
+                <summary className="flex items-center justify-between px-3 py-2.5 cursor-pointer select-none text-xs text-white/50 hover:text-white/70">
+                  <span className="font-black uppercase tracking-[0.16em]">Add a note or view submitted link</span>
+                  <ChevronDown className="w-4 h-4 transition-transform details[open]_rotate-180" />
+                </summary>
+                <div className="px-3 pb-3 space-y-3">
+                  {existingContentSubmissionUrl && (
+                    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/50 mb-1.5">Current link on file</p>
+                      <a href={existingContentSubmissionUrl} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200 break-all">
+                        <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                        {existingContentSubmissionUrl}
+                      </a>
+                    </div>
+                  )}
+                  <div className="space-y-1.5">
+                    <label htmlFor="deal-content-note" className="text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
+                      Note to brand (optional)
+                    </label>
+                    <textarea
+                      id="deal-content-note"
+                      value={contentNoteInput}
+                      onChange={(e) => setContentNoteInput(e.target.value)}
+                      placeholder="e.g. Added the final reel here..."
+                      rows={2}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-emerald-400/50 focus:outline-none resize-none"
+                    />
+                  </div>
+                  <p className="text-[11px] text-white/40">
+                    {guidedDealState === 'REVISION_REQUESTED'
+                      ? 'Brand will review your revised link.'
+                      : 'Brand reviews within 7 days. You can resubmit if changes are needed.'}
+                  </p>
                 </div>
-              )}
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-white/55">
-                  {guidedDealState === 'REVISION_REQUESTED'
-                    ? 'Replacing the link here lets the brand review the revised version.'
-                    : 'This sends the link to the brand and marks content as shared for review.'}
-                </p>
+              </details>
+              <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={handleSubmitContentLink}

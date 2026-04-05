@@ -605,6 +605,32 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
+        {/* Sticky bottom bar — shown when brand marked payment sent, creator hasn't confirmed */}
+        {paymentData.status === 'pending' && (
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/95 to-transparent md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+            <div className="max-w-4xl mx-auto px-4 pt-8 pb-4">
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-4 shadow-lg shadow-green-900/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white">Confirm when you receive payment</p>
+                    <p className="text-xs text-white/70">Tap only after the money reaches your account</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleMarkAsReceived}
+                    className="shrink-0 px-4 py-2 bg-white text-emerald-700 font-black text-xs rounded-xl shadow"
+                  >
+                    I Got It
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* How to get paid — shown only when payment is pending */}
         {paymentData.status === 'pending' && (
           <motion.div
@@ -1211,7 +1237,7 @@ const PaymentDetailPage = () => {
                 onClick={handleConfirmMarkAsReceived}
                 disabled={updateDealMutation.isPending}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {updateDealMutation.isPending ? (
                   <>

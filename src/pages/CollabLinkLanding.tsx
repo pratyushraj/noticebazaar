@@ -2703,33 +2703,74 @@ const CollabLinkLanding = () => {
                 </div>
               )}
 
-              {!showCustomFlow && (
-                <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)] ${showPackagesSection ? '' : 'hidden'}`}>
-                  <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
-                  <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
-                    How collaboration works
-                  </h3>
-                  <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
-                    Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
-                  </p>
-	                  <div className="mt-2.5 grid grid-cols-3 gap-2">
-	                    {[
-	                      { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
-	                      { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
-	                      { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
-	                    ].map((step) => (
-	                      <div key={step.n} className="rounded-xl bg-white border border-slate-200 px-2 py-1.5 flex flex-col gap-0.5">
-	                        <div className="flex items-center justify-end">
-	                          <span className="w-5 h-5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center">{step.icon}</span>
-	                        </div>
-	                        <p className="text-[10.5px] font-black text-slate-800 leading-tight">
-	                          0{step.n} {step.title}
-	                        </p>
+              {!showCustomFlow && showPackagesSection && (
+                <>
+                  {/* Mobile: collapsible "more info" */}
+                  <details className="rounded-2xl border border-slate-200 bg-white overflow-hidden lg:hidden">
+                    <summary className="flex items-center justify-between px-4 py-3 cursor-pointer select-none text-sm font-bold text-slate-700">
+                      <span>More info — past work, audience, reviews</span>
+                      <ChevronDown className="w-4 h-4 text-slate-500 transition-transform details[open]_rotate-180" />
+                    </summary>
+                    <div className="px-4 pb-4 space-y-3">
+
+                      {/* How it works */}
+                      <div className="rounded-xl bg-gradient-to-br from-slate-50 to-white border border-slate-200 p-4">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
+                        <p className="text-sm font-black text-slate-900 mb-2">How collaboration works</p>
+                        <p className="text-[11px] text-slate-600 mb-3">Choose a service, customize, and send. Creator approves and you track everything.</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[
+                            { n: 1, title: 'Choose service' },
+                            { n: 2, title: 'Customize' },
+                            { n: 3, title: 'Send proposal' },
+                          ].map((step) => (
+                            <div key={step.n} className="rounded-lg bg-slate-50 border border-slate-200 px-2 py-1.5 text-center">
+                              <p className="text-[10px] font-black text-slate-800">{step.n}. {step.title}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Past Work preview — show if exists */}
+                      {showPastWorkSection && (
+                        <div className="rounded-xl border border-slate-200 bg-white p-3">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Past collaborations</p>
+                          <p className="text-xs text-slate-600">See creator's past brand work on their profile page.</p>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+
+                  {/* Desktop: always visible full sections */}
+                  <div className="hidden lg:block">
+                    <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 lg:p-5 text-slate-800 relative overflow-hidden shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                      <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
+                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
+                      <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
+                        How collaboration works
+                      </h3>
+                      <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
+                        Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
+                      </p>
+	                      <div className="mt-2.5 grid grid-cols-3 gap-2">
+	                        {[
+	                          { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
+	                          { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
+	                          { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
+	                        ].map((step) => (
+	                          <div key={step.n} className="rounded-xl bg-white border border-slate-200 px-2 py-1.5 flex flex-col gap-0.5">
+	                            <div className="flex items-center justify-end">
+	                              <span className="w-5 h-5 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center">{step.icon}</span>
+	                            </div>
+	                            <p className="text-[10.5px] font-black text-slate-800 leading-tight">
+	                              0{step.n} {step.title}
+	                            </p>
+	                          </div>
+	                        ))}
 	                      </div>
-	                    ))}
-	                  </div>
-	                </div>
+                    </div>
+                  </div>
+                </>
               )}
 
 
