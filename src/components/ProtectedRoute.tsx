@@ -100,7 +100,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
       refetchProfile?.();
       attempt++;
       setTimeout(async () => {
-        const { data } = await supabase.from('profiles').select('id').eq('id', user.id).single();
+        const { data } = await supabase.from('profiles').select('id').eq('id', user.id as any).single();
         if (data) {
           refetchProfile?.();
           setIsCreatingProfile(false);

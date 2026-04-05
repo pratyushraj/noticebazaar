@@ -11,6 +11,7 @@ import {
   Search,
   ChevronRight,
   MessageSquare,
+  FileText,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';

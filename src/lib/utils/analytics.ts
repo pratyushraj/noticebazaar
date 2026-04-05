@@ -93,7 +93,11 @@ type AnalyticsEvent =
   | 'contract_summary_pdf_downloaded'
   | 'contract_downloaded'
   | 'contract_downloaded_legacy'
-  | 'invoice_downloaded';
+  | 'invoice_downloaded'
+  | 'error_boundary_caught'
+  | 'error_boundary_reload'
+  | 'error_boundary_go_home'
+  | 'error_boundary_report_issue';
 
 /** Fire events once per deal. Attach deal_id, creator_id, collab_type where applicable. Contract/brand events (contract_generated, contract_viewed_by_brand, contract_signed_by_brand, contract_not_signed_48h, payment_*) are typically fired from the backend. */
 
