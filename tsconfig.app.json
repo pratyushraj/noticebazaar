@@ -1,11 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "jsx": "react-jsx", // Explicitly set JSX to react-jsx
-    "types": ["@dyad-sh/react-vite-component-tagger/client"]
+    "jsx": "react-jsx",
+    "types": ["@dyad-sh/react-vite-component-tagger"]
   },
   "include": ["src"],
   "exclude": ["node_modules"]
