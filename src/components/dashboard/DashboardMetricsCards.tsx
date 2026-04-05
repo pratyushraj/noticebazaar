@@ -29,9 +29,9 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       icon: CreditCard,
       gradient: 'from-emerald-600 to-teal-600',
       bgGradient: 'from-emerald-500/10 to-teal-500/10',
-      borderColor: 'border-emerald-500/20',
+      borderColor: 'border-primary/20',
       trend: '+12%',
-      trendColor: 'text-emerald-400',
+      trendColor: 'text-primary',
     },
     {
       id: 'active',
@@ -40,9 +40,9 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       icon: Briefcase,
       gradient: 'from-blue-600 to-cyan-600',
       bgGradient: 'from-blue-500/10 to-cyan-500/10',
-      borderColor: 'border-blue-500/20',
+      borderColor: 'border-info/20',
       trend: '+3',
-      trendColor: 'text-blue-400',
+      trendColor: 'text-info',
     },
     {
       id: 'pending',
@@ -51,9 +51,9 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       icon: CreditCard,
       gradient: 'from-amber-600 to-orange-600',
       bgGradient: 'from-amber-500/10 to-orange-500/10',
-      borderColor: 'border-amber-500/20',
+      borderColor: 'border-warning/20',
       trend: '−5%',
-      trendColor: 'text-amber-400',
+      trendColor: 'text-warning',
     },
     {
       id: 'duration',
@@ -64,7 +64,7 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
       bgGradient: 'from-purple-500/10 to-pink-500/10',
       borderColor: 'border-purple-500/20',
       trend: '−2d',
-      trendColor: 'text-purple-400',
+      trendColor: 'text-secondary',
     },
   ];
 
@@ -85,7 +85,7 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
                 'relative overflow-hidden border transition-all duration-300 h-full',
                 isDark
                   ? `bg-gradient-to-br ${metric.bgGradient} ${metric.borderColor} backdrop-blur-sm`
-                  : 'bg-white border-slate-200 shadow-sm'
+                  : 'bg-card border-border shadow-sm'
               )}
             >
               {/* Animated background accent */}
@@ -98,9 +98,9 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
                 <div className="flex items-start justify-between mb-3">
                   <div className={cn(
                     'p-2.5 rounded-lg backdrop-blur-sm',
-                    isDark ? `bg-${metric.gradient.split('-')[0]}-500/20` : 'bg-slate-100'
+                    isDark ? `bg-${metric.gradient.split('-')[0]}-500/20` : 'bg-background'
                   )}>
-                    <Icon className={cn('w-4 h-4', isDark ? 'text-white' : 'text-slate-600')} />
+                    <Icon className={cn('w-4 h-4', isDark ? 'text-foreground' : 'text-muted-foreground')} />
                   </div>
                   <span className={cn(
                     'text-xs font-bold flex items-center gap-1',
@@ -114,13 +114,13 @@ const DashboardMetricsCards: React.FC<DashboardMetricsCardsProps> = ({
                 <div className="space-y-1">
                   <p className={cn(
                     'text-xs font-medium opacity-60',
-                    isDark ? 'text-white' : 'text-slate-600'
+                    isDark ? 'text-foreground' : 'text-muted-foreground'
                   )}>
                     {metric.label}
                   </p>
                   <h3 className={cn(
                     'text-lg sm:text-xl font-bold tracking-tight',
-                    isDark ? 'text-white' : 'text-slate-900'
+                    isDark ? 'text-foreground' : 'text-muted-foreground'
                   )}>
                     {metric.value}
                   </h3>

@@ -18,7 +18,7 @@ export function RetryButton({ onRetry, isLoading = false, className }: RetryButt
       variant="outline"
       size="sm"
       className={cn(
-        "rounded-[12px] bg-white/10 border-white/20 text-white hover:bg-white/15 active:scale-[0.97]",
+        "rounded-[12px] bg-secondary/50 border-border text-foreground hover:bg-secondary/15 active:scale-[0.97]",
         className
       )}
     >

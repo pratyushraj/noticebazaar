@@ -60,7 +60,7 @@ export const LinkPreview: React.FC<LinkPreviewProps> = ({
       className="block mt-2 no-underline"
       onClick={(e) => e.stopPropagation()}
     >
-      <Card className="bg-white rounded-lg overflow-hidden border border-gray-200 hover:border-purple-400 transition-colors max-w-[280px]">
+      <Card className="bg-card rounded-lg overflow-hidden border border-gray-200 hover:border-purple-400 transition-colors max-w-[280px]">
         <div className="w-full h-32 bg-gradient-to-br from-purple-600 to-pink-600 overflow-hidden flex items-center justify-center">
           {previewData.image ? (
             <img
@@ -73,7 +73,7 @@ export const LinkPreview: React.FC<LinkPreviewProps> = ({
               }}
             />
           ) : (
-            <div className="text-white/80 text-xs font-medium">CreatorArmour</div>
+            <div className="text-foreground/80 text-xs font-medium">CreatorArmour</div>
           )}
         </div>
         <div className="p-3">
@@ -142,7 +142,7 @@ export const renderMessageText = (content: string): React.ReactNode => {
             href={part.url.startsWith('http') ? part.url : `https://${part.url}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300 underline break-all"
+            className="text-info hover:text-info underline break-all"
             onClick={(e) => e.stopPropagation()}
           >
             {part.url}

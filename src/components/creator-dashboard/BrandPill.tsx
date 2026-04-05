@@ -15,12 +15,12 @@ const BrandPill: React.FC<BrandPillProps> = ({ brandName, logoUrl, className }) 
   return (
     <div className={cn(
       "inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium",
-      "brand-pill-gradient border border-white/10", // Custom gradient and border
+      "brand-pill-gradient border border-border", // Custom gradient and border
       className
     )}>
       <Avatar className="h-5 w-5">
         <AvatarImage src={logoUrl} alt={brandName} />
-        <AvatarFallback className="bg-gray-600 text-white text-xs">
+        <AvatarFallback className="bg-gray-600 text-foreground text-xs">
           {getInitials(brandName, '')}
         </AvatarFallback>
       </Avatar>

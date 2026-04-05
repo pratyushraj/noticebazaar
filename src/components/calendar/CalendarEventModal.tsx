@@ -55,7 +55,7 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-white/20 text-white max-w-md">
+      <DialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-border text-foreground max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className={`p-2 rounded-lg ${event.color}`}>
@@ -67,7 +67,7 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
 
         <div className="space-y-4">
           {/* Date & Time */}
-          <div className="flex items-center gap-2 text-white/60">
+          <div className="flex items-center gap-2 text-foreground/60">
             <Calendar className="w-4 h-4" />
             <span>
               {event.date.toLocaleDateString('en-US', { 
@@ -81,22 +81,22 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
 
           {/* Description */}
           {event.description && (
-            <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-              <p className="text-sm text-white/80">{event.description}</p>
+            <div className="p-3 bg-card rounded-lg border border-border">
+              <p className="text-sm text-foreground/80">{event.description}</p>
             </div>
           )}
 
           {/* Deal Details */}
           {deal && (
             <div className="space-y-3">
-              <div className="p-3 bg-white/5 rounded-lg border border-white/10 space-y-2">
+              <div className="p-3 bg-card rounded-lg border border-border space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/60">Brand</span>
+                  <span className="text-sm text-foreground/60">Brand</span>
                   <span className="font-semibold">{deal.brand_name}</span>
                 </div>
                 {deal.deal_amount && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Amount</span>
+                    <span className="text-sm text-foreground/60">Amount</span>
                     <span className="font-semibold flex items-center gap-1">
                       <IndianRupee className="w-4 h-4" />
                       {deal.deal_amount.toLocaleString('en-IN')}
@@ -105,14 +105,14 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
                 )}
                 {deal.platform && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Platform</span>
+                    <span className="text-sm text-foreground/60">Platform</span>
                     <span className="font-semibold">{deal.platform}</span>
                   </div>
                 )}
                 {deal.status && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Status</span>
-                    <Badge variant="outline" className="bg-white/10 text-white/80 border-white/20">
+                    <span className="text-sm text-foreground/60">Status</span>
+                    <Badge variant="outline" className="bg-secondary/50 text-foreground/80 border-border">
                       {deal.status}
                     </Badge>
                   </div>
@@ -121,11 +121,11 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
 
               {/* Overdue Warning */}
               {event.type === 'payment' && new Date(deal.payment_expected_date) < new Date() && (
-                <div className="flex items-center gap-2 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
-                  <AlertCircle className="w-5 h-5 text-red-400" />
+                <div className="flex items-center gap-2 p-3 bg-destructive/20 border border-destructive/30 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-destructive" />
                   <div>
-                    <p className="text-sm font-semibold text-red-400">Payment Overdue</p>
-                    <p className="text-xs text-red-300">
+                    <p className="text-sm font-semibold text-destructive">Payment Overdue</p>
+                    <p className="text-xs text-destructive">
                       {Math.ceil((new Date().getTime() - new Date(deal.payment_expected_date).getTime()) / (1000 * 60 * 60 * 24))} days overdue
                     </p>
                   </div>
@@ -136,15 +136,15 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
 
           {/* Tax Filing Details */}
           {filing && (
-            <div className="p-3 bg-white/5 rounded-lg border border-white/10 space-y-2">
+            <div className="p-3 bg-card rounded-lg border border-border space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/60">Filing Type</span>
+                <span className="text-sm text-foreground/60">Filing Type</span>
                 <span className="font-semibold">{filing.filing_type.replace(/_/g, ' ').toUpperCase()}</span>
               </div>
               {filing.details && (
                 <div>
-                  <span className="text-sm text-white/60">Details</span>
-                  <p className="text-sm text-white/80 mt-1">{filing.details}</p>
+                  <span className="text-sm text-foreground/60">Details</span>
+                  <p className="text-sm text-foreground/80 mt-1">{filing.details}</p>
                 </div>
               )}
             </div>
@@ -155,7 +155,7 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
             {deal && (
               <Button
                 onClick={handleViewDeal}
-                className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
+                className="flex-1 bg-secondary text-foreground hover:bg-secondary"
               >
                 <Briefcase className="w-4 h-4 mr-2" />
                 View Deal
@@ -165,7 +165,7 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
               <Button
                 onClick={handleViewPayments}
                 variant="outline"
-                className="flex-1 bg-white/10 text-white border-white/20 hover:bg-white/20"
+                className="flex-1 bg-secondary/50 text-foreground border-border hover:bg-secondary/20"
               >
                 <Wallet className="w-4 h-4 mr-2" />
                 View Payments
@@ -175,7 +175,7 @@ export function CalendarEventModal({ event, onClose }: CalendarEventModalProps) 
               <Button
                 onClick={handleViewTax}
                 variant="outline"
-                className="flex-1 bg-white/10 text-white border-white/20 hover:bg-white/20"
+                className="flex-1 bg-secondary/50 text-foreground border-border hover:bg-secondary/20"
               >
                 <FileText className="w-4 h-4 mr-2" />
                 View Tax

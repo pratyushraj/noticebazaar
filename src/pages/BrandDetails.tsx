@@ -28,8 +28,8 @@ const BrandDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-white/60" />
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-foreground/60" />
       </div>
     );
   }
@@ -37,11 +37,11 @@ const BrandDetails = () => {
   // Error handling
   if (brandError || oppsError) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground p-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/brand-directory')}
-          className="mb-4 text-white/80 hover:text-white"
+          className="mb-4 text-foreground/80 hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Directory
@@ -61,11 +61,11 @@ const BrandDetails = () => {
 
   if (!brand) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground p-4">
         <Button
           variant="ghost"
           onClick={() => navigate('/brand-directory')}
-          className="mb-4 text-white/80 hover:text-white"
+          className="mb-4 text-foreground/80 hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Directory
@@ -84,13 +84,13 @@ const BrandDetails = () => {
   );
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white pb-24">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground pb-24">
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Back Button */}
         <Button
           variant="ghost"
           onClick={() => navigate('/brand-directory')}
-          className="mb-6 text-white/80 hover:text-white"
+          className="mb-6 text-foreground/80 hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Directory
@@ -102,7 +102,7 @@ const BrandDetails = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <Card className="bg-white/10 backdrop-blur-xl border-white/20 rounded-2xl p-6">
+          <Card className="bg-secondary/50 backdrop-blur-xl border-border rounded-2xl p-6">
             <CardContent className="p-0">
               <div className="flex items-start gap-4">
                 {/* Brand Logo/Avatar */}
@@ -113,25 +113,25 @@ const BrandDetails = () => {
                     className="w-20 h-20 rounded-2xl object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-foreground font-bold text-2xl flex-shrink-0">
                     {brand.name.charAt(0)}
                   </div>
                 )}
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <h1 className="text-3xl font-bold text-white">{brand.name}</h1>
+                    <h1 className="text-3xl font-bold text-foreground">{brand.name}</h1>
                     {brand.verified && (
-                      <Badge variant="default" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                      <Badge variant="default" className="bg-info/20 text-info border-info/30">
                         Verified
                       </Badge>
                     )}
                   </div>
                   
-                  <p className="text-white/70 mb-4">{brand.industry}</p>
+                  <p className="text-foreground/70 mb-4">{brand.industry}</p>
                   
                   {brand.description && (
-                    <p className="text-white/80 mb-4">{brand.description}</p>
+                    <p className="text-foreground/80 mb-4">{brand.description}</p>
                   )}
 
                   {/* Brand Stats */}
@@ -139,22 +139,22 @@ const BrandDetails = () => {
                     {(brand.rating || 0) > 0 && (
                       <div className="flex items-center gap-2">
                         <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                        <span className="text-white font-semibold">{brand.rating?.toFixed(1)}</span>
-                        <span className="text-white/60">({brand.review_count || 0} reviews)</span>
+                        <span className="text-foreground font-semibold">{brand.rating?.toFixed(1)}</span>
+                        <span className="text-foreground/60">({brand.review_count || 0} reviews)</span>
                       </div>
                     )}
                     
                     {brand.avg_payment_time_days && (
                       <div className="flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-white/60" />
-                        <span className="text-white/80">Avg Payment: {brand.avg_payment_time_days} days</span>
+                        <Clock className="w-5 h-5 text-foreground/60" />
+                        <span className="text-foreground/80">Avg Payment: {brand.avg_payment_time_days} days</span>
                       </div>
                     )}
                     
                     {(brand.budget_min || brand.budget_max) && (
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-5 h-5 text-yellow-400" />
-                        <span className="text-white/80">
+                        <span className="text-foreground/80">
                           {brand.budget_min ? `₹${(brand.budget_min / 1000).toFixed(0)}K` : 'N/A'}
                           {brand.budget_min && brand.budget_max ? ' - ' : ''}
                           {brand.budget_max ? `₹${(brand.budget_max / 1000).toFixed(0)}K` : ''}
@@ -176,18 +176,18 @@ const BrandDetails = () => {
           className="mb-8"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-foreground">
               Active Opportunities
             </h2>
             {activeOpportunities.length > 0 && (
-              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+              <Badge className="bg-info/20 text-info border-info/30">
                 {activeOpportunities.length} Available
               </Badge>
             )}
           </div>
 
           {activeOpportunities.length === 0 ? (
-            <Card className="bg-white/10 backdrop-blur-xl border-white/20 rounded-2xl p-8">
+            <Card className="bg-secondary/50 backdrop-blur-xl border-border rounded-2xl p-8">
               <EmptyState
                 type="no-data"
                 title="No Active Opportunities"
@@ -204,10 +204,10 @@ const BrandDetails = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 rounded-xl p-5 hover:border-white/30 transition-all">
+                  <Card className="bg-secondary/50 backdrop-blur-xl border-border rounded-xl p-5 hover:border-border transition-all">
                     <CardContent className="p-0">
                       <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-white flex-1">{opp.title}</h3>
+                        <h3 className="text-lg font-semibold text-foreground flex-1">{opp.title}</h3>
                         {(() => {
                           // Try to detect source from apply_url or brand source
                           const source = opp.apply_url?.includes('influencer.in') ? 'influencer.in' :
@@ -216,7 +216,7 @@ const BrandDetails = () => {
                           return (
                             <Badge 
                               variant="outline" 
-                              className="ml-2 bg-white/10 border-white/20 text-white/80 text-xs"
+                              className="ml-2 bg-secondary/50 border-border text-foreground/80 text-xs"
                             >
                               {source === 'influencer.in' ? 'influencer.in' :
                                source === 'collabstr' ? 'Collabstr' : 'Marketplace'}
@@ -226,15 +226,15 @@ const BrandDetails = () => {
                       </div>
                       
                       {opp.description ? (
-                        <p className="text-white/70 text-sm mb-3 line-clamp-2">{opp.description}</p>
+                        <p className="text-foreground/70 text-sm mb-3 line-clamp-2">{opp.description}</p>
                       ) : (
-                        <p className="text-white/50 text-sm mb-3 italic line-clamp-2">No description available</p>
+                        <p className="text-foreground/50 text-sm mb-3 italic line-clamp-2">No description available</p>
                       )}
                       
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center gap-2 text-sm">
                           <DollarSign className="w-4 h-4 text-yellow-400" />
-                          <span className="text-white/80">
+                          <span className="text-foreground/80">
                             {opp.payout_min > 0 && opp.payout_max > 0 ? (
                               `₹${(opp.payout_min / 1000).toFixed(0)}K - ₹${(opp.payout_max / 1000).toFixed(0)}K`
                             ) : (
@@ -244,16 +244,16 @@ const BrandDetails = () => {
                         </div>
                         
                         <div className="flex items-center gap-2 text-sm">
-                          <Clock className="w-4 h-4 text-white/60" />
-                          <span className="text-white/70">
+                          <Clock className="w-4 h-4 text-foreground/60" />
+                          <span className="text-foreground/70">
                             Deadline: {new Date(opp.deadline).toLocaleDateString()}
                           </span>
                         </div>
                         
                         {opp.required_platforms && opp.required_platforms.length > 0 && (
                           <div className="flex items-center gap-2 text-sm">
-                            <TrendingUp className="w-4 h-4 text-white/60" />
-                            <span className="text-white/70">
+                            <TrendingUp className="w-4 h-4 text-foreground/60" />
+                            <span className="text-foreground/70">
                               {opp.required_platforms.join(', ')}
                             </span>
                           </div>
@@ -265,7 +265,7 @@ const BrandDetails = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => navigate(`/brands/${brandId}/opportunities`)}
-                          className="flex-1 border-white/20 text-white hover:bg-white/10"
+                          className="flex-1 border-border text-foreground hover:bg-secondary/50"
                         >
                           View Full Details
                         </Button>
@@ -273,7 +273,7 @@ const BrandDetails = () => {
                           <Button
                             size="sm"
                             onClick={() => setShowApplyNotice(opp.id)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white min-h-[44px]"
+                            className="bg-info hover:bg-info text-foreground min-h-[44px]"
                           >
                             <ExternalLink className="w-4 h-4 mr-1" />
                             Apply
@@ -292,7 +292,7 @@ const BrandDetails = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/brands/${brandId}/opportunities`)}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-border text-foreground hover:bg-secondary/50"
               >
                 View All {activeOpportunities.length} Opportunities
               </Button>
@@ -315,20 +315,20 @@ const BrandDetails = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 max-w-md w-full"
+                className="bg-secondary/50 backdrop-blur-xl border border-border rounded-2xl p-6 max-w-md w-full"
               >
                 <AlertCircle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2 text-center">
+                <h3 className="text-xl font-semibold text-foreground mb-2 text-center">
                   External Application
                 </h3>
-                <p className="text-white/80 text-center mb-4">
+                <p className="text-foreground/80 text-center mb-4">
                   You'll apply on the brand's original website. We don't collect or store your submission.
                 </p>
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowApplyNotice(null)}
-                    className="flex-1 border-white/20 text-white hover:bg-white/10 min-h-[48px]"
+                    className="flex-1 border-border text-foreground hover:bg-secondary/50 min-h-[48px]"
                   >
                     Cancel
                   </Button>
@@ -340,7 +340,7 @@ const BrandDetails = () => {
                       }
                       setShowApplyNotice(null);
                     }}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white min-h-[48px]"
+                    className="flex-1 bg-info hover:bg-info text-foreground min-h-[48px]"
                   >
                     Continue
                   </Button>

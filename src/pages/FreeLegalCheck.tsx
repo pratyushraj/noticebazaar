@@ -155,8 +155,8 @@ const FreeLegalCheck = () => {
           {/* Trust Badges (Point 6) */}
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-8">
             <span className="flex items-center gap-1 text-green-500 font-semibold"><Lock className="h-4 w-4" /> Confidential Report</span>
-            <span className="flex items-center gap-1 text-blue-500 font-semibold"><Clock className="h-4 w-4" /> Delivered in 48 hrs</span>
-            <span className="flex items-center gap-1 text-purple-500 font-semibold">
+            <span className="flex items-center gap-1 text-info font-semibold"><Clock className="h-4 w-4" /> Delivered in 48 hrs</span>
+            <span className="flex items-center gap-1 text-secondary font-semibold">
               <Star className="h-4 w-4 fill-current text-yellow-500" /> 4.9/5 Verified Legal Experts
             </span>
           </div>
@@ -178,9 +178,9 @@ const FreeLegalCheck = () => {
             </p>
             {/* Scarcity Progress Bar */}
             <div className="max-w-xs mx-auto mt-4">
-              <p className="text-xs font-semibold text-red-500 mb-1">37/50 Spots Left This Month</p>
+              <p className="text-xs font-semibold text-destructive mb-1">37/50 Spots Left This Month</p>
               <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-red-500 h-2 rounded-full" style={{ width: '74%' }}></div>
+                <div className="bg-destructive h-2 rounded-full" style={{ width: '74%' }}></div>
               </div>
             </div>
           </div>
@@ -212,14 +212,14 @@ const FreeLegalCheck = () => {
         <section className="max-w-2xl mx-auto mt-16" data-aos="fade-up">
           <h3 className="text-2xl font-bold text-foreground mb-6 text-center">📣 What Founders Are Saying</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-secondary p-6 rounded-xl border-l-4 border-blue-500 shadow-lg">
+            <Card className="bg-secondary p-6 rounded-xl border-l-4 border-info shadow-lg">
               <div className="flex mb-3 text-yellow-400">
                 <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
               </div>
               <p className="text-gray-300 text-lg leading-relaxed">
                 "The audit identified **₹50,000+** in hidden compliance gaps we didn't even know about. Fixed them before our Series A. Raised ₹8Cr last month."
               </p>
-              <div className="mt-4 font-bold text-white">— Priya Sharma, CEO, TechVenture (YC S21)</div>
+              <div className="mt-4 font-bold text-foreground">— Priya Sharma, CEO, TechVenture (YC S21)</div>
             </Card>
             <Card className="bg-secondary p-6 rounded-xl border-l-4 border-green-500 shadow-lg">
               <div className="flex mb-3 text-yellow-400">
@@ -228,7 +228,7 @@ const FreeLegalCheck = () => {
               <p className="text-gray-300 text-lg leading-relaxed">
                 "The audit saved us from a costly mistake that would have cost us 5x more than the free price tag."
               </p>
-              <div className="mt-4 font-bold text-white">— Ankit Sharma, CEO, Fine Flow AI</div>
+              <div className="mt-4 font-bold text-foreground">— Ankit Sharma, CEO, Fine Flow AI</div>
             </Card>
           </div>
           <div className="text-center mt-6 text-muted-foreground text-sm">

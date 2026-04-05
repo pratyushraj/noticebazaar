@@ -31,7 +31,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.1 }}
-        className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white"
+        className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-muted-foreground dark:text-foreground"
       >
         Stop Negotiating in DMs
       </motion.h1>
@@ -40,7 +40,7 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.18 }}
-        className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-8"
+        className="text-lg md:text-xl font-semibold text-muted-foreground dark:text-foreground/80 mb-8"
       >
         Turn brand chaos into one professional collab link.
       </motion.p>
@@ -52,8 +52,8 @@ export const WelcomeScreen1: React.FC<WelcomeScreen1Props> = ({ onNext }) => {
         className="max-w-lg w-full mb-8"
       >
         <GradientCard padding="md" className="text-center">
-          <div className="text-lg font-semibold mb-2 text-slate-900 dark:text-white">Share one link</div>
-          <p className="text-base text-slate-500 dark:text-white/70">
+          <div className="text-lg font-semibold mb-2 text-muted-foreground dark:text-foreground">Share one link</div>
+          <p className="text-base text-muted-foreground dark:text-foreground/70">
             Brands send offers professionally. No more back-and-forth chats.
           </p>
         </GradientCard>

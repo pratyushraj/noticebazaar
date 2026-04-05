@@ -55,51 +55,51 @@ const TaskManager: React.FC = () => {
   const completedTasks = tasks.filter(t => t.completed);
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-2xl">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between mb-2">
-          <CardTitle className="text-lg font-semibold text-white">Your Tasks</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">Your Tasks</CardTitle>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 hover:bg-white/10"
+            className="h-8 w-8 p-0 hover:bg-secondary/50"
             onClick={() => {
               // Placeholder for add task functionality
               alert('Add task feature coming soon!');
             }}
           >
-            <Plus className="h-4 w-4 text-white/60" />
+            <Plus className="h-4 w-4 text-foreground/60" />
           </Button>
         </div>
-        <p className="text-xs text-white/60 mt-2">
+        <p className="text-xs text-foreground/60 mt-2">
           📝 Complete these tasks to increase your Legal Health Score.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {pendingTasks.length === 0 && completedTasks.length === 0 ? (
-          <p className="text-sm text-white/60 text-center py-4">No tasks yet. Add one to get started!</p>
+          <p className="text-sm text-foreground/60 text-center py-4">No tasks yet. Add one to get started!</p>
         ) : (
           <>
             {pendingTasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                className="flex items-start gap-3 p-3 rounded-xl bg-card hover:bg-secondary/50 transition-colors cursor-pointer"
                 onClick={() => toggleTask(task.id)}
               >
                 <button type="button" className="flex-shrink-0 mt-0.5">
-                  <Circle className="h-5 w-5 text-white/40 hover:text-white/60" />
+                  <Circle className="h-5 w-5 text-foreground/40 hover:text-foreground/60" />
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white">{task.title}</p>
+                  <p className="text-sm font-medium text-foreground">{task.title}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <CalendarIcon className="h-3 w-3 text-white/40" />
-                    <p className="text-xs text-white/40">{formatDueDate(task.dueDate)}</p>
+                    <CalendarIcon className="h-3 w-3 text-foreground/40" />
+                    <p className="text-xs text-foreground/40">{formatDueDate(task.dueDate)}</p>
                   </div>
                 </div>
               </div>
             ))}
             {completedTasks.length > 0 && (
-              <div className="pt-2 border-t border-white/5">
+              <div className="pt-2 border-t border-border/5">
                 {completedTasks.map((task) => (
                   <div
                     key={task.id}
@@ -110,7 +110,7 @@ const TaskManager: React.FC = () => {
                       <CheckCircle2 className="h-5 w-5 text-green-400" />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white line-through">{task.title}</p>
+                      <p className="text-sm font-medium text-foreground line-through">{task.title}</p>
                     </div>
                   </div>
                 ))}

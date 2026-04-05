@@ -194,32 +194,32 @@ const ContractProtectionDetails = () => {
   const riskConfig: Record<RiskLevel, { color: string; label: string; bgColor: string; textColor: string }> = {
     low: { color: 'bg-green-500', label: 'Low Risk', bgColor: 'bg-green-500/20', textColor: 'text-green-400' },
     medium: { color: 'bg-yellow-500', label: 'Medium Risk', bgColor: 'bg-yellow-500/20', textColor: 'text-yellow-400' },
-    high: { color: 'bg-red-500', label: 'High Risk', bgColor: 'bg-red-500/20', textColor: 'text-red-400' },
+    high: { color: 'bg-destructive', label: 'High Risk', bgColor: 'bg-destructive/20', textColor: 'text-destructive' },
   };
 
   const statusConfig: Record<ContractStatus, { label: string; icon: typeof CheckCircle; color: string }> = {
     pending_review: { label: 'Pending Review', icon: Clock, color: 'text-yellow-400' },
-    issues_found: { label: 'Issues Found', icon: AlertTriangle, color: 'text-red-400' },
+    issues_found: { label: 'Issues Found', icon: AlertTriangle, color: 'text-destructive' },
     safe: { label: 'Safe', icon: CheckCircle, color: 'text-green-400' },
   };
 
   const clauseStatusConfig: Record<ClauseStatus, { label: string; color: string; bgColor: string; icon: typeof CheckCircle }> = {
     good: { label: 'Good', color: 'text-green-400', bgColor: 'bg-green-500/20', icon: CheckCircle },
     risky: { label: 'Risky', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', icon: AlertTriangle },
-    missing: { label: 'Missing', color: 'text-red-400', bgColor: 'bg-red-500/20', icon: XCircle },
-    needs_clarification: { label: 'Needs Clarification', color: 'text-blue-400', bgColor: 'bg-blue-500/20', icon: AlertCircle },
+    missing: { label: 'Missing', color: 'text-destructive', bgColor: 'bg-destructive/20', icon: XCircle },
+    needs_clarification: { label: 'Needs Clarification', color: 'text-info', bgColor: 'bg-info/20', icon: AlertCircle },
   };
 
   if (!contract) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-secondary mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Contract Not Found</h2>
-          <p className="text-purple-200 mb-4">The contract you're looking for doesn't exist.</p>
+          <p className="text-secondary mb-4">The contract you're looking for doesn't exist.</p>
           <button type="button"
             onClick={() => navigate('/creator-protection')}
-            className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl transition-colors"
+            className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl transition-colors"
           >
             Back to Protection
           </button>
@@ -229,13 +229,13 @@ const ContractProtectionDetails = () => {
   }
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-purple-900/95 backdrop-blur-xl border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-secondary/95 backdrop-blur-xl border-b border-border">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4">
           <button type="button"
             onClick={() => navigate('/creator-protection')}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+            className="p-2 hover:bg-secondary/50 rounded-lg transition-colors active:scale-95"
             aria-label="Back"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -249,7 +249,7 @@ const ContractProtectionDetails = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/[0.08] backdrop-blur-[40px] rounded-[24px] p-6 border border-white/15 shadow-lg"
+          className="bg-secondary/[0.08] backdrop-blur-[40px] rounded-[24px] p-6 border border-border shadow-lg"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -258,20 +258,20 @@ const ContractProtectionDetails = () => {
                 <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${riskConfig[contract.risk].bgColor} ${riskConfig[contract.risk].textColor}`}>
                   {riskConfig[contract.risk].label}
                 </div>
-                <div className={`px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white flex items-center gap-2`}>
+                <div className={`px-3 py-1.5 rounded-lg text-sm font-medium bg-secondary/50 text-foreground flex items-center gap-2`}>
                   {(() => {
                     const StatusIcon = statusConfig[contract.status].icon;
                     return <StatusIcon className="w-4 h-4" />;
                   })()}
                   {statusConfig[contract.status].label}
                 </div>
-                <div className="px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-300">
+                <div className="px-3 py-1.5 rounded-lg text-sm font-medium bg-secondary/20 text-secondary">
                   {contract.contractType}
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-purple-200">
+          <div className="flex items-center gap-2 text-sm text-secondary">
             <Clock className="w-4 h-4" />
             <span>Uploaded: {contract.uploadedDate}</span>
           </div>
@@ -282,7 +282,7 @@ const ContractProtectionDetails = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white/[0.08] backdrop-blur-[40px] rounded-[24px] p-6 border border-white/15 shadow-lg"
+          className="bg-secondary/[0.08] backdrop-blur-[40px] rounded-[24px] p-6 border border-border shadow-lg"
         >
           <div className="flex items-center gap-3 mb-4">
             <Shield className="w-6 h-6 text-green-400" />
@@ -290,9 +290,9 @@ const ContractProtectionDetails = () => {
           </div>
           <div className="flex items-end gap-4 mb-4">
             <div className="text-5xl font-bold text-green-400">{contract.protectionScore}</div>
-            <div className="text-lg text-purple-200 mb-2">out of 100</div>
+            <div className="text-lg text-secondary mb-2">out of 100</div>
           </div>
-          <div className="w-full bg-white/10 rounded-full h-3 mb-4">
+          <div className="w-full bg-secondary/50 rounded-full h-3 mb-4">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${contract.protectionScore}%` }}
@@ -305,7 +305,7 @@ const ContractProtectionDetails = () => {
               )}
             />
           </div>
-          <p className="text-sm text-purple-200 mb-4">
+          <p className="text-sm text-secondary mb-4">
             {contract.protectionScore >= 80 
               ? "Excellent! Your contract is well-protected."
               : contract.protectionScore >= 60
@@ -315,27 +315,27 @@ const ContractProtectionDetails = () => {
 
           {/* Why is this score low? */}
           {contract.protectionScore < 80 && (
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+            <div className="mt-6 pt-6 border-t border-border">
+              <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-yellow-400" />
                 Why is this score low?
               </h4>
               <div className="space-y-2">
                 {contract.clauses.filter(c => c.status === 'missing').map((clause, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-purple-200">
-                    <span className="text-red-400">❗</span>
+                  <div key={idx} className="flex items-start gap-2 text-xs text-secondary">
+                    <span className="text-destructive">❗</span>
                     <span>Missing {clause.name.toLowerCase()}</span>
                   </div>
                 ))}
                 {contract.clauses.filter(c => c.status === 'risky').map((clause, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-purple-200">
+                  <div key={idx} className="flex items-start gap-2 text-xs text-secondary">
                     <span className="text-yellow-400">⚠️</span>
                     <span>{clause.name} issue</span>
                   </div>
                 ))}
                 {contract.clauses.filter(c => c.status === 'needs_clarification').map((clause, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-purple-200">
-                    <span className="text-blue-400">🕒</span>
+                  <div key={idx} className="flex items-start gap-2 text-xs text-secondary">
+                    <span className="text-info">🕒</span>
                     <span>{clause.name} needs clarification</span>
                   </div>
                 ))}
@@ -349,9 +349,9 @@ const ContractProtectionDetails = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/[0.08] backdrop-blur-[40px] rounded-[24px] border border-white/15 shadow-lg overflow-hidden"
+          className="bg-secondary/[0.08] backdrop-blur-[40px] rounded-[24px] border border-border shadow-lg overflow-hidden"
         >
-          <div className="flex border-b border-white/10">
+          <div className="flex border-b border-border">
             {[
               { id: 'issues' as const, label: 'Issues', count: contract.issuesList.length },
               { id: 'clauses' as const, label: 'Clauses', count: contract.clauses.length },
@@ -364,8 +364,8 @@ const ContractProtectionDetails = () => {
                 className={cn(
                   "flex-1 px-4 py-4 text-sm font-medium transition-all relative",
                   activeTab === tab.id
-                    ? "text-white border-b-2 border-purple-400"
-                    : "text-purple-300 hover:text-white"
+                    ? "text-foreground border-b-2 border-purple-400"
+                    : "text-secondary hover:text-foreground"
                 )}
               >
                 {tab.label}
@@ -373,8 +373,8 @@ const ContractProtectionDetails = () => {
                   <span className={cn(
                     "ml-2 px-2 py-0.5 rounded-full text-xs",
                     activeTab === tab.id
-                      ? "bg-purple-500/30 text-white"
-                      : "bg-white/10 text-purple-300"
+                      ? "bg-secondary/30 text-foreground"
+                      : "bg-secondary/50 text-secondary"
                   )}>
                     {tab.count}
                   </span>
@@ -390,7 +390,7 @@ const ContractProtectionDetails = () => {
                 {contract.issuesList.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                    <p className="text-purple-200">No issues found! Your contract looks good.</p>
+                    <p className="text-secondary">No issues found! Your contract looks good.</p>
                   </div>
                 ) : (
                   contract.issuesList.map((issue) => {
@@ -403,16 +403,16 @@ const ContractProtectionDetails = () => {
                       <div
                         key={issue.id}
                         className={cn(
-                          "bg-white/5 rounded-xl p-5 border border-white/10",
+                          "bg-card rounded-xl p-5 border border-border",
                           isResolved && "opacity-60"
                         )}
                       >
                         <div className="flex items-start gap-3 mb-3">
                           <AlertTriangle className={cn(
                             "w-5 h-5 flex-shrink-0 mt-0.5",
-                            issue.severity === 'high' ? "text-red-400" :
+                            issue.severity === 'high' ? "text-destructive" :
                             issue.severity === 'medium' ? "text-yellow-400" :
-                            "text-blue-400"
+                            "text-info"
                           )} />
                           <div className="flex-1">
                             <div className="flex items-start justify-between mb-1">
@@ -423,18 +423,18 @@ const ContractProtectionDetails = () => {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-purple-200 mb-3">{issue.description}</p>
+                            <p className="text-sm text-secondary mb-3">{issue.description}</p>
                             <div className="space-y-1 mb-3">
                               {issue.impact.map((impact, idx) => (
-                                <div key={idx} className="text-xs text-purple-300 flex items-start gap-2">
-                                  <span className="text-purple-400 mt-1">•</span>
+                                <div key={idx} className="text-xs text-secondary flex items-start gap-2">
+                                  <span className="text-secondary mt-1">•</span>
                                   <span>{impact}</span>
                                 </div>
                               ))}
                             </div>
-                            <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 mb-3">
-                              <p className="text-xs font-medium text-blue-300 mb-1">💡 Recommendation:</p>
-                              <p className="text-sm text-blue-200">{issue.recommendation}</p>
+                            <div className="bg-info/20 border border-info/30 rounded-lg p-3 mb-3">
+                              <p className="text-xs font-medium text-info mb-1">💡 Recommendation:</p>
+                              <p className="text-sm text-info">{issue.recommendation}</p>
                             </div>
                             {!isResolved && (
                               <button type="button"
@@ -466,7 +466,7 @@ const ContractProtectionDetails = () => {
                   return (
                     <div
                       key={idx}
-                      className="bg-white/5 rounded-xl p-4 border border-white/10 flex items-start justify-between gap-4"
+                      className="bg-card rounded-xl p-4 border border-border flex items-start justify-between gap-4"
                     >
                       <div className="flex items-start gap-3 flex-1">
                         <div className={`w-10 h-10 rounded-lg ${StatusConfig.bgColor} flex items-center justify-center flex-shrink-0`}>
@@ -474,7 +474,7 @@ const ContractProtectionDetails = () => {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold mb-1">{clause.name}</h4>
-                          <p className="text-sm text-purple-200">{clause.description || 'No description available'}</p>
+                          <p className="text-sm text-secondary">{clause.description || 'No description available'}</p>
                         </div>
                       </div>
                       <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${StatusConfig.bgColor} ${StatusConfig.color}`}>
@@ -492,7 +492,7 @@ const ContractProtectionDetails = () => {
                 {contract.issues === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                    <p className="text-purple-200">No alerts at the moment.</p>
+                    <p className="text-secondary">No alerts at the moment.</p>
                   </div>
                 ) : (
                   <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-xl p-4">
@@ -516,16 +516,16 @@ const ContractProtectionDetails = () => {
                 {recommendations.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
-                    <p className="text-purple-200">No recommendations at this time.</p>
+                    <p className="text-secondary">No recommendations at this time.</p>
                   </div>
                 ) : (
                   recommendations.map((rec, idx) => (
                     <div
                       key={idx}
-                      className="bg-blue-500/20 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3"
+                      className="bg-info/20 border border-info/30 rounded-xl p-4 flex items-start gap-3"
                     >
-                      <Zap className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-blue-200 flex-1">{rec}</p>
+                      <Zap className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-info flex-1">{rec}</p>
                     </div>
                   ))
                 )}
@@ -539,7 +539,7 @@ const ContractProtectionDetails = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white/[0.08] backdrop-blur-[40px] rounded-[24px] p-6 border border-white/15 shadow-lg"
+          className="bg-secondary/[0.08] backdrop-blur-[40px] rounded-[24px] p-6 border border-border shadow-lg"
         >
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5" />
@@ -547,12 +547,12 @@ const ContractProtectionDetails = () => {
           </h3>
           <div className="space-y-3">
             {contract.contractFileUrl ? (
-              <div className="bg-white/5 rounded-xl p-4 border border-white/10 flex items-center justify-between">
+              <div className="bg-card rounded-xl p-4 border border-border flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <FileText className="w-8 h-8 text-purple-400" />
+                  <FileText className="w-8 h-8 text-secondary" />
                   <div>
                     <p className="font-medium">Contract Document</p>
-                    <p className="text-xs text-purple-300">Uploaded {contract.uploadedDate}</p>
+                    <p className="text-xs text-secondary">Uploaded {contract.uploadedDate}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -565,7 +565,7 @@ const ContractProtectionDetails = () => {
                         });
                       });
                     }}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                     aria-label="View contract"
                   >
                     <Eye className="w-4 h-4" />
@@ -582,7 +582,7 @@ const ContractProtectionDetails = () => {
                         toast.success('Downloading contract...');
                       }
                     }}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                     aria-label="Download contract"
                   >
                     <Download className="w-4 h-4" />
@@ -590,7 +590,7 @@ const ContractProtectionDetails = () => {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-purple-200">
+              <div className="text-center py-8 text-secondary">
                 <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>No contract file uploaded</p>
               </div>
@@ -607,9 +607,9 @@ const ContractProtectionDetails = () => {
         >
           <button type="button"
             onClick={() => navigate('/contract-upload')}
-            className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95"
+            className="bg-secondary/[0.08] hover:bg-secondary/[0.12] border border-border rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95"
           >
-            <Upload className="w-5 h-5 text-purple-300" />
+            <Upload className="w-5 h-5 text-secondary" />
             <span className="font-medium">Re-upload Contract</span>
           </button>
           <button type="button"
@@ -621,17 +621,17 @@ const ContractProtectionDetails = () => {
                 });
               });
             }}
-            className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95"
+            className="bg-secondary/[0.08] hover:bg-secondary/[0.12] border border-border rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95"
           >
-            <Eye className="w-5 h-5 text-purple-300" />
+            <Eye className="w-5 h-5 text-secondary" />
             <span className="font-medium">View Original File</span>
           </button>
           <button type="button"
             onClick={() => setShowLawyerRequestDialog(true)}
             disabled={createLawyerRequestMutation.isPending}
-            className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-secondary/[0.08] hover:bg-secondary/[0.12] border border-border rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Scale className="w-5 h-5 text-purple-300" />
+            <Scale className="w-5 h-5 text-secondary" />
             <span className="font-medium">Request Lawyer Help</span>
           </button>
           <button type="button"
@@ -653,7 +653,7 @@ const ContractProtectionDetails = () => {
               }
             }}
             disabled={resolveIssueMutation.isPending}
-            className="bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-secondary/[0.08] hover:bg-secondary/[0.12] border border-border rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <CheckCircle className="w-5 h-5 text-green-400" />
             <span className="font-medium">
@@ -669,10 +669,10 @@ const ContractProtectionDetails = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-[24px] p-6 border border-white/15 shadow-2xl max-w-md w-full"
+            className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-[24px] p-6 border border-border shadow-2xl max-w-md w-full"
           >
             <h3 className="text-xl font-bold mb-2">Mark Issue as Resolved</h3>
-            <p className="text-sm text-purple-200 mb-4">
+            <p className="text-sm text-secondary mb-4">
               Are you sure you want to mark this issue as resolved? This will help track which protection issues have been addressed.
             </p>
             <div className="flex gap-3">
@@ -681,7 +681,7 @@ const ContractProtectionDetails = () => {
                   setShowResolveDialog(false);
                   setSelectedIssueId(null);
                 }}
-                className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
+                className="flex-1 px-4 py-2 bg-secondary/50 hover:bg-secondary/20 rounded-xl transition-colors"
               >
                 Cancel
               </button>
@@ -729,10 +729,10 @@ const ContractProtectionDetails = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-[24px] p-6 border border-white/15 shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-[24px] p-6 border border-border shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
           >
             <h3 className="text-xl font-bold mb-2">Request Lawyer Help</h3>
-            <p className="text-sm text-purple-200 mb-4">
+            <p className="text-sm text-secondary mb-4">
               Submit a request for legal assistance. Our team will review your contract and provide guidance.
             </p>
             <form
@@ -770,7 +770,7 @@ const ContractProtectionDetails = () => {
                   type="text"
                   required
                   placeholder="e.g., Need help with exclusivity clause"
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full px-4 py-2 bg-secondary/50 border border-border rounded-xl text-foreground placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 />
               </div>
               <div>
@@ -780,7 +780,7 @@ const ContractProtectionDetails = () => {
                   required
                   rows={4}
                   placeholder="Describe your legal concern or question..."
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+                  className="w-full px-4 py-2 bg-secondary/50 border border-border rounded-xl text-foreground placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
                 />
               </div>
               <div>
@@ -788,7 +788,7 @@ const ContractProtectionDetails = () => {
                 <select
                   name="urgency"
                   defaultValue="medium"
-                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full px-4 py-2 bg-secondary/50 border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -800,14 +800,14 @@ const ContractProtectionDetails = () => {
                 <button type="button"
                   type="button"
                   onClick={() => setShowLawyerRequestDialog(false)}
-                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
+                  className="flex-1 px-4 py-2 bg-secondary/50 hover:bg-secondary/20 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createLawyerRequestMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-xl transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-secondary hover:bg-secondary rounded-xl transition-colors disabled:opacity-50"
                 >
                   {createLawyerRequestMutation.isPending ? 'Submitting...' : 'Submit Request'}
                 </button>

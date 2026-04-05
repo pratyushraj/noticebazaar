@@ -18,11 +18,11 @@ interface SimplifiedScannerProps {
 
 const PLATFORMS = [
   { id: 'Instagram', icon: Instagram, color: 'text-pink-500' },
-  { id: 'YouTube', icon: Youtube, color: 'text-red-500' },
-  { id: 'TikTok', icon: Music, color: 'text-black dark:text-white' },
-  { id: 'Facebook', icon: Facebook, color: 'text-blue-600' },
-  { id: 'Twitter', icon: Twitter, color: 'text-sky-500' },
-  { id: 'Pinterest', icon: ImageIcon, color: 'text-red-600' },
+  { id: 'YouTube', icon: Youtube, color: 'text-destructive' },
+  { id: 'TikTok', icon: Music, color: 'text-black dark:text-foreground' },
+  { id: 'Facebook', icon: Facebook, color: 'text-info' },
+  { id: 'Twitter', icon: Twitter, color: 'text-info' },
+  { id: 'Pinterest', icon: ImageIcon, color: 'text-destructive' },
 ];
 
 const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
@@ -112,11 +112,11 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
   };
 
   return (
-    <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+    <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
       <CardContent className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Search className="w-5 h-5 text-purple-400" />
-          <h2 className="text-lg font-semibold text-white">Scan for Stolen Content</h2>
+          <Search className="w-5 h-5 text-secondary" />
+          <h2 className="text-lg font-semibold text-foreground">Scan for Stolen Content</h2>
         </div>
 
         {/* Input Area */}
@@ -128,8 +128,8 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
           className={cn(
             "relative border-2 border-dashed rounded-xl p-6 mb-4 transition-all duration-200",
             isDragging
-              ? "border-purple-400 bg-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.5)] scale-[1.02]"
-              : "border-white/10 hover:border-purple-400/50 bg-white/5"
+              ? "border-purple-400 bg-secondary/20 shadow-[0_0_20px_rgba(168,85,247,0.5)] scale-[1.02]"
+              : "border-border hover:border-purple-400/50 bg-card"
           )}
         >
           {isDragging && (
@@ -137,19 +137,19 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
           )}
           <div className="flex flex-col items-center justify-center gap-4 relative z-10">
             <div className="flex items-center gap-2 w-full">
-              <Link className="w-5 h-5 text-white/60" />
+              <Link className="w-5 h-5 text-foreground/60" />
               <Input
                 type="text"
                 placeholder="Paste any link or upload content"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                className="flex-1 bg-card border-border text-foreground placeholder:text-foreground/40"
                 disabled={isScanning}
               />
             </div>
-            <div className="text-sm text-white/60 text-center">
+            <div className="text-sm text-foreground/60 text-center">
               {isDragging ? (
-                <p className="text-sm font-semibold text-purple-400 animate-pulse">
+                <p className="text-sm font-semibold text-secondary animate-pulse">
                   Drop to scan
                 </p>
               ) : (
@@ -169,7 +169,7 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
               size="sm"
               onClick={() => fileInputRef.current?.click()}
               disabled={isScanning}
-              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+              className="bg-card border-border text-foreground hover:bg-secondary/50"
             >
               <Upload className="w-4 h-4 mr-2" />
               Upload File
@@ -178,15 +178,15 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
         </div>
 
         {/* AI Detection Info */}
-        <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-          <p className="text-xs text-white/60">
+        <div className="mb-4 p-3 bg-info/10 border border-info/20 rounded-lg">
+          <p className="text-xs text-foreground/60">
             🤖 AI will auto-detect: Platform, Content Type
           </p>
         </div>
 
         {/* Platform Selection */}
         <div className="mb-4">
-          <label className="text-sm font-medium text-white mb-2 block">
+          <label className="text-sm font-medium text-foreground mb-2 block">
             Scan Platforms:
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -202,15 +202,15 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
                   className={cn(
                     "flex items-center gap-2 p-3 rounded-xl border transition-all",
                     isSelected
-                      ? "bg-purple-500/20 border-purple-400 text-white"
-                      : "bg-white/5 border-white/10 hover:border-purple-400/50 text-white/60 hover:bg-white/10"
+                      ? "bg-secondary/20 border-purple-400 text-foreground"
+                      : "bg-card border-border hover:border-purple-400/50 text-foreground/60 hover:bg-secondary/50"
                   )}
                 >
-                  <Icon className={cn("w-5 h-5", isSelected ? platform.color : "text-white/60")} />
+                  <Icon className={cn("w-5 h-5", isSelected ? platform.color : "text-foreground/60")} />
                   <span className="text-sm font-medium">{platform.id}</span>
                   {isSelected && (
-                    <div className="ml-auto w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
+                    <div className="ml-auto w-5 h-5 rounded-full bg-secondary flex items-center justify-center">
+                      <span className="text-foreground text-xs">✓</span>
                     </div>
                   )}
                 </button>
@@ -224,7 +224,7 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
           <Button
             onClick={handleScan}
             disabled={isScanning || !query.trim() || selectedPlatforms.length === 0}
-            className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+            className="flex-1 bg-secondary hover:bg-secondary text-foreground"
           >
             {isScanning ? (
               <>
@@ -241,20 +241,20 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
           {/* Live Scan Progress Bar */}
           {isScanning && scanProgress !== undefined && (
             <div className="mt-4 space-y-2 w-full">
-              <div className="flex items-center justify-between text-sm text-white/60 mb-1">
+              <div className="flex items-center justify-between text-sm text-foreground/60 mb-1">
                 <span>
                   {currentPlatform ? `Scanning ${currentPlatform}...` : 'Scanning...'}
                 </span>
-                <span className="font-semibold text-purple-400">{scanProgress}%</span>
+                <span className="font-semibold text-secondary">{scanProgress}%</span>
               </div>
-              <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className="relative h-2 bg-secondary/50 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${scanProgress}%` }}
                   transition={{ duration: 0.3 }}
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
                 >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
                 </motion.div>
               </div>
             </div>
@@ -263,7 +263,7 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
             variant="outline"
             onClick={() => setShowAdvanced(!showAdvanced)}
             disabled={isScanning}
-            className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            className="bg-card border-border text-foreground hover:bg-secondary/50"
           >
             <Settings className="w-4 h-4 mr-2" />
             Advanced
@@ -277,9 +277,9 @@ const SimplifiedScanner: React.FC<SimplifiedScannerProps> = ({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-white/5"
+              className="mt-4 pt-4 border-t border-border/5"
             >
-              <p className="text-sm text-white/60 mb-2">Advanced options coming soon...</p>
+              <p className="text-sm text-foreground/60 mb-2">Advanced options coming soon...</p>
             </motion.div>
           )}
         </AnimatePresence>

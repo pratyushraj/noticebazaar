@@ -83,18 +83,18 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     return (
       <div className={cn('flex flex-col items-center justify-center text-center', variantClasses[variant], className)}>
         {DefaultIcon && (
-          <DefaultIcon className={cn(iconSizeClasses[variant], 'text-white/40 mb-2')} />
+          <DefaultIcon className={cn(iconSizeClasses[variant], 'text-foreground/40 mb-2')} />
         )}
-        <h3 className="text-sm font-semibold text-white/80">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground/80">{title}</h3>
         {description && (
-          <p className="text-xs text-white/60 mt-1">{description}</p>
+          <p className="text-xs text-foreground/60 mt-1">{description}</p>
         )}
         {primaryAction && (
           <Button
             onClick={primaryAction.onClick}
             size="sm"
             variant="outline"
-            className="mt-3 bg-white/10 border-white/20 text-white hover:bg-white/15"
+            className="mt-3 bg-secondary/50 border-border text-foreground hover:bg-secondary/15"
           >
             {primaryAction.icon && <primaryAction.icon className="w-3 h-3 mr-1.5" />}
             {primaryAction.label}
@@ -131,13 +131,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.1, duration: 0.3 }}
           className={cn(
-            'rounded-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm flex items-center justify-center border border-white/10 shadow-lg mb-6',
+            'rounded-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm flex items-center justify-center border border-border shadow-lg mb-6',
             iconSizeClasses[variant]
           )}
         >
           <DefaultIcon className={cn(
             variant === 'compact' ? 'w-8 h-8' : 'w-12 h-12',
-            'text-white/50'
+            'text-foreground/50'
           )} />
         </motion.div>
       ) : null}
@@ -148,7 +148,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
         className={cn(
-          'font-semibold text-white mb-2',
+          'font-semibold text-foreground mb-2',
           variant === 'compact' ? 'text-lg' : 'text-xl'
         )}
       >
@@ -162,7 +162,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           className={cn(
-            'text-white/60 max-w-sm leading-relaxed',
+            'text-foreground/60 max-w-sm leading-relaxed',
             variant === 'compact' ? 'text-sm mb-4 md:mb-6' : 'text-base mb-6'
           )}
         >
@@ -194,7 +194,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             <Button
               onClick={primaryAction.onClick}
               size={variant === 'compact' ? 'sm' : 'default'}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white min-w-[140px]"
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-foreground min-w-[140px]"
             >
               {primaryAction.icon && <primaryAction.icon className="w-4 h-4 mr-2" />}
               {primaryAction.label}
@@ -205,7 +205,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               onClick={secondaryAction.onClick}
               variant="outline"
               size={variant === 'compact' ? 'sm' : 'default'}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/15 hover:border-white/30 min-w-[140px]"
+              className="bg-secondary/50 border-border text-foreground hover:bg-secondary/15 hover:border-border min-w-[140px]"
             >
               {secondaryAction.label}
             </Button>

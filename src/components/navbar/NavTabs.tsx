@@ -50,8 +50,8 @@ const NavTabs: React.FC<NavTabsProps> = ({ tabs, role }) => {
             className={cn(
               "relative flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
               active
-                ? "text-[#FF4DAA]"
-                : "text-white/60 hover:text-white/80"
+                ? "text-primary"
+                : "text-foreground/60 hover:text-foreground/80"
             )}
           >
             <Icon className="h-4 w-4" />

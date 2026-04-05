@@ -62,15 +62,15 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
     <Card className={cn(
       'border transition-all duration-300 overflow-hidden',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className={cn(
             'text-base font-bold tracking-tight flex items-center gap-2',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
             <span className="text-lg">📊</span> Deal Insights
           </h3>
@@ -84,26 +84,26 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
           className={cn(
             'p-3 rounded-xl border mb-6 flex gap-3',
             isDark
-              ? 'bg-blue-500/10 border-blue-500/20'
-              : 'bg-blue-50 border-blue-200'
+              ? 'bg-info/10 border-info/20'
+              : 'bg-info border-info'
           )}
         >
           <div className={cn(
             'flex-shrink-0 text-2xl',
-            isDark ? 'text-blue-400' : 'text-blue-600'
+            isDark ? 'text-info' : 'text-info'
           )}>
             🤖
           </div>
           <div className="flex-1">
             <p className={cn(
               'text-sm font-medium',
-              isDark ? 'text-blue-300' : 'text-blue-900'
+              isDark ? 'text-info' : 'text-info'
             )}>
               AI Insight
             </p>
             <p className={cn(
               'text-xs mt-1',
-              isDark ? 'text-blue-200/80' : 'text-blue-800'
+              isDark ? 'text-info/80' : 'text-info'
             )}>
               {aiMessage}
             </p>
@@ -122,8 +122,8 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
               className={cn(
                 'p-3 rounded-lg border transition-all',
                 isDark
-                  ? 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
-                  : 'bg-slate-50 border-slate-200 hover:bg-white shadow-sm hover:shadow-md'
+                  ? 'bg-card border-border hover:bg-secondary/50 hover:border-border'
+                  : 'bg-background border-border hover:bg-card shadow-sm hover:shadow-md'
               )}
             >
               <div className="flex items-start justify-between mb-2">
@@ -131,12 +131,12 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
                   'w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-br',
                   insight.color
                 )}>
-                  <span className="text-white">{insight.icon}</span>
+                  <span className="text-foreground">{insight.icon}</span>
                 </div>
                 {insight.trend !== undefined && insight.trend !== 0 && (
                   <span className={cn(
                     'text-xs font-bold',
-                    insight.trend > 0 ? 'text-emerald-500' : 'text-red-500'
+                    insight.trend > 0 ? 'text-primary' : 'text-destructive'
                   )}>
                     {insight.trend > 0 ? '+' : ''}{insight.trend}%
                   </span>
@@ -145,13 +145,13 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
 
               <p className={cn(
                 'text-xs font-medium opacity-60 mb-1',
-                isDark ? 'text-white' : 'text-slate-600'
+                isDark ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {insight.label}
               </p>
               <p className={cn(
                 'text-lg font-bold',
-                isDark ? 'text-white' : 'text-slate-900'
+                isDark ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {insight.value}
               </p>
@@ -167,13 +167,13 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
           className={cn(
             'p-4 rounded-xl border',
             isDark
-              ? 'bg-amber-500/10 border-amber-500/20'
-              : 'bg-amber-50 border-amber-200'
+              ? 'bg-warning/10 border-warning/20'
+              : 'bg-warning border-warning'
           )}
         >
           <h4 className={cn(
             'text-sm font-bold mb-3 flex items-center gap-2',
-            isDark ? 'text-amber-300' : 'text-amber-900'
+            isDark ? 'text-warning' : 'text-warning'
           )}>
             <AlertCircle className="w-4 h-4" />
             Recommendations
@@ -182,30 +182,30 @@ const EnhancedInsights: React.FC<EnhancedInsightsProps> = ({
           <div className="space-y-2">
             <div className={cn(
               'flex items-start gap-2 text-xs p-2 rounded-lg',
-              isDark ? 'bg-white/5' : 'bg-white'
+              isDark ? 'bg-card' : 'bg-card'
             )}>
               <span className="flex-shrink-0 mt-0.5">💡</span>
-              <p className={isDark ? 'text-amber-200/90' : 'text-amber-900'}>
+              <p className={isDark ? 'text-warning/90' : 'text-warning'}>
                 Your Instagram content gets 40% more engagement. Focus on that platform.
               </p>
             </div>
 
             <div className={cn(
               'flex items-start gap-2 text-xs p-2 rounded-lg',
-              isDark ? 'bg-white/5' : 'bg-white'
+              isDark ? 'bg-card' : 'bg-card'
             )}>
               <span className="flex-shrink-0 mt-0.5">🎯</span>
-              <p className={isDark ? 'text-amber-200/90' : 'text-amber-900'}>
+              <p className={isDark ? 'text-warning/90' : 'text-warning'}>
                 Try increasing your rates by 10-15% based on recent deal values.
               </p>
             </div>
 
             <div className={cn(
               'flex items-start gap-2 text-xs p-2 rounded-lg',
-              isDark ? 'bg-white/5' : 'bg-white'
+              isDark ? 'bg-card' : 'bg-card'
             )}>
               <span className="flex-shrink-0 mt-0.5">⚡</span>
-              <p className={isDark ? 'text-amber-200/90' : 'text-amber-900'}>
+              <p className={isDark ? 'text-warning/90' : 'text-warning'}>
                 Quick delivery (3-5 days) increases acceptances by 25%. Stay fast!
               </p>
             </div>

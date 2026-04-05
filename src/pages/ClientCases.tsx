@@ -124,20 +124,20 @@ const ClientCases = () => {
         break;
       case 'Drafting Stage (50% Complete)':
         width = '50%';
-        bgColor = 'bg-blue-500';
+        bgColor = 'bg-info';
         break;
       case 'In Progress':
       case 'On Track':
         width = '60%';
-        bgColor = 'bg-blue-500';
+        bgColor = 'bg-info';
         break;
       case 'Urgent - In Progress':
         width = '75%';
-        bgColor = 'bg-orange-500'; // Amber/Orange for urgency
+        bgColor = 'bg-warning'; // Amber/Orange for urgency
         break;
       case 'Filing Submitted (90% Complete)':
         width = '90%';
-        bgColor = 'bg-blue-500';
+        bgColor = 'bg-info';
         break;
       case 'Completed':
         width = '100%';

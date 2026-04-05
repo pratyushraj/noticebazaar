@@ -22,7 +22,7 @@ const AudienceAnalyticsPreview: React.FC<AudienceAnalyticsPreviewProps> = () => 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
         <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -43,7 +43,7 @@ const AudienceAnalyticsPreview: React.FC<AudienceAnalyticsPreviewProps> = () => 
                   {instagramFollowers.toLocaleString('en-IN')}
                 </div>
                 {instagramGrowth > 0 && (
-                  <div className="flex items-center gap-1 text-emerald-400 text-xs">
+                  <div className="flex items-center gap-1 text-primary text-xs">
                     <TrendingUp className="h-3 w-3" />
                     <span>+{instagramGrowth.toLocaleString('en-IN')} this month</span>
                   </div>
@@ -54,8 +54,8 @@ const AudienceAnalyticsPreview: React.FC<AudienceAnalyticsPreviewProps> = () => 
             {/* YouTube */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-600/20 to-red-800/20 border border-white/5">
-                  <Youtube className="h-3.5 w-3.5 text-red-400" />
+                <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-600/20 to-red-800/20 border border-border/5">
+                  <Youtube className="h-3.5 w-3.5 text-destructive" />
                 </div>
                 <span className="text-xs text-muted-foreground">YT Avg Views</span>
               </div>
@@ -77,7 +77,7 @@ const AudienceAnalyticsPreview: React.FC<AudienceAnalyticsPreviewProps> = () => 
                 <div className="text-sm font-semibold text-foreground">
                   {engagementRate}%
                 </div>
-                <div className="text-xs text-emerald-400">Above average</div>
+                <div className="text-xs text-primary">Above average</div>
               </div>
             </div>
           </div>

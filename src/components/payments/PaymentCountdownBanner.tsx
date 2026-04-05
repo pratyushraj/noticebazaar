@@ -54,7 +54,7 @@ export const PaymentCountdownBanner: React.FC<PaymentCountdownBannerProps> = ({ 
       animate={{ opacity: 1, y: 0 }}
       className="sticky top-16 z-40 mb-6"
     >
-      <div className="bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-xl border border-blue-400/30 rounded-2xl p-4 shadow-xl">
+      <div className="bg-gradient-to-r from-blue-600/90 to-purple-600/90 backdrop-blur-xl border border-info/30 rounded-2xl p-4 shadow-xl">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="relative w-12 h-12 flex-shrink-0">
@@ -81,18 +81,18 @@ export const PaymentCountdownBanner: React.FC<PaymentCountdownBannerProps> = ({ 
                   transition={{ duration: 1, ease: "easeOut" }}
                 />
               </svg>
-              <Clock className="absolute inset-0 m-auto w-5 h-5 text-white" />
+              <Clock className="absolute inset-0 m-auto w-5 h-5 text-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm md:text-base truncate">
+              <p className="text-foreground font-semibold text-sm md:text-base truncate">
                 ₹{totalAmount.toLocaleString('en-IN')} from {upcomingPayments.length} brand{upcomingPayments.length > 1 ? 's' : ''} drops in the next {daysUntilNext} day{daysUntilNext !== 1 ? 's' : ''}
               </p>
-              <p className="text-white/70 text-xs mt-0.5">
+              <p className="text-foreground/70 text-xs mt-0.5">
                 Next payment: {new Date(upcomingPayments[0].payment_expected_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
               </p>
             </div>
           </div>
-          <TrendingUp className="w-6 h-6 text-white/80 flex-shrink-0" />
+          <TrendingUp className="w-6 h-6 text-foreground/80 flex-shrink-0" />
         </div>
       </div>
     </motion.div>

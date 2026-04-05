@@ -87,20 +87,20 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card className="border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+      <Card className="border-border bg-card shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-black text-slate-900">
-            <Sparkles className="h-5 w-5 text-emerald-500" />
+          <CardTitle className="flex items-center gap-2 text-xl font-black text-muted-foreground">
+            <Sparkles className="h-5 w-5 text-primary" />
             Edit Profile
           </CardTitle>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Keep this simple. Brands only need the basics to understand your collab page.
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="creator-bio" className="flex items-center gap-2 text-slate-800">
-              <MessageSquareText className="h-4 w-4 text-emerald-500" />
+            <Label htmlFor="creator-bio" className="flex items-center gap-2 text-muted-foreground">
+              <MessageSquareText className="h-4 w-4 text-primary" />
               Bio
             </Label>
             <Textarea
@@ -109,21 +109,21 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
               onChange={(event) => setBio(event.target.value)}
               rows={4}
               placeholder="Tell brands what you create and the kind of collaborations that suit you."
-              className="border-slate-200"
+              className="border-border"
             />
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="creator-category" className="flex items-center gap-2 text-slate-800">
-                <Shapes className="h-4 w-4 text-emerald-500" />
+              <Label htmlFor="creator-category" className="flex items-center gap-2 text-muted-foreground">
+                <Shapes className="h-4 w-4 text-primary" />
                 Category
               </Label>
               <select
                 id="creator-category"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-500"
+                className="h-11 w-full rounded-md border border-border bg-card px-3 text-sm text-muted-foreground outline-none focus:border-primary"
               >
                 <option value="">Select category</option>
                 {CATEGORY_OPTIONS.map((option) => (
@@ -135,8 +135,8 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="creator-city" className="flex items-center gap-2 text-slate-800">
-                <MapPin className="h-4 w-4 text-emerald-500" />
+              <Label htmlFor="creator-city" className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
                 City
               </Label>
               <Input
@@ -144,39 +144,39 @@ const CreatorProfileForm: React.FC<CreatorProfileFormProps> = ({ initialProfile,
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
                 placeholder="Mumbai"
-                className="border-slate-200"
+                className="border-border"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="creator-languages" className="text-slate-800">Languages</Label>
+            <Label htmlFor="creator-languages" className="text-muted-foreground">Languages</Label>
             <Input
               id="creator-languages"
               value={languages}
               onChange={(event) => setLanguages(event.target.value)}
               placeholder="Hindi, English, Hinglish"
-              className="border-slate-200"
+              className="border-border"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="past-brand-work" className="text-slate-800">Past brand work (optional)</Label>
+            <Label htmlFor="past-brand-work" className="text-muted-foreground">Past brand work (optional)</Label>
             <Textarea
               id="past-brand-work"
               value={pastBrandWork}
               onChange={(event) => setPastBrandWork(event.target.value)}
               rows={4}
               placeholder="Add one brand per line"
-              className="border-slate-200"
+              className="border-border"
             />
           </div>
 
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+          <div className="rounded-2xl border border-primary bg-primary p-4 text-sm text-primary">
             Advanced settings stay optional. Creators should be able to share their collab page without filling everything else first.
           </div>
 
-          <Button type="submit" className="bg-emerald-600 text-white hover:bg-emerald-700" disabled={updateProfileMutation.isPending}>
+          <Button type="submit" className="bg-primary text-foreground hover:bg-primary" disabled={updateProfileMutation.isPending}>
             {updateProfileMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

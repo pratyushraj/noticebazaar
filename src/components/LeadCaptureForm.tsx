@@ -36,7 +36,7 @@ const LeadCaptureForm = () => {
   };
 
   return (
-    <Card className="card p-6 rounded-xl shadow-2xl border border-white/10 bg-card/80 backdrop-blur-sm">
+    <Card className="card p-6 rounded-xl shadow-2xl border border-border bg-card/80 backdrop-blur-sm">
       <CardContent className="p-0 space-y-4">
         {/* New Value Proposition */}
         <p className="text-yellow-400 font-semibold text-base flex items-center gap-2">
@@ -45,7 +45,7 @@ const LeadCaptureForm = () => {
         
         <div className="flex items-center space-x-3">
           <Download className="h-6 w-6 text-yellow-400 flex-shrink-0" />
-          <h3 className="text-2xl font-bold text-white">Free Legal Health Check</h3>
+          <h3 className="text-2xl font-bold text-foreground">Free Legal Health Check</h3>
         </div>
         
         {/* New Progress Indicator */}
@@ -65,7 +65,7 @@ const LeadCaptureForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className="w-full pl-10 py-3 bg-black/30 border-white/10 text-white placeholder-gray-400 focus:border-blue-500"
+              className="w-full pl-10 py-3 bg-black/30 border-border text-foreground placeholder-gray-400 focus:border-info"
             />
           </div>
           <Button 

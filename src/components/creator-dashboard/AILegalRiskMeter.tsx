@@ -80,9 +80,9 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
       case 'emerald':
         return {
           bg: 'from-emerald-500/20 to-emerald-600/20',
-          border: 'border-emerald-700/40',
-          text: 'text-emerald-400',
-          meter: 'bg-emerald-500',
+          border: 'border-primary/40',
+          text: 'text-primary',
+          meter: 'bg-primary',
         };
       case 'green':
         return {
@@ -101,9 +101,9 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
       default:
         return {
           bg: 'from-red-600/20 to-red-800/20',
-          border: 'border-white/5',
-          text: 'text-red-400',
-          meter: 'bg-red-500',
+          border: 'border-border/5',
+          text: 'text-destructive',
+          meter: 'bg-destructive',
         };
     }
   };
@@ -121,8 +121,8 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
-                <Shield className="h-5 w-5 text-purple-400" />
+              <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-secondary/50 border border-purple-500/20">
+                <Shield className="h-5 w-5 text-secondary" />
               </div>
               <CardTitle>AI Deal Risk Meter</CardTitle>
             </div>
@@ -137,7 +137,7 @@ const AILegalRiskMeter: React.FC<AILegalRiskMeterProps> = ({ brandDeals = [] }) 
               <TooltipTrigger asChild>
                 <div className="cursor-help space-y-4">
                   {/* Risk Meter */}
-                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                  <div className="relative h-3 bg-secondary/50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${meterWidth}%` }}

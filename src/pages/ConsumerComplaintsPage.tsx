@@ -103,7 +103,7 @@ const ConsumerComplaintsPage: React.FC = () => {
   if (!profile) {
     return (
       <div className="nb-screen-height flex items-center justify-center">
-        <div className="text-white/60">Loading...</div>
+        <div className="text-foreground/60">Loading...</div>
       </div>
     );
   }
@@ -114,12 +114,12 @@ const ConsumerComplaintsPage: React.FC = () => {
   //     <>
   //       <div className="nb-screen-height flex items-center justify-center p-4">
   //         <div className="text-center">
-  //           <Shield className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-  //           <h2 className="text-2xl font-bold text-white mb-2">Lifestyle Shield is a Creator Pro benefit</h2>
-  //           <p className="text-white/70 mb-6">Get unlimited consumer complaints, faster resolutions, and priority support.</p>
+  //           <Shield className="w-16 h-16 text-primary mx-auto mb-4" />
+  //           <h2 className="text-2xl font-bold text-foreground mb-2">Lifestyle Shield is a Creator Pro benefit</h2>
+  //           <p className="text-foreground/70 mb-6">Get unlimited consumer complaints, faster resolutions, and priority support.</p>
   //           <Button
   //             onClick={() => navigate('/upgrade?source=consumer-complaints')}
-  //             className="bg-emerald-500 hover:bg-emerald-600 text-white"
+  //             className="bg-primary hover:bg-primary text-foreground"
   //           >
   //             Upgrade to Creator Pro
   //           </Button>
@@ -141,18 +141,18 @@ const ConsumerComplaintsPage: React.FC = () => {
           <Button
             variant="ghost"
             onClick={() => navigate('/creator-dashboard')}
-            className="mb-4 text-white/70 hover:text-white hover:bg-white/10 -ml-2"
+            className="mb-4 text-foreground/70 hover:text-foreground hover:bg-secondary/50 -ml-2"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
           <div className="flex items-center gap-3 mb-3">
-              <Shield className="w-8 h-8 text-purple-400" />
-            <h1 className="text-3xl font-bold text-white">
+              <Shield className="w-8 h-8 text-secondary" />
+            <h1 className="text-3xl font-bold text-foreground">
                 Consumer Complaints
               </h1>
             </div>
-          <p className="text-white/70 text-base">
+          <p className="text-foreground/70 text-base">
               Resolve everyday refund and service issues without stress.
             </p>
           </div>
@@ -165,7 +165,7 @@ const ConsumerComplaintsPage: React.FC = () => {
               <button type="button"
                   key={category.id}
                 onClick={() => handleRaiseComplaint(category.id, category.name)}
-                className="w-full p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-left group"
+                className="w-full p-5 rounded-xl bg-card border border-border hover:bg-secondary/50 hover:border-border transition-all text-left group"
                 >
                 <div className="flex items-start gap-4">
                       {/* Icon */}
@@ -183,18 +183,18 @@ const ConsumerComplaintsPage: React.FC = () => {
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-white mb-1">
+                    <h3 className="text-lg font-semibold text-foreground mb-1">
                         {category.name}
                       </h3>
                     {category.helperText && (
-                      <p className="text-sm text-white/60">
+                      <p className="text-sm text-foreground/60">
                         {category.helperText}
                       </p>
                     )}
                   </div>
 
                   {/* Arrow */}
-                  <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-white/70 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
+                  <ArrowRight className="w-5 h-5 text-foreground/40 group-hover:text-foreground/70 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
                     </div>
               </button>
               );
@@ -206,7 +206,7 @@ const ConsumerComplaintsPage: React.FC = () => {
           <div className="max-w-2xl mx-auto">
             <button type="button"
               onClick={() => navigate('/consumer-complaints/how-it-works')}
-              className="w-full p-4 rounded-xl bg-white/10 border border-white/20 hover:bg-white/15 text-white font-medium flex items-center justify-center gap-2 transition-all"
+              className="w-full p-4 rounded-xl bg-secondary/50 border border-border hover:bg-secondary/15 text-foreground font-medium flex items-center justify-center gap-2 transition-all"
             >
               <HelpCircle className="w-5 h-5" />
               Need help choosing?

@@ -184,7 +184,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
     >
       <Card
         className={cn(
-          "bg-white/[0.08] backdrop-blur-lg border-l-4 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 transition-all cursor-pointer group hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5",
+          "bg-secondary/[0.08] backdrop-blur-lg border-l-4 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] p-4 transition-all cursor-pointer group hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5",
           stage === 'content_delivered' && 'border-orange-500/30 bg-orange-500/10',
           categoryStyle.borderColor
         )}
@@ -207,7 +207,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
                 {PlatformIcon && (
                   <PlatformIcon className="w-3.5 h-3.5 text-muted-foreground" />
                 )}
-                <span className="text-xs px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-muted-foreground font-medium">
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-card border border-border text-muted-foreground font-medium">
                   {deal.platform || 'N/A'}
                 </span>
               </div>
@@ -219,7 +219,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
         </div>
 
         {/* Amount and Deliverables - Compact Row */}
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/30">
+        <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
           <div>
             <div className="text-[10px] text-muted-foreground mb-0.5">Deal Value</div>
             <div className="text-lg font-bold text-foreground">
@@ -268,9 +268,9 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
                 "h-full transition-all",
                 stage === 'completed' ? 'bg-green-500' :
                 stage === 'content_delivered' ? 'bg-orange-500' :
-                stage === 'live_deal' || stage === 'content_making' ? 'bg-blue-500' :
+                stage === 'live_deal' || stage === 'content_making' ? 'bg-info' :
                 stage === 'brand_signed' || stage === 'contract_ready' ? 'bg-yellow-500' :
-                stage === 'fully_executed' ? 'bg-purple-500' :
+                stage === 'fully_executed' ? 'bg-secondary' :
                 'bg-gray-400'
               )}
             />
@@ -278,7 +278,7 @@ const ProjectDealCard: React.FC<ProjectDealCardProps> = ({
         </div>
 
         {/* Action Buttons - Accessibility: 44x44px minimum touch target */}
-        <div className="flex flex-wrap gap-2 pt-3 border-t border-border/30" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-wrap gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
           {primaryActions.slice(0, 2).map((action, index) => {
             const Icon = action.icon;
             return (

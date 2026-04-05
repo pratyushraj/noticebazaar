@@ -48,7 +48,7 @@ const TaxSummaryCard: React.FC<TaxSummaryCardProps> = ({ allDeals }) => {
       <Card className="bg-card border-border/40">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-blue-500" />
+            <FileText className="w-5 h-5 text-info" />
             <CardTitle className="text-lg font-semibold">Tax Summary (This Quarter)</CardTitle>
           </div>
         </CardHeader>

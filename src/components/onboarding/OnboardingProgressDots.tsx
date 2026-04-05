@@ -45,8 +45,8 @@ export const OnboardingProgressDots: React.FC<OnboardingProgressDotsProps> = ({
             className={cn(
               "h-2 rounded-full",
               isActive
-                ? "bg-emerald-600 dark:bg-emerald-400"
-                : "bg-slate-300 dark:bg-white/30"
+                ? "bg-primary dark:bg-primary"
+                : "bg-background dark:bg-secondary/30"
             )}
           />
         );

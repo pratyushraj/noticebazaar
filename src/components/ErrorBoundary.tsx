@@ -74,25 +74,25 @@ Please describe what you were doing when this error occurred:
   render() {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <div className="nb-screen-height bg-slate-950 text-white flex items-center justify-center p-4">
+        <div className="nb-screen-height bg-background text-foreground flex items-center justify-center p-4">
           <div className="text-center max-w-sm mx-auto">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/20 mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/20 mb-6">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
             </div>
 
             <h2 className="text-xl font-bold mb-3">
               Something went wrong
             </h2>
 
-            <p className="text-white/70 mb-6 leading-relaxed">
+            <p className="text-foreground/70 mb-6 leading-relaxed">
               We encountered an unexpected error. Don't worry, this has been reported and we're working on it.
             </p>
 
             {/* Error details in development */}
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="bg-white/5 rounded-lg p-3 mb-6 text-left">
-                <p className="text-xs text-white/50 mb-2">Error Details (Dev Mode):</p>
-                <p className="text-xs text-red-300 font-mono break-all">
+              <div className="bg-card rounded-lg p-3 mb-6 text-left">
+                <p className="text-xs text-foreground/50 mb-2">Error Details (Dev Mode):</p>
+                <p className="text-xs text-destructive font-mono break-all">
                   {this.state.error.message}
                 </p>
               </div>
@@ -102,7 +102,7 @@ Please describe what you were doing when this error occurred:
               <button
                 type="button"
                 onClick={this.handleReload}
-                className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                className="w-full h-12 bg-primary hover:bg-primary text-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 <RefreshCw className="w-4 h-4" />
                 Try Again
@@ -111,7 +111,7 @@ Please describe what you were doing when this error occurred:
               <button
                 type="button"
                 onClick={this.handleGoHome}
-                className="w-full h-12 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                className="w-full h-12 bg-secondary/50 hover:bg-secondary/20 text-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 <Home className="w-4 h-4" />
                 Go Home
@@ -120,7 +120,7 @@ Please describe what you were doing when this error occurred:
               <button
                 type="button"
                 onClick={this.handleReportIssue}
-                className="w-full h-12 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                className="w-full h-12 bg-card hover:bg-secondary/50 text-foreground/70 hover:text-foreground font-medium rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 <MessageSquare className="w-4 h-4" />
                 Report Issue
@@ -128,7 +128,7 @@ Please describe what you were doing when this error occurred:
             </div>
 
             {this.state.errorId && (
-              <p className="text-xs text-white/40 mt-4">
+              <p className="text-xs text-foreground/40 mt-4">
                 Error ID: {this.state.errorId}
               </p>
             )}

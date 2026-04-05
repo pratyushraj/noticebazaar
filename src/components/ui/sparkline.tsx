@@ -37,7 +37,7 @@ export function Sparkline({
   if (!data || data.length === 0) {
     return (
       <div
-        className={`h-[${height}px] w-[${width}px] bg-white/5 rounded`}
+        className={`h-[${height}px] w-[${width}px] bg-card rounded`}
         style={{ width, height }}
       />
     );

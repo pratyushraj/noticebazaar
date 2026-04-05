@@ -61,7 +61,7 @@ export const OfflineScreen: React.FC<OfflineScreenProps> = ({ onRetry }) => {
   };
 
   return (
-    <div className="nb-screen-height flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white p-4">
+    <div className="nb-screen-height flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -79,11 +79,11 @@ export const OfflineScreen: React.FC<OfflineScreenProps> = ({ onRetry }) => {
             ease: "easeInOut"
           }}
         >
-          <WifiOff className="w-24 h-24 mx-auto mb-6 text-purple-400" />
+          <WifiOff className="w-24 h-24 mx-auto mb-6 text-secondary" />
         </motion.div>
         
         <h1 className="text-3xl font-bold mb-2">No Internet Connection</h1>
-        <p className="text-white/70 mb-6">
+        <p className="text-foreground/70 mb-6">
           Please check your connection and try again. We'll automatically retry when you're back online.
         </p>
         
@@ -107,7 +107,7 @@ export const OfflineScreen: React.FC<OfflineScreenProps> = ({ onRetry }) => {
           </Button>
           
           {!navigator.onLine && (
-            <p className="text-sm text-purple-300 mt-2">
+            <p className="text-sm text-secondary mt-2">
               Waiting for connection...
             </p>
           )}

@@ -67,8 +67,8 @@ export const EarningsHeatmap: React.FC<EarningsHeatmapProps> = ({ brandDeals, cl
 
   return (
     <TooltipProvider>
-      <div className={cn("bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-2xl p-4", className)}>
-        <h3 className="text-sm font-semibold text-white mb-3">Earnings Heatmap (Last 30 Days)</h3>
+      <div className={cn("bg-secondary/[0.06] backdrop-blur-[40px] border border-border rounded-2xl p-4", className)}>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Earnings Heatmap (Last 30 Days)</h3>
         <div className="flex items-center gap-1 flex-wrap">
           {dates.map((dateKey, index) => {
             const amount = heatmapData[dateKey] || 0;
@@ -84,20 +84,20 @@ export const EarningsHeatmap: React.FC<EarningsHeatmapProps> = ({ brandDeals, cl
                     transition={{ delay: index * 0.01 }}
                     className={cn(
                       "w-3 h-3 rounded-sm cursor-pointer transition-all hover:scale-125",
-                      intensity === 0 && "bg-white/5",
-                      intensity === 1 && "bg-purple-500/20",
-                      intensity === 2 && "bg-purple-500/40",
-                      intensity === 3 && "bg-purple-500/60",
-                      intensity === 4 && "bg-purple-500/80",
-                      intensity === 5 && "bg-purple-500",
+                      intensity === 0 && "bg-card",
+                      intensity === 1 && "bg-secondary/20",
+                      intensity === 2 && "bg-secondary/40",
+                      intensity === 3 && "bg-secondary/60",
+                      intensity === 4 && "bg-secondary/80",
+                      intensity === 5 && "bg-secondary",
                     )}
                   />
                 </TooltipTrigger>
-                <TooltipContent className="bg-[#1C1C1E] text-white border-white/10">
+                <TooltipContent className="bg-card text-foreground border-border">
                   <p className="font-semibold">
                     {date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                   </p>
-                  <p className="text-sm text-white/70">
+                  <p className="text-sm text-foreground/70">
                     {amount > 0 ? `₹${amount.toLocaleString('en-IN')}` : 'No earnings'}
                   </p>
                 </TooltipContent>
@@ -105,15 +105,15 @@ export const EarningsHeatmap: React.FC<EarningsHeatmapProps> = ({ brandDeals, cl
             );
           })}
         </div>
-        <div className="flex items-center justify-between mt-3 text-xs text-white/60">
+        <div className="flex items-center justify-between mt-3 text-xs text-foreground/60">
           <span>Less</span>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-white/5" />
-            <div className="w-3 h-3 rounded-sm bg-purple-500/20" />
-            <div className="w-3 h-3 rounded-sm bg-purple-500/40" />
-            <div className="w-3 h-3 rounded-sm bg-purple-500/60" />
-            <div className="w-3 h-3 rounded-sm bg-purple-500/80" />
-            <div className="w-3 h-3 rounded-sm bg-purple-500" />
+            <div className="w-3 h-3 rounded-sm bg-card" />
+            <div className="w-3 h-3 rounded-sm bg-secondary/20" />
+            <div className="w-3 h-3 rounded-sm bg-secondary/40" />
+            <div className="w-3 h-3 rounded-sm bg-secondary/60" />
+            <div className="w-3 h-3 rounded-sm bg-secondary/80" />
+            <div className="w-3 h-3 rounded-sm bg-secondary" />
           </div>
           <span>More</span>
         </div>

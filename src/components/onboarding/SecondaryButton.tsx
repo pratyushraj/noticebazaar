@@ -35,8 +35,8 @@ export const SecondaryButton: React.FC<SecondaryButtonProps> = ({
       disabled={disabled}
       className={cn(
         "px-6 py-3",
-        "bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15",
-        "text-slate-700 dark:text-white",
+        "bg-background dark:bg-secondary/50 hover:bg-background dark:hover:bg-secondary/15",
+        "text-muted-foreground dark:text-foreground",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "rounded-xl",
         "font-medium",

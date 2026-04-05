@@ -31,11 +31,11 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   const statusOptions: Array<{ value: FilterState['status']; label: string; color: string }> = [
-    { value: 'all', label: 'All Deals', color: 'bg-slate-500/20 text-slate-300' },
-    { value: 'active', label: 'Active', color: 'bg-blue-500/20 text-blue-300' },
+    { value: 'all', label: 'All Deals', color: 'bg-background/20 text-muted-foreground' },
+    { value: 'active', label: 'Active', color: 'bg-info/20 text-info' },
     { value: 'pending', label: 'Pending', color: 'bg-yellow-500/20 text-yellow-300' },
     { value: 'completed', label: 'Completed', color: 'bg-green-500/20 text-green-300' },
-    { value: 'overdue', label: 'Overdue', color: 'bg-red-500/20 text-red-300' },
+    { value: 'overdue', label: 'Overdue', color: 'bg-destructive/20 text-destructive' },
   ];
 
   const sortOptions: Array<{ value: FilterState['sortBy']; label: string }> = [
@@ -76,11 +76,11 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
         className={cn(
           'relative flex items-center rounded-xl border transition-all duration-300',
           isDark
-            ? 'bg-white/5 border-white/10 focus-within:border-white/20 focus-within:bg-white/10'
-            : 'bg-white border-slate-200 focus-within:border-slate-300 focus-within:ring-1 focus-within:ring-blue-500/20'
+            ? 'bg-card border-border focus-within:border-border focus-within:bg-secondary/50'
+            : 'bg-card border-border focus-within:border-border focus-within:ring-1 focus-within:ring-blue-500/20'
         )}
       >
-        <Search className={cn('absolute left-3 w-4 h-4', isDark ? 'text-white/40' : 'text-slate-400')} />
+        <Search className={cn('absolute left-3 w-4 h-4', isDark ? 'text-foreground/40' : 'text-muted-foreground')} />
         <input
           type="text"
           placeholder="Search brands, status..."
@@ -88,7 +88,7 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
           onChange={handleSearch}
           className={cn(
             'flex-1 py-2.5 px-10 bg-transparent outline-none text-sm placeholder-opacity-60',
-            isDark ? 'text-white placeholder-white' : 'text-slate-900 placeholder-slate-500'
+            isDark ? 'text-foreground placeholder-white' : 'text-muted-foreground placeholder-slate-500'
           )}
         />
         {searchQuery && (
@@ -97,7 +97,7 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
               setSearchQuery('');
               onSearch?.('');
             }}
-            className={cn('mr-2 p-1 rounded hover:bg-white/10 transition-colors', isDark ? 'text-white/60' : 'text-slate-400')}
+            className={cn('mr-2 p-1 rounded hover:bg-secondary/50 transition-colors', isDark ? 'text-foreground/60' : 'text-muted-foreground')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -120,10 +120,10 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
             className={cn(
               'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all snap-start',
               filters.status === option.value
-                ? `${option.color} shadow-lg ring-2 ring-offset-2 ${isDark ? 'ring-offset-slate-950' : 'ring-offset-white'}`
+                ? `${option.color} shadow-lg ring-2 ring-offset-2 ${isDark ? 'ring-offset-background' : 'ring-offset-white'}`
                 : isDark
-                ? 'bg-white/10 text-white/70 hover:bg-white/15'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-secondary/50 text-foreground/70 hover:bg-secondary/15'
+                : 'bg-background text-muted-foreground hover:bg-background'
             )}
           >
             {option.label}
@@ -133,7 +133,7 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
 
       {/* Sort Button & Summary */}
       <div className="flex items-center justify-between">
-        <p className={cn('text-xs font-medium', isDark ? 'text-white/60' : 'text-slate-600')}>
+        <p className={cn('text-xs font-medium', isDark ? 'text-foreground/60' : 'text-muted-foreground')}>
           {totalDeals} deal{totalDeals !== 1 ? 's' : ''} {isFiltered && '(filtered)'}
         </p>
 
@@ -144,11 +144,11 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
               showFilterMenu
                 ? isDark
-                  ? 'bg-white/20 text-white'
-                  : 'bg-blue-100 text-blue-700'
+                  ? 'bg-secondary/20 text-foreground'
+                  : 'bg-info text-info'
                 : isDark
-                ? 'bg-white/10 text-white/70 hover:bg-white/15'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-secondary/50 text-foreground/70 hover:bg-secondary/15'
+                : 'bg-background text-muted-foreground hover:bg-background'
             )}
           >
             <Filter className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
                 transition={{ duration: 0.15 }}
                 className={cn(
                   'absolute right-0 top-full mt-2 rounded-xl border shadow-lg backdrop-blur-sm z-10 min-w-[140px]',
-                  isDark ? 'bg-slate-900/95 border-white/10' : 'bg-white border-slate-200'
+                  isDark ? 'bg-background/95 border-border' : 'bg-card border-border'
                 )}
               >
                 {sortOptions.map((option) => (
@@ -176,11 +176,11 @@ const DealSearchFilter: React.FC<DealSearchFilterProps> = ({
                       'w-full px-4 py-2.5 text-xs font-bold text-left transition-colors first:rounded-t-lg last:rounded-b-lg',
                       filters.sortBy === option.value
                         ? isDark
-                          ? 'bg-blue-600/30 text-blue-300'
-                          : 'bg-blue-50 text-blue-700'
+                          ? 'bg-info/30 text-info'
+                          : 'bg-info text-info'
                         : isDark
-                        ? 'text-white/70 hover:bg-white/10'
-                        : 'text-slate-700 hover:bg-slate-50'
+                        ? 'text-foreground/70 hover:bg-secondary/50'
+                        : 'text-muted-foreground hover:bg-background'
                     )}
                   >
                     {option.label}

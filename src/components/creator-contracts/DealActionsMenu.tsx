@@ -103,7 +103,7 @@ const DealActionsMenu: React.FC<DealActionsMenuProps> = ({
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           onClick={() => navigate('/creator-payments')}
-          className="cursor-pointer hover:bg-blue-500/10 text-blue-400"
+          className="cursor-pointer hover:bg-info/10 text-info"
         >
           <ExternalLink className="mr-2 h-4 w-4" />
           View Payment Status

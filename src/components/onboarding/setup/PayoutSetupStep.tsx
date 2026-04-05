@@ -34,24 +34,24 @@ export const PayoutSetupStep: React.FC<PayoutSetupStepProps> = ({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <GradientCard padding="lg" className="max-w-2xl mx-auto">
-        <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
+        <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-muted-foreground dark:text-foreground">
           Add payout details later if you want
         </h2>
-        <p className="text-base text-slate-500 dark:text-white/80 text-center mb-8">
+        <p className="text-base text-muted-foreground dark:text-foreground/80 text-center mb-8">
           You can finish onboarding without payout info. Add it now only if you want brands to have a ready payment method from day one.
         </p>
 
-        <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-white/5 p-4 mb-7">
-          <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-white/85">
+        <div className="rounded-xl border border-border dark:border-border bg-background/60 dark:bg-card p-4 mb-7">
+          <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/85">
             <Smartphone className="w-4 h-4" />
             Payment setup
           </p>
-          <p className="mb-3 text-xs text-slate-500 dark:text-white/65">
+          <p className="mb-3 text-xs text-muted-foreground dark:text-foreground/65">
             This is optional right now. You can add or change payout details later from your creator profile.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block">
-              <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+              <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
                 <Landmark className="w-4 h-4" />
                 Account holder name
               </span>
@@ -60,11 +60,11 @@ export const PayoutSetupStep: React.FC<PayoutSetupStepProps> = ({
                 value={bankAccountName}
                 onChange={(e) => onBankAccountNameChange(e.target.value)}
                 placeholder="Your payout name"
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+              <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
                 <Smartphone className="w-4 h-4" />
                 UPI ID
               </span>
@@ -75,12 +75,12 @@ export const PayoutSetupStep: React.FC<PayoutSetupStepProps> = ({
                 placeholder="yourname@upi"
                 autoCapitalize="none"
                 autoCorrect="off"
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
               />
               {bankUpiError ? (
                 <p className="mt-2 text-xs font-medium text-rose-600">{bankUpiError}</p>
               ) : (
-                <p className="mt-2 text-xs text-slate-500 dark:text-white/60">Optional for now. If you enter one, it should be valid.</p>
+                <p className="mt-2 text-xs text-muted-foreground dark:text-foreground/60">Optional for now. If you enter one, it should be valid.</p>
               )}
             </label>
           </div>

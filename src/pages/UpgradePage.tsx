@@ -37,7 +37,7 @@ const UpgradePage: React.FC = () => {
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="mb-6 text-white/70 hover:text-white hover:bg-white/10"
+          className="mb-6 text-foreground/70 hover:text-foreground hover:bg-secondary/50"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
@@ -46,13 +46,13 @@ const UpgradePage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="w-12 h-12 text-emerald-400" />
-            <h1 className="text-4xl md:text-5xl font-bold text-white">
+            <Shield className="w-12 h-12 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
               Upgrade to Creator Pro
             </h1>
           </div>
           {source === 'consumer-complaints' && (
-            <p className="text-white/70 text-lg">
+            <p className="text-foreground/70 text-lg">
               Lifestyle Shield is a Creator Pro benefit
             </p>
           )}
@@ -61,8 +61,8 @@ const UpgradePage: React.FC = () => {
         {/* Main Card */}
         <Card variant="default" className="mb-6">
           <CardHeader>
-            <CardTitle className="text-2xl text-white flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-emerald-400" />
+            <CardTitle className="text-2xl text-foreground flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-primary" />
               What you'll get with Creator Pro
             </CardTitle>
           </CardHeader>
@@ -70,8 +70,8 @@ const UpgradePage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                  <span className="text-white/90">{feature}</span>
+                  <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+                  <span className="text-foreground/90">{feature}</span>
                 </div>
               ))}
             </div>
@@ -83,11 +83,11 @@ const UpgradePage: React.FC = () => {
           <Button
             onClick={handleUpgrade}
             size="lg"
-            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 text-lg"
+            className="bg-primary hover:bg-primary text-foreground px-8 py-6 text-lg"
           >
             Upgrade to Creator Pro
           </Button>
-          <p className="text-white/60 text-sm mt-4">
+          <p className="text-foreground/60 text-sm mt-4">
             Starting at ₹2,999/month
           </p>
         </div>

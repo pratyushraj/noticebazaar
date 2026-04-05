@@ -153,19 +153,19 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-[90vw] md:max-w-4xl md:h-[85vh] md:rounded-3xl bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 md:border md:border-white/10 shadow-2xl z-50 flex flex-col overflow-hidden"
+            className="fixed inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:bottom-auto md:w-[90vw] md:max-w-4xl md:h-[85vh] md:rounded-3xl bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 md:border md:border-border shadow-2xl z-50 flex flex-col overflow-hidden"
           >
             {/* Header - Compact on mobile, full on desktop */}
-            <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/10 bg-purple-900/50 backdrop-blur-xl flex-shrink-0">
+            <div className="flex items-center justify-between p-3 md:p-4 border-b border-border bg-card0 backdrop-blur-xl flex-shrink-0">
               <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                {fileType === 'pdf' && <FileText className="w-4 h-4 md:w-5 md:h-5 text-purple-300 flex-shrink-0" />}
-                {fileType === 'image' && <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-purple-300 flex-shrink-0" />}
-                {fileType === 'doc' && <FileText className="w-4 h-4 md:w-5 md:h-5 text-purple-300 flex-shrink-0" />}
+                {fileType === 'pdf' && <FileText className="w-4 h-4 md:w-5 md:h-5 text-secondary flex-shrink-0" />}
+                {fileType === 'image' && <ImageIcon className="w-4 h-4 md:w-5 md:h-5 text-secondary flex-shrink-0" />}
+                {fileType === 'doc' && <FileText className="w-4 h-4 md:w-5 md:h-5 text-secondary flex-shrink-0" />}
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-white font-semibold truncate text-sm md:text-base">
+                  <h3 className="text-foreground font-semibold truncate text-sm md:text-base">
                     {fileName || metadata?.filename || 'Contract Preview'}
                   </h3>
-                  <div className="flex items-center gap-1.5 md:gap-2 text-xs text-purple-300">
+                  <div className="flex items-center gap-1.5 md:gap-2 text-xs text-secondary">
                     {metadata && (
                       <>
                         <span className="uppercase">{metadata.filetype}</span>
@@ -199,25 +199,25 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                 {isMobileDevice() && (
                   <button type="button"
                     onClick={handleShare}
-                    className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-1.5 md:p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                     aria-label="Share"
                   >
-                    <Share2 className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                    <Share2 className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
                   </button>
                 )}
                 <button type="button"
                   onClick={handleDownload}
-                  className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-xl transition-all active:scale-95 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
+                  className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-foreground font-medium rounded-xl transition-all active:scale-95 flex items-center gap-1.5 md:gap-2 text-sm md:text-base"
                 >
                   <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
                   <span className="hidden sm:inline">Download</span>
                 </button>
                 <button type="button"
                   onClick={onClose}
-                  className="p-1.5 md:p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-1.5 md:p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                   aria-label="Close"
                 >
-                  <X className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                  <X className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
                 </button>
               </div>
             </div>
@@ -226,16 +226,16 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
             <div className="flex-1 overflow-hidden bg-black/20 md:overflow-auto">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-white/60">Loading preview...</div>
+                  <div className="text-foreground/60">Loading preview...</div>
                 </div>
               ) : error ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
-                  <p className="text-white font-medium mb-2">Preview unavailable</p>
-                  <p className="text-white/60 text-sm mb-4">{error}</p>
+                  <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+                  <p className="text-foreground font-medium mb-2">Preview unavailable</p>
+                  <p className="text-foreground/60 text-sm mb-4">{error}</p>
                   <button type="button"
                     onClick={handleDownload}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl"
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-foreground rounded-xl"
                   >
                     Download Instead
                   </button>
@@ -267,22 +267,22 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                       }}
                     />
                     {/* Zoom Controls */}
-                    <div className="fixed bottom-20 right-4 flex flex-col gap-2 bg-purple-900/90 backdrop-blur-xl rounded-xl p-2 border border-white/10">
+                    <div className="fixed bottom-20 right-4 flex flex-col gap-2 bg-secondary/90 backdrop-blur-xl rounded-xl p-2 border border-border">
                       <button type="button"
                         onClick={() => handleImageZoom(0.1)}
-                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm"
+                        className="px-3 py-1 bg-secondary/50 hover:bg-secondary/20 rounded-lg text-foreground text-sm"
                       >
                         +
                       </button>
                       <button type="button"
                         onClick={() => handleImageZoom(-0.1)}
-                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm"
+                        className="px-3 py-1 bg-secondary/50 hover:bg-secondary/20 rounded-lg text-foreground text-sm"
                       >
                         −
                       </button>
                       <button type="button"
                         onClick={() => setImageZoom(1)}
-                        className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs"
+                        className="px-3 py-1 bg-secondary/50 hover:bg-secondary/20 rounded-lg text-foreground text-xs"
                       >
                         Reset
                       </button>
@@ -291,14 +291,14 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
                 </div>
               ) : fileType === 'doc' ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <FileText className="w-16 h-16 text-purple-300 mb-4" />
-                  <p className="text-white font-medium mb-2">No preview available</p>
-                  <p className="text-white/60 text-sm mb-6">
+                  <FileText className="w-16 h-16 text-secondary mb-4" />
+                  <p className="text-foreground font-medium mb-2">No preview available</p>
+                  <p className="text-foreground/60 text-sm mb-6">
                     Document files cannot be previewed in the browser.
                   </p>
                   <button type="button"
                     onClick={handleDownload}
-                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-xl transition-all active:scale-95"
+                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-foreground font-medium rounded-xl transition-all active:scale-95"
                   >
                     Download Document
                   </button>
@@ -306,13 +306,13 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
               ) : (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <AlertCircle className="w-12 h-12 text-yellow-400 mb-4" />
-                  <p className="text-white font-medium mb-2">Unsupported file type</p>
-                  <p className="text-white/60 text-sm mb-4">
+                  <p className="text-foreground font-medium mb-2">Unsupported file type</p>
+                  <p className="text-foreground/60 text-sm mb-4">
                     This file type cannot be previewed.
                   </p>
                   <button type="button"
                     onClick={handleDownload}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl"
+                    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-foreground rounded-xl"
                   >
                     Download File
                   </button>
@@ -320,8 +320,8 @@ export const ContractPreviewModal: React.FC<ContractPreviewModalProps> = ({
               )}
             </div>
             {/* Philosophy Footer */}
-            <div className="p-3 border-t border-white/5 bg-black/40 text-center flex-shrink-0">
-              <p className="text-[10px] text-white/30 uppercase tracking-widest font-medium">
+            <div className="p-3 border-t border-border/5 bg-black/40 text-center flex-shrink-0">
+              <p className="text-[10px] text-foreground/30 uppercase tracking-widest font-medium">
                 Actions on Creator Armour are recorded, timestamped, and legally enforceable.
               </p>
             </div>

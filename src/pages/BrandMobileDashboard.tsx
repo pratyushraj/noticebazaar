@@ -555,14 +555,14 @@ const BrandMobileDashboard = ({
   }, [theme]);
 
 	  const isDark = theme === 'dark';
-	  const textColor = isDark ? 'text-white' : 'text-slate-900';
-	  const secondaryTextColor = isDark ? 'text-white/50' : 'text-slate-500';
+	  const textColor = isDark ? 'text-foreground' : 'text-muted-foreground';
+	  const secondaryTextColor = isDark ? 'text-foreground/50' : 'text-muted-foreground';
 	  // Match Creator dashboard light-mode tokens (MobileDashboardDemo): neutral base + iOS-like borders.
 	  const bgColor = isDark ? 'bg-[#061318]' : 'bg-[#F9FAFB]';
-	  const borderColor = isDark ? 'border-white/10' : 'border-[#E5E5EA]';
+	  const borderColor = isDark ? 'border-border' : 'border-[#E5E5EA]';
 	  const cardBgColor = isDark
-	    ? 'bg-white/6 backdrop-blur-xl'
-	    : 'bg-white';
+	    ? 'bg-secondary/6 backdrop-blur-xl'
+	    : 'bg-card';
 
   const primaryButtonClass = cn('flex-1', dsButtons.ecosystemPrimary, 'h-10 text-[12px] disabled:opacity-50');
   const secondaryButtonClass = cn('h-10 px-4 text-[12px]', isDark ? dsButtons.ecosystemSecondaryDark : dsButtons.ecosystemSecondaryLight);
@@ -1180,7 +1180,7 @@ const BrandMobileDashboard = ({
           triggerHaptic(HapticPatterns.light);
           setActiveSettingsPage(null);
         }}
-        className={cn('p-2 -ml-2 rounded-full transition-all active:scale-90', secondaryTextColor, isDark ? 'hover:bg-white/5' : 'hover:bg-slate-100')}
+        className={cn('p-2 -ml-2 rounded-full transition-all active:scale-90', secondaryTextColor, isDark ? 'hover:bg-card' : 'hover:bg-background')}
       >
         <ChevronRight className="w-6 h-6 rotate-180" />
       </button>
@@ -1318,10 +1318,10 @@ const BrandMobileDashboard = ({
 	          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
 	          className={cn(
 	            'fixed bottom-0 inset-x-0 z-[150] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl',
-	            isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white/95 backdrop-blur-xl border-[#E5E5EA]'
+	            isDark ? 'bg-background border-border' : 'bg-secondary/95 backdrop-blur-xl border-[#E5E5EA]'
 	          )}
 	        >
-	          <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-6" />
+	          <div className="w-12 h-1 bg-background/20 rounded-full mx-auto mb-6" />
 	          <div className="max-w-md mx-auto">
 	            {isRequest ? (
 	              <>
@@ -1331,7 +1331,7 @@ const BrandMobileDashboard = ({
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
 	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{String(deliverables).replaceAll(',', ' • ')}</p>
 	                  </div>
-	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/70 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/70 bg-card' : 'border-border text-muted-foreground bg-background')}>
 	                    {requestStage}
 	                  </span>
 	                </div>
@@ -1348,7 +1348,7 @@ const BrandMobileDashboard = ({
 	                </div>
 
 	                <div className="flex items-center justify-between gap-2 mb-4">
-	                  <div className={cn('px-3 py-2 rounded-xl border text-[11px] font-semibold', isDark ? 'bg-[#1C2C2A] text-emerald-200 border-emerald-500/15' : 'bg-slate-50 text-slate-700 border-[#E5E5EA]')}>
+	                  <div className={cn('px-3 py-2 rounded-xl border text-[11px] font-semibold', isDark ? 'bg-[#1C2C2A] text-primary border-primary/15' : 'bg-background text-muted-foreground border-[#E5E5EA]')}>
 	                    <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
 	                    Payment released after content approval
 	                  </div>
@@ -1358,8 +1358,8 @@ const BrandMobileDashboard = ({
 	                      expires.tone === 'danger'
 	                        ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
 	                        : expires.tone === 'warn'
-	                          ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-300/30' : 'bg-amber-50 text-amber-800 border-amber-200')
-	                          : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200')
+	                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
+	                          : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border')
 	                    )}>
 	                      <Clock className="w-4 h-4" /> {expires.text}
 	                    </div>
@@ -1372,7 +1372,7 @@ const BrandMobileDashboard = ({
 	                      <button type="button"
 	                        onClick={acceptCounter}
 	                        disabled={isRequestBusy}
-	                        className="h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60 bg-gradient-to-r from-blue-600 to-sky-600 text-white border-transparent"
+	                        className="h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60 bg-gradient-to-r from-blue-600 to-sky-600 text-foreground border-transparent"
 	                      >
 	                        Accept Counter
 	                      </button>
@@ -1381,7 +1381,7 @@ const BrandMobileDashboard = ({
 	                        disabled={isRequestBusy}
 	                        className={cn(
 	                          'h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
-	                          isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+	                          isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
 	                        )}
 	                      >
 	                        Revise Terms
@@ -1404,7 +1404,7 @@ const BrandMobileDashboard = ({
 	                        disabled={isRequestBusy}
 	                        className={cn(
 	                          'col-span-2 h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60',
-	                          isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+	                          isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
 	                        )}
 	                      >
 	                        Edit Offer
@@ -1440,7 +1440,7 @@ const BrandMobileDashboard = ({
 	                      exit={{ opacity: 0, y: 12 }}
 	                      className={cn(
 	                        'fixed inset-x-0 top-[18%] z-[170] mx-auto max-w-md rounded-[2rem] border p-5 shadow-2xl',
-	                        isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200'
+	                        isDark ? 'bg-background border-border' : 'bg-card border-border'
 	                      )}
 	                    >
 	                      <div className="flex items-center justify-between mb-4">
@@ -1450,7 +1450,7 @@ const BrandMobileDashboard = ({
 	                        </div>
 	                        <button type="button"
 	                          onClick={() => setShowCounterEditor(false)}
-	                          className={cn('w-10 h-10 rounded-full border flex items-center justify-center', borderColor, isDark ? 'bg-white/5' : 'bg-slate-50')}
+	                          className={cn('w-10 h-10 rounded-full border flex items-center justify-center', borderColor, isDark ? 'bg-card' : 'bg-background')}
 	                        >
 	                          <ChevronRight className={cn('w-4 h-4 rotate-180', textColor)} />
 	                        </button>
@@ -1483,14 +1483,14 @@ const BrandMobileDashboard = ({
 	                          <button type="button"
 	                            onClick={() => setShowCounterEditor(false)}
 	                            disabled={isRequestBusy}
-	                            className={cn('h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
+	                            className={cn('h-12 rounded-2xl border text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground')}
 	                          >
 	                            Cancel
 	                          </button>
 	                          <button type="button"
 	                            onClick={submitCounter}
 	                            disabled={isRequestBusy}
-	                            className={cn('h-12 rounded-2xl text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-blue-600 to-sky-600 text-white')}
+	                            className={cn('h-12 rounded-2xl text-[13px] font-black transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-blue-600 to-sky-600 text-foreground')}
 	                          >
 	                            {isRequestBusy ? 'Saving...' : 'Send'}
 	                          </button>
@@ -1507,7 +1507,7 @@ const BrandMobileDashboard = ({
 	                    <h3 className={cn('text-[18px] font-bold tracking-tight truncate', textColor)}>{title}</h3>
 	                    <p className={cn('text-[12px] mt-1 opacity-60', textColor)}>{deliverables}</p>
 	                  </div>
-	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/70 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+	                  <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/70 bg-card' : 'border-border text-muted-foreground bg-background')}>
 	                    {status}
 	                  </span>
 	                </div>
@@ -1546,8 +1546,8 @@ const BrandMobileDashboard = ({
 		                    className={cn(
 		                      'p-5 rounded-[1.6rem] text-left border transition active:scale-[0.98] disabled:opacity-60',
 		                      isDark
-	                        ? 'border-white/10 bg-white/5 hover:bg-white/10'
-	                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+	                        ? 'border-border bg-card hover:bg-secondary/50'
+	                        : 'border-border bg-background hover:bg-background'
 	                    )}
 	                  >
 	                    <p className={cn('text-[13px] font-bold', textColor)}>{isOpeningContract ? 'Opening Contract...' : 'Review Contract'}</p>
@@ -1680,13 +1680,13 @@ const BrandMobileDashboard = ({
                   disabled={isMarkingComplete || !canSubmitCompletion}
                   className={cn(
                     'p-4 rounded-2xl border text-left transition-all active:scale-[0.99] disabled:opacity-60',
-                    isDark ? 'bg-emerald-500/10 border-emerald-400/25 hover:bg-emerald-500/15' : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+                    isDark ? 'bg-primary/10 border-primary/25 hover:bg-primary/15' : 'bg-primary border-primary hover:bg-primary'
                   )}
                 >
-                  <p className={cn('text-[13px] font-bold', isDark ? 'text-emerald-200' : 'text-emerald-800')}>
+                  <p className={cn('text-[13px] font-bold', isDark ? 'text-primary' : 'text-primary')}>
                     {isMarkingComplete ? 'Marking complete...' : 'Mark collaboration complete'}
                   </p>
-                  <p className={cn('text-[12px] mt-1', isDark ? 'text-emerald-200/70' : 'text-emerald-700/80')}>
+                  <p className={cn('text-[12px] mt-1', isDark ? 'text-primary/70' : 'text-primary/80')}>
                     {canSubmitCompletion
                       ? 'All required obligations are done. Move this deal to completed.'
                       : `Complete after ${completionBlockers.join(', ')}.`}
@@ -1703,7 +1703,7 @@ const BrandMobileDashboard = ({
                   }
                   toast.message('Creator profile unavailable');
                 }}
-                className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
               >
                 <p className={cn('text-[13px] font-bold', textColor)}>View creator profile</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Open the creator page in the same app</p>
@@ -1714,14 +1714,14 @@ const BrandMobileDashboard = ({
                   setSelectedOffer(null);
                   setActiveTab('collabs', normalizeStatus(offer?.status) === 'accepted' ? 'active' : activeCollabTab);
                 }}
-                className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
               >
                 <p className={cn('text-[13px] font-bold', textColor)}>Back to {activeCollabTab} list</p>
                 <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Keep reviewing offers without leaving this screen</p>
               </button>
 	              <button type="button"
 	                onClick={() => setSelectedOffer(null)}
-	                className={cn('h-12 rounded-2xl font-bold text-[13px] transition-all active:scale-[0.99]', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
+	                className={cn('h-12 rounded-2xl font-bold text-[13px] transition-all active:scale-[0.99]', isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}
 	              >
 	                Close
 	              </button>
@@ -1768,7 +1768,7 @@ const BrandMobileDashboard = ({
       ? deadline.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
       : '—';
     const diffDays = deadline ? Math.ceil((deadline.getTime() - Date.now()) / 86400000) : null;
-    const dueTone = diffDays === null ? secondaryTextColor : diffDays < 0 ? 'text-rose-500' : diffDays <= 7 ? 'text-amber-500' : 'text-sky-500';
+    const dueTone = diffDays === null ? secondaryTextColor : diffDays < 0 ? 'text-rose-500' : diffDays <= 7 ? 'text-warning' : 'text-info';
     const contractUrl = offer?.safe_contract_url || offer?.signed_contract_url || offer?.contract_file_url || null;
     const usageRights = offer?.usage_rights || offer?.usage_type || 'Organic social media only';
     const usageDuration = offer?.usage_duration || '90 days limit';
@@ -1819,12 +1819,12 @@ const BrandMobileDashboard = ({
 			    const label = cardUi.human || 'In progress';
 			    const tone =
 			      normalizedDealStatus === 'COMPLETED'
-			        ? (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
+			        ? (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-background text-muted-foreground border-border')
 			        : primaryCta.tone === 'action'
-			          ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
+			          ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
 			          : primaryCta.tone === 'waiting'
-			            ? (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200')
-			            : (isDark ? 'bg-sky-500/10 text-sky-200 border-sky-500/25' : 'bg-sky-50 text-sky-800 border-sky-200');
+			            ? (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border')
+			            : (isDark ? 'bg-info/10 text-info border-sky-500/25' : 'bg-info text-info border-sky-200');
 
 			    const stepIndex = Math.max(0, Math.min(4, (cardUi.step || 1) - 1));
 			    return { label, tone, cta: primaryCta.label, stepIndex };
@@ -2242,7 +2242,7 @@ const BrandMobileDashboard = ({
       <div
         className={cn(
           'rounded-3xl border shadow-[0_10px_40px_rgba(2,6,23,0.06)] overflow-hidden',
-          isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200',
+          isDark ? 'bg-card border-border' : 'bg-card border-border',
           className
         )}
       >
@@ -2255,7 +2255,7 @@ const BrandMobileDashboard = ({
     );
 
     const Pill = ({ children }: { children: ReactNode }) => (
-      <div className={cn('rounded-2xl border px-4 py-3 text-[14px] font-black', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900')}>
+      <div className={cn('rounded-2xl border px-4 py-3 text-[14px] font-black', isDark ? 'bg-card border-border text-foreground' : 'bg-card border-border text-muted-foreground')}>
         {children}
       </div>
     );
@@ -2270,9 +2270,9 @@ const BrandMobileDashboard = ({
           isDark ? 'bg-[#061318]' : 'bg-[#F9FAFB]'
         )}
       >
-        <div className={cn('px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-white/10' : 'bg-white border-slate-100')}>
+        <div className={cn('px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-[210]', isDark ? 'bg-[#061318]/92 backdrop-blur-xl border-border' : 'bg-card border-border')}>
           <div className="flex items-center gap-3">
-            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50')}>
+            <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setSelectedDealPage(null); }} className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-card hover:bg-background')}>
               <ChevronRight className="w-4 h-4 rotate-180" />
             </button>
             <div>
@@ -2285,7 +2285,7 @@ const BrandMobileDashboard = ({
               triggerHaptic(HapticPatterns.light);
               toast.message('More actions coming next.');
             }}
-            className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-white hover:bg-slate-50')}
+            className={cn('w-10 h-10 rounded-full flex items-center justify-center border transition-all active:scale-90', borderColor, isDark ? 'bg-card hover:bg-secondary/50' : 'bg-card hover:bg-background')}
           >
             <MoreHorizontal className={cn('w-5 h-5 opacity-60', textColor)} />
           </button>
@@ -2295,13 +2295,13 @@ const BrandMobileDashboard = ({
           {/* Hero */}
           <DealCard className="mb-6">
             <div className="p-5 relative overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(60%_50%_at_15%_0%,rgba(16,185,129,0.14),transparent_65%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.10),transparent_65%)]" />
+              <div className="absolute inset-0 pointer-events-none bg-background" />
               <div className="relative">
 	                <div className="flex items-center justify-between gap-3 mb-4">
 	                  <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', dealUi.tone)}>
 	                    {dealUi.label}
 	                  </span>
-	                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200') : (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200'))}>
+	                  <span className={cn('inline-flex px-3 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-widest', offer?.collab_type === 'barter' ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning') : (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary'))}>
 	                    {offer?.collab_type === 'barter' ? 'BARTER' : 'PAID CAMPAIGN'}
 	                  </span>
 	                </div>
@@ -2326,30 +2326,30 @@ const BrandMobileDashboard = ({
 	                  {amount > 0 ? formatCompactINR(amount) : '—'}
 	                  <span className={cn('text-[18px] font-bold ml-2 opacity-60', textColor)}>Offer</span>
                 </p>
-                <p className={cn('text-[14px] font-bold mt-3', isDark ? 'text-slate-300' : 'text-slate-600')}>
+                <p className={cn('text-[14px] font-bold mt-3', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
                   {String(deliverables).replaceAll(',', ' •')}
                 </p>
 
                 {typeof offer?.campaign_description === 'string' && offer.campaign_description.trim() && (
-                  <div className={cn('mt-4 rounded-2xl border px-4 py-3', isDark ? 'bg-white/5 border-white/10' : 'bg-white/80 border-slate-200')}>
+                  <div className={cn('mt-4 rounded-2xl border px-4 py-3', isDark ? 'bg-card border-border' : 'bg-secondary/80 border-border')}>
                     <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-50 mb-1', textColor)}>Campaign brief</p>
-                    <p className={cn('text-[12px] font-semibold leading-relaxed whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>
+                    <p className={cn('text-[12px] font-semibold leading-relaxed whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>
                       {offer.campaign_description.trim()}
                     </p>
                   </div>
                 )}
 
-                <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-white/10' : 'border-slate-100')}>
-                  <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-white/10' : 'border-slate-200')}>
+                <div className={cn('flex items-center gap-3 w-full border-t pt-4 mt-5', isDark ? 'border-border' : 'border-border')}>
+                  <Avatar className={cn('w-11 h-11 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
                     <AvatarImage src={offer?.profiles?.avatar_url || offer?.profiles?.profile_image_url || ''} alt={creatorName || 'Creator'} />
-                    <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+                    <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
                       {(creatorName || 'C').slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className={cn('text-[15px] font-black tracking-tight truncate', textColor)}>{creatorName || 'Creator'}</p>
-                      <ShieldCheck className="w-4 h-4 text-blue-500" strokeWidth={2.5} />
+                      <ShieldCheck className="w-4 h-4 text-info" strokeWidth={2.5} />
                     </div>
                     <p className={cn('text-[11px] font-semibold mt-0.5', secondaryTextColor)}>Verified Creator</p>
                   </div>
@@ -2370,7 +2370,7 @@ const BrandMobileDashboard = ({
                 <div className="grid grid-cols-5 gap-2">
                   {['Contract', 'Signed', 'Create', 'Deliver', 'Done'].map((step, idx) => (
                     <div key={step} className="flex flex-col items-center gap-2">
-                      <div className={cn('h-2 w-full rounded-full', idx <= dealUi.stepIndex ? (isDark ? 'bg-gradient-to-r from-emerald-400 to-sky-400' : 'bg-gradient-to-r from-emerald-500 to-sky-500') : (isDark ? 'bg-white/10' : 'bg-slate-100'))} />
+                      <div className={cn('h-2 w-full rounded-full', idx <= dealUi.stepIndex ? (isDark ? 'bg-gradient-to-r from-emerald-400 to-sky-400' : 'bg-gradient-to-r from-emerald-500 to-sky-500') : (isDark ? 'bg-secondary/50' : 'bg-background'))} />
                       <span className={cn('text-[10px] font-black tracking-tight text-center', idx <= dealUi.stepIndex ? textColor : secondaryTextColor)}>{step}</span>
                     </div>
                   ))}
@@ -2387,8 +2387,8 @@ const BrandMobileDashboard = ({
                   {requiresPayment ? 'Payout method' : requiresShipping ? 'Fulfillment' : 'Deal type'}
                 </p>
                 <div className="flex items-center gap-2.5">
-                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-emerald-500/15' : 'bg-emerald-500/10')}>
-                    <Landmark className={cn('w-4 h-4', isDark ? 'text-emerald-200' : 'text-emerald-700')} />
+                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', isDark ? 'bg-primary/15' : 'bg-primary/10')}>
+                    <Landmark className={cn('w-4 h-4', isDark ? 'text-primary' : 'text-primary')} />
                   </div>
                   <span className={cn('text-[14px] font-black leading-tight', textColor)}>
                     {requiresPayment ? 'UPI' : requiresShipping ? 'Product' : 'Collab'}
@@ -2448,10 +2448,10 @@ const BrandMobileDashboard = ({
 	                        ? 'READY'
 	                        : 'PENDING';
 	                  const badgeTone = isSignedStage
-	                    ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
+	                    ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
 	                    : contractUrl
-	                      ? (isDark ? 'bg-sky-500/10 text-sky-200 border-sky-500/20' : 'bg-sky-50 text-sky-800 border-sky-200')
-	                      : (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200');
+	                      ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-info border-sky-200')
+	                      : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning');
 	                  return (
 	                    <div className="flex items-start justify-between gap-3 mb-4">
 	                      <div className="min-w-0">
@@ -2465,7 +2465,7 @@ const BrandMobileDashboard = ({
 	                  );
 	                })()}
 
-	                <div className={cn('rounded-2xl border px-4 py-3 mb-4', isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200')}>
+	                <div className={cn('rounded-2xl border px-4 py-3 mb-4', isDark ? 'bg-card border-border' : 'bg-background border-border')}>
 	                  <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Document</p>
                   <p className={cn('text-[13px] font-bold truncate', textColor)}>
                     {contractUrl ? decodeURIComponent(String(contractUrl).split('/').pop() || 'collaboration-contract.pdf') : 'Contract will appear here'}
@@ -2478,7 +2478,7 @@ const BrandMobileDashboard = ({
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
                       'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                      isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                      isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
                     )}
                   >
                     Open
@@ -2488,7 +2488,7 @@ const BrandMobileDashboard = ({
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
                       'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                      isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                      isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
                     )}
                   >
                     Copy Link
@@ -2501,7 +2501,7 @@ const BrandMobileDashboard = ({
                     disabled={isOpeningContract || isGeneratingContract}
                     className={cn(
                       'mt-3 h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
-                      'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_35px_rgba(16,185,129,0.20)]'
+                      'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.20)]'
                     )}
                   >
                     Generate Contract
@@ -2540,17 +2540,17 @@ const BrandMobileDashboard = ({
                     <span className={cn(
                       'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                       shippingDelivered
-                        ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
+                        ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
                         : shippingStatus === 'shipped'
-                          ? (isDark ? 'bg-sky-500/10 text-sky-200 border-sky-500/20' : 'bg-sky-50 text-sky-800 border-sky-200')
-                          : (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
+                          ? (isDark ? 'bg-info/10 text-info border-sky-500/20' : 'bg-info text-info border-sky-200')
+                          : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
                     )}>
                       {shippingDelivered ? 'DELIVERED' : shippingStatus === 'shipped' ? 'SHIPPED' : 'PENDING'}
                     </span>
                   </div>
 
                   {(courierName || trackingNumber || trackingUrl || expectedDeliveryDate) && (
-                    <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-slate-200')}>
+                    <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-card border-border')}>
                       {courierName && (
                         <div>
                           <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Courier</p>
@@ -2563,7 +2563,7 @@ const BrandMobileDashboard = ({
                             <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50', textColor)}>Tracking</p>
                             <button type="button"
                               onClick={() => { void copyText(trackingNumber, 'Tracking number'); }}
-                              className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
+                              className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-info' : 'text-info')}
                             >
                               Copy
                             </button>
@@ -2580,7 +2580,7 @@ const BrandMobileDashboard = ({
                         </div>
                       )}
                       {trackingUrl && (
-                        <a href={trackingUrl} target="_blank" rel="noreferrer" className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-sky-200' : 'text-sky-700')}>
+                        <a href={trackingUrl} target="_blank" rel="noreferrer" className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-info' : 'text-info')}>
                           <FileText className="w-4 h-4" />
                           Open tracking link
                         </a>
@@ -2599,7 +2599,7 @@ const BrandMobileDashboard = ({
                           setExpectedDeliveryDateDraft(expectedDeliveryDate ? expectedDeliveryDate.slice(0, 10) : '');
                           setShowShippingBox(true);
                         }}
-                        className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                        className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
                       >
                         {shippingStatus === 'shipped' ? 'Update shipping' : 'Add shipping details'}
                       </button>
@@ -2611,7 +2611,7 @@ const BrandMobileDashboard = ({
                             value={courierNameDraft}
                             onChange={(e) => setCourierNameDraft(e.target.value)}
                             placeholder="Blue Dart, Delhivery, DHL..."
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
                           />
                         </div>
                         <div>
@@ -2620,7 +2620,7 @@ const BrandMobileDashboard = ({
                             value={trackingNumberDraft}
                             onChange={(e) => setTrackingNumberDraft(e.target.value)}
                             placeholder="Enter shipment tracking number"
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
                           />
                         </div>
                         <div>
@@ -2629,7 +2629,7 @@ const BrandMobileDashboard = ({
                             value={trackingUrlDraft}
                             onChange={(e) => setTrackingUrlDraft(e.target.value)}
                             placeholder="https://..."
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
                           />
                         </div>
                         <div>
@@ -2638,7 +2638,7 @@ const BrandMobileDashboard = ({
                             type="date"
                             value={expectedDeliveryDateDraft}
                             onChange={(e) => setExpectedDeliveryDateDraft(e.target.value)}
-                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
+                            className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground')}
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -2647,14 +2647,14 @@ const BrandMobileDashboard = ({
                               triggerHaptic(HapticPatterns.light);
                               setShowShippingBox(false);
                             }}
-                            className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50')}
+                            className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background')}
                           >
                             Cancel
                           </button>
                           <button type="button"
                             onClick={updateShipping}
                             disabled={isUpdatingShipping}
-                            className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                            className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
                           >
                             {isUpdatingShipping ? 'Saving…' : shippingStatus === 'shipped' ? 'Update shipping' : 'Mark as shipped'}
                           </button>
@@ -2731,21 +2731,21 @@ const BrandMobileDashboard = ({
                             className={cn(
                               'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                               canReview
-                                ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
+                                ? (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
                                 : isCompleted
-                                  ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
+                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
                                   : isDisputed
                                     ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
                                     : waitingRevision
                                       ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-500/20' : 'bg-rose-50 text-rose-700 border-rose-200')
-                                      : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-slate-50 text-slate-700 border-slate-200')
+                                      : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-background text-muted-foreground border-border')
                             )}
                           >
                             {canReview ? 'NEEDS REVIEW' : isCompleted ? 'COMPLETED' : isDisputed ? 'DISPUTED' : waitingRevision ? 'REVISION' : 'WAITING'}
                           </span>
                         </div>
 
-                        <div className={cn('rounded-2xl border px-4 py-3', isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200')}>
+                        <div className={cn('rounded-2xl border px-4 py-3', isDark ? 'bg-card border-border' : 'bg-background border-border')}>
                           <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Content Links</p>
                           {contentLinks.length ? (
                             <div className="space-y-2">
@@ -2755,7 +2755,7 @@ const BrandMobileDashboard = ({
                                   href={link}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className={cn('text-[13px] font-bold break-all underline block', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                  className={cn('text-[13px] font-bold break-all underline block', isDark ? 'text-info' : 'text-info')}
                                 >
                                   {link}
                                 </a>
@@ -2767,11 +2767,11 @@ const BrandMobileDashboard = ({
                         </div>
 
                         {(caption || notes || deliveryStatus) && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-slate-200')}>
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-card border-border')}>
                             {deliveryStatus && (
                               <div>
                                 <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Status</p>
-                                <p className={cn('text-[13px] font-semibold', isDark ? 'text-white/80' : 'text-slate-700')}>
+                                <p className={cn('text-[13px] font-semibold', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>
                                   {deliveryStatus === 'posted' ? 'Already posted' : 'Draft for review'}
                                 </p>
                               </div>
@@ -2779,13 +2779,13 @@ const BrandMobileDashboard = ({
                             {caption && (
                               <div>
                                 <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Caption</p>
-                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>{caption}</p>
+                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>{caption}</p>
                               </div>
                             )}
                             {notes && (
                               <div>
                                 <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Message</p>
-                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-white/80' : 'text-slate-700')}>{notes}</p>
+                                <p className={cn('text-[13px] font-semibold whitespace-pre-wrap', isDark ? 'text-foreground/80' : 'text-muted-foreground')}>{notes}</p>
                               </div>
                             )}
                           </div>
@@ -2799,7 +2799,7 @@ const BrandMobileDashboard = ({
                         )}
 
                         {requiresPayment && (canReleasePayment || normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED') && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-card border-border' : 'bg-card border-border')}>
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className={cn('text-[16px] font-black leading-tight', textColor)}>
@@ -2814,26 +2814,26 @@ const BrandMobileDashboard = ({
                               <span className={cn(
                                 'px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border',
                                 normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED'
-                                  ? (isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')
-                                  : (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-amber-50 text-amber-800 border-amber-200')
+                                  ? (isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')
+                                  : (isDark ? 'bg-warning/10 text-warning border-warning/20' : 'bg-warning text-warning border-warning')
                               )}>
                                 {normalizedDealStatus === 'PAYMENT_RELEASED' || normalizedDealStatus === 'COMPLETED' ? 'RECORDED' : 'REQUIRED'}
                               </span>
                             </div>
 
-                            <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-emerald-500/5 border-emerald-500/15' : 'bg-emerald-50/70 border-emerald-200')}>
+                            <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-primary/5 border-primary/15' : 'bg-primary/70 border-primary')}>
                               <div className="flex items-start justify-between gap-3">
                                 <div>
                                   <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-60 mb-1', textColor)}>Pay creator</p>
                                   <p className={cn('text-[14px] font-black', textColor)}>UPI payout details</p>
                                   <p className={cn('text-[12px] font-semibold mt-1', secondaryTextColor)}>Use this UPI ID when sending payment for this collaboration.</p>
                                 </div>
-                                <span className={cn('px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border', isDark ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-white text-emerald-800 border-emerald-200')}>
+                                <span className={cn('px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-card text-primary border-primary')}>
                                   UPI
                                 </span>
                               </div>
 
-                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-white border-emerald-100')}>
+                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-card border-primary')}>
                                 <div>
                                   <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Payee name</p>
                                   <p className={cn('text-[13px] font-semibold break-all', textColor)}>{creatorPayeeName || 'Creator'}</p>
@@ -2844,7 +2844,7 @@ const BrandMobileDashboard = ({
                                     {creatorUpiId && (
                                       <button type="button"
                                         onClick={() => { void copyText(creatorUpiId, 'UPI ID'); }}
-                                        className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                        className={cn('text-[11px] font-black uppercase tracking-wider', isDark ? 'text-info' : 'text-info')}
                                       >
                                         Copy
                                       </button>
@@ -2856,7 +2856,7 @@ const BrandMobileDashboard = ({
                             </div>
 
                             {(paymentReference || paymentReceivedDate || paymentProofUrl || paymentNotes) && (
-                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/3 border-white/10' : 'bg-slate-50 border-slate-200')}>
+                              <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-secondary/3 border-border' : 'bg-background border-border')}>
                                 {paymentReference && (
                                   <div>
                                     <p className={cn('text-[11px] font-black uppercase tracking-wider opacity-50 mb-1', textColor)}>Reference</p>
@@ -2882,7 +2882,7 @@ const BrandMobileDashboard = ({
                                     href={paymentProofUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-sky-200' : 'text-sky-700')}
+                                    className={cn('inline-flex items-center gap-2 text-[13px] font-bold underline', isDark ? 'text-info' : 'text-info')}
                                   >
                                     <FileText className="w-4 h-4" />
                                     View payment proof
@@ -2903,7 +2903,7 @@ const BrandMobileDashboard = ({
                                       }
                                       setShowPaymentProofBox(true);
                                     }}
-                                    className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                                    className={cn('h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
                                   >
                                     Add payment proof
                                   </button>
@@ -2915,7 +2915,7 @@ const BrandMobileDashboard = ({
                                         value={paymentReferenceDraft}
                                         onChange={(e) => setPaymentReferenceDraft(e.target.value)}
                                         placeholder="Enter UTR, bank ref, or transaction id"
-                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
                                       />
                                     </div>
                                     <div>
@@ -2924,7 +2924,7 @@ const BrandMobileDashboard = ({
                                         type="date"
                                         value={paymentDateDraft}
                                         onChange={(e) => setPaymentDateDraft(e.target.value)}
-                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')}
+                                        className={cn('w-full h-12 rounded-2xl px-4 text-[13px] font-semibold outline-none border', isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground')}
                                       />
                                     </div>
                                     <div>
@@ -2941,7 +2941,7 @@ const BrandMobileDashboard = ({
                                           }
                                           setPaymentProofFile(file);
                                         }}
-                                        className={cn('block w-full text-[12px] font-semibold', isDark ? 'text-white/80 file:text-white' : 'text-slate-700')}
+                                        className={cn('block w-full text-[12px] font-semibold', isDark ? 'text-foreground/80 file:text-foreground' : 'text-muted-foreground')}
                                       />
                                       {paymentProofFile && (
                                         <p className={cn('text-[11px] font-semibold mt-2', secondaryTextColor)}>{paymentProofFile.name}</p>
@@ -2953,7 +2953,7 @@ const BrandMobileDashboard = ({
                                         value={paymentNotesDraft}
                                         onChange={(e) => setPaymentNotesDraft(e.target.value)}
                                         placeholder="Add bank/account/payment notes"
-                                        className={cn('w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none', isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400')}
+                                        className={cn('w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none', isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground')}
                                       />
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
@@ -2962,14 +2962,14 @@ const BrandMobileDashboard = ({
                                           triggerHaptic(HapticPatterns.light);
                                           setShowPaymentProofBox(false);
                                         }}
-                                        className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50')}
+                                        className={cn('h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]', isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background')}
                                       >
                                         Cancel
                                       </button>
                                       <button type="button"
                                         onClick={releasePayment}
                                         disabled={isReleasingPayment}
-                                        className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white')}
+                                        className={cn('h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground')}
                                       >
                                         {isReleasingPayment ? 'Saving…' : 'Release payment'}
                                       </button>
@@ -2988,7 +2988,7 @@ const BrandMobileDashboard = ({
                               disabled={isReviewingContent}
                               className={cn(
                                 'h-12 w-full rounded-2xl font-black text-[13px] transition active:scale-[0.98] disabled:opacity-60',
-                                'bg-gradient-to-r from-emerald-600 to-sky-600 text-white'
+                                'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground'
                               )}
                             >
                               {isReviewingContent ? 'Saving…' : 'Approve content'}
@@ -3003,7 +3003,7 @@ const BrandMobileDashboard = ({
                                 disabled={isReviewingContent}
                                 className={cn(
                                   'h-12 rounded-2xl font-black text-[13px] border transition active:scale-[0.98] disabled:opacity-60',
-                                  isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                                  isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
                                 )}
                               >
                                 Request revision
@@ -3027,7 +3027,7 @@ const BrandMobileDashboard = ({
                         )}
 
                         {showRevisionBox && (
-                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200')}>
+                          <div className={cn('rounded-2xl border p-4 space-y-3', isDark ? 'bg-card border-border' : 'bg-card border-border')}>
                             <p className={cn('text-[12px] font-black', textColor)}>Revision note (required)</p>
                             <textarea
                               value={revisionFeedbackDraft}
@@ -3035,7 +3035,7 @@ const BrandMobileDashboard = ({
                               placeholder="What should the creator change?"
                               className={cn(
                                 'w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none',
-                                isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400'
+                                isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-background border-border text-muted-foreground placeholder:text-muted-foreground'
                               )}
                             />
                             <div className="grid grid-cols-2 gap-2">
@@ -3046,7 +3046,7 @@ const BrandMobileDashboard = ({
                                 }}
                                 className={cn(
                                   'h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]',
-                                  isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                                  isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-border text-muted-foreground hover:bg-background'
                                 )}
                               >
                                 Cancel
@@ -3056,7 +3056,7 @@ const BrandMobileDashboard = ({
                                 disabled={isReviewingContent}
                                 className={cn(
                                   'h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60',
-                                  isDark ? 'bg-rose-600 text-white' : 'bg-rose-600 text-white'
+                                  isDark ? 'bg-rose-600 text-foreground' : 'bg-rose-600 text-foreground'
                                 )}
                               >
                                 {isReviewingContent ? 'Sending…' : 'Send note'}
@@ -3074,7 +3074,7 @@ const BrandMobileDashboard = ({
                               placeholder="What went wrong? Add any context for support."
                               className={cn(
                                 'w-full min-h-[92px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none border resize-none',
-                                isDark ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-white border-rose-200 text-slate-900 placeholder:text-slate-400'
+                                isDark ? 'bg-card border-border text-foreground placeholder:text-foreground/30' : 'bg-card border-rose-200 text-muted-foreground placeholder:text-muted-foreground'
                               )}
                             />
                             <div className="grid grid-cols-2 gap-2">
@@ -3085,7 +3085,7 @@ const BrandMobileDashboard = ({
                                 }}
                                 className={cn(
                                   'h-11 rounded-2xl font-black text-[12px] border transition active:scale-[0.98]',
-                                  isDark ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-100'
+                                  isDark ? 'bg-card border-border text-foreground hover:bg-secondary/50' : 'bg-card border-rose-200 text-rose-700 hover:bg-rose-100'
                                 )}
                               >
                                 Cancel
@@ -3095,7 +3095,7 @@ const BrandMobileDashboard = ({
                                 disabled={isReviewingContent}
                                 className={cn(
                                   'h-11 rounded-2xl font-black text-[12px] transition active:scale-[0.98] disabled:opacity-60',
-                                  'bg-rose-600 text-white'
+                                  'bg-rose-600 text-foreground'
                                 )}
                               >
                                 {isReviewingContent ? 'Saving…' : 'Raise issue'}
@@ -3125,15 +3125,15 @@ const BrandMobileDashboard = ({
           {/* Legal protection */}
           <div className="mb-6">
             <SectionTitle>Legal Protection</SectionTitle>
-            <div className={cn('rounded-3xl border p-5 relative overflow-hidden', isDark ? 'bg-emerald-500/8 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200')}>
+            <div className={cn('rounded-3xl border p-5 relative overflow-hidden', isDark ? 'bg-primary/8 border-primary/20' : 'bg-primary border-primary')}>
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/12 to-transparent pointer-events-none" />
               <div className="relative flex items-center gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-[0_6px_18px_rgba(16,185,129,0.28)]">
-                  <ShieldCheck className="w-6 h-6 text-white" strokeWidth={2.5} />
+                <div className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shrink-0 shadow-[0_6px_18px_rgba(16,185,129,0.28)]">
+                  <ShieldCheck className="w-6 h-6 text-foreground" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('font-black text-[15px] leading-tight', isDark ? 'text-emerald-200' : 'text-emerald-800')}>Protected by Creator Armour</p>
-                  <p className={cn('text-[12px] font-semibold mt-1', isDark ? 'text-emerald-100/70' : 'text-emerald-800/80')}>Contract + rights + dispute support</p>
+                  <p className={cn('font-black text-[15px] leading-tight', isDark ? 'text-primary' : 'text-primary')}>Protected by Creator Armour</p>
+                  <p className={cn('text-[12px] font-semibold mt-1', isDark ? 'text-primary/70' : 'text-primary/80')}>Contract + rights + dispute support</p>
                 </div>
               </div>
             </div>
@@ -3144,7 +3144,7 @@ const BrandMobileDashboard = ({
         <div
           className={cn(
             'fixed inset-x-0 bottom-0 z-[220] border-t',
-            isDark ? 'bg-[#061318] border-white/10' : 'bg-white border-slate-100'
+            isDark ? 'bg-[#061318] border-border' : 'bg-card border-border'
           )}
         >
           <div
@@ -3180,10 +3180,10 @@ const BrandMobileDashboard = ({
     >
       <PageHeader title="Notifications" />
       <div className="px-5 space-y-6">
-        <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-[#1C1C1E] divide-[#2C2C2E]' : 'bg-white divide-[#E5E5EA] shadow-sm', 'divide-y')}>
+        <div className={cn('rounded-[24px] border overflow-hidden', borderColor, isDark ? 'bg-card divide-[#2C2C2E]' : 'bg-card divide-[#E5E5EA] shadow-sm', 'divide-y')}>
           <div className="p-4 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-500/15 text-blue-700')}>
+              <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0', isDark ? 'bg-info/20 text-info' : 'bg-info/15 text-info')}>
                 <Bell className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -3202,12 +3202,12 @@ const BrandMobileDashboard = ({
               }}
               className={cn(
                 'w-11 h-6 rounded-full relative transition-colors duration-200 ease-in-out',
-                isPushSubscribed ? 'bg-emerald-500' : isDark ? 'bg-[#39393D]' : 'bg-[#E9E9EB]'
+                isPushSubscribed ? 'bg-primary' : isDark ? 'bg-[#39393D]' : 'bg-[#E9E9EB]'
               )}
             >
               <motion.div
                 animate={{ x: isPushSubscribed ? 22 : 2 }}
-                className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+                className="absolute top-0.5 left-0.5 w-5 h-5 bg-card rounded-full shadow-md"
               />
             </button>
           </div>
@@ -3221,14 +3221,14 @@ const BrandMobileDashboard = ({
                 if (res.success) toast.success('Test notification sent!');
                 else toast.error('Failed: ' + res.reason);
               }}
-              className={cn('w-full py-4 text-[13px] font-bold text-center transition-all active:bg-opacity-50', isDark ? 'text-sky-400 active:bg-white/5' : 'text-sky-600 active:bg-slate-50')}
+              className={cn('w-full py-4 text-[13px] font-bold text-center transition-all active:bg-opacity-50', isDark ? 'text-info active:bg-card' : 'text-info active:bg-background')}
             >
               {isPushBusy ? 'Sending...' : 'Send Test Notification'}
             </button>
           )}
         </div>
 
-        <div className={cn('p-5 rounded-[24px] border', borderColor, isDark ? 'bg-white/5' : 'bg-white shadow-sm')}>
+        <div className={cn('p-5 rounded-[24px] border', borderColor, isDark ? 'bg-card' : 'bg-card shadow-sm')}>
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
               <p className={cn('text-[11px] font-black uppercase tracking-widest opacity-40 mb-1', textColor)}>Current Status</p>
@@ -3247,13 +3247,13 @@ const BrandMobileDashboard = ({
                 await refreshPushStatus();
                 toast.success('Status refreshed');
               }}
-              className={cn('p-2 rounded-xl border transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
+              className={cn('p-2 rounded-xl border transition-all active:scale-95', isDark ? 'border-border bg-card' : 'border-border bg-card')}
             >
               <RefreshCw className={cn('w-4 h-4 opacity-60', textColor)} />
             </button>
           </div>
           {isIOSNeedsInstall && (
-            <p className={cn('text-[12px] opacity-60', isDark ? 'text-amber-200/80' : 'text-amber-700')}>
+            <p className={cn('text-[12px] opacity-60', isDark ? 'text-warning/80' : 'text-warning')}>
               iOS requires “Add to Home Screen” to support push notifications.
             </p>
           )}
@@ -3294,14 +3294,14 @@ const BrandMobileDashboard = ({
                 initial={{ opacity: 0, scale: 0.96, y: 18 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 18 }}
-                className="rounded-3xl border border-white/10 bg-neutral-950/95 text-white shadow-2xl shadow-black/60 overflow-hidden"
+                className="rounded-3xl border border-border bg-neutral-950/95 text-foreground shadow-2xl shadow-black/60 overflow-hidden"
               >
               <div className="px-6 pt-6 pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[11px] font-black uppercase tracking-widest text-white/50">Contract</p>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-foreground/50">Contract</p>
                     <h3 className="mt-1 flex items-center gap-2 text-2xl font-semibold tracking-tight">
-                      <FileText className="w-5 h-5 text-sky-400" />
+                      <FileText className="w-5 h-5 text-info" />
                       Sign Agreement
                     </h3>
                     <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
@@ -3312,27 +3312,27 @@ const BrandMobileDashboard = ({
                   </div>
                   <button type="button"
                     onClick={closeBrandSigningModal}
-                    className="w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center"
+                    className="w-10 h-10 rounded-full border border-border bg-card hover:bg-secondary/50 flex items-center justify-center"
                     aria-label="Close"
                   >
-                    <ChevronRight className="w-4 h-4 rotate-45 text-white/70" />
+                    <ChevronRight className="w-4 h-4 rotate-45 text-foreground/70" />
                   </button>
                 </div>
               </div>
 
               <div className="px-6 pb-6 space-y-4">
                 {brandSigningInitError && (
-                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                     {brandSigningInitError}
                   </div>
                 )}
 
                 {!brandSigningToken && !brandSigningInitError && (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-white/70" />
+                  <div className="rounded-2xl border border-border bg-card px-4 py-4 flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin text-foreground/70" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold">Preparing signing…</p>
-                      <p className="text-xs text-white/60">Fetching your secure contract token.</p>
+                      <p className="text-xs text-foreground/60">Fetching your secure contract token.</p>
                     </div>
                   </div>
                 )}
@@ -3350,7 +3350,7 @@ const BrandMobileDashboard = ({
                         placeholder="you@company.com"
                         inputMode="email"
                         autoComplete="email"
-                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3 text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500"
+                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3 text-foreground focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500"
                       />
                     </div>
 
@@ -3358,7 +3358,7 @@ const BrandMobileDashboard = ({
                       onClick={handleSendBrandOTP}
                       disabled={isSendingBrandOTP || !!brandSigningInitError}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full bg-sky-600 hover:bg-sky-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                      className="w-full bg-info hover:bg-info py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
                     >
                       {isSendingBrandOTP ? (
                         <>
@@ -3387,7 +3387,7 @@ const BrandMobileDashboard = ({
                         onChange={(e) => setBrandSigningOtp(e.target.value.replace(/\D/g, ''))}
                         inputMode="numeric"
                         autoComplete="one-time-code"
-                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-white focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
+                        className="w-full bg-neutral-900 border border-neutral-600 rounded-xl px-4 py-3.5 text-center text-3xl tracking-[0.32em] font-mono text-foreground focus:border-sky-400 focus:ring-2 focus:ring-sky-400/25 outline-none transition-all placeholder:text-neutral-500 placeholder:tracking-normal"
                       />
                       <p className="text-xs text-neutral-400">Code expires in 10 minutes.</p>
                     </div>
@@ -3396,7 +3396,7 @@ const BrandMobileDashboard = ({
                       onClick={handleVerifyAndSignBrand}
                       disabled={isVerifyingBrandOTP || isSigningBrandContract || brandSigningOtp.replace(/\D/g, '').length !== 6}
                       whileTap={{ scale: 0.98 }}
-                      className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
+                      className="w-full bg-primary hover:bg-primary py-3.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:bg-neutral-800 disabled:text-neutral-500"
                     >
                       {isVerifyingBrandOTP || isSigningBrandContract ? (
                         <>
@@ -3425,7 +3425,7 @@ const BrandMobileDashboard = ({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-white/10 px-6 py-4">
+              <div className="flex items-center gap-2 text-[11px] text-neutral-400 border-t border-border px-6 py-4">
                 <Lock className="w-3.5 h-3.5" />
                 <span>Secure OTP-based e-signature powered by Creator Armour</span>
               </div>
@@ -3448,19 +3448,19 @@ const BrandMobileDashboard = ({
   }
 
   return (
-    <div className={cn('fixed inset-0 font-sans selection:bg-emerald-500/25 overflow-hidden', bgColor, textColor)}>
+    <div className={cn('fixed inset-0 font-sans selection:bg-primary/25 overflow-hidden', bgColor, textColor)}>
       {isDark && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-          <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
-          <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
-          <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
+          <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
+          <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
+          <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
         </div>
       )}
 
 	      {!isDark && (
 	        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-	          <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_18%_0%,rgba(37,99,235,0.10),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.10),transparent_60%)]" />
+	          <div className="absolute inset-0 bg-background" />
 	        </div>
 	      )}
 
@@ -3469,8 +3469,8 @@ const BrandMobileDashboard = ({
         className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-[60]"
         style={{ transform: `translateY(${pullDistance - 44}px)`, opacity: pullDistance > 10 ? 1 : 0 }}
       >
-        <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shadow-lg border', isDark ? 'bg-[#0B0F14]/90 border-white/10' : 'bg-white/90 border-slate-200')}>
-          {isRefreshing ? <Loader2 className={cn('w-5 h-5 animate-spin', isDark ? 'text-white/60' : 'text-slate-500')} /> : <div className={cn('w-2.5 h-2.5 rounded-full', isDark ? 'bg-emerald-400/70' : 'bg-emerald-600/70')} />}
+        <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shadow-lg border', isDark ? 'bg-[#0B0F14]/90 border-border' : 'bg-secondary/90 border-border')}>
+          {isRefreshing ? <Loader2 className={cn('w-5 h-5 animate-spin', isDark ? 'text-foreground/60' : 'text-muted-foreground')} /> : <div className={cn('w-2.5 h-2.5 rounded-full', isDark ? 'bg-primary/70' : 'bg-primary/70')} />}
         </div>
       </div>
 
@@ -3523,14 +3523,14 @@ const BrandMobileDashboard = ({
 
               {/* Brand Getting Started Banner — shown when no deals exist */}
               {!isLoading && deals.length === 0 && (
-                <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                <div className="mb-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-info">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-info flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
-                      <p className="text-[14px] font-bold text-slate-900">Welcome to Brand Console</p>
-                      <p className="text-[12px] text-slate-500">Find creators and close deals in 3 steps</p>
+                      <p className="text-[14px] font-bold text-muted-foreground">Welcome to Brand Console</p>
+                      <p className="text-[12px] text-muted-foreground">Find creators and close deals in 3 steps</p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
@@ -3542,11 +3542,11 @@ const BrandMobileDashboard = ({
                       <button
                         key={step.n}
                         onClick={step.action}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-white border border-blue-100 hover:border-blue-300 active:scale-[0.98] transition-all text-left"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card border border-info hover:border-info active:scale-[0.98] transition-all text-left"
                       >
-                        <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-[11px] font-black flex items-center justify-center">{step.n}</span>
-                        <span className="text-[13px] font-semibold text-slate-700">{step.label}</span>
-                        <ChevronRight className="w-4 h-4 text-slate-400 ml-auto" />
+                        <span className="w-6 h-6 rounded-full bg-info text-foreground text-[11px] font-black flex items-center justify-center">{step.n}</span>
+                        <span className="text-[13px] font-semibold text-muted-foreground">{step.label}</span>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
                       </button>
                     ))}
                   </div>
@@ -3559,13 +3559,13 @@ const BrandMobileDashboard = ({
                     triggerHaptic(HapticPatterns.light);
                     setShowActionSheet(true);
                   }}
-                  className={cn('w-10 h-10 -ml-1 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white/80 text-slate-600 shadow-sm')}
+                  className={cn('w-10 h-10 -ml-1 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}
                 >
                   <Menu className="w-6 h-6" strokeWidth={1.5} />
                 </button>
 
                 <div className="flex items-center gap-2 font-semibold text-[16px] tracking-tight">
-                  <Shield className={cn('w-4 h-4', isDark ? 'text-white' : 'text-slate-900')} />
+                  <Shield className={cn('w-4 h-4', isDark ? 'text-foreground' : 'text-muted-foreground')} />
                   <span className={textColor}>Brand Console</span>
                 </div>
 
@@ -3578,7 +3578,7 @@ const BrandMobileDashboard = ({
                     whileTap={{ scale: 0.92 }}
                     className={cn(
                       'flex items-center gap-1 px-2.5 h-10 rounded-2xl border transition-all duration-300',
-                      isDark ? 'bg-white/5 border-white/10 text-white/70' : 'bg-white/80 border-slate-200 text-slate-600 shadow-sm'
+                      isDark ? 'bg-card border-border text-foreground/70' : 'bg-secondary/80 border-border text-muted-foreground shadow-sm'
                     )}
                   >
                     <AnimatePresence mode="wait" initial={false}>
@@ -3610,12 +3610,12 @@ const BrandMobileDashboard = ({
                   <div className="relative">
                     <button type="button"
                       onClick={() => setNotificationsOpen((v) => !v)}
-                      className={cn('relative w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white/80 text-slate-600 shadow-sm')}
+                      className={cn('relative w-10 h-10 rounded-2xl border flex items-center justify-center transition-all active:scale-95', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-secondary/80 text-muted-foreground shadow-sm')}
                     >
                       <Bell className="w-5 h-5" />
                       {notifications.length > 0 && (
                         <span
-                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white"
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full border-2 text-[8px] font-black flex items-center justify-center text-foreground"
                           style={{ borderColor: isDark ? '#0B0F14' : '#F9FAFB' }}
                         >
                           {notifications.length}
@@ -3627,15 +3627,15 @@ const BrandMobileDashboard = ({
                         className={cn(
                           'absolute right-0 mt-3 w-[300px] max-w-[calc(100vw-32px)] rounded-[24px] border shadow-2xl p-4 z-50 overflow-hidden',
                           isDark
-                            ? 'bg-[#0A0A0B]/95 backdrop-blur-xl border-white/10 text-white'
-                            : 'bg-white/95 backdrop-blur-xl border-slate-200/60 text-slate-900'
+                            ? 'bg-[#0A0A0B]/95 backdrop-blur-xl border-border text-foreground'
+                            : 'bg-secondary/95 backdrop-blur-xl border-border/60 text-muted-foreground'
                         )}
                       >
                         <div className="flex items-center justify-between mb-4 px-1">
-                          <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'text-white/40' : 'text-slate-500')}>
+                          <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'text-foreground/40' : 'text-muted-foreground')}>
                             Updates
                           </p>
-                          <div className={cn('h-1.5 w-1.5 rounded-full animate-pulse', isDark ? 'bg-emerald-400' : 'bg-emerald-600')} />
+                          <div className={cn('h-1.5 w-1.5 rounded-full animate-pulse', isDark ? 'bg-primary' : 'bg-primary')} />
                         </div>
                         <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 -mr-1 custom-scrollbar">
                           {notifications.map((n: any) => (
@@ -3647,7 +3647,7 @@ const BrandMobileDashboard = ({
                               }}
 	                              className={cn(
 	                                'w-full text-left p-3 rounded-2xl border transition-all active:scale-[0.98]',
-		                                isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-white/80 border-[#E5E5EA] hover:bg-white backdrop-blur-xl'
+		                                isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-secondary/80 border-[#E5E5EA] hover:bg-card backdrop-blur-xl'
 	                              )}
 	                            >
                               <p className={cn('text-[13px] font-bold leading-tight', textColor)}>{n.title}</p>
@@ -3655,7 +3655,7 @@ const BrandMobileDashboard = ({
                             </button>
                           ))}
                           {notifications.length === 0 && (
-                            <div className={cn('p-6 text-center rounded-2xl border', isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}>
+                            <div className={cn('p-6 text-center rounded-2xl border', isDark ? 'border-border bg-card' : 'border-border bg-card')}>
                               <p className={cn('text-[12px] font-bold opacity-50', textColor)}>No updates yet</p>
                             </div>
                           )}
@@ -3669,7 +3669,7 @@ const BrandMobileDashboard = ({
                       triggerHaptic(HapticPatterns.light);
                       setActiveTab('profile');
                     }}
-                    className={cn('w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95', borderColor, isDark ? 'bg-white/5' : 'bg-white/80 shadow-sm')}
+                    className={cn('w-10 h-10 rounded-2xl border overflow-hidden transition-all active:scale-95', borderColor, isDark ? 'bg-card' : 'bg-secondary/80 shadow-sm')}
                   >
                     <img alt={brandName} src={brandLogo} loading="lazy" className="w-full h-full object-cover" />
                   </button>
@@ -3699,12 +3699,12 @@ const BrandMobileDashboard = ({
                       animate={{ opacity: 1, y: 0 }}
                       className={cn(
                         'mb-5 p-4 rounded-[24px] border shadow-sm',
-                        isDark ? 'bg-white/5 border-white/10' : 'bg-white/80 border-slate-200'
+                        isDark ? 'bg-card border-border' : 'bg-secondary/80 border-border'
                       )}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-emerald-500/15' : 'bg-emerald-500/10')}>
-                          <Bell className={cn('w-5 h-5', isDark ? 'text-emerald-200' : 'text-emerald-700')} />
+                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-primary/15' : 'bg-primary/10')}>
+                          <Bell className={cn('w-5 h-5', isDark ? 'text-primary' : 'text-primary')} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={cn('text-[13px] font-bold', textColor)}>Enable deal alerts</p>
@@ -3714,7 +3714,7 @@ const BrandMobileDashboard = ({
                               : 'Get notified when creators reply and deals need action.'}
                           </p>
                           {pushPermission === 'denied' && (
-                            <p className={cn('text-[12px] mt-2', isDark ? 'text-amber-200/80' : 'text-amber-700')}>
+                            <p className={cn('text-[12px] mt-2', isDark ? 'text-warning/80' : 'text-warning')}>
                               Notifications are blocked in your browser settings.
                             </p>
                           )}
@@ -3746,12 +3746,12 @@ const BrandMobileDashboard = ({
                       animate={{ opacity: 1, y: 0 }}
                       className={cn(
                         'mb-5 p-4 rounded-[24px] border shadow-sm',
-                        isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50/80 border-amber-200'
+                        isDark ? 'bg-warning/10 border-warning/20' : 'bg-warning/80 border-warning'
                       )}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-amber-500/15' : 'bg-amber-500/10')}>
-                          <Camera className={cn('w-5 h-5', isDark ? 'text-amber-200' : 'text-amber-800')} />
+                        <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-warning/15' : 'bg-warning/10')}>
+                          <Camera className={cn('w-5 h-5', isDark ? 'text-warning' : 'text-warning')} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={cn('text-[13px] font-bold', textColor)}>Upload your brand logo</p>
@@ -3762,7 +3762,7 @@ const BrandMobileDashboard = ({
                             <button type="button"
                               type="button"
                               onClick={() => navigate('/brand-settings')}
-                              className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-slate-900 border border-amber-200')}
+                              className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
                             >
                               Upload logo
                             </button>
@@ -3815,7 +3815,7 @@ const BrandMobileDashboard = ({
                               className={cn(
                                 'mb-4 w-full text-left p-4 rounded-[24px] border transition-all active:scale-[0.99]',
                                 borderColor,
-                                isDark ? 'bg-white/5 hover:bg-white/[0.07]' : 'bg-white/80 backdrop-blur-xl shadow-sm hover:bg-white'
+                                isDark ? 'bg-card hover:bg-secondary/[0.07]' : 'bg-secondary/80 backdrop-blur-xl shadow-sm hover:bg-card'
                               )}
                             >
                               <div className="flex items-start justify-between gap-3">
@@ -3829,7 +3829,7 @@ const BrandMobileDashboard = ({
                               </div>
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {contractsWaitingSignature > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')}>
+                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-warning bg-warning text-warning')}>
                                     {contractsWaitingSignature} waiting for signature
                                   </span>
                                 )}
@@ -3839,12 +3839,12 @@ const BrandMobileDashboard = ({
                                   </span>
                                 )}
                                 {offersExpiringSoon > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')}>
+                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-warning bg-warning text-warning')}>
                                     {offersExpiringSoon} expiring soon
                                   </span>
                                 )}
                                 {contentPendingReview > 0 && (
-                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-sky-500/25 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800')}>
+                                  <span className={cn('px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-sky-500/25 bg-info/10 text-info' : 'border-sky-200 bg-info text-info')}>
                                     {contentPendingReview} content to review
                                   </span>
                                 )}
@@ -3853,21 +3853,21 @@ const BrandMobileDashboard = ({
                           )}
 
 	                        {/* Performance (motivational) */}
-	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className={cn('mb-4 rounded-[32px] border overflow-hidden relative', isDark ? 'border-white/10 bg-white/5' : 'border-emerald-200/70 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_22px_48px_rgba(16,185,129,0.26)]')}>
-	                          <div className={cn('absolute inset-0 pointer-events-none', isDark ? 'bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.14),transparent_60%)]' : 'bg-[radial-gradient(58%_52%_at_18%_8%,rgba(255,255,255,0.20),transparent_60%),radial-gradient(50%_45%_at_88%_12%,rgba(255,255,255,0.16),transparent_60%),linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0))]')} />
+	                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className={cn('mb-4 rounded-[32px] border overflow-hidden relative', isDark ? 'border-border bg-card' : 'border-primary/70 bg-gradient-to-br from-emerald-500 via-teal-500 to-blue-600 shadow-[0_22px_48px_rgba(16,185,129,0.26)]')}>
+	                          <div className={cn('absolute inset-0 pointer-events-none', isDark ? 'bg-background')} />
 	                          <div className="relative p-5">
 	                            <div className="flex flex-col gap-4">
 	                              <div className="min-w-0">
-	                                <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'opacity-50 text-white' : 'text-white/80')}>Campaign value running</p>
-	                                <p className={cn('text-[34px] font-black tracking-tight leading-none mt-2', isDark ? textColor : 'text-white')}>
+	                                <p className={cn('text-[11px] font-black uppercase tracking-[0.2em]', isDark ? 'opacity-50 text-foreground' : 'text-foreground/80')}>Campaign value running</p>
+	                                <p className={cn('text-[34px] font-black tracking-tight leading-none mt-2', isDark ? textColor : 'text-foreground')}>
 	                                  ₹<CountUp end={Number(activeValue) || 0} duration={1.5} separator="," decimals={0} />
 	                                </p>
-	                                <p className={cn('text-[13px] font-bold mt-2', isDark ? 'text-white/70' : 'text-white/85')}>
+	                                <p className={cn('text-[13px] font-bold mt-2', isDark ? 'text-foreground/70' : 'text-foreground/85')}>
 	                                  Across {activeDealsList.length} active collaboration{activeDealsList.length === 1 ? '' : 's'}
 	                                </p>
 	                                <div className="mt-3 flex flex-wrap gap-2">
 	                                  {(newToday > 0 || contentPendingReview > 0) && (
-	                                    <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-white/20 bg-white/10 text-white')}>
+	                                    <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-border bg-secondary/50 text-foreground')}>
 	                                      {newToday > 0 ? `+${newToday} new today` : `${contentPendingReview} delivered`}
 	                                    </span>
 	                                  )}
@@ -3884,14 +3884,14 @@ const BrandMobileDashboard = ({
 	                                className={cn(
 	                                  'w-full sm:w-auto px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-[0.99]',
 	                                  needsActionTotal > 0
-	                                    ? 'bg-white text-slate-900 border-transparent shadow-[0_12px_30px_rgba(255,255,255,0.18)]'
-	                                    : (isDark ? 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10' : 'border-white/20 bg-white/10 text-white hover:bg-white/15')
+	                                    ? 'bg-card text-muted-foreground border-transparent shadow-[0_12px_30px_rgba(255,255,255,0.18)]'
+	                                    : (isDark ? 'border-border bg-card text-foreground/80 hover:bg-secondary/50' : 'border-border bg-secondary/50 text-foreground hover:bg-secondary/15')
 	                                )}
 	                              >
 	                                {needsActionTotal > 0 ? 'Review actions' : 'Send offer'}
 	                              </button>
 	                              {needsActionTotal > 0 && (
-	                                <p className={cn('text-[12px] font-medium', isDark ? secondaryTextColor : 'text-white/80')}>
+	                                <p className={cn('text-[12px] font-medium', isDark ? secondaryTextColor : 'text-foreground/80')}>
 	                                  {needsActionTotal} item{needsActionTotal === 1 ? '' : 's'} waiting on you
 	                                </p>
 	                              )}
@@ -3909,9 +3909,9 @@ const BrandMobileDashboard = ({
 	                            <div key={item.label} className={cn('min-h-[96px] p-4 rounded-[24px] border', cardBgColor, borderColor)}>
 	                              <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>{item.label}</p>
 	                              {isLoading ? (
-	                                <div className={cn('h-5 rounded-md mt-3 animate-pulse', isDark ? 'bg-white/10' : 'bg-slate-200')} />
+	                                <div className={cn('h-5 rounded-md mt-3 animate-pulse', isDark ? 'bg-secondary/50' : 'bg-background')} />
 	                              ) : (
-	                                <p className={cn('text-[20px] font-black tracking-tight mt-3', item.tone === 'warn' ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>
+	                                <p className={cn('text-[20px] font-black tracking-tight mt-3', item.tone === 'warn' ? (isDark ? 'text-warning' : 'text-warning') : textColor)}>
                                     <CountUp end={Number(item.value) || 0} duration={1.2} separator="," decimals={0} />
                                   </p>
 	                              )}
@@ -3925,9 +3925,9 @@ const BrandMobileDashboard = ({
 	                              </p>
 	                            </div>
 	                            {isLoading ? (
-	                              <div className={cn('h-8 w-12 rounded-md animate-pulse', isDark ? 'bg-white/10' : 'bg-slate-200')} />
+	                              <div className={cn('h-8 w-12 rounded-md animate-pulse', isDark ? 'bg-secondary/50' : 'bg-background')} />
 	                            ) : (
-	                              <p className={cn('text-[24px] font-black tracking-tight shrink-0', contentPendingReview > 0 ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>
+	                              <p className={cn('text-[24px] font-black tracking-tight shrink-0', contentPendingReview > 0 ? (isDark ? 'text-warning' : 'text-warning') : textColor)}>
                                   <CountUp end={Number(contentPendingReview) || 0} duration={1.2} separator="," decimals={0} />
                                 </p>
 	                            )}
@@ -3949,12 +3949,12 @@ const BrandMobileDashboard = ({
 	                            <button type="button"
 	                              type="button"
 	                              onClick={() => setActiveTab('collabs', activeCollabTab)}
-	                              className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}
+	                              className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}
 	                            >
 	                              View all
 	                            </button>
 	                          </div>
-	                          <div className={cn('mb-4 rounded-[24px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.08)]', isDark ? 'bg-white/[0.06] border-white/10' : 'bg-white/75 border-emerald-100/80')}>
+	                          <div className={cn('mb-4 rounded-[24px] border p-1.5 flex gap-1.5 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.08)]', isDark ? 'bg-secondary/[0.06] border-border' : 'bg-secondary/75 border-primary/80')}>
 	                            {[
 		                              { key: 'action_required', label: 'Action Required', count: offers.length },
 	                              { key: 'active', label: 'Active', count: activeDealsList.length },
@@ -3973,11 +3973,11 @@ const BrandMobileDashboard = ({
 	                                    'flex-1 rounded-[20px] px-3 py-3 text-left transition-all active:scale-[0.98] border backdrop-blur-lg',
 	                                    isSelected
 	                                      ? isDark
-	                                        ? 'bg-white/90 text-slate-900 border-white/40 shadow-[0_10px_30px_rgba(255,255,255,0.08)]'
-	                                        : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white border-emerald-300/70 shadow-[0_12px_30px_rgba(16,185,129,0.24)]'
+	                                        ? 'bg-secondary/90 text-muted-foreground border-border/40 shadow-[0_10px_30px_rgba(255,255,255,0.08)]'
+	                                        : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-foreground border-primary/70 shadow-[0_12px_30px_rgba(16,185,129,0.24)]'
 	                                      : isDark
-	                                        ? 'text-white/70 border-white/5 hover:bg-white/[0.05]'
-	                                        : 'text-slate-600 border-white/50 hover:bg-white/60'
+	                                        ? 'text-foreground/70 border-border/5 hover:bg-secondary/[0.05]'
+	                                        : 'text-muted-foreground border-border/50 hover:bg-secondary/60'
 	                                  )}
 	                                >
 	                                  <p className={cn('text-[10px] font-black uppercase tracking-widest', isSelected ? 'opacity-80' : 'opacity-50')}>{item.label}</p>
@@ -3986,8 +3986,8 @@ const BrandMobileDashboard = ({
 	                              );
 	                            })}
 	                          </div>
-		                          <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.10)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
-	                            <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-white/10 bg-white/[0.03]' : 'border-b border-slate-200/80 bg-white/45')}>
+		                          <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.10)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
+	                            <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-border bg-secondary/[0.03]' : 'border-b border-border/80 bg-secondary/45')}>
 	                              <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
 	                                {activeCollabTab === 'action_required' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
 	                              </p>
@@ -4002,7 +4002,7 @@ const BrandMobileDashboard = ({
 	                                      : 'No completed collabs yet'}
 	                                </p>
 	                                {activeCollabTab === 'action_required' && (
-                                  <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
+                                  <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
 	                                    <Send className="w-4 h-4 mr-2" /> Send new offer
 	                                  </Button>
 	                                )}
@@ -4032,25 +4032,25 @@ const BrandMobileDashboard = ({
 	                                    const urgencyText = urgencyParts.join(' • ');
 
 	                                    const statusTone = isCountered
-	                                      ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
+	                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
 	                                      : isNoResponse
-	                                        ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
-	                                        : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200');
+	                                        ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+	                                        : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
 	                                    const urgencyTone =
 	                                      exp?.tone === 'danger'
 	                                        ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
 	                                        : exp?.tone === 'warn'
-	                                          ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-300/30' : 'bg-amber-50 text-amber-800 border-amber-200')
+	                                          ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
 	                                          : isNoResponse
-	                                            ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
-	                                            : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200');
+	                                            ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+	                                            : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
 	                                    const attentionBorder =
 	                                      exp?.tone === 'danger'
 	                                        ? (isDark ? 'border-rose-500/30' : 'border-rose-200')
 	                                        : exp?.tone === 'warn' || isNoResponse
-	                                          ? (isDark ? 'border-amber-500/25' : 'border-amber-200')
+	                                          ? (isDark ? 'border-warning/25' : 'border-warning')
 	                                          : '';
 
 	                                    return (
@@ -4064,13 +4064,13 @@ const BrandMobileDashboard = ({
 	                                          'w-full p-4 rounded-3xl border text-left transition backdrop-blur-xl',
 	                                          borderColor,
 	                                          attentionBorder,
-	                                          isDark ? 'bg-white/[0.04]' : 'bg-white/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
+	                                          isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
 	                                        )}
 	                                      >
 	                                        <div className="flex flex-wrap items-center gap-2 mb-2">
 	                                          <span className={cn('inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest', statusTone)}>
 	                                            {isCountered ? (
-	                                              <AlertTriangle className={cn('w-4 h-4', isDark ? 'text-amber-200' : 'text-amber-700')} strokeWidth={2.5} />
+	                                              <AlertTriangle className={cn('w-4 h-4', isDark ? 'text-warning' : 'text-warning')} strokeWidth={2.5} />
 	                                            ) : (
 	                                              <Clock className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={2.5} />
 	                                            )}
@@ -4088,9 +4088,9 @@ const BrandMobileDashboard = ({
 
 	                                        <div className="flex items-start justify-between gap-3 mb-3">
 	                                          <div className="flex items-center gap-3 min-w-0">
-	                                            <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-white/10' : 'border-slate-200')}>
+	                                            <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
 	                                              <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
-	                                              <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+	                                              <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 	                                                {creatorName.slice(0, 1).toUpperCase()}
 	                                              </AvatarFallback>
 	                                            </Avatar>
@@ -4101,15 +4101,15 @@ const BrandMobileDashboard = ({
 	                                          </div>
 	                                          <div className="text-right shrink-0">
 	                                            <p className={cn('text-[18px] font-black tracking-tight', textColor)}>{amount > 0 ? formatCompactINR(amount) : '—'}</p>
-	                                            <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-emerald-400' : 'text-emerald-600')}>Campaign budget</p>
+	                                            <p className={cn('text-[9px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-primary' : 'text-primary')}>Campaign budget</p>
 	                                          </div>
 	                                        </div>
 
-	                                        <p className={cn('text-[12px] font-bold mb-3', isDark ? 'text-slate-200' : 'text-slate-700')}>
+	                                        <p className={cn('text-[12px] font-bold mb-3', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
 	                                          {String(formatDeliverables(item) || item?.collab_type || 'Deliverables').replaceAll(',', ' • ')}
 	                                        </p>
 
-	                                        <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-emerald-500/10 text-emerald-100 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')}>
+	                                        <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')}>
 	                                          <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
 	                                          Payment released after content approval
 	                                        </div>
@@ -4121,7 +4121,7 @@ const BrandMobileDashboard = ({
 	                                            triggerHaptic(HapticPatterns.light);
 	                                            setSelectedOffer(item);
 	                                          }}
-	                                          className={cn('h-11 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_14px_34px_rgba(16,185,129,0.22)]')}
+	                                          className={cn('h-11 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]', 'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_14px_34px_rgba(16,185,129,0.22)]')}
 	                                        >
 	                                          Review & Take Action
 	                                        </button>
@@ -4136,14 +4136,14 @@ const BrandMobileDashboard = ({
 		                                      className={cn(
 		                                        'w-full p-4 rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl',
 		                                        borderColor,
-		                                        isDark ? 'bg-white/[0.04]' : 'bg-white/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
+		                                        isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
 		                                      )}
 		                                    >
 		                                      <div className="flex items-start justify-between gap-3 mb-3.5">
 		                                        <div className="flex items-center gap-3 min-w-0">
-		                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-white/10' : 'border-slate-200')}>
+		                                          <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
 		                                            <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
-		                                            <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+		                                            <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 		                                              {creatorName.slice(0, 1).toUpperCase()}
 		                                            </AvatarFallback>
 		                                          </Avatar>
@@ -4153,7 +4153,7 @@ const BrandMobileDashboard = ({
 		                                          </div>
 		                                        </div>
 		                                        <div className="text-right shrink-0 pl-3">
-		                                          <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+		                                          <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-foreground' : 'text-muted-foreground')}>
 		                                            {amount > 0 ? formatCompactINR(amount) : '—'}
 		                                          </p>
 		                                        </div>
@@ -4169,7 +4169,7 @@ const BrandMobileDashboard = ({
 		                                            due.tone === 'danger'
 		                                              ? (isDark ? 'text-rose-200' : 'text-rose-700')
 		                                              : due.tone === 'warn'
-		                                                ? (isDark ? 'text-amber-200' : 'text-amber-700')
+		                                                ? (isDark ? 'text-warning' : 'text-warning')
 		                                                : secondaryTextColor
 		                                          )}>
 		                                            <Clock className="w-3.5 h-3.5" />
@@ -4181,8 +4181,8 @@ const BrandMobileDashboard = ({
 			                              <p className={cn(
 			                                'text-[13px] font-black mb-3',
 			                                ui.needsAction
-			                                  ? (isDark ? 'text-amber-200' : 'text-amber-700')
-			                                  : (isDark ? 'text-white/80' : 'text-slate-700')
+			                                  ? (isDark ? 'text-warning' : 'text-warning')
+			                                  : (isDark ? 'text-foreground/80' : 'text-muted-foreground')
 			                              )}>
 			                                {ui.statusLine}
 			                              </p>
@@ -4211,8 +4211,8 @@ const BrandMobileDashboard = ({
 		                                              className={cn(
 		                                                'h-1.5 w-6 rounded-full',
 		                                                i < ui.step
-		                                                  ? (isDark ? 'bg-emerald-400/80' : 'bg-emerald-500')
-		                                                  : (isDark ? 'bg-white/10' : 'bg-slate-200')
+		                                                  ? (isDark ? 'bg-primary/80' : 'bg-primary')
+		                                                  : (isDark ? 'bg-secondary/50' : 'bg-background')
 		                                              )}
 		                                            />
 		                                          ))}
@@ -4252,7 +4252,7 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[11px] font-black uppercase tracking-[0.2em] opacity-50', textColor)}>Suggested creators</p>
                         <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Pick based on reliability — not views.</p>
                       </div>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
                         View all
                       </button>
                     </div>
@@ -4284,12 +4284,12 @@ const BrandMobileDashboard = ({
 
                           <div className="flex flex-wrap gap-2 mt-3">
                             {getSmartTags(c).map((t) => (
-                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-background')}>
                                 {t}
                               </span>
                             ))}
                             {getSmartTags(c).length === 0 && (
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-slate-50')}>
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-background')}>
                                 ✔ Verified profile
                               </span>
                             )}
@@ -4307,7 +4307,7 @@ const BrandMobileDashboard = ({
                                 triggerHaptic(HapticPatterns.light);
                                 navigate(`/${handle}`);
                               }}
-                              className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}
+                              className={cn('flex-1 py-2.5 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-border bg-card hover:bg-secondary/50 text-foreground' : 'border-border bg-card hover:bg-background text-muted-foreground')}
                             >
                               View profile
                             </button>
@@ -4322,7 +4322,7 @@ const BrandMobileDashboard = ({
                                 triggerHaptic(HapticPatterns.success);
                                 navigate(`/${handle}?offer=true`);
                               }}
-                              className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white')}
+                              className={cn('flex-1 py-2.5 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 hover:from-emerald-400 hover:to-sky-400 text-foreground' : 'bg-gradient-to-br from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-foreground')}
                             >
                               Send offer
                             </button>
@@ -4332,13 +4332,13 @@ const BrandMobileDashboard = ({
                     </div>
                   </div>
 
-                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={cn('p-6 rounded-[2.5rem] border relative overflow-hidden mb-10', isDark ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-100 shadow-sm')}>
+                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={cn('p-6 rounded-[2.5rem] border relative overflow-hidden mb-10', isDark ? 'bg-background border-border/5' : 'bg-card border-border shadow-sm')}>
                     <div className="absolute top-0 right-0 p-8 opacity-[0.05]">
                       <Plus size={120} />
                     </div>
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-500/12 flex items-center justify-center">
-                        <Plus className={cn('w-5 h-5', isDark ? 'text-emerald-300' : 'text-emerald-600')} />
+                      <div className="w-10 h-10 rounded-2xl bg-primary/12 flex items-center justify-center">
+                        <Plus className={cn('w-5 h-5', isDark ? 'text-primary' : 'text-primary')} />
                       </div>
                       <div>
                         <h3 className={cn('text-[15px] font-bold tracking-tight', textColor)}>Quick actions</h3>
@@ -4351,7 +4351,7 @@ const BrandMobileDashboard = ({
                           triggerHaptic(HapticPatterns.light);
                           setActiveTab('creators');
                         }}
-                        className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}
+                        className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}
                       >
                         <User className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Find creators</span>
@@ -4360,17 +4360,17 @@ const BrandMobileDashboard = ({
                         onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }}
                         className={cn(
                           'flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]',
-                          isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
+                          isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-primary/30 hover:from-emerald-400 hover:to-sky-400 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-primary/40 hover:from-emerald-500 hover:to-sky-500 text-foreground shadow-lg'
                         )}
                       >
                         <Send className="w-4 h-4 mb-2 opacity-90" />
                         <span className="text-[11px] font-black uppercase tracking-widest">Send offer</span>
                       </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
                         <Handshake className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Collabs</span>
                       </button>
-                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm')}>
+                      <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); toast.message('Payments', { description: 'Invoices, GST, UPI payouts — coming soon.' }); }} className={cn('flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background shadow-sm')}>
                         <CreditCard className={cn('w-4 h-4 mb-2', secondaryTextColor)} />
                         <span className={cn('text-[11px] font-bold', textColor)}>Payments</span>
                       </button>
@@ -4383,18 +4383,18 @@ const BrandMobileDashboard = ({
                         <Briefcase className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={1.5} />
                         <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
                       </div>
-                      <button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                      <button type="button" onClick={() => setActiveTab('collabs', 'action_required')} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
                         View all
                       </button>
                     </div>
-	                    <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
+	                    <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
                       <button type="button"
                         type="button"
                         onClick={() => {
                           triggerHaptic(HapticPatterns.light);
                           setActiveTab('collabs', 'action_required');
                         }}
-                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-white/10 hover:bg-white/[0.06]' : 'border-b border-slate-200/80 hover:bg-white/60')}
+                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Action Required</p>
 	                        <p className={cn('text-[12px] font-bold', textColor)}>{offers.length}</p>
@@ -4405,7 +4405,7 @@ const BrandMobileDashboard = ({
                           triggerHaptic(HapticPatterns.light);
                           setActiveTab('collabs', 'active');
                         }}
-                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-white/10 hover:bg-white/[0.06]' : 'border-b border-slate-200/80 hover:bg-white/60')}
+                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995] backdrop-blur-md', isDark ? 'border-b border-border hover:bg-secondary/[0.06]' : 'border-b border-border/80 hover:bg-secondary/60')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Active</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{activeDealsList.length}</p>
@@ -4416,7 +4416,7 @@ const BrandMobileDashboard = ({
                           triggerHaptic(HapticPatterns.light);
                           setActiveTab('collabs', 'completed');
                         }}
-                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50')}
+                        className={cn('w-full p-4 flex items-center justify-between transition-all active:scale-[0.995]', isDark ? 'hover:bg-card' : 'hover:bg-background')}
                       >
                         <p className={cn('text-[12px] font-bold', textColor)}>Completed</p>
                         <p className={cn('text-[12px] font-bold', textColor)}>{completedDealsList.length}</p>
@@ -4438,11 +4438,11 @@ const BrandMobileDashboard = ({
 	                    <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Collaborations</h2>
 	                    <div className="flex items-center gap-3">
 	                      {needsActionTotal > 0 && (
-	                        <div className={cn('px-2.5 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')}>
+	                        <div className={cn('px-2.5 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')}>
 	                          {needsActionTotal} need action
 	                        </div>
 	                      )}
-	                      <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+	                      <button type="button" onClick={() => setActiveTab('dashboard')} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
 	                      Back
 	                      </button>
 	                    </div>
@@ -4450,7 +4450,7 @@ const BrandMobileDashboard = ({
 
 		                  {/* Keep the summary pill in the header; avoid duplicating the same items again in a separate widget. */}
 
-		                  <div className={cn('mb-4 rounded-[22px] border p-1 flex gap-1 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.10)]', isDark ? 'bg-white/[0.06] border-white/10' : 'bg-white/80 border-slate-200/70')}>
+		                  <div className={cn('mb-4 rounded-[22px] border p-1 flex gap-1 backdrop-blur-xl shadow-[0_14px_40px_rgba(15,23,42,0.10)]', isDark ? 'bg-secondary/[0.06] border-border' : 'bg-secondary/80 border-border/70')}>
 		                    {[
 			                      { key: 'action_required', label: 'Action Required', count: offers.length },
 		                      { key: 'active', label: 'Active', count: activeDealsList.length },
@@ -4469,11 +4469,11 @@ const BrandMobileDashboard = ({
 		                            'flex-1 h-11 rounded-[18px] px-3 transition-all active:scale-[0.98] flex items-center justify-center gap-2',
 		                            isSelected
 		                              ? isDark
-		                                ? 'bg-white text-slate-900 shadow-[0_10px_28px_rgba(255,255,255,0.06)]'
-		                                : 'bg-[#2563EB] text-white shadow-[0_12px_30px_rgba(37,99,235,0.22)]'
+		                                ? 'bg-card text-muted-foreground shadow-[0_10px_28px_rgba(255,255,255,0.06)]'
+		                                : 'bg-[#2563EB] text-foreground shadow-[0_12px_30px_rgba(37,99,235,0.22)]'
 		                              : isDark
-		                                ? 'text-white/70 hover:bg-white/[0.05]'
-		                                : 'text-slate-600 hover:bg-white/60'
+		                                ? 'text-foreground/70 hover:bg-secondary/[0.05]'
+		                                : 'text-muted-foreground hover:bg-secondary/60'
 		                          )}
 		                        >
 		                          <span className={cn('text-[11px] font-black uppercase tracking-widest', isSelected ? 'opacity-95' : 'opacity-70')}>{item.label}</span>
@@ -4481,8 +4481,8 @@ const BrandMobileDashboard = ({
 		                            className={cn(
 		                              'px-2 py-1 rounded-full text-[10px] font-black tabular-nums',
 		                              isSelected
-		                                ? (isDark ? 'bg-slate-900/10 text-slate-900' : 'bg-white/20 text-white')
-		                                : (isDark ? 'bg-white/5 text-white/60' : 'bg-slate-100 text-slate-700')
+		                                ? (isDark ? 'bg-background/10 text-muted-foreground' : 'bg-secondary/20 text-foreground')
+		                                : (isDark ? 'bg-card text-foreground/60' : 'bg-background text-muted-foreground')
 		                            )}
 		                          >
 		                            {item.count}
@@ -4492,8 +4492,8 @@ const BrandMobileDashboard = ({
 		                    })}
 		                  </div>
 
-		                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
-	                    <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-white/10 bg-white/[0.03]' : 'border-b border-slate-200/80 bg-white/45')}>
+		                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
+	                    <div className={cn('p-4 backdrop-blur-md', isDark ? 'border-b border-border bg-secondary/[0.03]' : 'border-b border-border/80 bg-secondary/45')}>
 	                      <p className={cn('text-[12px] font-black uppercase tracking-widest opacity-50', textColor)}>
 	                        {activeCollabTab === 'action_required' ? 'Action Required' : activeCollabTab === 'active' ? 'Active Deals' : 'Completed Deals'}
 	                      </p>
@@ -4508,7 +4508,7 @@ const BrandMobileDashboard = ({
                               : 'No completed collabs yet'}
                         </p>
                         {activeCollabTab === 'action_required' && (
-                          <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
+                          <Button type="button" onClick={() => openCreateOfferSheet()} className={cn('mt-4 rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
                             <Send className="w-4 h-4 mr-2" /> Send new offer
                           </Button>
                         )}
@@ -4532,14 +4532,14 @@ const BrandMobileDashboard = ({
 	                            const statusLabel = isCountered ? 'CREATOR COUNTERED' : isNoResponse ? 'NO RESPONSE YET' : 'WAITING FOR CREATOR';
 
 	                            const stageTone = isCountered
-	                              ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
-	                              : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200');
+	                              ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+	                              : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                               const statusTone = isCountered
                                 ? stageTone
                                 : isNoResponse
-                                  ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
-                                  : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200');
+                                  ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                  : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                               const urgencyParts: string[] = [];
                               if (sentSince) urgencyParts.push(`Sent ${sentSince}`);
@@ -4551,16 +4551,16 @@ const BrandMobileDashboard = ({
                                 exp?.tone === 'danger'
                                   ? (isDark ? 'bg-rose-500/10 text-rose-200 border-rose-300/30' : 'bg-rose-50 text-rose-800 border-rose-200')
                                   : exp?.tone === 'warn'
-                                    ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-300/30' : 'bg-amber-50 text-amber-800 border-amber-200')
+                                    ? (isDark ? 'bg-warning/10 text-warning border-warning/30' : 'bg-warning text-warning border-warning')
                                     : isNoResponse
-                                      ? (isDark ? 'bg-amber-500/10 text-amber-200 border-amber-500/25' : 'bg-amber-50 text-amber-800 border-amber-200')
-                                      : (isDark ? 'bg-white/5 text-white/70 border-white/10' : 'bg-white text-slate-700 border-slate-200');
+                                      ? (isDark ? 'bg-warning/10 text-warning border-warning/25' : 'bg-warning text-warning border-warning')
+                                      : (isDark ? 'bg-card text-foreground/70 border-border' : 'bg-card text-muted-foreground border-border');
 
                               const attentionBorder =
                                 exp?.tone === 'danger'
                                   ? (isDark ? 'border-rose-500/30' : 'border-rose-200')
                                   : exp?.tone === 'warn' || isNoResponse
-                                    ? (isDark ? 'border-amber-500/25' : 'border-amber-200')
+                                    ? (isDark ? 'border-warning/25' : 'border-warning')
                                     : '';
 
 	                            return (
@@ -4572,14 +4572,14 @@ const BrandMobileDashboard = ({
 	                                  borderColor,
                                     attentionBorder,
 	                                  isDark
-	                                    ? 'bg-white/[0.04] shadow-[0_10px_35px_rgba(0,0,0,0.25)]'
-	                                    : 'bg-white/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
+	                                    ? 'bg-secondary/[0.04] shadow-[0_10px_35px_rgba(0,0,0,0.25)]'
+	                                    : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)]'
 	                                )}
 	                              >
 	                                <div className="flex flex-wrap items-center gap-2 mb-2">
 	                                  <span className={cn('inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest', statusTone)}>
 	                                    {isCountered ? (
-	                                      <AlertTriangle className={cn('w-4 h-4', isDark ? 'text-amber-200' : 'text-amber-700')} strokeWidth={2.5} />
+	                                      <AlertTriangle className={cn('w-4 h-4', isDark ? 'text-warning' : 'text-warning')} strokeWidth={2.5} />
 	                                    ) : (
 	                                      <Clock className={cn('w-4 h-4', secondaryTextColor)} strokeWidth={2.5} />
 	                                    )}
@@ -4599,37 +4599,37 @@ const BrandMobileDashboard = ({
 
 	                                <div className="flex items-start justify-between mb-3">
 	                                  <div className="flex items-center gap-3 min-w-0">
-	                                    <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-white/10' : 'border-slate-200')}>
+	                                    <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
 	                                      <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
-	                                      <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+	                                      <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 	                                        {creatorName.slice(0, 1).toUpperCase()}
 	                                      </AvatarFallback>
 	                                    </Avatar>
 	                                    <div className="min-w-0">
 	                                      <p className={cn('text-[15px] font-black tracking-tight truncate', textColor)}>{creatorName}</p>
 	                                      <div className="flex items-center gap-1.5 mt-0.5">
-	                                        <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+	                                        <ShieldCheck className="w-3.5 h-3.5 text-info" />
 	                                        <span className={cn('text-[10px] font-black uppercase tracking-widest opacity-40 truncate', textColor)}>{creatorMeta}</span>
 	                                      </div>
 	                                    </div>
 	                                  </div>
 	                                  <div className="text-right shrink-0 pl-3">
-	                                    <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+	                                    <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-foreground' : 'text-muted-foreground')}>
 	                                      {amount > 0 ? formatCompactINR(amount) : '—'}
 	                                    </p>
-	                                    <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-emerald-400' : 'text-emerald-600')}>
+	                                    <p className={cn('text-[10px] font-black uppercase tracking-widest opacity-40 mt-1', isDark ? 'text-primary' : 'text-primary')}>
 	                                      Campaign budget
 	                                    </p>
 	                                  </div>
 	                                </div>
 
 	                                <div className="flex items-center justify-between gap-3 mb-3">
-	                                  <div className={cn('text-[13px] font-bold', isDark ? 'text-slate-200' : 'text-slate-700')}>
+	                                  <div className={cn('text-[13px] font-bold', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>
 	                                    {String(formatDeliverables(item) || item?.collab_type || 'Deliverables').replaceAll(',', ' • ')}
 	                                  </div>
 	                                </div>
 
-	                                <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-emerald-500/10 text-emerald-100 border-emerald-500/20' : 'bg-emerald-50 text-emerald-800 border-emerald-200')}>
+	                                <div className={cn('rounded-2xl border px-3.5 py-2.5 mb-3 text-[11px] font-semibold', isDark ? 'bg-primary/10 text-primary border-primary/20' : 'bg-primary text-primary border-primary')}>
 	                                  <Landmark className="w-4 h-4 inline-block mr-2 -mt-0.5" />
 	                                  Payment released after content approval
 	                                </div>
@@ -4642,7 +4642,7 @@ const BrandMobileDashboard = ({
 	                                  }}
 	                                  className={cn(
 	                                    'h-11 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]',
-	                                    'bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_14px_34px_rgba(16,185,129,0.22)]'
+	                                    'bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_14px_34px_rgba(16,185,129,0.22)]'
 	                                  )}
 	                                >
 	                                  Review & Take Action
@@ -4660,7 +4660,7 @@ const BrandMobileDashboard = ({
                                           triggerHaptic(HapticPatterns.light);
                                           toast.message('Send reminder', { description: 'Coming soon.' });
                                         }}
-                                        className={cn('text-[11px] font-black uppercase tracking-widest shrink-0', isDark ? 'text-sky-300' : 'text-sky-700')}
+                                        className={cn('text-[11px] font-black uppercase tracking-widest shrink-0', isDark ? 'text-info' : 'text-info')}
                                       >
                                         Send reminder
                                       </button>
@@ -4680,15 +4680,15 @@ const BrandMobileDashboard = ({
 		                                'w-full p-4 rounded-3xl border transition-all duration-300 group active:scale-[0.99] relative text-left backdrop-blur-xl',
 		                                borderColor,
 		                                isDark
-		                                  ? 'bg-white/[0.04] hover:bg-white/[0.06] shadow-[0_10px_35px_rgba(0,0,0,0.25)]'
-		                                  : 'bg-white/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)] hover:bg-white/95'
+		                                  ? 'bg-secondary/[0.04] hover:bg-secondary/[0.06] shadow-[0_10px_35px_rgba(0,0,0,0.25)]'
+		                                  : 'bg-secondary/85 shadow-[0_10px_35px_rgba(2,6,23,0.06)] hover:bg-secondary/95'
 		                              )}
 		                            >
 		                              <div className="flex items-start justify-between mb-3.5">
 		                                <div className="flex items-center gap-3 min-w-0">
-		                                  <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-white/10' : 'border-slate-200')}>
+		                                  <Avatar className={cn('w-11 h-11 border shadow-sm shrink-0', isDark ? 'border-border' : 'border-border')}>
 		                                    <AvatarImage src={safeImageSrc(item?.profiles?.avatar_url || item?.profiles?.profile_image_url || '')} alt={creatorName} />
-		                                    <AvatarFallback className={cn(isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}>
+		                                    <AvatarFallback className={cn(isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}>
 		                                      {creatorName.slice(0, 1).toUpperCase()}
 		                                    </AvatarFallback>
 		                                  </Avatar>
@@ -4698,7 +4698,7 @@ const BrandMobileDashboard = ({
 		                                  </div>
 		                                </div>
 			                                <div className="text-right shrink-0 pl-3">
-			                                  <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-white' : 'text-slate-900')}>
+			                                  <p className={cn('text-[20px] font-black tracking-tight leading-none', isDark ? 'text-foreground' : 'text-muted-foreground')}>
 			                                    {amount > 0 ? formatCompactINR(amount) : '—'}
 			                                  </p>
 			                                </div>
@@ -4714,7 +4714,7 @@ const BrandMobileDashboard = ({
 		                                    due.tone === 'danger'
 		                                      ? (isDark ? 'text-rose-200' : 'text-rose-700')
 		                                      : due.tone === 'warn'
-		                                        ? (isDark ? 'text-amber-200' : 'text-amber-700')
+		                                        ? (isDark ? 'text-warning' : 'text-warning')
 		                                        : secondaryTextColor
 		                                  )}>
 		                                    <Clock className="w-3.5 h-3.5" />
@@ -4726,8 +4726,8 @@ const BrandMobileDashboard = ({
 		                              <p className={cn(
 		                                'text-[13px] font-black mb-3',
 		                                ui.needsAction
-		                                  ? (isDark ? 'text-amber-200' : 'text-amber-700')
-		                                  : (isDark ? 'text-white/80' : 'text-slate-700')
+		                                  ? (isDark ? 'text-warning' : 'text-warning')
+		                                  : (isDark ? 'text-foreground/80' : 'text-muted-foreground')
 		                              )}>
 		                                {ui.statusLine}
 		                              </p>
@@ -4740,8 +4740,8 @@ const BrandMobileDashboard = ({
 		                                      className={cn(
 		                                        'h-1.5 w-6 rounded-full',
 		                                        i < ui.step
-		                                          ? (isDark ? 'bg-emerald-400/80' : 'bg-emerald-500')
-		                                          : (isDark ? 'bg-white/10' : 'bg-slate-200')
+		                                          ? (isDark ? 'bg-primary/80' : 'bg-primary')
+		                                          : (isDark ? 'bg-secondary/50' : 'bg-background')
 		                                      )}
 		                                    />
 		                                  ))}
@@ -4780,15 +4780,15 @@ const BrandMobileDashboard = ({
                 <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className={cn('text-[16px] font-bold tracking-tight', textColor)}>Creators</h2>
-                    <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-sky-300' : 'text-sky-700')}>
+                    <button type="button" onClick={() => { triggerHaptic(HapticPatterns.light); navigate('/creators'); }} className={cn('text-[12px] font-bold', isDark ? 'text-info' : 'text-info')}>
                       Browse
                     </button>
                   </div>
 
-                  <div className={cn('mb-5 rounded-[22px] border px-4 py-3', borderColor, isDark ? 'bg-white/[0.04]' : 'bg-white')}>
+                  <div className={cn('mb-5 rounded-[22px] border px-4 py-3', borderColor, isDark ? 'bg-secondary/[0.04]' : 'bg-card')}>
                     <div className="flex items-center gap-3">
-                      <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-slate-100')}>
-                        <Search className={cn('h-4 w-4', isDark ? 'text-white/70' : 'text-slate-600')} />
+                      <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center', isDark ? 'bg-card' : 'bg-background')}>
+                        <Search className={cn('h-4 w-4', isDark ? 'text-foreground/70' : 'text-muted-foreground')} />
                       </div>
                       <input
                         value={creatorSearch}
@@ -4803,14 +4803,14 @@ const BrandMobileDashboard = ({
                         placeholder="Search by @username"
                         className={cn(
                           'flex-1 bg-transparent outline-none text-[13px] font-semibold placeholder:font-medium',
-                          isDark ? 'text-white placeholder:text-white/35' : 'text-slate-900 placeholder:text-slate-400'
+                          isDark ? 'text-foreground placeholder:text-foreground/35' : 'text-muted-foreground placeholder:text-muted-foreground'
                         )}
                         inputMode="text"
                         autoCapitalize="none"
                         autoCorrect="off"
                         spellCheck={false}
                       />
-                      {isSearchingCreators && <Loader2 className={cn('h-4 w-4 animate-spin', isDark ? 'text-white/60' : 'text-slate-500')} />}
+                      {isSearchingCreators && <Loader2 className={cn('h-4 w-4 animate-spin', isDark ? 'text-foreground/60' : 'text-muted-foreground')} />}
                     </div>
                     {creatorSearchResults.length > 0 && (
                       <div className="mt-3 grid gap-2">
@@ -4826,7 +4826,7 @@ const BrandMobileDashboard = ({
                             }}
                             className={cn(
                               'w-full text-left flex items-center gap-3 rounded-2xl px-3 py-2 border transition active:scale-[0.99]',
-                              isDark ? 'border-white/10 bg-white/[0.03] hover:bg-white/[0.06]' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                              isDark ? 'border-border bg-secondary/[0.03] hover:bg-secondary/[0.06]' : 'border-border bg-background hover:bg-background'
                             )}
                           >
                             <Avatar className="w-9 h-9">
@@ -4837,7 +4837,7 @@ const BrandMobileDashboard = ({
                               <p className={cn('text-[13px] font-black truncate', textColor)}>{c.name}</p>
                               <p className={cn('text-[12px] truncate', secondaryTextColor)}>@{String(c.username || '').replace(/^@+/, '')}</p>
                             </div>
-                            <ChevronRight className={cn('h-4 w-4', isDark ? 'text-white/40' : 'text-slate-400')} />
+                            <ChevronRight className={cn('h-4 w-4', isDark ? 'text-foreground/40' : 'text-muted-foreground')} />
                           </button>
                         ))}
                       </div>
@@ -4854,7 +4854,7 @@ const BrandMobileDashboard = ({
                     </div>
                     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                       {(isLoadingSuggestedCreators ? Array.from({ length: 3 }).map((_, i) => ({ id: `sk-${i}`, name: 'Creator' })) : suggestedCreators.slice(0, 10)).map((c: any) => (
-                        <div key={c.id} className={cn('min-w-[292px] p-4 rounded-[28px] border', isDark ? 'bg-white/5 border-white/10' : 'bg-white/90 border-emerald-100 shadow-[0_14px_40px_rgba(15,23,42,0.08)]')}>
+                        <div key={c.id} className={cn('min-w-[292px] p-4 rounded-[28px] border', isDark ? 'bg-card border-border' : 'bg-secondary/90 border-primary shadow-[0_14px_40px_rgba(15,23,42,0.08)]')}>
                           <div className="flex items-start gap-3 mb-4">
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={safeImageSrc(c.profile_photo || c.avatar)} alt={c.name} />
@@ -4873,7 +4873,7 @@ const BrandMobileDashboard = ({
                             </div>
                           </div>
 
-                          <div className={cn('rounded-2xl border px-3 py-3 space-y-1.5', isDark ? 'border-white/10 bg-white/[0.04]' : 'border-slate-200 bg-slate-50/90')}>
+                          <div className={cn('rounded-2xl border px-3 py-3 space-y-1.5', isDark ? 'border-border bg-secondary/[0.04]' : 'border-border bg-background/90')}>
                             {getReliabilityLines(c).map((line) => (
                               <p key={line} className={cn('text-[12px] font-medium', textColor)}>{line}</p>
                             ))}
@@ -4881,12 +4881,12 @@ const BrandMobileDashboard = ({
 
                           <div className="flex flex-wrap gap-2 mt-3">
                             {getSmartTags(c).map((t) => (
-                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                              <span key={t} className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-card')}>
                                 {t}
                               </span>
                             ))}
                             {getSmartTags(c).length === 0 && (
-                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                              <span className={cn('text-[10px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-card')}>
                                 ✔ Verified profile
                               </span>
                             )}
@@ -4903,7 +4903,7 @@ const BrandMobileDashboard = ({
                                 triggerHaptic(HapticPatterns.light);
                                 navigate(`/${handle}`);
                               }}
-                              className={cn('flex-1 py-3 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-white/10 bg-white/5 hover:bg-white/10 text-white' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-900')}
+                              className={cn('flex-1 py-3 rounded-2xl border text-[12px] font-bold transition-all active:scale-[0.98]', isDark ? 'border-border bg-card hover:bg-secondary/50 text-foreground' : 'border-border bg-card hover:bg-background text-muted-foreground')}
                             >
                               View profile
                             </button>
@@ -4919,7 +4919,7 @@ const BrandMobileDashboard = ({
                                 // Go straight to the creator link page and open the offer flow.
                                 navigate(`/${handle}?offer=true`);
                               }}
-	                              className={cn('flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 hover:from-blue-400 hover:to-sky-400 text-white' : 'bg-gradient-to-br from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white')}
+	                              className={cn('flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-[0.98]', isDark ? 'bg-gradient-to-br from-blue-500 to-sky-500 hover:from-blue-400 hover:to-sky-400 text-foreground' : 'bg-gradient-to-br from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-foreground')}
                             >
                               Send offer
                             </button>
@@ -4929,20 +4929,20 @@ const BrandMobileDashboard = ({
                     </div>
                   </div>
 
-	                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-white/[0.04] shadow-black/20' : 'bg-white shadow-sm')}>
+	                  <div className={cn('rounded-[28px] border overflow-hidden backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.12)]', borderColor, isDark ? 'bg-secondary/[0.04] shadow-black/20' : 'bg-card shadow-sm')}>
                     {creatorFeed.length === 0 ? (
                       <div className="p-8 text-center">
                         <p className={cn('text-[13px] font-bold', textColor)}>Find creators to collaborate with.</p>
                         <p className={cn('text-[12px] opacity-60 mt-2', textColor)}>Browse our creator database and send your first offer.</p>
                         <div className="flex flex-col gap-2 mt-5">
-                          <Button type="button" onClick={() => navigate('/creators')} className={cn('rounded-2xl', isDark ? 'bg-emerald-500 hover:bg-emerald-400 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white')}>
+                          <Button type="button" onClick={() => navigate('/creators')} className={cn('rounded-2xl', isDark ? 'bg-primary hover:bg-primary text-foreground' : 'bg-primary hover:bg-primary text-foreground')}>
                             <User className="w-4 h-4 mr-2" /> Browse creators
                           </Button>
                           <Button
                             type="button"
                             variant="outline"
                             onClick={() => toast.message('Import creator link', { description: 'Coming soon.' })}
-                            className={cn('rounded-2xl', isDark ? 'border-white/10 bg-white/5 text-white hover:bg-white/10' : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50')}
+                            className={cn('rounded-2xl', isDark ? 'border-border bg-card text-foreground hover:bg-secondary/50' : 'border-border bg-card text-muted-foreground hover:bg-background')}
                           >
                             Import creator link
                           </Button>
@@ -4951,7 +4951,7 @@ const BrandMobileDashboard = ({
                     ) : (
                       <div className="divide-y" style={{ borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)' }}>
                         {creatorFeed.map((c) => (
-                          <button type="button" key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-white/60')}>
+                          <button type="button" key={c.id} onClick={() => c.href && navigate(c.href)} className={cn('w-full flex items-center gap-3 p-4 transition-all active:scale-[0.99] backdrop-blur-md', isDark ? 'hover:bg-secondary/[0.05]' : 'hover:bg-secondary/60')}>
                             <Avatar className="w-10 h-10">
                               <AvatarImage src={safeImageSrc(c.avatar_url)} alt={c.name} />
                               <AvatarFallback>{String(c.name || 'C').slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -4962,7 +4962,7 @@ const BrandMobileDashboard = ({
                             </div>
                             <div className="flex items-center gap-2">
                               {c.status && (
-                                <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-white/10 text-white/60 bg-white/5' : 'border-slate-200 text-slate-600 bg-white')}>
+                                <span className={cn('text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border', isDark ? 'border-border text-foreground/60 bg-card' : 'border-border text-muted-foreground bg-card')}>
                                   {c.status}
                                 </span>
                               )}
@@ -4982,12 +4982,12 @@ const BrandMobileDashboard = ({
                     className={cn(
                       'mb-5 p-5 rounded-[28px] border overflow-hidden relative',
                       borderColor,
-                      isDark ? 'bg-white/[0.04]' : 'bg-white/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]'
+                      isDark ? 'bg-secondary/[0.04]' : 'bg-secondary/80 backdrop-blur-xl shadow-[0_18px_45px_rgba(15,23,42,0.08)]'
                     )}
                   >
-                    <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.16),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.12),transparent_60%)]" />
+                    <div className="absolute inset-0 pointer-events-none bg-background" />
                     <div className="relative flex items-center gap-4">
-                      <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-white/10' : 'border-slate-200')}>
+                      <Avatar className={cn('w-14 h-14 border shadow-sm', isDark ? 'border-border' : 'border-border')}>
                         <AvatarImage src={brandLogo} alt={brandName} />
                         <AvatarFallback>{brandName.slice(0, 1).toUpperCase()}</AvatarFallback>
                       </Avatar>
@@ -4995,14 +4995,14 @@ const BrandMobileDashboard = ({
                         <p className={cn('text-[18px] font-black tracking-tight truncate', textColor)}>{brandName}</p>
                         <p className={cn('text-[12px] mt-1 opacity-60 truncate', textColor)}>Brand account</p>
                         <div className="flex flex-wrap gap-2 mt-3">
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-white/10 bg-white/5 text-white/70' : 'border-slate-200 bg-white text-slate-700')}>
+                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-border bg-card text-foreground/70' : 'border-border bg-card text-muted-foreground')}>
                             Verified Business
                           </span>
-                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800')}>
+                          <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-primary/20 bg-primary/10 text-primary' : 'border-primary bg-primary text-primary')}>
                             Protected by Creator Armour
                           </span>
                           {!hasUploadedBrandLogo && (
-                            <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-amber-500/25 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800')}>
+                            <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-widest', isDark ? 'border-warning/25 bg-warning/10 text-warning' : 'border-warning bg-warning text-warning')}>
                               Logo required
                             </span>
                           )}
@@ -5011,7 +5011,7 @@ const BrandMobileDashboard = ({
                     </div>
 
                     {!hasUploadedBrandLogo && (
-                      <div className={cn('relative mt-4 p-3 rounded-2xl border flex items-center justify-between gap-3', isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50/70 border-amber-200')}>
+                      <div className={cn('relative mt-4 p-3 rounded-2xl border flex items-center justify-between gap-3', isDark ? 'bg-warning/10 border-warning/20' : 'bg-warning/70 border-warning')}>
                         <div className="min-w-0">
                           <p className={cn('text-[12px] font-bold', textColor)}>Upload your logo to send offers</p>
                           <p className={cn('text-[11px] mt-0.5 opacity-70', textColor)}>Creators respond faster when they recognize you.</p>
@@ -5019,7 +5019,7 @@ const BrandMobileDashboard = ({
                         <button type="button"
                           type="button"
                           onClick={() => navigate('/brand-settings')}
-                          className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-white/10 text-white hover:bg-white/15' : 'bg-white text-slate-900 border border-amber-200')}
+                          className={cn('px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap', isDark ? 'bg-secondary/50 text-foreground hover:bg-secondary/15' : 'bg-card text-muted-foreground border border-warning')}
                         >
                           Upload
                         </button>
@@ -5044,7 +5044,7 @@ const BrandMobileDashboard = ({
                         ].map((item) => (
                           <div key={item.label} className={cn('p-3 rounded-[20px] border', cardBgColor, borderColor)}>
                             <p className={cn('text-[10px] font-black uppercase tracking-[0.16em] opacity-45', textColor)}>{item.label}</p>
-                            <p className={cn('text-[18px] font-black tracking-tight mt-2', item.tone === 'warn' ? (isDark ? 'text-amber-200' : 'text-amber-800') : textColor)}>
+                            <p className={cn('text-[18px] font-black tracking-tight mt-2', item.tone === 'warn' ? (isDark ? 'text-warning' : 'text-warning') : textColor)}>
                               {item.value}
                             </p>
                           </div>
@@ -5064,33 +5064,33 @@ const BrandMobileDashboard = ({
         </div>
       </div>
 
-      <div className={cn('fixed bottom-0 inset-x-0 border-t z-50 transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-slate-200 bg-white/90')} style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}>
+      <div className={cn('fixed bottom-0 inset-x-0 border-t z-50 transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')} style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}>
         <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
-            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
+            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('creators'); }} className="flex flex-col items-center gap-1 w-14 relative">
-            <User className={cn('w-[22px] h-[22px]', activeTab === 'creators' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'creators' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Creators</span>
+            <User className={cn('w-[22px] h-[22px]', activeTab === 'creators' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight', activeTab === 'creators' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Creators</span>
           </motion.button>
 
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { triggerHaptic(HapticPatterns.success); openCreateOfferSheet(); }} className="relative flex flex-col items-center -mt-8">
-            <div className={cn('w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#061318] text-white shadow-[0_4px_30px_rgba(16,185,129,0.28)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.20)] ring-1 ring-emerald-300/30' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-slate-200')}>
+            <div className={cn('w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110', isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#061318] text-foreground shadow-[0_4px_30px_rgba(16,185,129,0.28)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.20)] ring-1 ring-emerald-300/30' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-foreground shadow-lg hover:shadow-xl ring-1 ring-slate-200')}>
               <Plus className="w-7 h-7" />
             </div>
-            <span className={cn('text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap', isDark ? 'text-slate-400' : 'text-slate-600')}>Create</span>
+            <span className={cn('text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap', isDark ? 'text-muted-foreground' : 'text-muted-foreground')}>Create</span>
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14">
-            <Handshake className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+            <Handshake className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
           </motion.button>
 
           <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(HapticPatterns.light); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
-            <Settings className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
+            <Settings className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
           </motion.button>
         </div>
       </div>
@@ -5111,14 +5111,14 @@ const BrandMobileDashboard = ({
 	            animate={{ y: 0 }}
 	            exit={{ y: '100%' }}
 	            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-	            className={cn('fixed bottom-0 inset-x-0 z-[110] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl', isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200')}
+	            className={cn('fixed bottom-0 inset-x-0 z-[110] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl', isDark ? 'bg-background border-border' : 'bg-card border-border')}
 	          >
-	              <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-6" />
+	              <div className="w-12 h-1 bg-background/20 rounded-full mx-auto mb-6" />
 	              <div className="max-w-md mx-auto">
                 <div className="flex items-start justify-between mb-6">
                   <div>
-                    <h2 className={cn('text-2xl font-bold tracking-tight', isDark ? 'text-white' : 'text-slate-900')}>Start a collaboration</h2>
-                    <p className={cn('text-[13px] mt-1 opacity-60', isDark ? 'text-white' : 'text-slate-900')}>Send an offer, then track it end-to-end.</p>
+                    <h2 className={cn('text-2xl font-bold tracking-tight', isDark ? 'text-foreground' : 'text-muted-foreground')}>Start a collaboration</h2>
+                    <p className={cn('text-[13px] mt-1 opacity-60', isDark ? 'text-foreground' : 'text-muted-foreground')}>Send an offer, then track it end-to-end.</p>
                   </div>
                 </div>
 
@@ -5139,11 +5139,11 @@ const BrandMobileDashboard = ({
                     }}
                     className={cn(
                       'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
-                      isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
+                      isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-primary/30 hover:from-emerald-400 hover:to-sky-400 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-primary/40 hover:from-emerald-500 hover:to-sky-500 text-foreground shadow-lg'
                     )}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-white/10' : 'bg-white/10')}>
+                      <div className={cn('w-10 h-10 rounded-2xl flex items-center justify-center', isDark ? 'bg-secondary/50' : 'bg-secondary/50')}>
                         <Send className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
@@ -5158,13 +5158,13 @@ const BrandMobileDashboard = ({
                       setShowActionSheet(false);
                       setActiveTab('creators');
                     }}
-                    className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                    className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
                   >
                     <p className={cn('text-[13px] font-bold', textColor)}>Browse creators</p>
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Search and shortlist profiles</p>
                   </button>
 
-                  <button type="button" onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}>
+                  <button type="button" onClick={() => { setShowActionSheet(false); toast.message('Import creator profile', { description: 'Coming soon.' }); }} className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}>
                     <p className={cn('text-[13px] font-bold', textColor)}>Import creator profile</p>
                     <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Paste a link to add quickly</p>
                   </button>
@@ -5179,7 +5179,7 @@ const BrandMobileDashboard = ({
                         await handleEnablePush();
                         setShowActionSheet(false);
                       }}
-                      className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99] disabled:opacity-50', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                      className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99] disabled:opacity-50', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
                     >
                       <p className={cn('text-[13px] font-bold', textColor)}>Enable deal alerts</p>
                       <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Get notified when creators reply</p>
@@ -5207,12 +5207,12 @@ const BrandMobileDashboard = ({
 	            exit={{ opacity: 0, scale: 0.92, y: 20 }}
 	            className={cn(
 	              'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[130] w-[90%] max-w-sm rounded-[2rem] border p-6 shadow-2xl',
-	              isDark ? 'bg-[#0F172A] border-white/10' : 'bg-white border-slate-200'
+	              isDark ? 'bg-background border-border' : 'bg-card border-border'
 	            )}
 	          >
 	              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-emerald-500" />
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-primary" />
                 </div>
                 <div>
                   <h3 className={cn('text-lg font-bold', textColor)}>Monthly budget</h3>
@@ -5232,7 +5232,7 @@ const BrandMobileDashboard = ({
                     onChange={(e) => setBudgetDraft(e.target.value)}
                     className={cn(
                       'w-full h-12 px-4 rounded-xl border text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none',
-                      isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
+                      isDark ? 'bg-card border-border text-foreground' : 'bg-background border-border text-muted-foreground'
                     )}
                   />
                 </div>
@@ -5240,7 +5240,7 @@ const BrandMobileDashboard = ({
                 <div className="flex gap-3 pt-2">
                   <button type="button"
                     onClick={() => setShowBudgetModal(false)}
-                    className={cn('flex-1 h-12 rounded-xl font-bold text-sm', isDark ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-900')}
+                    className={cn('flex-1 h-12 rounded-xl font-bold text-sm', isDark ? 'bg-card text-foreground' : 'bg-background text-muted-foreground')}
                   >
                     Cancel
                   </button>

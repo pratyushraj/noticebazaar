@@ -131,7 +131,7 @@ export const ExportMonthlyReport: React.FC<ExportMonthlyReportProps> = ({
     <Button
       onClick={handleExport}
       disabled={isExporting}
-      className="bg-white/10 border border-white/20 text-white hover:bg-white/20 min-h-[44px]"
+      className="bg-secondary/50 border border-border text-foreground hover:bg-secondary/20 min-h-[44px]"
     >
       {isExporting ? (
         <>

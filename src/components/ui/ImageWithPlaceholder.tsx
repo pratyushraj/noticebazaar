@@ -65,21 +65,21 @@ export const ImageWithPlaceholder: React.FC<ImageWithPlaceholderProps> = ({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-[20px] bg-white/5',
+        'relative overflow-hidden rounded-[20px] bg-card',
         aspectClasses[aspectRatio],
         className
       )}
     >
       {/* Loading Skeleton */}
       {isLoading && (
-        <Skeleton className="absolute inset-0 w-full h-full bg-white/10" />
+        <Skeleton className="absolute inset-0 w-full h-full bg-secondary/50" />
       )}
 
       {/* Error State */}
       {hasError ? (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-white/5 p-4">
-          <ImageIcon className="w-8 h-8 text-white/30 mb-2" />
-          <p className="text-xs text-white/40 text-center">Image unavailable</p>
+        <div className="w-full h-full flex flex-col items-center justify-center bg-card p-4">
+          <ImageIcon className="w-8 h-8 text-foreground/30 mb-2" />
+          <p className="text-xs text-foreground/40 text-center">Image unavailable</p>
         </div>
       ) : (
         <img

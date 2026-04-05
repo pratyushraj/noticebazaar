@@ -58,11 +58,11 @@ const CreatorBadge: React.FC<CreatorBadgeProps> = ({ profile }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.6 }}
     >
-      <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
         <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
-            <BadgeCheck className="h-4 w-4 text-blue-400" />
-            <span className="text-xs font-semibold text-blue-400 uppercase tracking-wide">Creator Badge</span>
+            <BadgeCheck className="h-4 w-4 text-info" />
+            <span className="text-xs font-semibold text-info uppercase tracking-wide">Creator Badge</span>
           </div>
 
           <div className="space-y-3">
@@ -79,8 +79,8 @@ const CreatorBadge: React.FC<CreatorBadgeProps> = ({ profile }) => {
                 <p className="text-xs text-muted-foreground">Trust Score</p>
                 <p className={cn(
                   "text-sm font-bold",
-                  badgeData.trustScore >= 80 ? "text-emerald-400" :
-                  badgeData.trustScore >= 60 ? "text-blue-400" :
+                  badgeData.trustScore >= 80 ? "text-primary" :
+                  badgeData.trustScore >= 60 ? "text-info" :
                   "text-yellow-400"
                 )}>
                   {badgeData.trustScore}
@@ -93,9 +93,9 @@ const CreatorBadge: React.FC<CreatorBadgeProps> = ({ profile }) => {
               <span className="text-xs text-muted-foreground">Verified:</span>
               <div className="flex items-center gap-2">
                 {badgeData.verified.pan && (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/20 border border-emerald-500/30">
-                    <Shield className="h-3 w-3 text-emerald-400" />
-                    <span className="text-xs text-emerald-400">PAN</span>
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/20 border border-primary/30">
+                    <Shield className="h-3 w-3 text-primary" />
+                    <span className="text-xs text-primary">PAN</span>
                   </div>
                 )}
                 {badgeData.verified.instagram && (
@@ -105,9 +105,9 @@ const CreatorBadge: React.FC<CreatorBadgeProps> = ({ profile }) => {
                   </div>
                 )}
                 {badgeData.verified.bank && (
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-blue-500/20 border border-blue-500/30">
-                    <CreditCard className="h-3 w-3 text-blue-400" />
-                    <span className="text-xs text-blue-400">Bank</span>
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-info/20 border border-info/30">
+                    <CreditCard className="h-3 w-3 text-info" />
+                    <span className="text-xs text-info">Bank</span>
                   </div>
                 )}
               </div>

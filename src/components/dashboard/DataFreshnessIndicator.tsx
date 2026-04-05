@@ -54,7 +54,7 @@ export function DataFreshnessIndicator({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={onRefresh}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-[11px] text-white/60 hover:text-white/80"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-card hover:bg-secondary/50 transition-colors text-[11px] text-foreground/60 hover:text-foreground/80"
           >
             <RefreshCw className="h-3 w-3" />
             <span>Refresh</span>
@@ -65,9 +65,9 @@ export function DataFreshnessIndicator({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-white/40"
+            className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-foreground/40"
           >
-            <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+            <CheckCircle2 className="h-3 w-3 text-primary" />
             <span>{timeSinceUpdate || "Live"}</span>
           </motion.div>
         )}

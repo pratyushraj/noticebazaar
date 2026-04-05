@@ -33,21 +33,21 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({
       {step === 'uploading' && (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center w-full max-w-md">
-            <div className="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6 relative">
-              <Upload className="w-12 h-12 text-purple-400" />
+            <div className="w-24 h-24 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-6 relative">
+              <Upload className="w-12 h-12 text-secondary" />
               <div className="absolute inset-0 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin"></div>
             </div>
 
             <h2 className="text-2xl font-bold mb-2">Uploading Contract...</h2>
-            <p className="text-purple-300 mb-6">{fileName}</p>
+            <p className="text-secondary mb-6">{fileName}</p>
 
             {/* Enhanced Progress Bar */}
             <div className="w-full max-w-xs mx-auto mb-6">
               <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-purple-300 font-medium">{uploadProgress}%</span>
-                <span className="text-purple-300">{fileSize}</span>
+                <span className="text-secondary font-medium">{uploadProgress}%</span>
+                <span className="text-secondary">{fileSize}</span>
               </div>
-              <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-secondary/50 rounded-full h-3 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-300 relative"
                   style={{ width: `${uploadProgress}%` }}
@@ -58,18 +58,18 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({
             </div>
 
             {/* Stage Indicators */}
-            <div className="space-y-3 bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="space-y-3 bg-card rounded-xl p-4 border border-border">
               <div className="flex items-center gap-3 text-left">
-                <div className={`w-2 h-2 rounded-full transition-all ${uploadProgress > 0 ? 'bg-green-400 scale-125' : 'bg-white/20'
+                <div className={`w-2 h-2 rounded-full transition-all ${uploadProgress > 0 ? 'bg-green-400 scale-125' : 'bg-secondary/20'
                   }`} />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-white">Uploading file...</div>
-                  <div className="text-xs text-purple-300">
+                  <div className="text-sm font-medium text-foreground">Uploading file...</div>
+                  <div className="text-xs text-secondary">
                     {uploadProgress > 0 ? `Transferred ${(uploadProgress / 100 * parseFloat(fileSize)).toFixed(2)} MB` : 'Preparing upload...'}
                   </div>
                 </div>
                 {uploadProgress > 0 && uploadProgress < 100 && (
-                  <Loader className="w-4 h-4 animate-spin text-purple-400" />
+                  <Loader className="w-4 h-4 animate-spin text-secondary" />
                 )}
                 {uploadProgress === 100 && (
                   <CheckCircle className="w-4 h-4 text-green-400" />
@@ -84,21 +84,21 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({
       {step === 'scanning' && (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center w-full max-w-md">
-            <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-6 relative">
-              <FileText className="w-12 h-12 text-blue-400" />
-              <div className="absolute inset-0 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin"></div>
+            <div className="w-24 h-24 rounded-full bg-info/20 flex items-center justify-center mx-auto mb-6 relative">
+              <FileText className="w-12 h-12 text-info" />
+              <div className="absolute inset-0 rounded-full border-4 border-info/30 border-t-blue-500 animate-spin"></div>
             </div>
 
             <h2 className="text-2xl font-bold mb-2">Scanning Document...</h2>
-            <p className="text-purple-300 mb-6">Reading contract clauses</p>
+            <p className="text-secondary mb-6">Reading contract clauses</p>
 
             {/* Enhanced Progress Bar */}
             <div className="w-full max-w-xs mx-auto mb-6">
               <div className="flex items-center justify-between text-sm mb-2">
-                <span className="text-purple-300 font-medium">{scanProgress}%</span>
-                <span className="text-purple-300">12 pages</span>
+                <span className="text-secondary font-medium">{scanProgress}%</span>
+                <span className="text-secondary">12 pages</span>
               </div>
-              <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-secondary/50 rounded-full h-3 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300 relative"
                   style={{ width: `${scanProgress}%` }}
@@ -109,18 +109,18 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({
             </div>
 
             {/* Stage Indicators */}
-            <div className="space-y-3 bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="space-y-3 bg-card rounded-xl p-4 border border-border">
               <div className="flex items-center gap-3 text-left">
-                <div className={`w-2 h-2 rounded-full transition-all ${scanProgress > 0 ? 'bg-green-400 scale-125' : 'bg-white/20'
+                <div className={`w-2 h-2 rounded-full transition-all ${scanProgress > 0 ? 'bg-green-400 scale-125' : 'bg-secondary/20'
                   }`} />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-white">Extracting text from PDF...</div>
-                  <div className="text-xs text-purple-300">
+                  <div className="text-sm font-medium text-foreground">Extracting text from PDF...</div>
+                  <div className="text-xs text-secondary">
                     {scanProgress > 0 ? `Processed ${Math.round(scanProgress / 100 * 12)} of 12 pages` : 'Initializing scanner...'}
                   </div>
                 </div>
                 {scanProgress > 0 && scanProgress < 100 && (
-                  <Loader className="w-4 h-4 animate-spin text-blue-400" />
+                  <Loader className="w-4 h-4 animate-spin text-info" />
                 )}
                 {scanProgress === 100 && (
                   <CheckCircle className="w-4 h-4 text-green-400" />
@@ -136,13 +136,13 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({
         <div className="flex flex-col items-center min-h-[60vh] py-8" style={{ willChange: 'contents' }}>
           <div className="text-center mb-8">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 relative animate-pulse">
-              <Sparkles className="w-12 h-12 text-white" />
+              <Sparkles className="w-12 h-12 text-foreground" />
             </div>
 
             <h2 className="text-2xl font-bold mb-2">
               {isAutoRetrying ? 'Service Starting Up...' : 'AI Analyzing Contract...'}
             </h2>
-            <p className="text-purple-300/70 mb-8">
+            <p className="text-secondary/70 mb-8">
               {isAutoRetrying ? (
                 <span>
                   Retrying in {retryDelay}s (Attempt {retryAttempt}/{MAX_AUTO_RETRIES})
@@ -171,12 +171,12 @@ export const ProgressSteps: React.FC<ProgressStepsProps> = ({
 
             <div className="space-y-3 text-sm max-w-xs mx-auto">
               {['Payment terms', 'Termination rights', 'IP ownership', 'Exclusivity clause', 'Liability terms'].map((item) => (
-                <div key={item} className="flex items-center justify-between p-3 bg-white/5 rounded-lg" style={{ transform: 'translateZ(0)' }}>
-                  <span className="text-purple-200/70">{item}</span>
+                <div key={item} className="flex items-center justify-between p-3 bg-card rounded-lg" style={{ transform: 'translateZ(0)' }}>
+                  <span className="text-secondary/70">{item}</span>
                   {analyzedItems.has(item) ? (
                     <CheckCircle className="w-4 h-4 text-green-400" />
                   ) : (
-                    <Loader className="w-4 h-4 text-blue-400 animate-spin" />
+                    <Loader className="w-4 h-4 text-info animate-spin" />
                   )}
                 </div>
               ))}

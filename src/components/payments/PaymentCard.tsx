@@ -72,7 +72,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
       return 'bg-green-500/20 text-green-400 border-green-500/30';
     }
     if (paymentStatus === 'overdue') {
-      return 'bg-red-500/20 text-red-400 border-red-500/30';
+      return 'bg-destructive/20 text-destructive border-destructive/30';
     }
     return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
   };
@@ -83,7 +83,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
       return { text: 'Paid', color: 'bg-green-500/20 text-green-400 border-green-500/30' };
     }
     if (paymentStatus === 'overdue') {
-      return { text: 'Overdue', color: 'bg-red-500/20 text-red-400 border-red-500/30' };
+      return { text: 'Overdue', color: 'bg-destructive/20 text-destructive border-destructive/30' };
     }
     if (paymentStatus === 'due_today') {
       return { text: 'Due today', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
@@ -113,7 +113,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="relative bg-white/5 backdrop-blur-xl rounded-xl p-3.5 border border-white/10 cursor-pointer transition-all duration-200 hover:bg-white/7 hover:border-white/15"
+      className="relative bg-card backdrop-blur-xl rounded-xl p-3.5 border border-border cursor-pointer transition-all duration-200 hover:bg-secondary/7 hover:border-border"
       role="button"
       tabIndex={onClick ? 0 : undefined}
       aria-label={`Payment: ${dealName} - ${type === 'received' ? 'Paid' : 'Pending'}`}
@@ -127,9 +127,9 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
       <div className="flex items-center justify-between gap-3">
         {/* Left: Brand Name (bold) and Campaign Name (muted) */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-bold text-white truncate">{dealName}</h3>
+          <h3 className="text-base font-bold text-foreground truncate">{dealName}</h3>
           {campaignName && (
-            <div className="text-sm text-white/60 truncate mt-0.5">{campaignName}</div>
+            <div className="text-sm text-foreground/60 truncate mt-0.5">{campaignName}</div>
           )}
         </div>
 
@@ -137,7 +137,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = memo(({
         <div className="flex-shrink-0 flex flex-col items-end gap-1.5">
           {/* Amount */}
           <div className={`text-lg font-bold ${
-            type === 'expense' ? 'text-red-400' : 'text-white'
+            type === 'expense' ? 'text-destructive' : 'text-foreground'
           }`}>
             {type === 'expense' ? '-' : ''}₹{Math.round(amount).toLocaleString('en-IN')}
           </div>

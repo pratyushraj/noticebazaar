@@ -40,10 +40,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     >
       {Icon && (
         <div className={cn(
-          "w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4",
-          "border border-white/10"
+          "w-16 h-16 rounded-full bg-card flex items-center justify-center mb-4",
+          "border border-border"
         )}>
-          <Icon className={cn(iconSizes.xl, "text-white/50")} />
+          <Icon className={cn(iconSizes.xl, "text-foreground/50")} />
         </div>
       )}
       

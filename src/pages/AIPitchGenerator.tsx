@@ -212,7 +212,7 @@ const AIPitchGenerator = () => {
   const historyContent = (
     <>
       {history.length === 0 ? (
-        <div className="text-center py-8 text-white/40">
+        <div className="text-center py-8 text-foreground/40">
           <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">No history yet</p>
           <p className="text-xs mt-1">Generated pitches will appear here</p>
@@ -225,23 +225,23 @@ const AIPitchGenerator = () => {
               className={cn(
                 "p-3 rounded-xl border transition-all cursor-pointer",
                 selectedHistory === item.id
-                  ? "bg-purple-500/20 border-purple-500/30"
-                  : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                  ? "bg-secondary/20 border-purple-500/30"
+                  : "bg-card border-border hover:bg-secondary/50 hover:border-border"
               )}
               onClick={() => handleLoadHistory(item)}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
                   {item.type === 'pitch' ? (
-                    <FileText className="w-4 h-4 text-purple-400" />
+                    <FileText className="w-4 h-4 text-secondary" />
                   ) : (
-                    <MessageSquare className="w-4 h-4 text-blue-400" />
+                    <MessageSquare className="w-4 h-4 text-info" />
                   )}
-                  <span className="text-xs font-medium text-white/80 capitalize">
+                  <span className="text-xs font-medium text-foreground/80 capitalize">
                     {item.type === 'pitch' ? 'Pitch' : 'Notice'}
                   </span>
                   {item.tone && (
-                    <span className="text-xs text-white/50">• {item.tone}</span>
+                    <span className="text-xs text-foreground/50">• {item.tone}</span>
                   )}
                 </div>
                 <Button
@@ -251,15 +251,15 @@ const AIPitchGenerator = () => {
                     e.stopPropagation();
                     handleDeleteHistory(item.id);
                   }}
-                  className="h-6 w-6 p-0 text-white/40 hover:text-red-400 hover:bg-red-500/10"
+                  className="h-6 w-6 p-0 text-foreground/40 hover:text-destructive hover:bg-destructive/10"
                 >
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
-              <p className="text-xs text-white/60 line-clamp-2">
+              <p className="text-xs text-foreground/60 line-clamp-2">
                 {item.input}
               </p>
-              <p className="text-[10px] text-white/40 mt-2">
+              <p className="text-[10px] text-foreground/40 mt-2">
                 {item.createdAt.toLocaleDateString()} {item.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -462,12 +462,12 @@ const AIPitchGenerator = () => {
   };
 
   return (
-    <div className="nb-screen-height text-white relative pb-24 md:pb-8 overflow-hidden font-['Space_Grotesk']">
+    <div className="nb-screen-height text-foreground relative pb-24 md:pb-8 overflow-hidden font-['Space_Grotesk']">
       <div className="absolute inset-0">
-        <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full bg-purple-500/25 blur-[120px]" />
+        <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full bg-secondary/25 blur-[120px]" />
         <div className="absolute top-20 right-[-140px] h-[360px] w-[360px] rounded-full bg-cyan-400/20 blur-[120px]" />
         <div className="absolute bottom-[-180px] left-1/3 h-[420px] w-[420px] rounded-full bg-rose-500/15 blur-[120px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)]" />
+        <div className="absolute inset-0 bg-background" />
         <div className="absolute inset-0 opacity-[0.07] bg-[linear-gradient(90deg,rgba(255,255,255,0.15)_1px,transparent_1px),linear-gradient(180deg,rgba(255,255,255,0.15)_1px,transparent_1px)] bg-[size:40px_40px]" />
       </div>
 
@@ -481,14 +481,14 @@ const AIPitchGenerator = () => {
         <motion.div variants={itemVariants} className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500/40 to-blue-500/30 backdrop-blur-sm border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.35)]">
-                <Wand2 className="h-6 w-6 text-white" />
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500/40 to-blue-500/30 backdrop-blur-sm border border-border flex items-center justify-center shadow-[0_0_30px_rgba(168,85,247,0.35)]">
+                <Wand2 className="h-6 w-6 text-foreground" />
               </div>
               <div>
-                <h1 className="text-3xl font-semibold text-white tracking-tight font-['Fraunces']">
+                <h1 className="text-3xl font-semibold text-foreground tracking-tight font-['Fraunces']">
                   AI Pitch Studio
                 </h1>
-                <p className="text-sm text-white/70">
+                <p className="text-sm text-foreground/70">
                   Generate sponsor pitches and legal responses with a single prompt.
                 </p>
               </div>
@@ -499,15 +499,15 @@ const AIPitchGenerator = () => {
               <Button
                 variant="outline"
                 onClick={() => setIsHistoryOpen(true)}
-                className="lg:hidden bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
+                className="lg:hidden bg-card border-border text-foreground/80 hover:bg-secondary/50"
               >
                 <History className="w-4 h-4 mr-2" />
                 History
               </Button>
               {!isOnline && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-500/30">
-                  <WifiOff className="w-4 h-4 text-orange-400" />
-                  <span className="text-xs font-medium text-orange-400">Offline</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-warning/20 border border-orange-500/30">
+                  <WifiOff className="w-4 h-4 text-warning" />
+                  <span className="text-xs font-medium text-warning">Offline</span>
                 </div>
               )}
               
@@ -515,7 +515,7 @@ const AIPitchGenerator = () => {
                 <Button
                   onClick={handleReconnectAndUpdate}
                   disabled={isSyncing}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-info hover:bg-info text-foreground"
                 >
                   {isSyncing ? (
                     <>
@@ -540,10 +540,10 @@ const AIPitchGenerator = () => {
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-white/70">
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Instant drafts</span>
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Tone control</span>
-            <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10">Offline safe</span>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-foreground/70">
+            <span className="px-3 py-1 rounded-full bg-secondary/50 border border-border">Instant drafts</span>
+            <span className="px-3 py-1 rounded-full bg-secondary/50 border border-border">Tone control</span>
+            <span className="px-3 py-1 rounded-full bg-secondary/50 border border-border">Offline safe</span>
           </div>
           
           {/* Sync Conflict Alert */}
@@ -554,7 +554,7 @@ const AIPitchGenerator = () => {
                 <p className="text-sm font-medium text-yellow-400 mb-1">
                   Sync Conflicts Detected
                 </p>
-                <p className="text-xs text-white/60">
+                <p className="text-xs text-foreground/60">
                   You have {pendingSync.length} item(s) saved offline. Click "Reconnect & Update" to sync with the server.
                 </p>
               </div>
@@ -567,7 +567,7 @@ const AIPitchGenerator = () => {
           <div className="flex-1 space-y-6">
             {/* Mode Toggle */}
             <motion.div variants={itemVariants}>
-              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <Button
@@ -576,8 +576,8 @@ const AIPitchGenerator = () => {
                       className={cn(
                         "flex-1",
                         mode === 'pitch' 
-                          ? "bg-purple-600 hover:bg-purple-700 text-white" 
-                          : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                          ? "bg-secondary hover:bg-secondary text-foreground" 
+                          : "bg-card border-border text-foreground hover:bg-secondary/50"
                       )}
                     >
                       <FileText className="w-4 h-4 mr-2" />
@@ -589,8 +589,8 @@ const AIPitchGenerator = () => {
                       className={cn(
                         "flex-1",
                         mode === 'notice' 
-                          ? "bg-blue-600 hover:bg-blue-700 text-white" 
-                          : "bg-white/5 border-white/10 text-white hover:bg-white/10"
+                          ? "bg-info hover:bg-info text-foreground" 
+                          : "bg-card border-border text-foreground hover:bg-secondary/50"
                       )}
                     >
                       <MessageSquare className="w-4 h-4 mr-2" />
@@ -603,10 +603,10 @@ const AIPitchGenerator = () => {
 
             {/* Input Section */}
             <motion.div variants={itemVariants}>
-              <Card className="bg-white/[0.07] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_10px_36px_rgba(0,0,0,0.35)]">
+              <Card className="bg-secondary/[0.07] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_10px_36px_rgba(0,0,0,0.35)]">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-purple-300" />
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-secondary" />
                     {mode === 'pitch' ? 'Pitch Details' : 'Notice Details'}
                   </CardTitle>
                 </CardHeader>
@@ -614,13 +614,13 @@ const AIPitchGenerator = () => {
                   {mode === 'notice' && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <Label className="text-white/80">Tone</Label>
-                        <span className="text-xs font-medium text-white/60 px-2 py-1 rounded-full bg-white/10 border border-white/10">
+                        <Label className="text-foreground/80">Tone</Label>
+                        <span className="text-xs font-medium text-foreground/60 px-2 py-1 rounded-full bg-secondary/50 border border-border">
                           {toneLabel}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-xs text-white/50 w-12">Firm</span>
+                        <span className="text-xs text-foreground/50 w-12">Firm</span>
                         <Slider
                           value={[tone]}
                           onValueChange={(value) => setTone(value[0])}
@@ -628,13 +628,13 @@ const AIPitchGenerator = () => {
                           step={1}
                           className="flex-1"
                         />
-                        <span className="text-xs text-white/50 w-16">Friendly</span>
+                        <span className="text-xs text-foreground/50 w-16">Friendly</span>
                       </div>
                     </div>
                   )}
                   
                   <div className="space-y-2">
-                    <Label className="text-white/80">
+                    <Label className="text-foreground/80">
                       {mode === 'pitch' 
                         ? 'Describe your brand collaboration idea or key points' 
                         : 'Describe the notice or claim you need to respond to'}
@@ -645,9 +645,9 @@ const AIPitchGenerator = () => {
                       placeholder={mode === 'pitch' 
                         ? "e.g., I'm a lifestyle creator with 50K followers interested in promoting sustainable fashion..."
                         : "e.g., Received a notice about copyright claim on my Instagram post..."}
-                      className="min-h-[200px] bg-white/5 text-white border-white/10 placeholder:text-white/40 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/30"
+                      className="min-h-[200px] bg-card text-foreground border-border placeholder:text-foreground/40 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/30"
                     />
-                    <div className="flex items-center justify-between text-xs text-white/50">
+                    <div className="flex items-center justify-between text-xs text-foreground/50">
                       <span>{inputStats.words} words • {inputStats.chars} chars</span>
                       {toneBadge && <span>Suggested tone: {toneBadge}</span>}
                     </div>
@@ -658,7 +658,7 @@ const AIPitchGenerator = () => {
                       <button type="button"
                         key={prompt}
                         onClick={() => setInput((prev) => prev ? `${prev}\n${prompt}` : prompt)}
-                        className="text-xs text-white/70 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/10 hover:bg-white/[0.15] transition"
+                        className="text-xs text-foreground/70 px-3 py-1.5 rounded-full bg-secondary/[0.08] border border-border hover:bg-secondary/[0.15] transition"
                       >
                         {prompt}
                       </button>
@@ -669,7 +669,7 @@ const AIPitchGenerator = () => {
                     <Button
                       onClick={handleGenerate}
                       disabled={isGenerating || !input.trim()}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-foreground"
                     >
                       {isGenerating ? (
                         <>
@@ -686,7 +686,7 @@ const AIPitchGenerator = () => {
                     <Button
                       variant="outline"
                       onClick={() => setInput('')}
-                      className="bg-white/5 border-white/10 text-white/80 hover:bg-white/10"
+                      className="bg-card border-border text-foreground/80 hover:bg-secondary/50"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
                       Clear
@@ -698,10 +698,10 @@ const AIPitchGenerator = () => {
 
             {/* Output Section */}
             <motion.div variants={itemVariants}>
-              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="text-foreground flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-green-400" />
                       Generated {mode === 'pitch' ? 'Pitch' : 'Response'}
                     </CardTitle>
@@ -711,7 +711,7 @@ const AIPitchGenerator = () => {
                         size="sm"
                         onClick={() => handleCopy(output)}
                         disabled={!output}
-                        className="text-white/60 hover:text-white hover:bg-white/10 disabled:opacity-40"
+                        className="text-foreground/60 hover:text-foreground hover:bg-secondary/50 disabled:opacity-40"
                       >
                         <Copy className="w-4 h-4 mr-2" />
                         Copy
@@ -722,11 +722,11 @@ const AIPitchGenerator = () => {
                 <CardContent>
                   {isGenerating && (
                     <div className="mb-4">
-                      <div className="flex items-center justify-between text-xs text-white/70 mb-2">
+                      <div className="flex items-center justify-between text-xs text-foreground/70 mb-2">
                         <span>{progressLabel}</span>
                         <span>{progress}%</span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-2 w-full rounded-full bg-secondary/50 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
                           style={{ width: `${progress}%` }}
@@ -735,16 +735,16 @@ const AIPitchGenerator = () => {
                     </div>
                   )}
                   {output ? (
-                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                      <pre className="whitespace-pre-wrap text-sm text-white/90 font-sans leading-relaxed">
+                    <div className="bg-card rounded-2xl p-4 border border-border">
+                      <pre className="whitespace-pre-wrap text-sm text-foreground/90 font-sans leading-relaxed">
                         {output}
                       </pre>
                     </div>
                   ) : (
-                    <div className="bg-white/5 rounded-2xl p-10 border border-dashed border-white/10 text-center">
-                      <Sparkles className="w-6 h-6 text-purple-300 mx-auto mb-3" />
-                      <p className="text-sm text-white/70">Your generated copy will appear here.</p>
-                      <p className="text-xs text-white/40 mt-1">Tip: add a specific goal and audience for better output.</p>
+                    <div className="bg-card rounded-2xl p-10 border border-dashed border-border text-center">
+                      <Sparkles className="w-6 h-6 text-secondary mx-auto mb-3" />
+                      <p className="text-sm text-foreground/70">Your generated copy will appear here.</p>
+                      <p className="text-xs text-foreground/40 mt-1">Tip: add a specific goal and audience for better output.</p>
                     </div>
                   )}
                 </CardContent>
@@ -755,16 +755,16 @@ const AIPitchGenerator = () => {
           {/* History Sidebar */}
           <div className="w-80 hidden lg:block">
             <motion.div variants={itemVariants}>
-              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] sticky top-24">
+              <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] sticky top-24">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
+                  <CardTitle className="text-foreground flex items-center gap-2">
                     <History className="w-5 h-5" />
                     History
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {isLoadingHistory ? (
-                    <div className="text-center py-8 text-white/40">
+                    <div className="text-center py-8 text-foreground/40">
                       <RefreshCw className="w-6 h-6 mx-auto mb-3 animate-spin" />
                       <p className="text-sm">Loading history...</p>
                     </div>
@@ -785,7 +785,7 @@ const AIPitchGenerator = () => {
           className="lg:hidden"
         >
           {isLoadingHistory ? (
-            <div className="text-center py-8 text-white/40">
+            <div className="text-center py-8 text-foreground/40">
               <RefreshCw className="w-6 h-6 mx-auto mb-3 animate-spin" />
               <p className="text-sm">Loading history...</p>
             </div>

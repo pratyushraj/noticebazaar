@@ -114,10 +114,10 @@ const DocumentsView: React.FC<DocumentsViewProps> = ({
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'pdf':
-        return <FileText className="h-6 w-6 text-red-500" />;
+        return <FileText className="h-6 w-6 text-destructive" />;
       case 'doc':
       case 'docx':
-        return <FileText className="h-6 w-6 text-blue-500" />;
+        return <FileText className="h-6 w-6 text-info" />;
       case 'xls':
       case 'xlsx':
         return <FileText className="h-6 w-6 text-green-500" />;
@@ -128,7 +128,7 @@ const DocumentsView: React.FC<DocumentsViewProps> = ({
       case 'jpeg':
       case 'png':
       case 'gif':
-        return <FileImage className="h-6 w-6 text-purple-500" />;
+        return <FileImage className="h-6 w-6 text-secondary" />;
       case 'zip':
       case 'rar':
         return <FileArchive className="h-6 w-6 text-gray-500" />;

@@ -132,7 +132,7 @@ ${stats.collectionRate}%
           onClick={handleExportPDF}
           variant="outline"
           size="sm"
-          className="bg-white/5 border-white/10 text-white hover:bg-white/10 min-h-[44px]"
+          className="bg-card border-border text-foreground hover:bg-secondary/50 min-h-[44px]"
           aria-label="Export financial summary as PDF"
         >
           <Download className="w-4 h-4 mr-2" />
@@ -152,7 +152,7 @@ ${stats.collectionRate}%
             <div className="relative">
               {/* Wallet Box Icon */}
               <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-emerald-500 via-green-600 to-amber-600 rounded-2xl shadow-2xl shadow-emerald-500/40 flex items-center justify-center transform rotate-[-8deg] hover:rotate-[-5deg] transition-transform duration-300">
-                <Wallet className="w-16 h-16 md:w-20 md:h-20 text-white drop-shadow-lg" />
+                <Wallet className="w-16 h-16 md:w-20 md:h-20 text-foreground drop-shadow-lg" />
               </div>
               
               {/* Decorative Elements */}
@@ -166,7 +166,7 @@ ${stats.collectionRate}%
               
               {/* Arrow pointing up */}
               <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4">
-                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-emerald-400 animate-pulse" />
+                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-primary animate-pulse" />
               </div>
             </div>
           </div>
@@ -181,19 +181,19 @@ ${stats.collectionRate}%
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
+          <Card className="bg-secondary/[0.08] backdrop-blur-lg border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
             <CardContent className="p-0">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 md:gap-4 flex-1">
-                  <div className="p-2 md:p-2.5 rounded-xl bg-amber-500/20">
-                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                  <div className="p-2 md:p-2.5 rounded-xl bg-warning/20">
+                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-warning" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-white/50 mb-1 md:mb-2">Pending</p>
-                    <p className="text-lg md:text-xl font-semibold text-white tabular-nums">₹{stats.pending.amount.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-foreground/50 mb-1 md:mb-2">Pending</p>
+                    <p className="text-lg md:text-xl font-semibold text-foreground tabular-nums">₹{stats.pending.amount.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
-                <span className="text-xs text-white/40 text-right">{stats.pending.count} payments</span>
+                <span className="text-xs text-foreground/40 text-right">{stats.pending.count} payments</span>
               </div>
             </CardContent>
           </Card>
@@ -206,19 +206,19 @@ ${stats.collectionRate}%
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
+            <Card className="bg-secondary/[0.08] backdrop-blur-lg border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
               <CardContent className="p-0">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 md:gap-4 flex-1">
-                    <div className="p-2 md:p-2.5 rounded-xl bg-red-500/20">
-                      <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-red-500" />
+                    <div className="p-2 md:p-2.5 rounded-xl bg-destructive/20">
+                      <AlertTriangle className="w-4 h-4 md:w-5 md:h-5 text-destructive" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs text-white/50 mb-1 md:mb-2">Overdue</p>
-                      <p className="text-lg md:text-xl font-semibold text-red-500 tabular-nums">₹{stats.overdue.amount.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-foreground/50 mb-1 md:mb-2">Overdue</p>
+                      <p className="text-lg md:text-xl font-semibold text-destructive tabular-nums">₹{stats.overdue.amount.toLocaleString('en-IN')}</p>
                     </div>
                   </div>
-                  <span className="text-xs text-white/40 text-right">{stats.overdue.count} payments</span>
+                  <span className="text-xs text-foreground/40 text-right">{stats.overdue.count} payments</span>
                 </div>
               </CardContent>
             </Card>
@@ -230,19 +230,19 @@ ${stats.collectionRate}%
             transition={{ delay: 0.3 }}
           >
             {stats.received.amount > 0 && (
-              <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
+              <Card className="bg-secondary/[0.08] backdrop-blur-lg border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] px-5 py-4 transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
                 <CardContent className="p-0">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 md:gap-4 flex-1">
-                      <div className="p-2 md:p-2.5 rounded-xl bg-emerald-500/20">
-                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-400" />
+                      <div className="p-2 md:p-2.5 rounded-xl bg-primary/20">
+                        <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs text-white/50 mb-1 md:mb-2">Received</p>
-                        <p className="text-lg md:text-xl font-semibold text-emerald-400 tabular-nums">₹{stats.received.amount.toLocaleString('en-IN')}</p>
+                        <p className="text-xs text-foreground/50 mb-1 md:mb-2">Received</p>
+                        <p className="text-lg md:text-xl font-semibold text-primary tabular-nums">₹{stats.received.amount.toLocaleString('en-IN')}</p>
                       </div>
                     </div>
-                    <span className="text-xs text-white/40 text-right">{stats.received.count || 0} payments</span>
+                    <span className="text-xs text-foreground/40 text-right">{stats.received.count || 0} payments</span>
                   </div>
                 </CardContent>
               </Card>
@@ -258,14 +258,14 @@ ${stats.collectionRate}%
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)]">
+          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-border/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)]">
             <CardContent className="px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-500" />
+                  <TrendingUp className="w-5 h-5 text-info" />
                   <span className="text-sm font-medium text-foreground">Collection Success Rate</span>
                 </div>
-                <span className="text-2xl font-bold text-blue-500">{stats.collectionRate}%</span>
+                <span className="text-2xl font-bold text-info">{stats.collectionRate}%</span>
               </div>
               <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden mb-2">
                 <motion.div
@@ -274,12 +274,12 @@ ${stats.collectionRate}%
                   transition={{ duration: 1, delay: 0.5 }}
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
                 >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
                 </motion.div>
               </div>
               <div className={cn(
                 "flex items-center gap-1 text-sm",
-                stats.rateChange >= 0 ? "text-emerald-500" : "text-red-500"
+                stats.rateChange >= 0 ? "text-primary" : "text-destructive"
               )}>
                 <TrendingUp className={cn(
                   "w-4 h-4",

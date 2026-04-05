@@ -7,11 +7,11 @@ import { cn } from '@/lib/utils';
 
 export const StatusBadge = ({ status }: { status: string }) => {
     const config: Record<string, { bg: string; text: string; label: string }> = {
-        'new': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'NEW' },
-        'pending': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'AWAITING REVIEW' },
-        'negotiating': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'IN NEGOTIATION' },
-        'active': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'ACTIVE' },
-        'completed': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'COMPLETED' },
+        'new': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'NEW' },
+        'pending': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'AWAITING REVIEW' },
+        'negotiating': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'IN NEGOTIATION' },
+        'active': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'ACTIVE' },
+        'completed': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'COMPLETED' },
     };
     const normalizeStatus = (status: string) => {
         const s = String(status || '').toLowerCase();
@@ -225,7 +225,7 @@ export const SettingsRow = ({ icon, label, subtext, iconBg, hasChevron, isDark, 
         onClick={onClick}
         className={cn(
             "flex items-center gap-4 py-4 px-4 active:bg-opacity-50 transition-all cursor-pointer group",
-            isDark ? "active:bg-white/5" : "active:bg-slate-100"
+            isDark ? "active:bg-card" : "active:bg-background"
         )}
     >
         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0", iconBg)}>
@@ -243,7 +243,7 @@ export const SettingsRow = ({ icon, label, subtext, iconBg, hasChevron, isDark, 
 export const SettingsGroup = ({ children, isDark }: any) => (
     <div className={cn(
         "mx-4 overflow-hidden rounded-2xl border mb-8",
-        isDark ? "bg-[#1C1C1E] border-[#2C2C2E] divide-[#2C2C2E]" : "bg-white border-[#E5E5EA] divide-[#E5E5EA] shadow-sm",
+        isDark ? "bg-card border-[#2C2C2E] divide-[#2C2C2E]" : "bg-card border-[#E5E5EA] divide-[#E5E5EA] shadow-sm",
         "divide-y"
     )}>
         {children}
@@ -253,7 +253,7 @@ export const SettingsGroup = ({ children, isDark }: any) => (
 export const SectionHeader = ({ title, isDark }: any) => (
     <p className={cn(
         "px-8 mb-2 text-[13px] font-bold uppercase tracking-wider opacity-40",
-        isDark ? "text-white" : "text-black"
+        isDark ? "text-foreground" : "text-black"
     )}>
         {title}
     </p>
@@ -269,7 +269,7 @@ export const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
     >
         <motion.div
             animate={{ x: active ? 22 : 2 }}
-            className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+            className="absolute top-0.5 left-0.5 w-5 h-5 bg-card rounded-full shadow-md"
         />
     </button>
 );

@@ -104,7 +104,7 @@ const LongPressMenu: React.FC<LongPressMenuProps> = ({
               initial={{ opacity: 0, scale: 0.8, y: menuPosition.y - 20 }}
               animate={{ opacity: 1, scale: 1, y: menuPosition.y - 20 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="fixed z-[201] bg-[#0B0F1A] backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-2 min-w-[200px]"
+              className="fixed z-[201] bg-[#0B0F1A] backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-2 min-w-[200px]"
               style={{ left: menuPosition.x - 100, top: menuPosition.y - 20 }}
             >
               {items.map((item, index) => {
@@ -113,10 +113,10 @@ const LongPressMenu: React.FC<LongPressMenuProps> = ({
                   <button type="button"
                     key={index}
                     onClick={() => handleItemClick(item)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition-colors text-left"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-card transition-colors text-left"
                   >
-                    <Icon className={`w-5 h-5 ${item.color || 'text-white/70'}`} />
-                    <span className="text-sm font-medium text-white">{item.label}</span>
+                    <Icon className={`w-5 h-5 ${item.color || 'text-foreground/70'}`} />
+                    <span className="text-sm font-medium text-foreground">{item.label}</span>
                   </button>
                 );
               })}

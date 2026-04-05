@@ -62,14 +62,14 @@ const NotFound = () => {
       <div className="text-center max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
-            <ShieldCheck className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/20">
+            <ShieldCheck className="w-5 h-5 text-foreground" />
           </div>
-          <span className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</span>
+          <span className="text-lg font-black text-muted-foreground tracking-tight">Creator Armour</span>
         </div>
 
-        <h1 className="text-6xl font-black text-slate-900 mb-2">404</h1>
-        <p className="text-lg text-slate-600 mb-8">
+        <h1 className="text-6xl font-black text-muted-foreground mb-2">404</h1>
+        <p className="text-lg text-muted-foreground mb-8">
           This page doesn't exist or has been moved.
         </p>
 
@@ -79,17 +79,17 @@ const NotFound = () => {
             <button
               key={path}
               onClick={() => navigate(path)}
-              className="flex items-center gap-2 p-3 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all text-left active:scale-[0.98]"
+              className="flex items-center gap-2 p-3 rounded-xl bg-card border border-border hover:border-primary hover:shadow-md transition-all text-left active:scale-[0.98]"
             >
-              <Icon className="w-4 h-4 text-emerald-600" />
-              <span className="text-sm font-bold text-slate-700">{label}</span>
+              <Icon className="w-4 h-4 text-primary" />
+              <span className="text-sm font-bold text-muted-foreground">{label}</span>
             </button>
           ))}
         </div>
 
         <Button
           onClick={() => navigate('/')}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6"
+          className="bg-primary hover:bg-primary text-foreground rounded-full px-6"
         >
           Go to Homepage
         </Button>

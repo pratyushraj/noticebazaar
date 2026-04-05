@@ -38,10 +38,10 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-gray-900 border-gray-800 text-white">
+      <DialogContent className="sm:max-w-[500px] bg-gray-900 border-gray-800 text-foreground">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <Shield className="h-6 w-6 text-emerald-400" />
+            <Shield className="h-6 w-6 text-primary" />
             <DialogTitle className="text-2xl font-bold">
               Lifestyle Shield is a Creator Pro benefit
             </DialogTitle>
@@ -53,14 +53,14 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
         <div className="space-y-4 py-4">
           <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-            <p className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
+            <p className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
               What you'll get:
             </p>
             <div className="space-y-2">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -78,7 +78,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({
           </Button>
           <Button
             onClick={handleUpgrade}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white flex-1 sm:flex-initial"
+            className="bg-primary hover:bg-primary text-foreground flex-1 sm:flex-initial"
           >
             Upgrade to Creator Pro
           </Button>

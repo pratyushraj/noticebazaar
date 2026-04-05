@@ -38,8 +38,8 @@ export const TopBrandsCarousel: React.FC<TopBrandsCarouselProps> = ({ brandDeals
   if (topBrands.length === 0) return null;
 
   return (
-    <div className="bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-2xl p-4">
-      <h3 className="text-sm font-semibold text-white mb-3">Your Top Brands This Year</h3>
+    <div className="bg-secondary/[0.06] backdrop-blur-[40px] border border-border rounded-2xl p-4">
+      <h3 className="text-sm font-semibold text-foreground mb-3">Your Top Brands This Year</h3>
       <ScrollArea className="w-full">
         <div className="flex gap-4 pb-2">
           {topBrands.map((brand, index) => (
@@ -48,7 +48,7 @@ export const TopBrandsCarousel: React.FC<TopBrandsCarouselProps> = ({ brandDeals
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex-shrink-0 w-32 bg-white/5 rounded-xl p-3 border border-white/10 hover:border-purple-500/30 transition-all cursor-pointer group"
+              className="flex-shrink-0 w-32 bg-card rounded-xl p-3 border border-border hover:border-purple-500/30 transition-all cursor-pointer group"
             >
               <div className="flex flex-col items-center gap-2">
                 <BrandLogo
@@ -58,8 +58,8 @@ export const TopBrandsCarousel: React.FC<TopBrandsCarouselProps> = ({ brandDeals
                   className="w-12 h-12"
                 />
                 <div className="text-center w-full">
-                  <p className="text-xs font-semibold text-white truncate">{brand.name}</p>
-                  <p className="text-xs text-purple-400 font-medium mt-1">
+                  <p className="text-xs font-semibold text-foreground truncate">{brand.name}</p>
+                  <p className="text-xs text-secondary font-medium mt-1">
                     ₹{brand.totalEarnings.toLocaleString('en-IN')}
                   </p>
                 </div>

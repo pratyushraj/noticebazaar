@@ -380,7 +380,7 @@ export const BrandCampaignManager: React.FC = () => {
           <h1 className="text-2xl font-bold">Campaign Manager</h1>
           <p className="text-muted-foreground">Manage your brand collaborations and track performance</p>
         </div>
-        <Button onClick={handleCreateCampaign} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleCreateCampaign} className="bg-info hover:bg-info">
           <Plus className="w-4 h-4 mr-2" />
           Create Campaign
         </Button>
@@ -391,7 +391,7 @@ export const BrandCampaignManager: React.FC = () => {
         <MetricCard
           title="Active Campaigns"
           value={campaignStats.activeCampaigns.toString()}
-          icon={<Target className="h-5 w-5 text-blue-500" />}
+          icon={<Target className="h-5 w-5 text-info" />}
           subtitle={`${campaignStats.totalCampaigns} total`}
         />
         <MetricCard
@@ -403,13 +403,13 @@ export const BrandCampaignManager: React.FC = () => {
         <MetricCard
           title="Total Reach"
           value={formatNumber(campaignStats.totalReach)}
-          icon={<Eye className="h-5 w-5 text-purple-500" />}
+          icon={<Eye className="h-5 w-5 text-secondary" />}
           subtitle="Across all campaigns"
         />
         <MetricCard
           title="Average ROI"
           value={`${campaignStats.avgROI.toFixed(1)}x`}
-          icon={<TrendingUp className="h-5 w-5 text-emerald-500" />}
+          icon={<TrendingUp className="h-5 w-5 text-primary" />}
           subtitle="Return on investment"
         />
       </div>
@@ -441,7 +441,7 @@ export const BrandCampaignManager: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <div className={`w-3 h-3 rounded-full ${
                             status === 'active' ? 'bg-green-500' :
-                            status === 'completed' ? 'bg-blue-500' :
+                            status === 'completed' ? 'bg-info' :
                             status === 'draft' ? 'bg-gray-500' : 'bg-yellow-500'
                           }`} />
                           <span className="capitalize text-sm font-medium">{status}</span>
@@ -450,7 +450,7 @@ export const BrandCampaignManager: React.FC = () => {
                           <span className="text-sm text-muted-foreground">{count}</span>
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div
-                              className="bg-blue-500 h-2 rounded-full"
+                              className="bg-info h-2 rounded-full"
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
@@ -569,10 +569,10 @@ const CampaignCard: React.FC<CampaignCardProps> = ({ campaign, onSelect }) => {
   const getStatusColor = (status: Campaign['status']) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-700';
-      case 'completed': return 'bg-blue-100 text-blue-700';
+      case 'completed': return 'bg-info text-info';
       case 'draft': return 'bg-gray-100 text-gray-700';
       case 'paused': return 'bg-yellow-100 text-yellow-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
+      case 'cancelled': return 'bg-destructive text-destructive';
     }
   };
 
@@ -656,7 +656,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ campaign, onBac
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-blue-500" />
+              <Users className="h-8 w-8 text-info" />
               <div>
                 <p className="text-2xl font-bold">{campaign.creators.length}</p>
                 <p className="text-sm text-muted-foreground">Active Creators</p>
@@ -680,7 +680,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ campaign, onBac
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-8 w-8 text-purple-500" />
+              <TrendingUp className="h-8 w-8 text-secondary" />
               <div>
                 <p className="text-2xl font-bold">{campaign.performance.overview.roi.toFixed(1)}x</p>
                 <p className="text-sm text-muted-foreground">ROI</p>
@@ -744,7 +744,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ campaign, onBac
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-info">
                 {formatNumber(campaign.performance.overview.totalReach)}
               </p>
               <p className="text-sm text-muted-foreground">Total Reach</p>
@@ -756,7 +756,7 @@ const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({ campaign, onBac
               <p className="text-sm text-muted-foreground">Total Engagement</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-secondary">
                 {campaign.performance.overview.totalConversions}
               </p>
               <p className="text-sm text-muted-foreground">Conversions</p>
@@ -849,7 +849,7 @@ const CampaignAnalyticsView: React.FC<{ campaigns: Campaign[] }> = ({ campaigns 
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Eye className="h-8 w-8 text-blue-500" />
+              <Eye className="h-8 w-8 text-info" />
               <div>
                 <p className="text-xl font-bold">{formatNumber(totalMetrics.reach)}</p>
                 <p className="text-sm text-muted-foreground">Total Reach</p>
@@ -861,7 +861,7 @@ const CampaignAnalyticsView: React.FC<{ campaigns: Campaign[] }> = ({ campaigns 
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Heart className="h-8 w-8 text-red-500" />
+              <Heart className="h-8 w-8 text-destructive" />
               <div>
                 <p className="text-xl font-bold">{formatNumber(totalMetrics.engagement)}</p>
                 <p className="text-sm text-muted-foreground">Total Engagement</p>
@@ -885,7 +885,7 @@ const CampaignAnalyticsView: React.FC<{ campaigns: Campaign[] }> = ({ campaigns 
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <DollarSign className="h-8 w-8 text-purple-500" />
+              <DollarSign className="h-8 w-8 text-secondary" />
               <div>
                 <p className="text-xl font-bold">₹{totalMetrics.spent.toLocaleString()}</p>
                 <p className="text-sm text-muted-foreground">Total Spent</p>

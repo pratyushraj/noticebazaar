@@ -70,8 +70,8 @@ const CreatorBottomNav = () => {
       className={cn(
         "fixed bottom-0 left-0 right-0",
         // Translucent background so purple gradient shows through
-        "bg-white/5 backdrop-blur-2xl",
-        "border-t border-white/15",
+        "bg-card backdrop-blur-2xl",
+        "border-t border-border",
         shadows.depth,
         radius.xl,
         "progressive-blur transition-transform duration-300 ease-in-out",
@@ -101,7 +101,7 @@ const CreatorBottomNav = () => {
       <div className={cn(spotlight.top, "opacity-50")} />
 
       {/* Inner border for depth */}
-      <div className="absolute inset-x-0 top-0 h-[1px] bg-white/10" />
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-secondary/50" />
 
       <nav
         className="flex justify-around h-14 md:h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
@@ -157,8 +157,8 @@ const CreatorBottomNav = () => {
                   "pointer-events-auto",
                   "cursor-pointer",
                   active
-                    ? "text-white"
-                    : "text-white/70"
+                    ? "text-foreground"
+                    : "text-foreground/70"
                 )}
                 style={{
                   pointerEvents: 'auto',
@@ -179,7 +179,7 @@ const CreatorBottomNav = () => {
                     )} />
                     <div className={cn(
                       "absolute bottom-2 left-1/2 -translate-x-1/2 w-2 h-2",
-                      "bg-blue-600 rounded-full",
+                      "bg-info rounded-full",
                       shadows.sm, "animate-pulse"
                     )} />
                   </>
@@ -196,13 +196,13 @@ const CreatorBottomNav = () => {
                     iconSizes.lg,
                     "transition-all duration-150",
                     // replaced-by-ultra-polish
-                    active && "text-white", shadows.sm
+                    active && "text-foreground", shadows.sm
                   )} />
                 </motion.div>
 
                 <span className={cn(
                   "text-[11px] md:text-[10px] font-semibold transition-all duration-200",
-                  active && "text-white font-bold"
+                  active && "text-foreground font-bold"
                 )}>
                   {item.label}
                 </span>

@@ -48,15 +48,15 @@ const CreatorEasterEgg: React.FC<CreatorEasterEggProps> = ({ onTrigger }) => {
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent className="sm:max-w-[425px] bg-[#0B0F1A] text-white border-white/10">
+      <DialogContent className="sm:max-w-[425px] bg-[#0B0F1A] text-foreground border-border">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-            <Sparkles className="w-6 h-6 text-purple-400" />
+            <Sparkles className="w-6 h-6 text-secondary" />
             Made by a Creator
           </DialogTitle>
-          <DialogDescription className="text-center text-white/70 mt-4">
+          <DialogDescription className="text-center text-foreground/70 mt-4">
             <p className="text-base mb-2">
-              Built by <span className="font-semibold text-purple-400">Pratyush</span>
+              Built by <span className="font-semibold text-secondary">Pratyush</span>
             </p>
             <p className="text-sm">
               Fellow creator hustling since 2023 💜

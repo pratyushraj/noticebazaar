@@ -121,7 +121,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
               className={cn(
                 "relative overflow-hidden transition-all duration-300 border bg-muted/30",
                 isStandard && "border-primary/30 bg-primary/5",
-                isPremium && "border-amber-500/30 bg-amber-500/5",
+                isPremium && "border-warning/30 bg-warning/5",
                 isExpanded && " ring-2 ring-primary/20 scale-[1.02]"
               )}
             >
@@ -130,14 +130,14 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                 <div className="flex justify-between items-start mb-2">
                   <span className={cn(
                     "text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded",
-                    template.id === 'basic' ? "bg-slate-500/20 text-slate-400" :
-                    isStandard ? "bg-primary/20 text-primary" : "bg-amber-500/20 text-amber-500"
+                    template.id === 'basic' ? "bg-background/20 text-muted-foreground" :
+                    isStandard ? "bg-primary/20 text-primary" : "bg-warning/20 text-warning"
                   )}>
                     {template.id}
                   </span>
                   <button type="button" 
                     onClick={() => setExpandedId(isExpanded ? null : template.id)}
-                    className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                    className="p-1 hover:bg-secondary/50 rounded-full transition-colors"
                   >
                     <Settings2 className={cn("w-4 h-4 text-muted-foreground", isExpanded && "text-primary")} />
                   </button>
@@ -169,7 +169,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   onChange={(e) => handleUpdate(template.id, { description: e.target.value })}
                   disabled={disabled}
                   placeholder="What's included in this package?"
-                  className="text-xs bg-muted/50 border-white/5 resize-none min-h-[60px]"
+                  className="text-xs bg-muted/50 border-border/5 resize-none min-h-[60px]"
                 />
 
                 <div className="space-y-2">
@@ -186,7 +186,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                   <div className="space-y-1.5">
                     {(template.deliverables || []).map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2 group">
-                        <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                         <Input
                           value={item}
                           onChange={(e) => updateDeliverable(template.id, idx, e.target.value)}
@@ -195,7 +195,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                         />
                         <button type="button" 
                           onClick={() => removeDeliverable(template.id, idx)}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 text-red-500 hover:bg-red-500/10 rounded transition-all"
+                          className="opacity-0 group-hover:opacity-100 p-0.5 text-destructive hover:bg-destructive/10 rounded transition-all"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -216,7 +216,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                           value={template.turnaround_days || 0}
                           onChange={(e) => handleUpdate(template.id, { turnaround_days: parseInt(e.target.value) || 0 })}
                           disabled={disabled}
-                          className="h-8 text-xs bg-muted/50 border-white/5 w-12"
+                          className="h-8 text-xs bg-muted/50 border-border/5 w-12"
                         />
                         <span className="text-[10px] text-muted-foreground font-medium">Days</span>
                       </div>
@@ -231,7 +231,7 @@ const FiverrPackageEditor: React.FC<FiverrPackageEditorProps> = ({
                           value={template.revision_count || 0}
                           onChange={(e) => handleUpdate(template.id, { revision_count: parseInt(e.target.value) || 0 })}
                           disabled={disabled}
-                          className="h-8 text-xs bg-muted/50 border-white/5 w-12"
+                          className="h-8 text-xs bg-muted/50 border-border/5 w-12"
                         />
                         <span className="text-[10px] text-muted-foreground font-medium">Times</span>
                       </div>

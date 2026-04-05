@@ -24,12 +24,12 @@ export const ActionTile: React.FC<ActionTileProps> = ({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="relative bg-white/5 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/15 shadow-lg shadow-black/10 hover:bg-white/8 hover:border-white/20 transition-all duration-200 active:scale-95"
+      className="relative bg-card backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-border shadow-lg shadow-black/10 hover:bg-secondary/8 hover:border-border transition-all duration-200 active:scale-95"
     >
       <div className={`${iconBgColor} w-12 h-12 rounded-full flex items-center justify-center mb-3 mx-auto backdrop-blur-md`}>
         <Icon className={`w-6 h-6 ${iconColor}`} />
       </div>
-      <div className="text-xs font-semibold text-center text-white/90">{label}</div>
+      <div className="text-xs font-semibold text-center text-foreground/90">{label}</div>
     </motion.button>
   );
 };

@@ -39,7 +39,7 @@ const DealStatusBadge: React.FC<DealStatusBadgeProps> = ({ stage, className, sho
     return (
       <span className="inline-flex flex-col gap-0.5">
         {badge}
-        <span className="text-[11px] text-white/55 leading-tight">{helper}</span>
+        <span className="text-[11px] text-foreground/55 leading-tight">{helper}</span>
       </span>
     );
   }

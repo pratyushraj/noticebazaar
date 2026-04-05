@@ -169,15 +169,15 @@ const DocumentsVault: React.FC = () => {
   const getTypeColor = (type: DocumentType) => {
     switch (type) {
       case 'contract':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+        return 'bg-info/20 text-info border-info/30';
       case 'invoice':
         return 'bg-green-500/20 text-green-300 border-green-500/30';
       case 'payment_proof':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        return 'bg-primary/20 text-primary border-primary/30';
       case 'legal_notice':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
+        return 'bg-destructive/20 text-destructive border-destructive/30';
       case 'pan_gst':
-        return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+        return 'bg-secondary/20 text-secondary border-purple-500/30';
       default:
         return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
@@ -193,7 +193,7 @@ const DocumentsVault: React.FC = () => {
   if (sessionLoading) {
     return (
       <div className="nb-screen-height bg-[#0A0F1A] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-foreground">Loading...</div>
       </div>
     );
   }
@@ -210,31 +210,31 @@ const DocumentsVault: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-dashboard')}
-              className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
+              className="mb-4 text-foreground/70 hover:text-foreground hover:bg-secondary/50"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Your Deals
             </Button>
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center border border-blue-500/30">
-                <FolderOpen className="h-5 w-5 text-blue-400" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center border border-info/30">
+                <FolderOpen className="h-5 w-5 text-info" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Documents Vault</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Documents Vault</h1>
             </div>
-            <p className="text-sm text-white/60 mt-1">
+            <p className="text-sm text-foreground/60 mt-1">
               All your contracts, invoices, payment proofs, and legal documents in one place
             </p>
           </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-info/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <FileCheck className="w-4 h-4 text-blue-400" />
-                  <span className="text-xs text-white/60">Contracts</span>
+                  <FileCheck className="w-4 h-4 text-info" />
+                  <span className="text-xs text-foreground/60">Contracts</span>
                 </div>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-foreground">
                   {documents.filter(d => d.type === 'contract').length}
                 </div>
               </CardContent>
@@ -244,21 +244,21 @@ const DocumentsVault: React.FC = () => {
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Receipt className="w-4 h-4 text-green-400" />
-                  <span className="text-xs text-white/60">Invoices</span>
+                  <span className="text-xs text-foreground/60">Invoices</span>
                 </div>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-foreground">
                   {documents.filter(d => d.type === 'invoice').length}
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20">
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-primary/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <CreditCard className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs text-white/60">Payments</span>
+                  <CreditCard className="w-4 h-4 text-primary" />
+                  <span className="text-xs text-foreground/60">Payments</span>
                 </div>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-foreground">
                   {documents.filter(d => d.type === 'payment_proof').length}
                 </div>
               </CardContent>
@@ -267,10 +267,10 @@ const DocumentsVault: React.FC = () => {
             <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Shield className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs text-white/60">Legal</span>
+                  <Shield className="w-4 h-4 text-secondary" />
+                  <span className="text-xs text-foreground/60">Legal</span>
                 </div>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-foreground">
                   {documents.filter(d => d.type === 'legal_notice' || d.type === 'pan_gst').length}
                 </div>
               </CardContent>
@@ -278,20 +278,20 @@ const DocumentsVault: React.FC = () => {
           </div>
 
           {/* Filters and Search */}
-          <Card className="mb-6 bg-[#0F121A]/50 border-white/10">
+          <Card className="mb-6 bg-[#0F121A]/50 border-border">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
                   <Input
                     placeholder="Search documents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-[#0A0F1A] border-white/10 text-white placeholder:text-white/40"
+                    className="pl-10 bg-[#0A0F1A] border-border text-foreground placeholder:text-foreground/40"
                   />
                 </div>
                 <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value as DocumentCategory)}>
-                  <SelectTrigger className="w-full sm:w-[180px] bg-[#0A0F1A] border-white/10 text-white">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-[#0A0F1A] border-border text-foreground">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -305,7 +305,7 @@ const DocumentsVault: React.FC = () => {
                   </SelectContent>
                 </Select>
                 <Select value={selectedTag} onValueChange={setSelectedTag}>
-                  <SelectTrigger className="w-full sm:w-[180px] bg-[#0A0F1A] border-white/10 text-white">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-[#0A0F1A] border-border text-foreground">
                     <SelectValue placeholder="Tag" />
                   </SelectTrigger>
                   <SelectContent>
@@ -317,7 +317,7 @@ const DocumentsVault: React.FC = () => {
                 </Select>
                 <Button
                   onClick={() => setIsUploadOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-info hover:bg-info text-foreground"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Upload
@@ -363,7 +363,7 @@ const DocumentsVault: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Card className="bg-[#0F121A]/50 border-white/10 hover:border-white/20 transition-all cursor-pointer group">
+                    <Card className="bg-[#0F121A]/50 border-border hover:border-border transition-all cursor-pointer group">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3 mb-3">
                           <div className={cn(
@@ -373,10 +373,10 @@ const DocumentsVault: React.FC = () => {
                             <Icon className="w-6 h-6" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-semibold text-white truncate mb-1">
+                            <h3 className="text-sm font-semibold text-foreground truncate mb-1">
                               {doc.name}
                             </h3>
-                            <div className="flex items-center gap-2 text-xs text-white/60">
+                            <div className="flex items-center gap-2 text-xs text-foreground/60">
                               <Calendar className="w-3 h-3" />
                               {new Date(doc.uploadedAt).toLocaleDateString('en-IN', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </div>
@@ -388,7 +388,7 @@ const DocumentsVault: React.FC = () => {
                             <Badge
                               key={tag}
                               variant="outline"
-                              className="text-[10px] px-2 py-0.5 bg-white/5 border-white/10 text-white/70"
+                              className="text-[10px] px-2 py-0.5 bg-card border-border text-foreground/70"
                             >
                               {tag}
                             </Badge>
@@ -396,37 +396,37 @@ const DocumentsVault: React.FC = () => {
                           {doc.tags.length > 3 && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] px-2 py-0.5 bg-white/5 border-white/10 text-white/70"
+                              className="text-[10px] px-2 py-0.5 bg-card border-border text-foreground/70"
                             >
                               +{doc.tags.length - 3}
                             </Badge>
                           )}
                         </div>
                         
-                        <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                          <span className="text-xs text-white/50">{formatFileSize(doc.size)}</span>
+                        <div className="flex items-center justify-between pt-3 border-t border-border">
+                          <span className="text-xs text-foreground/50">{formatFileSize(doc.size)}</span>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-white/10"
+                              className="h-8 w-8 p-0 hover:bg-secondary/50"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 window.open(doc.url, '_blank', 'noopener,noreferrer');
                               }}
                             >
-                              <Eye className="w-4 h-4 text-white/70" />
+                              <Eye className="w-4 h-4 text-foreground/70" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-white/10"
+                              className="h-8 w-8 p-0 hover:bg-secondary/50"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 // Download logic
                               }}
                             >
-                              <Download className="w-4 h-4 text-white/70" />
+                              <Download className="w-4 h-4 text-foreground/70" />
                             </Button>
                           </div>
                         </div>

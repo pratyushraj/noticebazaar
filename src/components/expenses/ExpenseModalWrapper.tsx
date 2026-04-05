@@ -36,10 +36,10 @@ export const ExpenseModalWrapper: React.FC<ExpenseModalWrapperProps> = ({
       <DialogContent 
         className={cn(
           "max-w-2xl",
-          "bg-black/40 backdrop-blur-xl border border-white/20 rounded-3xl",
+          "bg-black/40 backdrop-blur-xl border border-border rounded-3xl",
           "shadow-[0_8px_40px_rgba(0,0,0,0.6)]",
           "px-6 py-6",
-          "text-white",
+          "text-foreground",
           "[&>button]:hidden", // Hide default close button
           "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
           "max-h-[90vh] flex flex-col"
@@ -50,9 +50,9 @@ export const ExpenseModalWrapper: React.FC<ExpenseModalWrapperProps> = ({
           onClick={onClose}
           className={cn(
             "absolute right-4 top-4 z-10",
-            "bg-white/10 backdrop-blur-xl rounded-full p-2",
-            "border border-white/20 text-white/90",
-            "hover:bg-white/15 transition-colors",
+            "bg-secondary/50 backdrop-blur-xl rounded-full p-2",
+            "border border-border text-foreground/90",
+            "hover:bg-secondary/15 transition-colors",
             "focus:outline-none focus:ring-2 focus:ring-white/20"
           )}
           aria-label="Close"
@@ -61,9 +61,9 @@ export const ExpenseModalWrapper: React.FC<ExpenseModalWrapperProps> = ({
         </button>
 
         <DialogHeader className="pr-8">
-          <DialogTitle className="text-white text-xl">{title}</DialogTitle>
+          <DialogTitle className="text-foreground text-xl">{title}</DialogTitle>
           {description && (
-            <DialogDescription className="text-white/70">
+            <DialogDescription className="text-foreground/70">
               {description}
             </DialogDescription>
           )}
@@ -77,9 +77,9 @@ export const ExpenseModalWrapper: React.FC<ExpenseModalWrapperProps> = ({
             "pr-2 -mr-2", // Account for scrollbar
             "[&::-webkit-scrollbar]:w-2",
             "[&::-webkit-scrollbar-track]:bg-transparent",
-            "[&::-webkit-scrollbar-thumb]:bg-white/20",
+            "[&::-webkit-scrollbar-thumb]:bg-secondary/20",
             "[&::-webkit-scrollbar-thumb]:rounded-full",
-            "[&::-webkit-scrollbar-thumb]:hover:bg-white/30"
+            "[&::-webkit-scrollbar-thumb]:hover:bg-secondary/30"
           )}
         >
           <AnimatePresence mode="wait">

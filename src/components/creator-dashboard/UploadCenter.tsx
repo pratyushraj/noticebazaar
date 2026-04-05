@@ -36,31 +36,31 @@ const UploadCenter: React.FC<UploadCenterProps> = ({ brandDeals = [] }) => {
   }, [brandDeals]);
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-2xl">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-          <Upload className="h-5 w-5 text-blue-400" />
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Upload className="h-5 w-5 text-info" />
           Upload Center
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-white/60 text-sm">
+            <div className="flex items-center gap-2 text-foreground/60 text-sm">
               <FileText className="h-4 w-4" />
               <span>This Month</span>
             </div>
-            <p className="text-2xl font-bold text-white">{uploadedThisMonth}</p>
-            <p className="text-xs text-white/40">contracts</p>
+            <p className="text-2xl font-bold text-foreground">{uploadedThisMonth}</p>
+            <p className="text-xs text-foreground/40">contracts</p>
           </div>
 
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-white/60 text-sm">
+            <div className="flex items-center gap-2 text-foreground/60 text-sm">
               <Clock className="h-4 w-4 text-orange-400" />
               <span>Pending Review</span>
             </div>
-            <p className="text-2xl font-bold text-white">{pendingReview}</p>
-            <p className="text-xs text-white/40">files</p>
+            <p className="text-2xl font-bold text-foreground">{pendingReview}</p>
+            <p className="text-xs text-foreground/40">files</p>
           </div>
         </div>
 
@@ -70,7 +70,7 @@ const UploadCenter: React.FC<UploadCenterProps> = ({ brandDeals = [] }) => {
             navigate('/creator-contracts');
             // You can also trigger upload dialog here
           }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center justify-center gap-2"
+          className="w-full bg-info hover:bg-info text-foreground font-semibold flex items-center justify-center gap-2"
           size="lg"
         >
           <Upload className="h-5 w-5" />

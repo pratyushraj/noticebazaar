@@ -161,42 +161,42 @@ const FreeInfluencerContract = () => {
       {/* FAQ Schema */}
       <FAQSchema faqs={faqs} />
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
         <div className="container mx-auto px-4 py-12 max-w-5xl">
           {/* SEO Content Above Fold */}
           <div className="mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
               Free Influencer Contract Generator
             </h1>
-            <p className="text-xl text-purple-200 mb-6 leading-relaxed">
+            <p className="text-xl text-secondary mb-6 leading-relaxed">
               Create professional, legally compliant influencer contracts in minutes. Our free contract generator helps content creators and influencers draft brand collaboration agreements with proper payment terms, deliverables, and intellectual property protection.
             </p>
 
             {/* Key Benefits */}
             <div className="grid md:grid-cols-3 gap-4 mb-8">
-              <Card className="bg-white/5 backdrop-blur-md border-white/10">
+              <Card className="bg-card backdrop-blur-md border-border">
                 <CardContent className="p-6">
-                  <Shield className="h-8 w-8 text-purple-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Legally Compliant</h3>
-                  <p className="text-sm text-purple-200">
+                  <Shield className="h-8 w-8 text-secondary mb-3" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Legally Compliant</h3>
+                  <p className="text-sm text-secondary">
                     Contracts follow Indian contract law and include standard clauses for influencer collaborations.
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/5 backdrop-blur-md border-white/10">
+              <Card className="bg-card backdrop-blur-md border-border">
                 <CardContent className="p-6">
-                  <FileText className="h-8 w-8 text-purple-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Professional Format</h3>
-                  <p className="text-sm text-purple-200">
+                  <FileText className="h-8 w-8 text-secondary mb-3" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Professional Format</h3>
+                  <p className="text-sm text-secondary">
                     Generate Word documents ready for signing. Includes all essential clauses and terms.
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/5 backdrop-blur-md border-white/10">
+              <Card className="bg-card backdrop-blur-md border-border">
                 <CardContent className="p-6">
-                  <CheckCircle2 className="h-8 w-8 text-purple-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Creator-Friendly</h3>
-                  <p className="text-sm text-purple-200">
+                  <CheckCircle2 className="h-8 w-8 text-secondary mb-3" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Creator-Friendly</h3>
+                  <p className="text-sm text-secondary">
                     Built by creators, for creators. Protects your rights and ensures fair payment terms.
                   </p>
                 </CardContent>
@@ -204,33 +204,33 @@ const FreeInfluencerContract = () => {
             </div>
 
             {/* Why Use This Tool */}
-            <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">
+            <div className="bg-card backdrop-blur-md rounded-xl p-6 border border-border mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">
                 Why Use Our Free Influencer Contract Generator?
               </h2>
-              <p className="text-purple-200 leading-relaxed mb-4">
+              <p className="text-secondary leading-relaxed mb-4">
                 As a content creator or influencer, protecting yourself in brand collaborations is crucial. Our free contract generator helps you create professional agreements that include:
               </p>
-              <ul className="space-y-2 text-purple-200">
+              <ul className="space-y-2 text-secondary">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Clear Payment Terms:</strong> Specify amounts, schedules, and late payment penalties (18% per annum as per Indian law)</span>
+                  <span><strong className="text-foreground">Clear Payment Terms:</strong> Specify amounts, schedules, and late payment penalties (18% per annum as per Indian law)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Deliverables Definition:</strong> Clearly outline what content you'll create, platforms, and deadlines</span>
+                  <span><strong className="text-foreground">Deliverables Definition:</strong> Clearly outline what content you'll create, platforms, and deadlines</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">IP Rights Protection:</strong> Ensure you retain ownership of your content while granting usage rights</span>
+                  <span><strong className="text-foreground">IP Rights Protection:</strong> Ensure you retain ownership of your content while granting usage rights</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Termination Clauses:</strong> Define how either party can end the agreement fairly</span>
+                  <span><strong className="text-foreground">Termination Clauses:</strong> Define how either party can end the agreement fairly</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Dispute Resolution:</strong> Include jurisdiction and resolution methods per Indian Contract Act, 1872</span>
+                  <span><strong className="text-foreground">Dispute Resolution:</strong> Include jurisdiction and resolution methods per Indian Contract Act, 1872</span>
                 </li>
               </ul>
             </div>
@@ -238,53 +238,53 @@ const FreeInfluencerContract = () => {
 
           {/* Tool Section - Below Fold */}
           <div id="contract-generator" className="scroll-mt-20">
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-secondary/50 backdrop-blur-md border-border">
               <CardContent className="p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-white mb-6">
+                <h2 className="text-2xl font-bold text-foreground mb-6">
                   Generate Your Contract
                 </h2>
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        Brand Name <span className="text-red-400">*</span>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Brand Name <span className="text-destructive">*</span>
                       </label>
                       <Input
                         value={brandName}
                         onChange={(e) => setBrandName(e.target.value)}
                         placeholder="Enter brand name"
-                        className="bg-white/5 border-white/20 text-white"
+                        className="bg-card border-border text-foreground"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        Creator Name <span className="text-red-400">*</span>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Creator Name <span className="text-destructive">*</span>
                       </label>
                       <Input
                         value={creatorName}
                         onChange={(e) => setCreatorName(e.target.value)}
                         placeholder="Your name"
-                        className="bg-white/5 border-white/20 text-white"
+                        className="bg-card border-border text-foreground"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Deal Amount (₹) <span className="text-red-400">*</span>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      Deal Amount (₹) <span className="text-destructive">*</span>
                     </label>
                     <Input
                       type="number"
                       value={dealAmount}
                       onChange={(e) => setDealAmount(e.target.value)}
                       placeholder="50000"
-                      className="bg-white/5 border-white/20 text-white"
+                      className="bg-card border-border text-foreground"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Deliverables <span className="text-red-400">*</span>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      Deliverables <span className="text-destructive">*</span>
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {['Instagram Reel', 'Instagram Post', 'Instagram Story', 'YouTube Video', 'YouTube Short', 'Blog Post'].map((item) => (
@@ -293,9 +293,9 @@ const FreeInfluencerContract = () => {
                             id={item}
                             checked={deliverables.includes(item)}
                             onCheckedChange={() => handleDeliverableToggle(item)}
-                            className="border-white/30 data-[state=checked]:bg-purple-600"
+                            className="border-border data-[state=checked]:bg-secondary"
                           />
-                          <label htmlFor={item} className="text-sm text-purple-200 cursor-pointer">
+                          <label htmlFor={item} className="text-sm text-secondary cursor-pointer">
                             {item}
                           </label>
                         </div>
@@ -306,7 +306,7 @@ const FreeInfluencerContract = () => {
                   <Button
                     onClick={handleGenerate}
                     disabled={isGenerating || !brandName || !creatorName || !dealAmount || deliverables.length === 0}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground"
                   >
                     {isGenerating ? (
                       <>
@@ -323,19 +323,19 @@ const FreeInfluencerContract = () => {
 
                   {/* Collab Link CTA - Funnel */}
                   {contractGenerated ? (
-                    <div className="mt-6 pt-6 border-t border-white/20">
+                    <div className="mt-6 pt-6 border-t border-border">
                       <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30">
                         <CardContent className="p-4">
-                          <p className="text-white text-sm leading-relaxed mb-3">
+                          <p className="text-foreground text-sm leading-relaxed mb-3">
                             <strong>✅ Contract Generated!</strong> This contract can be sent via your deal page.
                           </p>
-                          <p className="text-purple-200 text-sm leading-relaxed mb-4">
+                          <p className="text-secondary text-sm leading-relaxed mb-4">
                             When brands submit collaboration requests through your deal page, contracts are automatically generated 
                             and managed securely—no manual sending needed.
                           </p>
                           <Button
                             asChild
-                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground"
                           >
                             <Link to="/signup">
                               Get Your Free Collab Link <ArrowRight className="h-4 w-4 ml-2" />
@@ -345,12 +345,12 @@ const FreeInfluencerContract = () => {
                       </Card>
                     </div>
                   ) : (
-                    <div className="mt-6 pt-6 border-t border-white/20">
-                      <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                        <p className="text-purple-200 text-sm leading-relaxed">
-                          <strong className="text-white">💡 Pro Tip:</strong> This contract can be sent via your deal page. 
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <div className="bg-secondary/50 border border-purple-500/20 rounded-lg p-4">
+                        <p className="text-secondary text-sm leading-relaxed">
+                          <strong className="text-foreground">💡 Pro Tip:</strong> This contract can be sent via your deal page. 
                           When brands submit collaboration requests through your deal page, contracts are automatically generated 
-                          and managed securely. <Link to="/signup" className="text-purple-300 hover:text-white underline font-medium">Get your free deal page →</Link>
+                          and managed securely. <Link to="/signup" className="text-secondary hover:text-foreground underline font-medium">Get your free deal page →</Link>
                         </p>
                       </div>
                     </div>
@@ -365,16 +365,16 @@ const FreeInfluencerContract = () => {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-2">
+                  <h3 className="text-xl font-bold text-foreground mb-2">
                     Upgrade to CreatorArmour for Full Protection
                   </h3>
-                  <p className="text-purple-200">
+                  <p className="text-secondary">
                     Download contracts, track payments, get legal support, and protect all your brand deals in one place.
                   </p>
                 </div>
                 <Button
                   asChild
-                  className="bg-white text-purple-600 hover:bg-purple-50"
+                  className="bg-card text-secondary hover:bg-secondary"
                 >
                   <Link to="/signup">
                     Upgrade Now <ArrowRight className="h-4 w-4 ml-2" />
@@ -386,17 +386,17 @@ const FreeInfluencerContract = () => {
 
           {/* FAQs */}
           <div className="mt-12">
-            <h2 className="text-3xl font-bold text-white mb-6">
+            <h2 className="text-3xl font-bold text-foreground mb-6">
               Frequently Asked Questions
             </h2>
             <div className="space-y-4">
               {faqs.map((faq, index) => (
-                <Card key={index} className="bg-white/5 backdrop-blur-md border-white/10">
+                <Card key={index} className="bg-card backdrop-blur-md border-border">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-white mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {faq.question}
                     </h3>
-                    <p className="text-purple-200 leading-relaxed">
+                    <p className="text-secondary leading-relaxed">
                       {faq.answer}
                     </p>
                   </CardContent>

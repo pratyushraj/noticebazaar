@@ -91,12 +91,12 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
         <GradientCard padding="lg" className="max-w-2xl mx-auto">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Instagram className="w-8 h-8 text-pink-500" aria-hidden />
-            <Link2 className="w-5 h-5 text-slate-400 dark:text-white/60" aria-hidden />
+            <Link2 className="w-5 h-5 text-muted-foreground dark:text-foreground/60" aria-hidden />
           </div>
-          <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
+          <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-muted-foreground dark:text-foreground">
             Your Instagram username
           </h2>
-          <p className="text-base text-slate-500 dark:text-white/80 text-center mb-6">
+          <p className="text-base text-muted-foreground dark:text-foreground/80 text-center mb-6">
             This becomes your collaboration link so brands can find you. Use your handle now, and change it later if needed.
           </p>
 
@@ -106,24 +106,24 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder="e.g. your_handle"
-              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-6 py-4 text-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-blue-500 dark:focus:border-purple-500 transition-colors"
+              className="w-full bg-background dark:bg-card border border-border dark:border-border rounded-xl px-6 py-4 text-lg text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-info dark:focus:border-purple-500 transition-colors"
               autoFocus
               aria-label="Instagram username"
               aria-required="false"
             />
             {normalized && (
               <div className="mt-2 space-y-1 text-center">
-                <p className="text-sm text-slate-400 dark:text-white/60">
-                  Your link: <span className="text-blue-600 dark:text-purple-300 font-medium tracking-tight">creatorarmour.com/{normalized || 'username'}</span>
+                <p className="text-sm text-muted-foreground dark:text-foreground/60">
+                  Your link: <span className="text-info dark:text-secondary font-medium tracking-tight">creatorarmour.com/{normalized || 'username'}</span>
                 </p>
                 {availability === 'checking' && (
-                  <p className="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+                  <p className="text-xs font-semibold text-muted-foreground inline-flex items-center gap-1">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     Checking availability...
                   </p>
                 )}
                 {availability === 'available' && (
-                  <p className="text-xs font-semibold text-emerald-600 inline-flex items-center gap-1">
+                  <p className="text-xs font-semibold text-primary inline-flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     This handle is available
                   </p>
@@ -135,7 +135,7 @@ export const InstagramStep: React.FC<InstagramStepProps> = ({
                   </p>
                 )}
                 {availability === 'error' && (
-                  <p className="text-xs font-semibold text-amber-600">Could not verify now. You can still try continuing.</p>
+                  <p className="text-xs font-semibold text-warning">Could not verify now. You can still try continuing.</p>
                 )}
               </div>
             )}

@@ -20,9 +20,9 @@ interface StatCardProps {
 const colorClasses = {
     blue: {
         bg: 'from-blue-500/20 to-indigo-500/20',
-        border: 'border-blue-400/30',
-        icon: 'bg-blue-500/20 text-blue-400',
-        text: 'text-blue-400',
+        border: 'border-info/30',
+        icon: 'bg-info/20 text-info',
+        text: 'text-info',
     },
     green: {
         bg: 'from-green-500/20 to-emerald-500/20',
@@ -69,7 +69,7 @@ export const StatCard = ({ label, value, prefix, suffix, trend, icon, color, del
                     {trend && (
                         <div className={cn(
                             'flex items-center gap-1 text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shrink-0',
-                            trend.isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                            trend.isPositive ? 'bg-green-500/20 text-green-400' : 'bg-destructive/20 text-destructive'
                         )}>
                             {trend.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                             {Math.abs(trend.value)}%
@@ -78,7 +78,7 @@ export const StatCard = ({ label, value, prefix, suffix, trend, icon, color, del
                 </div>
 
                 <div>
-                    <p className="text-white/70 text-[11px] md:text-sm font-medium mb-0.5 md:mb-1">{label}</p>
+                    <p className="text-foreground/70 text-[11px] md:text-sm font-medium mb-0.5 md:mb-1">{label}</p>
                     <p className={cn('text-xl md:text-3xl font-bold leading-none truncate', colors.text)}>
                         {prefix}
                         <CountUp

@@ -23,8 +23,8 @@ const actionConfig = {
         color: 'red',
         label: 'Payment Overdue',
         bgClass: 'from-red-500/20 to-orange-500/20',
-        borderClass: 'border-red-400/30',
-        iconClass: 'bg-red-500/20 text-red-400',
+        borderClass: 'border-destructive/30',
+        iconClass: 'bg-destructive/20 text-destructive',
     },
     deliverable_overdue: {
         icon: Clock,
@@ -39,8 +39,8 @@ const actionConfig = {
         color: 'blue',
         label: 'Signature Needed',
         bgClass: 'from-blue-600/20 to-indigo-600/20',
-        borderClass: 'border-blue-400/30',
-        iconClass: 'bg-blue-600/20 text-blue-400',
+        borderClass: 'border-info/30',
+        iconClass: 'bg-info/20 text-info',
     },
     response_needed: {
         icon: AlertTriangle,
@@ -61,15 +61,15 @@ export const UrgentActionsWidget = ({ actions }: UrgentActionsWidgetProps) => {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-red-500/10 to-orange-500/10 backdrop-blur-xl border-2 border-red-400/20 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg"
+            className="bg-gradient-to-br from-red-500/10 to-orange-500/10 backdrop-blur-xl border-2 border-destructive/20 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg"
         >
             <div className="flex items-center gap-2.5 md:gap-3 mb-3.5 md:mb-4">
-                <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-destructive/20 text-destructive flex items-center justify-center">
                     <AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div>
-                    <h3 className="text-base md:text-lg font-bold text-white">Urgent Actions</h3>
-                    <p className="text-xs md:text-sm text-white/60">{actions.length} item{actions.length > 1 ? 's' : ''} need attention</p>
+                    <h3 className="text-base md:text-lg font-bold text-foreground">Urgent Actions</h3>
+                    <p className="text-xs md:text-sm text-foreground/60">{actions.length} item{actions.length > 1 ? 's' : ''} need attention</p>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@ export const UrgentActionsWidget = ({ actions }: UrgentActionsWidgetProps) => {
                             transition={{ delay: index * 0.1 }}
                             onClick={action.onClick}
                             className={cn(
-                                'w-full bg-gradient-to-br backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98] group relative overflow-hidden',
+                                'w-full bg-gradient-to-br backdrop-blur-xl border border-border rounded-xl p-3 md:p-4 shadow-sm hover:shadow-md transition-all active:scale-[0.98] group relative overflow-hidden',
                                 config.bgClass
                             )}
                         >
@@ -99,13 +99,13 @@ export const UrgentActionsWidget = ({ actions }: UrgentActionsWidgetProps) => {
                                         <Icon className="w-4 h-4 md:w-5 md:h-5" />
                                     </div>
                                     <div className="text-left min-w-0">
-                                        <p className="text-sm font-bold text-white truncate">{action.brand_name}</p>
+                                        <p className="text-sm font-bold text-foreground truncate">{action.brand_name}</p>
                                         <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                                            <p className="text-[11px] text-white/60 font-medium">{config.label}</p>
+                                            <p className="text-[11px] text-foreground/60 font-medium">{config.label}</p>
                                             {action.daysOverdue && (
                                                 <>
-                                                    <span className="w-1 h-1 rounded-full bg-white/20" />
-                                                    <p className="text-[11px] text-red-400 font-semibold">
+                                                    <span className="w-1 h-1 rounded-full bg-secondary/20" />
+                                                    <p className="text-[11px] text-destructive font-semibold">
                                                         {action.daysOverdue}d overdue
                                                     </p>
                                                 </>
@@ -119,7 +119,7 @@ export const UrgentActionsWidget = ({ actions }: UrgentActionsWidgetProps) => {
                                             {formatIndianCurrency(action.amount)}
                                         </span>
                                     )}
-                                    <div className="flex items-center gap-1 text-[10px] text-white/40 group-hover:text-white/70 transition-colors">
+                                    <div className="flex items-center gap-1 text-[10px] text-foreground/40 group-hover:text-foreground/70 transition-colors">
                                         Action <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                                     </div>
                                 </div>
@@ -130,7 +130,7 @@ export const UrgentActionsWidget = ({ actions }: UrgentActionsWidgetProps) => {
             </div>
 
             {actions.length > 3 && (
-                <p className="text-center text-xs md:text-sm text-white/40 mt-3 md:mt-4">
+                <p className="text-center text-xs md:text-sm text-foreground/40 mt-3 md:mt-4">
                     +{actions.length - 3} more action{actions.length - 3 > 1 ? 's' : ''}
                 </p>
             )}

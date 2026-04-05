@@ -109,18 +109,18 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
     >
-      <Card className="bg-white/[0.08] backdrop-blur-lg border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
+      <Card className="bg-secondary/[0.08] backdrop-blur-lg border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)] transition-all hover:shadow-2xl hover:border-purple-500/30 hover:-translate-y-0.5">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-purple-400" />
-              <CardTitle className="text-lg font-semibold text-white">Payment Insights</CardTitle>
+              <BarChart3 className="w-5 h-5 text-secondary" />
+              <CardTitle className="text-lg font-semibold text-foreground">Payment Insights</CardTitle>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-payments?analytics=true')}
-              className="text-xs text-white/60 hover:text-white hover:bg-white/10"
+              className="text-xs text-foreground/60 hover:text-foreground hover:bg-secondary/50"
             >
               View Full
               <ChevronRight className="w-3 h-3 ml-1" />
@@ -129,15 +129,15 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Average Payment Time - Pinned to Top */}
-          <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 mb-4">
+          <div className="p-4 bg-info/10 rounded-xl border border-info/20 mb-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-400" />
-                <div className="text-sm font-semibold text-white">Payment Cycle Insight</div>
+                <TrendingUp className="w-5 h-5 text-info" />
+                <div className="text-sm font-semibold text-foreground">Payment Cycle Insight</div>
               </div>
             </div>
-            <div className="text-3xl font-bold text-blue-400 mb-1">{analytics.avgPaymentTime} days</div>
-            <div className="text-xs text-white/60">
+            <div className="text-3xl font-bold text-info mb-1">{analytics.avgPaymentTime} days</div>
+            <div className="text-xs text-foreground/60">
               Average time from deal to payment • Fastest: {analytics.fastestBrand.name} ({analytics.fastestBrand.days} days) | 
               Slowest: {analytics.slowestBrand.name} ({analytics.slowestBrand.days} days)
             </div>
@@ -145,11 +145,11 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
 
           {/* Payment Success Rate */}
           <div>
-            <div className="flex items-center justify-between text-sm text-white/60 mb-2">
+            <div className="flex items-center justify-between text-sm text-foreground/60 mb-2">
               <span>Payment Success Rate</span>
-              <span className="font-semibold text-white">{analytics.successRate}%</span>
+              <span className="font-semibold text-foreground">{analytics.successRate}%</span>
             </div>
-            <div className="relative h-2 bg-white/5 rounded-full overflow-hidden">
+            <div className="relative h-2 bg-card rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${analytics.successRate}%` }}
@@ -161,12 +161,12 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
 
           {/* Total Recovered */}
           {analytics.recoveredAmount > 0 && (
-            <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-              <div className="text-sm text-white/60 mb-1">Total Recovered</div>
-              <div className="text-lg font-bold text-emerald-400">
+            <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="text-sm text-foreground/60 mb-1">Total Recovered</div>
+              <div className="text-lg font-bold text-primary">
                 ₹{analytics.recoveredAmount.toLocaleString('en-IN')}
               </div>
-              <div className="text-xs text-white/60 mt-1">
+              <div className="text-xs text-foreground/60 mt-1">
                 (through reminders)
               </div>
             </div>
@@ -175,26 +175,26 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({ allDeals }) => {
           {/* Brands to Watch */}
           {analytics.brandsToWatch.length > 0 && (
             <div>
-              <div className="text-sm font-medium text-white mb-2">Brands to Watch</div>
+              <div className="text-sm font-medium text-foreground mb-2">Brands to Watch</div>
               <div className="space-y-2">
                 {analytics.brandsToWatch.map((brand, idx) => (
                   <div
                     key={idx}
                     className={cn(
                       "flex items-center justify-between p-2 rounded-lg",
-                      brand.lateCount > 1 ? "bg-red-500/10 border border-red-500/20" :
+                      brand.lateCount > 1 ? "bg-destructive/10 border border-destructive/20" :
                       "bg-yellow-500/10 border border-yellow-500/20"
                     )}
                   >
                     <div className="flex items-center gap-2">
                       {brand.lateCount > 1 ? (
-                        <AlertTriangle className="w-4 h-4 text-red-400" />
+                        <AlertTriangle className="w-4 h-4 text-destructive" />
                       ) : (
                         <CheckCircle className="w-4 h-4 text-yellow-400" />
                       )}
-                      <span className="text-sm font-medium text-white">{brand.brand}</span>
+                      <span className="text-sm font-medium text-foreground">{brand.brand}</span>
                     </div>
-                    <div className="text-xs text-white/60">
+                    <div className="text-xs text-foreground/60">
                       {brand.lateCount > 1 ? `${brand.lateCount} late payments` : 'Reliable payer'} 
                       {' '}(avg {brand.avgDays} days)
                     </div>

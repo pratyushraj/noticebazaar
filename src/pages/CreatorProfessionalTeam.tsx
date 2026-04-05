@@ -39,13 +39,13 @@ const CreatorProfessionalTeamPage = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-dashboard')}
-              className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
+              className="mb-4 text-foreground/70 hover:text-foreground hover:bg-secondary/50"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Chat with Your Professional Team</h1>
-            <p className="text-sm sm:text-base text-white/60 mt-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Chat with Your Professional Team</h1>
+            <p className="text-sm sm:text-base text-foreground/60 mt-2">
               Connect with your Chartered Accountant and Legal Advisor
             </p>
           </div>

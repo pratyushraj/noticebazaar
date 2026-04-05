@@ -54,14 +54,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         className={clsx(
           'inline-block text-sm p-3 rounded-2xl shadow-sm max-w-[75%]',
           isCurrentUser
-            ? 'bg-blue-600 text-white rounded-br-md'
+            ? 'bg-info text-foreground rounded-br-md'
             : 'bg-muted/30 text-foreground rounded-bl-md'
         )}
       >
         <p className="leading-relaxed break-words">{message.text}</p>
         <div className={clsx(
           "text-[11px] mt-1",
-          isCurrentUser ? "text-white/70" : "text-muted-foreground"
+          isCurrentUser ? "text-foreground/70" : "text-muted-foreground"
         )}>
           {time}
         </div>

@@ -76,12 +76,12 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
             <div className="flex items-center text-sm mt-2">
               <span className={cn(
                 "h-2.5 w-2.5 rounded-full mr-2",
-                pendingBrandPayments.status === 'Overdue' ? 'bg-red-500' : 'bg-blue-500'
+                pendingBrandPayments.status === 'Overdue' ? 'bg-destructive' : 'bg-info'
               )}></span>
               <p className="text-muted-foreground">{pendingBrandPayments.details}</p>
             </div>
             {pendingBrandPayments.status === 'Overdue' && (
-              <p className="text-xs text-red-400 mt-1">
+              <p className="text-xs text-destructive mt-1">
                 {pendingBrandPayments.details.split(' ')[0]} invoice{pendingBrandPayments.details.split(' ')[0] !== '1' ? 's' : ''} overdue!
               </p>
             )}
@@ -97,7 +97,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
         <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0">
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Brand Deals</CardTitle>
-            <Briefcase className="h-4 w-4 text-blue-500" />
+            <Briefcase className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent className="px-0 pb-0 flex-grow">
             <ul className="space-y-2 mt-2">
@@ -107,7 +107,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
                     <div className="flex items-center">
                       <span className="text-foreground mr-2">{deal.brand_name}</span>
                       {deal.status === 'Payment Pending' && calculateOverdueDays(deal.payment_expected_date) > 0 && (
-                        <span className="text-xs text-red-400">({calculateOverdueDays(deal.payment_expected_date)} days overdue)</span>
+                        <span className="text-xs text-destructive">({calculateOverdueDays(deal.payment_expected_date)} days overdue)</span>
                       )}
                     </div>
                     <div className="flex items-center space-x-2">
@@ -187,7 +187,7 @@ const CreatorRevenuePayments: React.FC<CreatorRevenuePaymentsProps> = ({
                   <p className="text-muted-foreground">{paidAndRecoveredDeals.length} payment{paidAndRecoveredDeals.length !== 1 ? 's' : ''} recovered</p>
                 </div>
               </CardContent>
-              <Button asChild variant="default" className="w-full bg-green-600 text-white hover:bg-green-700 mt-4">
+              <Button asChild variant="default" className="w-full bg-green-600 text-foreground hover:bg-green-700 mt-4">
                 <Link to="/creator-payments">
                   View Recovery History <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>

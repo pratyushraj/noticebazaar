@@ -150,7 +150,7 @@ export const NotificationPreferences: React.FC = () => {
   if (isLoading) {
     return (
       <div className="p-4 text-center">
-        <div className="text-white/60 text-sm">Loading preferences...</div>
+        <div className="text-foreground/60 text-sm">Loading preferences...</div>
       </div>
     );
   }
@@ -158,7 +158,7 @@ export const NotificationPreferences: React.FC = () => {
   if (!preferences) {
     return (
       <div className="p-4 text-center">
-        <div className="text-white/60 text-sm">Failed to load preferences</div>
+        <div className="text-foreground/60 text-sm">Failed to load preferences</div>
       </div>
     );
   }
@@ -174,24 +174,24 @@ export const NotificationPreferences: React.FC = () => {
   return (
     <div className="space-y-3">
       {/* Notification Mode Selector - Primary Emphasis */}
-      <Card className="bg-white/3 rounded-lg p-4 border border-white/8">
-        <h3 className="text-base font-semibold text-white mb-1 flex items-center gap-2">
+      <Card className="bg-secondary/3 rounded-lg p-4 border border-border/8">
+        <h3 className="text-base font-semibold text-foreground mb-1 flex items-center gap-2">
           <Bell className="w-4 h-4" />
           Notification Mode
         </h3>
-        <p className="text-xs text-white/60 mb-4 mt-1">
+        <p className="text-xs text-foreground/60 mb-4 mt-1">
           Choose how often you want to receive updates from CreatorArmour
         </p>
         
         {/* Segmented Control */}
-        <div className="flex gap-1 bg-white/5 rounded-lg p-1 border border-white/10">
+        <div className="flex gap-1 bg-card rounded-lg p-1 border border-border">
           <button type="button"
             onClick={() => handleModeChange('all')}
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
               notificationMode === 'all'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/70 hover:text-white/90"
+                ? "bg-secondary/50 text-foreground shadow-sm"
+                : "text-foreground/70 hover:text-foreground/90"
             )}
           >
             All
@@ -201,8 +201,8 @@ export const NotificationPreferences: React.FC = () => {
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
               notificationMode === 'important'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/70 hover:text-white/90"
+                ? "bg-secondary/50 text-foreground shadow-sm"
+                : "text-foreground/70 hover:text-foreground/90"
             )}
           >
             Important
@@ -212,8 +212,8 @@ export const NotificationPreferences: React.FC = () => {
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
               notificationMode === 'minimal'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/70 hover:text-white/90"
+                ? "bg-secondary/50 text-foreground shadow-sm"
+                : "text-foreground/70 hover:text-foreground/90"
             )}
           >
             Minimal
@@ -223,8 +223,8 @@ export const NotificationPreferences: React.FC = () => {
             className={cn(
               "flex-1 min-h-[44px] px-2 py-2.5 rounded-md text-xs font-medium transition-all text-center",
               notificationMode === 'dnd'
-                ? "bg-white/10 text-white shadow-sm"
-                : "text-white/70 hover:text-white/90"
+                ? "bg-secondary/50 text-foreground shadow-sm"
+                : "text-foreground/70 hover:text-foreground/90"
             )}
           >
             Do Not Disturb
@@ -240,7 +240,7 @@ export const NotificationPreferences: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
-              className="text-xs text-white/60 mt-3"
+              className="text-xs text-foreground/60 mt-3"
             >
               {modeDescriptions[notificationMode]}
             </motion.p>
@@ -250,8 +250,8 @@ export const NotificationPreferences: React.FC = () => {
 
       {/* Do Not Disturb Schedule - Merged Quiet Hours + DND */}
       {notificationMode === 'dnd' && (
-        <Card className="bg-white/3 rounded-lg p-4 border border-white/8">
-          <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
+        <Card className="bg-secondary/3 rounded-lg p-4 border border-border/8">
+          <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
             <Moon className="w-4 h-4" />
             Do Not Disturb Schedule
           </h3>
@@ -259,31 +259,31 @@ export const NotificationPreferences: React.FC = () => {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-white/60 mb-1.5 block">Start Time</label>
+                <label className="text-xs text-foreground/60 mb-1.5 block">Start Time</label>
                 <input
                   type="time"
                   value={quietHoursStart}
                   onChange={(e) => setQuietHoursStart(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs text-white/60 mb-1.5 block">End Time</label>
+                <label className="text-xs text-foreground/60 mb-1.5 block">End Time</label>
                 <input
                   type="time"
                   value={quietHoursEnd}
                   onChange={(e) => setQuietHoursEnd(e.target.value)}
-                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm"
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm"
                 />
               </div>
             </div>
             
-            <label className="flex items-center gap-2 text-sm text-white/80">
+            <label className="flex items-center gap-2 text-sm text-foreground/80">
               <input
                 type="checkbox"
                 checked={allowPaymentAlerts}
                 onChange={(e) => setAllowPaymentAlerts(e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-white/5 text-purple-600 focus:ring-purple-500"
+                className="w-4 h-4 rounded border-border bg-card text-secondary focus:ring-purple-500"
               />
               <span>Allow payment alerts during DND</span>
             </label>
@@ -291,7 +291,7 @@ export const NotificationPreferences: React.FC = () => {
             <Button
               onClick={handleSaveQuietHours}
               disabled={isUpdating}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm py-2"
+              className="w-full bg-secondary hover:bg-secondary text-foreground text-sm py-2"
             >
               Save Schedule
             </Button>
@@ -300,19 +300,19 @@ export const NotificationPreferences: React.FC = () => {
       )}
 
       {/* Customize Advanced Notifications - Secondary Emphasis, Collapsed by default */}
-      <Card className="bg-white/3 rounded-lg p-3 border border-white/8">
+      <Card className="bg-secondary/3 rounded-lg p-3 border border-border/8">
         <button type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="w-full flex items-center justify-between min-h-[44px]"
         >
-          <h3 className="text-sm font-medium text-white/90 flex items-center gap-2">
-            <Bell className="w-4 h-4 text-white/60" />
+          <h3 className="text-sm font-medium text-foreground/90 flex items-center gap-2">
+            <Bell className="w-4 h-4 text-foreground/60" />
             Customize advanced notifications
           </h3>
           {showAdvanced ? (
-            <ChevronUp className="w-4 h-4 text-white/60" />
+            <ChevronUp className="w-4 h-4 text-foreground/60" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-white/60" />
+            <ChevronDown className="w-4 h-4 text-foreground/60" />
           )}
         </button>
 
@@ -325,24 +325,24 @@ export const NotificationPreferences: React.FC = () => {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="pt-3 space-y-2 border-t border-white/10 mt-3">
+              <div className="pt-3 space-y-2 border-t border-border mt-3">
                 {/* Global Channel Toggles */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between min-h-[44px] py-1.5">
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">Email</span>
+                      <Mail className="w-4 h-4 text-foreground/60" />
+                      <span className="text-sm text-foreground/80">Email</span>
                     </div>
                     <button type="button"
                       onClick={() => handleToggleGlobal('email_enabled')}
                       disabled={isUpdating}
                       className={cn(
                         "w-10 h-6 rounded-full transition-colors relative",
-                        preferences.email_enabled ? "bg-purple-600/80" : "bg-white/20"
+                        preferences.email_enabled ? "bg-secondary/80" : "bg-secondary/20"
                       )}
                     >
                       <div className={cn(
-                        "w-4 h-4 bg-white rounded-full absolute top-1 transition-all",
+                        "w-4 h-4 bg-card rounded-full absolute top-1 transition-all",
                         preferences.email_enabled ? "right-1" : "left-1"
                       )} />
                     </button>
@@ -350,19 +350,19 @@ export const NotificationPreferences: React.FC = () => {
 
                   <div className="flex items-center justify-between min-h-[44px] py-1.5">
                     <div className="flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">Push</span>
+                      <Smartphone className="w-4 h-4 text-foreground/60" />
+                      <span className="text-sm text-foreground/80">Push</span>
                     </div>
                     <button type="button"
                       onClick={() => handleToggleGlobal('push_enabled')}
                       disabled={isUpdating}
                       className={cn(
                         "w-10 h-6 rounded-full transition-colors relative",
-                        preferences.push_enabled ? "bg-purple-600/80" : "bg-white/20"
+                        preferences.push_enabled ? "bg-secondary/80" : "bg-secondary/20"
                       )}
                     >
                       <div className={cn(
-                        "w-4 h-4 bg-white rounded-full absolute top-1 transition-all",
+                        "w-4 h-4 bg-card rounded-full absolute top-1 transition-all",
                         preferences.push_enabled ? "right-1" : "left-1"
                       )} />
                     </button>
@@ -370,19 +370,19 @@ export const NotificationPreferences: React.FC = () => {
 
                   <div className="flex items-center justify-between min-h-[44px] py-1.5">
                     <div className="flex items-center gap-2">
-                      <Monitor className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white/80">In-App</span>
+                      <Monitor className="w-4 h-4 text-foreground/60" />
+                      <span className="text-sm text-foreground/80">In-App</span>
                     </div>
                     <button type="button"
                       onClick={() => handleToggleGlobal('in_app_enabled')}
                       disabled={isUpdating}
                       className={cn(
                         "w-10 h-6 rounded-full transition-colors relative",
-                        preferences.in_app_enabled ? "bg-purple-600/80" : "bg-white/20"
+                        preferences.in_app_enabled ? "bg-secondary/80" : "bg-secondary/20"
                       )}
                     >
                       <div className={cn(
-                        "w-4 h-4 bg-white rounded-full absolute top-1 transition-all",
+                        "w-4 h-4 bg-card rounded-full absolute top-1 transition-all",
                         preferences.in_app_enabled ? "right-1" : "left-1"
                       )} />
                     </button>
@@ -390,16 +390,16 @@ export const NotificationPreferences: React.FC = () => {
                 </div>
 
                 {/* Category Preferences - Collapsed by default */}
-                <div className="pt-2 border-t border-white/10">
+                <div className="pt-2 border-t border-border">
                   <button type="button"
                     onClick={() => setShowCategories(!showCategories)}
                     className="w-full flex items-center justify-between mb-2 min-h-[44px]"
                   >
-                    <span className="text-sm font-medium text-white/80">Category Preferences</span>
+                    <span className="text-sm font-medium text-foreground/80">Category Preferences</span>
                     {showCategories ? (
-                      <ChevronUp className="w-4 h-4 text-white/60" />
+                      <ChevronUp className="w-4 h-4 text-foreground/60" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-white/60" />
+                      <ChevronDown className="w-4 h-4 text-foreground/60" />
                     )}
                   </button>
 
@@ -414,7 +414,7 @@ export const NotificationPreferences: React.FC = () => {
                       >
                         {/* Money Group */}
                         <div>
-                          <div className="text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wide">Money</div>
+                          <div className="text-xs font-medium text-foreground/60 mb-1.5 uppercase tracking-wide">Money</div>
                           <div className="space-y-1.5">
                             {categoryGroups.money.map((category) => {
                               const categoryPref = preferences.preferences?.[category.id] || {
@@ -423,12 +423,12 @@ export const NotificationPreferences: React.FC = () => {
                                 in_app: true,
                               };
                               return (
-                                <div key={category.id} className="p-2.5 bg-white/5 rounded-lg min-h-[44px]">
+                                <div key={category.id} className="p-2.5 bg-card rounded-lg min-h-[44px]">
                                   <div className="flex items-center gap-2 mb-1.5">
                                     <span className="text-lg">{category.icon}</span>
                                     <div className="flex-1">
-                                      <div className="text-sm font-medium text-white">{category.name}</div>
-                                      <div className="text-xs text-white/60">{category.description}</div>
+                                      <div className="text-sm font-medium text-foreground">{category.name}</div>
+                                      <div className="text-xs text-foreground/60">{category.description}</div>
                                     </div>
                                   </div>
                                   <div className="flex gap-1.5">
@@ -438,8 +438,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.email && preferences.email_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       Email
@@ -450,8 +450,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.push && preferences.push_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       Push
@@ -462,8 +462,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.in_app && preferences.in_app_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       In-App
@@ -477,7 +477,7 @@ export const NotificationPreferences: React.FC = () => {
 
                         {/* Deals Group */}
                         <div>
-                          <div className="text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wide">Deals</div>
+                          <div className="text-xs font-medium text-foreground/60 mb-1.5 uppercase tracking-wide">Deals</div>
                           <div className="space-y-1.5">
                             {categoryGroups.deals.map((category) => {
                               const categoryPref = preferences.preferences?.[category.id] || {
@@ -486,12 +486,12 @@ export const NotificationPreferences: React.FC = () => {
                                 in_app: true,
                               };
                               return (
-                                <div key={category.id} className="p-2.5 bg-white/5 rounded-lg min-h-[44px]">
+                                <div key={category.id} className="p-2.5 bg-card rounded-lg min-h-[44px]">
                                   <div className="flex items-center gap-2 mb-1.5">
                                     <span className="text-lg">{category.icon}</span>
                                     <div className="flex-1">
-                                      <div className="text-sm font-medium text-white">{category.name}</div>
-                                      <div className="text-xs text-white/60">{category.description}</div>
+                                      <div className="text-sm font-medium text-foreground">{category.name}</div>
+                                      <div className="text-xs text-foreground/60">{category.description}</div>
                                     </div>
                                   </div>
                                   <div className="flex gap-1.5">
@@ -501,8 +501,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.email && preferences.email_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       Email
@@ -513,8 +513,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.push && preferences.push_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       Push
@@ -525,8 +525,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.in_app && preferences.in_app_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       In-App
@@ -540,7 +540,7 @@ export const NotificationPreferences: React.FC = () => {
 
                         {/* Messages Group */}
                         <div>
-                          <div className="text-xs font-medium text-white/60 mb-1.5 uppercase tracking-wide">Messages</div>
+                          <div className="text-xs font-medium text-foreground/60 mb-1.5 uppercase tracking-wide">Messages</div>
                           <div className="space-y-1.5">
                             {categoryGroups.messages.map((category) => {
                               const categoryPref = preferences.preferences?.[category.id] || {
@@ -549,12 +549,12 @@ export const NotificationPreferences: React.FC = () => {
                                 in_app: true,
                               };
                               return (
-                                <div key={category.id} className="p-2.5 bg-white/5 rounded-lg min-h-[44px]">
+                                <div key={category.id} className="p-2.5 bg-card rounded-lg min-h-[44px]">
                                   <div className="flex items-center gap-2 mb-1.5">
                                     <span className="text-lg">{category.icon}</span>
                                     <div className="flex-1">
-                                      <div className="text-sm font-medium text-white">{category.name}</div>
-                                      <div className="text-xs text-white/60">{category.description}</div>
+                                      <div className="text-sm font-medium text-foreground">{category.name}</div>
+                                      <div className="text-xs text-foreground/60">{category.description}</div>
                                     </div>
                                   </div>
                                   <div className="flex gap-1.5">
@@ -564,8 +564,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.email && preferences.email_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       Email
@@ -576,8 +576,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.push && preferences.push_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       Push
@@ -588,8 +588,8 @@ export const NotificationPreferences: React.FC = () => {
                                       className={cn(
                                         "flex-1 px-2 py-1 rounded text-xs font-medium transition-colors",
                                         categoryPref.in_app && preferences.in_app_enabled
-                                          ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
-                                          : "bg-white/5 text-white/40 border border-white/10"
+                                          ? "bg-secondary/30 text-secondary border border-purple-500/30"
+                                          : "bg-card text-foreground/40 border border-border"
                                       )}
                                     >
                                       In-App

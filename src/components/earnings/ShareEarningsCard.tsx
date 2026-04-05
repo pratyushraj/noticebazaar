@@ -85,21 +85,21 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
     <div className="space-y-4">
       <Card 
         ref={cardRef}
-        className="bg-gradient-to-br from-purple-500/30 via-blue-500/30 to-pink-500/30 backdrop-blur-[40px] border border-white/20 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden relative p-8"
+        className="bg-gradient-to-br from-purple-500/30 via-blue-500/30 to-pink-500/30 backdrop-blur-[40px] border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden relative p-8"
         style={{ width: '400px', height: '600px' }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] to-transparent pointer-events-none" />
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-white">
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center text-foreground">
           <div className="mb-6">
-            <p className="text-sm text-white/60 mb-2">Earnings This Month</p>
+            <p className="text-sm text-foreground/60 mb-2">Earnings This Month</p>
             <h2 className="text-5xl font-bold mb-2">{formatEarnings(earnings)}</h2>
-            <p className="text-lg text-white/80">{month} {new Date().getFullYear()}</p>
+            <p className="text-lg text-foreground/80">{month} {new Date().getFullYear()}</p>
             {growth && growth > 0 && (
               <p className="text-sm text-green-400 mt-2">+{growth}% from last month</p>
             )}
           </div>
           <div className="mt-auto pt-6">
-            <p className="text-xs text-white/40">Powered by Creator Armour</p>
+            <p className="text-xs text-foreground/40">Powered by Creator Armour</p>
           </div>
         </div>
       </Card>
@@ -108,7 +108,7 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
         <Button
           onClick={generateShareImage}
           disabled={isGenerating}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+          className="flex-1 bg-info hover:bg-info text-foreground"
         >
           <Download className="w-4 h-4 mr-2" />
           Download
@@ -117,7 +117,7 @@ const ShareEarningsCard: React.FC<ShareEarningsCardProps> = ({
           onClick={copyToClipboard}
           disabled={isGenerating}
           variant="outline"
-          className="flex-1 bg-white/5 border-white/10 text-white hover:bg-white/10"
+          className="flex-1 bg-card border-border text-foreground hover:bg-secondary/50"
         >
           <Share2 className="w-4 h-4 mr-2" />
           Copy

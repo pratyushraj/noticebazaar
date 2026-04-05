@@ -30,9 +30,9 @@ const ContentAnalytics: React.FC = () => {
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/30 shadow-lg">
-              <TrendingUp className="h-5 w-5 text-white" />
+              <TrendingUp className="h-5 w-5 text-foreground" />
             </div>
-            <CardTitle className="text-white">Content & Audience Analytics</CardTitle>
+            <CardTitle className="text-foreground">Content & Audience Analytics</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -40,10 +40,10 @@ const ContentAnalytics: React.FC = () => {
             {/* Highest Performing Post */}
             <div className="space-y-2 p-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
               <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-[#E879F9]" />
-                <span className="text-small text-white/70">Highest performing post</span>
+                <Eye className="h-4 w-4 text-secondary" />
+                <span className="text-small text-foreground/70">Highest performing post</span>
               </div>
-              <p className="text-xl font-bold text-white number-large">
+              <p className="text-xl font-bold text-foreground number-large">
                 {metrics.highestPerformingPost.label}
               </p>
             </div>
@@ -51,10 +51,10 @@ const ContentAnalytics: React.FC = () => {
             {/* Avg Engagement Rate */}
             <div className="space-y-2 p-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
               <div className="flex items-center gap-2">
-                <Heart className="h-4 w-4 text-[#F472B6]" />
-                <span className="text-small text-white/70">Avg engagement rate</span>
+                <Heart className="h-4 w-4 text-primary" />
+                <span className="text-small text-foreground/70">Avg engagement rate</span>
               </div>
-              <p className="text-xl font-bold text-white number-large">
+              <p className="text-xl font-bold text-foreground number-large">
                 {metrics.avgEngagementRate}%
               </p>
             </div>
@@ -62,10 +62,10 @@ const ContentAnalytics: React.FC = () => {
             {/* New Followers */}
             <div className="space-y-2 p-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-[#B4D4FF]" />
-                <span className="text-small text-white/70">New followers this month</span>
+                <Users className="h-4 w-4 text-info" />
+                <span className="text-small text-foreground/70">New followers this month</span>
               </div>
-              <p className="text-xl font-bold text-[#A8E6CF] number-large">
+              <p className="text-xl font-bold text-primary number-large">
                 +{metrics.newFollowersThisMonth.toLocaleString('en-IN')}
               </p>
             </div>
@@ -73,10 +73,10 @@ const ContentAnalytics: React.FC = () => {
             {/* Most Engaging Platform */}
             <div className="space-y-2 p-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
               <div className="flex items-center gap-2">
-                <Instagram className="h-4 w-4 text-[#F472B6]" />
-                <span className="text-small text-white/70">Most engaging platform</span>
+                <Instagram className="h-4 w-4 text-primary" />
+                <span className="text-small text-foreground/70">Most engaging platform</span>
               </div>
-              <p className="text-xl font-bold text-white number-large">
+              <p className="text-xl font-bold text-foreground number-large">
                 {metrics.mostEngagingPlatform}
               </p>
             </div>
@@ -88,16 +88,16 @@ const ContentAnalytics: React.FC = () => {
             <div className="flex items-center justify-between p-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/40 shadow-lg">
-                  <Instagram className="h-4 w-4 text-white" />
+                  <Instagram className="h-4 w-4 text-foreground" />
                 </div>
-                <span className="text-body text-white/80 font-medium">Instagram</span>
+                <span className="text-body text-foreground/80 font-medium">Instagram</span>
               </div>
               <div className="text-right">
-                <div className="text-body font-semibold text-white number-large">
+                <div className="text-body font-semibold text-foreground number-large">
                   {metrics.instagramFollowers.toLocaleString('en-IN')}
                 </div>
                 {metrics.instagramGrowth > 0 && (
-                  <div className="flex items-center justify-end gap-1 text-[#A8E6CF] text-small mt-1">
+                  <div className="flex items-center justify-end gap-1 text-primary text-small mt-1">
                     <TrendingUp className="h-3.5 w-3.5" />
                     <span>+{metrics.instagramGrowth.toLocaleString('en-IN')} this month</span>
                   </div>
@@ -109,15 +109,15 @@ const ContentAnalytics: React.FC = () => {
             <div className="flex items-center justify-between p-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-[#FF6B9D] to-[#FF8FAB] border border-[#FF6B9D]/40 shadow-lg">
-                  <Youtube className="h-4 w-4 text-white" />
+                  <Youtube className="h-4 w-4 text-foreground" />
                 </div>
-                <span className="text-body text-white/80 font-medium">YT Avg Views</span>
+                <span className="text-body text-foreground/80 font-medium">YT Avg Views</span>
               </div>
               <div className="text-right">
-                <div className="text-body font-semibold text-white number-large">
+                <div className="text-body font-semibold text-foreground number-large">
                   {metrics.youtubeAvgViews.toLocaleString('en-IN')}
                 </div>
-                <div className="text-small text-white/60 mt-1">per video</div>
+                <div className="text-small text-foreground/60 mt-1">per video</div>
               </div>
             </div>
           </div>

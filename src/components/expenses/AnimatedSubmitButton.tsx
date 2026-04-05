@@ -24,9 +24,9 @@ export const AnimatedSubmitButton: React.FC<AnimatedSubmitButtonProps> = ({
       whileTap={animations.microTap}
       className={cn(
         "w-full sm:w-auto px-6 py-3 rounded-xl",
-        "bg-purple-500 text-white font-semibold",
+        "bg-secondary text-foreground font-semibold",
         "shadow-xl shadow-purple-900/30",
-        "hover:bg-purple-600",
+        "hover:bg-secondary",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "transition-all duration-200",
         "flex items-center justify-center gap-2",

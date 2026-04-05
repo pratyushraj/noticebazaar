@@ -272,9 +272,9 @@ export default function DealDeliveryDetailsPage() {
 
   // Force readable input contrast across webviews/browsers where input backgrounds may be normalized to white.
   const fieldClass =
-    "h-11 sm:h-12 !bg-white !text-neutral-900 !caret-neutral-900 border-border placeholder:!text-neutral-500 focus:!border-info focus:ring-2 focus:ring-blue-400/20";
+    "h-11 sm:h-12 !bg-card !text-neutral-900 !caret-neutral-900 border-border placeholder:!text-neutral-500 focus:!border-info focus:ring-2 focus:ring-blue-400/20";
   const textAreaFieldClass =
-    "!bg-white !text-neutral-900 !caret-neutral-900 border-border placeholder:!text-neutral-500 focus:!border-info focus:ring-2 focus:ring-blue-400/20";
+    "!bg-card !text-neutral-900 !caret-neutral-900 border-border placeholder:!text-neutral-500 focus:!border-info focus:ring-2 focus:ring-blue-400/20";
 
   if (isSubmitted) {
     return (

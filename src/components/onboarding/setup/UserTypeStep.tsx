@@ -85,8 +85,8 @@ export const UserTypeStep: React.FC<UserTypeStepProps> = ({
                 onClick={() => onTypeSelect(type.id)}
                 className={`w-full p-6 rounded-xl border-2 transition-all text-left ${
                   isSelected
-                    ? 'bg-purple-600/30 border-purple-400'
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    ? 'bg-secondary/30 border-purple-400'
+                    : 'bg-card border-border hover:bg-secondary/50'
                 }`}
                 aria-label={`Select ${type.title}`}
                 aria-pressed={isSelected}
@@ -100,10 +100,10 @@ export const UserTypeStep: React.FC<UserTypeStepProps> = ({
                   />
                   <div className="flex-1">
                     <div className="text-lg font-semibold mb-1">{type.title}</div>
-                    <div className="text-sm text-white/60">{type.desc}</div>
+                    <div className="text-sm text-foreground/60">{type.desc}</div>
                   </div>
                   {isSelected && (
-                    <CheckCircle className="w-6 h-6 text-purple-400 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-secondary flex-shrink-0" />
                   )}
                 </div>
               </button>

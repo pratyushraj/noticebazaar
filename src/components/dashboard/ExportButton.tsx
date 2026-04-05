@@ -73,17 +73,17 @@ export function ExportButton({ data, className }: ExportButtonProps) {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-[#0F121A] border-white/10">
+      <DropdownMenuContent align="end" className="bg-[#0F121A] border-border">
         <DropdownMenuItem
           onClick={() => handleExport('csv')}
-          className="cursor-pointer hover:bg-white/10 text-white"
+          className="cursor-pointer hover:bg-secondary/50 text-foreground"
         >
           <FileText className="h-4 w-4 mr-2" />
           Export as CSV
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleExport('json')}
-          className="cursor-pointer hover:bg-white/10 text-white"
+          className="cursor-pointer hover:bg-secondary/50 text-foreground"
         >
           <FileJson className="h-4 w-4 mr-2" />
           Export as JSON

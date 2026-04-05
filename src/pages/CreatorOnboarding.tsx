@@ -231,7 +231,7 @@ export default function CreatorOnboarding() {
     <OnboardingContainer theme="light" allowScroll>
       <div className="mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col justify-center px-4 py-10 sm:px-6 lg:px-8">
         {step === 'instagram' && (
-          <div className="mx-auto w-full max-w-xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+          <div className="mx-auto w-full max-w-xl rounded-[32px] border border-border bg-card p-6 shadow-xl sm:p-8">
             <div className="mb-8">
               <p className="text-[11px] font-black uppercase tracking-[0.25em] text-primary">Creator Armour</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-muted-foreground">Create your offer link</h1>
@@ -245,7 +245,7 @@ export default function CreatorOnboarding() {
                 <Label htmlFor="instagram-handle" className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                   Instagram username
                 </Label>
-                <div className="rounded-2xl border border-slate-200 bg-background px-4 py-1">
+                <div className="rounded-2xl border border-border bg-background px-4 py-1">
                   <div className="flex items-center gap-3">
                     <Instagram className="h-5 w-5 text-muted-foreground" />
                     <Input
@@ -272,9 +272,9 @@ export default function CreatorOnboarding() {
                 </ul>
               </div>
 
-              <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="rounded-[28px] border border-border bg-card p-4 shadow-sm">
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">What brands will see</p>
-                <div className="mt-3 rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] p-4">
+                <div className="mt-3 rounded-[24px] border border-border bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] p-4">
                   <p className="text-xl font-black text-muted-foreground">{name || 'Creator Name'}</p>
                   <p className="mt-1 text-sm font-semibold text-primary">@{normalizedHandle || 'yourusername'}</p>
                   <p className="mt-3 text-sm text-muted-foreground">
@@ -300,7 +300,7 @@ export default function CreatorOnboarding() {
         )}
 
         {step === 'linkReady' && (
-          <div className="mx-auto w-full max-w-2xl rounded-[32px] border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
+          <div className="mx-auto w-full max-w-2xl rounded-[32px] border border-border bg-card p-6 shadow-xl sm:p-8">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary">
                 <CheckCircle2 className="h-7 w-7" />
@@ -314,12 +314,12 @@ export default function CreatorOnboarding() {
               </div>
             </div>
 
-            <div className="mt-8 rounded-[28px] border border-slate-200 bg-background p-5">
+            <div className="mt-8 rounded-[28px] border border-border bg-background p-5">
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">Your link</p>
               <p className="mt-3 break-all text-2xl font-black text-muted-foreground">{collabUrl.replace(/^https?:\/\//, '')}</p>
             </div>
 
-            <div className="mt-6 rounded-[28px] border border-slate-200 bg-white p-5">
+            <div className="mt-6 rounded-[28px] border border-border bg-card p-5">
               <p className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground">This is what brands will see</p>
               <div className="mt-4 rounded-[24px] border border-primary bg-[linear-gradient(180deg,#f8fffc_0%,#eef8f5_100%)] p-5">
                 <p className="text-2xl font-black text-muted-foreground">{name || 'Creator Name'}</p>
@@ -338,26 +338,26 @@ export default function CreatorOnboarding() {
                 <MessageCircleMore className="mr-2 h-5 w-5" />
                 Share on WhatsApp
               </Button>
-              <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-14 rounded-2xl border-slate-300 bg-white text-muted-foreground hover:bg-background">
+              <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-14 rounded-2xl border-border bg-card text-muted-foreground hover:bg-background">
                 <Copy className="mr-2 h-5 w-5" />
                 Copy Link
               </Button>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
+            <div className="mt-8 rounded-2xl border border-border bg-card p-5">
               <p className="text-sm font-bold text-muted-foreground">How brand deals work</p>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-background p-4">
+                <div className="rounded-2xl border border-border bg-background p-4">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">1</p>
                   <p className="mt-2 text-sm font-semibold text-muted-foreground">Brand opens your link</p>
                   <p className="mt-1 text-xs text-muted-foreground">They pick a service and send an offer</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-background p-4">
+                <div className="rounded-2xl border border-border bg-background p-4">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">2</p>
                   <p className="mt-2 text-sm font-semibold text-muted-foreground">You accept & create</p>
                   <p className="mt-1 text-xs text-muted-foreground">Fill price/address only if needed</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-background p-4">
+                <div className="rounded-2xl border border-border bg-background p-4">
                   <p className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">3</p>
                   <p className="mt-2 text-sm font-semibold text-muted-foreground">Submit & get paid</p>
                   <p className="mt-1 text-xs text-muted-foreground">Brand approves, you confirm payment</p>

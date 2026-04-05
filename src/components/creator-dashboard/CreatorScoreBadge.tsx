@@ -61,12 +61,12 @@ const CreatorScoreBadge: React.FC<CreatorScoreBadgeProps> = ({ brandDeals = [] }
               <div className="absolute inset-0 bg-yellow-400/20 blur-xl"></div>
             </div>
             <div>
-              <p className="text-sm text-white/60">Creator Trust Score</p>
+              <p className="text-sm text-foreground/60">Creator Trust Score</p>
               <p className={`text-3xl font-bold ${getScoreColor(score)} flex items-center gap-2`}>
                 {score}
-                <span className="text-white/40 text-lg">/ 100</span>
+                <span className="text-foreground/40 text-lg">/ 100</span>
               </p>
-              <p className="text-xs text-white/50 mt-1">{getScoreLabel(score)}</p>
+              <p className="text-xs text-foreground/50 mt-1">{getScoreLabel(score)}</p>
             </div>
           </div>
           <div className="text-right">
@@ -74,7 +74,7 @@ const CreatorScoreBadge: React.FC<CreatorScoreBadgeProps> = ({ brandDeals = [] }
           </div>
         </div>
 
-        <div className="mt-4 space-y-2 text-xs text-white/60">
+        <div className="mt-4 space-y-2 text-xs text-foreground/60">
           <div className="flex items-center justify-between">
             <span>Based on:</span>
           </div>
@@ -83,11 +83,11 @@ const CreatorScoreBadge: React.FC<CreatorScoreBadgeProps> = ({ brandDeals = [] }
             <span>On-time deliveries</span>
           </div>
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-3 w-3 text-blue-400" />
+            <TrendingUp className="h-3 w-3 text-info" />
             <span>Payment collection consistency</span>
           </div>
           <div className="flex items-center gap-2">
-            <Shield className="h-3 w-3 text-purple-400" />
+            <Shield className="h-3 w-3 text-secondary" />
             <span>Dispute resolution</span>
           </div>
         </div>

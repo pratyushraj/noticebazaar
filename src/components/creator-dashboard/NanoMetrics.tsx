@@ -63,15 +63,15 @@ const NanoMetrics: React.FC<NanoMetricsProps> = ({ brandDeals = [], totalEarning
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+        <TrendingUp className="h-3.5 w-3.5 text-primary" />
         <span>Avg deal size: <span className="text-foreground font-semibold">₹{metrics.avgDealSize.toLocaleString('en-IN')}</span></span>
       </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <CheckCircle className="h-3.5 w-3.5 text-blue-400" />
+        <CheckCircle className="h-3.5 w-3.5 text-info" />
         <span>On-time payment rate: <span className="text-foreground font-semibold">{metrics.onTimeRate}%</span></span>
       </div>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Clock className="h-3.5 w-3.5 text-purple-400" />
+        <Clock className="h-3.5 w-3.5 text-secondary" />
         <span>Avg payment cycle: <span className="text-foreground font-semibold">{metrics.avgPaymentCycle} days</span></span>
       </div>
     </div>

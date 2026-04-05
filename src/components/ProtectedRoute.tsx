@@ -171,9 +171,9 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     if (loaderTimedOut && session) {
       return (
         <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
-          <p className="text-lg text-slate-900 text-center font-semibold mb-2">Taking longer than usual?</p>
-          <p className="text-sm text-slate-600 text-center max-w-md mb-6">You can continue to your dashboard. Your profile will finish loading there.</p>
-          <button onClick={() => navigate('/creator-dashboard', { replace: true })} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg">
+          <p className="text-lg text-muted-foreground text-center font-semibold mb-2">Taking longer than usual?</p>
+          <p className="text-sm text-muted-foreground text-center max-w-md mb-6">You can continue to your dashboard. Your profile will finish loading there.</p>
+          <button onClick={() => navigate('/creator-dashboard', { replace: true })} className="px-6 py-3 bg-primary hover:bg-primary text-foreground rounded-xl font-semibold transition-colors shadow-lg">
             Continue to dashboard
           </button>
         </div>
@@ -190,9 +190,9 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     return (
       <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-4">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Account Setup Issue</h2>
-          <p className="text-slate-600 mb-6">We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.</p>
-          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors">
+          <h2 className="text-2xl font-bold text-muted-foreground mb-4">Account Setup Issue</h2>
+          <p className="text-muted-foreground mb-6">We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary hover:bg-primary text-foreground rounded-lg font-semibold transition-colors">
             Refresh Page
           </button>
         </div>

@@ -34,17 +34,17 @@ const ScanningProgress: React.FC<ScanningProgressProps> = ({
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
       >
-        <Card className="bg-card border-red-500/40">
+        <Card className="bg-card border-destructive/40">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <AlertCircle className="w-6 h-6 text-red-500" />
+              <AlertCircle className="w-6 h-6 text-destructive" />
               <h3 className="text-lg font-semibold text-foreground">Scan Failed</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             {onRetry && (
               <button type="button"
                 onClick={onRetry}
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-secondary hover:bg-secondary text-foreground rounded-lg transition-colors"
               >
                 Retry Scan
               </button>
@@ -64,7 +64,7 @@ const ScanningProgress: React.FC<ScanningProgressProps> = ({
       <Card className="bg-card border-border/40">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <Loader2 className="w-6 h-6 text-purple-500 animate-spin" />
+            <Loader2 className="w-6 h-6 text-secondary animate-spin" />
             <h3 className="text-lg font-semibold text-foreground">Scanning Content...</h3>
           </div>
 
@@ -107,7 +107,7 @@ const ScanningProgress: React.FC<ScanningProgressProps> = ({
                 transition={{ duration: 0.3 }}
                 className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
               >
-                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
               </motion.div>
             </div>
           </div>
@@ -124,10 +124,10 @@ const ScanningProgress: React.FC<ScanningProgressProps> = ({
 
           {/* Matches Found */}
           {matchesFound > 0 && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
               <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-medium text-red-500">
+                <AlertCircle className="w-4 h-4 text-destructive" />
+                <span className="text-sm font-medium text-destructive">
                   {matchesFound} potential match{matchesFound !== 1 ? 'es' : ''} found so far
                 </span>
               </div>

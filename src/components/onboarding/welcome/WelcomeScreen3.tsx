@@ -29,11 +29,11 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
         <IconBubble icon={ShieldCheck} size="lg" color="green" animated />
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-muted-foreground dark:text-foreground">
         Deals That Protect You
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-5 md:mb-8">
+      <p className="text-lg md:text-xl font-semibold text-muted-foreground dark:text-foreground/80 mb-5 md:mb-8">
         No more &quot;bro trust me&quot; partnerships.
       </p>
 
@@ -41,7 +41,7 @@ export const WelcomeScreen3: React.FC<WelcomeScreen3Props> = ({ onNext, onBack }
         {stats.map((stat, index) => (
           <GradientCard key={index} padding="md">
             <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{stat.value}</div>
-            <div className="text-base text-slate-700 dark:text-white/80">{stat.label}</div>
+            <div className="text-base text-muted-foreground dark:text-foreground/80">{stat.label}</div>
           </GradientCard>
         ))}
       </div>

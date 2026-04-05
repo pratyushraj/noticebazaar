@@ -94,7 +94,7 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
             <div className="relative">
               {/* Briefcase Box Icon */}
               <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 rounded-2xl shadow-2xl shadow-blue-500/40 flex items-center justify-center transform rotate-[-8deg] hover:rotate-[-5deg] transition-transform duration-300">
-                <Briefcase className="w-16 h-16 md:w-20 md:h-20 text-white drop-shadow-lg" />
+                <Briefcase className="w-16 h-16 md:w-20 md:h-20 text-foreground drop-shadow-lg" />
               </div>
               
               {/* Decorative Elements */}
@@ -108,7 +108,7 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
               
               {/* Arrow pointing up */}
               <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4">
-                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-blue-400 animate-pulse" />
+                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-info animate-pulse" />
               </div>
             </div>
           </div>
@@ -152,11 +152,11 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-blue-700/40 hover:border-blue-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-info/40 hover:border-info/60 transition-all">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Briefcase className="w-4 h-4 text-blue-500" />
+                <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                  <Briefcase className="w-4 h-4 text-info" />
                 </div>
                 <span className="text-xs text-muted-foreground">Active</span>
               </div>
@@ -209,11 +209,11 @@ const DealsHeader: React.FC<DealsHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-emerald-700/40 hover:border-emerald-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-primary/40 hover:border-primary/60 transition-all">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-xs text-muted-foreground">Revenue</span>
               </div>

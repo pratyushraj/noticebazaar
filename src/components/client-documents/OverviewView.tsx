@@ -79,7 +79,7 @@ const OverviewView: React.FC<OverviewViewProps> = ({
                   onClick={() => setCurrentView({ type: 'category', id: category.id })}
                 >
                   <CardHeader className="flex flex-col items-center justify-center space-y-2 p-0 mb-2 min-h-[80px]">
-                    <CategoryIcon className="h-8 w-8 text-purple-400" />
+                    <CategoryIcon className="h-8 w-8 text-secondary" />
                     <CardTitle className="text-lg font-semibold text-foreground text-center">
                       {category.name}
                     </CardTitle>
@@ -183,7 +183,7 @@ const OverviewView: React.FC<OverviewViewProps> = ({
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0 mb-2">
                   <CardTitle className="text-lg font-semibold text-foreground flex items-center">
-                    <FolderOpen className="h-5 w-5 mr-2 text-blue-400" /> {_case.title}
+                    <FolderOpen className="h-5 w-5 mr-2 text-info" /> {_case.title}
                   </CardTitle>
                   <Badge variant="outline">{_case.status}</Badge>
                 </CardHeader>

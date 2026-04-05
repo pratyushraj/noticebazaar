@@ -29,14 +29,14 @@ const FeatureCell = ({ value, isPopular }: { value: string | boolean, isPopular:
   
   if (typeof value === 'boolean') {
     return (
-      <TableCell className={cn(baseClasses, isPopular && 'bg-secondary/50')}>
+      <TableCell className={cn(baseClasses, isPopular && 'bg-card0')}>
         {value ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-destructive mx-auto" />}
       </TableCell>
     );
   }
   
   return (
-    <TableCell className={cn(baseClasses, isPopular && 'bg-secondary/50')}>
+    <TableCell className={cn(baseClasses, isPopular && 'bg-card0')}>
       {value}
     </TableCell>
   );
@@ -68,7 +68,7 @@ const PricingComparison = () => {
         
         {/* New WhatsApp CTA */}
         <div className="mt-6">
-          <Button asChild className="bg-green-600 hover:bg-green-700 text-white font-semibold text-lg px-6 py-3 shadow-md">
+          <Button asChild className="bg-green-600 hover:bg-green-700 text-foreground font-semibold text-lg px-6 py-3 shadow-md">
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
               <MessageSquare className="h-5 w-5 mr-2" /> Need help choosing a plan?
             </a>
@@ -82,11 +82,11 @@ const PricingComparison = () => {
             <TableRow className="border-border">
               <TableHead className="w-[250px] text-left text-foreground font-bold text-base">Features</TableHead>
               {plans.map((plan, index) => (
-                <TableHead key={plan.name} className={cn("text-center text-foreground font-bold text-base relative", plan.isPopular && 'bg-secondary/50')}>
+                <TableHead key={plan.name} className={cn("text-center text-foreground font-bold text-base relative", plan.isPopular && 'bg-card0')}>
                   {plan.isPopular && <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary px-3 py-1 rounded-full text-xs font-bold text-primary-foreground">MOST POPULAR</div>}
                   <div className="mt-4">{plan.name}</div>
                   <div className="text-2xl font-extrabold mt-1">{plan.price}</div>
-                  <Button variant="link" asChild className="text-xs p-0 h-auto mt-1 text-blue-400 hover:text-blue-300">
+                  <Button variant="link" asChild className="text-xs p-0 h-auto mt-1 text-info hover:text-info">
                     <Link to={plan.link}>View Details</Link>
                   </Button>
                 </TableHead>
@@ -100,7 +100,7 @@ const PricingComparison = () => {
                   <TableCell colSpan={4} className="text-left font-bold text-primary text-sm py-3">{section.category}</TableCell>
                 </TableRow>
                 {section.features.map((feature) => (
-                  <TableRow key={feature.name} className="border-border hover:bg-secondary/50">
+                  <TableRow key={feature.name} className="border-border hover:bg-card0">
                     <TableCell className="font-medium text-foreground">{feature.name}</TableCell>
                     <FeatureCell value={feature.essential} isPopular={false} />
                     <FeatureCell value={feature.growth} isPopular={true} />
@@ -109,11 +109,11 @@ const PricingComparison = () => {
                 ))}
               </React.Fragment>
             ))}
-            <TableRow className="border-border bg-secondary/50">
+            <TableRow className="border-border bg-card0">
               <TableCell className="font-bold text-foreground text-lg">Get Started</TableCell>
               {plans.map((plan) => (
-                <TableCell key={plan.name} className={cn("text-center py-4", plan.isPopular && 'bg-secondary/50')}>
-                  <Button asChild className={cn("w-full", plan.isPopular ? 'cta-primary text-black hover:bg-yellow-500' : 'cta-secondary hover:bg-blue-600')}>
+                <TableCell key={plan.name} className={cn("text-center py-4", plan.isPopular && 'bg-card0')}>
+                  <Button asChild className={cn("w-full", plan.isPopular ? 'cta-primary text-black hover:bg-yellow-500' : 'cta-secondary hover:bg-info')}>
                     <Link to={plan.loginLink}>
                       Choose Plan <ArrowRight className="h-4 w-4 ml-2" />
                     </Link>

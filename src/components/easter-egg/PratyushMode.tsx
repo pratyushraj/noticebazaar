@@ -78,7 +78,7 @@ export const PratyushModeOverlay: React.FC<{ isActive: boolean }> = ({ isActive 
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
-            className="text-6xl font-bold text-white drop-shadow-2xl"
+            className="text-6xl font-bold text-foreground drop-shadow-2xl"
             style={{ fontFamily: 'monospace', textShadow: '0 0 20px #000' }}
           >
             PRATYUSH MODE ACTIVATED

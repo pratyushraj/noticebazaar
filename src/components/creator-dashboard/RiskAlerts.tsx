@@ -135,16 +135,16 @@ const RiskAlerts: React.FC<RiskAlertsProps> = ({ brandDeals = [] }) => {
 
   if (alerts.length === 0) {
     return (
-      <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-white/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-border/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Shield className="h-5 w-5 text-green-400" />
           Smart Alerts
         </CardTitle>
-        <p className="text-xs text-white/60 mt-1">AI-powered insights for your business</p>
+        <p className="text-xs text-foreground/60 mt-1">AI-powered insights for your business</p>
       </CardHeader>
         <CardContent>
-          <p className="text-sm text-white/60 text-center py-4">No risk alerts at this time</p>
+          <p className="text-sm text-foreground/60 text-center py-4">No risk alerts at this time</p>
         </CardContent>
       </Card>
     );
@@ -153,24 +153,24 @@ const RiskAlerts: React.FC<RiskAlertsProps> = ({ brandDeals = [] }) => {
   const getSeverityStyles = (severity: string) => {
     switch (severity) {
       case 'high':
-        return 'bg-red-500/10 border-red-500/30 text-red-400';
+        return 'bg-destructive/10 border-destructive/30 text-destructive';
       case 'medium':
         return 'bg-orange-500/10 border-orange-500/30 text-orange-400';
       case 'low':
         return 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400';
       default:
-        return 'bg-blue-500/10 border-blue-500/30 text-blue-400';
+        return 'bg-info/10 border-info/30 text-info';
     }
   };
 
   return (
-    <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-white/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+    <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-border/5 rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Shield className="h-5 w-5 text-green-400" />
           Smart Alerts
         </CardTitle>
-        <p className="text-xs text-white/60 mt-1">AI-powered insights for your business</p>
+        <p className="text-xs text-foreground/60 mt-1">AI-powered insights for your business</p>
       </CardHeader>
       <CardContent className="space-y-2">
         {alerts.map((alert) => (
@@ -182,8 +182,8 @@ const RiskAlerts: React.FC<RiskAlertsProps> = ({ brandDeals = [] }) => {
               {alert.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white">{alert.title}</p>
-              <p className="text-xs text-white/60 mt-0.5">{alert.description}</p>
+              <p className="text-sm font-semibold text-foreground">{alert.title}</p>
+              <p className="text-xs text-foreground/60 mt-0.5">{alert.description}</p>
             </div>
           </div>
         ))}

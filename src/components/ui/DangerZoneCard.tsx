@@ -31,13 +31,13 @@ export const DangerZoneCard: React.FC<DangerZoneCardProps> = ({
     <BaseCard
       variant="secondary"
       className={cn(
-        "border-red-500/30 bg-red-500/5",
+        "border-destructive/30 bg-destructive/5",
         spacing.cardPadding.secondary,
         className
       )}
     >
       <div className="flex items-start gap-3 mb-4">
-        <AlertTriangle className={cn(iconSizes.md, "text-red-400 flex-shrink-0 mt-0.5")} />
+        <AlertTriangle className={cn(iconSizes.md, "text-destructive flex-shrink-0 mt-0.5")} />
         <div className="flex-1 min-w-0">
           <h3 className={cn(typography.h4, "mb-1")}>
             {title}

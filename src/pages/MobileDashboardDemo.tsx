@@ -57,11 +57,11 @@ interface MobileDashboardProps {
 // Minimal Status Badge for Deal Cards
 const StatusBadge = ({ status }: { status: string }) => {
     const config: Record<string, { bg: string; text: string; label: string }> = {
-        'new': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'NEW' },
-        'pending': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'AWAITING REVIEW' },
-        'negotiating': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'IN NEGOTIATION' },
-        'active': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'ACTIVE' },
-        'completed': { bg: 'bg-slate-100 dark:bg-white/10', text: 'text-slate-700 dark:text-slate-300', label: 'COMPLETED' },
+        'new': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'NEW' },
+        'pending': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'AWAITING REVIEW' },
+        'negotiating': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'IN NEGOTIATION' },
+        'active': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'ACTIVE' },
+        'completed': { bg: 'bg-background dark:bg-secondary/50', text: 'text-muted-foreground dark:text-muted-foreground', label: 'COMPLETED' },
     };
     const normalizeStatus = (status: string) => {
         const s = String(status || '').toLowerCase();
@@ -273,7 +273,7 @@ const SettingsRow = ({ icon, label, subtext, iconBg, hasChevron, isDark, textCol
         onClick={onClick}
         className={cn(
             "flex items-center gap-4 py-4 px-4 active:bg-opacity-50 transition-all cursor-pointer group",
-            isDark ? "active:bg-white/5" : "active:bg-slate-100"
+            isDark ? "active:bg-card" : "active:bg-background"
         )}
     >
         <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shadow-sm shrink-0", iconBg)}>
@@ -291,7 +291,7 @@ const SettingsRow = ({ icon, label, subtext, iconBg, hasChevron, isDark, textCol
 const SettingsGroup = ({ children, isDark }: any) => (
     <div className={cn(
         "mx-4 overflow-hidden rounded-2xl border mb-8",
-        isDark ? "bg-[#1C1C1E] border-[#2C2C2E] divide-[#2C2C2E]" : "bg-white border-[#E5E5EA] divide-[#E5E5EA] shadow-sm",
+        isDark ? "bg-card border-[#2C2C2E] divide-[#2C2C2E]" : "bg-card border-[#E5E5EA] divide-[#E5E5EA] shadow-sm",
         "divide-y"
     )}>
         {children}
@@ -301,7 +301,7 @@ const SettingsGroup = ({ children, isDark }: any) => (
 const SectionHeader = ({ title, isDark }: any) => (
     <p className={cn(
         "px-8 mb-2 text-[13px] font-bold uppercase tracking-wider opacity-40",
-        isDark ? "text-white" : "text-black"
+        isDark ? "text-foreground" : "text-black"
     )}>
         {title}
     </p>
@@ -317,7 +317,7 @@ const ToggleSwitch = ({ active, onToggle, isDark }: any) => (
     >
         <motion.div
             animate={{ x: active ? 22 : 2 }}
-            className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md"
+            className="absolute top-0.5 left-0.5 w-5 h-5 bg-card rounded-full shadow-md"
         />
     </button>
 );
@@ -1038,10 +1038,10 @@ const MobileDashboardDemo = ({
     const isDark = theme === 'dark';
     // Brand-like background base (gradient overlays applied in JSX below)
     const bgColor = isDark ? '#061318' : '#FFFFFF';
-    const cardBgColor = isDark ? 'bg-white/5 backdrop-blur-md' : 'bg-white';
-    const borderColor = isDark ? 'border-white/10' : 'border-slate-200';
-    const secondaryTextColor = isDark ? 'text-white/60' : 'text-slate-500';
-    const textColor = isDark ? 'text-white' : 'text-slate-900';
+    const cardBgColor = isDark ? 'bg-card backdrop-blur-md' : 'bg-card';
+    const borderColor = isDark ? 'border-border' : 'border-border';
+    const secondaryTextColor = isDark ? 'text-foreground/60' : 'text-muted-foreground';
+    const textColor = isDark ? 'text-foreground' : 'text-muted-foreground';
 
     const shouldShowPushPrompt =
         isPushSupported &&
@@ -1469,7 +1469,7 @@ const MobileDashboardDemo = ({
             // Premium letter-based icon
             if (bName) {
                 const char = bName.trim().charAt(0).toUpperCase();
-                let color = 'bg-slate-500'; // Default
+                let color = 'bg-background'; // Default
                 const nameLower = bName.toLowerCase();
                 if (nameLower.includes('boat')) color = 'bg-gradient-to-br from-violet-600 to-indigo-700';
                 else if (nameLower.includes('lenskart')) color = 'bg-gradient-to-br from-emerald-600 to-teal-700';
@@ -1482,15 +1482,15 @@ const MobileDashboardDemo = ({
                 else if (char >= 'U' && char <= 'Z') color = 'bg-gradient-to-br from-pink-500 to-rose-600';
 
                 return (
-                    <div className={cn("w-full h-full flex items-center justify-center text-white font-bold text-3xl shadow-inner transition-colors duration-500 rounded-inherit", color)}>
+                    <div className={cn("w-full h-full flex items-center justify-center text-foreground font-bold text-3xl shadow-inner transition-colors duration-500 rounded-inherit", color)}>
                         {firstLetter}
                     </div>
                 );
             }
 
-            if (catLower.includes('fit') || catLower.includes('gym') || catLower.includes('sport')) return <Dumbbell className="w-5 h-5 text-slate-400" />;
-            if (catLower.includes('cloth') || catLower.includes('fash') || catLower.includes('beauty') || catLower.includes('skin')) return <Shirt className="w-5 h-5 text-slate-400" />;
-            return <Target className="w-5 h-5 text-slate-400" />;
+            if (catLower.includes('fit') || catLower.includes('gym') || catLower.includes('sport')) return <Dumbbell className="w-5 h-5 text-muted-foreground" />;
+            if (catLower.includes('cloth') || catLower.includes('fash') || catLower.includes('beauty') || catLower.includes('skin')) return <Shirt className="w-5 h-5 text-muted-foreground" />;
+            return <Target className="w-5 h-5 text-muted-foreground" />;
         };
 
         const normalizeLogoUrl = (value?: string) => {
@@ -1511,7 +1511,7 @@ const MobileDashboardDemo = ({
             return (
                 <div className="relative w-full h-full flex items-center justify-center">
                     {isSvg && (
-                        <div className={cn("absolute inset-0 z-0", isDark ? "bg-white/90" : "bg-white")} />
+                        <div className={cn("absolute inset-0 z-0", isDark ? "bg-secondary/90" : "bg-card")} />
                     )}
                     <img alt=""
                         src={safeLogo}
@@ -1539,7 +1539,7 @@ const MobileDashboardDemo = ({
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setActiveSettingsPage(null)}
-                    className={cn("p-2 rounded-full transition-all", isDark ? "bg-[#1C1C1E] text-white" : "bg-white text-black shadow-sm")}
+                    className={cn("p-2 rounded-full transition-all", isDark ? "bg-card text-foreground" : "bg-card text-black shadow-sm")}
                 >
                     <ChevronRight className="w-5 h-5 rotate-180" />
                 </motion.button>
@@ -1571,32 +1571,32 @@ const MobileDashboardDemo = ({
                                 <div className="p-4 space-y-4">
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Full Name</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} value={profileFormData.full_name || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))} />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-border text-foreground" : "border-black/5 text-black")} value={profileFormData.full_name || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, full_name: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Email Address</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} value={profileFormData.email || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, email: e.target.value }))} />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-border text-foreground" : "border-black/5 text-black")} value={profileFormData.email || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, email: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Phone Number</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} value={profileFormData.phone || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))} />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-border text-foreground" : "border-black/5 text-black")} value={profileFormData.phone || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, phone: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Bio / Headline</p>
                                         <textarea
-                                            className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px] resize-none h-20", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}
+                                            className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px] resize-none h-20", isDark ? "border-border text-foreground" : "border-black/5 text-black")}
                                             value={profileFormData.bio || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, bio: e.target.value }))}
                                         />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Address</p>
-                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="House, Street, Area" value={profileFormData.address || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))} />
+                                        <input className={cn("w-full bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-border text-foreground" : "border-black/5 text-black")} placeholder="House, Street, Area" value={profileFormData.address || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, address: e.target.value }))} />
                                     </div>
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Pincode / City</p>
                                         <div className="flex gap-2">
-                                            <input className={cn("w-24 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="Pincode" value={profileFormData.pincode || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, pincode: e.target.value }))} />
-                                            <input className={cn("flex-1 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-white/10 text-white" : "border-black/5 text-black")} placeholder="City" value={profileFormData.city || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, city: e.target.value }))} />
+                                            <input className={cn("w-24 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-border text-foreground" : "border-black/5 text-black")} placeholder="Pincode" value={profileFormData.pincode || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, pincode: e.target.value }))} />
+                                            <input className={cn("flex-1 bg-transparent border-b py-2 outline-none font-medium text-[16px]", isDark ? "border-border text-foreground" : "border-black/5 text-black")} placeholder="City" value={profileFormData.city || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, city: e.target.value }))} />
                                         </div>
                                     </div>
                                 </div>
@@ -1614,14 +1614,14 @@ const MobileDashboardDemo = ({
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Media Kit URL</p>
                                         <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                            <Link2 className="w-4 h-4 text-blue-500" />
+                                            <Link2 className="w-4 h-4 text-info" />
                                             <input className="bg-transparent outline-none font-medium text-[16px] flex-1" placeholder="https://..." value={profileFormData.media_kit_url || ''} onChange={e => setProfileFormData((p: any) => ({ ...p, media_kit_url: e.target.value }))} />
                                         </div>
                                     </div>
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Profile'}
                                 </button>
                             </div>
@@ -1633,22 +1633,22 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Public Portfolio" />
                         <div className="px-4 space-y-6">
-                            <div className={cn("p-6 rounded-[2.5rem] border text-center relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
-                                <div className="w-20 h-20 bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                                    <Globe className="w-10 h-10 text-blue-500" />
+                            <div className={cn("p-6 rounded-[2.5rem] border text-center relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
+                                <div className="w-20 h-20 bg-info/10 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                                    <Globe className="w-10 h-10 text-info" />
                                 </div>
                                 <h3 className={cn("text-xl font-bold tracking-tight mb-1", textColor)}>creatorarmour.com/{username}</h3>
                                 <p className={cn("text-[13px] opacity-40 mb-6", textColor)}>Your public intake storefront</p>
                                 <div className="flex gap-3">
-                                    <button type="button" onClick={handleCopyStorefront} className="flex-1 bg-blue-600 text-white font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
-                                    <button type="button" onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-white/10 text-white" : "border-black/5 text-black")}>Preview</button>
+                                    <button type="button" onClick={handleCopyStorefront} className="flex-1 bg-info text-foreground font-bold py-3.5 rounded-2xl text-[13px] active:scale-95 transition-all">Copy</button>
+                                    <button type="button" onClick={() => window.open(`https://creatorarmour.com/${username}`, '_blank')} className={cn("flex-1 font-bold py-3.5 rounded-2xl text-[13px] border active:scale-95 transition-all", isDark ? "border-border text-foreground" : "border-black/5 text-black")}>Preview</button>
                                 </div>
                             </div>
                             <SectionHeader title="Storefront Controls" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
                                 <SettingsRow icon={<Info />} iconBg="bg-indigo-500" label="Bio & Headline" subtext="Your creator pitch" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
-                                <SettingsRow icon={<Star />} iconBg="bg-amber-400" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron onClick={() => toast("Integration coming soon!")} />
-                                <SettingsRow icon={<Link2 />} iconBg="bg-blue-500" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
+                                <SettingsRow icon={<Star />} iconBg="bg-warning" label="Featured Content" subtext="Showcase high-performing reels" isDark={isDark} textColor={textColor} hasChevron onClick={() => toast("Integration coming soon!")} />
+                                <SettingsRow icon={<Link2 />} iconBg="bg-info" label="Media Kit" subtext="Connect your external deck" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
                             </SettingsGroup>
                         </div>
                     </motion.div>
@@ -1664,7 +1664,7 @@ const MobileDashboardDemo = ({
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Account holder name</p>
                                         <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                            <Landmark className="w-4 h-4 text-blue-500" />
+                                            <Landmark className="w-4 h-4 text-info" />
                                             <input
                                                 className="bg-transparent outline-none font-medium text-[16px] flex-1"
                                                 placeholder="Your payout name"
@@ -1676,10 +1676,10 @@ const MobileDashboardDemo = ({
                                     <div className="space-y-1.5">
                                         <div className="flex items-center justify-between gap-3">
                                             <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>UPI ID</p>
-                                            <span className="text-[10px] font-black text-emerald-500">PRIMARY</span>
+                                            <span className="text-[10px] font-black text-primary">PRIMARY</span>
                                         </div>
                                         <div className="flex items-center gap-2 border-b py-2" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
-                                            <Smartphone className="w-4 h-4 text-emerald-500" />
+                                            <Smartphone className="w-4 h-4 text-primary" />
                                             <input
                                                 className="bg-transparent outline-none font-medium text-[16px] flex-1"
                                                 placeholder="yourname@upi"
@@ -1696,7 +1696,7 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
                             <div className="px-4 pt-4">
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save Payout Details'}
                                 </button>
                             </div>
@@ -1708,23 +1708,23 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Armour Verification" />
                         <div className="px-4 space-y-6">
-                            <div className={cn("p-8 rounded-[2.5rem] relative overflow-hidden", isDark ? "bg-[#1C1C1E] border border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
-                                <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-blue-500/30">
-                                    <ShieldCheck className="w-9 h-9 text-white" />
+                            <div className={cn("p-8 rounded-[2.5rem] relative overflow-hidden", isDark ? "bg-card border border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
+                                <div className="w-16 h-16 bg-info rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-blue-500/30">
+                                    <ShieldCheck className="w-9 h-9 text-foreground" />
                                 </div>
                                 <h3 className={cn("text-2xl font-black tracking-tight mb-2", textColor)}>Verified Creator</h3>
                                 <p className={cn("text-sm opacity-50 leading-relaxed mb-6", textColor)}>Your identity and content ownership are secured. Brands see your 'Verified' badge, increasing trust.</p>
                                 <div className="flex flex-col gap-2">
-                                    <div className={cn("flex items-center gap-3 p-3 rounded-xl", isDark ? "bg-white/5" : "bg-slate-50")}>
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                    <div className={cn("flex items-center gap-3 p-3 rounded-xl", isDark ? "bg-card" : "bg-background")}>
+                                        <CheckCircle2 className="w-4 h-4 text-primary" />
                                         <span className={cn("text-xs font-bold", textColor)}>Identity Secured</span>
                                     </div>
-                                    <div className={cn("flex items-center gap-3 p-3 rounded-xl", isDark ? "bg-white/5" : "bg-slate-50")}>
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                    <div className={cn("flex items-center gap-3 p-3 rounded-xl", isDark ? "bg-card" : "bg-background")}>
+                                        <CheckCircle2 className="w-4 h-4 text-primary" />
                                         <span className={cn("text-xs font-bold", textColor)}>Instagram Authenticated</span>
                                     </div>
                                 </div>
-                                <ShieldCheck className="absolute -right-10 -bottom-10 w-48 h-48 opacity-[0.03] text-blue-500" />
+                                <ShieldCheck className="absolute -right-10 -bottom-10 w-48 h-48 opacity-[0.03] text-info" />
                             </div>
                         </div>
                     </motion.div>
@@ -1734,24 +1734,24 @@ const MobileDashboardDemo = ({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.2} onDragEnd={(e, { offset, velocity }) => { if (offset.x > 50 || velocity.x > 500) { triggerHaptic(); setActiveSettingsPage(null); } }} className="pb-20 touch-pan-y">
                         <PageHeader title="Earnings & History" />
                         <div className="px-4 space-y-6">
-                            <div className={cn("p-6 rounded-[2.5rem] bg-slate-900 border border-white/10 text-white")}>
+                            <div className={cn("p-6 rounded-[2.5rem] bg-background border border-border text-foreground")}>
                                 <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-50 mb-4">Total Revenue Generated</p>
                                 <div className="text-4xl font-black font-outfit mb-6">₹{allTimeRevenue.toLocaleString()}</div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                    <div className="bg-card p-4 rounded-2xl border border-border/5">
                                         <p className="text-[10px] font-bold opacity-40 mb-1">THIS YEAR</p>
                                         <p className="text-lg font-bold">₹{yearlyRevenue.toLocaleString()}</p>
                                     </div>
-                                    <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                    <div className="bg-card p-4 rounded-2xl border border-border/5">
                                         <p className="text-[10px] font-bold opacity-40 mb-1">LAST MONTH</p>
-                                        <p className="text-lg font-bold text-emerald-400">₹{monthlyRevenue.toLocaleString()}</p>
+                                        <p className="text-lg font-bold text-primary">₹{monthlyRevenue.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>
                             <SectionHeader title="Financial Reports" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
-                                <SettingsRow icon={<FileText />} iconBg="bg-blue-500" label="Tax Invoices (GST)" subtext="Download monthly summaries" isDark={isDark} textColor={textColor} hasChevron />
-                                <SettingsRow icon={<Download />} iconBg="bg-emerald-500" label="Payout Statements" subtext="Detailed breakdown of fees" isDark={isDark} textColor={textColor} hasChevron />
+                                <SettingsRow icon={<FileText />} iconBg="bg-info" label="Tax Invoices (GST)" subtext="Download monthly summaries" isDark={isDark} textColor={textColor} hasChevron />
+                                <SettingsRow icon={<Download />} iconBg="bg-primary" label="Payout Statements" subtext="Detailed breakdown of fees" isDark={isDark} textColor={textColor} hasChevron />
                             </SettingsGroup>
                         </div>
                     </motion.div>
@@ -1762,10 +1762,10 @@ const MobileDashboardDemo = ({
                         <PageHeader title="Collab Link Performance" />
                         <div className="px-4 space-y-6">
                             {/* Performance Header */}
-                            <div className={cn("p-6 rounded-[2.5rem] border relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm")}>
+                            <div className={cn("p-6 rounded-[2.5rem] border relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm")}>
                                 <div className="flex items-center justify-between mb-6">
-                                    <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center">
-                                        <TrendingUp className="w-6 h-6 text-blue-500" />
+                                    <div className="w-12 h-12 bg-info/10 rounded-2xl flex items-center justify-center">
+                                        <TrendingUp className="w-6 h-6 text-info" />
                                     </div>
                                     <div className="text-right">
                                         <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1", textColor)}>Overall Score</p>
@@ -1784,7 +1784,7 @@ const MobileDashboardDemo = ({
                                             toast.success('Link copied');
                                             triggerHaptic();
                                         }}
-                                        className="bg-blue-600 text-white font-black py-3 rounded-xl text-[11px] active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20"
+                                        className="bg-info text-foreground font-black py-3 rounded-xl text-[11px] active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20"
                                     >
                                         Copy Link
                                     </button>
@@ -1793,7 +1793,7 @@ const MobileDashboardDemo = ({
                                             triggerHaptic();
                                             window.open(`/${username}`, '_blank');
                                         }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-slate-500 uppercase tracking-widest", isDark ? "border-white/10" : "border-black/5")}
+                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all text-muted-foreground uppercase tracking-widest", isDark ? "border-border" : "border-black/5")}
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" /> Preview
                                     </button>
@@ -1804,7 +1804,7 @@ const MobileDashboardDemo = ({
                                             window.open(`https://wa.me/?text=${message}`, '_blank');
                                             triggerHaptic();
                                         }}
-                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-100 text-emerald-600")}
+                                        className={cn("flex items-center justify-center gap-2 font-bold py-3 rounded-xl text-[11px] border active:scale-95 transition-all uppercase tracking-widest", isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-primary border-primary text-primary")}
                                     >
                                         <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
                                     </button>
@@ -1825,7 +1825,7 @@ const MobileDashboardDemo = ({
                                 <SectionHeader title="Status" isDark={isDark} />
                                 <SettingsGroup isDark={isDark}>
                                     <SettingsRow
-                                        icon={<CheckCircle2 />} iconBg="bg-emerald-500"
+                                        icon={<CheckCircle2 />} iconBg="bg-primary"
                                         label="Open for Collaborations"
                                         subtext={profileFormData.open_to_collabs ? "Brands can send you offers" : "Profile currently hidden from search"}
                                         isDark={isDark} textColor={textColor}
@@ -1840,19 +1840,19 @@ const MobileDashboardDemo = ({
                                 </SettingsGroup>
 
                                 {/* Optimization Wizard - Moved to Collab Link */}
-                            <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-[2.5rem] p-6 border border-blue-500/20 relative overflow-hidden group">
+                            <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-[2.5rem] p-6 border border-info/20 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
-                                    <Zap className="w-16 h-16 text-blue-500 fill-blue-500" />
+                                    <Zap className="w-16 h-16 text-info fill-blue-500" />
                                 </div>
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-9 h-9 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                            <Zap className="w-5 h-5 text-white fill-white" />
+                                        <div className="w-9 h-9 rounded-2xl bg-info flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                            <Zap className="w-5 h-5 text-foreground fill-white" />
                                         </div>
                                         <h3 className={cn("font-black text-[17px] tracking-tight", textColor)}>Optimization Wizard</h3>
                                     </div>
                                     <p className={cn("text-[13px] font-medium opacity-60 mb-5 leading-relaxed", textColor)}>
-                                        Your profile conversion is currently <span className="text-blue-500 font-black">Good</span>. 
+                                        Your profile conversion is currently <span className="text-info font-black">Good</span>. 
                                         Let AI analyze your bio and historical rates to boost brand appeal.
                                     </p>
                                     <div className="flex flex-wrap gap-2.5">
@@ -1865,7 +1865,7 @@ const MobileDashboardDemo = ({
                                                     error: 'Analysis failed'
                                                 });
                                             }}
-                                            className={cn("flex-1 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95", isDark ? "bg-white/5 border border-white/10 text-white" : "bg-white border border-slate-200 text-slate-900 shadow-sm")}
+                                            className={cn("flex-1 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95", isDark ? "bg-card border border-border text-foreground" : "bg-card border border-border text-muted-foreground shadow-sm")}
                                         >
                                             Enhance Bio
                                         </button>
@@ -1878,7 +1878,7 @@ const MobileDashboardDemo = ({
                                                     error: 'Pricing analysis failed'
                                                 });
                                             }}
-                                            className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl py-3.5 text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                                            className="flex-1 bg-info hover:bg-info text-foreground rounded-2xl py-3.5 text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95"
                                         >
                                             Smart Rates
                                         </button>
@@ -1908,13 +1908,13 @@ const MobileDashboardDemo = ({
                                         className={cn(
                                             "p-4 rounded-2xl border text-left transition-all active:scale-[0.98]",
                                             profileFormData.typical_deal_size === tier.key
-                                                ? "bg-blue-600 border-blue-600 text-white"
-                                                : (isDark ? "bg-[#1C1C1E] border-white/5 text-white" : "bg-white border-slate-100 text-black")
+                                                ? "bg-info border-info text-foreground"
+                                                : (isDark ? "bg-card border-border/5 text-foreground" : "bg-card border-border text-black")
                                         )}
                                     >
                                         <div className="flex justify-between items-center">
                                             <p className="font-bold text-sm">{tier.title}</p>
-                                            <p className={cn("text-xs font-black", profileFormData.typical_deal_size === tier.key ? "text-white/80" : "text-blue-500")}>{tier.range}</p>
+                                            <p className={cn("text-xs font-black", profileFormData.typical_deal_size === tier.key ? "text-foreground/80" : "text-info")}>{tier.range}</p>
                                         </div>
                                         <p className={cn("text-[10px] uppercase tracking-wider mt-1 opacity-60")}>{tier.sub}</p>
                                     </button>
@@ -1930,8 +1930,8 @@ const MobileDashboardDemo = ({
                                         className={cn(
                                             "flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all",
                                             (profileFormData.collaboration_preference || 'Hybrid').toLowerCase() === type.toLowerCase()
-                                                ? "bg-slate-900 border-slate-900 text-white"
-                                                : (isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-500")
+                                                ? "bg-background border-border text-foreground"
+                                                : (isDark ? "bg-card border-border text-foreground" : "bg-card border-border text-muted-foreground")
                                         )}
                                     >
                                         {type}
@@ -1946,11 +1946,11 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Content Niches</p>
                                         <div className="flex flex-wrap gap-2 pt-2">
                                             {(profileFormData.content_niches || ['Fashion', 'Tech', 'Lifestyle']).map((niche: string) => (
-                                                <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-white/5 border-white/10 text-white" : "bg-blue-50 border-blue-100 text-blue-600")}>
+                                                <div key={niche} className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border", isDark ? "bg-card border-border text-foreground" : "bg-info border-info text-info")}>
                                                     {niche}
                                                 </div>
                                             ))}
-                                            <button type="button" className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-white/20 text-white/40" : "border-black/10 text-black/40")}>
+                                            <button type="button" className={cn("px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border border-dashed", isDark ? "border-border text-foreground/40" : "border-black/10 text-black/40")}>
                                                 + ADD
                                             </button>
                                         </div>
@@ -1959,7 +1959,7 @@ const MobileDashboardDemo = ({
                             </SettingsGroup>
 
                             {/* Audience Demographics */}
-                            <SettingsGroup title="Audience Demographics" icon={<Target className="w-5 h-5 text-purple-500" />} isDark={isDark}>
+                            <SettingsGroup title="Audience Demographics" icon={<Target className="w-5 h-5 text-secondary" />} isDark={isDark}>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
@@ -1967,7 +1967,7 @@ const MobileDashboardDemo = ({
                                             <input
                                                 type="text"
                                                 placeholder="e.g. 70% Women"
-                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
+                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
                                                 value={profileFormData.audience_gender_split}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, audience_gender_split: e.target.value })}
                                             />
@@ -1977,7 +1977,7 @@ const MobileDashboardDemo = ({
                                             <input
                                                 type="text"
                                                 placeholder="e.g. 18-24"
-                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
+                                                className={cn("w-full px-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
                                                 value={profileFormData.audience_age_range}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, audience_age_range: e.target.value })}
                                             />
@@ -1987,7 +1987,7 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Top Cities</p>
                                         <div className="flex flex-wrap gap-2 mb-3">
                                             {(profileFormData.top_cities || []).map((city: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-purple-500/10 border-purple-500/20 text-purple-300 shadow-[0_0_10px_rgba(168,85,247,0.1)]" : "bg-purple-50 border-purple-100 text-purple-600")}>
+                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-secondary/50 border-purple-500/20 text-secondary shadow-[0_0_10px_rgba(168,85,247,0.1)]" : "bg-secondary border-purple-100 text-secondary")}>
                                                     {city}
                                                     <X className="w-3 h-3 cursor-pointer opacity-60 hover:opacity-100 transition-opacity" onClick={() => {
                                                         const newCities = [...profileFormData.top_cities];
@@ -1998,11 +1998,11 @@ const MobileDashboardDemo = ({
                                             ))}
                                         </div>
                                         <div className="relative group">
-                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
+                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
                                             <input
                                                 type="text"
                                                 placeholder="Add city & press enter..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
+                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         const target = e.target as HTMLInputElement;
@@ -2013,19 +2013,19 @@ const MobileDashboardDemo = ({
                                                     }
                                                 }}
                                             />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 opacity-50 group-focus-within:opacity-100 group-focus-within:bg-emerald-500/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-emerald-400" />
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
+                                                <Plus className="w-4 h-4 group-focus-within:text-primary" />
                                             </div>
                                         </div>
                                     </div>
                                     <div className="space-y-2 mt-2">
                                         <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Primary Language</p>
                                         <div className="relative group">
-                                            <Languages className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
+                                            <Languages className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
                                             <input
                                                 type="text"
                                                 placeholder="e.g. Hindi, English"
-                                                className={cn("w-full pl-11 pr-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
+                                                className={cn("w-full pl-11 pr-4 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
                                                 value={profileFormData.primary_audience_language}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, primary_audience_language: e.target.value })}
                                             />
@@ -2035,13 +2035,13 @@ const MobileDashboardDemo = ({
                             </SettingsGroup>
 
                             {/* Public Portfolio */}
-                            <SettingsGroup title="Public Portfolio" icon={<Search className="w-5 h-5 text-blue-500" />} isDark={isDark}>
+                            <SettingsGroup title="Public Portfolio" icon={<Search className="w-5 h-5 text-info" />} isDark={isDark}>
                                     <div className="space-y-2">
                                         <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Featured Work Gallery</p>
                                         <p className={cn("text-[10px] font-semibold opacity-60 mb-2 pl-1", textColor)}>Add links to your top-performing Reels or Posts</p>
                                         <div className="flex flex-col gap-2 mb-3">
                                             {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-2 px-3 py-2.5 rounded-[1rem] border text-[11px] font-black w-full shadow-sm backdrop-blur-sm", isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-blue-50 border-blue-100 text-blue-600")}>
+                                                <div key={idx} className={cn("flex items-center gap-2 px-3 py-2.5 rounded-[1rem] border text-[11px] font-black w-full shadow-sm backdrop-blur-sm", isDark ? "bg-info/10 border-info/20 text-info shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-info border-info text-info")}>
                                                     <Link2 className="w-4 h-4 shrink-0 opacity-70" />
                                                     <span className="truncate flex-1 mt-0.5">{link}</span>
                                                     <X className="w-4 h-4 cursor-pointer shrink-0 opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
@@ -2053,11 +2053,11 @@ const MobileDashboardDemo = ({
                                             ))}
                                         </div>
                                         <div className="relative group">
-                                            <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
+                                            <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
                                             <input
                                                 type="url"
                                                 placeholder="https://instagram.com/reel/..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
+                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         const target = e.target as HTMLInputElement;
@@ -2068,8 +2068,8 @@ const MobileDashboardDemo = ({
                                                     }
                                                 }}
                                             />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 opacity-50 group-focus-within:opacity-100 group-focus-within:bg-emerald-500/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-emerald-400" />
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
+                                                <Plus className="w-4 h-4 group-focus-within:text-primary" />
                                             </div>
                                         </div>
                                     </div>
@@ -2078,7 +2078,7 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Past Brands</p>
                                         <div className="flex flex-wrap gap-2 mb-3">
                                             {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-white/5 border-white/10 text-white shadow-sm" : "bg-slate-100 border-slate-200 text-slate-800")}>
+                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-card border-border text-foreground shadow-sm" : "bg-background border-border text-muted-foreground")}>
                                                     {brand}
                                                     <X className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
                                                         const newBrands = [...profileFormData.past_brands];
@@ -2089,11 +2089,11 @@ const MobileDashboardDemo = ({
                                             ))}
                                         </div>
                                         <div className="relative group">
-                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-emerald-400 transition-colors" />
+                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
                                             <input
                                                 type="text"
                                                 placeholder="Add past brand & press enter..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-white/[0.08] text-white focus:border-emerald-500/50 focus:bg-[#0B0F14] shadow-inner hover:border-white/20" : "bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 shadow-sm")}
+                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') {
                                                         const target = e.target as HTMLInputElement;
@@ -2104,15 +2104,15 @@ const MobileDashboardDemo = ({
                                                     }
                                                 }}
                                             />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 opacity-50 group-focus-within:opacity-100 group-focus-within:bg-emerald-500/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-emerald-400" />
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
+                                                <Plus className="w-4 h-4 group-focus-within:text-primary" />
                                             </div>
                                         </div>
                                     </div>
                             </SettingsGroup>
 
                             {/* Performance & Availability */}
-                            <SettingsGroup title="Performance & Availability" icon={<Zap className="w-5 h-5 text-amber-500" />} isDark={isDark}>
+                            <SettingsGroup title="Performance & Availability" icon={<Zap className="w-5 h-5 text-warning" />} isDark={isDark}>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1.5">
@@ -2120,7 +2120,7 @@ const MobileDashboardDemo = ({
                                             <input
                                                 type="number"
                                                 placeholder="e.g. 5"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                                 value={profileFormData.active_brand_collabs_month}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, active_brand_collabs_month: e.target.value })}
                                             />
@@ -2130,7 +2130,7 @@ const MobileDashboardDemo = ({
                                             <input
                                                 type="number"
                                                 placeholder="e.g. 12"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                                 value={profileFormData.past_brand_count}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, past_brand_count: e.target.value })}
                                             />
@@ -2141,7 +2141,7 @@ const MobileDashboardDemo = ({
                                         <input
                                             type="text"
                                             placeholder="e.g. 3-4 times / week"
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                             value={profileFormData.posting_frequency}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, posting_frequency: e.target.value })}
                                         />
@@ -2152,7 +2152,7 @@ const MobileDashboardDemo = ({
                                             <input
                                                 type="number"
                                                 placeholder="Avg Views"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                                 value={profileFormData.avg_reel_views_manual}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, avg_reel_views_manual: e.target.value })}
                                             />
@@ -2162,7 +2162,7 @@ const MobileDashboardDemo = ({
                                             <input
                                                 type="number"
                                                 placeholder="Avg Likes"
-                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                                className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                                 value={profileFormData.avg_likes_manual}
                                                 onChange={(e) => setProfileFormData({ ...profileFormData, avg_likes_manual: e.target.value })}
                                             />
@@ -2172,13 +2172,13 @@ const MobileDashboardDemo = ({
                             </SettingsGroup>
 
                             {/* Trust & Professional Notes */}
-                            <SettingsGroup title="Professional Collab Notes" icon={<ShieldCheck className="w-5 h-5 text-emerald-500" />} isDark={isDark}>
+                            <SettingsGroup title="Professional Collab Notes" icon={<ShieldCheck className="w-5 h-5 text-primary" />} isDark={isDark}>
                                 <div className="space-y-4">
                                     <div className="space-y-1.5">
                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-40", textColor)}>Audience Relevance Note</p>
                                         <textarea
                                             placeholder="e.g. Strong relevance for North India beauty enthusiasts."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold min-h-[80px]", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold min-h-[80px]", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                             value={profileFormData.collab_audience_relevance_note}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, collab_audience_relevance_note: e.target.value })}
                                         />
@@ -2188,7 +2188,7 @@ const MobileDashboardDemo = ({
                                         <input
                                             type="text"
                                             placeholder="e.g. Brands receive response same day"
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                             value={profileFormData.collab_response_behavior_note}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, collab_response_behavior_note: e.target.value })}
                                         />
@@ -2198,7 +2198,7 @@ const MobileDashboardDemo = ({
                                         <input
                                             type="text"
                                             placeholder="e.g. No DMs required — I reply here."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                             value={profileFormData.collab_cta_dm_note}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_dm_note: e.target.value })}
                                         />
@@ -2208,7 +2208,7 @@ const MobileDashboardDemo = ({
                                         <input
                                             type="text"
                                             placeholder="e.g. Creator notified instantly."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                             value={profileFormData.collab_cta_trust_note}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_trust_note: e.target.value })}
                                         />
@@ -2218,7 +2218,7 @@ const MobileDashboardDemo = ({
                                         <input
                                             type="text"
                                             placeholder="e.g. Direct collaboration — no middle agency."
-                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-100")}
+                                            className={cn("w-full px-4 py-3 rounded-2xl border text-sm font-bold", isDark ? "bg-card border-border text-foreground" : "bg-background border-border")}
                                             value={profileFormData.collab_cta_platform_note}
                                             onChange={(e) => setProfileFormData({ ...profileFormData, collab_cta_platform_note: e.target.value })}
                                         />
@@ -2226,43 +2226,43 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
 
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
                                     {isSavingProfile ? 'Saving...' : 'Save All Collab Settings'}
                                 </button>
                         {/* Analytics Grid */}
                             <SectionHeader title="Performance Metrics" isDark={isDark} />
                             <div className="grid grid-cols-3 gap-3">
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
+                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Views</p>
                                     <div className={cn("text-2xl font-black font-outfit", textColor)}>274</div>
                                     <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-emerald-400" />
-                                        <span className="text-[10px] font-bold text-emerald-400">+12%</span>
+                                        <TrendingUp className="w-3 h-3 text-primary" />
+                                        <span className="text-[10px] font-bold text-primary">+12%</span>
                                     </div>
                                 </div>
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
+                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Requests</p>
                                     <div className={cn("text-2xl font-black font-outfit", textColor)}>14</div>
                                     <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-emerald-400" />
-                                        <span className="text-[10px] font-bold text-emerald-400">+8%</span>
+                                        <TrendingUp className="w-3 h-3 text-primary" />
+                                        <span className="text-[10px] font-bold text-primary">+8%</span>
                                     </div>
                                 </div>
-                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
+                                <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 mb-2", textColor)}>Conv.</p>
                                     <div className={cn("text-2xl font-black font-outfit", textColor)}>5.1%</div>
                                     <div className="flex items-center gap-1 mt-1">
-                                        <TrendingUp className="w-3 h-3 text-amber-500 rotate-180" />
-                                        <span className="text-[10px] font-bold text-amber-500">-2%</span>
+                                        <TrendingUp className="w-3 h-3 text-warning rotate-180" />
+                                        <span className="text-[10px] font-bold text-warning">-2%</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Weekly Trend Chart (SVG) */}
-                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
+                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
                                 <div className="flex items-center justify-between mb-6">
                                     <h4 className={cn("text-sm font-black uppercase tracking-wider opacity-40", textColor)}>Weekly Traffic</h4>
-                                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400")}>Last 7 Days</span>
+                                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary")}>Last 7 Days</span>
                                 </div>
                                 <div className="h-24 w-full relative">
                                     <svg viewBox="0 0 100 40" className="w-full h-full">
@@ -2292,41 +2292,41 @@ const MobileDashboardDemo = ({
 
                             {/* Conversion insights */}
                             <SectionHeader title="Conversion Funnel" isDark={isDark} />
-                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-white/5 border-white/5" : "bg-white border-slate-100 shadow-sm")}>
+                            <div className={cn("p-6 rounded-[2.5rem] border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
                                 <div className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center"><Eye className="w-4 h-4 text-blue-500" /></div>
+                                            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center"><Eye className="w-4 h-4 text-info" /></div>
                                             <p className={cn("text-sm font-bold", textColor)}>Profile Views</p>
                                         </div>
                                         <p className={cn("text-sm font-black font-outfit", textColor)}>843</p>
                                     </div>
                                     <div className="flex items-center justify-between relative">
-                                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0.5 h-12 bg-slate-500/10" />
+                                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0.5 h-12 bg-background/10" />
                                         <div className="flex items-center gap-3 ml-2">
-                                            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"><Handshake className="w-4 h-4 text-amber-500" /></div>
+                                            <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center"><Handshake className="w-4 h-4 text-warning" /></div>
                                             <p className={cn("text-sm font-bold", textColor)}>Started Form</p>
                                         </div>
                                         <p className={cn("text-sm font-black font-outfit", textColor)}>92</p>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-emerald-500" /></div>
+                                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"><CheckCircle2 className="w-4 h-4 text-primary" /></div>
                                             <p className={cn("text-sm font-bold", textColor)}>Completed Deals</p>
                                         </div>
                                         <p className={cn("text-sm font-black font-outfit", textColor)}>14</p>
                                     </div>
                                 </div>
-                                <div className={cn("mt-6 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-center gap-2")}>
-                                    <Zap className="w-3.5 h-3.5 text-amber-500" />
-                                    <p className="text-[10px] font-black tracking-tight text-amber-600">Brands checking profile but not converting. Try adding Audience Stats.</p>
+                                <div className={cn("mt-6 p-3 rounded-xl bg-warning/5 border border-warning/10 flex items-center gap-2")}>
+                                    <Zap className="w-3.5 h-3.5 text-warning" />
+                                    <p className="text-[10px] font-black tracking-tight text-warning">Brands checking profile but not converting. Try adding Audience Stats.</p>
                                 </div>
                             </div>
 
                             {/* Optimization Tips */}
                             <SectionHeader title="Boost Your Conversions" isDark={isDark} />
                             <div className="grid grid-cols-1 gap-3">
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
+                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
                                     <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0">
                                         <BarChart3 className="w-5 h-5 text-indigo-500" />
                                     </div>
@@ -2334,27 +2334,27 @@ const MobileDashboardDemo = ({
                                         <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Add Audience Stats</p>
                                         <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Brands verify niche alignment via demographics</p>
                                     </div>
-                                    <span className="text-[10px] font-black text-blue-500">+12% SCORE</span>
+                                    <span className="text-[10px] font-black text-info">+12% SCORE</span>
                                 </div>
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
-                                    <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <Star className="w-5 h-5 text-emerald-500" />
+                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
+                                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                                        <Star className="w-5 h-5 text-primary" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Link Top Collaborations</p>
                                         <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Showcase high-performing past brand deals</p>
                                     </div>
-                                    <span className="text-[10px] font-black text-blue-500">+8% SCORE</span>
+                                    <span className="text-[10px] font-black text-info">+8% SCORE</span>
                                 </div>
-                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-100 shadow-sm")}>
-                                    <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                        <CreditCard className="w-5 h-5 text-amber-500" />
+                                <div className={cn("p-4 rounded-2xl border flex items-center gap-4 transition-all hover:scale-[1.02]", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
+                                    <div className="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+                                        <CreditCard className="w-5 h-5 text-warning" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className={cn("text-[14px] font-bold leading-tight", textColor)}>Set Rate Expectations</p>
                                         <p className={cn("text-[11px] opacity-40 mt-1", textColor)}>Filter out low-budget offers automatically</p>
                                     </div>
-                                    <span className="text-[10px] font-black text-blue-500">+5% SCORE</span>
+                                    <span className="text-[10px] font-black text-info">+5% SCORE</span>
                                 </div>
                             </div>
 
@@ -2364,20 +2364,20 @@ const MobileDashboardDemo = ({
                                 {[
                                     { name: 'boAt', logo: 'B', color: 'bg-violet-600' },
                                     { name: 'MamaEarth', logo: 'M', color: 'bg-teal-600' },
-                                    { name: 'Lenskart', logo: 'L', color: 'bg-emerald-600' },
+                                    { name: 'Lenskart', logo: 'L', color: 'bg-primary' },
                                     { name: 'Nykaa', logo: 'N', color: 'bg-pink-600' },
                                 ].map((brand, i) => (
-                                    <div key={i} className={cn("w-32 shrink-0 p-4 rounded-3xl border text-center transition-all", isDark ? "bg-[#1C1C1E] border-white/5" : "bg-white border-slate-100 shadow-sm")}>
-                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 text-white font-black text-xl shadow-lg", brand.color)}>
+                                    <div key={i} className={cn("w-32 shrink-0 p-4 rounded-3xl border text-center transition-all", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
+                                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 text-foreground font-black text-xl shadow-lg", brand.color)}>
                                             {brand.logo}
                                         </div>
                                         <p className={cn("text-[13px] font-black tracking-tight mb-1", textColor)}>{brand.name}</p>
-                                        <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">94% Match</p>
+                                        <p className="text-[9px] font-black text-primary uppercase tracking-widest">94% Match</p>
                                     </div>
                                 ))}
                             </div>
 
-                            <button type="button" className="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
+                            <button type="button" className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[11px] flex items-center justify-center gap-2">
                                 <Zap className="w-4 h-4 fill-white" /> Upgrade To Growth Pro
                             </button>
                         </div>
@@ -2390,7 +2390,7 @@ const MobileDashboardDemo = ({
                         <div className="px-4 space-y-6">
                             <SettingsGroup isDark={isDark}>
                                 <SettingsRow
-                                    icon={isDark ? <Sun /> : <Moon />} iconBg="bg-slate-500"
+                                    icon={isDark ? <Sun /> : <Moon />} iconBg="bg-background"
                                     label="Dark Mode"
                                     subtext={isDark ? "Always On" : "Off"}
                                     isDark={isDark} textColor={textColor}
@@ -2409,7 +2409,7 @@ const MobileDashboardDemo = ({
                             <SectionHeader title="Deal Alerts" isDark={isDark} />
                             <SettingsGroup isDark={isDark}>
                                 <SettingsRow
-                                    icon={<Bell />} iconBg="bg-blue-500"
+                                    icon={<Bell />} iconBg="bg-info"
                                     label="Push Notifications"
                                     subtext={isPushSubscribed ? "Active on this device" : "Receive instant deal alerts"}
                                     isDark={isDark} textColor={textColor}
@@ -2463,14 +2463,14 @@ const MobileDashboardDemo = ({
                                             if (res.success) toast.success("Test notification sent!");
                                             else toast.error("Test push failed.", { description: res.reason || 'Unknown reason' });
                                         }}
-                                        className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-blue-500 text-center", isPushBusy && "opacity-50")}
+                                        className={cn("w-full py-3 text-[11px] font-black uppercase tracking-wider text-info text-center", isPushBusy && "opacity-50")}
                                         disabled={isPushBusy}
                                     >
                                         {isPushBusy ? "Sending..." : "Send Test Notification"}
                                     </button>
                                 )}
                             </SettingsGroup>
-                            <div className={cn("p-4 rounded-2xl border flex items-start justify-between gap-3", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                            <div className={cn("p-4 rounded-2xl border flex items-start justify-between gap-3", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
                                 <div className="min-w-0">
                                     <p className={cn("text-[12px] font-black uppercase tracking-widest opacity-60", textColor)}>Status</p>
                                     <p className={cn("text-[12px] mt-1 opacity-70", textColor)}>
@@ -2479,12 +2479,12 @@ const MobileDashboardDemo = ({
                                         {'  '}• Subscribed: <span className={cn("font-semibold", textColor)}>{isPushSubscribed ? 'Yes' : 'No'}</span>
                                     </p>
                                     {isIOSNeedsInstall && (
-                                        <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                        <p className={cn("text-[12px] mt-1", isDark ? "text-warning/80" : "text-warning")}>
                                             iOS requires “Add to Home Screen” for push.
                                         </p>
                                     )}
                                     {!hasVapidKey && (
-                                        <p className={cn("text-[12px] mt-1", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                        <p className={cn("text-[12px] mt-1", isDark ? "text-warning/80" : "text-warning")}>
                                             Missing VAPID public key in frontend env.
                                         </p>
                                     )}
@@ -2498,13 +2498,13 @@ const MobileDashboardDemo = ({
                                     }}
                                     className={cn(
                                         "h-10 px-4 rounded-xl border text-[12px] font-bold transition-all active:scale-[0.99] shrink-0",
-                                        isDark ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                        isDark ? "border-border bg-card text-foreground/80 hover:bg-secondary/50" : "border-border bg-card text-muted-foreground hover:bg-background"
                                     )}
                                 >
                                     Refresh
                                 </button>
                             </div>
-                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-amber-500/5 text-amber-500/80" : "bg-amber-50 text-amber-600")}>
+                            <div className={cn("p-4 rounded-2xl flex items-start gap-3", isDark ? "bg-warning/5 text-warning/80" : "bg-warning text-warning")}>
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <p className="text-[11px] leading-relaxed font-medium">
                                     We use push notifications to alert you about new contracts and emergency payment updates.
@@ -2522,14 +2522,14 @@ const MobileDashboardDemo = ({
             default:
                 return (
                     <div className="flex flex-col items-center justify-center min-h-[60vh] px-10 text-center">
-                        <div className="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center mb-6">
-                            <Clock className="w-10 h-10 text-blue-500 opacity-40" />
+                        <div className="w-20 h-20 bg-info/10 rounded-3xl flex items-center justify-center mb-6">
+                            <Clock className="w-10 h-10 text-info opacity-40" />
                         </div>
                         <h3 className={cn("text-xl font-bold mb-2", textColor)}>Refining Module</h3>
                         <p className={cn("opacity-40 text-sm leading-relaxed mb-8", textColor)}>We're fine-tuning this control center for your creator business.</p>
                         <button type="button"
                             onClick={() => setActiveSettingsPage(null)}
-                            className="bg-blue-600 text-white font-black px-10 py-4 rounded-2xl active:scale-95 transition-all text-[13px] uppercase tracking-widest"
+                            className="bg-info text-foreground font-black px-10 py-4 rounded-2xl active:scale-95 transition-all text-[13px] uppercase tracking-widest"
                         >
                             Back To Hub
                         </button>
@@ -2558,25 +2558,25 @@ const MobileDashboardDemo = ({
 
     return (
         <div
-            className={cn('fixed inset-0 z-[1000] flex justify-center overflow-hidden font-sans selection:bg-emerald-500/25')}
+            className={cn('fixed inset-0 z-[1000] flex justify-center overflow-hidden font-sans selection:bg-primary/25')}
             style={{ backgroundColor: bgColor }}
         >
             {isDark ? (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
-                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
-                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
+                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
+                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
+                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
                 </div>
             ) : (
                 <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-                    <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
+                    <div className="absolute inset-0 bg-background" />
                 </div>
             )}
             <div
                 className={cn(
                     'w-full md:max-w-3xl mx-auto relative z-10 h-[100dvh] flex flex-col transition-colors duration-300 md:border-x bg-transparent',
-                    isDark ? 'md:border-[#1F2937] text-slate-200' : 'md:border-slate-200 text-slate-900'
+                    isDark ? 'md:border-[#1F2937] text-muted-foreground' : 'md:border-border text-muted-foreground'
                 )}
             >
                 {/* Sidebar Drawer */}
@@ -2595,10 +2595,10 @@ const MobileDashboardDemo = ({
                     className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-[110]"
                     style={{ transform: `translateY(${pullDistance - 40}px)`, opacity: pullDistance > 10 ? 1 : 0 }}
                 >
-                    <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shadow-lg border', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-white border-slate-200')}>
+                    <div className={cn('w-10 h-10 rounded-full flex items-center justify-center shadow-lg border', isDark ? 'bg-[#121826] border-[#1F2937]' : 'bg-card border-border')}>
                         {isRefreshingProp
-                            ? <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-                            : <RefreshCw className="w-5 h-5 text-slate-400" style={{ transform: `rotate(${pullDistance * 6}deg)` }} />
+                            ? <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                            : <RefreshCw className="w-5 h-5 text-muted-foreground" style={{ transform: `rotate(${pullDistance * 6}deg)` }} />
                         }
                     </div>
                 </div>
@@ -2629,31 +2629,31 @@ const MobileDashboardDemo = ({
                                 const remaining = tasks.filter(t => !t.done);
                                 const pct = Math.round((completed / tasks.length) * 100);
                                 return (
-                                    <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200">
+                                    <div className="mx-5 mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-primary">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
-                                                    <ShieldCheck className="w-5 h-5 text-white" />
+                                                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                                                    <ShieldCheck className="w-5 h-5 text-foreground" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[14px] font-bold text-slate-900">Complete Your Brand Deal Page</p>
-                                                    <p className="text-[12px] text-slate-500">{completed}/{tasks.length} done • {pct}%</p>
+                                                    <p className="text-[14px] font-bold text-muted-foreground">Complete Your Brand Deal Page</p>
+                                                    <p className="text-[12px] text-muted-foreground">{completed}/{tasks.length} done • {pct}%</p>
                                                 </div>
                                             </div>
-                                            <button onClick={() => setCompletionDismissed(true)} className="p-1 rounded-full hover:bg-emerald-100 active:scale-95">
-                                                <X className="w-4 h-4 text-slate-400" />
+                                            <button onClick={() => setCompletionDismissed(true)} className="p-1 rounded-full hover:bg-primary active:scale-95">
+                                                <X className="w-4 h-4 text-muted-foreground" />
                                             </button>
                                         </div>
                                         {/* Progress bar */}
-                                        <div className="w-full h-1.5 bg-emerald-100 rounded-full mb-3 overflow-hidden">
-                                            <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                        <div className="w-full h-1.5 bg-primary rounded-full mb-3 overflow-hidden">
+                                            <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {remaining.map(task => (
                                                 <button
                                                     key={task.focus}
                                                     onClick={() => navigate((task as any).tabLink ? '/creator-profile?section=profile' : `/creator-profile?section=collab&focus=${task.focus}`)}
-                                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-emerald-700 active:scale-95"
+                                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
                                                 >
                                                     {task.label}
                                                 </button>
@@ -2665,17 +2665,17 @@ const MobileDashboardDemo = ({
 
                             {/* PWA Install Banner (Android only) */}
                             {canInstall && (
-                                <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex items-center justify-between">
+                                <div className="mx-5 mb-4 p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-info flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center">
-                                            <Download className="w-4 h-4 text-white" />
+                                        <div className="w-9 h-9 rounded-xl bg-info flex items-center justify-center">
+                                            <Download className="w-4 h-4 text-foreground" />
                                         </div>
                                         <div>
-                                            <p className="text-[13px] font-bold text-slate-900">Install Creator Armour</p>
-                                            <p className="text-[11px] text-slate-500">Add to home screen for faster access</p>
+                                            <p className="text-[13px] font-bold text-muted-foreground">Install Creator Armour</p>
+                                            <p className="text-[11px] text-muted-foreground">Add to home screen for faster access</p>
                                         </div>
                                     </div>
-                                    <button onClick={promptInstall} className="text-[11px] font-bold px-4 py-2 rounded-full bg-blue-600 text-white active:scale-95">Install</button>
+                                    <button onClick={promptInstall} className="text-[11px] font-bold px-4 py-2 rounded-full bg-info text-foreground active:scale-95">Install</button>
                                 </div>
                             )}
 
@@ -2687,15 +2687,15 @@ const MobileDashboardDemo = ({
                                     className={cn(
                                         "p-4 rounded-2xl border relative overflow-hidden",
                                         isDark
-                                            ? "bg-gradient-to-r from-amber-950/50 to-orange-950/50 border-amber-800/30"
-                                            : "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200"
+                                            ? "bg-gradient-to-r from-amber-950/50 to-orange-950/50 border-warning/30"
+                                            : "bg-gradient-to-r from-amber-50 to-orange-50 border-warning"
                                     )}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
                                             <div className={cn(
                                                 "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                                                isDark ? "bg-amber-500/20" : "bg-amber-500"
+                                                isDark ? "bg-warning/20" : "bg-warning"
                                             )}>
                                                 <span className={isDark ? "text-lg" : "text-lg"}>🎁</span>
                                             </div>
@@ -2709,8 +2709,8 @@ const MobileDashboardDemo = ({
                                             className={cn(
                                                 "shrink-0 text-[11px] font-bold px-4 py-2 rounded-full active:scale-95 transition-all",
                                                 isDark
-                                                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                                                    : "bg-amber-500 text-white shadow-sm"
+                                                    ? "bg-warning/20 text-warning border border-warning/30"
+                                                    : "bg-warning text-foreground shadow-sm"
                                             )}
                                         >
                                             Invite
@@ -2729,7 +2729,7 @@ const MobileDashboardDemo = ({
 
                                     {/* Center: Wordmark */}
                                     <div className="flex items-center gap-1.5 font-semibold text-[16px] tracking-tight">
-                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-white" : "text-slate-900")} />
+                                        <ShieldCheck className={cn("w-4 h-4", isDark ? "text-foreground" : "text-muted-foreground")} />
                                         <span className={textColor}>CreatorArmour</span>
                                     </div>
 
@@ -2778,8 +2778,8 @@ const MobileDashboardDemo = ({
                                             className={cn(
                                                 "flex items-center gap-1 px-2.5 py-1.5 rounded-full border transition-all duration-300",
                                                 isDark
-                                                    ? "bg-slate-800 border-slate-700 text-amber-400"
-                                                    : "bg-slate-100 border-slate-200 text-slate-600"
+                                                    ? "bg-background border-border text-warning"
+                                                    : "bg-background border-border text-muted-foreground"
                                             )}
                                         >
                                             <AnimatePresence mode="wait" initial={false}>
@@ -2800,7 +2800,7 @@ const MobileDashboardDemo = ({
                                         <button type="button" onClick={() => handleAction('notifications')} aria-label={`Notifications${collabRequests.length > 0 ? ` (${collabRequests.length} new)` : ''}`} className={cn('relative', secondaryTextColor)}>
                                             <Bell className="w-5 h-5" />
                                             {collabRequests.length > 0 && (
-                                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 text-[8px] font-black flex items-center justify-center text-white" style={{ borderColor: bgColor }}>
+                                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full border-2 text-[8px] font-black flex items-center justify-center text-foreground" style={{ borderColor: bgColor }}>
                                                     {collabRequests.length}
                                                 </span>
                                             )}
@@ -2832,12 +2832,12 @@ const MobileDashboardDemo = ({
                                                 return name ? `${greeting}, ${name}` : greeting;
                                             })()}
                                         </h1>
-                                        <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-emerald-500/10" : "bg-emerald-50")}>
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                            <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-emerald-600 dark:text-emerald-400">Active</span>
+                                        <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full", isDark ? "bg-primary/10" : "bg-primary")}>
+                                            <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                            <span className="text-[10px] uppercase font-bold tracking-[0.06em] text-primary dark:text-primary">Active</span>
                                         </div>
                                     </div>
-                                    <p className={cn('text-[15px] font-semibold mt-0', isDark ? "text-white/70" : "text-slate-600")}>
+                                    <p className={cn('text-[15px] font-semibold mt-0', isDark ? "text-foreground/70" : "text-muted-foreground")}>
                                         @{username}
                                     </p>
                                 </motion.div>
@@ -2845,11 +2845,11 @@ const MobileDashboardDemo = ({
 
                             {shouldShowPushPrompt && (
                                 <div className="px-5 mb-6">
-                                    <div className={cn("p-5 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-200 shadow-sm")}>
-                                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                                    <div className={cn("p-5 rounded-[2rem] border relative overflow-hidden", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
+                                        <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
                                         <div className="flex items-start gap-3">
-                                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-emerald-500/15" : "bg-emerald-50")}>
-                                                <Bell className={cn("w-5 h-5", isDark ? "text-emerald-300" : "text-emerald-600")} />
+                                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0", isDark ? "bg-primary/15" : "bg-primary")}>
+                                                <Bell className={cn("w-5 h-5", isDark ? "text-primary" : "text-primary")} />
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>Enable Deal Alerts</p>
@@ -2873,7 +2873,7 @@ const MobileDashboardDemo = ({
                                                             if (res.success) toast.success("Push notifications enabled!");
                                                             else toast.error("Couldn’t enable notifications.", { description: res.reason || 'Unknown reason' });
                                                         }}
-                                                        className="flex-1 h-11 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-all bg-emerald-600 text-white hover:bg-emerald-500"
+                                                        className="flex-1 h-11 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg active:scale-95 transition-all bg-primary text-foreground hover:bg-primary"
                                                     >
                                                         Enable
                                                     </button>
@@ -2885,14 +2885,14 @@ const MobileDashboardDemo = ({
                                                         }}
                                                         className={cn(
                                                             "h-11 px-4 rounded-2xl border text-[11px] font-black uppercase tracking-widest active:scale-95 transition-all",
-                                                            isDark ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                                            isDark ? "border-border bg-card text-foreground/80 hover:bg-secondary/50" : "border-border bg-card text-muted-foreground hover:bg-background"
                                                         )}
                                                     >
                                                         Not now
                                                     </button>
                                                 </div>
                                                 {isIOSNeedsInstall && (
-                                                    <p className={cn("text-[11px] mt-3", isDark ? "text-amber-200/80" : "text-amber-700")}>
+                                                    <p className={cn("text-[11px] mt-3", isDark ? "text-warning/80" : "text-warning")}>
                                                         iPhone/iPad: install to Home Screen first (no “Allow” popup will show in a Safari tab).
                                                     </p>
                                                 )}
@@ -2908,11 +2908,11 @@ const MobileDashboardDemo = ({
                                     onClick={() => navigate('/brand-directory')}
                                     className={cn(
                                         "w-full p-4 rounded-2xl border flex items-center gap-3 active:scale-[0.98] transition-all text-left",
-                                        isDark ? "bg-[#1C1C1E] border-[#2C2C2E] hover:border-[#3C3C3E]" : "bg-white border-slate-200 hover:border-blue-300 shadow-sm hover:shadow-md"
+                                        isDark ? "bg-card border-[#2C2C2E] hover:border-[#3C3C3E]" : "bg-card border-border hover:border-info shadow-sm hover:shadow-md"
                                     )}
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
-                                        <Briefcase className="w-5 h-5 text-white" />
+                                    <div className="w-10 h-10 rounded-xl bg-info flex items-center justify-center shrink-0">
+                                        <Briefcase className="w-5 h-5 text-foreground" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className={cn("text-[14px] font-bold", textColor)}>Discover Brands</p>
@@ -2925,7 +2925,7 @@ const MobileDashboardDemo = ({
                             {/* How It Works — always show for new accounts */}
                             {(!profile?.instagram_handle || !profile?.bio) && (
                                 <div className="px-5 mb-5">
-                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-slate-200 shadow-sm")}>
+                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-border shadow-sm")}>
                                         <p className={cn("text-[13px] font-bold mb-3", textColor)}>How it works</p>
                                         <div className="space-y-3">
                                             {[
@@ -2934,7 +2934,7 @@ const MobileDashboardDemo = ({
                                                 { n: 3, text: 'You accept, counter, or decline — with contract protection', icon: '✅' },
                                             ].map(step => (
                                                 <div key={step.n} className="flex items-start gap-3">
-                                                    <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[12px] shrink-0 mt-0.5", isDark ? "bg-white/10" : "bg-slate-100")}>{step.icon}</span>
+                                                    <span className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[12px] shrink-0 mt-0.5", isDark ? "bg-secondary/50" : "bg-background")}>{step.icon}</span>
                                                     <p className={cn("text-[12px] font-medium leading-relaxed pt-1", textColor)}>{step.text}</p>
                                                 </div>
                                             ))}
@@ -2953,11 +2953,11 @@ const MobileDashboardDemo = ({
                                             animate={{ opacity: 1, y: 0 }}
                                             className={cn(
                                                 "p-5 md:p-6 rounded-[2.5rem] border relative overflow-hidden",
-                                                isDark ? "bg-gradient-to-br from-blue-900/30 via-[#1C1C1E] to-[#1C1C1E] border-[#2C2C2E]" : "bg-gradient-to-br from-blue-50/80 via-white to-white border-blue-100 shadow-xl shadow-blue-500/5"
+                                                isDark ? "bg-gradient-to-br from-blue-900/30 via-[#1C1C1E] to-[#1C1C1E] border-[#2C2C2E]" : "bg-gradient-to-br from-blue-50/80 via-white to-white border-info shadow-xl shadow-blue-500/5"
                                             )}
                                         >
                                             <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
-                                                <Zap className="w-20 h-20 text-blue-500" />
+                                                <Zap className="w-20 h-20 text-info" />
                                             </div>
                                             <h2 className={cn("text-[22px] font-black mb-1 tracking-tight font-outfit", textColor)}>Your Collaboration Page Is Live</h2>
                                             <p className={cn("text-[13px] font-medium mb-5 leading-relaxed opacity-70", textColor)}>
@@ -2966,16 +2966,16 @@ const MobileDashboardDemo = ({
                                             </p>
 
                                             {/* Beautiful Collab Link Card */}
-                                            <div className={cn("p-3.5 rounded-3xl border mb-4", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                            <div className={cn("p-3.5 rounded-3xl border mb-4", isDark ? "bg-black/30 border-border" : "bg-card border-border shadow-sm")}>
                                                 <div className="flex items-center justify-between mb-2.5">
                                                     <p className={cn("text-[10px] font-black uppercase tracking-widest opacity-50", textColor)}>Your Brand Deal Page</p>
-                                                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                                                        <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Brands submit offers here</span>
+                                                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-info/10 border border-info/20">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-info animate-pulse" />
+                                                        <span className="text-[9px] font-bold text-info dark:text-info uppercase tracking-wider">Brands submit offers here</span>
                                                     </div>
                                                 </div>
 
-                                                <div className={cn("px-4 py-3.5 rounded-2xl font-mono text-[13px] border mb-2.5 overflow-x-auto whitespace-nowrap", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-800")}>
+                                                <div className={cn("px-4 py-3.5 rounded-2xl font-mono text-[13px] border mb-2.5 overflow-x-auto whitespace-nowrap", isDark ? "bg-card border-border text-foreground" : "bg-background border-border text-muted-foreground")}>
                                                     creatorarmour.com/{profile?.handle || username || 'creator'}
                                                 </div>
 
@@ -2985,17 +2985,17 @@ const MobileDashboardDemo = ({
                                                             handleCopyStorefront();
                                                         }}
                                                         className={cn(
-                                                            "flex-1 h-12 rounded-2xl flex items-center justify-center border font-black text-white text-[12px] shadow-lg active:scale-95 transition-all whitespace-nowrap",
+                                                            "flex-1 h-12 rounded-2xl flex items-center justify-center border font-black text-foreground text-[12px] shadow-lg active:scale-95 transition-all whitespace-nowrap",
                                                             isCollabLinkCopied
-                                                                ? "bg-emerald-600 border-emerald-500 shadow-emerald-500/20"
-                                                                : "bg-blue-600 border-blue-500 shadow-blue-500/20"
+                                                                ? "bg-primary border-primary shadow-emerald-500/20"
+                                                                : "bg-info border-info shadow-blue-500/20"
                                                         )}
                                                     >
                                                         {isCollabLinkCopied ? 'Copied' : 'Copy Link'}
                                                     </button>
                                                     <button type="button"
                                                         onClick={() => window.open(`/${profile?.handle || username || 'creator'}`, '_blank')}
-                                                        className={cn("flex-1 h-12 rounded-2xl flex items-center justify-center border font-bold text-[12px] active:scale-95 transition-all whitespace-nowrap", isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-700")}
+                                                        className={cn("flex-1 h-12 rounded-2xl flex items-center justify-center border font-bold text-[12px] active:scale-95 transition-all whitespace-nowrap", isDark ? "bg-card border-border text-foreground" : "bg-background border-border text-muted-foreground")}
                                                     >
                                                         Preview Page
                                                     </button>
@@ -3003,16 +3003,16 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             {/* Where to Share Guide */}
-                                            <div className={cn("p-3.5 rounded-3xl border mb-1", isDark ? "bg-black/30 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                            <div className={cn("p-3.5 rounded-3xl border mb-1", isDark ? "bg-black/30 border-border" : "bg-card border-border shadow-sm")}>
                                                 <p className={cn("text-[11px] font-bold mb-3", textColor)}>Where to share your deal page</p>
                                                 <div className="grid grid-cols-2 gap-2.5 mb-4">
-                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Instagram Bio</span></div>
-                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Brand DMs</span></div>
-                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Email signature</span></div>
-                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Linktree</span></div>
+                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Instagram Bio</span></div>
+                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Brand DMs</span></div>
+                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Email signature</span></div>
+                                                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /><span className={cn("text-[11px] font-medium opacity-80", textColor)}>Linktree</span></div>
                                                 </div>
 
-                                                <div className={cn("p-3 rounded-2xl border text-[11px] font-medium leading-relaxed", isDark ? "bg-white/5 border-white/10 text-white/70" : "bg-slate-50 border-slate-200 text-slate-600")}>
+                                                <div className={cn("p-3 rounded-2xl border text-[11px] font-medium leading-relaxed", isDark ? "bg-card border-border text-foreground/70" : "bg-background border-border text-muted-foreground")}>
                                                     <span className="opacity-50 text-[10px] uppercase font-bold tracking-widest block mb-1">Example DM Reply:</span>
                                                     "Please submit campaign details here:<br />
                                                     creatorarmour.com/{profile?.handle || username || 'creator'}"
@@ -3036,27 +3036,27 @@ const MobileDashboardDemo = ({
                                                 "py-8 px-8 rounded-[2rem] shadow-xl shadow-emerald-500/20 border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
                                                 isDark
                                                     ? "from-emerald-400 via-cyan-500 to-blue-600"
-                                                    : "bg-emerald-600 from-emerald-600 via-teal-500 to-blue-700"
+                                                    : "bg-primary from-emerald-600 via-teal-500 to-blue-700"
                                             )}
                                         >
                                             {/* Decorative elements */}
-                                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-                                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-400/20 rounded-full blur-3xl home-card-glow" />
+                                            <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
+                                            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-info/20 rounded-full blur-3xl home-card-glow" />
 
                                             <div className="relative z-10">
-                                                <div className="flex items-center justify-between text-white/90 mb-3">
+                                                <div className="flex items-center justify-between text-foreground/90 mb-3">
                                                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Monthly Revenue</span>
-                                                    <Zap className="w-4 h-4 fill-white text-white opacity-80" />
+                                                    <Zap className="w-4 h-4 fill-white text-foreground opacity-80" />
                                                 </div>
-                                                <div className="text-4xl font-black text-white mb-6 flex items-baseline gap-1 font-outfit">
+                                                <div className="text-4xl font-black text-foreground mb-6 flex items-baseline gap-1 font-outfit">
                                                     <span className="text-2xl font-bold opacity-70">₹</span>
                                                     <AnimatedCounter value={monthlyRevenue} />
                                                 </div>
-                                                <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/10 w-fit">
-                                                    <div className="w-5 h-5 rounded-full bg-emerald-400/20 flex items-center justify-center border border-emerald-400/30">
-                                                        <CheckCircle2 className="w-3 h-3 text-emerald-300" />
+                                                <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-border w-fit">
+                                                    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                                                        <CheckCircle2 className="w-3 h-3 text-primary" />
                                                     </div>
-                                                    <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Secured by Armour</span>
+                                                    <span className="text-[9px] font-black text-foreground tracking-[0.15em] uppercase">Secured by Armour</span>
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -3105,7 +3105,7 @@ const MobileDashboardDemo = ({
                                             transition={{ delay: 0.15 }}
                                             className={cn(
                                                 "p-6 rounded-[2.5rem] border relative overflow-hidden group",
-                                                isDark ? "bg-slate-900 border-white/5" : "bg-white border-slate-100 shadow-sm"
+                                                isDark ? "bg-background border-border/5" : "bg-card border-border shadow-sm"
                                             )}
                                         >
                                             {/* Simple animated background element */}
@@ -3114,8 +3114,8 @@ const MobileDashboardDemo = ({
                                             </div>
 
                                             <div className="flex items-center gap-3 mb-4">
-                                                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                                                    <Link2 className="w-5 h-5 text-blue-500" />
+                                                <div className="w-10 h-10 rounded-2xl bg-info/10 flex items-center justify-center">
+                                                    <Link2 className="w-5 h-5 text-info" />
                                                 </div>
                                                 <div>
                                                     <h3 className={cn("text-[15px] font-bold tracking-tight", textColor)}>Promote Collab Link</h3>
@@ -3128,7 +3128,7 @@ const MobileDashboardDemo = ({
                                                     onClick={handleCopyStorefront}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
-                                                        isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm"
+                                                        isDark ? "bg-card border-border hover:bg-secondary/50" : "bg-background border-border hover:bg-background shadow-sm"
                                                     )}
                                                 >
                                                     <Copy className="w-4 h-4 mb-2 opacity-60" />
@@ -3138,7 +3138,7 @@ const MobileDashboardDemo = ({
                                                     onClick={handleCopyDMReply}
                                                     className={cn(
                                                         "flex-1 flex flex-col items-center justify-center py-4 rounded-[1.5rem] border transition-all active:scale-[0.97]",
-                                                        isDark ? "bg-white/5 border-white/10 hover:bg-white/10" : "bg-slate-50 border-slate-200 hover:bg-slate-100 shadow-sm"
+                                                        isDark ? "bg-card border-border hover:bg-secondary/50" : "bg-background border-border hover:bg-background shadow-sm"
                                                     )}
                                                 >
                                                     <MessageSquare className="w-4 h-4 mb-2 opacity-60" />
@@ -3328,17 +3328,17 @@ const MobileDashboardDemo = ({
                                                             className={cn(
                                                                 'rounded-2xl overflow-hidden transition-all duration-200 active:scale-[0.99] relative',
                                                                 isDark
-                                                                    ? 'bg-[#0F172A]/80 backdrop-blur-sm border border-slate-700/50 hover:border-slate-600'
-                                                                    : 'bg-white border-slate-200 shadow-lg hover:shadow-xl hover:border-slate-300'
+                                                                    ? 'bg-background/80 backdrop-blur-sm border border-border/50 hover:border-border'
+                                                                    : 'bg-card border-border shadow-lg hover:shadow-xl hover:border-border'
                                                             )}
                                                         >
                                                             {/* Collab type accent strip */}
                                                             <div className={cn("h-[4px] w-full", req.collab_type === 'barter' ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-500' : 'bg-gradient-to-r from-blue-500 via-violet-500 to-indigo-600')} />
 
                                                             {req.isDemo && (
-                                                                <div className="bg-blue-500/10 border-b border-blue-500/20 px-4 py-2.5 flex flex-col items-center justify-center gap-1">
-                                                                    <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-1.5"><Zap className="w-3 h-3 fill-blue-500" /> Interactive Demo Offer</span>
-                                                                    <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium text-center">This is a sample deal so you can understand how Creator Armour works.</span>
+                                                                <div className="bg-info/10 border-b border-info/20 px-4 py-2.5 flex flex-col items-center justify-center gap-1">
+                                                                    <span className="text-[10.5px] font-black uppercase tracking-[0.2em] text-info flex items-center gap-1.5"><Zap className="w-3 h-3 fill-blue-500" /> Interactive Demo Offer</span>
+                                                                    <span className="text-[10px] text-info/70 dark:text-info/70 font-medium text-center">This is a sample deal so you can understand how Creator Armour works.</span>
                                                                 </div>
                                                             )}
 
@@ -3349,7 +3349,7 @@ const MobileDashboardDemo = ({
                                                                     <div className={cn(
                                                                         "w-12 h-12 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 transition-all duration-300 hover:scale-105",
                                                                         req.collab_type === 'barter'
-                                                                            ? (isDark ? "bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30" : "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200")
+                                                                            ? (isDark ? "bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-warning/30" : "bg-gradient-to-br from-amber-50 to-orange-50 border-warning")
                                                                             : (isDark ? "bg-gradient-to-br from-blue-500/10 to-violet-500/10 border-violet-500/30" : "bg-gradient-to-br from-blue-50 to-violet-50 border-violet-200")
                                                                     )}>
                                                                         {getBrandIcon(req.brand_logo || req.brand_logo_url || req.logo_url || req.raw?.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)}
@@ -3358,15 +3358,15 @@ const MobileDashboardDemo = ({
                                                                     <div className="flex-1 min-w-0">
                                                                         {/* Brand name + type badge */}
                                                                         <div className="flex items-center gap-2 mb-1">
-                                                                            <p className={cn("text-[15px] font-bold leading-tight truncate", isDark ? "text-white" : "text-slate-900")}>
+                                                                            <p className={cn("text-[15px] font-bold leading-tight truncate", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                                 {(req.brand_name || 'Brand').replace(/\s*\(Free products Demo\)\s*/i, '').replace(/\s*\(Demo\)\s*/i, '')}
                                                                             </p>
                                                                             {req.isConfirmedDeal ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/15">
+                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary/10 text-primary border border-primary/15">
                                                                                     🔥 Active
                                                                                 </span>
                                                                             ) : req.collab_type === 'barter' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-500 border border-amber-500/20">
+                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-warning border border-warning/20">
                                                                                     🎁 Free products
                                                                                 </span>
                                                                             ) : req.collab_type === 'hybrid' ? (
@@ -3374,11 +3374,11 @@ const MobileDashboardDemo = ({
                                                                                     🤝 Hybrid
                                                                                 </span>
                                                                             ) : req.collab_type === 'affiliate' ? (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-500 border border-emerald-500/15">
+                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-primary border border-primary/15">
                                                                                     📈 Affiliate
                                                                                 </span>
                                                                             ) : (
-                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-violet-500/10 text-blue-500 border border-blue-500/15">
+                                                                                <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-violet-500/10 text-info border border-info/15">
                                                                                     💳 Paid
                                                                                 </span>
                                                                             )}
@@ -3386,22 +3386,22 @@ const MobileDashboardDemo = ({
                                                                         {/* Category + Verified */}
                                                                         <div className="flex items-center gap-1.5">
                                                                             <span className={cn("text-[12px] font-medium", secondaryTextColor)}>{req.category || 'Lifestyle'}</span>
-                                                                            <span className="text-slate-500 text-[9px]">•</span>
+                                                                            <span className="text-muted-foreground text-[9px]">•</span>
                                                                             <div className="flex items-center gap-0.5">
-                                                                                <ShieldCheck className="w-3 h-3 text-blue-500" strokeWidth={2.5} />
-                                                                                <span className={cn("text-[11px] font-semibold text-blue-500", isDark ? "text-blue-400" : "text-blue-600")}>Verified</span>
+                                                                                <ShieldCheck className="w-3 h-3 text-info" strokeWidth={2.5} />
+                                                                                <span className={cn("text-[11px] font-semibold text-info", isDark ? "text-info" : "text-info")}>Verified</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
 
                                                                     {/* Budget — more prominent */}
                                                                     <div className="shrink-0 text-right">
-                                                                        <p className={cn("text-[20px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                        <p className={cn("text-[20px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                             {req.exact_budget || req.deal_amount ? `₹${(req.exact_budget || req.deal_amount).toLocaleString()}`
                                                                                 : req.barter_value ? `₹${(req.barter_value / 1000).toFixed(0)}K`
                                                                                     : (req.budget_range || '₹75K')}
                                                                         </p>
-                                                                        <p className={cn("text-[9px] font-bold uppercase tracking-widest", req.collab_type === 'barter' ? "text-amber-500" : (isDark ? "text-slate-500" : "text-slate-400"))}>
+                                                                        <p className={cn("text-[9px] font-bold uppercase tracking-widest", req.collab_type === 'barter' ? "text-warning" : (isDark ? "text-muted-foreground" : "text-muted-foreground"))}>
                                                                             {req.collab_type === 'barter' ? 'Product Val.' : 'Cash'}
                                                                         </p>
                                                                     </div>
@@ -3412,21 +3412,21 @@ const MobileDashboardDemo = ({
                                                                     {deliverablesArr.map((d, i) => (
                                                                         <span key={i} className={cn(
                                                                             "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all",
-                                                                            isDark ? "bg-slate-800/50 border-slate-700/50 text-slate-300" : "bg-slate-50 border-slate-200 text-slate-600"
+                                                                            isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground"
                                                                         )}>
                                                                             {d}
                                                                         </span>
                                                                     ))}
                                                                     <span className={cn(
                                                                         "px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all",
-                                                                        isDark ? "bg-slate-800/50 border-slate-700/50 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-600"
+                                                                        isDark ? "bg-background/50 border-border/50 text-muted-foreground" : "bg-background border-border text-muted-foreground"
                                                                     )}>
                                                                         📅 {(req.deadline || req.due_date) ? new Date(req.deadline || req.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '21 Mar'}
                                                                     </span>
                                                                     {deadlineText && (
                                                                         <span className={cn(
                                                                             "px-2.5 py-1 rounded-lg text-[10px] font-black border transition-all animate-pulse",
-                                                                            isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30 text-amber-400" : "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-amber-600"
+                                                                            isDark ? "bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-warning/30 text-warning" : "bg-gradient-to-r from-amber-50 to-orange-50 border-warning text-warning"
                                                                         )}>
                                                                             ⚡{deadlineText}
                                                                         </span>
@@ -3440,8 +3440,8 @@ const MobileDashboardDemo = ({
                                                                         className={cn(
                                                                             "flex-1 h-11 rounded-xl font-semibold text-[12px] border transition-all active:scale-[0.96]",
                                                                             isDark
-                                                                                ? "border-slate-600/50 text-slate-300 hover:bg-white/5 hover:border-slate-500 bg-slate-800/30"
-                                                                                : "border-slate-200 text-slate-700 hover:bg-slate-50 bg-white"
+                                                                                ? "border-border/50 text-muted-foreground hover:bg-card hover:border-border bg-background/30"
+                                                                                : "border-border text-muted-foreground hover:bg-background bg-card"
                                                                         )}
                                                                     >
                                                                         Details
@@ -3459,7 +3459,7 @@ const MobileDashboardDemo = ({
                                                                             }}
                                                                             disabled={processingDeal === req.id}
                                                                             className={cn(
-                                                                                "flex-1 h-11 rounded-xl font-bold text-[12px] text-white transition-all flex items-center justify-center gap-1.5 active:scale-[0.96] disabled:opacity-50 shadow-lg",
+                                                                                "flex-1 h-11 rounded-xl font-bold text-[12px] text-foreground transition-all flex items-center justify-center gap-1.5 active:scale-[0.96] disabled:opacity-50 shadow-lg",
                                                                                 req.collab_type === 'barter'
                                                                                     ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-amber-500/25"
                                                                                     : "bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 shadow-blue-500/25"
@@ -3492,9 +3492,9 @@ const MobileDashboardDemo = ({
                             {/* Toggle Header */}
                             <div className={cn(
                                 "sticky top-0 z-20 -mx-5 px-5 pt-2 pb-4 mb-6",
-                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-white/10" : "bg-white/80 backdrop-blur-xl border-b border-slate-100"
+                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-b border-border" : "bg-secondary/80 backdrop-blur-xl border-b border-border"
                             )}>
-                                <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-white/5" : "bg-slate-100")}>
+                                <div className={cn("flex p-1.5 rounded-2xl", isDark ? "bg-card" : "bg-background")}>
                                     <button type="button"
                                         onClick={() => {
                                             triggerHaptic();
@@ -3508,7 +3508,7 @@ const MobileDashboardDemo = ({
                                         className={cn(
                                             "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                             collabSubTab === 'pending'
-                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                ? "bg-info text-foreground shadow-xl shadow-blue-500/20"
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
@@ -3527,7 +3527,7 @@ const MobileDashboardDemo = ({
                                         className={cn(
                                             "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                             collabSubTab === 'active'
-                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                ? "bg-info text-foreground shadow-xl shadow-blue-500/20"
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
@@ -3546,7 +3546,7 @@ const MobileDashboardDemo = ({
                                         className={cn(
                                             "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300",
                                             collabSubTab === 'completed'
-                                                ? "bg-blue-600 text-white shadow-xl shadow-blue-500/20"
+                                                ? "bg-info text-foreground shadow-xl shadow-blue-500/20"
                                                 : cn("opacity-70", textColor)
                                         )}
                                     >
@@ -3566,7 +3566,7 @@ const MobileDashboardDemo = ({
                                     >
                                         <div className="flex items-center justify-between mb-6">
                                             <h2 className={cn("text-xl font-bold", textColor)}>Active Collabs</h2>
-                                            <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-xs font-bold">
+                                            <span className="px-3 py-1 bg-info/10 text-info rounded-full text-xs font-bold">
                                                 {activeDealsCount} Active
                                             </span>
                                         </div>
@@ -3615,7 +3615,7 @@ const MobileDashboardDemo = ({
                                                             }}
                                                             className={cn(
                                                                 "p-4 rounded-2xl border mb-1 transition-all active:scale-[0.99]",
-                                                                isDark ? "bg-white/5 hover:bg-white/10" : "bg-slate-50 hover:bg-white",
+                                                                isDark ? "bg-card hover:bg-secondary/50" : "bg-background hover:bg-card",
                                                                 borderColor
                                                             )}
                                                         >
@@ -3627,7 +3627,7 @@ const MobileDashboardDemo = ({
                                                                     <span
                                                                         className={cn(
                                                                             "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full border shrink-0",
-                                                                            isDark ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-red-50 text-red-700 border-red-200"
+                                                                            isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive text-destructive border-destructive"
                                                                         )}
                                                                     >
                                                                         {insights.risk} AT RISK
@@ -3649,10 +3649,10 @@ const MobileDashboardDemo = ({
 
                                                                     const toneCls =
                                                                         it.tone === 'amber'
-                                                                            ? (isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200")
+                                                                            ? (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
                                                                             : it.tone === 'red'
-                                                                                ? (isDark ? "bg-red-500/10 text-red-200 border-red-500/20" : "bg-red-50 text-red-800 border-red-200")
-                                                                                : (isDark ? "bg-blue-500/10 text-blue-200 border-blue-500/20" : "bg-blue-50 text-blue-800 border-blue-200");
+                                                                                ? (isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive text-destructive border-destructive")
+                                                                                : (isDark ? "bg-info/10 text-info border-info/20" : "bg-info text-info border-info");
 
                                                                     const onChip = () => {
                                                                         triggerHaptic();
@@ -3702,7 +3702,7 @@ const MobileDashboardDemo = ({
                                                             className={cn(
                                                                 "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] hover:-translate-y-[1px] relative cursor-pointer",
                                                                 borderColor,
-                                                                isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
+                                                                isDark ? "bg-card active:bg-secondary/50" : "bg-card shadow-sm active:bg-background"
                                                             )}
                                                         >
                                                             {(() => {
@@ -3714,10 +3714,10 @@ const MobileDashboardDemo = ({
                                                                         : `Due in ${ux.daysUntilDue}d`;
                                                                 const dueTone =
                                                                     ux.urgencyLevel === 'critical'
-                                                                        ? (isDark ? "text-red-200" : "text-red-700")
+                                                                        ? (isDark ? "text-destructive" : "text-destructive")
                                                                         : ux.urgencyLevel === 'warning'
-                                                                            ? (isDark ? "text-amber-200" : "text-amber-700")
-                                                                            : (isDark ? "text-orange-200" : "text-orange-700");
+                                                                            ? (isDark ? "text-warning" : "text-warning")
+                                                                            : (isDark ? "text-warning" : "text-warning");
 
                                                                 const cta = getDealPrimaryCta({ role: 'creator', deal });
                                                                 const ctaLabel = cta.label;
@@ -3733,7 +3733,7 @@ const MobileDashboardDemo = ({
                                                                     <>
                                                                         <div className="flex items-start justify-between gap-3 mb-3">
                                                                             <div className="flex items-center gap-3 min-w-0">
-                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                                <div className="w-10 h-10 rounded-xl overflow-hidden border border-border shrink-0 shadow-sm">
                                                                                     {getBrandIcon(
                                                                                         deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url,
                                                                                         deal.category,
@@ -3746,7 +3746,7 @@ const MobileDashboardDemo = ({
                                                                                 </div>
                                                                             </div>
                                                                             <div className="text-right shrink-0">
-                                                                                <p className={cn("text-[18px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                                <p className={cn("text-[18px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                                     {budget > 0 ? `₹${budget.toLocaleString()}` : '—'}
                                                                                 </p>
                                                                                 {dueText && (
@@ -3767,10 +3767,10 @@ const MobileDashboardDemo = ({
                                                                         <p className={cn(
                                                                             "text-[12px] font-bold mb-3",
                                                                             ux.needsSignature
-                                                                                ? (isDark ? "text-amber-200" : "text-amber-700")
+                                                                                ? (isDark ? "text-warning" : "text-warning")
                                                                                 : contractSigned
-                                                                                    ? (isDark ? "text-emerald-200" : "text-emerald-700")
-                                                                                    : (isDark ? "text-white/70" : "text-slate-600")
+                                                                                    ? (isDark ? "text-primary" : "text-primary")
+                                                                                    : (isDark ? "text-foreground/70" : "text-muted-foreground")
                                                                         )}>
                                                                             {ux.needsSignature ? '⚠️ Signature required' : contractSigned ? '✅ Contract signed' : (ux.contractLabel || 'In progress')}
                                                                         </p>
@@ -3783,8 +3783,8 @@ const MobileDashboardDemo = ({
                                                                                         className={cn(
                                                                                             "h-1.5 w-6 rounded-full",
                                                                                             i < ux.progressStep
-                                                                                                ? (isDark ? "bg-emerald-400/80" : "bg-emerald-500")
-                                                                                                : (isDark ? "bg-white/10" : "bg-slate-200")
+                                                                                                ? (isDark ? "bg-primary/80" : "bg-primary")
+                                                                                                : (isDark ? "bg-secondary/50" : "bg-background")
                                                                                         )}
                                                                                     />
                                                                                 ))}
@@ -3792,8 +3792,8 @@ const MobileDashboardDemo = ({
                                                                             <span className={cn(
                                                                                 "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border",
                                                                                 ux.needsCreatorAction
-                                                                                    ? (isDark ? "border-amber-500/25 bg-amber-500/10 text-amber-200" : "border-amber-200 bg-amber-50 text-amber-800")
-                                                                                    : (isDark ? "border-white/10 bg-white/5 text-white/60" : "border-slate-200 bg-slate-50 text-slate-600")
+                                                                                    ? (isDark ? "border-warning/25 bg-warning/10 text-warning" : "border-warning bg-warning text-warning")
+                                                                                    : (isDark ? "border-border bg-card text-foreground/60" : "border-border bg-background text-muted-foreground")
                                                                             )}>
                                                                                 {ux.stagePill}
                                                                             </span>
@@ -3845,7 +3845,7 @@ const MobileDashboardDemo = ({
                                     >
                                         <div className="flex items-center justify-between mb-6">
                                             <h2 className={cn("text-xl font-bold", textColor)}>Completed</h2>
-                                            <span className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-xs font-bold">
+                                            <span className="px-3 py-1 bg-info/10 text-info rounded-full text-xs font-bold">
                                                 {completedDealsCount} Closed
                                             </span>
                                         </div>
@@ -3866,12 +3866,12 @@ const MobileDashboardDemo = ({
                                                             className={cn(
                                                                 "p-4 rounded-2xl border transition-all duration-200 group active:scale-[0.99] relative cursor-pointer",
                                                                 borderColor,
-                                                                isDark ? "bg-white/5 active:bg-white/10" : "bg-white shadow-sm active:bg-slate-50"
+                                                                isDark ? "bg-card active:bg-secondary/50" : "bg-card shadow-sm active:bg-background"
                                                             )}
                                                         >
                                                             <div className="flex items-start justify-between mb-3">
                                                                 <div className="flex items-center gap-3 min-w-0">
-                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm">
+                                                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-border shrink-0 shadow-sm">
                                                                         {getBrandIcon(deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url, deal.category, deal.brand_name)}
                                                                     </div>
                                                                     <div className="min-w-0">
@@ -3880,14 +3880,14 @@ const MobileDashboardDemo = ({
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right shrink-0 pl-3">
-                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                         ₹{(deal.deal_amount || deal.exact_budget || 0).toLocaleString()}
                                                                     </div>
-                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-slate-300" : "text-slate-500")}>Earned</p>
+                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-muted-foreground" : "text-muted-foreground")}>Earned</p>
                                                                 </div>
                                                             </div>
 
-                                                            <div className={cn("text-[11px] font-semibold", isDark ? "text-emerald-300" : "text-emerald-700")}>
+                                                            <div className={cn("text-[11px] font-semibold", isDark ? "text-primary" : "text-primary")}>
                                                                 ✅ Completed
                                                             </div>
                                                             <button type="button"
@@ -3901,7 +3901,7 @@ const MobileDashboardDemo = ({
                                                                 }}
                                                                 className={cn(
                                                                     "mt-4 w-full h-12 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95",
-                                                                    isDark ? "bg-white/10 hover:bg-white/15 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+                                                                    isDark ? "bg-secondary/50 hover:bg-secondary/15 text-foreground" : "bg-background text-foreground hover:bg-background"
                                                                 )}
                                                             >
                                                                 {ux.cta || 'View Summary'}
@@ -3912,7 +3912,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         ) : (
                                             <div className="text-center py-8">
-                                                <CheckCircle2 className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
+                                                <CheckCircle2 className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-foreground" : "text-muted-foreground")} />
                                                 <p className={cn("text-sm", secondaryTextColor)}>No completed deals yet.</p>
                                             </div>
                                         )}
@@ -3944,23 +3944,23 @@ const MobileDashboardDemo = ({
                                                                 borderColor,
                                                                 isDark
                                                                     ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-                                                                    : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
+                                                                    : "bg-card shadow-sm hover:shadow-md active:bg-background"
                                                             )}
                                                         >
                                                             <div className="flex flex-wrap items-center gap-2 mb-3">
                                                                 <span
                                                                     className={cn(
                                                                         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
-                                                                        isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200"
+                                                                        isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning"
                                                                     )}
                                                                 >
-                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-amber-200" : "text-amber-700")} strokeWidth={3} />
+                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-warning" : "text-warning")} strokeWidth={3} />
                                                                     Action required
                                                                 </span>
                                                             </div>
                                                             <div className="flex items-start justify-between mb-3.5">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-11 h-11 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
+                                                                    <div className="w-11 h-11 rounded-xl overflow-hidden border border-border shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
                                                                         {getBrandIcon(
                                                                             deal.brand_logo || deal.brand_logo_url || deal.logo_url || deal.raw?.brand_logo || deal.raw?.brand_logo_url || (deal as any).brand?.logo_url,
                                                                             deal.category,
@@ -3975,10 +3975,10 @@ const MobileDashboardDemo = ({
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right shrink-0 pl-3">
-                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-white" : "text-slate-900")}>
+                                                                    <div className={cn("text-[17px] font-black tracking-tight leading-none", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                         ₹{Number(deal.deal_amount || 0).toLocaleString()}
                                                                     </div>
-                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-slate-300" : "text-slate-500")}>Campaign budget</p>
+                                                                    <p className={cn("text-[8px] font-black uppercase tracking-widest opacity-40 mt-1.5", isDark ? "text-muted-foreground" : "text-muted-foreground")}>Campaign budget</p>
                                                                 </div>
                                                             </div>
 
@@ -4034,35 +4034,35 @@ const MobileDashboardDemo = ({
                                                                 borderColor,
 	                                                                isDark
 	                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-	                                                                    : "bg-white shadow-sm hover:shadow-md active:bg-slate-50"
+	                                                                    : "bg-card shadow-sm hover:shadow-md active:bg-background"
 	                                                            )}
 	                                                        >
 	                                                            <div className="flex flex-wrap items-center gap-2 mb-3">
 	                                                                <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
-	                                                                    isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200"
+	                                                                    isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning"
 	                                                                )}>
-	                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-amber-200" : "text-amber-700")} strokeWidth={3} />
+	                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-warning" : "text-warning")} strokeWidth={3} />
 	                                                                    Action required
 	                                                                </span>
 	                                                            </div>
                                                             <div className="flex items-start justify-between mb-3.5">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-11 h-11 rounded-xl overflow-hidden border border-white/10 shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
+                                                                    <div className="w-11 h-11 rounded-xl overflow-hidden border border-border shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
                                                                         {getBrandIcon(req.brand_logo || req.brand_logo_url || req.logo_url || req.raw?.brand_logo || req.raw?.brand_logo_url || req.raw?.logo_url, req.category, req.brand_name)}
                                                                     </div>
                                                                     <div>
                                                                         <h4 className={cn("text-[15px] font-bold tracking-tight", textColor)}>{req.brand_name}</h4>
                                                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                                                            <ShieldCheck className="w-3 h-3 text-blue-500" />
+                                                                            <ShieldCheck className="w-3 h-3 text-info" />
                                                                             <span className={cn("text-[10px] font-black uppercase tracking-widest opacity-40", textColor)}>Verified Brand</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className={cn("text-[22px] font-black font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                                                    <p className={cn("text-[22px] font-black font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                         ₹{amount.toLocaleString()}
                                                                     </p>
-                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-60 mt-1", isDark ? "text-emerald-300" : "text-emerald-600")}>
+                                                                    <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-60 mt-1", isDark ? "text-primary" : "text-primary")}>
                                                                         You’ll earn
                                                                     </p>
                                                                 </div>
@@ -4090,7 +4090,7 @@ const MobileDashboardDemo = ({
                                                                                 }
                                                                             } catch (_) { }
                                                                             return items.slice(0, 2).map((d, i) => (
-                                                                                <span key={i} className={cn("text-[12px] font-black bg-slate-500/10 px-2.5 py-1 rounded-lg", isDark ? "text-white" : "text-slate-900")}>
+                                                                                <span key={i} className={cn("text-[12px] font-black bg-background/10 px-2.5 py-1 rounded-lg", isDark ? "text-foreground" : "text-muted-foreground")}>
                                                                                     {d}
                                                                                 </span>
                                                                             ));
@@ -4099,10 +4099,10 @@ const MobileDashboardDemo = ({
                                                                     <div className={cn(
                                                                         "flex items-center gap-1.5 ml-auto px-2.5 py-1.5 rounded-lg border",
                                                                         expTone === 'danger'
-                                                                            ? (isDark ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-red-50 text-red-700 border-red-200")
+                                                                            ? (isDark ? "bg-destructive/10 text-destructive border-destructive/20" : "bg-destructive text-destructive border-destructive")
                                                                             : expTone === 'warn'
-                                                                                ? (isDark ? "bg-amber-500/10 text-amber-200 border-amber-500/20" : "bg-amber-50 text-amber-800 border-amber-200")
-                                                                                : (isDark ? "bg-white/5 text-white/70 border-white/10" : "bg-white text-slate-700 border-slate-200")
+                                                                                ? (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
+                                                                                : (isDark ? "bg-card text-foreground/70 border-border" : "bg-card text-muted-foreground border-border")
                                                                     )}>
                                                                         <Clock className="w-3.5 h-3.5" />
                                                                         <span className="text-[10px] font-bold uppercase tracking-widest">
@@ -4112,7 +4112,7 @@ const MobileDashboardDemo = ({
                                                                 </div>
                                                                 
                                                                 {/* Expected Payment Time callout */}
-                                                                <div className={cn("flex items-start gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold leading-relaxed border", isDark ? "bg-[#1C2C2A]/70 text-emerald-200 border-emerald-500/20" : "bg-emerald-50 text-emerald-800 border-emerald-200")}>
+                                                                <div className={cn("flex items-start gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold leading-relaxed border", isDark ? "bg-[#1C2C2A]/70 text-primary border-primary/20" : "bg-primary text-primary border-primary")}>
                                                                     <Landmark className="w-3.5 h-3.5 shrink-0 mt-[2px]" />
                                                                     Payment released after content approval
                                                                 </div>
@@ -4122,7 +4122,7 @@ const MobileDashboardDemo = ({
                                                                 <button type="button"
                                                                     type="button"
                                                                     onClick={(e) => { e.stopPropagation(); triggerHaptic(); setSelectedItem(req); setSelectedType('offer'); }}
-                                                                    className="h-11 w-full bg-blue-600 text-white rounded-[16px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                                                                    className="h-11 w-full bg-info text-foreground rounded-[16px] text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
                                                                 >
                                                                     Review & Respond
                                                                     <ArrowRight className="w-3.5 h-3.5 opacity-70" />
@@ -4138,7 +4138,7 @@ const MobileDashboardDemo = ({
                                                                             setSelectedType('offer');
                                                                             toast.message("Counter inside offer details", { description: "Open offer → Counter." });
                                                                         }}
-                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-white/70 hover:text-white" : "text-slate-600 hover:text-slate-900")}
+                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/70 hover:text-foreground" : "text-muted-foreground hover:text-muted-foreground")}
                                                                     >
                                                                         Counter
                                                                     </button>
@@ -4154,7 +4154,7 @@ const MobileDashboardDemo = ({
                                                                             if (onDeclineRequest) onDeclineRequest(req.id);
                                                                             else toast.error("Declined offer.");
                                                                         }}
-                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-white/60 hover:text-white" : "text-slate-600 hover:text-slate-900")}
+                                                                        className={cn("text-[11px] font-black uppercase tracking-widest", isDark ? "text-foreground/60 hover:text-foreground" : "text-muted-foreground hover:text-muted-foreground")}
                                                                     >
                                                                         Decline
                                                                     </button>
@@ -4172,7 +4172,7 @@ const MobileDashboardDemo = ({
                                             </div>
                                         ) : (
                                             <div className="text-center py-12">
-                                                <Handshake className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-white" : "text-slate-900")} />
+                                                <Handshake className={cn("w-12 h-12 mx-auto mb-3 opacity-20", isDark ? "text-foreground" : "text-muted-foreground")} />
                                                 <p className={cn("text-sm", secondaryTextColor)}>No new requests right now.</p>
                                             </div>
                                         )}
@@ -4203,10 +4203,10 @@ const MobileDashboardDemo = ({
                                             <div className="px-4 mb-8">
                                                 <div className={cn(
                                                     "p-5 rounded-3xl flex items-center gap-4 transition-all border",
-                                                    isDark ? "bg-[#1C1C1E] border-[#2C2C2E]" : "bg-white border-[#E5E5EA] shadow-sm"
+                                                    isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm"
                                                 )}>
                                                     <div className="relative">
-                                                        <div className="w-20 h-20 rounded-2xl overflow-hidden border border-white/10 shadow-md">
+                                                        <div className="w-20 h-20 rounded-2xl overflow-hidden border border-border shadow-md">
                                                             <img
                                                                 src={avatarUrl}
                                                                 alt="avatar"
@@ -4217,16 +4217,16 @@ const MobileDashboardDemo = ({
                                                                 }}
                                                             />
                                                         </div>
-                                                        <button type="button" className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-500 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
-                                                            <Camera className="w-3.5 h-3.5 text-white" />
+                                                        <button type="button" className="absolute -bottom-1 -right-1 w-7 h-7 bg-info rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+                                                            <Camera className="w-3.5 h-3.5 text-foreground" />
                                                         </button>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>{displayName}</h2>
                                                         <p className={cn("text-[14px] opacity-40 font-medium mb-1.5", textColor)}> @{username || 'theblooming.miss'}</p>
-                                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                                                            <ShieldCheck className="w-3 h-3 text-blue-500" />
-                                                            <span className="text-[10px] font-black uppercase tracking-wider text-blue-500">Verified Creator</span>
+                                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-info/10 border border-info/20">
+                                                            <ShieldCheck className="w-3 h-3 text-info" />
+                                                            <span className="text-[10px] font-black uppercase tracking-wider text-info">Verified Creator</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -4235,14 +4235,14 @@ const MobileDashboardDemo = ({
                                             <SectionHeader title="Account" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
-                                                    icon={<User />} iconBg="bg-blue-500"
+                                                    icon={<User />} iconBg="bg-info"
                                                     label="Personal Information"
                                                     subtext="Creator Identity & Legal details"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('personal')}
                                                 />
                                                 <SettingsRow
-                                                    icon={<FileText />} iconBg="bg-emerald-500"
+                                                    icon={<FileText />} iconBg="bg-primary"
                                                     label="Public Portfolio"
                                                     subtext="What brands see on your link"
                                                     isDark={isDark} textColor={textColor}
@@ -4260,7 +4260,7 @@ const MobileDashboardDemo = ({
                                             <SectionHeader title="Preferences" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
-                                                    icon={isDark ? <Sun /> : <Moon />} iconBg="bg-slate-500"
+                                                    icon={isDark ? <Sun /> : <Moon />} iconBg="bg-background"
                                                     label="Dark Mode"
                                                     subtext="System default or custom"
                                                     isDark={isDark} textColor={textColor}
@@ -4296,7 +4296,7 @@ const MobileDashboardDemo = ({
                                             <SectionHeader title="Security" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
-                                                    icon={<ShieldCheck />} iconBg="bg-blue-600"
+                                                    icon={<ShieldCheck />} iconBg="bg-info"
                                                     label="Armour Verification"
                                                     subtext="Trust features & fraud protection"
                                                     isDark={isDark} textColor={textColor}
@@ -4307,14 +4307,14 @@ const MobileDashboardDemo = ({
                                             <SectionHeader title="About" isDark={isDark} />
                                             <SettingsGroup isDark={isDark}>
                                                 <SettingsRow
-                                                    icon={<Info />} iconBg="bg-slate-400"
+                                                    icon={<Info />} iconBg="bg-background"
                                                     label="About Creator Armour"
                                                     subtext="Version 2.4.1 • Support"
                                                     isDark={isDark} textColor={textColor}
                                                     onClick={() => setActiveSettingsPage('about')}
                                                 />
                                                 <SettingsRow
-                                                    icon={<LogOut />} iconBg="bg-red-500"
+                                                    icon={<LogOut />} iconBg="bg-destructive"
                                                     label="Log Out"
                                                     subtext="Securely sign out of your account"
                                                     isDark={isDark} textColor={textColor}
@@ -4363,27 +4363,27 @@ const MobileDashboardDemo = ({
 	                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
 	                                )}
 	                            >
-	                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
-	                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl" />
+	                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
+	                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
 	                                <div className="relative z-10">
-	                                    <div className="flex items-center justify-between text-white/90 mb-3">
+	                                    <div className="flex items-center justify-between text-foreground/90 mb-3">
 	                                        <div className="space-y-0.5">
-	                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-white">Pending Amount</span>
-	                                            <span className="block text-[11px] font-semibold text-white/70">Released after content approval</span>
+	                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-foreground">Pending Amount</span>
+	                                            <span className="block text-[11px] font-semibold text-foreground/70">Released after content approval</span>
 	                                        </div>
-	                                        <div className="p-2 rounded-xl bg-white/12 backdrop-blur-md border border-white/20">
-	                                            <Clock className="w-4 h-4 text-white" />
+	                                        <div className="p-2 rounded-xl bg-secondary/12 backdrop-blur-md border border-border">
+	                                            <Clock className="w-4 h-4 text-foreground" />
 	                                        </div>
 	                                    </div>
-	                                    <div className="text-4xl font-black text-white mb-5 flex items-baseline gap-1 font-outfit">
+	                                    <div className="text-4xl font-black text-foreground mb-5 flex items-baseline gap-1 font-outfit">
 	                                        <span className="text-2xl font-bold opacity-75">₹</span>
 	                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
 	                                    </div>
-	                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-white/15 w-fit">
-	                                        <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center border border-white/20">
-	                                            <ShieldCheck className="w-3 h-3 text-white/90" />
+	                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-border w-fit">
+	                                        <div className="w-5 h-5 rounded-full bg-secondary/15 flex items-center justify-center border border-border">
+	                                            <ShieldCheck className="w-3 h-3 text-foreground/90" />
 	                                        </div>
-	                                        <span className="text-[9px] font-black text-white tracking-[0.15em] uppercase">Creator Armour protection active</span>
+	                                        <span className="text-[9px] font-black text-foreground tracking-[0.15em] uppercase">Creator Armour protection active</span>
 	                                    </div>
 	                                </div>
 	                            </motion.div>
@@ -4392,7 +4392,7 @@ const MobileDashboardDemo = ({
                             <div className="grid grid-cols-2 gap-3 mb-6">
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Paid This Month</p>
-                                    <div className={cn("text-lg font-bold font-outfit", isDark ? "text-emerald-400" : "text-emerald-600")}>₹{monthlyRevenue.toLocaleString()}</div>
+                                    <div className={cn("text-lg font-bold font-outfit", isDark ? "text-primary" : "text-primary")}>₹{monthlyRevenue.toLocaleString()}</div>
                                 </div>
                                 <div className={cn("p-5 rounded-2xl border", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-50 mb-2", textColor)}>Total Earnings</p>
@@ -4407,12 +4407,12 @@ const MobileDashboardDemo = ({
 	                                        (() => {
 	                                            const payUx = getCreatorPaymentListUX(deal);
 	                                            const badgeClass = payUx.tone === 'success'
-	                                                ? (isDark ? "bg-emerald-500/12 text-emerald-300 border-emerald-400/20" : "bg-emerald-500/10 text-emerald-700 border-emerald-500/15")
+	                                                ? (isDark ? "bg-primary/12 text-primary border-primary/20" : "bg-primary/10 text-primary border-primary/15")
 	                                                : payUx.tone === 'warning'
-	                                                    ? (isDark ? "bg-amber-500/14 text-amber-200 border-amber-400/25" : "bg-amber-500/10 text-amber-700 border-amber-500/15")
+	                                                    ? (isDark ? "bg-warning/14 text-warning border-warning/25" : "bg-warning/10 text-warning border-warning/15")
 	                                                    : payUx.tone === 'neutral'
-	                                                        ? (isDark ? "bg-white/10 text-white/80 border-white/10" : "bg-slate-900/5 text-slate-700 border-slate-900/10")
-	                                                        : (isDark ? "bg-sky-500/14 text-sky-200 border-sky-400/25" : "bg-sky-500/10 text-sky-700 border-sky-500/15");
+	                                                        ? (isDark ? "bg-secondary/50 text-foreground/80 border-border" : "bg-background/5 text-muted-foreground border-border")
+	                                                        : (isDark ? "bg-info/14 text-info border-sky-400/25" : "bg-info/10 text-info border-sky-500/15");
 
 	                                        <motion.div
 	                                            key={idx}
@@ -4423,7 +4423,7 @@ const MobileDashboardDemo = ({
 	                                            className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
 	                                        >
 	                                            <div className="flex items-center gap-4">
-	                                                <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-white/5" : "bg-slate-50")}>
+	                                                <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-card" : "bg-background")}>
 	                                                    {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
 	                                                </div>
 	                                                <div>
@@ -4447,7 +4447,7 @@ const MobileDashboardDemo = ({
 	                                    ))
 	                                ) : (
 	                                    <div className="text-center py-12">
-	                                        <div className="w-16 h-16 rounded-full bg-slate-500/10 flex items-center justify-center mx-auto mb-4 border border-slate-500/10">
+	                                        <div className="w-16 h-16 rounded-full bg-background/10 flex items-center justify-center mx-auto mb-4 border border-border">
 	                                            <CreditCard className={cn("w-8 h-8 opacity-20", textColor)} />
                                         </div>
                                         <p className={cn("text-sm font-bold opacity-30", textColor)}>No transactions found</p>
@@ -4460,18 +4460,18 @@ const MobileDashboardDemo = ({
 
                 {/* ─── NAVIGATION BAR (Redesigned) ─── */}
                 <div
-                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1050] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-slate-200 bg-white/90')}
+                    className={cn('fixed bottom-0 inset-x-0 border-t z-[1050] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
                     style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
                 >
                     <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
-                            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
+                            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('collabs'); }} className="flex flex-col items-center gap-1 w-14 relative">
-                            <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
+                            <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'collabs' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'collabs' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
                         </motion.button>
 
                         {/* Middle Action: + Collab Link */}
@@ -4481,22 +4481,22 @@ const MobileDashboardDemo = ({
                         >
                             <div className={cn(
                                 "w-16 h-16 rounded-full flex items-center justify-center transition-all hover:brightness-110",
-                                isDark ? "bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#0B0F14] text-white shadow-[0_4px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.35)] ring-1 ring-emerald-400/30"
-                                    : "bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-white shadow-lg hover:shadow-xl ring-1 ring-emerald-200"
+                                isDark ? "bg-gradient-to-br from-emerald-500 to-sky-500 border-4 border-[#0B0F14] text-foreground shadow-[0_4px_30px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_40px_rgba(14,165,233,0.35)] ring-1 ring-emerald-400/30"
+                                    : "bg-gradient-to-br from-emerald-600 to-sky-600 border-4 border-white text-foreground shadow-lg hover:shadow-xl ring-1 ring-emerald-200"
                             )}>
                                 <Link2 className="w-7 h-7" />
                             </div>
-                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-slate-400" : "text-slate-600")}>Create</span>
+                            <span className={cn("text-[11px] font-semibold tracking-tight mt-1 whitespace-nowrap", isDark ? "text-muted-foreground" : "text-muted-foreground")}>Create</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">
-                            <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
+                            <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
                         </motion.button>
 
                         <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
-                            <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-white' : 'text-slate-900') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-white font-bold' : 'text-slate-900 font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
+                            <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
                         </motion.button>
                     </div>
                 </div>
@@ -4519,22 +4519,22 @@ const MobileDashboardDemo = ({
                                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                                 className={cn(
                                     "fixed bottom-0 inset-x-0 z-[110] rounded-t-[2.5rem] border-t p-6 pb-safe overflow-hidden shadow-2xl",
-                                    isDark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-200"
+                                    isDark ? "bg-background border-border" : "bg-card border-border"
                                 )}
                             >
-                                <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-6" />
+                                <div className="w-12 h-1 bg-background/20 rounded-full mx-auto mb-6" />
                                 <div className="max-w-md mx-auto">
                                     <div className="flex items-start justify-between mb-6">
                                         <div>
-                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-white" : "text-slate-900")}>Manage your deal page</h2>
-                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-white" : "text-slate-900")}>Share your profile, review offers, and keep your page current.</p>
+                                            <h2 className={cn("text-2xl font-bold tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>Manage your deal page</h2>
+                                            <p className={cn("text-[13px] mt-1 opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>Share your profile, review offers, and keep your page current.</p>
                                         </div>
                                         <motion.button
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => setShowActionSheet(false)}
-                                            className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}
+                                            className={cn("w-10 h-10 rounded-full flex items-center justify-center", isDark ? "bg-card" : "bg-background")}
                                         >
-                                            <X className="w-5 h-5 text-slate-400" />
+                                            <X className="w-5 h-5 text-muted-foreground" />
                                         </motion.button>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 mb-6">
@@ -4545,11 +4545,11 @@ const MobileDashboardDemo = ({
                                             }}
                                             className={cn(
                                                 'p-4 rounded-2xl border text-left transition-all active:scale-[0.99]',
-                                                isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-emerald-300/30 hover:from-emerald-400 hover:to-sky-400 text-white shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-emerald-600/40 hover:from-emerald-500 hover:to-sky-500 text-white shadow-lg'
+                                                isDark ? 'bg-gradient-to-br from-emerald-500 to-sky-500 border-primary/30 hover:from-emerald-400 hover:to-sky-400 text-foreground shadow-[0_10px_35px_rgba(16,185,129,0.25)]' : 'bg-gradient-to-br from-emerald-600 to-sky-600 border-primary/40 hover:from-emerald-500 hover:to-sky-500 text-foreground shadow-lg'
                                             )}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-white/10">
+                                                <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-secondary/50">
                                                     <Share2 className="w-5 h-5" />
                                                 </div>
                                                 <div className="min-w-0">
@@ -4564,7 +4564,7 @@ const MobileDashboardDemo = ({
                                                 handleCopyStorefront();
                                                 setShowActionSheet(false);
                                             }}
-                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
                                         >
                                             <p className={cn('text-[13px] font-bold', textColor)}>Copy deal page</p>
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>creatorarmour.com/{username}</p>
@@ -4572,7 +4572,7 @@ const MobileDashboardDemo = ({
 
                                         <button type="button"
                                             onClick={() => { setShowActionSheet(false); window.open(`/${username}`, '_blank'); }}
-                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
                                         >
                                             <p className={cn('text-[13px] font-bold', textColor)}>Preview page</p>
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>See what brands see before you share it</p>
@@ -4580,7 +4580,7 @@ const MobileDashboardDemo = ({
 
                                         <button type="button"
                                             onClick={() => { setShowActionSheet(false); setActiveTab('collabs'); setCollabSubTab('pending'); }}
-                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                                            className={cn('p-4 rounded-2xl border text-left transition-all active:scale-[0.99]', isDark ? 'bg-card border-border hover:bg-secondary/50' : 'bg-background border-border hover:bg-background')}
                                         >
                                             <p className={cn('text-[13px] font-bold', textColor)}>Review offers</p>
                                             <p className={cn('text-[12px] opacity-60 mt-1', textColor)}>Open pending brand requests and respond faster</p>
@@ -4590,27 +4590,27 @@ const MobileDashboardDemo = ({
                                     <div className="space-y-1">
                                         <motion.button
                                             whileTap={{ scale: 0.98 }}
-                                            className={cn("w-full flex items-center justify-between p-4 rounded-2xl transition-all group", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}
+                                            className={cn("w-full flex items-center justify-between p-4 rounded-2xl transition-all group", isDark ? "hover:bg-card" : "hover:bg-background")}
                                         >
                                             <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-xl bg-slate-500/10 flex items-center justify-center">
-                                                    <QrCode className="w-4 h-4 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                                                <div className="w-8 h-8 rounded-xl bg-background/10 flex items-center justify-center">
+                                                    <QrCode className="w-4 h-4 text-muted-foreground group-hover:text-info transition-colors" />
                                                 </div>
-                                                <p className={cn("font-bold text-[14px]", isDark ? "text-white" : "text-slate-900")}>Generate QR Code</p>
+                                                <p className={cn("font-bold text-[14px]", isDark ? "text-foreground" : "text-muted-foreground")}>Generate QR Code</p>
                                             </div>
-                                            <ChevronRight className="w-4 h-4 text-slate-300" />
+                                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                                         </motion.button>
                                         <motion.button
                                             whileTap={{ scale: 0.98 }}
-                                            className={cn("w-full flex items-center justify-between p-4 rounded-2xl transition-all group", isDark ? "hover:bg-white/5" : "hover:bg-slate-50")}
+                                            className={cn("w-full flex items-center justify-between p-4 rounded-2xl transition-all group", isDark ? "hover:bg-card" : "hover:bg-background")}
                                         >
                                             <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-xl bg-slate-500/10 flex items-center justify-center">
-                                                    <RefreshCw className="w-4 h-4 text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                                                <div className="w-8 h-8 rounded-xl bg-background/10 flex items-center justify-center">
+                                                    <RefreshCw className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                                 </div>
-                                                <p className={cn("font-bold text-[14px]", isDark ? "text-white" : "text-slate-900")}>Test Intake Form</p>
+                                                <p className={cn("font-bold text-[14px]", isDark ? "text-foreground" : "text-muted-foreground")}>Test Intake Form</p>
                                             </div>
-                                            <ChevronRight className="w-4 h-4 text-slate-300" />
+                                            <ChevronRight className="w-4 h-4 text-muted-foreground" />
                                         </motion.button>
                                     </div>
                                 </div>
@@ -4641,25 +4641,25 @@ const MobileDashboardDemo = ({
                             {isDark ? (
                                 <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
                                     <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-                                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-emerald-400/20 rounded-full blur-[140px]" />
-                                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-sky-500/18 rounded-full blur-[160px]" />
-                                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-emerald-500/12 rounded-full blur-[170px]" />
+                                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
+                                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
+                                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
                                 </div>
                             ) : (
                                 <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                                    <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(55%_45%_at_95%_10%,rgba(14,165,233,0.16),transparent_60%)]" />
+                                    <div className="absolute inset-0 bg-background" />
                                 </div>
                             )}
 
                             {/* Fixed Header */}
                             <div className={cn(
                                 "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
-                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-white/10" : "bg-white/95 backdrop-blur-md border-slate-100"
+                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-border" : "bg-secondary/95 backdrop-blur-md border-border"
                             )}>
                                 <div className="flex items-center gap-3">
                                     <button type="button"
                                         onClick={closeItemDetail}
-                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                     >
                                         <ChevronRight className="w-4 h-4 rotate-180" />
                                     </button>
@@ -4674,7 +4674,7 @@ const MobileDashboardDemo = ({
                                 </div>
                                 <button type="button"
                                     onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
-                                    className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5" : "bg-white")}
+                                    className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card" : "bg-card")}
                                 >
                                     <MoreHorizontal className="w-4 h-4 opacity-40" />
                                 </button>
@@ -4688,28 +4688,28 @@ const MobileDashboardDemo = ({
                                         {/* Status Row */}
                                         <div className={cn("flex items-center px-3 py-1.5 rounded-full border shadow-sm mb-1",
                                             selectedType === 'deal'
-                                                ? (isDark ? "bg-emerald-500/10 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")
-                                                : (isDark ? "bg-amber-500/10 border-amber-500/20" : "bg-amber-50 border-amber-200")
+                                                ? (isDark ? "bg-primary/10 border-primary/20" : "bg-primary border-primary")
+                                                : (isDark ? "bg-warning/10 border-warning/20" : "bg-warning border-warning")
                                         )}>
-                                            <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-emerald-400' : 'text-emerald-700') : (isDark ? 'text-amber-400' : 'text-amber-700'))}>
+                                            <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-primary' : 'text-primary') : (isDark ? 'text-warning' : 'text-warning'))}>
                                                 {selectedType === 'deal' ? '🟢 Active Collaboration' : <><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5}/> Awaiting Your Decision</>}
                                             </span>
                                         </div>
 
                                         {/* Campaign Type Tag */}
                                         {selectedItem.collab_type === 'barter' ? (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
                                         ) : (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
                                         )}
 
                                         {/* Hero Budget */}
-                                        <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                                        <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
                                             {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
                                         </p>
 
                                         {/* Deliverables */}
-                                        <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-slate-300" : "text-slate-600")}>
+                                        <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-muted-foreground" : "text-muted-foreground")}>
                                             {(() => {
                                                 const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
                                                 let items: string[] = ['🎬 1 Reel', '📱 2 Stories'];
@@ -4745,7 +4745,7 @@ const MobileDashboardDemo = ({
                                                 return <p className={cn("text-[12px] font-semibold mt-2", secondaryTextColor)}>No Deadline Set</p>;
                                             }
                                             return (
-                                                <div className="flex items-center justify-center gap-1.5 mt-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full shadow-sm">
+                                                <div className="flex items-center justify-center gap-1.5 mt-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full shadow-sm">
                                                     <Clock className="w-3.5 h-3.5" />
                                                     <span className="text-[11px] font-black uppercase tracking-wider">Deadline: {deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                 </div>
@@ -4754,11 +4754,11 @@ const MobileDashboardDemo = ({
                                     </div>
 
                                     {/* Brand Logo & Name */}
-                                    <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-white/10" : "border-slate-100")}>
+                                    <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-border" : "border-border")}>
                                         <div className={cn("w-8 h-8 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
                                             selectedItem.collab_type === 'barter'
-                                                ? (isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-100")
-                                                : (isDark ? "bg-blue-500/10 border-blue-500/20" : "bg-blue-50 border-blue-200")
+                                                ? (isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")
+                                                : (isDark ? "bg-info/10 border-info/20" : "bg-info border-info")
                                         )}>
                                             {getBrandIcon(
                                                 selectedItem.brand_logo ||
@@ -4777,9 +4777,9 @@ const MobileDashboardDemo = ({
                                                 <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
                                                     {selectedItem.brand_name || 'Brand Name'}
                                                 </p>
-                                                <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2.5} />
+                                                <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
                                             </div>
-                                            <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-slate-500")}>Verified Brand</p>
+                                            <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-muted-foreground")}>Verified Brand</p>
                                         </div>
                                     </div>
                                 </div>
@@ -4794,8 +4794,8 @@ const MobileDashboardDemo = ({
                                         onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
                                         className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity"
                                     >
-                                        <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-blue-500/10" : "bg-blue-50")}>
-                                            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2} />
+                                        <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-info/10" : "bg-info")}>
+                                            <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2} />
                                         </div>
                                         <div className="flex-1 text-left min-w-0">
                                             <p className={cn("text-[13px] font-bold leading-tight", textColor)}>Brand Information</p>
@@ -4820,16 +4820,16 @@ const MobileDashboardDemo = ({
                                                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                                                 className="overflow-hidden"
                                             >
-                                                <div className={cn("border-t mx-0", isDark ? "border-white/8" : "border-slate-100")} />
+                                                <div className={cn("border-t mx-0", isDark ? "border-border/8" : "border-border")} />
 
                                                 {/* Trust badges */}
                                                 <div className="px-4 pt-3 pb-2">
                                                     <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40", textColor)}>Verified Identity</p>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {[
-                                                            { icon: '✓', label: 'GST Verified', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-                                                            { icon: '✓', label: 'Email Verified', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-                                                            { icon: '✓', label: 'Domain Verified', color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+                                                            { icon: '✓', label: 'GST Verified', color: 'text-primary bg-primary/10 border-primary/20' },
+                                                            { icon: '✓', label: 'Email Verified', color: 'text-primary bg-primary/10 border-primary/20' },
+                                                            { icon: '✓', label: 'Domain Verified', color: 'text-primary bg-primary/10 border-primary/20' },
                                                         ].map((badge) => (
                                                             <span key={badge.label} className={cn("px-2 py-0.5 rounded-md text-[10px] font-black border", badge.color)}>
                                                                 {badge.icon} {badge.label}
@@ -4849,7 +4849,7 @@ const MobileDashboardDemo = ({
                                                         { label: 'Email', value: selectedItem.contact_email || selectedItem.email || selectedItem.brand_email || selectedItem.raw?.brand_email || '—' },
                                                         { label: 'Phone', value: selectedItem.contact_phone || selectedItem.phone || selectedItem.brand_phone || selectedItem.raw?.brand_phone || '—' },
                                                     ].map((row, i) => (
-                                                        <div key={i} className={cn("flex items-start justify-between py-2", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
+                                                        <div key={i} className={cn("flex items-start justify-between py-2", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
                                                             <span className={cn("text-[12px] shrink-0 w-16", secondaryTextColor)}>{row.label}</span>
                                                             <span className={cn("text-[12px] font-semibold text-right flex-1 ml-3", textColor)}>{row.value}</span>
                                                         </div>
@@ -4865,20 +4865,20 @@ const MobileDashboardDemo = ({
                                 {selectedType === 'offer' && (
                                     <div className="mb-6">
                                         <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Timeline</h4>
-                                        <div className={cn("rounded-2xl border px-2 py-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                        <div className={cn("rounded-2xl border px-2 py-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
                                             <div className="flex items-center justify-between px-2 mb-4 text-[11px] font-black uppercase tracking-wider">
-                                                <span className={isDark ? "text-blue-400" : "text-blue-600"}>Step 1 of 5</span>
+                                                <span className={isDark ? "text-info" : "text-info"}>Step 1 of 5</span>
                                                 <span className={textColor}>Offer Received</span>
                                             </div>
                                             <div className="flex items-center justify-between px-2 relative">
-                                                <div className={cn("absolute left-4 right-4 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-white/10" : "bg-slate-100")} />
-                                                <div className={cn("absolute left-4 w-1 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-blue-500" : "bg-blue-500")} />
+                                                <div className={cn("absolute left-4 right-4 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-secondary/50" : "bg-background")} />
+                                                <div className={cn("absolute left-4 w-1 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-info" : "bg-info")} />
                                                 {['Offer', 'Accept', 'Create', 'Submit', 'Payment'].map((step, i) => (
                                                     <div key={step} className="relative z-10 flex flex-col items-center gap-2">
                                                         <div className={cn("w-[15px] h-[15px] rounded-full border-[3px]", 
-                                                            i === 0 ? "bg-white border-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] box-content" : (isDark ? "bg-[#111827] border-white/20" : "bg-white border-slate-200")
+                                                            i === 0 ? "bg-card border-info shadow-[0_0_8px_rgba(59,130,246,0.6)] box-content" : (isDark ? "bg-[#111827] border-border" : "bg-card border-border")
                                                         )} />
-                                                        <span className={cn("text-[9px] font-bold uppercase", i === 0 ? (isDark ? "text-blue-400" : "text-blue-600") : "opacity-40")}>{step}</span>
+                                                        <span className={cn("text-[9px] font-bold uppercase", i === 0 ? (isDark ? "text-info" : "text-info") : "opacity-40")}>{step}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -4890,8 +4890,8 @@ const MobileDashboardDemo = ({
                                 {selectedType === 'offer' && (
                                     <div className="mb-6">
                                         <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Brief</h4>
-                                        <div className={cn("rounded-2xl border p-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
-                                            <p className={cn("text-[13px] leading-relaxed font-semibold whitespace-pre-wrap", isDark ? "text-white/80" : "text-slate-700")}>
+                                        <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
+                                            <p className={cn("text-[13px] leading-relaxed font-semibold whitespace-pre-wrap", isDark ? "text-foreground/80" : "text-muted-foreground")}>
                                                 {selectedItem.campaign_description || selectedItem.raw?.campaign_description || '—'}
                                             </p>
                                         </div>
@@ -4923,7 +4923,7 @@ const MobileDashboardDemo = ({
                                             return items.map((d, i) => (
                                                 <div key={i} className={cn(
                                                     "px-3.5 py-2.5 rounded-xl text-[14px] font-black border flex items-center gap-2 shadow-sm",
-                                                    isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200"
+                                                    isDark ? "bg-card border-border" : "bg-card border-border"
                                                 )}>
                                                     {d}
                                                 </div>
@@ -4936,8 +4936,8 @@ const MobileDashboardDemo = ({
                                 {selectedRequiresShipping && (
                                     <div className="mb-6">
                                         <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
-                                        <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-                                            <div className="w-16 h-16 rounded-xl bg-orange-100 shrink-0 overflow-hidden border border-black/5">
+                                        <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
+                                            <div className="w-16 h-16 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
                                                 <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
                                             </div>
                                             <div>
@@ -4969,19 +4969,19 @@ const MobileDashboardDemo = ({
                                                 <span className={cn(
                                                     "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
                                                     selectedShippingDelivered
-                                                        ? (isDark ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")
+                                                        ? (isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-primary text-primary border-primary")
                                                         : selectedShippingStatus === 'shipped'
-                                                            ? (isDark ? "bg-sky-500/10 text-sky-300 border-sky-500/20" : "bg-sky-50 text-sky-700 border-sky-200")
+                                                            ? (isDark ? "bg-info/10 text-info border-sky-500/20" : "bg-info text-info border-sky-200")
                                                             : selectedShippingStatus === 'issue_reported'
                                                                 ? (isDark ? "bg-rose-500/10 text-rose-300 border-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-200")
-                                                                : (isDark ? "bg-amber-500/10 text-amber-300 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-200")
+                                                                : (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
                                                 )}>
                                                     {selectedShippingDelivered ? 'RECEIVED' : selectedShippingStatus === 'shipped' ? 'SHIPPED' : selectedShippingStatus === 'issue_reported' ? 'ISSUE' : 'PENDING'}
                                                 </span>
                                             </div>
 
                                             {(selectedItem.courier_name || selectedItem.tracking_number || selectedItem.tracking_url || selectedItem.expected_delivery_date) && (
-                                                <div className={cn("rounded-2xl border p-4 space-y-3", isDark ? "bg-white/3 border-white/10" : "bg-white border-slate-200")}>
+                                                <div className={cn("rounded-2xl border p-4 space-y-3", isDark ? "bg-secondary/3 border-border" : "bg-card border-border")}>
                                                     {selectedItem.courier_name && (
                                                         <div>
                                                             <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Courier</p>
@@ -5007,7 +5007,7 @@ const MobileDashboardDemo = ({
                                                             href={selectedItem.tracking_url}
                                                             target="_blank"
                                                             rel="noreferrer"
-                                                            className={cn("inline-flex items-center gap-2 text-[13px] font-bold underline", isDark ? "text-sky-200" : "text-sky-700")}
+                                                            className={cn("inline-flex items-center gap-2 text-[13px] font-bold underline", isDark ? "text-info" : "text-info")}
                                                         >
                                                             <ExternalLink className="w-4 h-4" />
                                                             Track package
@@ -5021,7 +5021,7 @@ const MobileDashboardDemo = ({
                                                     <button type="button"
                                                         onClick={confirmSelectedProductReceived}
                                                         disabled={isConfirmingReceived}
-                                                        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-white font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+                                                        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
                                                     >
                                                         {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                                         Confirm Product Received
@@ -5031,7 +5031,7 @@ const MobileDashboardDemo = ({
                                                             triggerHaptic();
                                                             setShowReportIssueModal(true);
                                                         }}
-                                                        className={cn("w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900")}
+                                                        className={cn("w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2", isDark ? "bg-card border-border text-foreground" : "bg-card border-border text-muted-foreground")}
                                                     >
                                                         <AlertCircle className="w-4 h-4" />
                                                         Report Shipping Issue
@@ -5040,8 +5040,8 @@ const MobileDashboardDemo = ({
                                             )}
 
                                             {selectedShippingStatus === 'pending' && (
-                                                <div className={cn("rounded-2xl border p-4 flex items-start gap-3", isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200")}>
-                                                    <Package className={cn("w-5 h-5 mt-0.5", isDark ? "text-amber-300" : "text-amber-700")} />
+                                                <div className={cn("rounded-2xl border p-4 flex items-start gap-3", isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")}>
+                                                    <Package className={cn("w-5 h-5 mt-0.5", isDark ? "text-warning" : "text-warning")} />
                                                     <div>
                                                         <p className={cn("text-[13px] font-black", textColor)}>Waiting for shipping update</p>
                                                         <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
@@ -5090,8 +5090,8 @@ const MobileDashboardDemo = ({
                                             {selectedRequiresPayment ? 'Payment Method' : selectedRequiresShipping ? 'Fulfillment' : 'Deal Type'}
                                         </p>
                                         <div className="flex items-center gap-2.5 mb-1">
-                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                                                <Landmark className="w-4 h-4 text-blue-500" />
+                                            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                                                <Landmark className="w-4 h-4 text-info" />
                                             </div>
                                             <span className={cn("text-[14px] font-black leading-tight", textColor)}>
                                                 {selectedRequiresPayment ? <>UPI<br />Payout</> : selectedRequiresShipping ? <>Product<br />Shipping</> : <>Collab<br />Only</>}
@@ -5104,7 +5104,7 @@ const MobileDashboardDemo = ({
                                             const rawDeadline = selectedItem.due_date || selectedItem.deadline;
                                             const d = rawDeadline ? new Date(rawDeadline) : new Date(Date.now() + 13 * 86400000);
                                             const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
-                                            const deadlineColor = diff < 3 ? 'text-red-500' : diff < 7 ? 'text-orange-500' : 'text-blue-500';
+                                            const deadlineColor = diff < 3 ? 'text-destructive' : diff < 7 ? 'text-warning' : 'text-info';
                                             const deadlineStr = rawDeadline
                                                 ? new Date(rawDeadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                                                 : '21 Mar 2026';
@@ -5158,16 +5158,16 @@ const MobileDashboardDemo = ({
                                                         <span className={cn(
                                                             "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
                                                             status.includes('signed')
-                                                                ? (isDark ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-200")
+                                                                ? (isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-primary text-primary border-primary")
                                                                 : hasContract
-                                                                    ? (isDark ? "bg-blue-500/10 text-blue-300 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-200")
-                                                                    : (isDark ? "bg-amber-500/10 text-amber-300 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-200")
+                                                                    ? (isDark ? "bg-info/10 text-info border-info/20" : "bg-info text-info border-info")
+                                                                    : (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
                                                         )}>
                                                             {status.includes('signed') ? 'Signed' : hasContract ? 'Ready' : 'Pending'}
                                                         </span>
                                                     </div>
 
-                                                    <div className={cn("rounded-2xl border px-4 py-3 mb-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200")}>
+                                                    <div className={cn("rounded-2xl border px-4 py-3 mb-4", isDark ? "bg-card border-border" : "bg-card border-border")}>
                                                         <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Document</p>
                                                         <p className={cn("text-[13px] font-bold break-all", textColor)}>{contractName}</p>
                                                     </div>
@@ -5177,7 +5177,7 @@ const MobileDashboardDemo = ({
                                                             onClick={() => { triggerHaptic(); openDealContractReview(selectedItem); }}
                                                             className={cn(
                                                                 "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
-                                                                isDark ? "bg-white text-[#0B0F14] border-white" : "bg-slate-900 text-white border-slate-900"
+                                                                isDark ? "bg-card text-[#0B0F14] border-white" : "bg-background text-foreground border-border"
                                                             )}
                                                         >
                                                             Open Contract
@@ -5186,7 +5186,7 @@ const MobileDashboardDemo = ({
                                                             onClick={() => { triggerHaptic(); copySelectedItemLink(); }}
                                                             className={cn(
                                                                 "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
-                                                                isDark ? "bg-white/5 text-white border-white/10" : "bg-white text-slate-900 border-slate-200"
+                                                                isDark ? "bg-card text-foreground border-border" : "bg-card text-muted-foreground border-border"
                                                             )}
                                                         >
                                                             Copy Deal Link
@@ -5205,18 +5205,18 @@ const MobileDashboardDemo = ({
                                     <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
                                     <div className={cn(
                                         "rounded-2xl border p-4 relative overflow-hidden",
-                                        isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+                                        isDark ? "bg-primary/5 border-primary/20" : "bg-primary border-primary"
                                     )}>
-                                        <div className="absolute inset-y-0 left-0 w-1.5 bg-emerald-500 rounded-r-full" />
+                                        <div className="absolute inset-y-0 left-0 w-1.5 bg-primary rounded-r-full" />
                                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
 
                                         <div className="flex items-center gap-3 relative">
-                                            <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
-                                                <ShieldCheck className="w-5 h-5 text-white" strokeWidth={2.5} />
+                                            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
+                                                <ShieldCheck className="w-5 h-5 text-foreground" strokeWidth={2.5} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-emerald-200" : "text-emerald-700")}>Protected by Creator Armour</p>
-                                                <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-emerald-100/70" : "text-emerald-800/80")}>Contract + rights + dispute support</p>
+                                                <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-primary")}>Protected by Creator Armour</p>
+                                                <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-primary/70" : "text-primary/80")}>Contract + rights + dispute support</p>
                                             </div>
                                         </div>
 
@@ -5227,8 +5227,8 @@ const MobileDashboardDemo = ({
                                                 'Dispute protection included',
                                             ].map((t) => (
                                                 <div key={t} className="flex items-center gap-2">
-                                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                                                    <span className={cn("text-[12px] font-bold", isDark ? "text-emerald-100/85" : "text-emerald-800/90")}>{t}</span>
+                                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                                    <span className={cn("text-[12px] font-bold", isDark ? "text-primary/85" : "text-primary/90")}>{t}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -5239,9 +5239,9 @@ const MobileDashboardDemo = ({
                                 {selectedType === 'offer' && (
                                     <div className="mb-6">
                                         <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Earnings Breakdown</h4>
-                                        <div className={cn("rounded-2xl border p-4", isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-200 shadow-sm")}>
+                                        <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
                                             <div className="mb-5">
-                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-emerald-400" : "text-emerald-600")}>You Receive</p>
+                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-primary" : "text-primary")}>You Receive</p>
                                                 <p className={cn("text-[32px] font-black leading-none", textColor)}>{renderBudgetValue(selectedItem)}</p>
                                             </div>
 
@@ -5252,9 +5252,9 @@ const MobileDashboardDemo = ({
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span className={cn("font-medium opacity-70", textColor)}>Platform fee</span>
-                                                    <span className={cn("font-bold text-emerald-500")}>₹0</span>
+                                                    <span className={cn("font-bold text-primary")}>₹0</span>
                                                 </div>
-                                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-500/10">
+                                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
                                                     <span className={cn("font-medium opacity-70", textColor)}>Payment Method</span>
                                                     <span className={cn("font-bold", textColor)}>Bank Transfer</span>
                                                 </div>
@@ -5267,7 +5267,7 @@ const MobileDashboardDemo = ({
                             {/* ── STICKY CTA BAR ── */}
                             <div className={cn(
                                 "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t",
-                                isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-white/10" : "bg-white/98 backdrop-blur-xl border-slate-100"
+                                isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-border" : "bg-secondary/98 backdrop-blur-xl border-border"
                             )}>
                                 <div className="space-y-2.5">
 	                                    <motion.button
@@ -5317,10 +5317,10 @@ const MobileDashboardDemo = ({
 	                                        className={cn(
 	                                            "w-full py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all flex flex-col items-center justify-center active:scale-[0.98] border disabled:opacity-50",
 	                                            selectedType === 'offer'
-	                                                ? (selectedItem.collab_type === 'barter' ? "bg-amber-500 text-white border-amber-400 shadow-amber-500/30" : "bg-blue-600 text-white border-blue-500 shadow-blue-500/30")
+	                                                ? (selectedItem.collab_type === 'barter' ? "bg-warning text-foreground border-warning shadow-amber-500/30" : "bg-info text-foreground border-info shadow-blue-500/30")
 	                                                : cn(
 	                                                    dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
-	                                                    isDark ? "border-white/10" : "border-slate-200"
+	                                                    isDark ? "border-border" : "border-border"
 	                                                  )
 	                                        )}
 	                                    >
@@ -5354,7 +5354,7 @@ const MobileDashboardDemo = ({
                                                     toast.success("Messaging thread opened");
                                                 }}
                                                 className={cn("w-full py-3 rounded-2xl flex items-center justify-center gap-2 border transition-all active:scale-95",
-                                                    isDark ? "bg-white/5 border-white/10 hover:bg-white/10 text-white" : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800")}
+                                                    isDark ? "bg-card border-border hover:bg-secondary/50 text-foreground" : "bg-background border-border hover:bg-background text-muted-foreground")}
                                             >
                                                 <MessageCircle className="w-4 h-4" />
                                                 <span className="font-bold text-[14px]">Ask Brand Question</span>
@@ -5372,8 +5372,8 @@ const MobileDashboardDemo = ({
                                                     }}
                                                     className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95")}
                                                 >
-                                                    <Edit3 className="w-3.5 h-3.5 opacity-50 text-slate-400" /> 
-                                                    <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-white" : "text-slate-600")}>Suggest New Price</span>
+                                                    <Edit3 className="w-3.5 h-3.5 opacity-50 text-muted-foreground" /> 
+                                                    <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Suggest New Price</span>
                                                 </button>
                                                 <button type="button"
                                                     onClick={() => {
@@ -5385,9 +5385,9 @@ const MobileDashboardDemo = ({
                                                         if (onDeclineRequest) onDeclineRequest(selectedItem.id);
                                                         closeItemDetail();
                                                     }}
-                                                    className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-red-500/80")}
+                                                    className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-destructive/80")}
                                                 >
-                                                    <XCircle className="w-3.5 h-3.5 opacity-50 text-red-500/60" /> 
+                                                    <XCircle className="w-3.5 h-3.5 opacity-50 text-destructive/60" /> 
                                                     <span className="font-bold text-[13px] opacity-90">Decline Offer</span>
                                                 </button>
                                             </div>
@@ -5414,10 +5414,10 @@ const MobileDashboardDemo = ({
                                             transition={{ type: 'spring', damping: 26, stiffness: 220 }}
                                             className={cn(
                                                 "fixed bottom-0 inset-x-0 z-[20110] rounded-t-[2.25rem] border-t p-5 pb-safe shadow-2xl",
-                                                isDark ? "bg-[#0F172A] border-white/10" : "bg-white border-slate-200"
+                                                isDark ? "bg-background border-border" : "bg-card border-border"
                                             )}
                                         >
-                                            <div className="w-12 h-1 bg-slate-500/20 rounded-full mx-auto mb-5" />
+                                            <div className="w-12 h-1 bg-background/20 rounded-full mx-auto mb-5" />
                                             <div className="max-w-md mx-auto">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div className="min-w-0">
@@ -5429,7 +5429,7 @@ const MobileDashboardDemo = ({
                                                     <motion.button
                                                         whileTap={{ scale: 0.92 }}
                                                         onClick={() => setShowItemMenu(false)}
-                                                        className={cn("w-10 h-10 rounded-full flex items-center justify-center border", borderColor, isDark ? "bg-white/5" : "bg-slate-50")}
+                                                        className={cn("w-10 h-10 rounded-full flex items-center justify-center border", borderColor, isDark ? "bg-card" : "bg-background")}
                                                     >
                                                         <X className={cn("w-4 h-4", textColor)} />
                                                     </motion.button>
@@ -5438,11 +5438,11 @@ const MobileDashboardDemo = ({
                                                 <div className={cn("rounded-2xl border overflow-hidden", borderColor)}>
                                                     <button type="button"
                                                         onClick={async () => { triggerHaptic(); await copySelectedItemLink(); setShowItemMenu(false); }}
-                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                                     >
                                                         <span className="flex items-center gap-3">
-                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                <Copy className={cn("w-4 h-4", isDark ? "text-emerald-300" : "text-emerald-700")} />
+                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                <Copy className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} />
                                                             </span>
                                                             <span>
                                                                 <p className={cn("text-[14px] font-bold", textColor)}>Copy link</p>
@@ -5451,14 +5451,14 @@ const MobileDashboardDemo = ({
                                                         </span>
                                                         <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
                                                     </button>
-                                                    <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                                    <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
                                                     <button type="button"
                                                         onClick={async () => { triggerHaptic(); await shareSelectedItemLink(); setShowItemMenu(false); }}
-                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                                     >
                                                         <span className="flex items-center gap-3">
-                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                <Share2 className={cn("w-4 h-4", isDark ? "text-sky-300" : "text-sky-700")} />
+                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                <Share2 className={cn("w-4 h-4", isDark ? "text-info" : "text-info")} />
                                                             </span>
                                                             <span>
                                                                 <p className={cn("text-[14px] font-bold", textColor)}>Share</p>
@@ -5467,7 +5467,7 @@ const MobileDashboardDemo = ({
                                                         </span>
                                                         <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
                                                     </button>
-                                                    <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                                    <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
 
                                                     {selectedType === 'deal' && (() => {
                                                         const statusLower = String(selectedItem?.status || '').toLowerCase();
@@ -5482,11 +5482,11 @@ const MobileDashboardDemo = ({
                                                                         setShowItemMenu(false);
                                                                         setShowProgressSheet(true);
                                                                     }}
-                                                                    className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                                    className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                                                 >
                                                                     <span className="flex items-center gap-3">
-                                                                        <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                            <TrendingUp className={cn("w-4 h-4", isDark ? "text-purple-300" : "text-purple-700")} />
+                                                                        <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                            <TrendingUp className={cn("w-4 h-4", isDark ? "text-secondary" : "text-secondary")} />
                                                                         </span>
                                                                         <span>
                                                                             <p className={cn("text-[14px] font-bold", textColor)}>Update progress</p>
@@ -5495,7 +5495,7 @@ const MobileDashboardDemo = ({
                                                                     </span>
                                                                     <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
                                                                 </button>
-                                                                <div className={cn("h-px", isDark ? "bg-white/10" : "bg-slate-100")} />
+                                                                <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
                                                             </>
                                                         );
                                                     })()}
@@ -5508,11 +5508,11 @@ const MobileDashboardDemo = ({
                                                             else toast.error('No page available for this item.');
                                                             setShowItemMenu(false);
                                                         }}
-                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                                     >
                                                         <span className="flex items-center gap-3">
-                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-white/5" : "bg-slate-100")}>
-                                                                <Eye className={cn("w-4 h-4", isDark ? "text-white/80" : "text-slate-700")} />
+                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                <Eye className={cn("w-4 h-4", isDark ? "text-foreground/80" : "text-muted-foreground")} />
                                                             </span>
                                                             <span>
                                                                 <p className={cn("text-[14px] font-bold", textColor)}>Open full page</p>
@@ -5552,20 +5552,20 @@ const MobileDashboardDemo = ({
             <Dialog open={showDeliverContentModal} onOpenChange={setShowDeliverContentModal}>
                 <DialogContent
                     className={cn(
-                        "sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto overscroll-contain",
-                        isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200"
+                        "sm:max-w-[520px] border-border rounded-[2rem] p-0 overflow-hidden shadow-2xl max-h-[85vh] overflow-y-auto overscroll-contain",
+                        isDark ? "bg-[#0B0F14] text-foreground shadow-black/60" : "bg-card text-muted-foreground shadow-slate-200"
                     )}
                 >
                     <DialogHeader>
-                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-	                            <Send className="w-6 h-6 text-emerald-500" />
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+	                            <Send className="w-6 h-6 text-primary" />
 	                            {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
 	                            String(selectedItem?.status || '').toLowerCase().includes('changes_requested') ||
 	                            String((selectedItem as any)?.brand_approval_status || '').toLowerCase().includes('changes_requested')
 	                                ? 'Upload Revision'
 	                                : 'Deliver Content'}
 	                        </DialogTitle>
-	                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
+	                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
 	                            Paste your content link(s) so the brand can review and approve. Use Instagram or Google Drive links — no uploads needed.
 		                        </DialogDescription>
 		                    </DialogHeader>
@@ -5580,7 +5580,7 @@ const MobileDashboardDemo = ({
 	                            </div>
 		                        )}
 		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
 		                                Main Content Link (Required)
 		                            </label>
 		                            <input
@@ -5589,36 +5589,36 @@ const MobileDashboardDemo = ({
 		                                placeholder="Paste Instagram/Drive link (full URL)"
 		                                className={cn(
 		                                    "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border",
-		                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+		                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
 		                                )}
 		                                inputMode="url"
 		                                autoComplete="url"
 		                                autoCapitalize="none"
 		                                autoCorrect="off"
 		                            />
-		                            <p className={cn("text-[11px] font-semibold px-1", isDark ? "text-white/45" : "text-slate-500")}>
+		                            <p className={cn("text-[11px] font-semibold px-1", isDark ? "text-foreground/45" : "text-muted-foreground")}>
 		                                Examples: `instagram.com/reel/...` or `drive.google.com/...`
 		                            </p>
 		                        </div>
 
 		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
 		                                Content Status (Required)
 		                            </label>
-		                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+		                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
 		                                <button type="button"
 		                                    type="button"
 		                                    onClick={() => setDeliverContentStatusDraft('draft')}
 		                                    className={cn(
 		                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
 		                                        deliverContentStatusDraft === 'draft'
-		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
-		                                            : isDark ? "text-white/85 hover:bg-white/5" : "text-slate-800 hover:bg-white"
+		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
+		                                            : isDark ? "text-foreground/85 hover:bg-card" : "text-muted-foreground hover:bg-card"
 		                                    )}
 		                                    aria-pressed={deliverContentStatusDraft === 'draft'}
 		                                >
 		                                    <span>Draft for review</span>
-		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'draft' ? "text-white/90" : isDark ? "text-white/55" : "text-slate-500")}>
+		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'draft' ? "text-foreground/90" : isDark ? "text-foreground/55" : "text-muted-foreground")}>
 		                                        Not posted yet
 		                                    </span>
 		                                </button>
@@ -5628,13 +5628,13 @@ const MobileDashboardDemo = ({
 		                                    className={cn(
 		                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
 		                                        deliverContentStatusDraft === 'posted'
-		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
-		                                            : isDark ? "text-white/85 hover:bg-white/5" : "text-slate-800 hover:bg-white"
+		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
+		                                            : isDark ? "text-foreground/85 hover:bg-card" : "text-muted-foreground hover:bg-card"
 		                                    )}
 		                                    aria-pressed={deliverContentStatusDraft === 'posted'}
 		                                >
 		                                    <span>Already posted</span>
-		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'posted' ? "text-white/90" : isDark ? "text-white/55" : "text-slate-500")}>
+		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'posted' ? "text-foreground/90" : isDark ? "text-foreground/55" : "text-muted-foreground")}>
 		                                        Live on profile
 		                                    </span>
 		                                </button>
@@ -5642,7 +5642,7 @@ const MobileDashboardDemo = ({
 		                        </div>
 		
 		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
 		                                Caption (Optional)
 		                            </label>
 		                            <textarea
@@ -5651,13 +5651,13 @@ const MobileDashboardDemo = ({
                                 placeholder="Paste your caption here..."
                                 className={cn(
                                     "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
-                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
                                 )}
 		                            />
 		                        </div>
 
 		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
 		                                Additional Links (Optional)
 		                            </label>
 		                            <textarea
@@ -5666,13 +5666,13 @@ const MobileDashboardDemo = ({
 		                                placeholder={"Add any extra links (one per line)\nhttps://drive.google.com/...\nhttps://instagram.com/p/..."}
 		                                className={cn(
 		                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
-		                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+		                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
 		                                )}
 		                            />
 		                        </div>
 
 		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-white/70" : "text-slate-900/60")}>
+		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
 		                                Message to Brand (Optional)
 		                            </label>
 		                            <textarea
@@ -5681,7 +5681,7 @@ const MobileDashboardDemo = ({
 		                                placeholder="Any context for review (timelines, instructions, etc.)"
 		                                className={cn(
 		                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
-		                                    isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-emerald-500/50"
+		                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
 		                                )}
 		                            />
 		                        </div>
@@ -5689,7 +5689,7 @@ const MobileDashboardDemo = ({
 
                     <div className={cn(
                         "sticky bottom-0 border-t px-6 backdrop-blur",
-                        isDark ? "bg-[#0B0F14]/92 border-white/10" : "bg-white/92 border-slate-200"
+                        isDark ? "bg-[#0B0F14]/92 border-border" : "bg-secondary/92 border-border"
                     )}>
                         <div className="grid grid-cols-2 gap-2 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
                             <button type="button"
@@ -5700,7 +5700,7 @@ const MobileDashboardDemo = ({
                                 disabled={isSubmittingContent}
                                 className={cn(
                                     "h-12 rounded-2xl font-black text-[12px] border transition-all active:scale-[0.98] disabled:opacity-60",
-                                    isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-white border-slate-200 text-slate-900 hover:bg-slate-50"
+                                    isDark ? "bg-card border-border text-foreground hover:bg-secondary/50" : "bg-card border-border text-muted-foreground hover:bg-background"
                                 )}
                             >
                                 Cancel
@@ -5710,7 +5710,7 @@ const MobileDashboardDemo = ({
                                 disabled={isSubmittingContent}
                                 className={cn(
                                     "h-12 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] disabled:opacity-60",
-                                    "bg-gradient-to-r from-emerald-600 to-sky-600 text-white shadow-[0_12px_38px_rgba(16,185,129,0.22)]"
+                                    "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_12px_38px_rgba(16,185,129,0.22)]"
                                 )}
                             >
                                 {isSubmittingContent ? 'Submitting…' : 'Submit Content'}
@@ -5729,16 +5729,16 @@ const MobileDashboardDemo = ({
             >
                 <DialogContent
                     className={cn(
-                        "sm:max-w-[520px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl",
-                        isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200"
+                        "sm:max-w-[520px] border-border rounded-[2rem] p-0 overflow-hidden shadow-2xl",
+                        isDark ? "bg-[#0B0F14] text-foreground shadow-black/60" : "bg-card text-muted-foreground shadow-slate-200"
                     )}
                 >
                     <DialogHeader>
-                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
                             <AlertCircle className="w-6 h-6 text-rose-500" />
                             Report Shipping Issue
                         </DialogTitle>
-                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
                             Describe what went wrong so the brand can fix the shipment quickly.
                         </DialogDescription>
                     </DialogHeader>
@@ -5750,7 +5750,7 @@ const MobileDashboardDemo = ({
                             rows={5}
                             className={cn(
                                 "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border resize-none",
-                                isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-rose-500/50" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-rose-500/50"
+                                isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-rose-500/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-rose-500/50"
                             )}
                         />
                         <div className="grid grid-cols-2 gap-2.5">
@@ -5759,14 +5759,14 @@ const MobileDashboardDemo = ({
                                     setShowReportIssueModal(false);
                                     setReportIssueReason('');
                                 }}
-                                className={cn("h-12 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]", isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900")}
+                                className={cn("h-12 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]", isDark ? "bg-card border-border text-foreground" : "bg-card border-border text-muted-foreground")}
                             >
                                 Cancel
                             </button>
                             <button type="button"
                                 onClick={reportSelectedShippingIssue}
                                 disabled={isReportingIssue || !reportIssueReason.trim()}
-                                className="h-12 rounded-2xl bg-rose-600 text-white text-[14px] font-black transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+                                className="h-12 rounded-2xl bg-rose-600 text-foreground text-[14px] font-black transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
                             >
                                 {isReportingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                 Report Issue
@@ -5778,13 +5778,13 @@ const MobileDashboardDemo = ({
 
             {/* Creator Signing Modal */}
             <Dialog open={showCreatorSigningModal} onOpenChange={setShowCreatorSigningModal}>
-                <DialogContent className={cn("sm:max-w-[440px] border-white/10 rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-white shadow-black/60" : "bg-white text-slate-900 shadow-slate-200")}>
+                <DialogContent className={cn("sm:max-w-[440px] border-border rounded-[2rem] p-0 overflow-hidden shadow-2xl", isDark ? "bg-[#0B0F14] text-foreground shadow-black/60" : "bg-card text-muted-foreground shadow-slate-200")}>
                     <DialogHeader>
-                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-white" : "text-slate-900")}>
-                            <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                        <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                            <ShieldCheck className="w-6 h-6 text-primary" />
                             Sign Agreement
                         </DialogTitle>
-                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-white" : "text-slate-900")}>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
                             {creatorSigningStep === 'send'
                                 ? 'We will send a secure OTP to your registered email to verify your identity and sign the contract.'
                                 : 'Enter the 6-digit code sent to your email to complete the signing process.'}
@@ -5795,9 +5795,9 @@ const MobileDashboardDemo = ({
                         {creatorSigningStep === 'send' ? (
                             <div className="space-y-6">
                                 <div className={cn("p-4 rounded-2xl flex items-start gap-3 border", 
-                                    isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50/50 border-emerald-100")}>
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                        <Mail className="w-5 h-5 text-emerald-500" />
+                                    isDark ? "bg-primary/5 border-primary/20" : "bg-primary/50 border-primary")}>
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Mail className="w-5 h-5 text-primary" />
                                     </div>
                                     <div className="min-w-0">
                                         <p className="text-[14px] font-bold tracking-tight">OTP Verification</p>
@@ -5810,7 +5810,7 @@ const MobileDashboardDemo = ({
                                     onClick={handleSendCreatorOTP}
                                     disabled={isSendingCreatorOTP}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-slate-800 disabled:text-slate-500"
+                                    className="w-full bg-primary hover:bg-primary text-foreground h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-background disabled:text-muted-foreground"
                                 >
                                     {isSendingCreatorOTP ? (
                                         <>
@@ -5839,7 +5839,7 @@ const MobileDashboardDemo = ({
                                         autoComplete="one-time-code"
                                         className={cn(
                                             "w-full rounded-2xl px-4 py-5 text-center text-4xl tracking-[0.3em] font-black font-outfit focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all placeholder:opacity-20 border",
-                                            isDark ? "bg-white/5 border-white/10 text-white focus:border-emerald-500/50" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-emerald-500/50"
+                                            isDark ? "bg-card border-border text-foreground focus:border-primary/50" : "bg-background border-border text-muted-foreground focus:border-primary/50"
                                         )}
                                     />
                                     <div className="flex items-center justify-between px-1">
@@ -5850,7 +5850,7 @@ const MobileDashboardDemo = ({
                                                 setCreatorOTP('');
                                             }}
                                             disabled={isVerifyingCreatorOTP || isSigningAsCreator}
-                                            className="text-[11px] font-black uppercase tracking-widest text-emerald-500 hover:opacity-70 transition-opacity"
+                                            className="text-[11px] font-black uppercase tracking-widest text-primary hover:opacity-70 transition-opacity"
                                         >
                                             Resend
                                         </button>
@@ -5861,7 +5861,7 @@ const MobileDashboardDemo = ({
                                     onClick={handleVerifyCreatorOTP}
                                     disabled={isVerifyingCreatorOTP || creatorOTP.length !== 6 || isSigningAsCreator}
                                     whileTap={{ scale: 0.98 }}
-                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-400"
+                                    className="w-full bg-primary hover:bg-primary text-foreground h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 disabled:bg-background dark:disabled:bg-background disabled:text-muted-foreground"
                                 >
                                     {isVerifyingCreatorOTP || isSigningAsCreator ? (
                                         <>
@@ -5879,8 +5879,8 @@ const MobileDashboardDemo = ({
                         )}
                     </div>
 
-                    <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-40 border-t px-6 py-5", isDark ? "border-white/5" : "border-slate-100")}>
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <div className={cn("flex items-center gap-2 text-[10px] font-bold opacity-40 border-t px-6 py-5", isDark ? "border-border/5" : "border-border")}>
+                        <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                         <span>Aadhar Verified · Secure E-signature by Creator Armour</span>
                     </div>
                 </DialogContent>
@@ -5888,10 +5888,10 @@ const MobileDashboardDemo = ({
 
             {/* iOS install guide for push notifications */}
             <Dialog open={showPushInstallGuide} onOpenChange={setShowPushInstallGuide}>
-                <DialogContent className={cn("sm:max-w-[440px] border-white/15 text-white rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-slate-900")}>
+                <DialogContent className={cn("sm:max-w-[440px] border-border text-foreground rounded-2xl p-0 overflow-hidden shadow-2xl shadow-black/60", isDark ? "bg-neutral-950/98" : "bg-background")}>
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-white">
-                            <Bell className="w-5 h-5 text-emerald-300" />
+                        <DialogTitle className="flex items-center gap-2 px-6 pt-6 text-2xl font-semibold tracking-tight text-foreground">
+                            <Bell className="w-5 h-5 text-primary" />
                             Enable Deal Alerts
                         </DialogTitle>
                         <DialogDescription className="text-neutral-300 px-6 pb-2 text-base leading-relaxed">
@@ -5900,9 +5900,9 @@ const MobileDashboardDemo = ({
                     </DialogHeader>
 
                     <div className="px-6 py-5 space-y-3">
-                        <div className="p-4 bg-emerald-500/12 border border-emerald-400/30 rounded-xl">
-                            <p className="text-sm font-semibold text-emerald-100">How to install</p>
-                            <ol className="mt-2 space-y-1 text-sm text-white/80 list-decimal pl-5">
+                        <div className="p-4 bg-primary/12 border border-primary/30 rounded-xl">
+                            <p className="text-sm font-semibold text-primary">How to install</p>
+                            <ol className="mt-2 space-y-1 text-sm text-foreground/80 list-decimal pl-5">
                                 <li>Tap the Share button in Safari</li>
                                 <li>Select “Add to Home Screen”</li>
                                 <li>Open CreatorArmour from your Home Screen</li>
@@ -5913,14 +5913,14 @@ const MobileDashboardDemo = ({
                             <button type="button"
                                 type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
-                                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-3 transition-colors"
+                                className="flex-1 rounded-xl bg-primary hover:bg-primary text-foreground text-sm font-semibold px-4 py-3 transition-colors"
                             >
                                 Got it
                             </button>
                             <button type="button"
                                 type="button"
                                 onClick={() => setShowPushInstallGuide(false)}
-                                className="rounded-xl border border-white/20 text-white/85 hover:text-white hover:bg-white/10 text-sm px-4 py-3 transition-colors"
+                                className="rounded-xl border border-border text-foreground/85 hover:text-foreground hover:bg-secondary/50 text-sm px-4 py-3 transition-colors"
                             >
                                 Later
                             </button>
@@ -5963,12 +5963,12 @@ const MobileDashboardDemo = ({
                             {/* Header */}
                             <div className={cn(
                                 "px-5 py-3.5 flex items-center justify-between border-b",
-                                isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-100"
+                                isDark ? "bg-[#0B0F14] border-border" : "bg-card border-border"
                             )}>
                                 <div className="flex items-center gap-3">
                                     <button type="button"
                                         onClick={() => { triggerHaptic(); setSelectedPayment(null); }}
-                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-white/5 hover:bg-white/10" : "bg-white hover:bg-slate-50")}
+                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                     >
                                         <ChevronRight className="w-4 h-4 rotate-180" />
                                     </button>
@@ -5980,8 +5980,8 @@ const MobileDashboardDemo = ({
                                 <span className={cn(
                                     "text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border",
                                     isPaid
-                                        ? (isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700")
-                                        : (isDark ? "bg-red-500/10 border-red-500/20 text-red-400" : "bg-red-50 border-red-200 text-red-600")
+                                        ? (isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-primary border-primary text-primary")
+                                        : (isDark ? "bg-destructive/10 border-destructive/20 text-destructive" : "bg-destructive border-destructive text-destructive")
                                 )}>
                                     {isPaid ? 'Paid' : 'Overdue'}
                                 </span>
@@ -5993,15 +5993,15 @@ const MobileDashboardDemo = ({
                                 {/* ── BRAND HEADER ── */}
                                 <div className={cn("rounded-2xl border p-4 flex items-start gap-4", cardBgColor, borderColor)}>
                                     <div className={cn("w-14 h-14 rounded-2xl border overflow-hidden flex items-center justify-center shrink-0",
-                                        isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
+                                        isDark ? "bg-card border-border" : "bg-background border-border"
                                     )}>
                                         {getBrandIcon(pay.brand_logo_url || pay.logo_url, pay.category, pay.brand_name)}
                                     </div>
                                     <div className="flex-1">
                                         <p className={cn("text-[20px] font-black tracking-tight leading-tight", textColor)}>{pay.brand_name || 'Brand'}</p>
                                         <div className="flex items-center gap-1.5 mt-1 mb-2">
-                                            <ShieldCheck className="w-3.5 h-3.5 text-blue-500" strokeWidth={2.5} />
-                                            <span className="text-[12px] font-bold text-blue-500">Verified Brand</span>
+                                            <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
+                                            <span className="text-[12px] font-bold text-info">Verified Brand</span>
                                         </div>
                                         <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>
                                             {pay.campaign_name || pay.title || 'Instagram Reel Campaign'}
@@ -6013,16 +6013,16 @@ const MobileDashboardDemo = ({
                                 <div className={cn(
                                     "rounded-2xl border p-5 relative overflow-hidden",
                                     isPaid
-                                        ? (isDark ? "bg-emerald-500/5 border-emerald-500/25" : "bg-emerald-50 border-emerald-200")
-                                        : (isDark ? "bg-red-500/5 border-red-500/25" : "bg-red-50 border-red-200")
+                                        ? (isDark ? "bg-primary/5 border-primary/25" : "bg-primary border-primary")
+                                        : (isDark ? "bg-destructive/5 border-destructive/25" : "bg-destructive border-destructive")
                                 )}>
                                     <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                                     <div className="relative">
-	                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-emerald-400/70" : "text-emerald-700/70") : (isDark ? "text-red-400/70" : "text-red-600/70"))}>
+	                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-primary/70" : "text-primary/70") : (isDark ? "text-destructive/70" : "text-destructive/70"))}>
 	                                            Payment Status
 	                                        </p>
-	                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-600"))}>
+	                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-primary") : (isDark ? "text-destructive" : "text-destructive"))}>
 	                                            {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
 	                                        </p>
 	                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
@@ -6031,7 +6031,7 @@ const MobileDashboardDemo = ({
 	                                        ) : (
 	                                            <div className="space-y-1">
 	                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
-	                                                {daysPast > 0 && <p className="text-[11px] font-black text-red-500">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
+	                                                {daysPast > 0 && <p className="text-[11px] font-black text-destructive">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
 	                                            </div>
 	                                        )}
 	                                    </div>
@@ -6046,7 +6046,7 @@ const MobileDashboardDemo = ({
                                         { label: 'Deal Type', value: pay.collab_type === 'barter' ? '🎁 Free products' : '💰 Paid Campaign' },
                                         { label: 'Payment Terms', value: pay.payment_terms || 'Direct Bank Transfer' },
                                     ].map((row, i) => (
-                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
+                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
                                             <span className={cn("text-[13px] font-semibold opacity-60", textColor)}>{row.label}</span>
                                             <span className={cn("text-[13px] font-black", textColor)}>{row.value}</span>
                                         </div>
@@ -6063,28 +6063,28 @@ const MobileDashboardDemo = ({
                                                     <div className={cn(
                                                         "w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[12px] font-black border-2",
                                                         step.done
-                                                            ? "bg-emerald-500 border-emerald-500 text-white"
+                                                            ? "bg-primary border-primary text-foreground"
                                                             : step.warn
-                                                                ? "bg-red-500/10 border-red-500 text-red-500"
+                                                                ? "bg-destructive/10 border-destructive text-destructive"
                                                                 : step.active
-                                                                    ? (isDark ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-amber-50 border-amber-400 text-amber-600")
-                                                                    : (isDark ? "bg-white/5 border-white/20 text-white/20" : "bg-slate-100 border-slate-200 text-slate-400")
+                                                                    ? (isDark ? "bg-warning/10 border-warning text-warning" : "bg-warning border-warning text-warning")
+                                                                    : (isDark ? "bg-card border-border text-foreground/20" : "bg-background border-border text-muted-foreground")
                                                     )}>
                                                         {step.done ? '✓' : step.warn ? '⚠' : step.active ? '⏳' : '·'}
                                                     </div>
                                                     {i < timelineSteps.length - 1 && (
-                                                        <div className={cn("w-0.5 h-6 mt-1", step.done ? "bg-emerald-500/40" : (isDark ? "bg-white/10" : "bg-slate-200"))} />
+                                                        <div className={cn("w-0.5 h-6 mt-1", step.done ? "bg-primary/40" : (isDark ? "bg-secondary/50" : "bg-background"))} />
                                                     )}
                                                 </div>
                                                 <p className={cn(
                                                     "text-[13px] font-semibold pt-0.5 pb-5",
                                                     step.done
-                                                        ? (isDark ? "text-emerald-400" : "text-emerald-700")
+                                                        ? (isDark ? "text-primary" : "text-primary")
                                                         : step.warn
-                                                            ? "text-red-500"
+                                                            ? "text-destructive"
                                                             : step.active
-                                                                ? (isDark ? "text-amber-400" : "text-amber-600")
-                                                                : (isDark ? "text-white/30" : "text-slate-400")
+                                                                ? (isDark ? "text-warning" : "text-warning")
+                                                                : (isDark ? "text-foreground/30" : "text-muted-foreground")
                                                 )}>{step.label}</p>
                                             </div>
                                         ))}
@@ -6092,21 +6092,21 @@ const MobileDashboardDemo = ({
                                 </div>
 
                                 {/* ── CONTRACT ── */}
-                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200")}>
+                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-primary/5 border-primary/20" : "bg-primary border-primary")}>
                                     <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
-                                            <ShieldCheck className="w-4 h-4 text-white" strokeWidth={2.5} />
+                                        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center">
+                                            <ShieldCheck className="w-4 h-4 text-foreground" strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-emerald-400" : "text-emerald-800")}>Creator Armour Protected</p>
-                                            <p className={cn("text-[11px] font-semibold", isDark ? "text-emerald-400/60" : "text-emerald-700/70")}>Content Rights Agreement</p>
+                                            <p className={cn("text-[13px] font-black leading-tight", isDark ? "text-primary" : "text-primary")}>Creator Armour Protected</p>
+                                            <p className={cn("text-[11px] font-semibold", isDark ? "text-primary/60" : "text-primary/70")}>Content Rights Agreement</p>
                                         </div>
                                     </div>
                                     <button type="button"
                                         onClick={() => { triggerHaptic(); import('sonner').then(m => m.toast('Contract download coming soon')); }}
                                         className={cn(
                                             "w-full py-2.5 rounded-xl text-[13px] font-black border flex items-center justify-center gap-2 active:scale-[0.98] transition-all",
-                                            isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-500/10 border-emerald-400/30 text-emerald-700"
+                                            isDark ? "bg-primary/10 border-primary/20 text-primary" : "bg-primary/10 border-primary/30 text-primary"
                                         )}
                                     >
                                         <Download className="w-4 h-4" />
@@ -6123,7 +6123,7 @@ const MobileDashboardDemo = ({
                                         { label: 'Agreement Signed', value: signedDateStr },
 	                                        { label: 'Creator Armour Protection', value: '✓ Active' },
                                     ].map((row, i) => (
-                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-white/5" : "border-t border-slate-100") : "")}>
+                                        <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
                                             <span className={cn("text-[12px] font-semibold opacity-60", textColor)}>{row.label}</span>
                                             <span className={cn("text-[12px] font-black font-mono", textColor)}>{row.value}</span>
                                         </div>
@@ -6146,7 +6146,7 @@ const MobileDashboardDemo = ({
                                                 href={pay.submission_link || pay.content_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className={cn("text-[12px] font-black text-blue-500 border border-blue-500/20 px-3 py-1.5 rounded-xl active:scale-95 transition-all", isDark ? "bg-blue-500/10" : "bg-blue-50")}
+                                                className={cn("text-[12px] font-black text-info border border-info/20 px-3 py-1.5 rounded-xl active:scale-95 transition-all", isDark ? "bg-info/10" : "bg-info")}
                                             >
                                                 View Link
                                             </a>
@@ -6158,11 +6158,11 @@ const MobileDashboardDemo = ({
                                 <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
                                     <p className={cn("text-[10px] font-black uppercase tracking-widest mb-3 opacity-40", textColor)}>Brand Trust</p>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className={cn("rounded-xl p-3 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <div className={cn("rounded-xl p-3 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
                                             <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Response Time</p>
                                             <p className={cn("text-[15px] font-black", textColor)}>~3 hours</p>
                                         </div>
-                                        <div className={cn("rounded-xl p-3 border", isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
+                                        <div className={cn("rounded-xl p-3 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
                                             <p className={cn("text-[10px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Campaigns</p>
                                             <p className={cn("text-[15px] font-black", textColor)}>{pay.total_collabs || 21} done</p>
                                         </div>
@@ -6175,7 +6175,7 @@ const MobileDashboardDemo = ({
                             {!isPaid && (
                                 <div className={cn(
                                     "px-5 pb-8 pt-4 border-t space-y-2.5",
-                                    isDark ? "bg-[#0B0F14] border-white/10" : "bg-white border-slate-100"
+                                    isDark ? "bg-[#0B0F14] border-border" : "bg-card border-border"
                                 )}>
                                     <motion.button
                                         whileTap={{ scale: 0.97 }}
@@ -6183,7 +6183,7 @@ const MobileDashboardDemo = ({
                                             triggerHaptic();
                                             import('sonner').then(m => m.toast.success('Payment reminder sent to brand!', { description: 'They will be notified via email.' }));
                                         }}
-                                        className="w-full py-3.5 rounded-2xl bg-amber-500 text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all"
+                                        className="w-full py-3.5 rounded-2xl bg-warning text-foreground font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all"
                                     >
                                         <Bell className="w-4 h-4" /> Send Payment Reminder
                                     </motion.button>
@@ -6195,8 +6195,8 @@ const MobileDashboardDemo = ({
                                                 navigate('/creator-dashboard?tab=disputes');
                                             }}
                                             className={cn(
-                                                "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all text-red-500",
-                                                isDark ? "bg-red-500/10 border-red-500/20" : "bg-red-50 border-red-200"
+                                                "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all text-destructive",
+                                                isDark ? "bg-destructive/10 border-destructive/20" : "bg-destructive border-destructive"
                                             )}
                                         >
                                             <AlertTriangle className="w-4 h-4" /> Open Dispute
@@ -6210,7 +6210,7 @@ const MobileDashboardDemo = ({
                                             }}
                                             className={cn(
                                                 "flex-1 py-3 rounded-2xl flex items-center justify-center gap-1.5 border font-black text-[13px] active:scale-95 transition-all",
-                                                isDark ? "bg-white/5 border-white/10" : "bg-slate-100 border-slate-200",
+                                                isDark ? "bg-card border-border" : "bg-background border-border",
                                                 textColor
                                             )}
                                         >

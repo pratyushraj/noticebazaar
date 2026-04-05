@@ -21,8 +21,8 @@ const actionConfig: Record<
 > = {
   upload: {
     icon: Upload,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/20',
   },
   complete: {
     icon: CheckCircle,
@@ -31,13 +31,13 @@ const actionConfig: Record<
   },
   invoice: {
     icon: FileText,
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/20',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary/20',
   },
   payment: {
     icon: DollarSign,
-    color: 'text-emerald-400',
-    bgColor: 'bg-emerald-500/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/20',
   },
   issue: {
     icon: AlertCircle,
@@ -79,7 +79,7 @@ export const ActionLog: React.FC<ActionLogProps> = ({ entries }) => {
 
   if (entries.length === 0) {
     return (
-      <div className="text-center py-8 text-white/60">
+      <div className="text-center py-8 text-foreground/60">
         <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
         <p>No activity yet</p>
       </div>
@@ -111,16 +111,16 @@ export const ActionLog: React.FC<ActionLogProps> = ({ entries }) => {
               </div>
 
               {/* Content */}
-              <div className="flex-1 min-w-0 bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
+              <div className="flex-1 min-w-0 bg-card backdrop-blur-xl rounded-xl p-4 border border-border">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h4 className="text-white font-medium text-sm">{entry.action}</h4>
-                  <span className="text-xs text-white/50 flex-shrink-0">
+                  <h4 className="text-foreground font-medium text-sm">{entry.action}</h4>
+                  <span className="text-xs text-foreground/50 flex-shrink-0">
                     {formatTimestamp(entry.timestamp)}
                   </span>
                 </div>
 
                 {entry.user && (
-                  <p className="text-xs text-purple-300 mb-1">{entry.user}</p>
+                  <p className="text-xs text-secondary mb-1">{entry.user}</p>
                 )}
               </div>
             </motion.div>

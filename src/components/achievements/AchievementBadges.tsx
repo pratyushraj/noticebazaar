@@ -38,7 +38,7 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
       id: 'protection-streak',
       label: '100% Protection Streak',
       icon: Shield,
-      color: 'bg-purple-500/20 border-purple-500/30 text-purple-400',
+      color: 'bg-secondary/20 border-purple-500/30 text-secondary',
       checkFn: () => protectionScore >= 100,
     },
     {
@@ -59,7 +59,7 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
       id: 'growth',
       label: 'Growing Fast',
       icon: TrendingUp,
-      color: 'bg-blue-500/20 border-blue-500/30 text-blue-400',
+      color: 'bg-info/20 border-info/30 text-info',
       checkFn: () => brandDeals.length >= 10,
     },
   ], [brandDeals, earnings, protectionScore]);

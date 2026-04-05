@@ -1511,7 +1511,7 @@ const CollabLinkLanding = () => {
     return (
       <div className="min-h-screen bg-black text-foreground flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-secondary/50 backdrop-blur-md border border-border rounded-lg p-8">
+          <div className="bg-card0 backdrop-blur-md border border-border rounded-lg p-8">
             <h1 className="text-2xl font-bold mb-4">{errorTitle}</h1>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               {error.toLowerCase().includes('timeout')
@@ -1522,7 +1522,7 @@ const CollabLinkLanding = () => {
               <Button
                 onClick={() => navigate('/')}
                 variant="outline"
-                className="bg-secondary/50 border-border text-foreground hover:bg-secondary/20"
+                className="bg-card0 border-border text-foreground hover:bg-secondary/20"
               >
                 Go to Homepage
               </Button>
@@ -2049,7 +2049,7 @@ const CollabLinkLanding = () => {
                 <Button
                   variant="outline"
                   onClick={() => navigate('/')}
-                  className="h-12 rounded-full border-slate-300 px-6 text-sm font-black text-muted-foreground hover:bg-background"
+                  className="h-12 rounded-full border-border px-6 text-sm font-black text-muted-foreground hover:bg-background"
                 >
                   Go to Homepage
                 </Button>
@@ -2136,7 +2136,7 @@ const CollabLinkLanding = () => {
                 }}
                 size="sm"
                 variant="outline"
-                className={`${previewAsBrand ? 'bg-card text-muted-foreground' : 'bg-secondary/50 text-foreground'} border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
+                className={`${previewAsBrand ? 'bg-card text-muted-foreground' : 'bg-card0 text-foreground'} border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm`}
               >
                 {previewAsBrand ? 'Back to Owner View' : 'Preview as Brand'}
               </Button>
@@ -2145,7 +2145,7 @@ const CollabLinkLanding = () => {
                 size="sm"
                 disabled={signOutMutation.isPending}
                 variant="outline"
-                className="bg-secondary/50 text-foreground hover:bg-secondary/20 border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
+                className="bg-card0 text-foreground hover:bg-secondary/20 border-border transition-all text-[11px] font-bold h-7 px-3 rounded-full shadow-sm"
               >
                 {signOutMutation.isPending ? (
                   <>
@@ -2193,14 +2193,14 @@ const CollabLinkLanding = () => {
                         </div>
                       )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full border-2 border-slate-50" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full border-2 border-border" />
                   </div>
 
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1.5">
                       {editMode ? (
                         <Input
-                          className="h-7 text-[17px] font-black text-muted-foreground w-auto min-w-[120px] px-2 bg-card0 border-slate-300 border-dashed focus:border-teal-500 transition-all"
+                          className="h-7 text-[17px] font-black text-muted-foreground w-auto min-w-[120px] px-2 bg-card0 border-border border-dashed focus:border-teal-500 transition-all"
                           defaultValue={creator.name}
                           onBlur={(e) => handleInlineProfileUpdate('name', e.target.value)}
                           placeholder="Your Name"
@@ -2218,7 +2218,7 @@ const CollabLinkLanding = () => {
                           <FileCheck className="h-3 w-3 text-primary" />
                           <span className="text-[9px] font-bold text-primary uppercase">Contract-backed</span>
                         </div>
-                        <div className="flex items-center gap-1 bg-info border border-blue-200 rounded-full px-2 py-0.5">
+                        <div className="flex items-center gap-1 bg-info border border-info rounded-full px-2 py-0.5">
                           <ShieldCheck className="h-3 w-3 text-info" />
                           <span className="text-[9px] font-bold text-info uppercase">Pay after approval</span>
                         </div>
@@ -2228,7 +2228,7 @@ const CollabLinkLanding = () => {
                       <div className="mt-1 flex gap-2 items-center">
                         <span className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest">Category:</span>
                         <Input
-                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-card0 border-slate-300 border-dashed w-32"
+                          className="h-6 text-[12px] font-bold text-teal-600 px-2 bg-card0 border-border border-dashed w-32"
                           defaultValue={creator.category || ''}
                           onBlur={(e) => handleInlineProfileUpdate('creator_category', e.target.value)}
                           placeholder="e.g. Lifestyle"
@@ -2696,7 +2696,7 @@ const CollabLinkLanding = () => {
               </div>
 
               {!showCustomFlow && (
-                <div className="mt-5 text-center rounded-2xl border border-dashed border-slate-300 bg-background/65 px-4 py-4">
+                <div className="mt-5 text-center rounded-2xl border border-dashed border-border bg-background/65 px-4 py-4">
                   <p className="text-[12px] text-muted-foreground font-black uppercase tracking-[0.14em] mb-3">OR CREATE CUSTOM DEAL</p>
                   <Button
                     onClick={() => {
@@ -2792,7 +2792,7 @@ const CollabLinkLanding = () => {
                   {[
                     { label: 'Legally Binding', icon: <FileCheck className="h-4 w-4 text-primary" />, bg: 'bg-primary border border-primary' },
                     { label: 'Secure Payment', icon: <ShieldCheck className="h-4 w-4 text-teal-700" />, bg: 'bg-teal-100 border border-teal-200' },
-                    { label: 'Creator Armour', icon: <BadgeCheck className="h-4 w-4 text-info" />, bg: 'bg-info border border-blue-200' },
+                    { label: 'Creator Armour', icon: <BadgeCheck className="h-4 w-4 text-info" />, bg: 'bg-info border border-info' },
                   ].map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-xl bg-card p-2 border border-border">
                       <div className={`shrink-0 rounded-lg p-2 ${item.bg}`}>{item.icon}</div>
@@ -2916,7 +2916,7 @@ const CollabLinkLanding = () => {
 	                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none">Creator Bio</p>
 			            </div>
                     <Textarea
-                      className="bg-background border-slate-300 border-dashed text-muted-foreground leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
+                      className="bg-background border-border border-dashed text-muted-foreground leading-relaxed font-medium min-h-[100px] focus:border-teal-500 transition-all"
                       defaultValue={creator.bio || ''}
                       onBlur={(e) => handleInlineProfileUpdate('bio', e.target.value)}
                       placeholder="Brief introduction for brands..."
@@ -3096,7 +3096,7 @@ const CollabLinkLanding = () => {
                                 href={link.startsWith('http') ? link : `https://${link}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 p-3 rounded-xl border border-border bg-background hover:bg-background hover:border-slate-300 transition-all group"
+                                className="flex items-center gap-2 p-3 rounded-xl border border-border bg-background hover:bg-background hover:border-border transition-all group"
                               >
                                 <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                                   {link.includes('instagram.com') ? <Instagram className="w-4 h-4 text-pink-600" /> : <ExternalLink className="w-4 h-4 text-muted-foreground" />}
@@ -3415,7 +3415,7 @@ const CollabLinkLanding = () => {
                                 value={exactBudget}
                                 onChange={(e) => setExactBudget(e.target.value)}
                                 placeholder="Enter your exact budget"
-                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                                className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-border transition-all"
                               />
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-2">Enter the exact amount you'd pay. The creator will see this directly.</p>
@@ -3445,7 +3445,7 @@ const CollabLinkLanding = () => {
                                   value={exactBudget}
                                   onChange={(e) => setExactBudget(e.target.value)}
                                   placeholder="Plus cash amount (optional)"
-                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
+                                  className="h-14 pl-10 pr-6 rounded-2xl border-white bg-card font-black text-[15px] shadow-sm focus:border-border transition-all"
                                 />
                               </div>
                             )}
@@ -3553,7 +3553,7 @@ const CollabLinkLanding = () => {
                     {currentStep === 2 && isStep2Ready && (
                       <>
                         {/* Contract summary - what happens when you send */}
-                        <div className="mb-4 rounded-2xl border border-blue-200 bg-info/70 px-4 py-4">
+                        <div className="mb-4 rounded-2xl border border-info bg-info/70 px-4 py-4">
                           <p className="text-[11px] font-black uppercase tracking-widest text-info mb-3">What you're agreeing to</p>
                           <div className="space-y-2.5">
                             <div className="flex items-start gap-2.5">
@@ -3603,7 +3603,7 @@ const CollabLinkLanding = () => {
                           triggerHaptic(HapticPatterns.light);
                         }}
                         variant="outline"
-                        className="h-14 rounded-full border-border text-muted-foreground font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-muted-foreground transition-all active:scale-95"
+                        className="h-14 rounded-full border-border text-muted-foreground font-black text-xs uppercase tracking-widest hover:border-border hover:text-muted-foreground transition-all active:scale-95"
                       >
                         {currentStep === 1 ? 'Go Back' : 'Back'}
                       </Button>
@@ -3746,7 +3746,7 @@ const CollabLinkLanding = () => {
                     type="button"
                     variant="outline"
                     onClick={() => setShowSaveDraftModal(false)}
-                    className="border-border text-foreground hover:bg-secondary/50"
+                    className="border-border text-foreground hover:bg-card0"
                   >
                     Cancel
                   </Button>
@@ -3974,7 +3974,7 @@ const EditDealTemplateModal = ({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleDeliverableToggleModal(opt.value)}
-                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 bg-card"
+                        className="rounded border-border text-teal-600 focus:ring-teal-500 bg-card"
                       />
                       {opt.label}
                     </label>

@@ -27,8 +27,8 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       className={cn(
         'p-4 rounded-2xl border',
         isDark
-          ? 'bg-white/5 border-white/10'
-          : 'bg-white border-slate-100 shadow-sm'
+          ? 'bg-card border-border'
+          : 'bg-card border-border shadow-sm'
       )}
     >
       <div className="space-y-4">
@@ -38,7 +38,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
             <div
               className={cn(
                 'w-10 h-10 rounded-xl',
-                isDark ? 'bg-white/10' : 'bg-slate-200'
+                isDark ? 'bg-secondary/50' : 'bg-background'
               )}
               style={shimmerAnimation}
             />
@@ -46,14 +46,14 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
               <div
                 className={cn(
                   'h-3 rounded-lg w-2/3',
-                  isDark ? 'bg-white/10' : 'bg-slate-200'
+                  isDark ? 'bg-secondary/50' : 'bg-background'
                 )}
                 style={shimmerAnimation}
               />
               <div
                 className={cn(
                   'h-2 rounded-lg w-1/2',
-                  isDark ? 'bg-white/5' : 'bg-slate-100'
+                  isDark ? 'bg-card' : 'bg-background'
                 )}
                 style={shimmerAnimation}
               />
@@ -62,7 +62,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           <div
             className={cn(
               'h-6 w-16 rounded-lg',
-              isDark ? 'bg-white/10' : 'bg-slate-200'
+              isDark ? 'bg-secondary/50' : 'bg-background'
             )}
             style={shimmerAnimation}
           />
@@ -73,14 +73,14 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           <div
             className={cn(
               'h-2 rounded-lg w-3/4',
-              isDark ? 'bg-white/5' : 'bg-slate-100'
+              isDark ? 'bg-card' : 'bg-background'
             )}
             style={shimmerAnimation}
           />
           <div
             className={cn(
               'h-2 rounded-lg w-1/2',
-              isDark ? 'bg-white/5' : 'bg-slate-100'
+              isDark ? 'bg-card' : 'bg-background'
             )}
             style={shimmerAnimation}
           />
@@ -90,7 +90,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         <div
           className={cn(
             'h-10 rounded-xl',
-            isDark ? 'bg-white/10' : 'bg-slate-200'
+            isDark ? 'bg-secondary/50' : 'bg-background'
           )}
           style={shimmerAnimation}
         />
@@ -105,8 +105,8 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       className={cn(
         'p-4 rounded-xl border',
         isDark
-          ? 'bg-white/5 border-white/10'
-          : 'bg-white border-slate-100 shadow-sm'
+          ? 'bg-card border-border'
+          : 'bg-card border-border shadow-sm'
       )}
     >
       <div className="space-y-3">
@@ -114,14 +114,14 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           <div
             className={cn(
               'w-8 h-8 rounded-lg',
-              isDark ? 'bg-white/10' : 'bg-slate-200'
+              isDark ? 'bg-secondary/50' : 'bg-background'
             )}
             style={shimmerAnimation}
           />
           <div
             className={cn(
               'h-3 w-12 rounded',
-              isDark ? 'bg-white/10' : 'bg-slate-200'
+              isDark ? 'bg-secondary/50' : 'bg-background'
             )}
             style={shimmerAnimation}
           />
@@ -129,14 +129,14 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
         <div
           className={cn(
             'h-2 rounded w-2/3',
-            isDark ? 'bg-white/5' : 'bg-slate-100'
+            isDark ? 'bg-card' : 'bg-background'
           )}
           style={shimmerAnimation}
         />
         <div
           className={cn(
             'h-6 rounded w-1/2',
-            isDark ? 'bg-white/10' : 'bg-slate-200'
+            isDark ? 'bg-secondary/50' : 'bg-background'
           )}
           style={shimmerAnimation}
         />
@@ -191,15 +191,15 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                 className={cn(
                   'p-3 rounded-lg border',
                   isDark
-                    ? 'bg-white/5 border-white/10'
-                    : 'bg-white border-slate-100'
+                    ? 'bg-card border-border'
+                    : 'bg-card border-border'
                 )}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
                       'w-8 h-8 rounded',
-                      isDark ? 'bg-white/10' : 'bg-slate-200'
+                      isDark ? 'bg-secondary/50' : 'bg-background'
                     )}
                     style={shimmerAnimation}
                   />
@@ -207,14 +207,14 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                     <div
                       className={cn(
                         'h-2 rounded w-1/3',
-                        isDark ? 'bg-white/10' : 'bg-slate-200'
+                        isDark ? 'bg-secondary/50' : 'bg-background'
                       )}
                       style={shimmerAnimation}
                     />
                     <div
                       className={cn(
                         'h-2 rounded w-1/4',
-                        isDark ? 'bg-white/5' : 'bg-slate-100'
+                        isDark ? 'bg-card' : 'bg-background'
                       )}
                       style={shimmerAnimation}
                     />

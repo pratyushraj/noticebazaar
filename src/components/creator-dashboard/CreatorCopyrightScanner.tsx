@@ -21,9 +21,9 @@ interface PlatformOption {
 
 const PLATFORM_OPTIONS: PlatformOption[] = [
   { id: 'Instagram', name: 'Instagram', icon: Instagram, color: 'text-pink-500' },
-  { id: 'YouTube', name: 'YouTube', icon: Youtube, color: 'text-red-500' },
-  { id: 'TikTok', name: 'TikTok', icon: Globe, color: 'text-black dark:text-white' },
-  { id: 'Facebook', name: 'Facebook', icon: Facebook, color: 'text-blue-600' },
+  { id: 'YouTube', name: 'YouTube', icon: Youtube, color: 'text-destructive' },
+  { id: 'TikTok', name: 'TikTok', icon: Globe, color: 'text-black dark:text-foreground' },
+  { id: 'Facebook', name: 'Facebook', icon: Facebook, color: 'text-info' },
   { id: 'Other Web', name: 'Web', icon: Globe, color: 'text-gray-500' },
 ];
 
@@ -173,7 +173,7 @@ const CreatorCopyrightScanner: React.FC = () => {
     <Card className="creator-card-base shadow-sm p-6 flex flex-col justify-between min-h-[200px]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0 pt-0">
         <CardTitle className="text-sm font-medium text-muted-foreground">Copyright Scanner</CardTitle>
-        <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/30">IP Protection</Badge>
+        <Badge variant="outline" className="bg-secondary/20 text-secondary border-purple-500/30">IP Protection</Badge>
       </CardHeader>
       <CardContent className="px-0 pb-0 flex-grow">
         {/* Description */}

@@ -65,10 +65,10 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
   }, [brandDeals, profile]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return { bg: 'from-emerald-500/20 to-emerald-600/20', border: 'border-emerald-700/40', text: 'text-emerald-400', label: 'Excellent' };
-    if (score >= 60) return { bg: 'from-blue-500/20 to-blue-600/20', border: 'border-blue-700/40', text: 'text-blue-400', label: 'Good' };
+    if (score >= 80) return { bg: 'from-emerald-500/20 to-emerald-600/20', border: 'border-primary/40', text: 'text-primary', label: 'Excellent' };
+    if (score >= 60) return { bg: 'from-blue-500/20 to-blue-600/20', border: 'border-info/40', text: 'text-info', label: 'Good' };
     if (score >= 40) return { bg: 'from-yellow-500/20 to-yellow-600/20', border: 'border-yellow-700/40', text: 'text-yellow-400', label: 'Fair' };
-    return { bg: 'from-red-600/20 to-red-800/20', border: 'border-white/5', text: 'text-red-400', label: 'Needs Work' };
+    return { bg: 'from-red-600/20 to-red-800/20', border: 'border-border/5', text: 'text-destructive', label: 'Needs Work' };
   };
 
   const scoreConfig = getScoreColor(score);
@@ -79,16 +79,16 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.15 }}
     >
-      <Card className={cn("border", scoreConfig.border, "hover:border-white/10 transition-all")}>
+      <Card className={cn("border", scoreConfig.border, "hover:border-border transition-all")}>
         {/* Soft radial gradient overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_70%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-background pointer-events-none" />
         
         <CardContent className="p-4 relative z-10 space-y-1.5">
           {/* Header */}
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-3.5 w-3.5 text-blue-300 opacity-80" />
-              <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wide">Brand Interest Score</span>
+              <TrendingUp className="h-3.5 w-3.5 text-info opacity-80" />
+              <span className="text-[11px] font-semibold text-foreground/50 uppercase tracking-wide">Brand Interest Score</span>
             </div>
             <span className={cn("text-[17px] font-bold tracking-tight", scoreConfig.text)}>
               {score}/100
@@ -108,7 +108,7 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="5"
-                  className="text-white/10"
+                  className="text-foreground/10"
                 />
                 {/* Progress arc */}
                 <motion.circle
@@ -152,10 +152,10 @@ const BrandInterestScore: React.FC<BrandInterestScoreProps> = ({ brandDeals = []
 
           {/* Bottom Status */}
           <div className="text-center mt-1.5">
-            <span className={cn("text-xs font-semibold", score >= 60 ? 'text-blue-300' : scoreConfig.text)}>
+            <span className={cn("text-xs font-semibold", score >= 60 ? 'text-info' : scoreConfig.text)}>
               {scoreConfig.label}
             </span>
-            <p className="text-[10px] text-white/50 mt-0.5 leading-tight">
+            <p className="text-[10px] text-foreground/50 mt-0.5 leading-tight">
               {score >= 80 ? 'Keep it up!' : score >= 60 ? 'Maintain level' : 'Needs work'}
             </p>
           </div>

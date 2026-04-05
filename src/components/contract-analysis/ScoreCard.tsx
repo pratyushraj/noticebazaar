@@ -15,7 +15,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ score, riskLevel }) => {
   const getScoreColor = () => {
     if (score > 80) return 'text-green-400';
     if (score >= 50) return 'text-yellow-400';
-    return 'text-red-400';
+    return 'text-destructive';
   };
 
   // Risk tag colors
@@ -23,9 +23,9 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ score, riskLevel }) => {
     switch (riskLevel) {
       case 'High':
         return {
-          color: 'text-red-400',
-          bgColor: 'bg-red-500/20',
-          borderColor: 'border-red-400/30',
+          color: 'text-destructive',
+          bgColor: 'bg-destructive/20',
+          borderColor: 'border-destructive/30',
           icon: XCircle,
           label: 'High Risk',
         };
@@ -64,7 +64,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ score, riskLevel }) => {
             <RiskIcon className={`w-8 h-8 ${riskConfig.color}`} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold mb-1 text-white">Contract Analyzed</h2>
+            <h2 className="text-2xl font-bold mb-1 text-foreground">Contract Analyzed</h2>
             <p className={`text-sm ${riskConfig.color} font-medium`}>
               {riskConfig.label}
             </p>
@@ -72,7 +72,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({ score, riskLevel }) => {
         </div>
         <div className="text-right">
           <div className={`text-4xl font-bold ${getScoreColor()}`}>{score}</div>
-          <div className="text-sm text-white/60">Protection Score</div>
+          <div className="text-sm text-foreground/60">Protection Score</div>
         </div>
       </div>
     </motion.div>

@@ -34,12 +34,12 @@ const typeLabels = {
 };
 
 const typeColors = {
-  deal: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  deal: 'bg-info/20 text-info border-info/30',
   payment: 'bg-green-500/20 text-green-400 border-green-500/30',
-  contract: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  contract: 'bg-secondary/20 text-secondary border-purple-500/30',
   notification: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   message: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-  tax: 'bg-red-500/20 text-red-400 border-red-500/30',
+  tax: 'bg-destructive/20 text-destructive border-destructive/30',
 };
 
 export default function SearchResults() {
@@ -89,29 +89,29 @@ export default function SearchResults() {
   };
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-white">
+    <div className="nb-screen-height bg-gradient-to-br from-[#0F121A] via-[#1A1D2E] to-[#0F121A] text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#0F121A]/80 backdrop-blur-xl border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-[#0F121A]/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="text-white/60 hover:text-white hover:bg-white/10"
+              className="text-foreground/60 hover:text-foreground hover:bg-secondary/50"
             >
               <X className="h-5 w-5" />
             </Button>
             
             {/* Search Input */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/40" />
               <Input
                 type="text"
                 placeholder="Search deals, payments, contracts..."
                 value={query}
                 onChange={(e) => handleQueryChange(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-purple-500/50 h-12"
+                className="pl-10 bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-purple-500/50 h-12"
                 autoFocus
               />
             </div>
@@ -140,9 +140,9 @@ export default function SearchResults() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {query.trim().length === 0 ? (
           <div className="text-center py-20">
-            <Search className="h-16 w-16 mx-auto mb-4 text-white/20" />
+            <Search className="h-16 w-16 mx-auto mb-4 text-foreground/20" />
             <h2 className="text-2xl font-semibold mb-2">Start Searching</h2>
-            <p className="text-white/60">
+            <p className="text-foreground/60">
               Search across your deals, payments, contracts, and more
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function SearchResults() {
               
               const Icon = typeIcons[type as keyof typeof typeIcons] || Search;
               const label = typeLabels[type as keyof typeof typeLabels] || type;
-              const colorClass = typeColors[type as keyof typeof typeColors] || 'bg-white/10 text-white/60';
+              const colorClass = typeColors[type as keyof typeof typeColors] || 'bg-secondary/50 text-foreground/60';
 
               return (
                 <motion.div
@@ -168,7 +168,7 @@ export default function SearchResults() {
                   transition={{ duration: 0.3 }}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <Icon className="h-5 w-5 text-white/60" />
+                    <Icon className="h-5 w-5 text-foreground/60" />
                     <h3 className="text-lg font-semibold">{label}</h3>
                     <Badge variant="outline" className={cn("text-xs", colorClass)}>
                       {items.length}
@@ -178,7 +178,7 @@ export default function SearchResults() {
                   <div className="space-y-3">
                     {items.map((result) => {
                       const ResultIcon = typeIcons[result.type] || Search;
-                      const resultColorClass = typeColors[result.type] || 'bg-white/10 text-white/60';
+                      const resultColorClass = typeColors[result.type] || 'bg-secondary/50 text-foreground/60';
 
                       return (
                         <motion.div
@@ -188,7 +188,7 @@ export default function SearchResults() {
                           transition={{ delay: 0.1 }}
                         >
                           <Card 
-                            className="bg-white/[0.08] backdrop-blur-[40px] border-white/15 hover:bg-white/[0.12] transition-all cursor-pointer"
+                            className="bg-secondary/[0.08] backdrop-blur-[40px] border-border hover:bg-secondary/[0.12] transition-all cursor-pointer"
                             onClick={() => handleResultClick(result)}
                           >
                             <CardContent className="p-4">
@@ -201,7 +201,7 @@ export default function SearchResults() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-base font-semibold text-white">
+                                    <h4 className="text-base font-semibold text-foreground">
                                       {result.title}
                                     </h4>
                                     <Badge variant="outline" className={cn("text-xs", resultColorClass)}>
@@ -209,12 +209,12 @@ export default function SearchResults() {
                                     </Badge>
                                   </div>
                                   {result.subtitle && (
-                                    <p className="text-sm text-white/60 mb-1">
+                                    <p className="text-sm text-foreground/60 mb-1">
                                       {result.subtitle}
                                     </p>
                                   )}
                                   {result.description && (
-                                    <p className="text-sm text-white/40">
+                                    <p className="text-sm text-foreground/40">
                                       {result.description}
                                     </p>
                                   )}

@@ -100,12 +100,12 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     <form className="space-y-6">
       {/* Amount */}
       <div>
-        <Label htmlFor="amount" className="text-white/90 mb-2 block">
+        <Label htmlFor="amount" className="text-foreground/90 mb-2 block">
           Amount *
         </Label>
         <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 z-10" />
-          <div className="absolute left-9 top-1/2 -translate-y-1/2 text-white/70 text-sm z-10">
+          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/50 z-10" />
+          <div className="absolute left-9 top-1/2 -translate-y-1/2 text-foreground/70 text-sm z-10">
             ₹
           </div>
           <Input
@@ -117,28 +117,28 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             disabled={isSubmitting}
             placeholder="0"
             className={cn(
-              "pl-12 bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-              "placeholder:text-white/40 text-white",
+              "pl-12 bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+              "placeholder:text-foreground/40 text-foreground",
               "px-4 py-3",
-              "focus:border-white/30 focus:ring-2 focus:ring-white/20",
-              errors.amount && "border-red-400/50 focus:border-red-400"
+              "focus:border-border focus:ring-2 focus:ring-white/20",
+              errors.amount && "border-destructive/50 focus:border-destructive"
             )}
             required
           />
         </div>
         {formData.amount && (
-          <p className="text-xs text-white/60 mt-1">
+          <p className="text-xs text-foreground/60 mt-1">
             {formatAmountDisplay(formData.amount) ? `₹${formatAmountDisplay(formData.amount)}` : ''}
           </p>
         )}
         {errors.amount && (
-          <p className="text-red-400 text-sm mt-1">{errors.amount}</p>
+          <p className="text-destructive text-sm mt-1">{errors.amount}</p>
         )}
       </div>
 
       {/* Category */}
       <div>
-        <Label htmlFor="category" className="text-white/90 mb-2 block">
+        <Label htmlFor="category" className="text-foreground/90 mb-2 block">
           Category *
         </Label>
         <CategoryDropdown
@@ -151,11 +151,11 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Date */}
       <div>
-        <Label htmlFor="expenseDate" className="text-white/90 mb-2 block">
+        <Label htmlFor="expenseDate" className="text-foreground/90 mb-2 block">
           Date *
         </Label>
         <div className="relative">
-          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 z-10" />
+          <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/50 z-10" />
           <Input
             id="expenseDate"
             type="date"
@@ -163,23 +163,23 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             onChange={(e) => onFieldChange('expenseDate', e.target.value)}
             disabled={isSubmitting}
             className={cn(
-              "pl-9 bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-              "placeholder:text-white/40 text-white",
+              "pl-9 bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+              "placeholder:text-foreground/40 text-foreground",
               "px-4 py-3",
-              "focus:border-white/30 focus:ring-2 focus:ring-white/20",
-              errors.expenseDate && "border-red-400/50 focus:border-red-400"
+              "focus:border-border focus:ring-2 focus:ring-white/20",
+              errors.expenseDate && "border-destructive/50 focus:border-destructive"
             )}
             required
           />
         </div>
         {errors.expenseDate && (
-          <p className="text-red-400 text-sm mt-1">{errors.expenseDate}</p>
+          <p className="text-destructive text-sm mt-1">{errors.expenseDate}</p>
         )}
       </div>
 
       {/* Description */}
       <div>
-        <Label htmlFor="description" className="text-white/90 mb-2 block">
+        <Label htmlFor="description" className="text-foreground/90 mb-2 block">
           Description *
         </Label>
         <Textarea
@@ -191,20 +191,20 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           rows={3}
           minLength={5}
           className={cn(
-            "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-            "placeholder:text-white/40 text-white",
+            "bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+            "placeholder:text-foreground/40 text-foreground",
             "px-4 py-3",
-            "focus:border-white/30 focus:ring-2 focus:ring-white/20",
+            "focus:border-border focus:ring-2 focus:ring-white/20",
             "resize-none",
-            errors.description && "border-red-400/50 focus:border-red-400"
+            errors.description && "border-destructive/50 focus:border-destructive"
           )}
           required
         />
         {errors.description && (
-          <p className="text-red-400 text-sm mt-1">{errors.description}</p>
+          <p className="text-destructive text-sm mt-1">{errors.description}</p>
         )}
         {formData.description && formData.description.length < 5 && (
-          <p className="text-xs text-white/60 mt-1">
+          <p className="text-xs text-foreground/60 mt-1">
             Minimum 5 characters required ({formData.description.length}/5)
           </p>
         )}
@@ -212,11 +212,11 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Vendor */}
       <div>
-        <Label htmlFor="vendorName" className="text-white/90 mb-2 block">
+        <Label htmlFor="vendorName" className="text-foreground/90 mb-2 block">
           Vendor/Supplier
         </Label>
         <div className="relative">
-          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 z-10" />
+          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/50 z-10" />
           <Input
             id="vendorName"
             value={formData.vendorName}
@@ -224,10 +224,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             disabled={isSubmitting}
             placeholder="e.g., Amazon, Office Depot"
             className={cn(
-              "pl-9 bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-              "placeholder:text-white/40 text-white",
+              "pl-9 bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+              "placeholder:text-foreground/40 text-foreground",
               "px-4 py-3",
-              "focus:border-white/30 focus:ring-2 focus:ring-white/20"
+              "focus:border-border focus:ring-2 focus:ring-white/20"
             )}
           />
         </div>
@@ -235,7 +235,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Payment Method */}
       <div>
-        <Label htmlFor="paymentMethod" className="text-white/90 mb-2 block">
+        <Label htmlFor="paymentMethod" className="text-foreground/90 mb-2 block">
           Payment Method
         </Label>
         <MethodDropdown
@@ -254,7 +254,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Label htmlFor="upiId" className="text-white/90 mb-2 block">
+            <Label htmlFor="upiId" className="text-foreground/90 mb-2 block">
               UPI ID *
             </Label>
             <Input
@@ -264,16 +264,16 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               disabled={isSubmitting}
               placeholder="e.g., yourname@paytm"
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "placeholder:text-white/40 text-white",
+                "bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+                "placeholder:text-foreground/40 text-foreground",
                 "px-4 py-3",
-                "focus:border-white/30 focus:ring-2 focus:ring-white/20",
-                errors.upiId && "border-red-400/50 focus:border-red-400"
+                "focus:border-border focus:ring-2 focus:ring-white/20",
+                errors.upiId && "border-destructive/50 focus:border-destructive"
               )}
               required={showUpiField}
             />
             {errors.upiId && (
-              <p className="text-red-400 text-sm mt-1">{errors.upiId}</p>
+              <p className="text-destructive text-sm mt-1">{errors.upiId}</p>
             )}
           </motion.div>
         )}
@@ -285,7 +285,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Label htmlFor="accountLast4" className="text-white/90 mb-2 block">
+            <Label htmlFor="accountLast4" className="text-foreground/90 mb-2 block">
               Last 4 digits of account (Optional)
             </Label>
             <Input
@@ -301,10 +301,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               disabled={isSubmitting}
               placeholder="1234"
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "placeholder:text-white/40 text-white",
+                "bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+                "placeholder:text-foreground/40 text-foreground",
                 "px-4 py-3",
-                "focus:border-white/30 focus:ring-2 focus:ring-white/20"
+                "focus:border-border focus:ring-2 focus:ring-white/20"
               )}
             />
           </motion.div>
@@ -317,7 +317,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Label htmlFor="cardLast4" className="text-white/90 mb-2 block">
+            <Label htmlFor="cardLast4" className="text-foreground/90 mb-2 block">
               Last 4 digits of card (Optional)
             </Label>
             <Input
@@ -333,10 +333,10 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               disabled={isSubmitting}
               placeholder="1234"
               className={cn(
-                "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "placeholder:text-white/40 text-white",
+                "bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+                "placeholder:text-foreground/40 text-foreground",
                 "px-4 py-3",
-                "focus:border-white/30 focus:ring-2 focus:ring-white/20"
+                "focus:border-border focus:ring-2 focus:ring-white/20"
               )}
             />
           </motion.div>
@@ -345,7 +345,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Tags */}
       <div>
-        <Label htmlFor="tags" className="text-white/90 mb-2 block">
+        <Label htmlFor="tags" className="text-foreground/90 mb-2 block">
           Tags
         </Label>
         <ChipInput
@@ -363,7 +363,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
       {/* Receipt Upload */}
       <div>
-        <Label htmlFor="receiptFile" className="text-white/90 mb-2 block">
+        <Label htmlFor="receiptFile" className="text-foreground/90 mb-2 block">
           Receipt (Optional)
         </Label>
         {formData.receiptFile ? (
@@ -380,15 +380,15 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               onChange={handleFileChange}
               disabled={isSubmitting}
               className={cn(
-                "cursor-pointer bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-                "text-white file:mr-4 file:py-2 file:px-4",
+                "cursor-pointer bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+                "text-foreground file:mr-4 file:py-2 file:px-4",
                 "file:rounded-lg file:border-0 file:text-sm file:font-semibold",
-                "file:bg-white/10 file:text-white hover:file:bg-white/15",
+                "file:bg-secondary/50 file:text-foreground hover:file:bg-secondary/15",
                 "px-4 py-3",
-                "focus:border-white/30 focus:ring-2 focus:ring-white/20"
+                "focus:border-border focus:ring-2 focus:ring-white/20"
               )}
             />
-            <p className="text-xs text-white/60 mt-1">
+            <p className="text-xs text-foreground/60 mt-1">
               Upload receipt image or PDF (max 5MB)
             </p>
           </>

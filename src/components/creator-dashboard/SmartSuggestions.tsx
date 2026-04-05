@@ -110,25 +110,25 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
     switch (priority) {
       case 'high':
         return {
-          badge: 'bg-red-500/20 text-red-600 border-red-500/30',
-          border: 'border-red-500/20 bg-gradient-to-br from-red-500/5 to-orange-500/5',
-          icon: 'text-red-500',
+          badge: 'bg-destructive/20 text-destructive border-destructive/30',
+          border: 'border-destructive/20 bg-gradient-to-br from-red-500/5 to-orange-500/5',
+          icon: 'text-destructive',
           gradient: 'from-red-600 to-orange-600',
           label: 'Urgent',
         };
       case 'medium':
         return {
-          badge: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
-          border: 'border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-cyan-500/5',
-          icon: 'text-blue-500',
+          badge: 'bg-info/20 text-info border-info/30',
+          border: 'border-info/20 bg-gradient-to-br from-blue-500/5 to-cyan-500/5',
+          icon: 'text-info',
           gradient: 'from-blue-600 to-cyan-600',
           label: 'Important',
         };
       case 'low':
         return {
-          badge: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
+          badge: 'bg-secondary/20 text-secondary border-purple-500/30',
           border: 'border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-pink-500/5',
-          icon: 'text-purple-500',
+          icon: 'text-secondary',
           gradient: 'from-purple-600 to-pink-600',
           label: 'Opportunity',
         };
@@ -157,8 +157,8 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="overflow-hidden bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-xl border border-slate-700/30 rounded-2xl shadow-lg">
-        <CardHeader className="pb-4 pt-5 px-5 sm:px-6 border-b border-slate-700/20">
+      <Card className="overflow-hidden bg-gradient-to-br from-background/50 to-slate-800/30 backdrop-blur-xl border border-border rounded-2xl shadow-lg">
+        <CardHeader className="pb-4 pt-5 px-5 sm:px-6 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -167,19 +167,19 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                   transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                   className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl blur opacity-20"
                 />
-                <div className="relative bg-purple-600/20 p-2 rounded-xl border border-purple-500/30">
-                  <Sparkles className="h-5 w-5 text-purple-400" />
+                <div className="relative bg-secondary/20 p-2 rounded-xl border border-purple-500/30">
+                  <Sparkles className="h-5 w-5 text-secondary" />
                 </div>
               </div>
               <div>
-                <CardTitle className="text-lg font-bold text-white">Smart Suggestions</CardTitle>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <CardTitle className="text-lg font-bold text-foreground">Smart Suggestions</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {activeSuggestions.length} actionable items
                 </p>
               </div>
             </div>
             {activeSuggestions.length > 0 && (
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                 <Zap className="w-3 h-3 mr-1" />
                 AI-Powered
               </Badge>
@@ -212,12 +212,12 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                       {/* Header */}
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className={cn("flex-shrink-0 mt-1 p-2 rounded-lg bg-white/5 border border-white/10", config.icon)}>
+                          <div className={cn("flex-shrink-0 mt-1 p-2 rounded-lg bg-card border border-border", config.icon)}>
                             {suggestion.icon}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="text-sm font-bold text-white">{suggestion.title}</h3>
+                              <h3 className="text-sm font-bold text-foreground">{suggestion.title}</h3>
                               <Badge
                                 variant="outline"
                                 className={cn("text-xs font-semibold border", config.badge)}
@@ -226,13 +226,13 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                                 {config.label}
                               </Badge>
                             </div>
-                            <p className="text-xs text-slate-400 mt-2">{suggestion.description}</p>
+                            <p className="text-xs text-muted-foreground mt-2">{suggestion.description}</p>
                           </div>
                         </div>
 
                         <button type="button"
                           onClick={() => handleDismiss(suggestion.id)}
-                          className="flex-shrink-0 p-1.5 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
+                          className="flex-shrink-0 p-1.5 hover:bg-secondary/50 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
                           aria-label="Dismiss suggestion"
                         >
                           <X className="w-4 h-4" />
@@ -240,7 +240,7 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                       </div>
 
                       {/* Meta Info */}
-                      <div className="flex flex-wrap gap-4 mb-3 text-xs text-slate-400">
+                      <div className="flex flex-wrap gap-4 mb-3 text-xs text-muted-foreground">
                         {suggestion.estimatedTime && (
                           <div className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5 text-cyan-400" />
@@ -248,7 +248,7 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                           </div>
                         )}
                         <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-white">{suggestion.count}</span>
+                          <span className="font-semibold text-foreground">{suggestion.count}</span>
                           <span>{suggestion.count === 1 ? 'item' : 'items'}</span>
                         </div>
                       </div>
@@ -261,13 +261,13 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.2 }}
-                            className="mb-3 p-3 bg-white/5 border border-white/10 rounded-lg"
+                            className="mb-3 p-3 bg-card border border-border rounded-lg"
                           >
                             <div className="flex items-start gap-2">
-                              <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                              <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-xs font-semibold text-emerald-400">Estimated Impact</p>
-                                <p className="text-xs text-slate-300 mt-1">{suggestion.impact}</p>
+                                <p className="text-xs font-semibold text-primary">Estimated Impact</p>
+                                <p className="text-xs text-muted-foreground mt-1">{suggestion.impact}</p>
                               </div>
                             </div>
                           </motion.div>
@@ -275,12 +275,12 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                       </AnimatePresence>
 
                       {/* Action Button */}
-                      <div className="flex gap-2 pt-3 border-t border-white/10">
+                      <div className="flex gap-2 pt-3 border-t border-border">
                         <Button
                           size="sm"
                           onClick={() => handleAction(suggestion.id)}
                           className={cn(
-                            "flex-1 gap-1.5 font-semibold text-white shadow-lg transition-all",
+                            "flex-1 gap-1.5 font-semibold text-foreground shadow-lg transition-all",
                             suggestion.priority === 'high'
                               ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 shadow-red-600/20'
                               : suggestion.priority === 'medium'
@@ -293,7 +293,7 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
                         </Button>
                         <button type="button"
                           onClick={() => setExpandedId(isExpanded ? null : suggestion.id)}
-                          className="px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition-colors text-slate-300 hover:text-white"
+                          className="px-3 py-2 rounded-lg border border-border hover:bg-card transition-colors text-muted-foreground hover:text-foreground"
                           aria-label={isExpanded ? 'Show less' : 'Show more'}
                         >
                           {isExpanded ? '−' : '+'}
@@ -312,7 +312,7 @@ const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({ brandDeals = [], on
               animate={{ opacity: 1 }}
               className="text-center py-6"
             >
-              <p className="text-sm text-slate-400">All suggestions dismissed!</p>
+              <p className="text-sm text-muted-foreground">All suggestions dismissed!</p>
               <Button
                 variant="outline"
                 size="sm"

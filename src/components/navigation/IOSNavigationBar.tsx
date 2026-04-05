@@ -27,7 +27,7 @@ const IOSNavigationBar: React.FC<IOSNavigationBarProps> = ({
   return (
     <header className={cn(
       "sticky top-0 z-40 w-full h-14",
-      "bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border-b border-white/10",
+      "bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] border-b border-border",
       "shadow-[0_1px_0_rgba(0,0,0,0.1)]",
       className
     )}>
@@ -37,7 +37,7 @@ const IOSNavigationBar: React.FC<IOSNavigationBarProps> = ({
           {shouldShowBack && (
             <button type="button"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-1 text-white active:opacity-50 transition-opacity"
+              className="flex items-center gap-1 text-foreground active:opacity-50 transition-opacity"
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="text-base font-medium">Back</span>
@@ -46,7 +46,7 @@ const IOSNavigationBar: React.FC<IOSNavigationBarProps> = ({
         </div>
 
         {/* Center: Title */}
-        <h1 className="text-lg font-semibold text-white text-center flex-1 truncate px-2">
+        <h1 className="text-lg font-semibold text-foreground text-center flex-1 truncate px-2">
           {title}
         </h1>
 

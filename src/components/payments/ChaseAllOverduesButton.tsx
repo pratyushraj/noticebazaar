@@ -67,7 +67,7 @@ export const ChaseAllOverduesButton: React.FC<ChaseAllOverduesButtonProps> = ({ 
       <Button
         onClick={handleChaseAll}
         disabled={isChasing}
-        className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-full shadow-lg shadow-red-500/30 hover:shadow-red-500/50 min-h-[56px] flex items-center gap-2"
+        className="bg-destructive hover:bg-destructive text-foreground font-bold px-6 py-3 rounded-full shadow-lg shadow-red-500/30 hover:shadow-red-500/50 min-h-[56px] flex items-center gap-2"
       >
         {isChasing ? (
           <>

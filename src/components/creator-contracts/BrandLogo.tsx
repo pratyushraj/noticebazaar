@@ -55,7 +55,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({
     return (
       <div
         className={cn(
-          "h-12 w-12 rounded-xl bg-white/5 border border-white/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35)] flex items-center justify-center backdrop-blur-md overflow-hidden",
+          "h-12 w-12 rounded-xl bg-card border border-border shadow-[0_4px_12px_-2px_rgba(0,0,0,0.35)] flex items-center justify-center backdrop-blur-md overflow-hidden",
           size === 'sm' && 'h-8 w-8',
           size === 'lg' && 'h-14 w-14',
           className

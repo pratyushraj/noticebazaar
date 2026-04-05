@@ -81,7 +81,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({ issues }) => {
         className="relative bg-[rgba(255,255,255,0.06)] backdrop-blur-[24px] rounded-[20px] p-5 border border-[rgba(255,255,255,0.15)] shadow-[0_8px_40px_rgba(0,0,0,0.25)] text-center py-8"
       >
         <div className="text-4xl mb-2">🎉</div>
-        <div className="text-white font-medium">No major issues found</div>
+        <div className="text-foreground font-medium">No major issues found</div>
       </motion.div>
     );
   }
@@ -93,7 +93,7 @@ export const IssuesList: React.FC<IssuesListProps> = ({ issues }) => {
       transition={{ duration: 0.3, delay: 0.2 }}
       className="relative bg-[rgba(255,255,255,0.06)] backdrop-blur-[24px] rounded-[20px] p-5 border border-[rgba(255,255,255,0.15)] shadow-[0_8px_40px_rgba(0,0,0,0.25)]"
     >
-      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-white">
+      <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-foreground">
         <AlertTriangle className="w-5 h-5 text-yellow-400" />
         Issues Found ({issues.length})
       </h3>
@@ -115,17 +115,17 @@ export const IssuesList: React.FC<IssuesListProps> = ({ issues }) => {
                 <AlertTriangle className={`w-5 h-5 ${impactColors.text} flex-shrink-0 mt-0.5`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <h4 className="font-semibold text-white">{issue.title}</h4>
+                    <h4 className="font-semibold text-foreground">{issue.title}</h4>
                     <span className={`px-2 py-0.5 rounded text-xs font-medium border ${impactColors.bg} ${impactColors.text} ${impactColors.border}`}>
                       {issue.category}
                     </span>
-                    <span className="text-xs text-white/50">{sectionNumber}</span>
+                    <span className="text-xs text-foreground/50">{sectionNumber}</span>
                   </div>
-                  <p className="text-sm text-white/80 mb-3 line-clamp-3">{issue.description}</p>
+                  <p className="text-sm text-foreground/80 mb-3 line-clamp-3">{issue.description}</p>
                   
                   <button type="button"
                     onClick={() => toggleExpanded(issue.id)}
-                    className="flex items-center gap-1 text-xs text-white/60 hover:text-white/80 transition-colors mb-2"
+                    className="flex items-center gap-1 text-xs text-foreground/60 hover:text-foreground/80 transition-colors mb-2"
                   >
                     {isExpanded ? (
                       <>
@@ -147,10 +147,10 @@ export const IssuesList: React.FC<IssuesListProps> = ({ issues }) => {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="p-3 bg-white/5 rounded-lg border border-white/10"
+                        className="p-3 bg-card rounded-lg border border-border"
                       >
-                        <div className="text-xs text-white/60 mb-1">💡 Recommendation</div>
-                        <div className="text-sm text-white/90">{issue.recommendation}</div>
+                        <div className="text-xs text-foreground/60 mb-1">💡 Recommendation</div>
+                        <div className="text-sm text-foreground/90">{issue.recommendation}</div>
                       </motion.div>
                     )}
                   </AnimatePresence>

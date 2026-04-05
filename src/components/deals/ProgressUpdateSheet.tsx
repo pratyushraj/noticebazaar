@@ -109,12 +109,12 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
           >
             {/* Handle */}
             <div className="flex items-center justify-center pt-3 pb-2 flex-shrink-0">
-              <div className="w-12 h-1.5 rounded-full bg-white/20" />
+              <div className="w-12 h-1.5 rounded-full bg-secondary/20" />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 pb-4 flex-shrink-0">
-              <h2 className={cn(typography.h3, "text-white")}>Update Progress</h2>
+              <h2 className={cn(typography.h3, "text-foreground")}>Update Progress</h2>
               <motion.button
                 onClick={() => {
                   triggerHaptic(HapticPatterns.light);
@@ -125,11 +125,11 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                   "w-10 h-10 rounded-full",
                   glass.apple,
                   "flex items-center justify-center transition-colors",
-                  "hover:bg-white/15 active:scale-95"
+                  "hover:bg-secondary/15 active:scale-95"
                 )}
                 aria-label="Close"
               >
-                <X className={cn(iconSizes.md, "text-white")} />
+                <X className={cn(iconSizes.md, "text-foreground")} />
               </motion.button>
             </div>
 
@@ -169,8 +169,8 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                         "p-4 flex items-center justify-between",
                         "transition-all duration-200",
                         isSelected
-                          ? "bg-white/15 border-2 border-white/30 shadow-lg shadow-purple-500/20"
-                          : "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20",
+                          ? "bg-secondary/15 border-2 border-border shadow-lg shadow-purple-500/20"
+                          : "bg-card border border-border hover:bg-secondary/50 hover:border-border",
                         (isLoading || isAuto) && "opacity-50 cursor-not-allowed",
                         "active:scale-[0.97]"
                       )}
@@ -181,8 +181,8 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                           "w-12 h-12 rounded-full flex items-center justify-center",
                           "font-semibold text-sm",
                           isSelected
-                            ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white"
-                            : "bg-white/10 text-white/70"
+                            ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-foreground"
+                            : "bg-secondary/50 text-foreground/70"
                         )}>
                           {percent}%
                         </div>
@@ -191,16 +191,16 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                         <div className="flex-1 text-left">
                           <div className={cn(
                             "font-semibold mb-1 flex items-center gap-2",
-                            isSelected ? "text-white" : "text-white/90"
+                            isSelected ? "text-foreground" : "text-foreground/90"
                           )}>
                             <span>{stageConfig.label}</span>
                             {isAuto && (
-                              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/70 border border-white/10">
+                              <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-secondary/50 text-foreground/70 border border-border">
                                 Auto
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-white/60">
+                          <div className="text-xs text-foreground/60">
                             {stageConfig.description}
                           </div>
                         </div>
@@ -214,7 +214,7 @@ const ProgressUpdateSheet: React.FC<ProgressUpdateSheetProps> = ({
                           transition={motionTokens.spring.ios17}
                           className="flex-shrink-0"
                         >
-                          <Check className={cn(iconSizes.md, "text-purple-400")} />
+                          <Check className={cn(iconSizes.md, "text-secondary")} />
                         </motion.div>
                       )}
                     </motion.button>

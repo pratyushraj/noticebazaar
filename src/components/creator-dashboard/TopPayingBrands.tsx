@@ -86,20 +86,20 @@ const TopPayingBrands: React.FC<TopPayingBrandsProps> = ({ brandDeals = [] }) =>
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
-            className="flex items-center gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-smooth card-interactive"
+            className="flex items-center gap-3 p-4 rounded-xl bg-card hover:bg-secondary/50 border border-border/5 hover:border-border transition-smooth card-interactive"
           >
             <div className="flex-shrink-0">
               {getRankIcon(index + 1)}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-body font-semibold text-white truncate">{brand.name}</p>
-              <p className="text-small text-white/60">
+              <p className="text-body font-semibold text-foreground truncate">{brand.name}</p>
+              <p className="text-small text-foreground/60">
                 {brand.dealCount} deal{brand.dealCount !== 1 ? 's' : ''}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xl font-bold text-white number-large">₹{brand.totalAmount.toLocaleString('en-IN')}</p>
-              <p className="text-small text-white/40">total</p>
+              <p className="text-xl font-bold text-foreground number-large">₹{brand.totalAmount.toLocaleString('en-IN')}</p>
+              <p className="text-small text-foreground/40">total</p>
             </div>
           </motion.div>
         ))}

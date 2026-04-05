@@ -46,7 +46,7 @@ export function DeadlineCalendar({ viewMode = 'month' }: DeadlineCalendarProps) 
           date: dueDate,
           type: 'payment',
           color: isOverdue 
-            ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+            ? 'bg-destructive/20 text-destructive border border-destructive/30' 
             : 'bg-green-500/20 text-green-400 border border-green-500/30',
           description: `₹${deal.deal_amount?.toLocaleString('en-IN') || '0'} expected`,
           metadata: { deal, eventType: 'payment' },
@@ -65,7 +65,7 @@ export function DeadlineCalendar({ viewMode = 'month' }: DeadlineCalendarProps) 
           type: 'deliverable',
           color: isOverdue 
             ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' 
-            : 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+            : 'bg-info/20 text-info border border-info/30',
           description: deal.platform || 'Multiple platforms',
           metadata: { deal, eventType: 'deliverable' },
         });
@@ -84,7 +84,7 @@ export function DeadlineCalendar({ viewMode = 'month' }: DeadlineCalendarProps) 
         date: dueDate,
         type: 'tax',
         color: isOverdue 
-          ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+          ? 'bg-destructive/20 text-destructive border border-destructive/30' 
           : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
         description: filing.details || 'Tax compliance deadline',
         metadata: { filing, eventType: 'tax' },

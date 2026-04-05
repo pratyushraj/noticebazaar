@@ -45,16 +45,16 @@ export const UploadStep: React.FC<UploadStepProps> = ({
             "w-full text-left p-5 rounded-2xl border-2 transition-all relative",
             "cursor-pointer group",
             selectedOption === 'upload'
-              ? 'border-purple-400 bg-purple-500/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
+              ? 'border-purple-400 bg-secondary/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
               : recommendedOption === 'upload'
-                ? 'border-purple-300/40 bg-purple-500/8 hover:border-purple-300/60 hover:bg-purple-500/12 shadow-md shadow-purple-500/10'
-                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
+                ? 'border-purple-300/40 bg-secondary/8 hover:border-purple-300/60 hover:bg-secondary/12 shadow-md shadow-purple-500/10'
+                : 'border-border bg-card hover:border-border hover:bg-secondary/50 opacity-75'
           )}
         >
           {/* Check Icon - Top Right (when selected) */}
           {selectedOption === 'upload' && (
             <div className="absolute top-3 right-3">
-              <CheckCircle className="w-5 h-5 text-purple-400" />
+              <CheckCircle className="w-5 h-5 text-secondary" />
             </div>
           )}
 
@@ -64,11 +64,11 @@ export const UploadStep: React.FC<UploadStepProps> = ({
               <div className={cn(
                 "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
                 selectedOption === 'upload'
-                  ? 'border-purple-400 bg-purple-500/20'
-                  : 'border-white/30 bg-transparent'
+                  ? 'border-purple-400 bg-secondary/20'
+                  : 'border-border bg-transparent'
               )}>
                 {selectedOption === 'upload' && (
-                  <div className="w-2 h-2 rounded-full bg-purple-400" />
+                  <div className="w-2 h-2 rounded-full bg-secondary" />
                 )}
               </div>
             </div>
@@ -76,15 +76,15 @@ export const UploadStep: React.FC<UploadStepProps> = ({
             <div className="flex-1 min-w-0">
               <h3 className={cn(
                 "font-semibold text-lg mb-1.5 flex items-center gap-2",
-                selectedOption === 'upload' ? 'text-white' : recommendedOption === 'upload' ? 'text-white/95' : 'text-white/80'
+                selectedOption === 'upload' ? 'text-foreground' : recommendedOption === 'upload' ? 'text-foreground/95' : 'text-foreground/80'
               )}>
                 <FileText className="w-5 h-5 flex-shrink-0" />
                 Upload Contract
               </h3>
-              <p className="text-sm text-white/60 mb-2">
+              <p className="text-sm text-foreground/60 mb-2">
                 Upload an existing contract to analyze and protect it.
               </p>
-              <p className="text-xs text-white/50 font-medium">
+              <p className="text-xs text-foreground/50 font-medium">
                 PDF / DOC • Takes ~2 minutes • Lawyer-reviewed
               </p>
             </div>
@@ -111,23 +111,23 @@ export const UploadStep: React.FC<UploadStepProps> = ({
             "w-full text-left p-5 rounded-2xl border-2 transition-all relative",
             "cursor-pointer group",
             selectedOption === 'request_details'
-              ? 'border-purple-400 bg-purple-500/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
+              ? 'border-purple-400 bg-secondary/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
               : recommendedOption === 'request_details'
-                ? 'border-purple-300/40 bg-purple-500/8 hover:border-purple-300/60 hover:bg-purple-500/12 shadow-md shadow-purple-500/10'
-                : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
+                ? 'border-purple-300/40 bg-secondary/8 hover:border-purple-300/60 hover:bg-secondary/12 shadow-md shadow-purple-500/10'
+                : 'border-border bg-card hover:border-border hover:bg-secondary/50 opacity-75'
           )}
         >
           {/* Recommendation Badge - Top Right (only when not selected) */}
           {recommendedOption === 'request_details' && selectedOption !== 'request_details' && (
-            <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-blue-400/20 backdrop-blur-sm opacity-75">
-              <span className="text-[10px] font-medium text-blue-300/90">Most creators choose this</span>
+            <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-info/20 backdrop-blur-sm opacity-75">
+              <span className="text-[10px] font-medium text-info/90">Most creators choose this</span>
             </div>
           )}
 
           {/* Check Icon - Top Right (when selected) */}
           {selectedOption === 'request_details' && (
             <div className="absolute top-3 right-3">
-              <CheckCircle className="w-5 h-5 text-purple-400" />
+              <CheckCircle className="w-5 h-5 text-secondary" />
             </div>
           )}
 
@@ -137,11 +137,11 @@ export const UploadStep: React.FC<UploadStepProps> = ({
               <div className={cn(
                 "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
                 selectedOption === 'request_details'
-                  ? 'border-purple-400 bg-purple-500/20'
-                  : 'border-white/30 bg-transparent'
+                  ? 'border-purple-400 bg-secondary/20'
+                  : 'border-border bg-transparent'
               )}>
                 {selectedOption === 'request_details' && (
-                  <div className="w-2 h-2 rounded-full bg-purple-400" />
+                  <div className="w-2 h-2 rounded-full bg-secondary" />
                 )}
               </div>
             </div>
@@ -149,15 +149,15 @@ export const UploadStep: React.FC<UploadStepProps> = ({
             <div className="flex-1 min-w-0">
               <h3 className={cn(
                 "font-semibold text-lg mb-1.5 flex items-center gap-2",
-                selectedOption === 'request_details' ? 'text-white' : recommendedOption === 'request_details' ? 'text-white/95' : 'text-white/80'
+                selectedOption === 'request_details' ? 'text-foreground' : recommendedOption === 'request_details' ? 'text-foreground/95' : 'text-foreground/80'
               )}>
                 <MessageSquare className="w-5 h-5 flex-shrink-0" />
                 Request Details from Brand
               </h3>
-              <p className="text-sm text-white/60 mb-2">
+              <p className="text-sm text-foreground/60 mb-2">
                 No contract yet? Brands can share paid or barter deal details in under 2 minutes.
               </p>
-              <p className="text-xs text-white/50 font-medium">
+              <p className="text-xs text-foreground/50 font-medium">
                 We send a secure link • No follow-ups needed
               </p>
             </div>
@@ -169,7 +169,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
 
       {/* Sticky Bottom CTA */}
       <div
-        className="fixed left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-white/10 px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8"
+        className="fixed left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-border px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8"
         style={{
           bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))', // Account for bottom nav height + safe area
           zIndex: 10000, // Above bottom nav (z-9999)
@@ -177,7 +177,7 @@ export const UploadStep: React.FC<UploadStepProps> = ({
         }}
       >
         {/* Helper Text */}
-        <p className="text-xs text-white/50 text-center mb-2.5">
+        <p className="text-xs text-foreground/50 text-center mb-2.5">
           You can change this later
         </p>
 
@@ -196,8 +196,8 @@ export const UploadStep: React.FC<UploadStepProps> = ({
           className={cn(
             "w-full py-4 rounded-xl font-semibold text-lg transition-all",
             selectedOption
-              ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 text-white"
-              : "bg-white/10 border border-white/20 text-white/40",
+              ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 text-foreground"
+              : "bg-secondary/50 border border-border text-foreground/40",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "flex items-center justify-center gap-2"
           )}

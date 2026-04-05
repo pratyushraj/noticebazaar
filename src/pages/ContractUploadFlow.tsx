@@ -1835,10 +1835,10 @@ ${creatorName}`;
     } else if (clampedProgress >= 76) {
       return {
         label: 'Almost Secure',
-        color: 'text-blue-400',
-        bgColor: 'bg-blue-500/20',
-        borderColor: 'border-blue-500/50',
-        shieldColor: 'text-blue-400',
+        color: 'text-info',
+        bgColor: 'bg-info/20',
+        borderColor: 'border-info/50',
+        shieldColor: 'text-info',
         glowColor: 'rgba(59, 130, 246, 0.6)', // blue-500
         gradientStart: '#3b82f6', // blue-500
         gradientEnd: '#2563eb', // blue-600
@@ -1859,10 +1859,10 @@ ${creatorName}`;
     } else if (clampedProgress >= 26) {
       return {
         label: 'Moderate Risk',
-        color: 'text-orange-400',
-        bgColor: 'bg-orange-500/20',
+        color: 'text-warning',
+        bgColor: 'bg-warning/20',
         borderColor: 'border-orange-500/50',
-        shieldColor: 'text-orange-400',
+        shieldColor: 'text-warning',
         glowColor: 'rgba(249, 115, 22, 0.6)', // orange-500
         gradientStart: '#f97316', // orange-500
         gradientEnd: '#ea580c', // orange-600
@@ -1871,10 +1871,10 @@ ${creatorName}`;
     } else {
       return {
         label: 'High Risk',
-        color: 'text-red-400',
-        bgColor: 'bg-red-500/20',
-        borderColor: 'border-red-500/50',
-        shieldColor: 'text-red-400',
+        color: 'text-destructive',
+        bgColor: 'bg-destructive/20',
+        borderColor: 'border-destructive/50',
+        shieldColor: 'text-destructive',
         glowColor: 'rgba(239, 68, 68, 0.6)', // red-500
         gradientStart: '#ef4444', // red-500
         gradientEnd: '#dc2626', // red-600
@@ -2479,7 +2479,7 @@ ${creatorName}`;
   const riskConfig: Record<RiskLevel, { color: string; bgColor: string; label: string; icon: typeof CheckCircle }> = {
     low: { color: 'text-green-400', bgColor: 'bg-green-500/20', label: 'Low Risk', icon: CheckCircle },
     medium: { color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', label: 'Medium Risk', icon: AlertTriangle },
-    high: { color: 'text-red-400', bgColor: 'bg-red-500/20', label: 'High Risk', icon: XCircle }
+    high: { color: 'text-destructive', bgColor: 'bg-destructive/20', label: 'High Risk', icon: XCircle }
   };
 
   // Only render results if we have real API data
@@ -2502,7 +2502,7 @@ ${creatorName}`;
   return (
     <ContextualTipsProvider currentView="upload">
       <div
-        className="w-full text-white flex flex-col"
+        className="w-full text-foreground flex flex-col"
         style={{
           height: '100dvh', // Use dynamic viewport height for iPhone 11
           maxHeight: '100dvh', // Prevent overflow on iPhone 11
@@ -2512,7 +2512,7 @@ ${creatorName}`;
         }}
       >
         {/* Header */}
-        <div className="flex-shrink-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 mb-4">
+        <div className="flex-shrink-0 z-50 bg-secondary/90 backdrop-blur-lg border-b border-border -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 mb-4">
           <div className="flex items-center justify-between py-4">
             <button type="button"
               onClick={() => {
@@ -2524,7 +2524,7 @@ ${creatorName}`;
                   navigate('/creator-dashboard');
                 }
               }}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
               aria-label="Go back"
             >
               <ArrowLeft className="w-6 h-6" />
@@ -2571,16 +2571,16 @@ ${creatorName}`;
                     "w-full text-left p-5 rounded-2xl border-2 transition-all relative",
                     "cursor-pointer group",
                     selectedOption === 'upload'
-                      ? 'border-purple-400 bg-purple-500/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
+                      ? 'border-purple-400 bg-secondary/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
                       : recommendedOption === 'upload'
-                        ? 'border-purple-300/40 bg-purple-500/8 hover:border-purple-300/60 hover:bg-purple-500/12 shadow-md shadow-purple-500/10'
-                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
+                        ? 'border-purple-300/40 bg-secondary/8 hover:border-purple-300/60 hover:bg-secondary/12 shadow-md shadow-purple-500/10'
+                        : 'border-border bg-card hover:border-border hover:bg-secondary/50 opacity-75'
                   )}
                 >
                   {/* Check Icon - Top Right (when selected) */}
                   {selectedOption === 'upload' && (
                     <div className="absolute top-3 right-3">
-                      <CheckCircle className="w-5 h-5 text-purple-400" />
+                      <CheckCircle className="w-5 h-5 text-secondary" />
                     </div>
                   )}
 
@@ -2590,11 +2590,11 @@ ${creatorName}`;
                       <div className={cn(
                         "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
                         selectedOption === 'upload'
-                          ? 'border-purple-400 bg-purple-500/20'
-                          : 'border-white/30 bg-transparent'
+                          ? 'border-purple-400 bg-secondary/20'
+                          : 'border-border bg-transparent'
                       )}>
                         {selectedOption === 'upload' && (
-                          <div className="w-2 h-2 rounded-full bg-purple-400" />
+                          <div className="w-2 h-2 rounded-full bg-secondary" />
                         )}
                       </div>
                     </div>
@@ -2602,15 +2602,15 @@ ${creatorName}`;
                     <div className="flex-1 min-w-0">
                       <h3 className={cn(
                         "font-semibold text-lg mb-1.5 flex items-center gap-2",
-                        selectedOption === 'upload' ? 'text-white' : recommendedOption === 'upload' ? 'text-white/95' : 'text-white/80'
+                        selectedOption === 'upload' ? 'text-foreground' : recommendedOption === 'upload' ? 'text-foreground/95' : 'text-foreground/80'
                       )}>
                         <FileText className="w-5 h-5 flex-shrink-0" />
                         Upload Contract
                       </h3>
-                      <p className="text-sm text-white/60 mb-2">
+                      <p className="text-sm text-foreground/60 mb-2">
                         Upload an existing contract to analyze and protect it.
                       </p>
-                      <p className="text-xs text-white/50 font-medium">
+                      <p className="text-xs text-foreground/50 font-medium">
                         PDF / DOC • Takes ~2 minutes • Lawyer-reviewed
                       </p>
                     </div>
@@ -2637,23 +2637,23 @@ ${creatorName}`;
                     "w-full text-left p-5 rounded-2xl border-2 transition-all relative",
                     "cursor-pointer group",
                     selectedOption === 'request_details'
-                      ? 'border-purple-400 bg-purple-500/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
+                      ? 'border-purple-400 bg-secondary/15 shadow-lg shadow-purple-500/30 ring-2 ring-purple-400/20'
                       : recommendedOption === 'request_details'
-                        ? 'border-purple-300/40 bg-purple-500/8 hover:border-purple-300/60 hover:bg-purple-500/12 shadow-md shadow-purple-500/10'
-                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10 opacity-75'
+                        ? 'border-purple-300/40 bg-secondary/8 hover:border-purple-300/60 hover:bg-secondary/12 shadow-md shadow-purple-500/10'
+                        : 'border-border bg-card hover:border-border hover:bg-secondary/50 opacity-75'
                   )}
                 >
                   {/* Recommendation Badge - Top Right (only when not selected) */}
                   {recommendedOption === 'request_details' && selectedOption !== 'request_details' && (
-                    <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-blue-400/20 backdrop-blur-sm opacity-75">
-                      <span className="text-[10px] font-medium text-blue-300/90">Most creators choose this</span>
+                    <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-500/15 to-cyan-500/15 border border-info/20 backdrop-blur-sm opacity-75">
+                      <span className="text-[10px] font-medium text-info/90">Most creators choose this</span>
                     </div>
                   )}
 
                   {/* Check Icon - Top Right (when selected) */}
                   {selectedOption === 'request_details' && (
                     <div className="absolute top-3 right-3">
-                      <CheckCircle className="w-5 h-5 text-purple-400" />
+                      <CheckCircle className="w-5 h-5 text-secondary" />
                     </div>
                   )}
 
@@ -2663,11 +2663,11 @@ ${creatorName}`;
                       <div className={cn(
                         "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
                         selectedOption === 'request_details'
-                          ? 'border-purple-400 bg-purple-500/20'
-                          : 'border-white/30 bg-transparent'
+                          ? 'border-purple-400 bg-secondary/20'
+                          : 'border-border bg-transparent'
                       )}>
                         {selectedOption === 'request_details' && (
-                          <div className="w-2 h-2 rounded-full bg-purple-400" />
+                          <div className="w-2 h-2 rounded-full bg-secondary" />
                         )}
                       </div>
                     </div>
@@ -2675,15 +2675,15 @@ ${creatorName}`;
                     <div className="flex-1 min-w-0">
                       <h3 className={cn(
                         "font-semibold text-lg mb-1.5 flex items-center gap-2",
-                        selectedOption === 'request_details' ? 'text-white' : recommendedOption === 'request_details' ? 'text-white/95' : 'text-white/80'
+                        selectedOption === 'request_details' ? 'text-foreground' : recommendedOption === 'request_details' ? 'text-foreground/95' : 'text-foreground/80'
                       )}>
                         <MessageSquare className="w-5 h-5 flex-shrink-0" />
                         Request Details from Brand
                       </h3>
-                      <p className="text-sm text-white/60 mb-2">
+                      <p className="text-sm text-foreground/60 mb-2">
                         No contract yet? Brands can share paid or barter deal details in under 2 minutes.
                       </p>
-                      <p className="text-xs text-white/50 font-medium">
+                      <p className="text-xs text-foreground/50 font-medium">
                         We send a secure link • No follow-ups needed
                       </p>
                     </div>
@@ -2698,7 +2698,7 @@ ${creatorName}`;
           {/* Sticky Bottom CTA */}
           {step === 'upload' && (
             <div
-              className="fixed left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-white/10 px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8"
+              className="fixed left-0 right-0 bg-gradient-to-t from-purple-900/95 via-purple-900/95 to-transparent backdrop-blur-lg border-t border-border px-4 md:px-6 lg:px-8 py-4 -mx-4 md:-mx-6 lg:-mx-8"
               style={{
                 bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))', // Account for bottom nav height + safe area
                 zIndex: 10000, // Above bottom nav (z-9999)
@@ -2706,7 +2706,7 @@ ${creatorName}`;
               }}
             >
               {/* Helper Text */}
-              <p className="text-xs text-white/50 text-center mb-2.5">
+              <p className="text-xs text-foreground/50 text-center mb-2.5">
                 You can change this later
               </p>
 
@@ -2725,8 +2725,8 @@ ${creatorName}`;
                 className={cn(
                   "w-full py-4 rounded-xl font-semibold text-lg transition-all",
                   selectedOption
-                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 text-white"
-                    : "bg-white/10 border border-white/20 text-white/40",
+                    ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-500/30 text-foreground"
+                    : "bg-secondary/50 border border-border text-foreground/40",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   "flex items-center justify-center gap-2"
                 )}
@@ -2740,21 +2740,21 @@ ${creatorName}`;
           {step === 'select-file' && (
             <div className="space-y-6" ref={uploadAreaRef}>
               {/* Info Card */}
-              <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
+              <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-info/30">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-blue-400" />
+                  <div className="w-10 h-10 rounded-xl bg-info/30 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-info" />
                   </div>
                   <div>
                     <h3 className="font-semibold mb-1">AI-Powered Review</h3>
-                    <p className="text-sm text-purple-200">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
+                    <p className="text-sm text-secondary">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
                   </div>
                 </div>
               </div>
 
               {/* Upload Area */}
               <div
-                className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/20 p-12 text-center hover:bg-white/15 transition-all cursor-pointer"
+                className="bg-secondary/50 backdrop-blur-md rounded-2xl border-2 border-dashed border-border p-12 text-center hover:bg-secondary/15 transition-all cursor-pointer"
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={handleFileSelect}
@@ -2767,24 +2767,24 @@ ${creatorName}`;
                   className="hidden"
                 />
 
-                <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-10 h-10 text-purple-400" />
+                <div className="w-20 h-20 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-10 h-10 text-secondary" />
                 </div>
 
                 <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
-                <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
+                <p className="text-sm text-secondary mb-4">Drag and drop or click to browse</p>
 
                 <button type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleFileSelect();
                   }}
-                  className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-medium transition-colors"
+                  className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-medium transition-colors"
                 >
                   Choose File
                 </button>
 
-                <div className="mt-4 text-xs text-purple-400">
+                <div className="mt-4 text-xs text-secondary">
                   Supported: PDF, DOCX • Max 10MB
                 </div>
               </div>
@@ -2795,7 +2795,7 @@ ${creatorName}`;
                   <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-medium">Instant Analysis</div>
-                    <div className="text-purple-300">Get results in under 30 seconds</div>
+                    <div className="text-secondary">Get results in under 30 seconds</div>
                   </div>
                 </div>
 
@@ -2803,7 +2803,7 @@ ${creatorName}`;
                   <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-medium">100% Confidential</div>
-                    <div className="text-purple-300">Your contracts are encrypted and secure</div>
+                    <div className="text-secondary">Your contracts are encrypted and secure</div>
                   </div>
                 </div>
 
@@ -2811,7 +2811,7 @@ ${creatorName}`;
                   <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-medium">Expert Insights</div>
-                    <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+                    <div className="text-secondary">AI trained on 10,000+ creator contracts</div>
                   </div>
                 </div>
               </div>
@@ -2822,14 +2822,14 @@ ${creatorName}`;
           {step === 'request-details' && (
             <div className="space-y-6">
               {/* Request Collaboration Details Card */}
-              <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10">
+              <div className="bg-card backdrop-blur-md rounded-2xl p-5 border border-border">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-white/60" />
+                  <div className="w-10 h-10 rounded-xl bg-secondary/50 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-foreground/60" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-1 text-white/90">No contract yet?</h3>
-                    <p className="text-sm text-white/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
+                    <h3 className="font-semibold mb-1 text-foreground/90">No contract yet?</h3>
+                    <p className="text-sm text-foreground/60 mb-3">Let the brand share deal details — we'll generate a clean agreement for you.</p>
 
                     {!collaborationLink ? (
                       <button type="button"
@@ -2852,24 +2852,24 @@ ${creatorName}`;
                     ) : (
                       <div className="space-y-3">
                         {/* Link Display */}
-                        <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                        <div className="bg-card rounded-lg p-3 border border-border">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-white/50 mb-1">Share this link:</p>
+                              <p className="text-xs text-foreground/50 mb-1">Share this link:</p>
                               <div className="flex items-center gap-2">
                                 <input
                                   type="text"
                                   readOnly
                                   value={collaborationLink}
-                                  className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white/90 font-mono truncate focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                  className="flex-1 bg-card border border-border rounded px-2 py-1.5 text-xs text-foreground/90 font-mono truncate focus:outline-none focus:ring-1 focus:ring-purple-500"
                                   onClick={(e) => (e.target as HTMLInputElement).select()}
                                 />
                                 <button type="button"
                                   onClick={handleCopyLink}
-                                  className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                                  className="p-2 bg-secondary/50 hover:bg-secondary/20 rounded-lg transition-colors flex-shrink-0"
                                   title="Copy link"
                                 >
-                                  <Copy className="w-4 h-4 text-white/80" />
+                                  <Copy className="w-4 h-4 text-foreground/80" />
                                 </button>
                               </div>
                             </div>
@@ -2880,21 +2880,21 @@ ${creatorName}`;
                         <div className="flex flex-wrap gap-2">
                           <button type="button"
                             onClick={handleShareEmail}
-                            className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                            className="flex-1 min-w-[100px] bg-secondary/50 hover:bg-secondary/20 border border-border px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                           >
                             <Mail className="w-4 h-4" />
                             Email
                           </button>
                           <button type="button"
                             onClick={handleShareWhatsApp}
-                            className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                            className="flex-1 min-w-[100px] bg-secondary/50 hover:bg-secondary/20 border border-border px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                           >
                             <MessageCircle className="w-4 h-4" />
                             WhatsApp
                           </button>
                           <button type="button"
                             onClick={handleShareInstagram}
-                            className="flex-1 min-w-[100px] bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                            className="flex-1 min-w-[100px] bg-secondary/50 hover:bg-secondary/20 border border-border px-3 py-2 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                           >
                             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
@@ -2914,21 +2914,21 @@ ${creatorName}`;
           {step === 'uploading' && (
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center w-full max-w-md">
-                <div className="w-24 h-24 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-6 relative">
-                  <Upload className="w-12 h-12 text-purple-400" />
+                <div className="w-24 h-24 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-6 relative">
+                  <Upload className="w-12 h-12 text-secondary" />
                   <div className="absolute inset-0 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin"></div>
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">Uploading Contract...</h2>
-                <p className="text-purple-300 mb-6">{fileName}</p>
+                <p className="text-secondary mb-6">{fileName}</p>
 
                 {/* Enhanced Progress Bar */}
                 <div className="w-full max-w-xs mx-auto mb-6">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-purple-300 font-medium">{uploadProgress}%</span>
-                    <span className="text-purple-300">{fileSize}</span>
+                    <span className="text-secondary font-medium">{uploadProgress}%</span>
+                    <span className="text-secondary">{fileSize}</span>
                   </div>
-                  <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-secondary/50 rounded-full h-3 overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-300 relative"
                       style={{ width: `${uploadProgress}%` }}
@@ -2939,18 +2939,18 @@ ${creatorName}`;
                 </div>
 
                 {/* Stage Indicators */}
-                <div className="space-y-3 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="space-y-3 bg-card rounded-xl p-4 border border-border">
                   <div className="flex items-center gap-3 text-left">
-                    <div className={`w-2 h-2 rounded-full transition-all ${uploadProgress > 0 ? 'bg-green-400 scale-125' : 'bg-white/20'
+                    <div className={`w-2 h-2 rounded-full transition-all ${uploadProgress > 0 ? 'bg-green-400 scale-125' : 'bg-secondary/20'
                       }`} />
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-white">Uploading file...</div>
-                      <div className="text-xs text-purple-300">
+                      <div className="text-sm font-medium text-foreground">Uploading file...</div>
+                      <div className="text-xs text-secondary">
                         {uploadProgress > 0 ? `Transferred ${(uploadProgress / 100 * parseFloat(fileSize)).toFixed(2)} MB` : 'Preparing upload...'}
                       </div>
                     </div>
                     {uploadProgress > 0 && uploadProgress < 100 && (
-                      <Loader className="w-4 h-4 animate-spin text-purple-400" />
+                      <Loader className="w-4 h-4 animate-spin text-secondary" />
                     )}
                     {uploadProgress === 100 && (
                       <CheckCircle className="w-4 h-4 text-green-400" />
@@ -2965,21 +2965,21 @@ ${creatorName}`;
           {step === 'scanning' && (
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center w-full max-w-md">
-                <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-6 relative">
-                  <FileText className="w-12 h-12 text-blue-400" />
-                  <div className="absolute inset-0 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin"></div>
+                <div className="w-24 h-24 rounded-full bg-info/20 flex items-center justify-center mx-auto mb-6 relative">
+                  <FileText className="w-12 h-12 text-info" />
+                  <div className="absolute inset-0 rounded-full border-4 border-info/30 border-t-blue-500 animate-spin"></div>
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">Scanning Document...</h2>
-                <p className="text-purple-300 mb-6">Reading contract clauses</p>
+                <p className="text-secondary mb-6">Reading contract clauses</p>
 
                 {/* Enhanced Progress Bar */}
                 <div className="w-full max-w-xs mx-auto mb-6">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-purple-300 font-medium">{scanProgress}%</span>
-                    <span className="text-purple-300">12 pages</span>
+                    <span className="text-secondary font-medium">{scanProgress}%</span>
+                    <span className="text-secondary">12 pages</span>
                   </div>
-                  <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-secondary/50 rounded-full h-3 overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full transition-all duration-300 relative"
                       style={{ width: `${scanProgress}%` }}
@@ -2990,18 +2990,18 @@ ${creatorName}`;
                 </div>
 
                 {/* Stage Indicators */}
-                <div className="space-y-3 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="space-y-3 bg-card rounded-xl p-4 border border-border">
                   <div className="flex items-center gap-3 text-left">
-                    <div className={`w-2 h-2 rounded-full transition-all ${scanProgress > 0 ? 'bg-green-400 scale-125' : 'bg-white/20'
+                    <div className={`w-2 h-2 rounded-full transition-all ${scanProgress > 0 ? 'bg-green-400 scale-125' : 'bg-secondary/20'
                       }`} />
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-white">Extracting text from PDF...</div>
-                      <div className="text-xs text-purple-300">
+                      <div className="text-sm font-medium text-foreground">Extracting text from PDF...</div>
+                      <div className="text-xs text-secondary">
                         {scanProgress > 0 ? `Processed ${Math.round(scanProgress / 100 * 12)} of 12 pages` : 'Initializing scanner...'}
                       </div>
                     </div>
                     {scanProgress > 0 && scanProgress < 100 && (
-                      <Loader className="w-4 h-4 animate-spin text-blue-400" />
+                      <Loader className="w-4 h-4 animate-spin text-info" />
                     )}
                     {scanProgress === 100 && (
                       <CheckCircle className="w-4 h-4 text-green-400" />
@@ -3017,13 +3017,13 @@ ${creatorName}`;
             <div className="flex flex-col items-center min-h-[60vh] py-8" style={{ willChange: 'contents' }}>
               <div className="text-center mb-8">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-6 relative animate-pulse">
-                  <Sparkles className="w-12 h-12 text-white" />
+                  <Sparkles className="w-12 h-12 text-foreground" />
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">
                   {isAutoRetrying ? 'Service Starting Up...' : 'AI Analyzing Contract...'}
                 </h2>
-                <p className="text-purple-300/70 mb-8">
+                <p className="text-secondary/70 mb-8">
                   {isAutoRetrying ? (
                     <span>
                       Retrying in {retryDelay}s (Attempt {retryAttempt}/{MAX_AUTO_RETRIES})
@@ -3052,12 +3052,12 @@ ${creatorName}`;
 
                 <div className="space-y-3 text-sm max-w-xs mx-auto">
                   {['Payment terms', 'Termination rights', 'IP ownership', 'Exclusivity clause', 'Liability terms'].map((item) => (
-                    <div key={item} className="flex items-center justify-between p-3 bg-white/5 rounded-lg" style={{ transform: 'translateZ(0)' }}>
-                      <span className="text-purple-200/70">{item}</span>
+                    <div key={item} className="flex items-center justify-between p-3 bg-card rounded-lg" style={{ transform: 'translateZ(0)' }}>
+                      <span className="text-secondary/70">{item}</span>
                       {analyzedItems.has(item) ? (
                         <CheckCircle className="w-4 h-4 text-green-400" />
                       ) : (
-                        <Loader className="w-4 h-4 text-blue-400 animate-spin" />
+                        <Loader className="w-4 h-4 text-info animate-spin" />
                       )}
                     </div>
                   ))}
@@ -3077,17 +3077,17 @@ ${creatorName}`;
           {step === 'upload-error' && (
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center max-w-md">
-                <div className="w-24 h-24 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-6">
-                  <XCircle className="w-12 h-12 text-red-400" />
+                <div className="w-24 h-24 rounded-full bg-destructive/20 flex items-center justify-center mx-auto mb-6">
+                  <XCircle className="w-12 h-12 text-destructive" />
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">Upload Failed</h2>
-                <p className="text-white/70 mb-6">{uploadError || 'An error occurred during upload. Please try again.'}</p>
+                <p className="text-foreground/70 mb-6">{uploadError || 'An error occurred during upload. Please try again.'}</p>
 
                 <div className="flex flex-col gap-3">
                   <button type="button"
                     onClick={handleRetryUpload}
-                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                    className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Upload className="w-5 h-5" />
                     Try Again
@@ -3101,13 +3101,13 @@ ${creatorName}`;
                       setFileName('');
                       setFileSize('');
                     }}
-                    className="bg-white/10 hover:bg-white/15 px-6 py-3 rounded-xl font-medium transition-colors"
+                    className="bg-secondary/50 hover:bg-secondary/15 px-6 py-3 rounded-xl font-medium transition-colors"
                   >
                     Choose Different File
                   </button>
                   <button type="button"
                     onClick={() => navigate('/creator-dashboard')}
-                    className="text-purple-300 hover:text-white text-sm transition-colors"
+                    className="text-secondary hover:text-foreground text-sm transition-colors"
                   >
                     Go Back to Dashboard
                   </button>
@@ -3125,12 +3125,12 @@ ${creatorName}`;
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">Review Failed</h2>
-                <p className="text-white/70 mb-6">{reviewError || 'An error occurred during contract review. Please try again.'}</p>
+                <p className="text-foreground/70 mb-6">{reviewError || 'An error occurred during contract review. Please try again.'}</p>
 
                 <div className="flex flex-col gap-3">
                   <button type="button"
                     onClick={handleRetryReview}
-                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                    className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-5 h-5" />
                     Retry Review
@@ -3144,13 +3144,13 @@ ${creatorName}`;
                       setFileName('');
                       setFileSize('');
                     }}
-                    className="bg-white/10 hover:bg-white/15 px-6 py-3 rounded-xl font-medium transition-colors"
+                    className="bg-secondary/50 hover:bg-secondary/15 px-6 py-3 rounded-xl font-medium transition-colors"
                   >
                     Upload New Contract
                   </button>
                   <button type="button"
                     onClick={() => navigate('/creator-dashboard')}
-                    className="text-purple-300 hover:text-white text-sm transition-colors"
+                    className="text-secondary hover:text-foreground text-sm transition-colors"
                   >
                     Go Back to Dashboard
                   </button>
@@ -3163,12 +3163,12 @@ ${creatorName}`;
           {step === 'validation-error' && (
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center max-w-md">
-                <div className="w-24 h-24 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-6">
-                  <AlertTriangle className="w-12 h-12 text-orange-400" />
+                <div className="w-24 h-24 rounded-full bg-warning/20 flex items-center justify-center mx-auto mb-6">
+                  <AlertTriangle className="w-12 h-12 text-warning" />
                 </div>
 
                 <h2 className="text-2xl font-bold mb-2">Invalid Document Type</h2>
-                <p className="text-white/70 mb-6 whitespace-pre-line">{validationError || 'This document does not appear to be a brand deal contract.'}</p>
+                <p className="text-foreground/70 mb-6 whitespace-pre-line">{validationError || 'This document does not appear to be a brand deal contract.'}</p>
 
                 <div className="flex flex-col gap-3">
                   <button type="button"
@@ -3182,14 +3182,14 @@ ${creatorName}`;
                         fileInputRef.current.value = '';
                       }
                     }}
-                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                    className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                   >
                     <Upload className="w-5 h-5" />
                     Choose Different File
                   </button>
                   <button type="button"
                     onClick={() => navigate('/creator-dashboard')}
-                    className="text-purple-300 hover:text-white text-sm transition-colors"
+                    className="text-secondary hover:text-foreground text-sm transition-colors"
                   >
                     Go Back to Dashboard
                   </button>
@@ -3206,13 +3206,13 @@ ${creatorName}`;
                 {/* Contract Type Badge */}
                 <div className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-400/30">
                   <div className="flex items-center gap-2 text-sm flex-wrap">
-                    <FileText className="w-4 h-4 text-purple-300" />
-                    <span className="text-xs text-white/60">
+                    <FileText className="w-4 h-4 text-secondary" />
+                    <span className="text-xs text-foreground/60">
                       {analysisResults.dealType === 'barter'
                         ? 'Barter Protection (from chat)'
                         : 'Contract Type'}
                     </span>
-                    <span className="font-semibold text-white">
+                    <span className="font-semibold text-foreground">
                       {analysisResults.dealType === 'barter'
                         ? 'Beta'
                         : 'Influencer–Brand Paid Collaboration'}
@@ -3229,25 +3229,25 @@ ${creatorName}`;
                 {((profile as any)?.subscription_plan === 'premium' || (profile as any)?.subscription_plan === 'pro' || (profile as any)?.subscription_plan === 'strategic') ? (
                   <div className="bg-gradient-to-r from-purple-600/30 to-indigo-600/30 backdrop-blur-md rounded-2xl px-4 py-3 border border-purple-400/30">
                     <div className="flex items-center gap-2 text-sm">
-                      <Shield className="w-4 h-4 text-purple-300" />
-                      <span className="text-purple-200">🛡️ Contract Protected by Lawyer + AI</span>
+                      <Shield className="w-4 h-4 text-secondary" />
+                      <span className="text-secondary">🛡️ Contract Protected by Lawyer + AI</span>
                     </div>
-                    <p className="text-xs text-purple-300/80 mt-1 ml-6">
+                    <p className="text-xs text-secondary/80 mt-1 ml-6">
                       ✅ Your contract is now legally optimized for negotiation
                     </p>
                   </div>
                 ) : null}
 
                 {/* Premium Risk Score Card with Circular Gauge */}
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-xl" style={{ transform: 'translateZ(0)' }}>
+                <div className="bg-secondary/50 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-border shadow-xl" style={{ transform: 'translateZ(0)' }}>
                   <div className="flex flex-col items-center gap-4 md:gap-6">
                     {/* Brand Name and Deal Amount Display */}
                     {(analysisResults.keyTerms?.brandName || analysisResults.keyTerms?.dealValue) && (
                       <div className="w-full mb-2 space-y-2">
                         {analysisResults.keyTerms?.brandName && (
                           <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border border-purple-400/40 rounded-xl backdrop-blur-sm">
-                            <Building2 className="w-4 h-4 text-purple-300 flex-shrink-0" />
-                            <span className="text-sm font-semibold text-white tracking-wide">
+                            <Building2 className="w-4 h-4 text-secondary flex-shrink-0" />
+                            <span className="text-sm font-semibold text-foreground tracking-wide">
                               Brand: {analysisResults.keyTerms.brandName}
                             </span>
                           </div>
@@ -3255,7 +3255,7 @@ ${creatorName}`;
                         {analysisResults.keyTerms?.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
                           <div className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/40 rounded-xl backdrop-blur-sm">
                             <IndianRupee className="w-4 h-4 text-green-300 flex-shrink-0" />
-                            <span className="text-sm font-semibold text-white tracking-wide">
+                            <span className="text-sm font-semibold text-foreground tracking-wide">
                               Deal Value: {analysisResults.keyTerms.dealValue}
                             </span>
                           </div>
@@ -3267,9 +3267,9 @@ ${creatorName}`;
                       {/* Risk Status Badge */}
                       <div
                         className={`px-4 py-2 rounded-full font-bold text-sm uppercase tracking-wide ${analysisResults.overallRisk === 'high'
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                          ? 'bg-destructive/20 text-destructive border border-destructive/40'
                           : analysisResults.overallRisk === 'medium'
-                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                            ? 'bg-warning/20 text-warning border border-warning/40'
                             : 'bg-green-500/20 text-green-400 border border-green-500/40'
                           }`}
                       >
@@ -3282,10 +3282,10 @@ ${creatorName}`;
                           {scoreAnimation || analysisResults.score}
                         </div>
                         <div className="mt-2 space-y-1">
-                          <div className="text-sm text-white/70 font-medium">
+                          <div className="text-sm text-foreground/70 font-medium">
                             Risk Score: {scoreAnimation || analysisResults.score} / 100
                           </div>
-                          <p className="text-[11px] text-white/60 max-w-xs mx-auto">
+                          <p className="text-[11px] text-foreground/60 max-w-xs mx-auto">
                             Score reflects missing protections, payment certainty, and usage rights — not deal quality.
                           </p>
                         </div>
@@ -3293,7 +3293,7 @@ ${creatorName}`;
 
                       {/* Horizontal Risk Bar */}
                       <div className="w-full max-w-xs">
-                        <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                        <div className="relative h-3 bg-secondary/50 rounded-full overflow-hidden">
                           <div
                             className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500 transition-all duration-1000 ease-out"
                             style={{
@@ -3301,7 +3301,7 @@ ${creatorName}`;
                             }}
                           />
                         </div>
-                        <div className="text-xs text-white/50 mt-2 text-center">
+                        <div className="text-xs text-foreground/50 mt-2 text-center">
                           Low safety → High safety
                         </div>
                       </div>
@@ -3317,10 +3317,10 @@ ${creatorName}`;
 
                         return (
                           <div className="mt-4 flex flex-wrap justify-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/80">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-[11px] text-foreground/80">
                               {issuesCount > 0 ? (
                                 <>
-                                  <AlertTriangle className="w-3 h-3 text-amber-300" />
+                                  <AlertTriangle className="w-3 h-3 text-warning" />
                                   <span>{issuesCount} {issuesCount === 1 ? 'issue to review' : 'issues to review'}</span>
                                 </>
                               ) : (
@@ -3330,8 +3330,8 @@ ${creatorName}`;
                                 </>
                               )}
                             </span>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[11px] text-white/80">
-                              <FileText className="w-3 h-3 text-purple-200" />
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-[11px] text-foreground/80">
+                              <FileText className="w-3 h-3 text-secondary" />
                               <span>
                                 {missingCount > 0
                                   ? `${missingCount} missing ${missingCount === 1 ? 'clause' : 'clauses'}`
@@ -3345,7 +3345,7 @@ ${creatorName}`;
 
                     {/* Risk Label and Info */}
                     <div className="flex-1 text-center w-full">
-                      <h2 className="text-2xl md:text-3xl font-bold mb-3 text-white">Deal Risk Analysis</h2>
+                      <h2 className="text-2xl md:text-3xl font-bold mb-3 text-foreground">Deal Risk Analysis</h2>
 
                       {/* Creator-First Risk Message */}
                       {(() => {
@@ -3373,7 +3373,7 @@ ${creatorName}`;
                                   <span>{isLowRisk ? '✅' : '⚠️'}</span>
                                   <span>{verdictLabel}</span>
                                 </p>
-                                <p className="text-xs md:text-sm text-white/70 mt-1 max-w-xs mx-auto">
+                                <p className="text-xs md:text-sm text-foreground/70 mt-1 max-w-xs mx-auto">
                                   {isLowRisk
                                     ? 'Mostly safe, with a few points to negotiate below.'
                                     : `You're exposed in ${totalRiskAreas} key risk ${totalRiskAreas === 1 ? 'area' : 'areas'
@@ -3384,19 +3384,19 @@ ${creatorName}`;
 
                               {/* Issues & Missing Clauses Chip */}
                               <div className="mb-3 flex flex-col items-center justify-center gap-2">
-                                <div className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/70">
+                                <div className="px-3 py-1.5 rounded-full bg-card border border-border text-xs text-foreground/70">
                                   {issuesCount > 0 && (
-                                    <span className={isLowRisk ? 'text-green-300' : 'text-orange-300'}>
+                                    <span className={isLowRisk ? 'text-green-300' : 'text-warning'}>
                                       {isLowRisk ? `Review ${issuesCount} ${issuesCount === 1 ? 'Suggestion' : 'Suggestions'}` : `View ${issuesCount} Risk ${issuesCount === 1 ? 'Issue' : 'Issues'}`}
                                     </span>
                                   )}
-                                  {issuesCount > 0 && missingCount > 0 && <span className="mx-1.5 text-white/40">•</span>}
+                                  {issuesCount > 0 && missingCount > 0 && <span className="mx-1.5 text-foreground/40">•</span>}
                                   {missingCount > 0 && (
                                     <span className="text-yellow-300">{missingCount} Missing {missingCount === 1 ? 'Clause' : 'Clauses'}</span>
                                   )}
                                 </div>
                                 {issuesCount > 0 && (
-                                  <p className="text-[10px] text-white/40 text-center max-w-xs">
+                                  <p className="text-[10px] text-foreground/40 text-center max-w-xs">
                                     {isLowRisk
                                       ? 'Pro users can get a human lawyer to polish this contract further.'
                                       : 'Pro users can get a human lawyer review for this contract.'
@@ -3414,7 +3414,7 @@ ${creatorName}`;
                                 <span>✅</span>
                                 <span>Safe</span>
                               </p>
-                              <p className="text-sm text-white/70 mt-1">
+                              <p className="text-sm text-foreground/70 mt-1">
                                 All key areas are protected.
                               </p>
                             </div>
@@ -3424,8 +3424,8 @@ ${creatorName}`;
 
                       <div className="flex items-center justify-center gap-2 mb-3">
                         <div className="group relative">
-                          <Info className="w-4 h-4 text-white/40 cursor-help hover:text-white/60 transition-colors" />
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-purple-900/95 backdrop-blur-sm rounded-lg text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 border border-purple-400/30">
+                          <Info className="w-4 h-4 text-foreground/40 cursor-help hover:text-foreground/60 transition-colors" />
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-secondary/95 backdrop-blur-sm rounded-lg text-xs text-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 border border-purple-400/30">
                             Score is based on 30+ legal risk checks
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-purple-900/95"></div>
                           </div>
@@ -3525,27 +3525,27 @@ ${creatorName}`;
                 {analysisResults && (
                   <div className="space-y-3 mt-4">
                     {/* 1. Key Terms */}
-                    <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                    <div className="bg-card backdrop-blur-md rounded-xl border border-border overflow-hidden">
                       <button type="button"
                         onClick={() => handleAccordionToggle('keyTerms')}
-                        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-card transition-colors"
                       >
                         <div className="flex flex-col items-start gap-1 w-full text-left">
                           <div className="flex items-center gap-2 w-full">
                             <CheckCircle className="w-5 h-5 text-green-400" />
-                            <span className="text-white font-medium flex-1">Key Terms</span>
+                            <span className="text-foreground font-medium flex-1">Key Terms</span>
                             <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
                               Safe
                             </span>
                           </div>
                           {analysisResults.keyTerms && (
-                            <p className="text-[11px] text-white/60 pl-6">
+                            <p className="text-[11px] text-foreground/60 pl-6">
                               Brand, money, and timelines in one place.
                             </p>
                           )}
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-white/60 transition-transform ${isKeyTermsExpanded ? 'rotate-180' : ''}`}
+                          className={`w-5 h-5 text-foreground/60 transition-transform ${isKeyTermsExpanded ? 'rotate-180' : ''}`}
                         />
                       </button>
                       <AnimatePresence>
@@ -3561,44 +3561,44 @@ ${creatorName}`;
                               {analysisResults.keyTerms && (
                                 <div className="grid gap-2">
                                   {analysisResults.keyTerms.brandName && (
-                                    <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
-                                      <div className="flex items-start gap-2 text-white/70">
+                                    <div className="bg-card rounded-lg px-3 py-2 text-sm">
+                                      <div className="flex items-start gap-2 text-foreground/70">
                                         <Building2 className="w-4 h-4 mt-0.5" />
                                         <span className="font-medium">Brand Name</span>
                                       </div>
-                                      <div className="mt-1 text-white font-semibold text-sm leading-snug break-words">
+                                      <div className="mt-1 text-foreground font-semibold text-sm leading-snug break-words">
                                         {analysisResults.keyTerms.brandName}
                                       </div>
                                     </div>
                                   )}
                                   {analysisResults.keyTerms.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
-                                    <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
-                                      <span className="text-white/70 font-medium block">Deal Value</span>
-                                      <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                    <div className="bg-card rounded-lg px-3 py-2 text-sm">
+                                      <span className="text-foreground/70 font-medium block">Deal Value</span>
+                                      <span className="mt-1 block text-foreground font-medium text-sm leading-snug break-words">
                                         {analysisResults.keyTerms.dealValue}
                                       </span>
                                     </div>
                                   )}
                                   {analysisResults.keyTerms.deliverables && analysisResults.keyTerms.deliverables !== 'Not specified' && (
-                                    <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
-                                      <span className="text-white/70 font-medium block">Deliverables</span>
-                                      <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                    <div className="bg-card rounded-lg px-3 py-2 text-sm">
+                                      <span className="text-foreground/70 font-medium block">Deliverables</span>
+                                      <span className="mt-1 block text-foreground font-medium text-sm leading-snug break-words">
                                         {analysisResults.keyTerms.deliverables}
                                       </span>
                                     </div>
                                   )}
                                   {analysisResults.keyTerms.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' && (
-                                    <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
-                                      <span className="text-white/70 font-medium block">Payment Schedule</span>
-                                      <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                    <div className="bg-card rounded-lg px-3 py-2 text-sm">
+                                      <span className="text-foreground/70 font-medium block">Payment Schedule</span>
+                                      <span className="mt-1 block text-foreground font-medium text-sm leading-snug break-words">
                                         {analysisResults.keyTerms.paymentSchedule}
                                       </span>
                                     </div>
                                   )}
                                   {analysisResults.keyTerms.duration && analysisResults.keyTerms.duration !== 'Not specified' && (
-                                    <div className="bg-white/5 rounded-lg px-3 py-2 text-sm">
-                                      <span className="text-white/70 font-medium block">Duration</span>
-                                      <span className="mt-1 block text-white font-medium text-sm leading-snug break-words">
+                                    <div className="bg-card rounded-lg px-3 py-2 text-sm">
+                                      <span className="text-foreground/70 font-medium block">Duration</span>
+                                      <span className="mt-1 block text-foreground font-medium text-sm leading-snug break-words">
                                         {analysisResults.keyTerms.duration}
                                       </span>
                                     </div>
@@ -3612,25 +3612,25 @@ ${creatorName}`;
                     </div>
 
                     {/* 2. Protection Status */}
-                    <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                    <div className="bg-card backdrop-blur-md rounded-xl border border-border overflow-hidden">
                       <button type="button"
                         onClick={() => handleAccordionToggle('protectionStatus')}
-                        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-card transition-colors"
                       >
                         <div className="flex flex-col items-start gap-1 w-full text-left">
                           <div className="flex items-center gap-2 w-full">
                             <Shield className="w-5 h-5 text-green-400" />
-                            <span className="text-white font-medium flex-1">Protection Status</span>
+                            <span className="text-foreground font-medium flex-1">Protection Status</span>
                             <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30 flex-shrink-0">
                               {analysisResults.verified.length} Strong Clauses
                             </span>
                           </div>
-                          <p className="text-[11px] text-white/60 pl-6">
+                          <p className="text-[11px] text-foreground/60 pl-6">
                             Safe clauses that already protect you.
                           </p>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-white/60 transition-transform ${isProtectionStatusExpanded ? 'rotate-180' : ''}`}
+                          className={`w-5 h-5 text-foreground/60 transition-transform ${isProtectionStatusExpanded ? 'rotate-180' : ''}`}
                         />
                       </button>
                       <AnimatePresence>
@@ -3648,13 +3648,13 @@ ${creatorName}`;
                                   <div key={clause.id} className="flex items-start gap-2 text-sm">
                                     <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                                     <div>
-                                      <div className="text-white font-medium">{clause.title}</div>
-                                      <div className="text-white/60 text-xs">{clause.description}</div>
+                                      <div className="text-foreground font-medium">{clause.title}</div>
+                                      <div className="text-foreground/60 text-xs">{clause.description}</div>
                                     </div>
                                   </div>
                                 ))
                               ) : (
-                                <div className="text-white/60 text-sm">No strong clauses found.</div>
+                                <div className="text-foreground/60 text-sm">No strong clauses found.</div>
                               )}
                             </div>
                           </motion.div>
@@ -3663,10 +3663,10 @@ ${creatorName}`;
                     </div>
 
                     {/* 3. Negotiation Suggestions / Optional Improvements */}
-                    <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                    <div className="bg-card backdrop-blur-md rounded-xl border border-border overflow-hidden">
                       <button type="button"
                         onClick={() => handleAccordionToggle('issues')}
-                        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-card transition-colors"
                       >
                         <div className="flex flex-col items-start gap-1 w-full text-left">
                           <div className="flex items-center gap-2 w-full">
@@ -3679,7 +3679,7 @@ ${creatorName}`;
                                 return (
                                   <>
                                     <CheckCircle className="w-5 h-5 text-green-400" />
-                                    <span className="text-white font-medium flex-1">
+                                    <span className="text-foreground font-medium flex-1">
                                       Optional Improvements
                                     </span>
                                     <span className="text-xs px-3 py-1 rounded-full bg-green-500/15 text-green-300 border border-green-500/30 flex-shrink-0">
@@ -3691,11 +3691,11 @@ ${creatorName}`;
 
                               return (
                                 <>
-                                  <AlertTriangle className="w-5 h-5 text-orange-400" />
-                                  <span className="text-white font-medium flex-1">
+                                  <AlertTriangle className="w-5 h-5 text-warning" />
+                                  <span className="text-foreground font-medium flex-1">
                                     Negotiation Suggestions
                                   </span>
-                                  <span className="text-xs px-3 py-1 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30 flex-shrink-0">
+                                  <span className="text-xs px-3 py-1 rounded-full bg-warning/15 text-warning border border-orange-500/30 flex-shrink-0">
                                     {analysisResults.issues.length}{' '}
                                     {analysisResults.issues.length === 1 ? 'Issue' : 'Issues'}
                                   </span>
@@ -3703,7 +3703,7 @@ ${creatorName}`;
                               );
                             })()}
                           </div>
-                          <p className="text-[11px] text-white/60 pl-6">
+                          <p className="text-[11px] text-foreground/60 pl-6">
                             {(() => {
                               const issues = analysisResults.issues || [];
                               const hasSingleLowIssue =
@@ -3718,7 +3718,7 @@ ${creatorName}`;
                           </p>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-white/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''} ml-2`}
+                          className={`w-5 h-5 text-foreground/60 transition-transform ${isIssuesExpanded ? 'rotate-180' : ''} ml-2`}
                         />
                       </button>
                       <AnimatePresence>
@@ -3745,13 +3745,13 @@ ${creatorName}`;
                                       return (
                                         <div
                                           key={issue.id}
-                                          className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-start gap-3 text-sm"
+                                          className="rounded-xl bg-card border border-border p-3 flex items-start gap-3 text-sm"
                                         >
                                           <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-400" />
                                           <div className="flex-1">
-                                            <div className="text-white font-medium">{issue.title}</div>
-                                            <div className="text-xs text-white/70 mt-1">
-                                              <span className="font-semibold text-white/80">
+                                            <div className="text-foreground font-medium">{issue.title}</div>
+                                            <div className="text-xs text-foreground/70 mt-1">
+                                              <span className="font-semibold text-foreground/80">
                                                 Suggested fix:{' '}
                                               </span>
                                               <span>{getSuggestedFix(issue)}</span>
@@ -3760,7 +3760,7 @@ ${creatorName}`;
                                               <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-300 border border-green-500/30">
                                                 Low Impact
                                               </span>
-                                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-200 border border-blue-500/30">
+                                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-info/15 text-info border border-info/30">
                                                 Easy to Clarify
                                               </span>
                                             </div>
@@ -3772,20 +3772,20 @@ ${creatorName}`;
                                     return (
                                       <div
                                         key={issue.id}
-                                        className="rounded-xl bg-white/5 border border-white/10 p-3 flex items-start gap-3 text-sm"
+                                        className="rounded-xl bg-card border border-border p-3 flex items-start gap-3 text-sm"
                                       >
                                         <AlertTriangle
                                           className={`w-4 h-4 mt-0.5 flex-shrink-0 ${issue.severity === 'high'
-                                            ? 'text-red-400'
+                                            ? 'text-destructive'
                                             : issue.severity === 'medium'
-                                              ? 'text-orange-400'
+                                              ? 'text-warning'
                                               : 'text-yellow-400'
                                             }`}
                                         />
                                         <div className="flex-1">
-                                          <div className="text-white font-medium">{issue.title}</div>
-                                          <div className="text-xs text-white/70 mt-1">
-                                            <span className="font-semibold text-white/80">
+                                          <div className="text-foreground font-medium">{issue.title}</div>
+                                          <div className="text-xs text-foreground/70 mt-1">
+                                            <span className="font-semibold text-foreground/80">
                                               Suggested fix:{' '}
                                             </span>
                                             <span>{getSuggestedFix(issue)}</span>
@@ -3793,9 +3793,9 @@ ${creatorName}`;
                                           <div className="flex flex-wrap items-center gap-2 mt-2">
                                             <span
                                               className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${issue.severity === 'high'
-                                                ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                                                ? 'bg-destructive/20 text-destructive border border-destructive/40'
                                                 : issue.severity === 'medium'
-                                                  ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
+                                                  ? 'bg-warning/20 text-warning border border-orange-500/40'
                                                   : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
                                                 }`}
                                             >
@@ -3813,7 +3813,7 @@ ${creatorName}`;
                                               );
                                             })()}
                                           </div>
-                                          <div className="mt-1 text-[11px] text-white/50">
+                                          <div className="mt-1 text-[11px] text-foreground/50">
                                             Impact if ignored: {getImpactIfIgnored(issue)}
                                           </div>
                                         </div>
@@ -3822,7 +3822,7 @@ ${creatorName}`;
                                   });
                                 })()
                               ) : (
-                                <div className="text-white/60 text-sm">
+                                <div className="text-foreground/60 text-sm">
                                   No risks detected. This contract is safe to proceed.
                                 </div>
                               )}
@@ -3833,15 +3833,15 @@ ${creatorName}`;
                     </div>
 
                     {/* 3.5. Missing Clauses */}
-                    <div className="bg-white/5 backdrop-blur-md rounded-xl border border-yellow-500/30 overflow-hidden">
+                    <div className="bg-card backdrop-blur-md rounded-xl border border-yellow-500/30 overflow-hidden">
                       <button type="button"
                         onClick={() => handleAccordionToggle('missingClauses')}
-                        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-card transition-colors"
                       >
                         <div className="flex flex-col items-start gap-1 w-full text-left">
                           <div className="flex items-center gap-2 w-full">
                             <AlertCircle className="w-5 h-5 text-yellow-400" />
-                            <span className="text-white font-medium flex-1">Missing Clauses</span>
+                            <span className="text-foreground font-medium flex-1">Missing Clauses</span>
                             {(() => {
                               // Count missing clauses - common ones to check
                               const missingCount = [
@@ -3881,12 +3881,12 @@ ${creatorName}`;
                               );
                             })()}
                           </div>
-                          <p className="text-[11px] text-white/60 pl-6">
+                          <p className="text-[11px] text-foreground/60 pl-6">
                             Important points that are not written anywhere yet.
                           </p>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-white/60 transition-transform ${isMissingClausesExpanded ? 'rotate-180' : ''
+                          className={`w-5 h-5 text-foreground/60 transition-transform ${isMissingClausesExpanded ? 'rotate-180' : ''
                             } ml-2`}
                         />
                       </button>
@@ -3904,8 +3904,8 @@ ${creatorName}`;
                                 <div className="flex items-start gap-2 text-sm p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                                   <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                                   <div className="flex-1">
-                                    <div className="text-white font-medium">Payment Amount</div>
-                                    <div className="text-white/60 text-xs mt-1">Payment amount is not specified in the contract.</div>
+                                    <div className="text-foreground font-medium">Payment Amount</div>
+                                    <div className="text-foreground/60 text-xs mt-1">Payment amount is not specified in the contract.</div>
                                   </div>
                                 </div>
                               )}
@@ -3913,8 +3913,8 @@ ${creatorName}`;
                                 <div className="flex items-start gap-2 text-sm p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                                   <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                                   <div className="flex-1">
-                                    <div className="text-white font-medium">Payment Schedule</div>
-                                    <div className="text-white/60 text-xs mt-1">Payment timeline is not clearly defined.</div>
+                                    <div className="text-foreground font-medium">Payment Schedule</div>
+                                    <div className="text-foreground/60 text-xs mt-1">Payment timeline is not clearly defined.</div>
                                   </div>
                                 </div>
                               )}
@@ -3922,8 +3922,8 @@ ${creatorName}`;
                                 <div className="flex items-start gap-2 text-sm p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                                   <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                                   <div className="flex-1">
-                                    <div className="text-white font-medium">Exclusivity Terms</div>
-                                    <div className="text-white/60 text-xs mt-1">Exclusivity period is not specified.</div>
+                                    <div className="text-foreground font-medium">Exclusivity Terms</div>
+                                    <div className="text-foreground/60 text-xs mt-1">Exclusivity period is not specified.</div>
                                   </div>
                                 </div>
                               )}
@@ -3947,27 +3947,27 @@ ${creatorName}`;
                     </div>
 
                     {/* 4. Financial Breakdown */}
-                    <div className="bg-white/5 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden">
+                    <div className="bg-card backdrop-blur-md rounded-xl border border-border overflow-hidden">
                       <button type="button"
                         onClick={() => handleAccordionToggle('financialBreakdown')}
-                        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-card transition-colors"
                       >
                         <div className="flex flex-col items-start gap-1 w-full text-left">
                           <div className="flex items-center gap-2 w-full">
                             <DollarSign className="w-5 h-5 text-green-400" />
-                            <span className="text-white font-medium flex-1">
+                            <span className="text-foreground font-medium flex-1">
                               Financial Breakdown
                             </span>
                             <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
                               Fair Rate
                             </span>
                           </div>
-                          <p className="text-[11px] text-white/60 pl-6">
+                          <p className="text-[11px] text-foreground/60 pl-6">
                             Simple view of payout, certainty, and timeline.
                           </p>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-white/60 transition-transform ${isFinancialBreakdownExpanded ? 'rotate-180' : ''
+                          className={`w-5 h-5 text-foreground/60 transition-transform ${isFinancialBreakdownExpanded ? 'rotate-180' : ''
                             }`}
                         />
                       </button>
@@ -4010,9 +4010,9 @@ ${creatorName}`;
                                   : 'Needs clarification — payment date is not clearly written.';
 
                                 return (
-                                  <div className="rounded-lg bg-white/5 border border-white/10 p-3 text-xs text-white/80 space-y-1.5">
+                                  <div className="rounded-lg bg-card border border-border p-3 text-xs text-foreground/80 space-y-1.5">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-white/70">
+                                      <span className="text-foreground/70">
                                         Expected payout
                                       </span>
                                       <span className="font-medium">
@@ -4022,7 +4022,7 @@ ${creatorName}`;
                                       </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                      <span className="text-white/70">
+                                      <span className="text-foreground/70">
                                         Payment certainty
                                       </span>
                                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-300 border border-green-500/30">
@@ -4030,10 +4030,10 @@ ${creatorName}`;
                                         <span>{certaintyLabel}</span>
                                       </span>
                                     </div>
-                                    <p className="text-[11px] text-white/60 mt-1.5">
+                                    <p className="text-[11px] text-foreground/60 mt-1.5">
                                       {certaintyCopy}
                                     </p>
-                                    <p className="text-[11px] text-white/55">
+                                    <p className="text-[11px] text-foreground/55">
                                       Timeline risk: {timelineRisk}
                                     </p>
                                   </div>
@@ -4042,18 +4042,18 @@ ${creatorName}`;
 
                               {analysisResults.keyTerms?.dealValue && analysisResults.keyTerms.dealValue !== 'Not specified' && (
                                 <div className="flex justify-between items-center text-sm">
-                                  <span className="text-white/70">Deal Value:</span>
-                                  <span className="text-white font-medium">{analysisResults.keyTerms.dealValue}</span>
+                                  <span className="text-foreground/70">Deal Value:</span>
+                                  <span className="text-foreground font-medium">{analysisResults.keyTerms.dealValue}</span>
                                 </div>
                               )}
                               {analysisResults.keyTerms?.paymentSchedule && analysisResults.keyTerms.paymentSchedule !== 'Not specified' && (
                                 <div className="flex justify-between items-center text-sm">
-                                  <span className="text-white/70">Payment Schedule:</span>
-                                  <span className="text-white font-medium">{analysisResults.keyTerms.paymentSchedule}</span>
+                                  <span className="text-foreground/70">Payment Schedule:</span>
+                                  <span className="text-foreground font-medium">{analysisResults.keyTerms.paymentSchedule}</span>
                                 </div>
                               )}
                               {(!analysisResults.keyTerms?.dealValue || analysisResults.keyTerms.dealValue === 'Not specified') && (
-                                <div className="text-white/60 text-sm">Payment amount not specified in contract.</div>
+                                <div className="text-foreground/60 text-sm">Payment amount not specified in contract.</div>
                               )}
                             </div>
                           </motion.div>
@@ -4062,18 +4062,18 @@ ${creatorName}`;
                     </div>
 
                     {/* 6. What We Will Ask the Brand */}
-                    <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 backdrop-blur-md rounded-xl border border-blue-500/30 overflow-hidden">
+                    <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 backdrop-blur-md rounded-xl border border-info/30 overflow-hidden">
                       <button type="button"
                         onClick={() => handleAccordionToggle('brandRequests')}
-                        className="w-full p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                        className="w-full p-4 flex items-center justify-between hover:bg-card transition-colors"
                       >
                         <div className="flex flex-col items-start gap-1 w-full text-left">
                           <div className="flex items-center gap-2 w-full">
-                            <Send className="w-5 h-5 text-blue-400" />
-                            <span className="text-white font-medium flex-1">
+                            <Send className="w-5 h-5 text-info" />
+                            <span className="text-foreground font-medium flex-1">
                               What We Will Ask the Brand
                             </span>
-                            <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex-shrink-0">
+                            <span className="text-xs px-3 py-1 rounded-full bg-info/20 text-info border border-info/30 flex-shrink-0">
                               {(() => {
                                 const requests = generateBrandRequests();
                                 const count = requests.length;
@@ -4096,12 +4096,12 @@ ${creatorName}`;
                               })()}
                             </span>
                           </div>
-                          <p className="text-[11px] text-white/60 pl-6">
+                          <p className="text-[11px] text-foreground/60 pl-6">
                             Clear, polite asks we’ll send to protect your money.
                           </p>
                         </div>
                         <ChevronDown
-                          className={`w-5 h-5 text-white/60 transition-transform ${isRecommendedActionsExpanded ? 'rotate-180' : ''
+                          className={`w-5 h-5 text-foreground/60 transition-transform ${isRecommendedActionsExpanded ? 'rotate-180' : ''
                             } ml-2`}
                         />
                       </button>
@@ -4135,15 +4135,15 @@ ${creatorName}`;
                                     {/* Brand Requests List */}
                                     <div className="space-y-3">
                                       {requests.map((request, index) => (
-                                        <div key={index} className="flex items-start gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
-                                          <CheckCircle className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                        <div key={index} className="flex items-start gap-3 p-3 bg-card rounded-lg border border-border">
+                                          <CheckCircle className="w-4 h-4 text-info mt-0.5 flex-shrink-0" />
                                           <div className="flex-1">
-                                            <p className="text-sm text-white font-medium mb-1.5">{request.text}</p>
+                                            <p className="text-sm text-foreground font-medium mb-1.5">{request.text}</p>
                                             <div className="flex items-center gap-2 flex-wrap">
-                                              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                              <span className="text-xs px-2 py-0.5 rounded-full bg-info/20 text-info border border-info/30">
                                                 {request.impact}
                                               </span>
-                                              <span className="text-xs text-white/50">Will be added to brand message</span>
+                                              <span className="text-xs text-foreground/50">Will be added to brand message</span>
                                             </div>
                                           </div>
                                         </div>
@@ -4169,32 +4169,32 @@ ${creatorName}`;
                                     </div>
 
                                     {/* Message Preview Box */}
-                                    <div className="mt-4 p-4 bg-white/5 rounded-lg border border-blue-500/20">
+                                    <div className="mt-4 p-4 bg-card rounded-lg border border-info/20">
                                       <div className="flex items-center gap-2 mb-3">
-                                        <MessageSquare className="w-4 h-4 text-blue-400" />
-                                        <h4 className="text-sm font-semibold text-white">Final Message to Brand (Preview)</h4>
+                                        <MessageSquare className="w-4 h-4 text-info" />
+                                        <h4 className="text-sm font-semibold text-foreground">Final Message to Brand (Preview)</h4>
                                       </div>
-                                      <div className="bg-white/5 rounded-lg p-3 border border-white/10">
+                                      <div className="bg-card rounded-lg p-3 border border-border">
                                         {negotiationMessage ? (
                                           <div className="space-y-1">
                                             {negotiationMessage.split('\n').slice(0, 3).map((line, index) => (
-                                              <p key={index} className="text-xs text-white/70 leading-relaxed">
+                                              <p key={index} className="text-xs text-foreground/70 leading-relaxed">
                                                 {line || '\u00A0'}
                                               </p>
                                             ))}
                                             {negotiationMessage.split('\n').length > 3 && (
-                                              <p className="text-xs text-white/50 italic mt-2">...</p>
+                                              <p className="text-xs text-foreground/50 italic mt-2">...</p>
                                             )}
                                           </div>
                                         ) : (
                                           <div className="space-y-1">
-                                            <p className="text-xs text-white/70 leading-relaxed">
+                                            <p className="text-xs text-foreground/70 leading-relaxed">
                                               Hi {analysisResults?.keyTerms?.brandName || '[Brand Name]'},
                                             </p>
-                                            <p className="text-xs text-white/70 leading-relaxed">
+                                            <p className="text-xs text-foreground/70 leading-relaxed">
                                               Thanks for sharing the contract. I'd like to clarify a few points before proceeding...
                                             </p>
-                                            <p className="text-xs text-white/50 italic mt-2">Full message will be generated when you click "Share with Brand"</p>
+                                            <p className="text-xs text-foreground/50 italic mt-2">Full message will be generated when you click "Share with Brand"</p>
                                           </div>
                                         )}
                                       </div>
@@ -4283,7 +4283,7 @@ ${creatorName}`;
                                         }}
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className="flex-1 px-4 py-2.5 bg-purple-600/90 hover:bg-purple-600 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm"
+                                        className="flex-1 px-4 py-2.5 bg-secondary/90 hover:bg-secondary text-foreground rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm"
                                       >
                                         <Edit className="w-4 h-4" />
                                         Edit Message
@@ -4442,7 +4442,7 @@ ${creatorName}`;
                                         disabled={isGeneratingMessage}
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className="flex-1 px-4 py-2.5 bg-green-600/90 hover:bg-green-600 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+                                        className="flex-1 px-4 py-2.5 bg-green-600/90 hover:bg-green-600 text-foreground rounded-lg font-semibold transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-50"
                                       >
                                         {isGeneratingMessage ? (
                                           <>
@@ -4743,7 +4743,7 @@ ${creatorName}`;
                         disabled={isGeneratingMessage}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-purple-500/30"
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-purple-500/30"
                       >
                         {isGeneratingMessage ? (
                           <>
@@ -4785,7 +4785,7 @@ ${creatorName}`;
                         );
                       })()}
 
-                      <p className="text-xs text-white/50 mt-2 text-center px-2">
+                      <p className="text-xs text-foreground/50 mt-2 text-center px-2">
                         {(() => {
                           const actionType = getActionType();
                           if (actionType === 'SUMMARY') {
@@ -4805,7 +4805,7 @@ ${creatorName}`;
 
                     {/* Soft Fear Line */}
                     <div className="mt-4 mb-2 text-center">
-                      <p className="text-xs text-white/50 italic">
+                      <p className="text-xs text-foreground/50 italic">
                         Most creators lose money due to unclear contracts. You're already ahead.
                       </p>
                     </div>
@@ -4845,7 +4845,7 @@ ${creatorName}`;
                       disabled={(isAutoSaved || savedDealId) || addDealMutation.isPending}
                       whileHover={!(isAutoSaved || savedDealId) ? { scale: 1.02 } : {}}
                       whileTap={!(isAutoSaved || savedDealId) ? { scale: 0.98 } : {}}
-                      className="flex-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(isAutoSaved || savedDealId) ? (
                         <>
@@ -4853,7 +4853,7 @@ ${creatorName}`;
                             <CheckCircle className="w-5 h-5 text-green-400" />
                             <span>Saved to Drafts</span>
                           </div>
-                          <span className="text-xs text-white/50 font-normal">Auto-saved while you work</span>
+                          <span className="text-xs text-foreground/50 font-normal">Auto-saved while you work</span>
                         </>
                       ) : addDealMutation.isPending ? (
                         <>
@@ -4874,7 +4874,7 @@ ${creatorName}`;
 
                 {/* Perfect Contract Empty State */}
                 {analysisResults.issues.length === 0 && analysisResults.score >= 75 && (
-                  <div className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-white/10 shadow-lg text-center mb-6">
+                  <div className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-border shadow-lg text-center mb-6">
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -4889,10 +4889,10 @@ ${creatorName}`;
                       </motion.div>
                     </motion.div>
                     <h2 className="text-3xl md:text-4xl font-bold text-green-400 mb-3">This Is a Strong Contract ✅</h2>
-                    <p className="text-lg text-white/90 mb-3 max-w-2xl mx-auto">
+                    <p className="text-lg text-foreground/90 mb-3 max-w-2xl mx-auto">
                       This is a well-balanced, creator-friendly contract. Key terms are clearly defined and there are no critical payment or legal risks.
                     </p>
-                    <p className="text-sm text-white/50 max-w-2xl mx-auto">
+                    <p className="text-sm text-foreground/50 max-w-2xl mx-auto">
                       Score is based on contract clauses, not brand reputation.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
@@ -4910,7 +4910,7 @@ ${creatorName}`;
                         }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="bg-white/5 hover:bg-white/10 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                        className="bg-card hover:bg-secondary/50 border border-border text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                       >
                         <Download className="w-5 h-5" />
                         Download for Records
@@ -4973,7 +4973,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
                       >
                         <Share2 className="w-5 h-5" />
                         Share with Brand
@@ -4984,7 +4984,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                 {/* Old Issues Section - Removed */}
                 {false && analysisResults.issues.length > 0 && (
-                  <div id="issues-section-old" className="bg-white/10 backdrop-blur-md rounded-2xl p-4 md:p-6 md:p-8 border border-white/10 md:border-t shadow-lg">
+                  <div id="issues-section-old" className="bg-secondary/50 backdrop-blur-md rounded-2xl p-4 md:p-6 md:p-8 border border-border md:border-t shadow-lg">
                     <button type="button"
                       onClick={() => setIsIssuesExpanded(!isIssuesExpanded)}
                       className="w-full flex items-center justify-between mb-4 hover:opacity-80 transition-opacity"
@@ -4992,7 +4992,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                       <h3 className="font-semibold text-xl md:text-2xl flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
                         Issues Found
-                        <span className="text-sm font-normal text-purple-300 ml-2">
+                        <span className="text-sm font-normal text-secondary ml-2">
                           ({analysisResults.issues.length} {analysisResults.issues.length === 1 ? 'issue' : 'issues'})
                         </span>
                       </h3>
@@ -5000,7 +5000,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         animate={{ rotate: isIssuesExpanded ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <ChevronDown className="w-5 h-5 md:w-6 md:h-6 text-purple-300" />
+                        <ChevronDown className="w-5 h-5 md:w-6 md:h-6 text-secondary" />
                       </motion.div>
                     </button>
 
@@ -5014,14 +5014,14 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           className="overflow-hidden"
                         >
                           {/* Safety Progress Tracker */}
-                          <div className="mb-6 p-4 bg-purple-900/40 rounded-xl border border-purple-700/50">
+                          <div className="mb-6 p-4 bg-secondary/40 rounded-xl border border-purple-700/50">
                             <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold text-purple-200">Safety Progress:</span>
-                              <span className="text-lg font-bold text-white">
+                              <span className="text-sm font-semibold text-secondary">Safety Progress:</span>
+                              <span className="text-lg font-bold text-foreground">
                                 {fixedIssuesCount} of {totalIssuesCount} issues fixed
                               </span>
                             </div>
-                            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                            <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${(fixedIssuesCount / totalIssuesCount) * 100}%` }}
@@ -5101,7 +5101,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 }}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-sm shadow-lg shadow-purple-500/30"
+                                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-foreground px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2 text-sm shadow-lg shadow-purple-500/30"
                               >
                                 <Zap className="w-4 h-4" />
                                 <span className="hidden md:inline">Quick Fix: Fix All Issues</span>
@@ -5226,9 +5226,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                                     return (
                                       <div key={categoryLabel} className="mb-8 md:mb-0">
-                                        <div className="flex items-center gap-3 mb-5 md:mb-6 pb-3 border-b border-white/10">
-                                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                                            <CategoryIcon className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+                                        <div className="flex items-center gap-3 mb-5 md:mb-6 pb-3 border-b border-border">
+                                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
+                                            <CategoryIcon className="w-5 h-5 md:w-6 md:h-6 text-secondary" />
                                           </div>
                                           <h4 className="font-semibold text-lg md:text-xl">{categoryInfo.emoji} {categoryLabel} ({issues.length})</h4>
                                         </div>
@@ -5239,13 +5239,13 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                             {issues.map((issue, index) => {
                                               const severityConfig = {
                                                 high: {
-                                                  border: 'border-l-4 border-red-500',
-                                                  badge: 'bg-red-500/30 text-red-300 border-red-500/50',
+                                                  border: 'border-l-4 border-destructive',
+                                                  badge: 'bg-destructive/30 text-destructive border-destructive/50',
                                                   label: 'High'
                                                 },
                                                 medium: {
                                                   border: 'border-l-4 border-orange-500',
-                                                  badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50',
+                                                  badge: 'bg-warning/30 text-warning border-orange-500/50',
                                                   label: 'Medium'
                                                 },
                                                 low: {
@@ -5275,21 +5275,21 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: resolvedIssues.has(issue.id) ? 0.5 : 1, y: 0 }}
                                                     exit={{ opacity: 0, height: 0 }}
-                                                    className={`${config.border} bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200 p-5`}
+                                                    className={`${config.border} bg-card rounded-xl border border-border hover:bg-secondary/50 hover:border-purple-400/30 transition-all duration-200 p-5`}
                                                     style={{ animationDelay: `${index * 50}ms` }}
                                                   >
                                                     {/* Issue Header Row */}
                                                     <div className="flex items-start justify-between gap-4 mb-4">
                                                       <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                                          <h5 className="font-semibold text-base md:text-lg text-white">{issue.title}</h5>
+                                                          <h5 className="font-semibold text-base md:text-lg text-foreground">{issue.title}</h5>
                                                           <span className={`px-3 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${config.badge}`}>
                                                             {config.label}
                                                           </span>
                                                         </div>
                                                         <button type="button"
                                                           onClick={() => toggleFixExpansion(issue.id)}
-                                                          className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mt-1"
+                                                          className="text-xs text-secondary hover:text-secondary transition-colors flex items-center gap-1 mt-1"
                                                         >
                                                           {isExpanded ? 'Hide Details' : 'Tap to View Details'}
                                                           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -5298,25 +5298,25 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                     </div>
 
                                                     {/* Score Impact */}
-                                                    <div className="mb-4 pb-4 border-b border-white/10">
+                                                    <div className="mb-4 pb-4 border-b border-border">
                                                       <div className="flex items-center gap-2 mb-2">
-                                                        <Clock className="w-4 h-4 text-purple-400" />
-                                                        <span className="text-xs text-purple-400 font-medium">
+                                                        <Clock className="w-4 h-4 text-secondary" />
+                                                        <span className="text-xs text-secondary font-medium">
                                                           {issue.severity === 'high' ? '2-3 min fix' : issue.severity === 'medium' ? '1-2 min fix' : '1 min fix'}
                                                         </span>
                                                       </div>
-                                                      <p className="text-sm md:text-base text-purple-300/70">
-                                                        Fixing this will improve your score to ~<span className="font-black text-purple-200">{potentialScore}/100</span>
+                                                      <p className="text-sm md:text-base text-secondary/70">
+                                                        Fixing this will improve your score to ~<span className="font-black text-secondary">{potentialScore}/100</span>
                                                       </p>
                                                     </div>
 
                                                     {/* Impact Preview - Risk if Ignored */}
-                                                    <div className="mb-4 bg-red-900/20 border-l-4 border-red-500 p-3 rounded-r-lg">
+                                                    <div className="mb-4 bg-destructive/20 border-l-4 border-destructive p-3 rounded-r-lg">
                                                       <div className="flex items-start gap-2">
-                                                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                                                        <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
                                                         <div>
-                                                          <span className="text-xs font-semibold text-red-300 block mb-1">Risk if ignored:</span>
-                                                          <p className="text-xs text-red-200/80 leading-relaxed">{getImpactIfIgnored(issue)}</p>
+                                                          <span className="text-xs font-semibold text-destructive block mb-1">Risk if ignored:</span>
+                                                          <p className="text-xs text-destructive/80 leading-relaxed">{getImpactIfIgnored(issue)}</p>
                                                         </div>
                                                       </div>
                                                     </div>
@@ -5345,17 +5345,17 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                                   toast.info('Please copy the clause manually');
                                                                 }
                                                               }}
-                                                              className="bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                                                              className="bg-green-600/80 hover:bg-green-600 text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
                                                             >
                                                               <Copy className="w-4 h-4" />
                                                               Copy
                                                             </button>
                                                             <button type="button"
                                                               onClick={() => handleMarkAsResolved(issue.id)}
-                                                              className="bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center"
+                                                              className="bg-secondary/80 hover:bg-secondary text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center"
                                                             >
                                                               Issue Fixed
-                                                              <span className="text-xs text-purple-300 mt-1">This risk is now secured</span>
+                                                              <span className="text-xs text-secondary mt-1">This risk is now secured</span>
                                                             </button>
                                                           </div>
                                                         </div>
@@ -5367,7 +5367,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                           }}
                                                           disabled={clauseState === 'loading'}
                                                           whileTap={{ scale: 0.98 }}
-                                                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
+                                                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
                                                         >
                                                           {clauseState === 'loading' ? (
                                                             <>
@@ -5383,7 +5383,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                         </motion.button>
                                                       )}
                                                       {clauseState !== 'loading' && clauseState !== 'success' && (
-                                                        <span className="text-xs text-purple-300 mt-1 block text-center">AI rewrites this clause in your favor</span>
+                                                        <span className="text-xs text-secondary mt-1 block text-center">AI rewrites this clause in your favor</span>
                                                       )}
                                                     </div>
 
@@ -5393,22 +5393,22 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                         initial={{ height: 0, opacity: 0 }}
                                                         animate={{ height: 'auto', opacity: 1 }}
                                                         exit={{ height: 0, opacity: 0 }}
-                                                        className="mt-5 pt-5 border-t border-white/10 overflow-hidden"
+                                                        className="mt-5 pt-5 border-t border-border overflow-hidden"
                                                       >
                                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                                          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                                                            <div className="text-xs text-red-300 mb-2 flex items-center gap-1 font-medium">
+                                                          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+                                                            <div className="text-xs text-destructive mb-2 flex items-center gap-1 font-medium">
                                                               <XCircle className="w-3 h-3" />
                                                               Problem Detected
                                                             </div>
-                                                            <div className="text-sm text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
+                                                            <div className="text-sm text-secondary leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
                                                           </div>
                                                           <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                                                             <div className="text-xs text-green-300 mb-2 flex items-center gap-1 font-medium">
                                                               <CheckCircle className="w-3 h-3" />
                                                               Recommended Fix
                                                             </div>
-                                                            <div className="text-sm text-purple-200 leading-relaxed mb-3">{issue.recommendation}</div>
+                                                            <div className="text-sm text-secondary leading-relaxed mb-3">{issue.recommendation}</div>
                                                             <div className="mb-3">
                                                               <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
                                                                 {negotiationStrength.emoji} {negotiationStrength.label}
@@ -5438,13 +5438,13 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                                             const severityConfig = {
                                               high: {
-                                                border: 'border-l-4 border-red-500',
-                                                badge: 'bg-red-500/30 text-red-300 border-red-500/50',
+                                                border: 'border-l-4 border-destructive',
+                                                badge: 'bg-destructive/30 text-destructive border-destructive/50',
                                                 label: 'High'
                                               },
                                               medium: {
                                                 border: 'border-l-4 border-orange-500',
-                                                badge: 'bg-orange-500/30 text-orange-300 border-orange-500/50',
+                                                badge: 'bg-warning/30 text-warning border-orange-500/50',
                                                 label: 'Medium'
                                               },
                                               low: {
@@ -5474,7 +5474,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                   initial={{ opacity: 0, y: 20 }}
                                                   animate={{ opacity: 1, y: 0 }}
                                                   exit={{ opacity: 0, height: 0 }}
-                                                  className={`${config.border} p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 hover:border-purple-400/30 transition-all duration-200`}
+                                                  className={`${config.border} p-4 bg-card rounded-xl border border-border hover:bg-secondary/50 hover:border-purple-400/30 transition-all duration-200`}
                                                   style={{ animationDelay: `${index * 50}ms` }}
                                                 >
                                                   {/* Compact Header - Always Visible */}
@@ -5488,14 +5488,14 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                       </div>
 
                                                       {/* Score Preview - Always Visible */}
-                                                      <p className="text-xs text-purple-300 mb-3">
+                                                      <p className="text-xs text-secondary mb-3">
                                                         Fixing this will improve your score to ~{potentialScore}/100
                                                       </p>
 
                                                       {/* Tap to View Details Link */}
                                                       <button type="button"
                                                         onClick={() => toggleFixExpansion(issue.id)}
-                                                        className="text-xs text-purple-400 hover:text-purple-300 transition-colors flex items-center gap-1 mb-3"
+                                                        className="text-xs text-secondary hover:text-secondary transition-colors flex items-center gap-1 mb-3"
                                                       >
                                                         {isExpanded ? 'Hide Details' : 'Tap to View Details'}
                                                         {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -5513,12 +5513,12 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                         className="overflow-hidden space-y-3 mb-3"
                                                       >
                                                         {/* Problem Section */}
-                                                        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-                                                          <div className="text-xs text-red-300 mb-1 flex items-center gap-1 font-medium">
+                                                        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                                                          <div className="text-xs text-destructive mb-1 flex items-center gap-1 font-medium">
                                                             <XCircle className="w-3 h-3" />
                                                             Problem Detected
                                                           </div>
-                                                          <div className="text-sm text-purple-200 leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
+                                                          <div className="text-sm text-secondary leading-relaxed">{issue.clause || issue.description || 'N/A'}</div>
                                                         </div>
 
                                                         {/* Recommendation Section */}
@@ -5527,7 +5527,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                             <CheckCircle className="w-3 h-3" />
                                                             Recommended Fix
                                                           </div>
-                                                          <div className="text-sm text-purple-200 leading-relaxed">{issue.recommendation}</div>
+                                                          <div className="text-sm text-secondary leading-relaxed">{issue.recommendation}</div>
                                                           <div className="mt-2">
                                                             <span className={`px-2 py-1 rounded-full text-xs font-medium border ${negotiationStrength.color}`}>
                                                               {negotiationStrength.emoji} {negotiationStrength.label}
@@ -5569,17 +5569,17 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                               toast.info('Please copy the clause manually');
                                                             }
                                                           }}
-                                                          className="flex-1 bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                                                          className="flex-1 bg-green-600/80 hover:bg-green-600 text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 min-h-[48px]"
                                                         >
                                                           <Copy className="w-4 h-4" />
                                                           Copy Clause
                                                         </button>
                                                         <button type="button"
                                                           onClick={() => handleMarkAsResolved(issue.id)}
-                                                          className="flex-1 bg-purple-600/80 hover:bg-purple-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center justify-center"
+                                                          className="flex-1 bg-secondary/80 hover:bg-secondary text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all min-h-[48px] flex flex-col items-center justify-center"
                                                         >
                                                           Issue Fixed
-                                                          <span className="text-xs text-purple-300 mt-1">This risk is now secured</span>
+                                                          <span className="text-xs text-secondary mt-1">This risk is now secured</span>
                                                         </button>
                                                       </div>
                                                     </div>
@@ -5591,7 +5591,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                       }}
                                                       disabled={clauseState === 'loading'}
                                                       whileTap={{ scale: 0.98 }}
-                                                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
+                                                      className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-purple-500/50 text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 min-h-[48px]"
                                                     >
                                                       {clauseState === 'loading' ? (
                                                         <>
@@ -5607,7 +5607,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                                     </motion.button>
                                                   )}
                                                   {clauseState !== 'loading' && clauseState !== 'success' && (
-                                                    <span className="text-xs text-purple-300 mt-1 block text-center">AI rewrites this clause in your favor</span>
+                                                    <span className="text-xs text-secondary mt-1 block text-center">AI rewrites this clause in your favor</span>
                                                   )}
                                                 </motion.div>
                                               </AnimatePresence>
@@ -5627,7 +5627,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                       }}
                                       whileHover={{ scale: 1.02 }}
                                       whileTap={{ scale: 0.98 }}
-                                      className="bg-purple-600/80 hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mx-auto"
+                                      className="bg-secondary/80 hover:bg-secondary text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mx-auto"
                                     >
                                       Show all issues ({unresolvedIssues.length})
                                     </motion.button>
@@ -5738,18 +5738,18 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           disabled={isGeneratingMessage}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="bg-red-600/90 hover:bg-red-600 hover:shadow-xl hover:shadow-red-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px] relative overflow-hidden"
+                          className="bg-destructive/90 hover:bg-destructive hover:shadow-xl hover:shadow-red-500/50 hover:-translate-y-1 text-foreground px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px] relative overflow-hidden"
                         >
                           <motion.div
                             animate={{ opacity: [0.5, 1, 0.5] }}
                             transition={{ duration: 2, repeat: Infinity }}
-                            className="absolute inset-0 bg-red-500/20"
+                            className="absolute inset-0 bg-destructive/20"
                           />
                           <div className="flex items-center gap-2 relative z-10">
                             <AlertTriangle className="w-5 h-5" />
                             <div className="flex flex-col items-start">
                               <strong className="text-sm">Critical: Ask Brand for Revisions</strong>
-                              <span className="text-xs text-red-100/80">Must do before signing</span>
+                              <span className="text-xs text-destructive/80">Must do before signing</span>
                             </div>
                           </div>
                         </motion.button>
@@ -5810,7 +5810,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           }}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="bg-yellow-600/80 hover:bg-yellow-600 hover:shadow-xl hover:shadow-yellow-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
+                          className="bg-yellow-600/80 hover:bg-yellow-600 hover:shadow-xl hover:shadow-yellow-500/50 hover:-translate-y-1 text-foreground px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
                         >
                           <div className="flex items-center gap-2">
                             <Clock className="w-5 h-5" />
@@ -5921,7 +5921,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           }}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="bg-green-600/90 hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-1 text-white px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
+                          className="bg-green-600/90 hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/50 hover:-translate-y-1 text-foreground px-4 py-4 rounded-xl font-semibold transition-all duration-200 flex flex-col items-center justify-center gap-1.5 min-h-[48px]"
                         >
                           <div className="flex items-center gap-2">
                             <Download className="w-5 h-5" />
@@ -5936,9 +5936,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                     {/* Brand Approval Tracker */}
                     {brandApprovalStatus && (
-                      <div className="mt-6 bg-white/10 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-white/10 shadow-lg">
+                      <div className="mt-6 bg-secondary/50 backdrop-blur-md rounded-2xl p-5 md:p-6 border border-border shadow-lg">
                         <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                          <FileCheck className="w-5 h-5 text-purple-400" />
+                          <FileCheck className="w-5 h-5 text-secondary" />
                           Brand Approval Status
                         </h4>
 
@@ -5949,35 +5949,35 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               <>
                                 <div className="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
                                 <span className="font-medium text-yellow-300">Sent to Brand</span>
-                                <span className="text-sm text-white/60 ml-auto">Waiting for their response</span>
+                                <span className="text-sm text-foreground/60 ml-auto">Waiting for their response</span>
                               </>
                             )}
                             {brandApprovalStatus === 'viewed' && (
                               <>
-                                <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-                                <span className="font-medium text-blue-300">Brand Viewed</span>
-                                <span className="text-sm text-white/60 ml-auto">Brand opened your message</span>
+                                <div className="w-3 h-3 rounded-full bg-info"></div>
+                                <span className="font-medium text-info">Brand Viewed</span>
+                                <span className="text-sm text-foreground/60 ml-auto">Brand opened your message</span>
                               </>
                             )}
                             {brandApprovalStatus === 'negotiating' && (
                               <>
-                                <div className="w-3 h-3 rounded-full bg-orange-400 animate-pulse"></div>
-                                <span className="font-medium text-orange-300">Negotiating</span>
-                                <span className="text-sm text-white/60 ml-auto">Changes being discussed</span>
+                                <div className="w-3 h-3 rounded-full bg-warning animate-pulse"></div>
+                                <span className="font-medium text-warning">Negotiating</span>
+                                <span className="text-sm text-foreground/60 ml-auto">Changes being discussed</span>
                               </>
                             )}
                             {brandApprovalStatus === 'approved' && (
                               <>
                                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
                                 <span className="font-medium text-green-300">Approved</span>
-                                <span className="text-sm text-white/60 ml-auto">Contract finalized</span>
+                                <span className="text-sm text-foreground/60 ml-auto">Contract finalized</span>
                               </>
                             )}
                             {brandApprovalStatus === 'rejected' && (
                               <>
-                                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                                <span className="font-medium text-red-300">Rejected</span>
-                                <span className="text-sm text-white/60 ml-auto">Brand declined changes</span>
+                                <div className="w-3 h-3 rounded-full bg-destructive"></div>
+                                <span className="font-medium text-destructive">Rejected</span>
+                                <span className="text-sm text-foreground/60 ml-auto">Brand declined changes</span>
                               </>
                             )}
                           </div>
@@ -6022,21 +6022,21 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                   toast.error('Failed to create deal', { description: error?.message });
                                 }
                               }}
-                              className="w-full bg-green-600/80 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all"
+                              className="w-full bg-green-600/80 hover:bg-green-600 text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all"
                             >
                               ✅ Move to Active Deals
                             </button>
                           )}
 
                           {brandApprovalStatus === 'sent' && approvalStatusUpdatedAt && (
-                            <div className="text-xs text-white/60">
+                            <div className="text-xs text-foreground/60">
                               Sent {new Date(approvalStatusUpdatedAt).toLocaleDateString()} •
                               {Math.floor((Date.now() - approvalStatusUpdatedAt.getTime()) / (1000 * 60 * 60)) > 48 && (
                                 <button type="button"
                                   onClick={() => {
                                     toast.info('Reminder sent to brand');
                                   }}
-                                  className="ml-2 text-purple-400 hover:text-purple-300 underline"
+                                  className="ml-2 text-secondary hover:text-secondary underline"
                                 >
                                   Send Reminder
                                 </button>
@@ -6050,7 +6050,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 setShowNegotiationModal(true);
                                 toast.info('Try renegotiation with revised terms');
                               }}
-                              className="w-full bg-orange-600/80 hover:bg-orange-600 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all"
+                              className="w-full bg-warning/80 hover:bg-warning text-foreground px-4 py-3 rounded-lg text-sm font-semibold transition-all"
                             >
                               🔄 Try Renegotiation with Revised Terms
                             </button>
@@ -6069,7 +6069,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     disabled={!negotiationMessage}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-card hover:bg-secondary/50 border border-border text-foreground font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Mail className="w-5 h-5" />
                     Copy Email
@@ -6081,7 +6081,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     disabled={!negotiationMessage}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-card hover:bg-secondary/50 border border-border text-foreground font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <MessageSquare className="w-5 h-5" />
                     Copy WhatsApp
@@ -6181,7 +6181,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     disabled={isGeneratingMessage}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-card hover:bg-secondary/50 border border-border text-foreground font-semibold py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isGeneratingMessage ? (
                       <>
@@ -6203,7 +6203,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                   if (!issue) return null;
                   return (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                      <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                      <div className="bg-secondary/50 backdrop-blur-md rounded-2xl border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
                           <div className="flex items-center justify-between mb-6">
                             <h3 className="text-2xl font-bold">Auto-Generated Safe Clause</h3>
@@ -6212,7 +6212,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 setSelectedIssueForClause(null);
                                 setGeneratedClause(null);
                               }}
-                              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                             >
                               <X className="w-5 h-5" />
                             </button>
@@ -6221,11 +6221,11 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           {/* Original Risky Clause */}
                           <div className="mb-6">
                             <div className="flex items-center gap-2 mb-3">
-                              <AlertTriangle className="w-5 h-5 text-red-400" />
-                              <h4 className="font-semibold text-red-400">Original Risky Clause</h4>
+                              <AlertTriangle className="w-5 h-5 text-destructive" />
+                              <h4 className="font-semibold text-destructive">Original Risky Clause</h4>
                             </div>
-                            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-                              <p className="text-sm text-purple-200">{issue.clause || issue.description}</p>
+                            <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-xl">
+                              <p className="text-sm text-secondary">{issue.clause || issue.description}</p>
                             </div>
                           </div>
 
@@ -6236,7 +6236,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               <h4 className="font-semibold text-green-400">Safer Replacement Clause</h4>
                             </div>
                             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-                              <p className="text-sm text-purple-200 whitespace-pre-line">{generatedClause}</p>
+                              <p className="text-sm text-secondary whitespace-pre-line">{generatedClause}</p>
                             </div>
                           </div>
 
@@ -6257,7 +6257,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                 toast.info('Unable to copy automatically. Please copy the clause manually.');
                               }
                             }}
-                            className="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                            className="w-full bg-secondary hover:bg-secondary text-foreground px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
                           >
                             <Copy className="w-5 h-5" />
                             Copy Safe Clause
@@ -6270,12 +6270,12 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                 {/* Negotiation Message Modal */}
                 <Dialog open={showNegotiationModal} onOpenChange={setShowNegotiationModal}>
-                  <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-white overflow-y-auto">
+                  <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-foreground overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-white mb-2">
+                      <DialogTitle className="text-2xl font-bold text-foreground mb-2">
                         Request Contract Changes from Brand
                       </DialogTitle>
-                      <DialogDescription className="text-purple-200">
+                      <DialogDescription className="text-secondary">
                         Review and edit the AI-generated negotiation message before sending
                       </DialogDescription>
                     </DialogHeader>
@@ -6283,13 +6283,13 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                     <div className="space-y-4 mt-4">
                       {/* Editable Message Textarea */}
                       <div>
-                        <label className="block text-sm font-medium text-purple-200 mb-2">
+                        <label className="block text-sm font-medium text-secondary mb-2">
                           Negotiation Message
                         </label>
                         <textarea
                           value={negotiationMessage || ''}
                           onChange={(e) => setNegotiationMessage(e.target.value)}
-                          className="w-full min-h-[300px] p-4 bg-white/10 border border-purple-400/30 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-y"
+                          className="w-full min-h-[300px] p-4 bg-secondary/50 border border-purple-400/30 rounded-xl text-foreground placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-y"
                           placeholder="Loading negotiation message..."
                         />
                       </div>
@@ -6301,7 +6301,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           onClick={handleCopyEmail}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                          className="bg-card hover:bg-secondary/50 border border-border text-foreground px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                         >
                           <Mail className="w-5 h-5" />
                           Copy Email
@@ -6312,7 +6312,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           onClick={handleCopyWhatsApp}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                          className="bg-card hover:bg-secondary/50 border border-border text-foreground px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                         >
                           <MessageSquare className="w-5 h-5" />
                           Copy WhatsApp
@@ -6407,7 +6407,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           }}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                          className="bg-gray-600/80 hover:bg-gray-600 text-foreground px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2"
                         >
                           <Download className="w-5 h-5" />
                           Download PDF
@@ -6416,8 +6416,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                       {/* Email Input Section (if email button clicked) */}
                       {brandEmail && (
-                        <div className="mt-4 p-4 bg-white/10 border border-purple-400/30 rounded-xl">
-                          <label className="block text-sm font-medium text-purple-200 mb-2">
+                        <div className="mt-4 p-4 bg-secondary/50 border border-purple-400/30 rounded-xl">
+                          <label className="block text-sm font-medium text-secondary mb-2">
                             Brand Email Address
                           </label>
                           <div className="flex gap-2">
@@ -6426,12 +6426,12 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               value={brandEmail}
                               onChange={(e) => setBrandEmail(e.target.value)}
                               placeholder="brand@example.com"
-                              className="flex-1 px-4 py-2 bg-white/10 border border-purple-400/30 rounded-lg text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              className="flex-1 px-4 py-2 bg-secondary/50 border border-purple-400/30 rounded-lg text-foreground placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                             />
                             <button type="button"
                               onClick={() => handleSendEmail(brandEmail)}
                               disabled={isSendingEmail || !brandEmail}
-                              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
+                              className="bg-info hover:bg-info disabled:opacity-50 disabled:cursor-not-allowed text-foreground px-6 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
                             >
                               {isSendingEmail ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -6450,7 +6450,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                           setShowNegotiationModal(false);
                           setBrandEmail('');
                         }}
-                        className="w-full bg-gray-600/80 hover:bg-gray-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-4"
+                        className="w-full bg-gray-600/80 hover:bg-gray-600 text-foreground px-4 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 mt-4"
                       >
                         <X className="w-5 h-5" />
                         Close
@@ -6506,9 +6506,9 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
 
                 {/* WhatsApp Preview Modal */}
                 <Dialog open={showWhatsAppPreview} onOpenChange={setShowWhatsAppPreview}>
-                  <DialogContent className="max-w-lg bg-gradient-to-br from-green-900/95 to-emerald-900/95 backdrop-blur-xl border border-green-500/30 text-white">
+                  <DialogContent className="max-w-lg bg-gradient-to-br from-green-900/95 to-emerald-900/95 backdrop-blur-xl border border-green-500/30 text-foreground">
                     <DialogHeader>
-                      <DialogTitle className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                      <DialogTitle className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
                         <MessageSquare className="w-6 h-6" />
                         WhatsApp Message Preview
                       </DialogTitle>
@@ -6516,8 +6516,8 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         Review your message before sending
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 max-h-96 overflow-y-auto">
-                      <pre className="text-sm text-white whitespace-pre-wrap font-sans">
+                    <div className="mt-4 p-4 bg-secondary/50 rounded-xl border border-border max-h-96 overflow-y-auto">
+                      <pre className="text-sm text-foreground whitespace-pre-wrap font-sans">
                         {whatsappPreviewMessage || (negotiationMessage ? 'Generating preview...' : 'No message available')}
                       </pre>
                     </div>
@@ -6526,7 +6526,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         onClick={handleConfirmWhatsAppCopy}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                       >
                         <Copy className="w-5 h-5" />
                         Copy & Close
@@ -6544,7 +6544,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="flex-1 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+                        className="flex-1 bg-green-500 hover:bg-green-600 text-foreground px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
                       >
                         <MessageSquare className="w-5 h-5" />
                         Open WhatsApp

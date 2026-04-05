@@ -140,24 +140,24 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <GradientCard padding="lg" className="max-w-2xl mx-auto">
-        <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
+        <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-muted-foreground dark:text-foreground">
           Make your collab page complete
         </h2>
-        <p className="text-base text-slate-500 dark:text-white/80 text-center mb-8">
+        <p className="text-base text-muted-foreground dark:text-foreground/80 text-center mb-8">
           Add audience + pricing signals so your collab page is complete on day one.
         </p>
 
         <div className="space-y-4 mb-7">
           <label className="block">
             <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
                 <FileText className="w-4 h-4" />
                 Bio for brands
               </span>
               <button type="button"
                 onClick={onGenerateBio}
                 disabled={isGeneratingBio}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-primary bg-primary px-2.5 py-1 text-xs font-semibold text-primary transition-all hover:bg-primary disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isGeneratingBio ? (
                   <>
@@ -172,7 +172,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                 )}
               </button>
             </div>
-            <p className="mb-2 text-xs text-slate-500 dark:text-white/65">
+            <p className="mb-2 text-xs text-muted-foreground dark:text-foreground/65">
               Tell brands what type of collaborations work best for you.
             </p>
             <textarea
@@ -186,13 +186,13 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               rows={2}
               maxLength={280}
               placeholder="Tell brands what you create, audience type, and campaign strengths..."
-              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors resize-none"
+              className="w-full bg-background dark:bg-card border border-border dark:border-border rounded-xl px-4 py-2.5 text-sm text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors resize-none"
             />
-            <p className="mt-1 text-[11px] text-slate-400 dark:text-white/50">Keep it short and clear (max 280 chars).</p>
+            <p className="mt-1 text-[11px] text-muted-foreground dark:text-foreground/50">Keep it short and clear (max 280 chars).</p>
           </label>
 
           <label className="block">
-            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
               <User className="w-4 h-4" />
               Instagram followers
             </span>
@@ -202,12 +202,12 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               value={followers}
               onChange={(e) => onFollowersChange(e.target.value)}
               placeholder="e.g. 12000"
-              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-background dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
             />
           </label>
 
           <label className="block">
-            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
               <User className="w-4 h-4" />
               Brand deals completed
             </span>
@@ -217,12 +217,12 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               value={brandDealsCompleted}
               onChange={(e) => onBrandDealsCompletedChange(e.target.value)}
               placeholder="e.g. 12 (enter 0 if none)"
-              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-background dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
             />
           </label>
 
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-white/5 p-4">
-            <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-white/85">
+          <div className="rounded-xl border border-border dark:border-border bg-background/60 dark:bg-card p-4">
+            <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/85">
               <BarChart3 className="w-4 h-4" />
               Creator signals
             </p>
@@ -230,7 +230,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               <select
                 value={audienceGenderSplit}
                 onChange={(e) => onAudienceGenderSplitChange(e.target.value)}
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-3 py-2.5 text-sm text-muted-foreground dark:text-foreground outline-none focus:border-primary transition-colors"
               >
                 <option value="">Audience split</option>
                 {audienceSplitOptions.map((option) => (
@@ -242,7 +242,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               <select
                 value={primaryAudienceLanguage}
                 onChange={(e) => onPrimaryAudienceLanguageChange(e.target.value)}
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-3 py-2.5 text-sm text-muted-foreground dark:text-foreground outline-none focus:border-primary transition-colors"
               >
                 <option value="">Primary language</option>
                 {primaryLanguageOptions.map((option) => (
@@ -254,7 +254,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
               <select
                 value={postingFrequency}
                 onChange={(e) => onPostingFrequencyChange(e.target.value)}
-                className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-3 py-2.5 text-sm text-muted-foreground dark:text-foreground outline-none focus:border-primary transition-colors"
               >
                 <option value="">Posting frequency</option>
                 {postingFrequencyOptions.map((option) => (
@@ -270,7 +270,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                   value={avgReelViewsManual}
                   onChange={(e) => onAvgReelViewsManualChange(e.target.value)}
                   placeholder="Avg views"
-                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-3 py-2.5 text-sm text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
                 />
                 <input
                   type="number"
@@ -278,105 +278,105 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                   value={avgLikesManual}
                   onChange={(e) => onAvgLikesManualChange(e.target.value)}
                   placeholder="Avg likes"
-                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-3 py-2.5 text-sm text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-white/5 p-4">
+          <div className="rounded-xl border border-border dark:border-border bg-background/60 dark:bg-card p-4">
             <div className="mb-3 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-white/85">
+              <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/85">
                 <Package2 className="w-4 h-4" />
                 Your collaboration packages
               </p>
               <button type="button"
                 onClick={onAutoSuggestPrices}
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-white shadow-[0_8px_20px_rgba(16,185,129,0.28)] transition-all hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] whitespace-nowrap"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3.5 py-2 text-xs font-bold text-foreground shadow-[0_8px_20px_rgba(16,185,129,0.28)] transition-all hover:from-emerald-600 hover:to-teal-600 active:scale-[0.98] whitespace-nowrap"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 Auto Suggest Prices
               </button>
             </div>
-            <p className="mb-3 text-xs text-slate-500 dark:text-white/65">
+            <p className="mb-3 text-xs text-muted-foreground dark:text-foreground/65">
               Set starting prices brands will see on your collab page.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_12px_rgba(15,23,42,0.05)]">
-                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">Starter Creator Package</p>
-                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-slate-600">
+              <div className="rounded-2xl border border-border bg-card p-2.5 shadow-[0_4px_12px_rgba(15,23,42,0.05)]">
+                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Starter Creator Package</p>
+                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-muted-foreground">
                   <li>• 1 Reel</li>
                   <li>• Basic brand tagging</li>
                 </ul>
                 <div className="mt-2.5 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₹</span>
                   <input
                     type="number"
                     min={1}
                     value={starterPrice}
                     onChange={(e) => onStarterPriceChange(e.target.value)}
                     placeholder="e.g. 1,499"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-3 py-2.5 text-sm font-semibold text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-background border border-border rounded-xl pl-7 pr-3 py-2.5 text-sm font-semibold text-muted-foreground placeholder-slate-400 outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
-              <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-b from-amber-50/60 to-white p-2.5 shadow-[0_8px_18px_rgba(245,158,11,0.15)]">
-                <div className="inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-950">
+              <div className="rounded-2xl border-2 border-warning bg-gradient-to-b from-amber-50/60 to-white p-2.5 shadow-[0_8px_18px_rgba(245,158,11,0.15)]">
+                <div className="inline-flex rounded-full bg-warning px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-warning">
                   Most Popular
                 </div>
-                <p className="mt-1.5 text-[11px] font-black uppercase tracking-wider text-slate-700">Engagement Package</p>
-                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-slate-600">
+                <p className="mt-1.5 text-[11px] font-black uppercase tracking-wider text-muted-foreground">Engagement Package</p>
+                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-muted-foreground">
                   <li>• 1 Reel</li>
                   <li>• 2 Story mentions</li>
                   <li>• Link sticker</li>
                 </ul>
                 <div className="mt-2.5 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₹</span>
                   <input
                     type="number"
                     min={1}
                     value={engagementPrice}
                     onChange={(e) => onEngagementPriceChange(e.target.value)}
                     placeholder="e.g. 2,999"
-                    className="w-full bg-white border border-amber-200 rounded-xl pl-7 pr-3 py-2.5 text-sm font-semibold text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-card border border-warning rounded-xl pl-7 pr-3 py-2.5 text-sm font-semibold text-muted-foreground placeholder-slate-400 outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-[0_4px_12px_rgba(15,23,42,0.05)]">
-                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">Product Review (Free Products)</p>
-                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-slate-600">
+              <div className="rounded-2xl border border-border bg-card p-2.5 shadow-[0_4px_12px_rgba(15,23,42,0.05)]">
+                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Product Review (Free Products)</p>
+                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold text-muted-foreground">
                   <li>• 1 Unboxing</li>
                   <li>• 1 Story mention</li>
                 </ul>
                 <div className="mt-2.5 relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">₹</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">₹</span>
                   <input
                     type="number"
                     min={1}
                     value={productValue}
                     onChange={(e) => onProductValueChange(e.target.value)}
                     placeholder="Minimum product value"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-7 pr-3 py-2.5 text-sm font-semibold text-slate-900 placeholder-slate-400 placeholder:text-[13px] sm:placeholder:text-sm outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-background border border-border rounded-xl pl-7 pr-3 py-2.5 text-sm font-semibold text-muted-foreground placeholder-slate-400 placeholder:text-[13px] sm:placeholder:text-sm outline-none focus:border-primary transition-colors"
                   />
                 </div>
               </div>
             </div>
-            <p className="mt-2.5 text-[11px] text-slate-500 dark:text-white/65">
+            <p className="mt-2.5 text-[11px] text-muted-foreground dark:text-foreground/65">
               You can change these prices anytime.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/60 dark:bg-white/5 p-4">
-            <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-white/85">
+          <div className="rounded-xl border border-border dark:border-border bg-background/60 dark:bg-card p-4">
+            <p className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/85">
               <Smartphone className="w-4 h-4" />
               Payment setup
             </p>
-            <p className="mb-3 text-xs text-slate-500 dark:text-white/65">
+            <p className="mb-3 text-xs text-muted-foreground dark:text-foreground/65">
               Brands will use this UPI ID when releasing payment for paid collaborations.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block">
-                <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+                <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
                   <Landmark className="w-4 h-4" />
                   Account holder name
                 </span>
@@ -385,11 +385,11 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                   value={bankAccountName}
                   onChange={(e) => onBankAccountNameChange(e.target.value)}
                   placeholder="Your payout name"
-                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+                <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
                   <Smartphone className="w-4 h-4" />
                   UPI ID
                 </span>
@@ -400,7 +400,7 @@ export const CollabReadyStep: React.FC<CollabReadyStepProps> = ({
                   placeholder="yourname@upi"
                   autoCapitalize="none"
                   autoCorrect="off"
-                  className="w-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-card dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
                 />
               </label>
             </div>

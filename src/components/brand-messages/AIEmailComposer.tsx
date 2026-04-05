@@ -154,7 +154,7 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
           size="default"
           onClick={handleGenerateAIEmail}
           disabled={disabled || isGenerating}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 h-11"
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 text-foreground font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 h-11"
         >
           {isGenerating ? (
             <>
@@ -168,14 +168,14 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
             </>
           )}
         </Button>
-        <p className="text-xs text-purple-300/70 px-1">
+        <p className="text-xs text-secondary/70 px-1">
           Creates a ready-to-send email using AI
         </p>
       </div>
 
       {/* Writing Tools Section */}
       <div className="space-y-2">
-        <p className="text-xs text-purple-300/80 font-medium">Writing Tools</p>
+        <p className="text-xs text-secondary/80 font-medium">Writing Tools</p>
         <div className="grid grid-cols-3 gap-2">
           <Button
             type="button"
@@ -183,7 +183,7 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
             size="sm"
             onClick={handleImprove}
             disabled={disabled || isGenerating || !value.trim()}
-            className="bg-white/5 border-white/20 text-purple-200 hover:bg-white/10 hover:border-purple-400/40 hover:text-purple-100 transition-all h-9 text-xs"
+            className="bg-card border-border text-secondary hover:bg-secondary/50 hover:border-purple-400/40 hover:text-secondary transition-all h-9 text-xs"
           >
             {isGenerating ? (
               <>
@@ -203,7 +203,7 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
             size="sm"
             onClick={handleShorten}
             disabled={disabled || isGenerating || !value.trim()}
-            className="bg-white/5 border-white/20 text-purple-200 hover:bg-white/10 hover:border-purple-400/40 hover:text-purple-100 transition-all h-9 text-xs"
+            className="bg-card border-border text-secondary hover:bg-secondary/50 hover:border-purple-400/40 hover:text-secondary transition-all h-9 text-xs"
           >
             {isGenerating ? (
               <>
@@ -223,7 +223,7 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
             size="sm"
             onClick={handleExpand}
             disabled={disabled || isGenerating || !value.trim()}
-            className="bg-white/5 border-white/20 text-purple-200 hover:bg-white/10 hover:border-purple-400/40 hover:text-purple-100 transition-all h-9 text-xs"
+            className="bg-card border-border text-secondary hover:bg-secondary/50 hover:border-purple-400/40 hover:text-secondary transition-all h-9 text-xs"
           >
             {isGenerating ? (
               <>
@@ -242,13 +242,13 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2 text-xs text-red-300">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 text-xs text-destructive">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
               <p className="font-semibold mb-1">Error generating email</p>
-              <p className="text-red-300/80">{error}</p>
+              <p className="text-destructive/80">{error}</p>
               {error.includes('API key') && (
-                <p className="mt-2 text-red-300/70">
+                <p className="mt-2 text-destructive/70">
                   💡 Get a free API key: <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="underline">console.groq.com</a>
                 </p>
               )}
@@ -258,7 +258,7 @@ export const AIEmailComposer: React.FC<AIEmailComposerProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => window.location.reload()}
-              className="h-5 w-5 p-0 text-red-300 hover:text-red-200 flex-shrink-0"
+              className="h-5 w-5 p-0 text-destructive hover:text-destructive flex-shrink-0"
               title="Reload page"
             >
               <X className="w-3 h-3" />

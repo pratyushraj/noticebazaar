@@ -88,7 +88,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
   const shouldShowBottomNav = isCreator && !isOnboarding && !hideBottomNav;
 
   return (
-    <div className={cn("nb-screen-height", gradients.page, "text-white overflow-x-hidden", className)}>
+    <div className={cn("nb-screen-height", gradients.page, "text-foreground overflow-x-hidden", className)}>
       {/* Premium Drawer */}
       <PremiumDrawer
         open={showMenu}
@@ -122,13 +122,13 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-        <AlertDialogContent className="bg-gradient-to-br from-[#1E263A] via-[#182133] to-[#121722] backdrop-blur-xl border border-white/10 text-white shadow-2xl">
+        <AlertDialogContent className="bg-gradient-to-br from-[#1E263A] via-[#182133] to-[#121722] backdrop-blur-xl border border-border text-foreground shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white text-xl flex items-center gap-2">
-              <LogOut className="w-5 h-5 text-red-400" />
+            <AlertDialogTitle className="text-foreground text-xl flex items-center gap-2">
+              <LogOut className="w-5 h-5 text-destructive" />
               Confirm Logout
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
+            <AlertDialogDescription className="text-foreground/60">
               Are you sure you want to log out? You'll need to sign in again to access your account.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -137,7 +137,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
               onClick={() => {
                 triggerHaptic(HapticPatterns.light);
               }}
-              className="bg-white/5 text-white border-white/10 hover:bg-white/10 focus:ring-2 focus:ring-blue-400/50"
+              className="bg-card text-foreground border-border hover:bg-secondary/50 focus:ring-2 focus:ring-blue-400/50"
             >
               Cancel
             </AlertDialogCancel>
@@ -163,7 +163,7 @@ export const CreatorNavigationWrapper: React.FC<CreatorNavigationWrapperProps> =
                 }
               }}
               disabled={signOutMutation.isPending}
-              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
+              className="bg-destructive/20 hover:bg-destructive/30 text-destructive border border-destructive/40 focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
             >
               {signOutMutation.isPending ? (
                 <>

@@ -107,32 +107,32 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
 
   return (
     <div className="min-h-[100dvh] bg-gradient-to-b from-[#F8FAFC] via-[#EEF7F1] to-[#F8FAFC] px-5 py-10 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-3xl border border-emerald-100 bg-white shadow-[0_20px_60px_rgba(16,185,129,0.12)] p-6 text-center">
-        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-          <ShieldCheck className="w-7 h-7 text-white" />
+      <div className="w-full max-w-md rounded-3xl border border-primary bg-card shadow-[0_20px_60px_rgba(16,185,129,0.12)] p-6 text-center">
+        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-emerald-500/30">
+          <ShieldCheck className="w-7 h-7 text-foreground" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">{title}</h2>
-        <p className="text-slate-600 mb-5">{description}</p>
+        <h2 className="text-2xl font-bold text-muted-foreground mb-2">{title}</h2>
+        <p className="text-muted-foreground mb-5">{description}</p>
         <button type="button"
           onClick={handleInstall}
-          className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3.5 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
+          className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-green-600 text-foreground font-semibold py-3.5 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30"
         >
           <Download className="w-4 h-4" />
           {installLabel}
         </button>
         <button
           onClick={handleContinueAnyway}
-          className="mt-3 w-full rounded-2xl border border-slate-200 bg-white text-slate-700 font-semibold py-3.5 transition-colors hover:bg-slate-50"
+          className="mt-3 w-full rounded-2xl border border-border bg-card text-muted-foreground font-semibold py-3.5 transition-colors hover:bg-background"
         >
           {continueLabel}
         </button>
-        <div className="mt-4 rounded-2xl bg-slate-50 border border-slate-200 p-4 text-left">
-          <p className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-emerald-600" />
+        <div className="mt-4 rounded-2xl bg-background border border-border p-4 text-left">
+          <p className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+            <Smartphone className="w-4 h-4 text-primary" />
             Quick steps
           </p>
           {quickSteps.map((step) => (
-            <p key={step} className="text-sm text-slate-600">{quickSteps.indexOf(step) + 1}. {step}</p>
+            <p key={step} className="text-sm text-muted-foreground">{quickSteps.indexOf(step) + 1}. {step}</p>
           ))}
         </div>
       </div>

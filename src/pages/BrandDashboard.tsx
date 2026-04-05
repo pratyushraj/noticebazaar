@@ -75,14 +75,14 @@ const BrandDashboard: React.FC = () => {
     if (!status) return 'bg-yellow-500/20 text-yellow-400';
     const s = status.toLowerCase();
     if (s.includes('awaiting') || (!s && tab === 'sent')) return 'bg-yellow-500/20 text-yellow-400';
-    if (s.includes('content') && s.includes('making')) return 'bg-blue-500/20 text-blue-400';
-    if (s.includes('delivered') || s.includes('submitted')) return 'bg-purple-500/20 text-purple-400';
-    if (s.includes('approved')) return 'bg-emerald-500/20 text-emerald-400';
+    if (s.includes('content') && s.includes('making')) return 'bg-info/20 text-info';
+    if (s.includes('delivered') || s.includes('submitted')) return 'bg-secondary/20 text-secondary';
+    if (s.includes('approved')) return 'bg-primary/20 text-primary';
     if (s.includes('payment') && (s.includes('sent') || s.includes('pending'))) return 'bg-yellow-500/20 text-yellow-400';
     if (s.includes('payment') && (s.includes('received') || s.includes('complete'))) return 'bg-green-500/20 text-green-400';
-    if (s.includes('revision') || s.includes('change')) return 'bg-amber-500/20 text-amber-400';
+    if (s.includes('revision') || s.includes('change')) return 'bg-warning/20 text-warning';
     if (s.includes('completed') || s.includes('vested')) return 'bg-green-500/20 text-green-400';
-    if (s.includes('declined') || s.includes('rejected') || s.includes('cancelled')) return 'bg-red-500/20 text-red-400';
+    if (s.includes('declined') || s.includes('rejected') || s.includes('cancelled')) return 'bg-destructive/20 text-destructive';
     return 'bg-yellow-500/20 text-yellow-400';
   };
 
@@ -138,11 +138,11 @@ const BrandDashboard: React.FC = () => {
 
   if (!isBrandUser) {
     return (
-      <div className="min-h-screen bg-[#0D0F1A] text-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0D0F1A] text-foreground flex items-center justify-center p-4">
         <div className="text-center max-w-sm mx-auto">
           <h2 className="text-xl font-bold mb-3">Brand account required</h2>
-          <p className="text-white/60 mb-6">This section is for brand accounts only.</p>
-          <Button onClick={() => navigate('/')} className="bg-emerald-600 hover:bg-emerald-500">
+          <p className="text-foreground/60 mb-6">This section is for brand accounts only.</p>
+          <Button onClick={() => navigate('/')} className="bg-primary hover:bg-primary">
             Go to Creator Dashboard
           </Button>
         </div>
@@ -151,12 +151,12 @@ const BrandDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0F1A] text-white pb-24">
+    <div className="min-h-screen bg-[#0D0F1A] text-foreground pb-24">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-900 to-purple-800 px-4 pt-12 pb-6">
-        <p className="text-[11px] font-black uppercase tracking-[0.28em] text-purple-300 mb-1">Brand Armour</p>
+        <p className="text-[11px] font-black uppercase tracking-[0.28em] text-secondary mb-1">Brand Armour</p>
         {profile?.first_name && (
-          <p className="text-sm text-white/50 mb-3">
+          <p className="text-sm text-foreground/50 mb-3">
             Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {profile.first_name}
           </p>
         )}
@@ -171,7 +171,7 @@ const BrandDashboard: React.FC = () => {
         <div className="flex gap-3">
           <Button
             onClick={() => navigate('/brand-new-deal')}
-            className="flex-1 h-12 bg-purple-600 hover:bg-purple-500 font-bold text-white rounded-xl flex items-center justify-center gap-2"
+            className="flex-1 h-12 bg-secondary hover:bg-secondary font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
           >
             <Plus className="h-5 w-5" />
             Send New Offer
@@ -179,12 +179,12 @@ const BrandDashboard: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 border-b border-white/10">
+        <div className="flex gap-2 border-b border-border">
           <button
             onClick={() => setTab('sent')}
             className={cn(
               'pb-3 px-1 text-sm font-semibold transition-colors flex items-center gap-1.5',
-              tab === 'sent' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+              tab === 'sent' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
             )}
           >
             <Clock className="w-3.5 h-3.5" />
@@ -194,7 +194,7 @@ const BrandDashboard: React.FC = () => {
             onClick={() => setTab('active')}
             className={cn(
               'pb-3 px-1 text-sm font-semibold transition-colors',
-              tab === 'active' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+              tab === 'active' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
             )}
           >
             Active ({activeDeals.length})
@@ -203,7 +203,7 @@ const BrandDashboard: React.FC = () => {
             onClick={() => setTab('completed')}
             className={cn(
               'pb-3 px-1 text-sm font-semibold transition-colors',
-              tab === 'completed' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-white/50 hover:text-white/70'
+              tab === 'completed' ? 'text-secondary border-b-2 border-purple-400' : 'text-foreground/50 hover:text-foreground/70'
             )}
           >
             <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
@@ -214,27 +214,27 @@ const BrandDashboard: React.FC = () => {
         {/* Deals List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-secondary" />
           </div>
         ) : displayedDeals.length === 0 ? (
-          <Card className="bg-white/5 border-white/10 rounded-2xl">
+          <Card className="bg-card border-border rounded-2xl">
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                {tab === 'sent' ? <Clock className="h-8 w-8 text-purple-400" /> :
-                 tab === 'active' ? <Plus className="h-8 w-8 text-purple-400" /> :
-                 <CheckCircle2 className="h-8 w-8 text-purple-400" />}
+              <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
+                {tab === 'sent' ? <Clock className="h-8 w-8 text-secondary" /> :
+                 tab === 'active' ? <Plus className="h-8 w-8 text-secondary" /> :
+                 <CheckCircle2 className="h-8 w-8 text-secondary" />}
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {tab === 'sent' ? 'No pending offers' :
                  tab === 'active' ? 'No active deals' : 'No completed deals'}
               </h3>
-              <p className="text-sm text-white/60 mb-6">
+              <p className="text-sm text-foreground/60 mb-6">
                 {tab === 'sent' ? "You haven't sent any offers yet. Find a creator to collaborate with." :
                  tab === 'active' ? "You don't have any deals in progress." : "Your completed deals will appear here."}
               </p>
               <Button
                 onClick={() => navigate('/brand-new-deal')}
-                className="bg-purple-600 hover:bg-purple-500 font-bold"
+                className="bg-secondary hover:bg-secondary font-bold"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 {tab === 'sent' ? 'Find Creators' : 'Send an Offer'}
@@ -246,7 +246,7 @@ const BrandDashboard: React.FC = () => {
             {displayedDeals.map((deal) => (
               <Card
                 key={deal.id}
-                className="bg-white/5 border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
+                className="bg-card border-border rounded-2xl overflow-hidden hover:border-border transition-colors cursor-pointer"
                 onClick={() => navigate(`/brand-deal/${deal.id}`)}
                 role="article"
                 aria-label={`Deal with ${deal.brand_name || 'Brand'}, ${getStatusLabel(deal.status)}, ${deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}`}
@@ -255,14 +255,14 @@ const BrandDashboard: React.FC = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-bold text-white truncate">
+                        <h3 className="text-base font-bold text-foreground truncate">
                           {deal.brand_name || 'Brand'}
                         </h3>
                         <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
                           {getStatusLabel(deal.status)}
                         </span>
                       </div>
-                      <p className="text-sm text-white/60 mt-1">
+                      <p className="text-sm text-foreground/60 mt-1">
                         {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
                       </p>
                       {tab === 'sent' && (
@@ -272,7 +272,7 @@ const BrandDashboard: React.FC = () => {
                             const exp = getExpiresIn((deal as any).expires_at);
                             if (!exp) return null;
                             return (
-                              <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${exp.tone === 'danger' ? 'bg-red-500/20 text-red-400' : exp.tone === 'warning' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-white/60'}`}>
+                              <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${exp.tone === 'danger' ? 'bg-destructive/20 text-destructive' : exp.tone === 'warning' ? 'bg-warning/20 text-warning' : 'bg-secondary/50 text-foreground/60'}`}>
                                 {exp.label}
                               </span>
                             );
@@ -281,11 +281,11 @@ const BrandDashboard: React.FC = () => {
                       )}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-base font-bold text-white">
+                      <p className="text-base font-bold text-foreground">
                         {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
                       </p>
                       {deal.deal_type !== 'barter' && (
-                        <p className="text-xs text-white/40">deal value</p>
+                        <p className="text-xs text-foreground/40">deal value</p>
                       )}
                     </div>
                   </div>
@@ -294,9 +294,9 @@ const BrandDashboard: React.FC = () => {
                   {tab === 'active' && (
                     <div className="mt-3 flex items-center gap-2">
                       {deal.status?.toLowerCase().includes('submitted') || deal.status?.toLowerCase().includes('delivered') ? (
-                        <span className="text-xs text-purple-400 font-medium">Review content →</span>
+                        <span className="text-xs text-secondary font-medium">Review content →</span>
                       ) : deal.status?.toLowerCase().includes('approved') ? (
-                        <span className="text-xs text-emerald-400 font-medium">Pay creator →</span>
+                        <span className="text-xs text-primary font-medium">Pay creator →</span>
                       ) : null}
                     </div>
                   )}
@@ -304,13 +304,13 @@ const BrandDashboard: React.FC = () => {
                   {/* Progress bar */}
                   {deal.progress_percentage != null && (
                     <div className="mt-3">
-                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-secondary/50 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-purple-500 rounded-full transition-all"
+                          className="h-full bg-secondary rounded-full transition-all"
                           style={{ width: `${deal.progress_percentage}%` }}
                         />
                       </div>
-                      <p className="text-[10px] text-white/40 mt-1">{deal.progress_percentage}% complete</p>
+                      <p className="text-[10px] text-foreground/40 mt-1">{deal.progress_percentage}% complete</p>
                     </div>
                   )}
                 </CardContent>

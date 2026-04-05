@@ -158,34 +158,34 @@ const NotificationCenter = () => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
+        return 'bg-destructive/20 text-destructive border-destructive/30';
       case 'high':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        return 'bg-warning/20 text-warning border-orange-500/30';
       case 'normal':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        return 'bg-info/20 text-info border-info/30';
       default:
-        return 'bg-white/10 text-white/60 border-white/20';
+        return 'bg-secondary/50 text-foreground/60 border-border';
     }
   };
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-purple-900/90 backdrop-blur-lg border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-secondary/90 backdrop-blur-lg border-b border-border">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              className="text-foreground/80 hover:text-foreground hover:bg-secondary/50"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
               <h1 className="text-xl font-bold">Notifications</h1>
               {unreadCount > 0 && (
-                <p className="text-sm text-white/60">{unreadCount} unread</p>
+                <p className="text-sm text-foreground/60">{unreadCount} unread</p>
               )}
             </div>
           </div>
@@ -194,7 +194,7 @@ const NotificationCenter = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate('/creator-profile?section=notifications')}
-              className="text-white/80 hover:text-white hover:bg-white/10"
+              className="text-foreground/80 hover:text-foreground hover:bg-secondary/50"
               aria-label="Notification settings"
             >
               <Settings className="w-5 h-5" />
@@ -205,7 +205,7 @@ const NotificationCenter = () => {
                 size="sm"
                 onClick={handleMarkAllRead}
                 disabled={isMarkingAllAsRead}
-                className="text-white/80 hover:text-white hover:bg-white/10"
+                className="text-foreground/80 hover:text-foreground hover:bg-secondary/50"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Mark all read
@@ -219,13 +219,13 @@ const NotificationCenter = () => {
       <div className="p-4 space-y-4">
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40" />
           <Input
             type="text"
             placeholder="Search notifications..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+            className="pl-10 bg-secondary/50 border-border text-foreground placeholder:text-foreground/40"
           />
         </div>
 
@@ -253,8 +253,8 @@ const NotificationCenter = () => {
               onClick={() => setTypeFilter(type)}
               className={`flex-shrink-0 ${
                 typeFilter === type
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white/10 border-white/20 text-white/80 hover:bg-white/15'
+                  ? 'bg-secondary text-foreground'
+                  : 'bg-secondary/50 border-border text-foreground/80 hover:bg-secondary/15'
               }`}
             >
               {type === 'all' ? 'All Types' : type.charAt(0).toUpperCase() + type.slice(1)}
@@ -267,13 +267,13 @@ const NotificationCenter = () => {
       <div className="px-4 pb-24">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-white/60">Loading notifications...</div>
+            <div className="text-foreground/60">Loading notifications...</div>
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <Card className="p-12 text-center bg-white/5 border-white/10">
-            <Bell className="w-16 h-16 text-white/20 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">No notifications</h3>
-            <p className="text-white/60 text-sm">
+          <Card className="p-12 text-center bg-card border-border">
+            <Bell className="w-16 h-16 text-foreground/20 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No notifications</h3>
+            <p className="text-foreground/60 text-sm">
               {searchQuery
                 ? 'No notifications match your search'
                 : filter === 'unread'
@@ -285,7 +285,7 @@ const NotificationCenter = () => {
           <div className="space-y-6">
             {groupedNotifications.map(({ date, notifications: groupNotifications }) => (
               <div key={date}>
-                <h2 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3 px-2">
+                <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wider mb-3 px-2">
                   {date}
                 </h2>
                 <div className="space-y-2">
@@ -298,26 +298,26 @@ const NotificationCenter = () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, x: -20 }}
-                          className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-white/[0.12] transition-all cursor-pointer"
+                          className="bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[20px] p-4 border border-border shadow-[0_4px_16px_rgba(0,0,0,0.2)] hover:bg-secondary/[0.12] transition-all cursor-pointer"
                           onClick={() => handleNotificationClick(notification)}
                         >
                           <div className="flex items-start gap-3">
                             {/* Icon */}
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                               notification.type === 'payment' ? 'bg-green-500/20' :
-                              notification.type === 'deal' ? 'bg-blue-500/20' :
-                              notification.type === 'contract' ? 'bg-purple-500/20' :
-                              notification.type === 'tax' ? 'bg-orange-500/20' :
+                              notification.type === 'deal' ? 'bg-info/20' :
+                              notification.type === 'contract' ? 'bg-secondary/20' :
+                              notification.type === 'tax' ? 'bg-warning/20' :
                               notification.type === 'message' ? 'bg-pink-500/20' :
-                              'bg-white/10'
+                              'bg-secondary/50'
                             }`}>
                               <Icon className={`w-5 h-5 ${
                                 notification.type === 'payment' ? 'text-green-400' :
-                                notification.type === 'deal' ? 'text-blue-400' :
-                                notification.type === 'contract' ? 'text-purple-400' :
-                                notification.type === 'tax' ? 'text-orange-400' :
+                                notification.type === 'deal' ? 'text-info' :
+                                notification.type === 'contract' ? 'text-secondary' :
+                                notification.type === 'tax' ? 'text-warning' :
                                 notification.type === 'message' ? 'text-pink-400' :
-                                'text-white/60'
+                                'text-foreground/60'
                               }`} />
                             </div>
 
@@ -326,15 +326,15 @@ const NotificationCenter = () => {
                               <div className="flex items-start justify-between gap-2 mb-1">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h3 className={`text-sm font-semibold ${!notification.read ? 'text-white' : 'text-white/80'}`}>
+                                    <h3 className={`text-sm font-semibold ${!notification.read ? 'text-foreground' : 'text-foreground/80'}`}>
                                       {notification.title}
                                     </h3>
                                     {!notification.read && (
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                                      <div className="w-2 h-2 bg-info rounded-full flex-shrink-0" />
                                     )}
                                   </div>
                                   {notification.message && (
-                                    <p className="text-xs text-white/70 mb-2 line-clamp-2">
+                                    <p className="text-xs text-foreground/70 mb-2 line-clamp-2">
                                       {notification.message}
                                     </p>
                                   )}
@@ -343,7 +343,7 @@ const NotificationCenter = () => {
                                   variant="ghost"
                                   size="icon"
                                   onClick={(e) => handleDelete(notification.id, e)}
-                                  className="w-6 h-6 text-white/40 hover:text-red-400 hover:bg-red-500/20 flex-shrink-0"
+                                  className="w-6 h-6 text-foreground/40 hover:text-destructive hover:bg-destructive/20 flex-shrink-0"
                                 >
                                   <X className="w-4 h-4" />
                                 </Button>
@@ -356,12 +356,12 @@ const NotificationCenter = () => {
                                       {notification.priority}
                                     </span>
                                   )}
-                                  <span className="text-xs text-white/50">
+                                  <span className="text-xs text-foreground/50">
                                     {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                   </span>
                                 </div>
                                 {notification.action_label && (
-                                  <span className="text-xs text-purple-400 flex items-center gap-1">
+                                  <span className="text-xs text-secondary flex items-center gap-1">
                                     {notification.action_label}
                                   </span>
                                 )}

@@ -81,10 +81,10 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
                   className="relative p-3 rounded-[16px] bg-gradient-to-br from-red-950/50 via-red-950/40 to-red-950/30 
-                            backdrop-blur-xl border border-red-500/30 shadow-[0_4px_20px_rgba(239,68,68,0.25)] 
+                            backdrop-blur-xl border border-destructive/30 shadow-[0_4px_20px_rgba(239,68,68,0.25)] 
                             space-y-2.5 active:scale-[0.98] transition-all duration-200
                             hover:bg-gradient-to-br hover:from-red-950/60 hover:via-red-950/50 hover:to-red-950/40 
-                            hover:border-red-500/40 hover:shadow-[0_6px_24px_rgba(239,68,68,0.35)] overflow-hidden group"
+                            hover:border-destructive/40 hover:shadow-[0_6px_24px_rgba(239,68,68,0.35)] overflow-hidden group"
                   onClick={() => {
                     if (action.dealId) {
                       navigate(`/creator-contracts/${action.dealId}`);
@@ -100,42 +100,42 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                       <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="relative">
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500/30 to-red-600/20 
-                                        flex items-center justify-center backdrop-blur-sm border border-red-500/40 
+                                        flex items-center justify-center backdrop-blur-sm border border-destructive/40 
                                         shadow-[0_0_8px_rgba(239,68,68,0.3)] group-hover:shadow-[0_0_12px_rgba(239,68,68,0.4)] 
                                         transition-all duration-200">
-                            <Icon className="w-3.5 h-3.5 text-red-300" />
+                            <Icon className="w-3.5 h-3.5 text-destructive" />
                           </div>
-                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 animate-pulse border border-red-950/50" />
+                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-destructive animate-pulse border border-destructive/50" />
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold text-white leading-tight tracking-tight mb-0.5">
-                            {action.brand || 'Payment'} <span className="text-white/60">•</span> Payment Overdue
+                          <h3 className="text-sm font-semibold text-foreground leading-tight tracking-tight mb-0.5">
+                            {action.brand || 'Payment'} <span className="text-foreground/60">•</span> Payment Overdue
                           </h3>
-                          <p className="text-xs text-red-200/90 leading-tight font-medium">
-                            Due since: <span className="text-red-300">{action.daysOverdue || 0}</span> {action.daysOverdue === 1 ? 'day' : 'days'}
+                          <p className="text-xs text-destructive/90 leading-tight font-medium">
+                            Due since: <span className="text-destructive">{action.daysOverdue || 0}</span> {action.daysOverdue === 1 ? 'day' : 'days'}
                           </p>
                         </div>
                       </div>
 
                       <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-red-500/30 to-red-600/20 
-                                     text-red-100 text-[10px] font-semibold border border-red-500/50 
+                                     text-destructive text-[10px] font-semibold border border-destructive/50 
                                      shadow-[0_1px_4px_rgba(239,68,68,0.3)] backdrop-blur-sm shrink-0 ml-2">
                         Overdue
                       </span>
                     </div>
 
-                    <div className="bg-white/5 backdrop-blur-sm rounded-[12px] p-2.5 border border-white/10 space-y-1.5 mb-2.5">
+                    <div className="bg-card backdrop-blur-sm rounded-[12px] p-2.5 border border-border space-y-1.5 mb-2.5">
                       <div className="flex items-center justify-between">
-                        <p className="text-lg font-bold text-white tabular-nums">
+                        <p className="text-lg font-bold text-foreground tabular-nums">
                           ₹{action.amount?.toLocaleString('en-IN')}
                         </p>
-                        <span className="px-2 py-0.5 rounded-lg bg-white/10 text-white/80 text-xs font-medium">
+                        <span className="px-2 py-0.5 rounded-lg bg-secondary/50 text-foreground/80 text-xs font-medium">
                           {action.platform || 'N/A'}
                         </span>
           </div>
-                      <div className="flex items-center gap-2 text-xs text-red-100/80">
-                        <span className="text-white/50">Due Date:</span>
+                      <div className="flex items-center gap-2 text-xs text-destructive/80">
+                        <span className="text-foreground/50">Due Date:</span>
                         <span className="font-medium">
                           {action.dueDate ? new Date(action.dueDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
           </span>
@@ -151,10 +151,10 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                         }}
                         className="flex-1 py-1.5 rounded-[12px] 
                                  bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 
-                                 text-white font-semibold text-xs tracking-tight
+                                 text-foreground font-semibold text-xs tracking-tight
                                  active:scale-[0.97] active:opacity-90 transition-all duration-150
                                  shadow-[0_2px_8px_rgba(239,68,68,0.5)] hover:shadow-[0_4px_12px_rgba(239,68,68,0.6)]
-                                 border border-red-400/40 backdrop-blur-sm"
+                                 border border-destructive/40 backdrop-blur-sm"
                       >
                         Send Reminder
                       </button>
@@ -165,9 +165,9 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                           onEscalate?.(action.dealId!);
                         }}
                         className="flex-1 py-1.5 rounded-[12px] 
-                                 bg-white/10 backdrop-blur-md hover:bg-white/15 text-white/95 font-semibold text-xs tracking-tight
+                                 bg-secondary/50 backdrop-blur-md hover:bg-secondary/15 text-foreground/95 font-semibold text-xs tracking-tight
                                  active:scale-[0.97] active:opacity-90 transition-all duration-150
-                                 border border-white/30 hover:border-white/40 shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
+                                 border border-border hover:border-border/40 shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
         >
                         Escalate
         </button>
@@ -194,11 +194,11 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
             
                 const actionIconBg = action.type === 'contract_review' 
               ? 'bg-yellow-500/10' 
-              : 'bg-purple-500/10';
+              : 'bg-secondary/50';
             
                 const actionIconColor = action.type === 'contract_review' 
               ? 'text-yellow-500' 
-              : 'text-purple-500';
+              : 'text-secondary';
 
                 // Original layout for other action types
             return (
@@ -232,14 +232,14 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-sm font-semibold text-white">{action.title}</h4>
+                      <h4 className="text-sm font-semibold text-foreground">{action.title}</h4>
                       {action.type === 'contract_review' && action.hasRedFlags && (
                         <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full font-medium">
                           Red flags
                         </span>
                       )}
                       {action.type === 'content_stolen' && action.matches && (
-                        <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 text-xs rounded-full font-medium">
+                        <span className="px-2 py-0.5 bg-secondary/20 text-secondary text-xs rounded-full font-medium">
                           {action.matches} matches
                         </span>
                       )}
@@ -290,7 +290,7 @@ const CriticalActions: React.FC<CriticalActionsProps> = ({
                               e.stopPropagation();
                               onTakeDown?.();
                             }}
-                            className="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium rounded-lg transition-all flex items-center gap-1.5"
+                            className="px-3 py-1.5 bg-secondary hover:bg-secondary text-foreground text-xs font-medium rounded-lg transition-all flex items-center gap-1.5"
                           >
                             <AlertTriangle className="w-3 h-3" />
                             Take Down

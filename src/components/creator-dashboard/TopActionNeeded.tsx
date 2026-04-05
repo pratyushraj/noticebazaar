@@ -77,7 +77,7 @@ const TopActionNeeded: React.FC<TopActionNeededProps> = ({ brandDeals = [] }) =>
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.25 }}
     >
-      <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-[#210909] to-[#3A0F0F] border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
         <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
             <AlertCircle className="h-4 w-4 text-orange-400" />
@@ -88,7 +88,7 @@ const TopActionNeeded: React.FC<TopActionNeededProps> = ({ brandDeals = [] }) =>
             {topActions.map((action, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 text-sm text-foreground py-1.5 px-2 rounded-md bg-white/5 hover:bg-white/10 transition-colors"
+                className="flex items-center gap-2 text-sm text-foreground py-1.5 px-2 rounded-md bg-card hover:bg-secondary/50 transition-colors"
               >
                 <ArrowRight className="h-3.5 w-3.5 text-orange-400 flex-shrink-0" />
                 <span className="flex-1">{action.text}</span>

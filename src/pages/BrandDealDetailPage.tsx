@@ -254,7 +254,7 @@ const BrandDealDetailPage: React.FC = () => {
               <div className="flex gap-3">
                 <Button
                   onClick={() => setShowChangesModal(true)}
-                  className="flex-1 h-11 bg-secondary/50 hover:bg-secondary/20 border border-border text-foreground font-bold rounded-xl flex items-center justify-center gap-2"
+                  className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-bold rounded-xl flex items-center justify-center gap-2"
                 >
                   <ThumbsDown className="h-4 w-4" />
                   Request Changes
@@ -341,7 +341,7 @@ const BrandDealDetailPage: React.FC = () => {
                 <div className="flex justify-between text-xs text-foreground/60 mb-2">
                   <span>Progress</span><span>{deal.progress_percentage}%</span>
                 </div>
-                <div className="h-2 bg-secondary/50 rounded-full overflow-hidden">
+                <div className="h-2 bg-card0 rounded-full overflow-hidden">
                   <div className="h-full bg-secondary rounded-full" style={{ width: `${deal.progress_percentage}%` }} />
                 </div>
               </div>
@@ -415,7 +415,7 @@ const BrandDealDetailPage: React.FC = () => {
         <div className="space-y-3">
           <Button
             onClick={copyDealLink}
-            className="w-full h-12 bg-secondary/50 hover:bg-secondary/20 border border-border font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
+            className="w-full h-12 bg-card0 hover:bg-secondary/20 border border-border font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
           >
             <Copy className="h-4 w-4" />
             Copy Deal Link
@@ -431,7 +431,7 @@ const BrandDealDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowChangesModal(true)}
-              className="flex-1 h-12 rounded-xl bg-secondary/50 border border-border text-foreground/80 font-bold text-sm flex items-center justify-center gap-2"
+              className="flex-1 h-12 rounded-xl bg-card0 border border-border text-foreground/80 font-bold text-sm flex items-center justify-center gap-2"
             >
               <ThumbsDown className="h-4 w-4" />
               Changes
@@ -482,7 +482,7 @@ const BrandDealDetailPage: React.FC = () => {
               <p className="text-2xl font-black text-foreground">{formatCurrency(deal.deal_amount)}</p>
             </div>
             <div className="flex gap-3">
-              <Button onClick={() => setShowApproveModal(false)} className="flex-1 h-11 bg-secondary/50 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
+              <Button onClick={() => setShowApproveModal(false)} className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
                 Cancel
               </Button>
               <Button onClick={handleApproveContent} disabled={isUpdating} className="flex-1 h-11 bg-primary hover:bg-primary font-bold text-foreground rounded-xl flex items-center justify-center gap-2">
@@ -499,8 +499,8 @@ const BrandDealDetailPage: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-md w-full border border-border">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                <ThumbsDown className="w-5 h-5 text-orange-400" />
+              <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center">
+                <ThumbsDown className="w-5 h-5 text-warning" />
               </div>
               <h3 className="text-lg font-bold text-foreground">Request changes</h3>
             </div>
@@ -513,10 +513,10 @@ const BrandDealDetailPage: React.FC = () => {
               className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none mb-4"
             />
             <div className="flex gap-3">
-              <Button onClick={() => { setShowChangesModal(false); setBrandFeedback(''); }} className="flex-1 h-11 bg-secondary/50 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
+              <Button onClick={() => { setShowChangesModal(false); setBrandFeedback(''); }} className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
                 Cancel
               </Button>
-              <Button onClick={handleRequestChanges} disabled={isUpdating || !brandFeedback.trim()} className="flex-1 h-11 bg-orange-600 hover:bg-orange-500 font-bold text-foreground rounded-xl flex items-center justify-center gap-2">
+              <Button onClick={handleRequestChanges} disabled={isUpdating || !brandFeedback.trim()} className="flex-1 h-11 bg-warning hover:bg-warning font-bold text-foreground rounded-xl flex items-center justify-center gap-2">
                 {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 Send Feedback
               </Button>
@@ -548,7 +548,7 @@ const BrandDealDetailPage: React.FC = () => {
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="bg-secondary/50 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
+                  className="bg-card0 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
                 >
                   <option value="UPI">UPI</option>
                   <option value="Bank Transfer">Bank Transfer</option>
@@ -560,7 +560,7 @@ const BrandDealDetailPage: React.FC = () => {
               </div>
             </div>
             <div className="flex gap-3">
-              <Button onClick={() => setShowMarkPaidModal(false)} className="flex-1 h-11 bg-secondary/50 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
+              <Button onClick={() => setShowMarkPaidModal(false)} className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
                 Cancel
               </Button>
               <Button onClick={handleMarkPaymentSent} disabled={isUpdating} className="flex-1 h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 font-bold text-foreground rounded-xl flex items-center justify-center gap-2">

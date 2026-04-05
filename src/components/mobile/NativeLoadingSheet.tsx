@@ -61,8 +61,8 @@ export const NativeLoadingSheet: React.FC<NativeLoadingSheetProps> = ({
             }}
           >
             <div className="flex flex-col items-center justify-center gap-4">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
-              <p className="text-white/80 text-sm font-medium">{message}</p>
+              <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+              <p className="text-foreground/80 text-sm font-medium">{message}</p>
             </div>
           </motion.div>
         </>

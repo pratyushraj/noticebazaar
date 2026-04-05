@@ -76,13 +76,13 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
     }
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl mb-6">
+        <div className="bg-background border border-border rounded-2xl p-6 shadow-xl mb-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
                         Deal Progress
                     </h2>
-                    <p className="text-slate-400 text-sm">
+                    <p className="text-muted-foreground text-sm">
                         Track collaboration milestones and deadlines.
                     </p>
                 </div>
@@ -91,8 +91,8 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
                     <div className={cn(
                         "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border",
                         isDeadlineUrgent
-                            ? "bg-red-500/10 text-red-400 border-red-500/20"
-                            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                            ? "bg-destructive/10 text-destructive border-destructive/20"
+                            : "bg-info/10 text-info border-info/20"
                     )}>
                         {isDeadlineUrgent ? <AlertCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                         {deadlineText}
@@ -112,7 +112,7 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
             <div className="relative mb-12 overflow-x-auto pb-4 hide-scrollbar">
                 <div className="flex items-center justify-between min-w-[600px] relative px-2">
                     {/* Connecting Line (Background) */}
-                    <div className="absolute left-6 right-6 top-4 h-1 bg-slate-800 -z-10 rounded-full" />
+                    <div className="absolute left-6 right-6 top-4 h-1 bg-background -z-10 rounded-full" />
 
                     {/* Connecting Line (Active) */}
                     <div
@@ -130,9 +130,9 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
                                 {/* Node */}
                                 <div className={cn(
                                     "w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 border-2 z-10",
-                                    isCompleted ? "bg-emerald-500 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)] text-white" :
-                                        isCurrent ? "bg-slate-800 border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)] text-emerald-400" :
-                                            "bg-slate-900 border-slate-700 text-slate-500"
+                                    isCompleted ? "bg-primary border-primary shadow-[0_0_15px_rgba(16,185,129,0.3)] text-foreground" :
+                                        isCurrent ? "bg-background border-primary shadow-[0_0_15px_rgba(16,185,129,0.2)] text-primary" :
+                                            "bg-background border-border text-muted-foreground"
                                 )}>
                                     {isCompleted ? (
                                         <Check className="w-5 h-5" />
@@ -144,16 +144,16 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
                                 {/* Label */}
                                 <span className={cn(
                                     "text-xs font-semibold whitespace-nowrap transition-colors",
-                                    isCompleted ? "text-slate-300" :
-                                        isCurrent ? "text-emerald-400" :
-                                            "text-slate-500"
+                                    isCompleted ? "text-muted-foreground" :
+                                        isCurrent ? "text-primary" :
+                                            "text-muted-foreground"
                                 )}>
                                     {step.label}
                                 </span>
 
                                 {/* Pending State Next Step Pointer (Only for Active Step) */}
                                 {isCurrent && index < TRACKER_STEPS.length - 1 && (
-                                    <div className="absolute -bottom-8 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap animate-pulse">
+                                    <div className="absolute -bottom-8 bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap animate-pulse">
                                         Next Step
                                     </div>
                                 )}
@@ -164,9 +164,9 @@ export const DealProgressTracker: React.FC<DealProgressTrackerProps> = ({ deal, 
             </div>
 
             {/* Embedded Activity Log */}
-            <div className="border-t border-slate-800 pt-6 mt-6">
-                <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-6 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-slate-500" />
+            <div className="border-t border-border pt-6 mt-6">
+                <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-6 flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-muted-foreground" />
                     Deal History Log
                 </h3>
 

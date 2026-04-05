@@ -78,19 +78,19 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
   const typeConfig = {
     payment: {
       icon: <DollarSign className="w-5 h-5" />,
-      color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      color: 'bg-primary/20 text-primary border-primary/30',
       badge: 'emerald',
       label: 'Payment',
     },
     message: {
       icon: <MessageSquare className="w-5 h-5" />,
-      color: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      color: 'bg-info/20 text-info border-info/30',
       badge: 'blue',
       label: 'Message',
     },
     alert: {
       icon: <AlertCircle className="w-5 h-5" />,
-      color: 'bg-red-500/20 text-red-300 border-red-500/30',
+      color: 'bg-destructive/20 text-destructive border-destructive/30',
       badge: 'red',
       label: 'Alert',
     },
@@ -102,7 +102,7 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
     },
     info: {
       icon: <Info className="w-5 h-5" />,
-      color: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+      color: 'bg-secondary/20 text-secondary border-purple-500/30',
       badge: 'purple',
       label: 'Info',
     },
@@ -166,8 +166,8 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
@@ -175,20 +175,20 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
           <div className="flex items-center gap-2">
             <h3 className={cn(
               'text-base font-bold tracking-tight flex items-center gap-2',
-              isDark ? 'text-white' : 'text-slate-900'
+              isDark ? 'text-foreground' : 'text-muted-foreground'
             )}>
               <Bell className="w-5 h-5" />
               Notifications
             </h3>
             {unreadCount > 0 && (
-              <Badge className="bg-red-600 text-white text-xs">{unreadCount}</Badge>
+              <Badge className="bg-destructive text-foreground text-xs">{unreadCount}</Badge>
             )}
           </div>
           <button type="button"
             onClick={() => setShowPreferences(!showPreferences)}
             className={cn(
               'p-2 rounded-lg transition-colors',
-              isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+              isDark ? 'hover:bg-secondary/50' : 'hover:bg-background'
             )}
           >
             <Settings className="w-4 h-4" />
@@ -207,17 +207,17 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
                 'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all',
                 selectedFilter === option.value
                   ? isDark
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-blue-500 text-white shadow-lg'
+                    ? 'bg-info text-foreground shadow-lg'
+                    : 'bg-info text-foreground shadow-lg'
                   : isDark
-                  ? 'bg-white/10 text-white/70 hover:bg-white/15'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-secondary/50 text-foreground/70 hover:bg-secondary/15'
+                  : 'bg-background text-muted-foreground hover:bg-background'
               )}
             >
               {option.label}
               <span className={cn(
                 'ml-1.5 text-xs font-semibold',
-                selectedFilter === option.value ? 'text-white' : isDark ? 'text-white/50' : 'text-slate-500'
+                selectedFilter === option.value ? 'text-foreground' : isDark ? 'text-foreground/50' : 'text-muted-foreground'
               )}>
                 {option.count}
               </span>
@@ -256,7 +256,7 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <h4 className={cn(
                             'text-sm font-semibold',
-                            isDark ? 'text-white' : 'text-slate-900'
+                            isDark ? 'text-foreground' : 'text-muted-foreground'
                           )}>
                             {notification.title}
                             {!notification.read && (
@@ -265,14 +265,14 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
                           </h4>
                           <span className={cn(
                             'text-xs flex-shrink-0',
-                            isDark ? 'text-white/50' : 'text-slate-500'
+                            isDark ? 'text-foreground/50' : 'text-muted-foreground'
                           )}>
                             {getTimeAgo(notification.timestamp)}
                           </span>
                         </div>
                         <p className={cn(
                           'text-xs',
-                          isDark ? 'text-white/70' : 'text-slate-700'
+                          isDark ? 'text-foreground/70' : 'text-muted-foreground'
                         )}>
                           {notification.description}
                         </p>
@@ -285,7 +285,7 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
                         onClick={() => handleDismiss(notification.id)}
                         className={cn(
                           'flex-shrink-0 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity',
-                          isDark ? 'hover:bg-white/10' : 'hover:bg-white'
+                          isDark ? 'hover:bg-secondary/50' : 'hover:bg-card'
                         )}
                       >
                         <X className="w-4 h-4" />
@@ -300,7 +300,7 @@ const SmartNotificationsCenter: React.FC<SmartNotificationsCenterProps> = ({
                 animate={{ opacity: 1 }}
                 className={cn(
                   'text-center py-6',
-                  isDark ? 'text-white/60' : 'text-slate-600'
+                  isDark ? 'text-foreground/60' : 'text-muted-foreground'
                 )}
               >
                 <p className="text-sm">No notifications</p>

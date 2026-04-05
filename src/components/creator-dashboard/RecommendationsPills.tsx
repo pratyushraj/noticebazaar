@@ -78,14 +78,14 @@ const RecommendationsPills: React.FC = () => {
   const typeConfig = {
     improvement: {
       label: 'Improvements',
-      badge: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
-      icon: 'text-blue-500',
+      badge: 'bg-info/20 text-info border-info/30',
+      icon: 'text-info',
       description: 'Enhance your profile and offerings',
     },
     warning: {
       label: 'Warnings',
-      badge: 'bg-red-500/20 text-red-600 border-red-500/30',
-      icon: 'text-red-500',
+      badge: 'bg-destructive/20 text-destructive border-destructive/30',
+      icon: 'text-destructive',
       description: 'Issues that need attention',
     },
     action: {
@@ -96,8 +96,8 @@ const RecommendationsPills: React.FC = () => {
     },
     info: {
       label: 'Insights',
-      badge: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
-      icon: 'text-purple-500',
+      badge: 'bg-secondary/20 text-secondary border-purple-500/30',
+      icon: 'text-secondary',
       description: 'Positive trends and opportunities',
     },
   };
@@ -131,17 +131,17 @@ const RecommendationsPills: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="bg-gradient-to-br from-slate-900/50 to-slate-800/30 backdrop-blur-xl border border-slate-700/30 rounded-2xl shadow-lg">
+      <Card className="bg-gradient-to-br from-background/50 to-slate-800/30 backdrop-blur-xl border border-border rounded-2xl shadow-lg">
         <CardContent className="p-4 sm:p-6">
           {/* Header */}
           <div className="mb-5">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-bold text-white">Recommendations</h3>
+              <h3 className="text-base font-bold text-foreground">Recommendations</h3>
               <Badge variant="outline" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/30 text-xs">
                 {typeCounts.all} active
               </Badge>
             </div>
-            <p className="text-xs text-slate-400 mb-4">Personalized insights to grow your creator business</p>
+            <p className="text-xs text-muted-foreground mb-4">Personalized insights to grow your creator business</p>
 
             {/* Filter Tabs */}
             <div className="flex flex-wrap gap-2">
@@ -160,15 +160,15 @@ const RecommendationsPills: React.FC = () => {
                     'px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5',
                     selectedType === type
                       ? type === 'warning'
-                        ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
+                        ? 'bg-destructive text-foreground shadow-lg shadow-red-600/30'
                         : type === 'action'
-                        ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-600/30'
+                        ? 'bg-yellow-600 text-foreground shadow-lg shadow-yellow-600/30'
                         : type === 'improvement'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                        ? 'bg-info text-foreground shadow-lg shadow-blue-600/30'
                         : type === 'info'
-                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                        : 'bg-slate-600 text-white shadow-lg shadow-slate-600/30'
-                      : 'bg-white/10 text-slate-300 hover:bg-white/15'
+                        ? 'bg-secondary text-foreground shadow-lg shadow-purple-600/30'
+                        : 'bg-background text-foreground shadow-lg shadow-slate-600/30'
+                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary/15'
                   )}
                 >
                   {type === 'all' ? 'All' : typeConfig[type]?.label}
@@ -192,8 +192,8 @@ const RecommendationsPills: React.FC = () => {
                   className={cn(
                     'group p-3 rounded-xl border transition-all duration-200 overflow-hidden',
                     expandedId === rec.id
-                      ? 'bg-white/10 border-white/20'
-                      : 'bg-white/5 border-white/10 hover:bg-white/8 hover:border-white/15'
+                      ? 'bg-secondary/50 border-border'
+                      : 'bg-card border-border hover:bg-secondary/8 hover:border-border'
                   )}
                 >
                   {/* Collapsed State */}
@@ -201,12 +201,12 @@ const RecommendationsPills: React.FC = () => {
                     className="flex items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className={cn("flex-shrink-0 p-1.5 rounded-lg bg-white/5 border border-white/10", typeConfig[rec.type].icon)}>
+                      <div className={cn("flex-shrink-0 p-1.5 rounded-lg bg-card border border-border", typeConfig[rec.type].icon)}>
                         {rec.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{rec.text}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{typeConfig[rec.type].description}</p>
+                        <p className="text-sm font-semibold text-foreground truncate">{rec.text}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{typeConfig[rec.type].description}</p>
                       </div>
                     </div>
 
@@ -219,7 +219,7 @@ const RecommendationsPills: React.FC = () => {
                       </Badge>
                       <button type="button"
                         onClick={() => setExpandedId(expandedId === rec.id ? null : rec.id)}
-                        className="p-1 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white"
+                        className="p-1 hover:bg-secondary/50 rounded transition-colors text-muted-foreground hover:text-foreground"
                       >
                         <ChevronDown
                           className={cn('w-4 h-4 transition-transform', expandedId === rec.id && 'rotate-180')}
@@ -227,7 +227,7 @@ const RecommendationsPills: React.FC = () => {
                       </button>
                       <button type="button"
                         onClick={() => handleDismiss(rec.id)}
-                        className="p-1 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white"
+                        className="p-1 hover:bg-secondary/50 rounded transition-colors text-muted-foreground hover:text-foreground"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -242,9 +242,9 @@ const RecommendationsPills: React.FC = () => {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="mt-3 pt-3 border-t border-white/10"
+                        className="mt-3 pt-3 border-t border-border"
                       >
-                        <p className="text-xs font-semibold text-slate-300 mb-2">Related actions</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-2">Related actions</p>
                         <div className="flex flex-wrap gap-2">
                           {rec.relatedActions.map((action, idx) => (
                             <motion.button
@@ -252,7 +252,7 @@ const RecommendationsPills: React.FC = () => {
                               initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: idx * 0.05 }}
-                              className="px-2.5 py-1 text-xs rounded-full bg-white/10 hover:bg-white/15 text-slate-300 hover:text-white transition-colors border border-white/10 hover:border-white/20"
+                              className="px-2.5 py-1 text-xs rounded-full bg-secondary/50 hover:bg-secondary/15 text-muted-foreground hover:text-foreground transition-colors border border-border hover:border-border"
                             >
                               {action}
                             </motion.button>
@@ -261,14 +261,14 @@ const RecommendationsPills: React.FC = () => {
                         <Button
                           size="sm"
                           className={cn(
-                            "w-full mt-3 font-semibold text-white transition-all",
+                            "w-full mt-3 font-semibold text-foreground transition-all",
                             rec.type === 'warning'
-                              ? 'bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20'
+                              ? 'bg-destructive hover:bg-destructive shadow-lg shadow-red-600/20'
                               : rec.type === 'action'
                               ? 'bg-yellow-600 hover:bg-yellow-700 shadow-lg shadow-yellow-600/20'
                               : rec.type === 'improvement'
-                              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20'
-                              : 'bg-purple-600 hover:bg-purple-700 shadow-lg shadow-purple-600/20'
+                              ? 'bg-info hover:bg-info shadow-lg shadow-blue-600/20'
+                              : 'bg-secondary hover:bg-secondary shadow-lg shadow-purple-600/20'
                           )}
                         >
                           {rec.actionLabel || 'Take Action'}
@@ -286,13 +286,13 @@ const RecommendationsPills: React.FC = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-3 pt-3 border-t border-white/10"
+              className="mt-3 pt-3 border-t border-border"
             >
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowMore(!showMore)}
-                className="w-full text-xs font-semibold border-white/20 hover:bg-white/10"
+                className="w-full text-xs font-semibold border-border hover:bg-secondary/50"
               >
                 {showMore ? '− Show Less' : `+ Show ${filteredRecs.length - 4} More`}
               </Button>

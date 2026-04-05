@@ -28,15 +28,15 @@ export const DataPlaceholder: React.FC<DataPlaceholderProps> = ({
         {Array.from({ length: count }).map((_, i) => (
           <Card
             key={i}
-            className="p-4 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border border-white/15"
+            className="p-4 bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] border border-border"
           >
             <div className="flex items-center gap-3">
-              <Skeleton className="h-12 w-12 rounded-full bg-white/10" />
+              <Skeleton className="h-12 w-12 rounded-full bg-secondary/50" />
               <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4 bg-white/10" />
-                <Skeleton className="h-3 w-1/2 bg-white/10" />
+                <Skeleton className="h-4 w-3/4 bg-secondary/50" />
+                <Skeleton className="h-3 w-1/2 bg-secondary/50" />
               </div>
-              <Skeleton className="h-8 w-20 rounded-lg bg-white/10" />
+              <Skeleton className="h-8 w-20 rounded-lg bg-secondary/50" />
             </div>
           </Card>
         ))}
@@ -48,11 +48,11 @@ export const DataPlaceholder: React.FC<DataPlaceholderProps> = ({
     return (
       <div className={cn('space-y-2', className)}>
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-            <Skeleton className="h-10 w-10 rounded-lg bg-white/10" />
+          <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-xl">
+            <Skeleton className="h-10 w-10 rounded-lg bg-secondary/50" />
             <div className="flex-1 space-y-1.5">
-              <Skeleton className="h-3.5 w-2/3 bg-white/10" />
-              <Skeleton className="h-3 w-1/2 bg-white/10" />
+              <Skeleton className="h-3.5 w-2/3 bg-secondary/50" />
+              <Skeleton className="h-3 w-1/2 bg-secondary/50" />
             </div>
           </div>
         ))}
@@ -66,11 +66,11 @@ export const DataPlaceholder: React.FC<DataPlaceholderProps> = ({
         {Array.from({ length: count }).map((_, i) => (
           <Card
             key={i}
-            className="p-4 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border border-white/15"
+            className="p-4 bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] border border-border"
           >
-            <Skeleton className="h-32 w-full mb-3 rounded-xl bg-white/10" />
-            <Skeleton className="h-4 w-full mb-2 bg-white/10" />
-            <Skeleton className="h-3 w-2/3 bg-white/10" />
+            <Skeleton className="h-32 w-full mb-3 rounded-xl bg-secondary/50" />
+            <Skeleton className="h-4 w-full mb-2 bg-secondary/50" />
+            <Skeleton className="h-3 w-2/3 bg-secondary/50" />
           </Card>
         ))}
       </div>
@@ -81,21 +81,21 @@ export const DataPlaceholder: React.FC<DataPlaceholderProps> = ({
     return (
       <div className={cn('space-y-2', className)}>
         {/* Table Header */}
-        <div className="grid grid-cols-4 gap-4 p-3 bg-white/5 rounded-t-xl">
+        <div className="grid grid-cols-4 gap-4 p-3 bg-card rounded-t-xl">
           {['Name', 'Status', 'Date', 'Action'].map((header) => (
-            <Skeleton key={header} className="h-4 w-20 bg-white/10" />
+            <Skeleton key={header} className="h-4 w-20 bg-secondary/50" />
           ))}
         </div>
         {/* Table Rows */}
         {Array.from({ length: count }).map((_, i) => (
           <div
             key={i}
-            className="grid grid-cols-4 gap-4 p-3 bg-white/[0.08] border-b border-white/10 last:border-b-0"
+            className="grid grid-cols-4 gap-4 p-3 bg-secondary/[0.08] border-b border-border last:border-b-0"
           >
-            <Skeleton className="h-4 w-24 bg-white/10" />
-            <Skeleton className="h-4 w-16 bg-white/10" />
-            <Skeleton className="h-4 w-20 bg-white/10" />
-            <Skeleton className="h-6 w-16 rounded-lg bg-white/10" />
+            <Skeleton className="h-4 w-24 bg-secondary/50" />
+            <Skeleton className="h-4 w-16 bg-secondary/50" />
+            <Skeleton className="h-4 w-20 bg-secondary/50" />
+            <Skeleton className="h-6 w-16 rounded-lg bg-secondary/50" />
           </div>
         ))}
       </div>
@@ -108,19 +108,19 @@ export const DataPlaceholder: React.FC<DataPlaceholderProps> = ({
         {Array.from({ length: count }).map((_, i) => (
           <Card
             key={i}
-            className="p-6 bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] border border-white/15"
+            className="p-6 bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] border border-border"
           >
             <div className="flex items-start gap-4">
-              <Skeleton className="h-16 w-16 rounded-xl bg-white/10" />
+              <Skeleton className="h-16 w-16 rounded-xl bg-secondary/50" />
               <div className="flex-1 space-y-3">
-                <Skeleton className="h-5 w-3/4 bg-white/10" />
-                <Skeleton className="h-4 w-full bg-white/10" />
-                <Skeleton className="h-4 w-2/3 bg-white/10" />
+                <Skeleton className="h-5 w-3/4 bg-secondary/50" />
+                <Skeleton className="h-4 w-full bg-secondary/50" />
+                <Skeleton className="h-4 w-2/3 bg-secondary/50" />
               </div>
             </div>
             <div className="mt-4 flex gap-2">
-              <Skeleton className="h-8 w-24 rounded-lg bg-white/10" />
-              <Skeleton className="h-8 w-24 rounded-lg bg-white/10" />
+              <Skeleton className="h-8 w-24 rounded-lg bg-secondary/50" />
+              <Skeleton className="h-8 w-24 rounded-lg bg-secondary/50" />
             </div>
           </Card>
         ))}

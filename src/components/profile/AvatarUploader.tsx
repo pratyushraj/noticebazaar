@@ -142,7 +142,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     <>
       <div className="flex flex-col items-center space-y-4">
         <div className="relative">
-          <Avatar className="h-24 w-24 border-4 border-white/10">
+          <Avatar className="h-24 w-24 border-4 border-border">
             <AvatarImage 
               src={
                 preview 
@@ -176,17 +176,17 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           className="hidden"
           onChange={handleFileSelect}
         />
-        <p className="text-xs text-white/60 text-center">Click camera icon to upload</p>
+        <p className="text-xs text-foreground/60 text-center">Click camera icon to upload</p>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-[#0F121A] border-white/10">
+        <DialogContent className="bg-[#0F121A] border-border">
           <DialogHeader>
-            <DialogTitle className="text-white">Crop & Preview Avatar</DialogTitle>
+            <DialogTitle className="text-foreground">Crop & Preview Avatar</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center space-y-4 py-4">
             {preview && (
-              <Avatar className="h-32 w-32 border-4 border-white/20">
+              <Avatar className="h-32 w-32 border-4 border-border">
                 <AvatarImage 
                   src={preview.startsWith('data:') ? preview : `${preview}${preview.includes('?') ? '&' : '?'}t=${Date.now()}`} 
                   alt="Preview"
@@ -197,7 +197,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
                 </AvatarFallback>
               </Avatar>
             )}
-            <p className="text-sm text-white/70 text-center">
+            <p className="text-sm text-foreground/70 text-center">
               This will be your profile picture. Make sure it looks good!
             </p>
           </div>
@@ -210,7 +210,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
               disabled={isUploading}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-border text-foreground hover:bg-secondary/50"
             >
               <X className="h-4 w-4 mr-2" />
               Cancel

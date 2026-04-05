@@ -23,8 +23,8 @@ const QuickStats: React.FC<QuickStatsProps> = ({
   const stats = [
     {
       icon: Briefcase,
-      iconColor: 'text-blue-500',
-      iconBg: 'bg-blue-500/10',
+      iconColor: 'text-info',
+      iconBg: 'bg-info/10',
       label: 'Deals closed',
       value: `${dealsClosed}`,
       change: dealsChange,
@@ -33,8 +33,8 @@ const QuickStats: React.FC<QuickStatsProps> = ({
     },
     {
       icon: Send,
-      iconColor: 'text-blue-500',
-      iconBg: 'bg-blue-500/10',
+      iconColor: 'text-info',
+      iconBg: 'bg-info/10',
       label: 'New brand pitches',
       value: `${pitchesSent} sent`,
       change: null,
@@ -43,8 +43,8 @@ const QuickStats: React.FC<QuickStatsProps> = ({
     },
     {
       icon: Shield,
-      iconColor: 'text-purple-500',
-      iconBg: 'bg-purple-500/10',
+      iconColor: 'text-secondary',
+      iconBg: 'bg-secondary/50',
       label: 'Content protection',
       value: `${takedownsSuccessful} takedowns successful`,
       change: null,
@@ -62,7 +62,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({
       <Card className="bg-card border-border/40 hover:border-border/60 transition-all">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <BarChart3 className="w-5 h-5 text-purple-500" />
+            <BarChart3 className="w-5 h-5 text-secondary" />
             This Month at a Glance
           </CardTitle>
         </CardHeader>
@@ -90,7 +90,7 @@ const QuickStats: React.FC<QuickStatsProps> = ({
                         {stat.change !== null && (
                           <span className={cn(
                             "flex items-center gap-1 text-sm font-medium",
-                            stat.positive ? "text-green-500" : "text-red-500"
+                            stat.positive ? "text-green-500" : "text-destructive"
                           )}>
                             {stat.positive ? (
                               <TrendingUp className="h-3 w-3" />

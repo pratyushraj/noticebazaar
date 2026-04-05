@@ -36,18 +36,18 @@ const ProfileCompletionMeter: React.FC<ProfileCompletionMeterProps> = ({ profile
     if (percentage >= 80) return 'bg-green-500';
     if (percentage >= 60) return 'bg-yellow-500';
     if (percentage >= 40) return 'bg-orange-500';
-    return 'bg-red-500';
+    return 'bg-destructive';
   };
 
   return (
-    <div className="bg-[#0A0F1C] border border-white/10 rounded-xl p-4 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
+    <div className="bg-[#0A0F1C] border border-border rounded-xl p-4 shadow-[0_0_20px_-4px_rgba(255,255,255,0.06)]">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <CheckCircle2 className={cn(
             "h-5 w-5",
             completionPercentage >= 80 ? "text-green-500" : completionPercentage >= 60 ? "text-yellow-500" : "text-orange-500"
           )} />
-          <span className="text-sm font-semibold text-white">Profile Completion</span>
+          <span className="text-sm font-semibold text-foreground">Profile Completion</span>
         </div>
         <span className={cn(
           "text-lg font-bold",
@@ -56,7 +56,7 @@ const ProfileCompletionMeter: React.FC<ProfileCompletionMeterProps> = ({ profile
           {completionPercentage}%
         </span>
       </div>
-      <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-card rounded-full h-2 overflow-hidden">
         <div 
           className={cn(
             "h-2 rounded-full transition-all duration-500",
@@ -65,7 +65,7 @@ const ProfileCompletionMeter: React.FC<ProfileCompletionMeterProps> = ({ profile
           style={{ width: `${completionPercentage}%` }}
         />
       </div>
-      <p className="text-xs text-white/60 mt-2">
+      <p className="text-xs text-foreground/60 mt-2">
         {filledCount} of {totalCount} fields completed
       </p>
     </div>

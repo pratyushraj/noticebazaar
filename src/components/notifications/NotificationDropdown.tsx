@@ -113,7 +113,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
           variant="ghost"
           size="icon"
           className={cn(
-            "relative h-9 w-9 text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none",
+            "relative h-9 w-9 text-foreground/80 hover:text-foreground hover:bg-secondary/50 transition-all duration-200 focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none",
             className
           )}
           aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
@@ -121,36 +121,36 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
           <Bell className="h-5 w-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute top-0.5 right-0.5 flex h-2 w-2" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
             </span>
           )}
           {unreadCount > 0 && unreadCount <= 99 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-purple-900">
+            <span className="absolute -top-1 -right-1 bg-destructive text-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-purple-900">
               {unreadCount}
             </span>
           )}
           {unreadCount > 99 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-purple-900">
+            <span className="absolute -top-1 -right-1 bg-destructive text-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-purple-900">
               99+
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-80 md:w-96 bg-white/[0.08] backdrop-blur-[60px] saturate-[200%] border border-white/15 rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-0 max-h-[600px] overflow-hidden"
+        className="w-80 md:w-96 bg-secondary/[0.08] backdrop-blur-[60px] saturate-[200%] border border-border rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.3)] p-0 max-h-[600px] overflow-hidden"
         align="end"
         sideOffset={8}
       >
         {/* Header */}
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
-          <h3 className="font-semibold text-white text-lg">Notifications</h3>
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold text-foreground text-lg">Notifications</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleMarkAllRead}
-              className="text-xs text-white/70 hover:text-white hover:bg-white/10 h-7 px-2"
+              className="text-xs text-foreground/70 hover:text-foreground hover:bg-secondary/50 h-7 px-2"
             >
               <Check className="w-3 h-3 mr-1" />
               Mark all read
@@ -162,25 +162,25 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
         <div className="overflow-y-auto max-h-[500px]">
           {error ? (
             <div className="p-8 text-center">
-              <Bell className="w-12 h-12 text-red-400/50 mx-auto mb-3" />
-              <div className="text-red-400 text-sm mb-2">Error loading notifications</div>
-              <div className="text-white/40 text-xs">{String(error)}</div>
+              <Bell className="w-12 h-12 text-destructive/50 mx-auto mb-3" />
+              <div className="text-destructive text-sm mb-2">Error loading notifications</div>
+              <div className="text-foreground/40 text-xs">{String(error)}</div>
             </div>
           ) : isLoading ? (
             <div className="p-8 text-center">
-              <div className="text-white/60 text-sm">Loading notifications...</div>
+              <div className="text-foreground/60 text-sm">Loading notifications...</div>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
-              <Bell className="w-12 h-12 text-white/20 mx-auto mb-3" />
-              <div className="text-white/60 text-sm">No notifications yet</div>
+              <Bell className="w-12 h-12 text-foreground/20 mx-auto mb-3" />
+              <div className="text-foreground/60 text-sm">No notifications yet</div>
             </div>
           ) : (
             <AnimatePresence>
               {groupedNotifications.map(([groupName, groupNotifications]) => (
-                <div key={groupName} className="border-b border-white/10 last:border-0">
-                  <div className="px-4 py-2 bg-white/5">
-                    <span className="text-xs font-medium text-white/60 uppercase tracking-wider">
+                <div key={groupName} className="border-b border-border last:border-0">
+                  <div className="px-4 py-2 bg-card">
+                    <span className="text-xs font-medium text-foreground/60 uppercase tracking-wider">
                       {groupName}
                     </span>
                   </div>
@@ -191,36 +191,36 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 10 }}
                       className={cn(
-                        "px-4 py-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0",
-                        !notification.read && "bg-white/[0.08]"
+                        "px-4 py-3 hover:bg-card cursor-pointer transition-colors border-b border-border/5 last:border-0",
+                        !notification.read && "bg-secondary/[0.08]"
                       )}
                       onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="flex items-start gap-3">
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                          <div className="w-2 h-2 bg-info rounded-full mt-2 flex-shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <p className="text-sm font-semibold text-white leading-tight">
+                            <p className="text-sm font-semibold text-foreground leading-tight">
                               {notification.title}
                             </p>
                             {notification.priority === 'urgent' && (
-                              <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                              <span className="text-[10px] bg-destructive/20 text-destructive px-1.5 py-0.5 rounded-full flex-shrink-0">
                                 Urgent
                               </span>
                             )}
                           </div>
                           {notification.message && (
-                            <p className="text-xs text-white/70 mb-2 line-clamp-2">
+                            <p className="text-xs text-foreground/70 mb-2 line-clamp-2">
                               {notification.message}
                             </p>
                           )}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-white/50">
+                            <span className="text-xs text-foreground/50">
                               {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                             </span>
-                            <span className="text-xs text-purple-400 flex items-center gap-1">
+                            <span className="text-xs text-secondary flex items-center gap-1">
                               {notification.action_label || 'Open'}
                               <ChevronRight className="w-3 h-3" />
                             </span>
@@ -237,12 +237,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="p-3 border-t border-white/10">
+          <div className="p-3 border-t border-border">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/notifications')}
-              className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-center"
+              className="w-full text-foreground/70 hover:text-foreground hover:bg-secondary/50 justify-center"
             >
               View All Notifications
               <ExternalLink className="w-4 h-4 ml-2" />

@@ -36,50 +36,50 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-9 w-9 rounded-full p-0 hover:bg-white/5 transition-all duration-200"
+          className="relative h-9 w-9 rounded-full p-0 hover:bg-card transition-all duration-200"
         >
           <Avatar className="h-9 w-9 ring-2 ring-white/10 hover:ring-blue-500/50 transition-all">
             <AvatarImage 
               src={profile?.avatar_url || DEFAULT_AVATAR_URL} 
               alt={profile?.first_name || "User"} 
             />
-            <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-medium">
+            <AvatarFallback className="bg-info/20 text-info text-sm font-medium">
               {getInitials(profile?.first_name || null, profile?.last_name || null)}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56 bg-gradient-to-br from-[#3B82F6]/10 via-[#8B5CF6]/10 to-[#3B82F6]/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden"
+        className="w-56 bg-gradient-to-br from-[#3B82F6]/10 via-[#8B5CF6]/10 to-[#3B82F6]/5 backdrop-blur-xl border border-border shadow-2xl rounded-2xl overflow-hidden"
         align="end"
       >
         <DropdownMenuLabel className="font-normal px-3 py-3">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-semibold leading-none text-white">
+            <p className="text-sm font-semibold leading-none text-foreground">
               {profile?.first_name} {profile?.last_name}
             </p>
-            <p className="text-xs leading-none text-white/50 truncate">
+            <p className="text-xs leading-none text-foreground/50 truncate">
               {user?.email}
             </p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/5" />
+        <DropdownMenuSeparator className="bg-card" />
         
-        <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors">
+        <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-card active:bg-secondary/50 transition-colors">
           <Link to={profilePath} className="flex items-center w-full">
-            <User className="mr-3 h-4 w-4 text-white/60" />
-            <span className="text-[15px] text-white/90">View Profile</span>
+            <User className="mr-3 h-4 w-4 text-foreground/60" />
+            <span className="text-[15px] text-foreground/90">View Profile</span>
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-white/5 active:bg-white/10 transition-colors">
+        <DropdownMenuItem asChild className="cursor-pointer px-3 py-2.5 hover:bg-card active:bg-secondary/50 transition-colors">
           <Link to={profilePath} className="flex items-center w-full">
-            <Settings className="mr-3 h-4 w-4 text-white/60" />
-            <span className="text-[15px] text-white/90">Settings</span>
+            <Settings className="mr-3 h-4 w-4 text-foreground/60" />
+            <span className="text-[15px] text-foreground/90">Settings</span>
           </Link>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-white/5 my-1" />
+        <DropdownMenuSeparator className="bg-card my-1" />
         
         <DropdownMenuItem
           onClick={async () => {
@@ -100,7 +100,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ profilePath }) => {
             await handleLogout();
           }}
           disabled={signOutMutation.isPending}
-          className="cursor-pointer px-3 py-2.5 text-red-400 focus:text-red-300 hover:bg-red-500/10 focus:bg-red-500/10 active:bg-red-500/15 transition-colors min-h-[44px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50"
+          className="cursor-pointer px-3 py-2.5 text-destructive focus:text-destructive hover:bg-destructive/10 focus:bg-destructive/10 active:bg-destructive/15 transition-colors min-h-[44px] touch-manipulation focus:outline-none focus:ring-2 focus:ring-red-400/50"
           aria-label="Log out of your account"
         >
           {signOutMutation.isPending ? (

@@ -36,7 +36,7 @@ const NewsletterSignup = () => {
 
   return (
     <div className="space-y-4">
-      <h4 className="font-semibold text-white text-lg">Get Compliance Tips Monthly</h4>
+      <h4 className="font-semibold text-foreground text-lg">Get Compliance Tips Monthly</h4>
       <p className="text-gray-400 text-sm">
         Subscribe to our newsletter for expert insights on GST, ROC filings, and legal strategy for SMEs.
       </p>
@@ -49,7 +49,7 @@ const NewsletterSignup = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
-            className="w-full pl-10 py-2 bg-black/30 border-white/10 text-white placeholder-gray-400"
+            className="w-full pl-10 py-2 bg-black/30 border-border text-foreground placeholder-gray-400"
           />
         </div>
         <Button 

@@ -10,7 +10,7 @@ export const DashboardStatsSkeleton = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-white/5 backdrop-blur-xl border-2 border-white/10 rounded-2xl p-6 shadow-lg"
+                    className="bg-card backdrop-blur-xl border-2 border-border rounded-2xl p-6 shadow-lg"
                 >
                     <div className="flex items-center justify-between mb-4">
                         <Skeleton className="w-12 h-12 rounded-xl" />
@@ -33,7 +33,7 @@ export const ActiveDealsSkeleton = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-white/5 backdrop-blur-xl border-2 border-white/10 rounded-xl p-4 shadow-lg"
+                    className="bg-card backdrop-blur-xl border-2 border-border rounded-xl p-4 shadow-lg"
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
@@ -60,7 +60,7 @@ export const CollabRequestsSkeleton = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-white/5 backdrop-blur-xl border-2 border-white/10 rounded-xl p-4 shadow-lg"
+                    className="bg-card backdrop-blur-xl border-2 border-border rounded-xl p-4 shadow-lg"
                 >
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3 flex-1">

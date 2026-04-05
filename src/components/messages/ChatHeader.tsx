@@ -12,7 +12,7 @@ type Props = {
 
 export const ChatHeader: React.FC<Props> = ({ advisor }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-card/50 backdrop-blur-sm">
+    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <Avatar className="h-9 w-9 flex-shrink-0">
           <AvatarImage src={advisor?.avatarUrl || DEFAULT_AVATAR_URL} alt={advisor?.name || 'Advisor'} />

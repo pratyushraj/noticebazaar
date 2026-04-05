@@ -90,9 +90,9 @@ const CampaignsOverviewCard: React.FC<CampaignsOverviewCardProps> = ({
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/30 shadow-lg">
-                <TrendingUp className="h-5 w-5 text-white" />
+                <TrendingUp className="h-5 w-5 text-foreground" />
               </div>
-              <h2 className="text-h3 font-semibold text-white tracking-tight">
+              <h2 className="text-h3 font-semibold text-foreground tracking-tight">
               Campaigns
             </h2>
             </div>
@@ -103,7 +103,7 @@ const CampaignsOverviewCard: React.FC<CampaignsOverviewCardProps> = ({
                 e.stopPropagation();
                 navigate('/creator-contracts');
               }}
-              className="text-body text-[#F472B6] hover:text-[#FF8FAB] hover:bg-[#F472B6]/10 transition-fast flex items-center gap-2 group focus-ring rounded-lg px-3 py-2"
+              className="text-body text-primary hover:text-primary hover:bg-primary/20/10 transition-fast flex items-center gap-2 group focus-ring rounded-lg px-3 py-2"
             >
               View All
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -115,11 +115,11 @@ const CampaignsOverviewCard: React.FC<CampaignsOverviewCardProps> = ({
             {/* Active Campaigns Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-micro text-white/60">Active</span>
-                <span className="text-3xl font-bold text-white number-large">{activeCampaigns} running</span>
+                <span className="text-micro text-foreground/60">Active</span>
+                <span className="text-3xl font-bold text-foreground number-large">{activeCampaigns} running</span>
               </div>
               {activeCampaigns > 0 && (
-                <div className="text-body text-white/70">
+                <div className="text-body text-foreground/70">
                   {deliverablesDue} deliverable{deliverablesDue !== 1 ? 's' : ''} due
                   {campaignWithDeliverable && (
                     <span className="text-warning font-semibold ml-1">
@@ -132,36 +132,36 @@ const CampaignsOverviewCard: React.FC<CampaignsOverviewCardProps> = ({
                 <div className="mt-3 p-4 bg-[#3D2A3F] rounded-xl border border-[#FFD89B]/40 backdrop-blur-sm card-interactive hover:bg-[#4A3A4F] transition-all">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E879F9] to-[#F472B6] flex items-center justify-center text-small text-white font-semibold shadow-lg">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E879F9] to-[#F472B6] flex items-center justify-center text-small text-foreground font-semibold shadow-lg">
                         {getBrandInitials(campaignWithDeliverable.brand_name)}
                       </div>
                       <div>
-                        <div className="text-body font-semibold text-white">{campaignWithDeliverable.brand_name}</div>
-                        <div className="text-small text-[#FFD89B] font-medium mt-0.5">
+                        <div className="text-body font-semibold text-foreground">{campaignWithDeliverable.brand_name}</div>
+                        <div className="text-small text-warning font-medium mt-0.5">
                           Due in {Math.ceil((new Date(campaignWithDeliverable.payment_expected_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days
                         </div>
                       </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-white/60 group-hover:text-white/80 transition-colors shrink-0" />
+                    <ChevronRight className="w-5 h-5 text-foreground/60 group-hover:text-foreground/80 transition-colors shrink-0" />
                   </div>
                 </div>
               )}
             </div>
 
             {/* Vertical Divider */}
-            <div className="hidden md:block w-px bg-white/10"></div>
+            <div className="hidden md:block w-px bg-secondary/50"></div>
 
             {/* Completed Section */}
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-micro text-white/60">Completed</span>
-                <span className="text-3xl font-bold text-white number-large">{completed} this month</span>
+                <span className="text-micro text-foreground/60">Completed</span>
+                <span className="text-3xl font-bold text-foreground number-large">{completed} this month</span>
               </div>
               {completedChange !== 0 && (
                 <div className="flex items-center gap-2 text-body">
                   <div className={cn(
                     "flex items-center gap-1.5 font-semibold px-2 py-1 rounded-md",
-                    completedChange > 0 ? "bg-[#A8E6CF]/20 text-[#A8E6CF] border border-[#A8E6CF]/40" : "bg-[#FFB3BA]/20 text-[#FF6B9D] border border-[#FF6B9D]/40"
+                    completedChange > 0 ? "bg-primary/20/20 text-primary border border-[#A8E6CF]/40" : "bg-[#FFB3BA]/20 text-[#FF6B9D] border border-[#FF6B9D]/40"
                   )}>
                     <TrendingUp className={cn(
                       "w-4 h-4",
@@ -169,11 +169,11 @@ const CampaignsOverviewCard: React.FC<CampaignsOverviewCardProps> = ({
                     )} />
                     <span>{Math.abs(completedChange)} {completedChange > 0 ? 'more' : 'less'}</span>
                   </div>
-                  <span className="text-white/60">than last month</span>
+                  <span className="text-foreground/60">than last month</span>
                 </div>
               )}
-              <div className="text-[13px] text-white/60">
-                On-time delivery rate: <span className="font-semibold text-white">{onTimeRate}%</span>
+              <div className="text-[13px] text-foreground/60">
+                On-time delivery rate: <span className="font-semibold text-foreground">{onTimeRate}%</span>
               </div>
             </div>
           </div>

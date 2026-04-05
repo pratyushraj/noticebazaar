@@ -67,7 +67,7 @@ const InsightsPage: React.FC = () => {
   if (sessionLoading) {
     return (
       <div className="nb-screen-height bg-[#0A0F1A] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-foreground">Loading...</div>
       </div>
     );
   }
@@ -84,18 +84,18 @@ const InsightsPage: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-dashboard')}
-              className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
+              className="mb-4 text-foreground/70 hover:text-foreground hover:bg-secondary/50"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
             <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 flex items-center justify-center border border-purple-500/30">
-                <TrendingUp className="h-5 w-5 text-purple-400" />
+                <TrendingUp className="h-5 w-5 text-secondary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Insights & Analytics</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Insights & Analytics</h1>
             </div>
-            <p className="text-sm text-white/60 mt-1">
+            <p className="text-sm text-foreground/60 mt-1">
               Growth intelligence, performance data, and forecasting for your creator business
             </p>
           </div>
@@ -105,15 +105,15 @@ const InsightsPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-white/70 mb-1">Earnings Trend</h3>
+                  <h3 className="text-sm font-semibold text-foreground/70 mb-1">Earnings Trend</h3>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-white">
+                    <span className="text-3xl font-bold text-foreground">
                       ₹{earningsTrend.current.toLocaleString('en-IN')}
                     </span>
                     <span className={cn(
                       "text-sm font-semibold flex items-center gap-1",
-                      earningsTrend.trend === 'up' ? "text-emerald-400" :
-                      earningsTrend.trend === 'down' ? "text-red-400" : "text-white/60"
+                      earningsTrend.trend === 'up' ? "text-primary" :
+                      earningsTrend.trend === 'down' ? "text-destructive" : "text-foreground/60"
                     )}>
                       <TrendingUp className={cn(
                         "w-4 h-4",
@@ -124,10 +124,10 @@ const InsightsPage: React.FC = () => {
                       {earningsTrend.trend === 'flat' && 'No change'}
                     </span>
                   </div>
-                  <p className="text-xs text-white/50 mt-1">vs last month</p>
+                  <p className="text-xs text-foreground/50 mt-1">vs last month</p>
                 </div>
-                <div className="h-16 w-16 rounded-xl bg-white/5 flex items-center justify-center">
-                  <BarChart3 className="w-8 h-8 text-purple-400" />
+                <div className="h-16 w-16 rounded-xl bg-card flex items-center justify-center">
+                  <BarChart3 className="w-8 h-8 text-secondary" />
                 </div>
               </div>
             </CardContent>
@@ -155,42 +155,42 @@ const InsightsPage: React.FC = () => {
           </div>
 
           {/* Growth Forecast Section */}
-          <Card className="mb-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+          <Card className="mb-6 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-info/20">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Target className="w-5 h-5 text-blue-400" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Target className="w-5 h-5 text-info" />
                 Growth Forecast
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-card rounded-xl">
                   <div>
-                    <p className="text-sm text-white/60 mb-1">Projected Next Month</p>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-sm text-foreground/60 mb-1">Projected Next Month</p>
+                    <p className="text-2xl font-bold text-foreground">
                       ₹{Math.round(earningsTrend.current * 1.1).toLocaleString('en-IN')}
                     </p>
                   </div>
-                  <Sparkles className="w-8 h-8 text-blue-400" />
+                  <Sparkles className="w-8 h-8 text-info" />
                 </div>
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-card rounded-xl">
                   <div>
-                    <p className="text-sm text-white/60 mb-1">Estimated 3-Month Average</p>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-sm text-foreground/60 mb-1">Estimated 3-Month Average</p>
+                    <p className="text-2xl font-bold text-foreground">
                       ₹{Math.round(earningsTrend.current * 1.15).toLocaleString('en-IN')}
                     </p>
                   </div>
-                  <LineChart className="w-8 h-8 text-emerald-400" />
+                  <LineChart className="w-8 h-8 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Weekly Highlights */}
-          <Card className="bg-[#0F121A]/50 border-white/10">
+          <Card className="bg-[#0F121A]/50 border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Calendar className="w-5 h-5 text-blue-400" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <Calendar className="w-5 h-5 text-info" />
                 Weekly Highlights
               </CardTitle>
             </CardHeader>
@@ -198,27 +198,27 @@ const InsightsPage: React.FC = () => {
               <div className="space-y-3">
                 {brandDeals && brandDeals.length > 0 ? (
                   <>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center justify-between p-3 bg-card rounded-xl">
                       <div>
-                        <p className="text-sm font-medium text-white">Top Performing Deal</p>
-                        <p className="text-xs text-white/60">
+                        <p className="text-sm font-medium text-foreground">Top Performing Deal</p>
+                        <p className="text-xs text-foreground/60">
                           {brandDeals.reduce((max, deal) => deal.deal_amount > (max?.deal_amount || 0) ? deal : max, brandDeals[0])?.brand_name}
                         </p>
                       </div>
                       <Award className="w-6 h-6 text-yellow-400" />
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center justify-between p-3 bg-card rounded-xl">
                       <div>
-                        <p className="text-sm font-medium text-white">Total Active Deals</p>
-                        <p className="text-xs text-white/60">
+                        <p className="text-sm font-medium text-foreground">Total Active Deals</p>
+                        <p className="text-xs text-foreground/60">
                           {brandDeals.filter(d => d.status === 'Approved' || d.status === 'Drafting').length} running
                         </p>
                       </div>
-                      <TrendingUp className="w-6 h-6 text-emerald-400" />
+                      <TrendingUp className="w-6 h-6 text-primary" />
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-white/60 text-center py-4">No highlights available yet</p>
+                  <p className="text-sm text-foreground/60 text-center py-4">No highlights available yet</p>
                 )}
               </div>
             </CardContent>

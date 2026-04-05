@@ -47,7 +47,7 @@ const CreatorQuickActions: React.FC<CreatorQuickActionsProps> = ({ quickActions,
             className={cn(
               "flex flex-col items-center justify-center p-4 h-24 rounded-xl",
               action.variant === 'primary'
-                ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-xl transition-all' // High-contrast amber for Send Takedown Notice
+                ? 'bg-warning hover:bg-warning text-foreground shadow-lg hover:shadow-xl transition-all' // High-contrast amber for Send Takedown Notice
                 : action.variant === 'destructive'
                   ? 'quick-action-button-destructive-gradient text-destructive-foreground'
                   : 'quick-action-button-gradient text-secondary-foreground'

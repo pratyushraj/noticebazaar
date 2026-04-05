@@ -53,7 +53,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white rounded-t-[24px] shadow-2xl",
+              "fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground rounded-t-[24px] shadow-2xl",
               "max-h-[90vh] overflow-hidden flex flex-col",
               "safe-area-inset-bottom",
               className
@@ -64,7 +64,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           >
             {/* Handle */}
             <div className="flex items-center justify-center pt-3 pb-2">
-              <div className="w-12 h-1.5 bg-white/30 rounded-full" />
+              <div className="w-12 h-1.5 bg-secondary/30 rounded-full" />
             </div>
 
             {/* Header */}
@@ -73,7 +73,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                 <h2 className="text-xl font-bold">{title}</h2>
                 <button type="button"
                   onClick={onClose}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors active:scale-95"
+                  className="w-8 h-8 rounded-full bg-secondary/50 hover:bg-secondary/20 flex items-center justify-center transition-colors active:scale-95"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />

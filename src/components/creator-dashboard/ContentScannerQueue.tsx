@@ -26,14 +26,14 @@ const ContentScannerQueue: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.45 }}
     >
-      <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] cursor-pointer px-5 py-4"
+      <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] cursor-pointer px-5 py-4"
         onClick={() => navigate('/creator-contracts')}
       >
         <CardContent className="p-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-blue-400" />
-              <span className="text-xs font-semibold text-blue-400 uppercase tracking-wide">Content Scanner Queue</span>
+              <Shield className="h-4 w-4 text-info" />
+              <span className="text-xs font-semibold text-info uppercase tracking-wide">Content Scanner Queue</span>
             </div>
             <Button
               variant="ghost"
@@ -51,7 +51,7 @@ const ContentScannerQueue: React.FC = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <Search className="h-3.5 w-3.5 text-blue-400" />
+                <Search className="h-3.5 w-3.5 text-info" />
                 <span className="text-muted-foreground">Scans running</span>
               </div>
               <span className="font-semibold text-foreground">{scansRunning}</span>
@@ -59,7 +59,7 @@ const ContentScannerQueue: React.FC = () => {
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <Send className="h-3.5 w-3.5 text-purple-400" />
+                <Send className="h-3.5 w-3.5 text-secondary" />
                 <span className="text-muted-foreground">Takedowns submitted</span>
               </div>
               <span className="font-semibold text-foreground">{takedownsSubmitted}</span>

@@ -59,11 +59,11 @@ const TopInvoicesDueSoon: React.FC<TopInvoicesDueSoonProps> = ({ brandDeals = []
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
     >
-      <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-700/40 hover:border-blue-600/60 transition-all shadow-inner">
+      <Card className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-info/40 hover:border-info/60 transition-all shadow-inner">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <FileText className="h-4 w-4 text-blue-400" />
+              <FileText className="h-4 w-4 text-info" />
               Top 5 Invoices Due Soon
             </CardTitle>
             <Button
@@ -103,7 +103,7 @@ const TopInvoicesDueSoon: React.FC<TopInvoicesDueSoonProps> = ({ brandDeals = []
             {upcomingInvoices.map(({ deal, daysUntil }) => (
                 <div
                 key={deal.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-2 rounded-lg bg-card hover:bg-secondary/50 transition-colors cursor-pointer"
                 onClick={() => navigate(`/creator-contracts/${deal.id}`)}
                 >
                 <div className="flex items-center gap-2 flex-1 min-w-0">

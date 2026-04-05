@@ -374,11 +374,11 @@ const PaymentDetailPage = () => {
 
   if (error || !paymentData) {
     return (
-      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-white/80 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-foreground/80 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Payment Not Found</h2>
-          <p className="text-white/60 mb-4">The payment you're looking for doesn't exist.</p>
+          <p className="text-foreground/60 mb-4">The payment you're looking for doesn't exist.</p>
           <button type="button"
             onClick={() => navigate('/creator-payments')}
             className="bg-gradient-to-r from-[#A06BFF] to-[#7C3AED] hover:from-[#8F5AFF] hover:to-[#6D28D9] px-6 py-3 rounded-xl transition-all active:scale-[0.97] shadow-lg shadow-purple-900/40"
@@ -503,13 +503,13 @@ const PaymentDetailPage = () => {
   };
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4 pb-32 text-white relative">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 px-4 pb-32 text-foreground relative">
       {/* Page Header */}
-      <div className="sticky top-0 z-50 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-white/10 shadow-xl">
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border-b border-border shadow-xl">
         <div className="flex items-center gap-4 px-4 md:px-6 py-4 max-w-4xl mx-auto">
           <button type="button"
             onClick={() => navigate('/creator-payments')}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors active:scale-95"
+            className="p-2 hover:bg-secondary/50 rounded-xl transition-colors active:scale-95"
             aria-label="Back"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -520,7 +520,7 @@ const PaymentDetailPage = () => {
 
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
         {!isOnline && (
-          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+          <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-foreground px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
             <WifiOff className="w-4 h-4 flex-shrink-0" />
             You're offline — changes will sync when you reconnect
           </div>
@@ -530,15 +530,15 @@ const PaymentDetailPage = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 rounded-2xl p-4 md:p-5 shadow-lg"
+            className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-primary/30 rounded-2xl p-4 md:p-5 shadow-lg"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-5 h-5 text-emerald-400" />
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-white">Deal Complete! 🎉</p>
-                <p className="text-xs text-white/70 mt-0.5">You earned ₹{paymentData.amount.toLocaleString('en-IN')} from {paymentData.brandName}</p>
+                <p className="text-sm font-bold text-foreground">Deal Complete! 🎉</p>
+                <p className="text-xs text-foreground/70 mt-0.5">You earned ₹{paymentData.amount.toLocaleString('en-IN')} from {paymentData.brandName}</p>
               </div>
             </div>
           </motion.div>
@@ -549,13 +549,13 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
         >
           <div className="mb-4">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div className="flex-1 min-w-0">
               {/* Large Amount */}
-              <div className="text-4xl md:text-5xl font-bold text-white mb-4">
+              <div className="text-4xl md:text-5xl font-bold text-foreground mb-4">
                 ₹{paymentData.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </div>
 
@@ -566,7 +566,7 @@ const PaymentDetailPage = () => {
                     Received
                   </span>
                 ) : paymentData.status === 'overdue' ? (
-                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-destructive/20 text-destructive border border-destructive/30">
                     Overdue
                   </span>
                 ) : (
@@ -577,7 +577,7 @@ const PaymentDetailPage = () => {
               </div>
 
               {/* Helper Line */}
-                <div className="text-sm text-white/70">
+                <div className="text-sm text-foreground/70">
                 {paymentData.status === 'received' && paymentData.receivedAt ? (
                   `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
                 ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
@@ -595,13 +595,13 @@ const PaymentDetailPage = () => {
             {paymentData.status !== 'received' && (
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs text-white/50 whitespace-nowrap">Risk Level</span>
+                  <span className="text-xs text-foreground/50 whitespace-nowrap">Risk Level</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Info className="w-3 h-3 text-white/40 hover:text-white/60 cursor-help" />
+                        <Info className="w-3 h-3 text-foreground/40 hover:text-foreground/60 cursor-help" />
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-xs bg-gray-900 border-gray-700 text-white text-xs">
+                      <TooltipContent className="max-w-xs bg-gray-900 border-gray-700 text-foreground text-xs">
                         <p>{getPaymentRiskTooltip()}</p>
                       </TooltipContent>
                     </Tooltip>
@@ -630,17 +630,17 @@ const PaymentDetailPage = () => {
             <div className="max-w-4xl mx-auto px-4 pt-8 pb-4">
               <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-4 shadow-lg shadow-green-900/30">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-5 h-5 text-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-white">Confirm when you receive payment</p>
-                    <p className="text-xs text-white/70">Tap only after the money reaches your account</p>
+                    <p className="text-sm font-bold text-foreground">Confirm when you receive payment</p>
+                    <p className="text-xs text-foreground/70">Tap only after the money reaches your account</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleMarkAsReceived}
-                    className="shrink-0 px-4 py-2 bg-white text-emerald-700 font-black text-xs rounded-xl shadow"
+                    className="shrink-0 px-4 py-2 bg-card text-primary font-black text-xs rounded-xl shadow"
                   >
                     I Got It
                   </button>
@@ -656,9 +656,9 @@ const PaymentDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05, duration: 0.3 }}
-            className="relative rounded-2xl border border-white/10 bg-white/5 p-5"
+            className="relative rounded-2xl border border-border bg-card p-5"
           >
-            <p className="text-[11px] font-black uppercase tracking-widest text-white/50 mb-3">How you'll get paid</p>
+            <p className="text-[11px] font-black uppercase tracking-widest text-foreground/50 mb-3">How you'll get paid</p>
             <div className="space-y-3">
               {[
                 { step: '1', title: 'Brand transfers to your UPI', desc: 'They pay directly — outside Creator Armour' },
@@ -666,21 +666,21 @@ const PaymentDetailPage = () => {
                 { step: '3', title: 'You confirm receipt', desc: 'Tap "I received payment" to close the deal' },
               ].map(item => (
                 <div key={item.step} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-xs font-black text-purple-300 flex-shrink-0 mt-0.5">{item.step}</div>
+                  <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center text-xs font-black text-secondary flex-shrink-0 mt-0.5">{item.step}</div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{item.title}</p>
-                    <p className="text-xs text-white/50">{item.desc}</p>
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="text-xs text-foreground/50">{item.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
             {/* Payment protection messaging */}
-            <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="mt-4 pt-4 border-t border-border">
               <div className="flex items-start gap-2.5">
-                <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <ShieldCheck className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-xs font-semibold text-white">Contract-backed payment</p>
-                  <p className="text-[11px] text-white/50 mt-0.5">If payment is 7+ days late, you can escalate and we'll help you take action — including sending a legal notice.</p>
+                  <p className="text-xs font-semibold text-foreground">Contract-backed payment</p>
+                  <p className="text-[11px] text-foreground/50 mt-0.5">If payment is 7+ days late, you can escalate and we'll help you take action — including sending a legal notice.</p>
                 </div>
               </div>
             </div>
@@ -693,28 +693,28 @@ const PaymentDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05, duration: 0.3 }}
-            className="relative rounded-2xl border border-red-400/30 bg-red-500/10 p-5"
+            className="relative rounded-2xl border border-destructive/30 bg-destructive/10 p-5"
           >
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-full bg-red-400/20 p-2">
-                <AlertCircle className="h-4 w-4 text-red-300" />
+              <div className="mt-0.5 rounded-full bg-destructive/20 p-2">
+                <AlertCircle className="h-4 w-4 text-destructive" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">Payment is overdue</p>
-                <p className="mt-1 text-sm text-white/70">
+                <p className="text-sm font-semibold text-foreground">Payment is overdue</p>
+                <p className="mt-1 text-sm text-foreground/70">
                   Contact the brand directly first. If they don't respond within 48 hours, you can:
                 </p>
                 <div className="mt-3 space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-white/60">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">1</span>
+                  <div className="flex items-center gap-2 text-xs text-foreground/60">
+                    <span className="w-5 h-5 rounded-full bg-secondary/50 flex items-center justify-center text-[10px] font-bold">1</span>
                     <span>Send a payment reminder</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-white/60">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">2</span>
+                  <div className="flex items-center gap-2 text-xs text-foreground/60">
+                    <span className="w-5 h-5 rounded-full bg-secondary/50 flex items-center justify-center text-[10px] font-bold">2</span>
                     <span>Report the issue — we'll contact the brand</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-white/60">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">3</span>
+                  <div className="flex items-center gap-2 text-xs text-foreground/60">
+                    <span className="w-5 h-5 rounded-full bg-secondary/50 flex items-center justify-center text-[10px] font-bold">3</span>
                     <span>After 30 days: request a legal notice (automated)</span>
                   </div>
                 </div>
@@ -728,19 +728,19 @@ const PaymentDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05, duration: 0.3 }}
-            className="relative rounded-2xl border border-amber-400/20 bg-amber-500/10 p-5 md:p-6"
+            className="relative rounded-2xl border border-warning/20 bg-warning/10 p-5 md:p-6"
           >
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-full bg-amber-400/20 p-2">
-                <AlertCircle className="h-4 w-4 text-amber-300" />
+              <div className="mt-0.5 rounded-full bg-warning/20 p-2">
+                <AlertCircle className="h-4 w-4 text-warning" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">Add your UPI only when payment is near</p>
-                <p className="mt-1 text-sm text-white/70">
+                <p className="text-sm font-semibold text-foreground">Add your UPI only when payment is near</p>
+                <p className="mt-1 text-sm text-foreground/70">
                   This keeps onboarding short. Save it now so you can confirm payment in one tap later.
                 </p>
                 <div className="mt-4 space-y-2">
-                  <Label htmlFor="payment-upi" className="text-xs uppercase tracking-[0.18em] text-white/60">
+                  <Label htmlFor="payment-upi" className="text-xs uppercase tracking-[0.18em] text-foreground/60">
                     UPI ID
                   </Label>
                   <div className="flex flex-col gap-3 sm:flex-row">
@@ -749,13 +749,13 @@ const PaymentDetailPage = () => {
                       value={pendingUpi}
                       onChange={(e) => setPendingUpi(e.target.value)}
                       placeholder="name@oksbi"
-                      className="border-white/15 bg-white/5 text-white placeholder:text-white/30"
+                      className="border-border bg-card text-foreground placeholder:text-foreground/30"
                     />
                     <button
                       type="button"
                       onClick={handleSaveUpi}
                       disabled={isSavingUpi}
-                      className="h-11 shrink-0 rounded-xl bg-white text-slate-900 px-4 text-sm font-semibold hover:bg-white/90 disabled:opacity-60"
+                      className="h-11 shrink-0 rounded-xl bg-card text-muted-foreground px-4 text-sm font-semibold hover:bg-secondary/90 disabled:opacity-60"
                     >
                       {isSavingUpi ? 'Saving...' : 'Save UPI'}
                     </button>
@@ -767,7 +767,7 @@ const PaymentDetailPage = () => {
         )}
 
         {/* SECTION 2: Primary Action Bar (Sticky) */}
-        <div className="sticky top-[73px] z-40 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-3 mb-6 safe-area-top">
+        <div className="sticky top-[73px] z-40 bg-background/95 backdrop-blur-xl border-b border-border -mx-4 px-4 py-3 mb-6 safe-area-top">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
             {paymentData.status === 'pending' ? (
               <>
@@ -775,7 +775,7 @@ const PaymentDetailPage = () => {
                   onClick={handleMarkAsReceived}
                   disabled={updateDealMutation.isPending || !hasSavedUpi}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold px-4 py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground font-semibold px-4 py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {updateDealMutation.isPending ? (
                     <>
@@ -808,7 +808,7 @@ const PaymentDetailPage = () => {
                     }
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                  className="w-full sm:w-auto px-4 py-3 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
                   <MessageSquare className="w-4 h-4 flex-shrink-0" />
                   <span className="text-xs sm:text-sm">Remind brand</span>
@@ -833,7 +833,7 @@ const PaymentDetailPage = () => {
                     }
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-foreground font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4 flex-shrink-0" />
                   <span className="text-xs sm:text-sm">Send Payment Reminder</span>
@@ -842,7 +842,7 @@ const PaymentDetailPage = () => {
                   onClick={handleMarkAsReceived}
                   disabled={updateDealMutation.isPending || !hasSavedUpi}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
+                  className="w-full sm:w-auto px-4 py-3 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                 >
                   {updateDealMutation.isPending ? (
                     <>
@@ -870,7 +870,7 @@ const PaymentDetailPage = () => {
                     }
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full sm:flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-foreground font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <Eye className="w-4 h-4 flex-shrink-0" />
                   <span className="text-xs sm:text-sm">View Receipt</span>
@@ -886,7 +886,7 @@ const PaymentDetailPage = () => {
                       }
                     }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
+                    className="w-full sm:w-auto px-4 py-3 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
                   >
                     <Download className="w-4 h-4 flex-shrink-0" />
                     <span className="text-xs sm:text-sm">Download Invoice</span>
@@ -896,7 +896,7 @@ const PaymentDetailPage = () => {
             )}
           </div>
           <div className="max-w-4xl mx-auto mt-2">
-            <p className="text-xs text-white/70">
+            <p className="text-xs text-foreground/70">
               {paymentData.status === 'pending' || paymentData.status === 'overdue'
                 ? hasSavedUpi
                   ? 'Tap this only after the money reaches your bank account.'
@@ -911,34 +911,34 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
         >
           <div className="grid grid-cols-2 gap-4 md:gap-6">
             <div>
-              <div className="text-xs text-white/60 mb-1">Contract Name</div>
-              <div className="text-sm font-semibold text-white">{paymentData.contractName}</div>
+              <div className="text-xs text-foreground/60 mb-1">Contract Name</div>
+              <div className="text-sm font-semibold text-foreground">{paymentData.contractName}</div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Brand Name</div>
-              <div className="text-sm font-semibold text-white">{paymentData.brandName}</div>
+              <div className="text-xs text-foreground/60 mb-1">Brand Name</div>
+              <div className="text-sm font-semibold text-foreground">{paymentData.brandName}</div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Payment Method</div>
-              <div className="text-sm font-semibold text-white">{paymentData.paymentMethod}</div>
+              <div className="text-xs text-foreground/60 mb-1">Payment Method</div>
+              <div className="text-sm font-semibold text-foreground">{paymentData.paymentMethod}</div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Created Date</div>
-              <div className="text-sm font-semibold text-white">
+              <div className="text-xs text-foreground/60 mb-1">Created Date</div>
+              <div className="text-sm font-semibold text-foreground">
                 {paymentData.createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Payment trigger</div>
-              <div className="text-sm font-semibold text-white">On Approval</div>
+              <div className="text-xs text-foreground/60 mb-1">Payment trigger</div>
+              <div className="text-sm font-semibold text-foreground">On Approval</div>
             </div>
             <div>
-              <div className="text-xs text-white/60 mb-1">Payment window</div>
-              <div className="text-sm font-semibold text-white">Within 7 days</div>
+              <div className="text-xs text-foreground/60 mb-1">Payment window</div>
+              <div className="text-sm font-semibold text-foreground">Within 7 days</div>
             </div>
           </div>
         </motion.div>
@@ -949,24 +949,24 @@ const PaymentDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.3 }}
-            className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+            className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
           >
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-4">When payment is due</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">When payment is due</h3>
               
               <div className="space-y-4">
                 <div>
-                  <div className="text-xs text-white/60 mb-1">Expected Date</div>
-                  <div className="text-base font-semibold text-white">
+                  <div className="text-xs text-foreground/60 mb-1">Expected Date</div>
+                  <div className="text-base font-semibold text-foreground">
                     {paymentData.expectedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-xs text-white/60 mb-1">Countdown</div>
+                  <div className="text-xs text-foreground/60 mb-1">Countdown</div>
                   <div className={cn(
                     "text-lg font-bold",
-                    paymentData.status === 'overdue' ? 'text-red-400' : 'text-yellow-400'
+                    paymentData.status === 'overdue' ? 'text-destructive' : 'text-yellow-400'
                   )}>
                     {paymentData.daysInfo}
                   </div>
@@ -975,7 +975,7 @@ const PaymentDetailPage = () => {
                 {/* Thin accent divider */}
                 <div className={cn(
                   "h-0.5 rounded-full",
-                  paymentData.status === 'overdue' ? 'bg-red-500/30' : 'bg-yellow-500/30'
+                  paymentData.status === 'overdue' ? 'bg-destructive/30' : 'bg-yellow-500/30'
                 )} />
               </div>
             </div>
@@ -987,25 +987,25 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
         >
-          <h3 className="text-lg font-semibold text-white mb-4">Payment updates</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Payment updates</h3>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 rounded-full bg-white/40 mt-1.5 flex-shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-secondary/40 mt-1.5 flex-shrink-0" />
               <div className="flex-1">
-                <div className="text-sm font-medium text-white">Payment created</div>
-                <div className="text-xs text-white/50 group-hover:text-white/70">
+                <div className="text-sm font-medium text-foreground">Payment created</div>
+                <div className="text-xs text-foreground/50 group-hover:text-foreground/70">
                   {paymentData.createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             </div>
             {paymentData.invoiceFileUrl && (
               <div className="flex items-start gap-3">
-                <div className="w-2 h-2 rounded-full bg-white/40 mt-1.5 flex-shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-secondary/40 mt-1.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-white">Invoice generated</div>
-                  <div className="text-xs text-white/50 group-hover:text-white/70">
+                  <div className="text-sm font-medium text-foreground">Invoice generated</div>
+                  <div className="text-xs text-foreground/50 group-hover:text-foreground/70">
                     {paymentData.createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
@@ -1016,7 +1016,7 @@ const PaymentDetailPage = () => {
                 <div className="w-2 h-2 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-green-400">Payment confirmed by creator</div>
-                  <div className="text-xs text-white/50 group-hover:text-white/70">
+                  <div className="text-xs text-foreground/50 group-hover:text-foreground/70">
                     {paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
@@ -1031,23 +1031,23 @@ const PaymentDetailPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25, duration: 0.3 }}
-            className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+            className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
           >
           <div className="space-y-4">
             {/* Invoice Number */}
             <div>
-              <div className="text-sm text-white/60 mb-2">Invoice Number</div>
+              <div className="text-sm text-foreground/60 mb-2">Invoice Number</div>
               <div className="flex items-center gap-3">
-                <div className="text-xl font-bold text-white">{paymentData.invoiceNumber}</div>
+                <div className="text-xl font-bold text-foreground">{paymentData.invoiceNumber}</div>
                 {paymentData.invoiceFileUrl && (
-                  <FileText className="w-5 h-5 text-white/40" />
+                  <FileText className="w-5 h-5 text-foreground/40" />
                 )}
               </div>
             </div>
 
             {/* Tax Information */}
             <div>
-              <div className="text-sm text-white/60 mb-2">Tax</div>
+              <div className="text-sm text-foreground/60 mb-2">Tax</div>
               {paymentData.taxInfo ? (
                 <div className={cn(
                   "text-sm font-medium",
@@ -1074,12 +1074,12 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
         >
           <div className="relative z-10 space-y-4">
             <div>
-              <div className="text-sm font-medium text-white mb-1">Payment Proof (Optional)</div>
-              <div className="text-xs text-white/60 mb-3">
+              <div className="text-sm font-medium text-foreground mb-1">Payment Proof (Optional)</div>
+              <div className="text-xs text-foreground/60 mb-3">
                 Upload UTR or payment screenshot for your records.
               </div>
             </div>
@@ -1124,15 +1124,15 @@ const PaymentDetailPage = () => {
                 />
                 <label
                   htmlFor="proof-of-payment-upload"
-                  className="flex items-center justify-center gap-2 p-3 border border-dashed border-white/20 rounded-lg cursor-pointer hover:border-white/30 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-center gap-2 p-3 border border-dashed border-border rounded-lg cursor-pointer hover:border-border hover:bg-card transition-colors"
                 >
-                  <Upload className="w-4 h-4 text-white/50" />
-                  <span className="text-xs text-white/60">
+                  <Upload className="w-4 h-4 text-foreground/50" />
+                  <span className="text-xs text-foreground/60">
                     {proofOfPaymentFile ? proofOfPaymentFile.name : 'Click to upload'}
                   </span>
                 </label>
                 {paymentData.status === 'received' && !proofOfPaymentUrl && (
-                  <div className="text-xs text-white/40 text-center mt-2">
+                  <div className="text-xs text-foreground/40 text-center mt-2">
                     No payment proof uploaded (optional)
                   </div>
                 )}
@@ -1141,7 +1141,7 @@ const PaymentDetailPage = () => {
                     onClick={handleUploadProof}
                     disabled={isUploadingProof}
                     className={cn(
-                      "w-full bg-white/10 hover:bg-white/15 border border-white/20 rounded-xl px-4 py-3",
+                      "w-full bg-secondary/50 hover:bg-secondary/15 border border-border rounded-xl px-4 py-3",
                       "transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium",
                       isUploadingProof && "opacity-50 cursor-not-allowed"
                     )}
@@ -1169,12 +1169,12 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.3 }}
-          className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-white/20"
+          className="relative bg-secondary/50 backdrop-blur-xl rounded-2xl p-5 md:p-6 border border-border"
         >
           <div className="relative z-10 space-y-4">
             <div>
-              <div className="text-sm font-medium text-white mb-1">Notes (only visible to you)</div>
-              <div className="text-xs text-white/60 mb-3">
+              <div className="text-sm font-medium text-foreground mb-1">Notes (only visible to you)</div>
+              <div className="text-xs text-foreground/60 mb-3">
                 Brand said they'll pay next week
               </div>
             </div>
@@ -1184,15 +1184,15 @@ const PaymentDetailPage = () => {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add your notes here..."
               rows={4}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/20 resize-none"
+              className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-border resize-none"
             />
 
             <button type="button"
               onClick={handleSaveNotes}
               disabled={isSavingNotes}
               className={cn(
-                "w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg px-4 py-2.5",
-                "transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium text-white/70",
+                "w-full bg-card hover:bg-secondary/50 border border-border rounded-lg px-4 py-2.5",
+                "transition-colors active:scale-[0.98] flex items-center justify-center gap-2 text-sm font-medium text-foreground/70",
                 isSavingNotes && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -1213,17 +1213,17 @@ const PaymentDetailPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          className="space-y-3 pt-6 border-t border-white/10"
+          className="space-y-3 pt-6 border-t border-border"
         >
-          <div className="text-xs text-white/50 mb-3">Advanced</div>
+          <div className="text-xs text-foreground/50 mb-3">Advanced</div>
           <div className="grid grid-cols-2 gap-3">
             <button type="button"
               onClick={() => {
                 toast.info('Edit Payment feature coming soon');
               }}
               className={cn(
-                "bg-white/5 border border-white/10 rounded-lg px-4 py-3",
-                "text-white/60 hover:text-white hover:bg-white/10",
+                "bg-card border border-border rounded-lg px-4 py-3",
+                "text-foreground/60 hover:text-foreground hover:bg-secondary/50",
                 "transition-colors active:scale-[0.98]",
                 "flex items-center justify-center gap-2 text-sm font-medium"
               )}
@@ -1238,8 +1238,8 @@ const PaymentDetailPage = () => {
                 }
               }}
               className={cn(
-                "bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3",
-                "text-red-400 hover:text-red-300 hover:bg-red-500/20",
+                "bg-destructive/10 border border-destructive/30 rounded-lg px-4 py-3",
+                "text-destructive hover:text-destructive hover:bg-destructive/20",
                 "transition-colors active:scale-[0.98]",
                 "flex items-center justify-center gap-2 text-sm font-medium"
               )}
@@ -1258,17 +1258,17 @@ const PaymentDetailPage = () => {
           onClick={() => setShowPreviewModal(false)}
         >
           <div
-            className="relative max-w-4xl max-h-[90vh] bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-xl overflow-hidden"
+            className="relative max-w-4xl max-h-[90vh] bg-secondary/50 backdrop-blur-xl rounded-2xl border border-border shadow-xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <h3 className="text-lg font-semibold text-white">Proof of Payment</h3>
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h3 className="text-lg font-semibold text-foreground">Proof of Payment</h3>
               <button type="button"
                 onClick={() => setShowPreviewModal(false)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                 aria-label="Close preview"
               >
-                <X className="w-5 h-5 text-white/60" />
+                <X className="w-5 h-5 text-foreground/60" />
               </button>
             </div>
             <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
@@ -1297,24 +1297,24 @@ const PaymentDetailPage = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
+            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-border shadow-2xl"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Confirm payment received</h3>
+                <h3 className="text-lg font-semibold text-foreground">Confirm payment received</h3>
               </div>
             </div>
             
-            <p className="text-white/80 mb-4">
+            <p className="text-foreground/80 mb-4">
               Confirm only after checking your bank account. Make sure the received amount matches:
             </p>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
-              <div className="text-xs text-white/50 mb-1">Expected amount</div>
-              <div className="text-2xl font-black text-white">₹{paymentData.amount.toLocaleString('en-IN')}</div>
-              <div className="text-xs text-white/50 mt-1">from {paymentData.brandName}</div>
+            <div className="bg-card border border-border rounded-xl p-4 mb-6">
+              <div className="text-xs text-foreground/50 mb-1">Expected amount</div>
+              <div className="text-2xl font-black text-foreground">₹{paymentData.amount.toLocaleString('en-IN')}</div>
+              <div className="text-xs text-foreground/50 mt-1">from {paymentData.brandName}</div>
             </div>
             <div className="flex gap-3">
               <button type="button"
@@ -1322,7 +1322,7 @@ const PaymentDetailPage = () => {
                   setShowConfirmModal(false);
                 }}
                 disabled={updateDealMutation.isPending}
-                className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground rounded-xl font-medium transition-all disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1330,7 +1330,7 @@ const PaymentDetailPage = () => {
                 onClick={handleConfirmMarkAsReceived}
                 disabled={updateDealMutation.isPending}
                 whileTap={{ scale: 0.98 }}
-                className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {updateDealMutation.isPending ? (
                   <>

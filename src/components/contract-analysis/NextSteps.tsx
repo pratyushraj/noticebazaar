@@ -46,8 +46,8 @@ export const NextSteps: React.FC<NextStepsProps> = ({ riskLevel }) => {
       transition={{ duration: 0.3, delay: 0.4 }}
       className="relative bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-[24px] rounded-[20px] p-5 border border-[rgba(255,255,255,0.15)] shadow-[0_8px_40px_rgba(0,0,0,0.25)]"
     >
-      <h3 className="font-semibold text-lg mb-4 text-white">🎯 Recommended Next Steps</h3>
-      <ol className="space-y-3 list-decimal list-inside text-sm text-white/90">
+      <h3 className="font-semibold text-lg mb-4 text-foreground">🎯 Recommended Next Steps</h3>
+      <ol className="space-y-3 list-decimal list-inside text-sm text-foreground/90">
         {steps.map((step, index) => (
           <motion.li
             key={index}

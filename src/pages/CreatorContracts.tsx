@@ -280,7 +280,7 @@ const CreatorContracts = () => {
 
     // Payment Pending → orange
     if (statusLower.includes('payment') || statusLower === 'payment pending') {
-      return { label: 'Payment Pending', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' };
+      return { label: 'Payment Pending', color: 'bg-warning/20 text-warning border-orange-500/30' };
     }
 
     // Completed → grey
@@ -300,7 +300,7 @@ const CreatorContracts = () => {
 
     // Contract Ready (sent, draft ready) → blue
     if (statusLower === 'sent' || statusLower === 'draft' || statusLower.includes('contract_ready') || statusLower.includes('agreement_prepared')) {
-      return { label: 'Contract Ready', color: 'bg-info/20 text-info border-blue-500/30' };
+      return { label: 'Contract Ready', color: 'bg-info/20 text-info border-info/30' };
     }
 
     // Negotiation → yellow (includes barter "Drafting" = Delivery Details Pending)
@@ -605,7 +605,7 @@ const CreatorContracts = () => {
               ) : (
                 <div className="mb-4 grid grid-cols-1 gap-3">
                   {/* Primary Card: Total Value Protected */}
-                  <div className="bg-secondary/50 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
+                  <div className="bg-card0 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
                     <div className="text-sm text-foreground/70 mb-1">Total Value Protected</div>
                     <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(stats.totalValue)}</div>
                     <div className="text-xs text-foreground/60">Across active protected deals</div>
@@ -622,14 +622,14 @@ const CreatorContracts = () => {
                     <div
                       className={cn(
                         "bg-secondary/6 backdrop-blur-xl border border-border/12 rounded-2xl p-3",
-                        stats.paymentsAtRisk > 0 && "bg-orange-500/15 border-orange-500/30"
+                        stats.paymentsAtRisk > 0 && "bg-warning/15 border-orange-500/30"
                       )}
                     >
                       <div className="text-xs text-foreground/70 mb-1">Payments at Risk</div>
                       <div
                         className={cn(
                           "text-lg font-semibold",
-                          stats.paymentsAtRisk > 0 ? "text-orange-300" : "text-foreground/80"
+                          stats.paymentsAtRisk > 0 ? "text-warning" : "text-foreground/80"
                         )}
                       >
                         {formatIndianCurrency(stats.paymentsAtRisk)}
@@ -655,7 +655,7 @@ const CreatorContracts = () => {
                   "w-full",
                   "relative bg-gradient-to-r from-blue-600/30 to-indigo-600/20",
                   "backdrop-blur-xl rounded-2xl p-4",
-                  "border border-blue-400/40 shadow-lg shadow-blue-500/20",
+                  "border border-info/40 shadow-lg shadow-blue-500/20",
                   "hover:bg-secondary/12 transition-all"
                 )}
               >
@@ -714,7 +714,7 @@ const CreatorContracts = () => {
                         {filter.id === 'action_needed' && filter.count !== undefined && filter.count > 0 && (
                           <span className={cn(
                             "ml-1.5 px-1.5 py-0.5 rounded-full text-xs font-semibold",
-                            isActive ? "bg-secondary/25 text-foreground" : "bg-secondary/50 text-foreground/80"
+                            isActive ? "bg-secondary/25 text-foreground" : "bg-card0 text-foreground/80"
                           )}>
                             {filter.count}
                           </span>
@@ -736,7 +736,7 @@ const CreatorContracts = () => {
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
                       "bg-secondary/8 text-foreground border-border hover:bg-secondary/12",
-                      hasActiveAdvancedFilters && "bg-info/20 border-blue-400/30 text-info",
+                      hasActiveAdvancedFilters && "bg-info/20 border-info/30 text-info",
                       "text-sm h-9"
                     )}
                   >
@@ -805,7 +805,7 @@ const CreatorContracts = () => {
                       )}
                       <button type="button"
                         onClick={() => setShowAdvancedFilters(false)}
-                        className="p-1 hover:bg-secondary/50 rounded-lg transition-colors"
+                        className="p-1 hover:bg-card0 rounded-lg transition-colors"
                       >
                         <X className="w-4 h-4 text-foreground/60" />
                       </button>

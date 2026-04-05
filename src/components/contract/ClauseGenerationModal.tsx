@@ -36,14 +36,14 @@ export const ClauseGenerationModal: React.FC<ClauseGenerationModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-secondary/50 backdrop-blur-md rounded-2xl border border-border shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold">Auto-Generated Safe Clause</h3>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -53,11 +53,11 @@ export const ClauseGenerationModal: React.FC<ClauseGenerationModalProps> = ({
           {/* Original Risky Clause */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
-              <h4 className="font-semibold text-red-400">Original Risky Clause</h4>
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <h4 className="font-semibold text-destructive">Original Risky Clause</h4>
             </div>
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-              <p className="text-sm text-purple-200">{issue.clause || issue.description}</p>
+            <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-xl">
+              <p className="text-sm text-secondary">{issue.clause || issue.description}</p>
             </div>
           </div>
 
@@ -68,7 +68,7 @@ export const ClauseGenerationModal: React.FC<ClauseGenerationModalProps> = ({
               <h4 className="font-semibold text-green-400">Safer Replacement Clause</h4>
             </div>
             <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-              <p className="text-sm text-purple-200 whitespace-pre-line">{generatedClause}</p>
+              <p className="text-sm text-secondary whitespace-pre-line">{generatedClause}</p>
             </div>
           </div>
 
@@ -76,7 +76,7 @@ export const ClauseGenerationModal: React.FC<ClauseGenerationModalProps> = ({
           <button
             type="button"
             onClick={handleCopy}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-secondary hover:bg-secondary text-foreground px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <Copy className="w-5 h-5" />
             Copy Safe Clause

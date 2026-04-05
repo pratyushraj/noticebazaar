@@ -72,32 +72,32 @@ const OnboardingChecklist = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 border border-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-6"
+        className="bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-[24px] p-6 border border-border shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-6"
       >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-purple-400" />
+              <Sparkles className="w-5 h-5 text-secondary" />
             </div>
             <div>
-              <h3 className="font-semibold text-[17px] text-white mb-1">Your collab journey</h3>
-              <p className="text-[13px] text-purple-200">
+              <h3 className="font-semibold text-[17px] text-foreground mb-1">Your collab journey</h3>
+              <p className="text-[13px] text-secondary">
                 {checklistItems.filter(i => i.completed).length} of {checklistItems.length} done
               </p>
             </div>
           </div>
           <button type="button"
             onClick={() => setIsVisible(false)}
-            className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-1 hover:bg-secondary/50 rounded-lg transition-colors"
             aria-label="Dismiss"
           >
-            <X className="w-4 h-4 text-purple-300" />
+            <X className="w-4 h-4 text-secondary" />
           </button>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-4">
-          <div className="w-full bg-white/10 rounded-full h-2 mb-2">
+          <div className="w-full bg-secondary/50 rounded-full h-2 mb-2">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${completionPercentage}%` }}
@@ -120,26 +120,26 @@ const OnboardingChecklist = () => {
                 className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                   item.completed
                     ? 'bg-green-500/10 border border-green-500/20'
-                    : 'bg-white/5 border border-white/10'
+                    : 'bg-card border border-border'
                 }`}
               >
                 {item.completed ? (
                   <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                 ) : (
-                  <Circle className="w-5 h-5 text-purple-400/50 flex-shrink-0" />
+                  <Circle className="w-5 h-5 text-secondary/50 flex-shrink-0" />
                 )}
-                <Icon className={`w-5 h-5 text-purple-400 flex-shrink-0 ${item.completed ? 'opacity-40' : ''}`} />
+                <Icon className={`w-5 h-5 text-secondary flex-shrink-0 ${item.completed ? 'opacity-40' : ''}`} />
                 <div className="flex-1 min-w-0">
-                  <div className={`font-medium text-[15px] ${item.completed ? 'text-green-400' : 'text-white'}`}>
+                  <div className={`font-medium text-[15px] ${item.completed ? 'text-green-400' : 'text-foreground'}`}>
                     {item.title}
                   </div>
-                  <div className="text-[13px] text-purple-200">{item.description}</div>
+                  <div className="text-[13px] text-secondary">{item.description}</div>
                 </div>
                 {item.action && !item.completed && (
                   <button
                     type="button"
                     onClick={item.action}
-                    className="flex items-center gap-1.5 text-xs font-bold text-purple-300 hover:text-white transition-colors whitespace-nowrap"
+                    className="flex items-center gap-1.5 text-xs font-bold text-secondary hover:text-foreground transition-colors whitespace-nowrap"
                   >
                     {item.cta}
                     {item.ctaIcon}

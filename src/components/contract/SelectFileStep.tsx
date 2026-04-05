@@ -19,21 +19,21 @@ export const SelectFileStep: React.FC<SelectFileStepProps> = ({
   return (
     <div className="space-y-6">
       {/* Info Card */}
-      <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-blue-400/30">
+      <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-md rounded-2xl p-5 border border-info/30">
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-blue-400" />
+          <div className="w-10 h-10 rounded-xl bg-info/30 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-5 h-5 text-info" />
           </div>
           <div>
             <h3 className="font-semibold mb-1">AI-Powered Review</h3>
-            <p className="text-sm text-purple-200">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
+            <p className="text-sm text-secondary">Our AI instantly analyzes your contract for potential issues and unfair terms.</p>
           </div>
         </div>
       </div>
 
       {/* Upload Area */}
       <div
-        className="bg-white/10 backdrop-blur-md rounded-2xl border-2 border-dashed border-white/20 p-12 text-center hover:bg-white/15 transition-all cursor-pointer"
+        className="bg-secondary/50 backdrop-blur-md rounded-2xl border-2 border-dashed border-border p-12 text-center hover:bg-secondary/15 transition-all cursor-pointer"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={handleFileSelect}
@@ -46,24 +46,24 @@ export const SelectFileStep: React.FC<SelectFileStepProps> = ({
           className="hidden"
         />
 
-        <div className="w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-          <Upload className="w-10 h-10 text-purple-400" />
+        <div className="w-20 h-20 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
+          <Upload className="w-10 h-10 text-secondary" />
         </div>
 
         <h3 className="text-xl font-semibold mb-2">Upload Contract</h3>
-        <p className="text-sm text-purple-300 mb-4">Drag and drop or click to browse</p>
+        <p className="text-sm text-secondary mb-4">Drag and drop or click to browse</p>
 
         <button type="button"
           onClick={(e) => {
             e.stopPropagation();
             handleFileSelect();
           }}
-          className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-medium transition-colors"
+          className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-medium transition-colors"
         >
           Choose File
         </button>
 
-        <div className="mt-4 text-xs text-purple-400">
+        <div className="mt-4 text-xs text-secondary">
           Supported: PDF, DOCX • Max 10MB
         </div>
       </div>
@@ -74,7 +74,7 @@ export const SelectFileStep: React.FC<SelectFileStepProps> = ({
           <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
           <div>
             <div className="font-medium">Instant Analysis</div>
-            <div className="text-purple-300">Get results in under 30 seconds</div>
+            <div className="text-secondary">Get results in under 30 seconds</div>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export const SelectFileStep: React.FC<SelectFileStepProps> = ({
           <Shield className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
           <div>
             <div className="font-medium">100% Confidential</div>
-            <div className="text-purple-300">Your contracts are encrypted and secure</div>
+            <div className="text-secondary">Your contracts are encrypted and secure</div>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export const SelectFileStep: React.FC<SelectFileStepProps> = ({
           <Sparkles className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
           <div>
             <div className="font-medium">Expert Insights</div>
-            <div className="text-purple-300">AI trained on 10,000+ creator contracts</div>
+            <div className="text-secondary">AI trained on 10,000+ creator contracts</div>
           </div>
         </div>
       </div>

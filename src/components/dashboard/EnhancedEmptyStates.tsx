@@ -25,7 +25,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
       emojis: ['💼', '🤝', '📈'],
       actionLabel: 'Share Collab Link',
       color: 'from-blue-600 to-cyan-600',
-      bgColor: 'bg-blue-500/10 border-blue-500/20',
+      bgColor: 'bg-info/10 border-info/20',
     },
     'no-recommendations': {
       icon: Star,
@@ -34,7 +34,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
       emojis: ['🎉', '⭐', '🚀'],
       actionLabel: 'View Analytics',
       color: 'from-purple-600 to-pink-600',
-      bgColor: 'bg-purple-500/10 border-purple-500/20',
+      bgColor: 'bg-secondary/50 border-purple-500/20',
     },
     'no-search-results': {
       icon: Search,
@@ -43,7 +43,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
       emojis: ['🔍', '📝', '🎯'],
       actionLabel: 'Clear Filters',
       color: 'from-amber-600 to-orange-600',
-      bgColor: 'bg-amber-500/10 border-amber-500/20',
+      bgColor: 'bg-warning/10 border-warning/20',
     },
     'no-active-deals': {
       icon: Zap,
@@ -52,7 +52,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
       emojis: ['⚡', '🔥', '💡'],
       actionLabel: 'Browser Offers',
       color: 'from-red-600 to-orange-600',
-      bgColor: 'bg-red-500/10 border-red-500/20',
+      bgColor: 'bg-destructive/10 border-destructive/20',
     },
   };
 
@@ -66,7 +66,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className={cn(
         'p-8 rounded-3xl border text-center relative overflow-hidden',
-        isDark ? `${state.bgColor} border-white/10` : 'bg-slate-50 border-slate-200 shadow-sm'
+        isDark ? `${state.bgColor} border-border` : 'bg-background border-border shadow-sm'
       )}
     >
       {/* Animated background elements */}
@@ -104,7 +104,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
             state.color
           )}
         >
-          <Icon className="w-8 h-8 text-white" />
+          <Icon className="w-8 h-8 text-foreground" />
         </motion.div>
 
         {/* Title */}
@@ -114,7 +114,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
           transition={{ delay: 0.15, duration: 0.3 }}
           className={cn(
             'text-lg sm:text-xl font-bold mb-2',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}
         >
           {state.title}
@@ -127,7 +127,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
           transition={{ delay: 0.2, duration: 0.3 }}
           className={cn(
             'text-sm mb-6 max-w-xs mx-auto',
-            isDark ? 'text-white/60' : 'text-slate-600'
+            isDark ? 'text-foreground/60' : 'text-muted-foreground'
           )}
         >
           {state.description}
@@ -143,7 +143,7 @@ const EnhancedEmptyStates: React.FC<EnhancedEmptyStateProps> = ({
             <Button
               onClick={onAction}
               className={cn(
-                'bg-gradient-to-r text-white font-bold rounded-xl px-6 py-2.5 text-sm hover:shadow-lg transition-all active:scale-95 shadow-lg',
+                'bg-gradient-to-r text-foreground font-bold rounded-xl px-6 py-2.5 text-sm hover:shadow-lg transition-all active:scale-95 shadow-lg',
                 state.color
               )}
             >

@@ -2032,7 +2032,7 @@ Best regards`;
             <button
               type="button"
               onClick={() => navigate(`/creator-deal/${prevDeal.id}`)}
-              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors active:scale-95"
+              className="p-2 hover:bg-card0 rounded-lg transition-colors active:scale-95"
               aria-label={`Previous deal: ${prevDeal.brand_name}`}
               title={prevDeal.brand_name}
             >
@@ -2048,7 +2048,7 @@ Best regards`;
             <button
               type="button"
               onClick={() => navigate(`/creator-deal/${nextDeal.id}`)}
-              className="p-2 hover:bg-secondary/50 rounded-lg transition-colors active:scale-95"
+              className="p-2 hover:bg-card0 rounded-lg transition-colors active:scale-95"
               aria-label={`Next deal: ${nextDeal.brand_name}`}
               title={nextDeal.brand_name}
             >
@@ -2108,7 +2108,7 @@ Best regards`;
                 return (
                   <Fragment key={step}>
                     <div className="flex flex-col items-center">
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${isComplete ? 'bg-primary text-black' : isCurrent ? 'bg-white text-black' : 'bg-secondary/50 text-foreground/40'}`}>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black ${isComplete ? 'bg-primary text-black' : isCurrent ? 'bg-card text-black' : 'bg-card0 text-foreground/40'}`}>
                         {isComplete ? '✓' : index + 1}
                       </div>
                       <p className={`text-[10px] font-bold uppercase tracking-[0.1em] mt-1.5 text-center ${isCurrent ? 'text-foreground' : isComplete ? 'text-primary' : 'text-foreground/40'}`}>
@@ -2116,7 +2116,7 @@ Best regards`;
                       </p>
                     </div>
                     {index < GUIDED_PROGRESS_STEPS.length - 1 && (
-                      <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-primary' : 'bg-secondary/50'}`} />
+                      <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-primary' : 'bg-card0'}`} />
                     )}
                   </Fragment>
                 );
@@ -2139,7 +2139,7 @@ Best regards`;
                 <button
                   type="button"
                   onClick={guidedDealCard.secondaryAction}
-                  className="inline-flex items-center justify-center rounded-xl bg-secondary/50 border border-border px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-foreground transition hover:bg-secondary/20 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center rounded-xl bg-card0 border border-border px-5 py-3 h-12 w-full md:w-auto text-base md:text-sm font-bold text-foreground transition hover:bg-secondary/20 active:scale-[0.98]"
                 >
                   <Copy className="h-4 w-4 mr-2" />
                   {guidedDealCard.secondaryActionLabel}
@@ -3105,7 +3105,7 @@ ${link}`;
                         }}
                         whileHover={{ scale: 1.01, y: -2 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full bg-card hover:bg-secondary/50 border border-border px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-3 group"
+                        className="w-full bg-card hover:bg-card0 border border-border px-6 py-4 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-3 group"
                       >
                         <Share2 className="w-5 h-5 text-info group-hover:scale-110 transition-transform" />
                         Send for Brand Signature
@@ -3153,7 +3153,7 @@ ${link}`;
                               copyToClipboard(`CA-${deal?.id?.toUpperCase() || ''}`);
                               toast.success('Audit ID copied to clipboard');
                             }}
-                            className="p-2 hover:bg-secondary/50 rounded-lg transition-colors text-foreground/40 hover:text-foreground"
+                            className="p-2 hover:bg-card0 rounded-lg transition-colors text-foreground/40 hover:text-foreground"
                           >
                             <Copy className="w-4 h-4" />
                           </button>
@@ -3199,7 +3199,7 @@ ${link}`;
                         onClick={handleDownloadContract}
                         disabled={(!contractDocxUrl && !signedContractUrl && !deal?.id) || isDownloading}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full px-6 py-3 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-secondary/50 hover:bg-secondary/20 border border-border"
+                        className="w-full px-6 py-3 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-card0 hover:bg-secondary/20 border border-border"
                       >
                         {isDownloading ? (
                           <>
@@ -3253,7 +3253,7 @@ ${link}`;
                       "w-full px-4 py-2.5 border rounded-xl transition-all flex items-center justify-center gap-2 text-sm",
                       !bothSigned
                         ? "bg-card border-border/5 text-foreground/30 cursor-not-allowed"
-                        : "bg-card hover:bg-secondary/50 border-border text-foreground active:scale-[0.98]"
+                        : "bg-card hover:bg-card0 border-border text-foreground active:scale-[0.98]"
                     )}
                   >
                     <Calendar className="w-4 h-4" />
@@ -3565,7 +3565,7 @@ ${link}`;
                               setIsEditingBrandPhone(true);
                             }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-1.5 hover:bg-secondary/50 rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-card0 rounded-lg transition-colors"
                             title="Edit phone number"
                           >
                             <Edit className="w-4 h-4 text-foreground/60" />
@@ -3592,7 +3592,7 @@ ${link}`;
                               setBrandPhoneInput(value);
                             }}
                             placeholder="+91 9876543210"
-                            className="flex-1 bg-secondary/50 border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                            className="flex-1 bg-card0 border border-border rounded-lg px-3 py-2 text-foreground text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                             autoFocus
                           />
                           <motion.button
@@ -3830,7 +3830,7 @@ ${link}`;
                 </button>
                 <button type="button"
                   onClick={() => setShowMarkSignedModal(false)}
-                  className="flex-1 bg-secondary/50 hover:bg-secondary/20 px-4 py-2 rounded-xl font-medium transition-colors"
+                  className="flex-1 bg-card0 hover:bg-secondary/20 px-4 py-2 rounded-xl font-medium transition-colors"
                 >
                   Cancel
                 </button>
@@ -4163,14 +4163,14 @@ ${link}`;
                             <div className="flex flex-wrap gap-2">
                               <button type="button"
                                 onClick={() => setShowReportIssueModal(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
                               >
                                 <AlertCircle className="w-4 h-4" />
                                 Report issue (e.g. brand has not shipped)
                               </button>
                               <button
                                 onClick={() => navigate('/creator-dashboard')}
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium text-sm"
                               >
                                 <Flag className="w-4 h-4" />
                                 Legal support
@@ -4200,7 +4200,7 @@ ${link}`;
                                 href={trackingUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium"
                               >
                                 <ExternalLink className="w-4 h-4" />
                                 Track package
@@ -4239,7 +4239,7 @@ ${link}`;
                             <button type="button"
                               onClick={() => setShowReportIssueModal(true)}
                               disabled={isReportingIssue}
-                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium"
+                              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium"
                             >
                               <AlertCircle className="w-4 h-4" />
                               Report Issue
@@ -4438,7 +4438,7 @@ ${link}`;
             onChange={(e) => setReportIssueReason(e.target.value)}
             placeholder="Describe the issue..."
             rows={4}
-            className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border text-foreground placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+            className="w-full px-4 py-3 rounded-xl bg-card0 border border-border text-foreground placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
           />
           <div className="flex gap-2 justify-end mt-4">
             <button type="button"
@@ -4446,7 +4446,7 @@ ${link}`;
                 setShowReportIssueModal(false);
                 setReportIssueReason('');
               }}
-              className="px-4 py-2 rounded-xl bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground font-medium"
+              className="px-4 py-2 rounded-xl bg-card0 hover:bg-secondary/15 border border-border text-foreground font-medium"
             >
               Cancel
             </button>
@@ -4531,7 +4531,7 @@ ${link}`;
                     setShowDeleteConfirm(false);
                   }}
                   disabled={deleteDeal.isPending}
-                  className="flex-1 px-4 py-2.5 bg-secondary/50 hover:bg-secondary/15 border border-border text-foreground rounded-xl font-medium transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-card0 hover:bg-secondary/15 border border-border text-foreground rounded-xl font-medium transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>

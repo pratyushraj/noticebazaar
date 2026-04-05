@@ -32,14 +32,14 @@ const ToolsResourcesAccordion: React.FC = () => {
       title: 'Templates',
       icon: <FileText className="h-4 w-4" />,
       content: (
-        <div className="space-y-2 text-sm text-white/70">
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+        <div className="space-y-2 text-sm text-foreground/70">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Contract Template
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Invoice Template
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Payment Reminder Template
           </div>
         </div>
@@ -50,14 +50,14 @@ const ToolsResourcesAccordion: React.FC = () => {
       title: 'Help & Support',
       icon: <HelpCircle className="h-4 w-4" />,
       content: (
-        <div className="space-y-2 text-sm text-white/70">
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+        <div className="space-y-2 text-sm text-foreground/70">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Getting Started Guide
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             FAQ
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Contact Support
           </div>
         </div>
@@ -68,14 +68,14 @@ const ToolsResourcesAccordion: React.FC = () => {
       title: 'Learn More',
       icon: <BookOpen className="h-4 w-4" />,
       content: (
-        <div className="space-y-2 text-sm text-white/70">
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+        <div className="space-y-2 text-sm text-foreground/70">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Best Practices
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Legal Resources
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Video Tutorials
           </div>
         </div>
@@ -86,14 +86,14 @@ const ToolsResourcesAccordion: React.FC = () => {
       title: 'Settings',
       icon: <Settings className="h-4 w-4" />,
       content: (
-        <div className="space-y-2 text-sm text-white/70">
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+        <div className="space-y-2 text-sm text-foreground/70">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Account Settings
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Notifications
           </div>
-          <div className="p-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer">
+          <div className="p-2 rounded-lg bg-card hover:bg-secondary/50 cursor-pointer">
             Integrations
           </div>
         </div>
@@ -102,9 +102,9 @@ const ToolsResourcesAccordion: React.FC = () => {
   ];
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-2xl">
       <CardContent className="p-4">
-        <h3 className="text-sm font-semibold text-white mb-4">Tools & Resources</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">Tools & Resources</h3>
         
         <div className="space-y-2">
           {sections.map((section) => {
@@ -119,17 +119,17 @@ const ToolsResourcesAccordion: React.FC = () => {
                   <div
                     className={cn(
                       "flex items-center justify-between p-3 rounded-lg",
-                      "bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                      "bg-card hover:bg-secondary/50 transition-colors cursor-pointer"
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <div className="text-white/60">{section.icon}</div>
-                      <span className="text-sm font-medium text-white">{section.title}</span>
+                      <div className="text-foreground/60">{section.icon}</div>
+                      <span className="text-sm font-medium text-foreground">{section.title}</span>
                     </div>
                     {isOpen ? (
-                      <ChevronDown className="h-4 w-4 text-white/50" />
+                      <ChevronDown className="h-4 w-4 text-foreground/50" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-white/50" />
+                      <ChevronRight className="h-4 w-4 text-foreground/50" />
                     )}
                   </div>
                 </CollapsibleTrigger>

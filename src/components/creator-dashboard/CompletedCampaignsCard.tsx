@@ -47,19 +47,19 @@ const CompletedCampaignsCard: React.FC<CompletedCampaignsCardProps> = ({
       
       <CardHeader className="relative z-10 pb-3">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
-            <CheckCircle className="h-5 w-5 text-white/80" />
+          <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-card backdrop-blur-sm">
+            <CheckCircle className="h-5 w-5 text-foreground/80" />
           </div>
           <CardTitle>Completed</CardTitle>
         </div>
       </CardHeader>
 
       <CardContent className="relative z-10">
-        <div className="text-3xl font-bold text-white tabular-nums">{completed} this month</div>
+        <div className="text-3xl font-bold text-foreground tabular-nums">{completed} this month</div>
         {completedChange !== 0 && (
           <div className={cn(
             "flex items-center gap-1 text-[13px] font-semibold mt-1",
-            completedChange > 0 ? "text-emerald-400" : "text-red-400"
+            completedChange > 0 ? "text-primary" : "text-destructive"
           )}>
             <TrendingUp className={cn(
               "w-3.5 h-3.5",
@@ -68,13 +68,13 @@ const CompletedCampaignsCard: React.FC<CompletedCampaignsCardProps> = ({
             <span>{Math.abs(completedChange)} {completedChange > 0 ? 'more' : 'less'} than last month</span>
           </div>
         )}
-        <div className="text-[13px] text-white/60 mt-2">
-          On-time delivery rate: <span className="font-semibold text-white">{onTimeRate}%</span>
+        <div className="text-[13px] text-foreground/60 mt-2">
+          On-time delivery rate: <span className="font-semibold text-foreground">{onTimeRate}%</span>
         </div>
       </CardContent>
 
-      <div className="relative z-10 px-4 pb-4 pt-3 border-t border-white/10">
-        <div className="flex items-center gap-1.5 text-sm text-blue-500 group-hover:text-blue-400 transition-colors cursor-pointer">
+      <div className="relative z-10 px-4 pb-4 pt-3 border-t border-border">
+        <div className="flex items-center gap-1.5 text-sm text-info group-hover:text-info transition-colors cursor-pointer">
           <span className="whitespace-nowrap">View All</span>
           <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
         </div>

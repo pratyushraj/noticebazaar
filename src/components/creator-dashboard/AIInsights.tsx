@@ -52,17 +52,17 @@ const AIInsights: React.FC<AIInsightsProps> = ({ brandDeals = [] }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
     >
-      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
         <CardContent className="p-0">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 flex-shrink-0">
-              <Sparkles className="h-5 w-5 text-purple-400" />
+              <Sparkles className="h-5 w-5 text-secondary" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold text-purple-400 uppercase tracking-wide">AI Insights</span>
+                <span className="text-xs font-semibold text-secondary uppercase tracking-wide">AI Insights</span>
                 {earningsGrowth > 0 && (
-                  <div className="flex items-center gap-1 text-emerald-400 text-xs">
+                  <div className="flex items-center gap-1 text-primary text-xs">
                     <TrendingUp className="h-3 w-3" />
                     <span>+{Math.abs(earningsGrowth)}%</span>
                   </div>

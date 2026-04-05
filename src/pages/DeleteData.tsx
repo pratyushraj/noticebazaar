@@ -78,7 +78,7 @@ const DeleteData = () => {
 
           <h2 className="text-2xl font-bold text-foreground">Retention Exceptions</h2>
           <div className="card p-4 flex items-start gap-3">
-            <Shield className="h-5 w-5 text-purple-400 mt-1" />
+            <Shield className="h-5 w-5 text-secondary mt-1" />
             <p className="text-sm">
               Certain documents (e.g., legal notices issued, invoices raised, compliance filings)
               may need to be retained for up to 8 years to comply with the Bar Council of India,

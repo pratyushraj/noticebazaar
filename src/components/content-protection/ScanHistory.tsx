@@ -51,19 +51,19 @@ const ScanHistoryItem: React.FC<{
       transition={{ delay: index * 0.1, type: 'spring', stiffness: 300, damping: 30 }}
       className={cn(
         "flex items-center justify-between p-3 rounded-xl transition-all relative overflow-hidden group",
-        "hover:bg-white/5"
+        "hover:bg-card"
       )}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {getStatusIcon(scan.status)}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-white truncate">
+            <span className="text-sm font-medium text-foreground truncate">
               {scan.platform} Scan
             </span>
             {getStatusBadge(scan.status)}
           </div>
-          <div className="flex items-center gap-2 text-xs text-white/60">
+          <div className="flex items-center gap-2 text-xs text-foreground/60">
             <Calendar className="w-3 h-3" />
             <span>{new Date(scan.date).toLocaleDateString('en-IN', {
               day: 'numeric',
@@ -80,8 +80,8 @@ const ScanHistoryItem: React.FC<{
           <div className="flex items-center gap-1">
             {scan.matchesFound > 0 ? (
               <>
-                <AlertTriangle className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-semibold text-red-500">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+                <span className="text-sm font-semibold text-destructive">
                   {scan.matchesFound}
                 </span>
               </>
@@ -103,7 +103,7 @@ const ScanHistoryItem: React.FC<{
           <Button
             size="sm"
             variant="outline"
-            className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 h-8 px-3 text-xs"
+            className="bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20 h-8 px-3 text-xs"
             onClick={() => {
               toast.info('Filing takedown for this scan...');
               onSwipe(null);
@@ -116,7 +116,7 @@ const ScanHistoryItem: React.FC<{
         <Button
           size="sm"
           variant="outline"
-          className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20 h-8 px-3 text-xs"
+          className="bg-secondary/50 border-purple-500/30 text-secondary hover:bg-secondary/20 h-8 px-3 text-xs"
           onClick={() => {
             toast.info('Re-running scan...');
             onSwipe(null);
@@ -142,7 +142,7 @@ const ScanHistory: React.FC<ScanHistoryProps> = ({ scans }) => {
       case 'pending':
         return <Clock className="w-4 h-4 text-yellow-500" />;
       case 'failed':
-        return <XCircle className="w-4 h-4 text-red-500" />;
+        return <XCircle className="w-4 h-4 text-destructive" />;
     }
   };
 
@@ -163,18 +163,18 @@ const ScanHistory: React.FC<ScanHistoryProps> = ({ scans }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
     >
-      <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+      <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
-            <Calendar className="w-5 h-5 text-purple-400" />
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
+            <Calendar className="w-5 h-5 text-secondary" />
             Recent Scans
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
+          <div className="space-y-2 bg-card rounded-2xl p-2 border border-border/5">
             {scans.slice(0, 5).map((scan, index) => (
               <div key={scan.id} className={cn(
-                index < scans.slice(0, 5).length - 1 && "border-b border-white/5"
+                index < scans.slice(0, 5).length - 1 && "border-b border-border/5"
               )}>
                 <ScanHistoryItem
                   scan={scan}

@@ -101,30 +101,30 @@ const Notifications: React.FC = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-white/5 transition-all duration-200 focus-visible:ring-4 focus-visible:ring-blue-400/50 focus-visible:outline-none"
+          className="relative h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-card transition-all duration-200 focus-visible:ring-4 focus-visible:ring-blue-400/50 focus-visible:outline-none"
           aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         >
           <Bell className="h-4 w-4 opacity-80" aria-hidden="true" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-2 w-2" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-info opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-info"></span>
             </span>
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-80 bg-[#0F121A]/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-0"
+        className="w-80 bg-[#0F121A]/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl p-0"
         align="end"
       >
-        <div className="p-4 border-b border-white/10">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-white">Notifications</h3>
+            <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-xs text-blue-400 hover:text-blue-300"
+                className="h-6 px-2 text-xs text-info hover:text-info"
                 onClick={handleMarkAllRead}
               >
                 Mark all read
@@ -147,19 +147,19 @@ const Notifications: React.FC = () => {
               <DropdownMenuItem
                 key={notification.id}
                 className={cn(
-                  "flex items-start gap-3 p-4 cursor-pointer hover:bg-white/5 border-b border-white/5 last:border-b-0",
-                  !notification.read && "bg-blue-500/5"
+                  "flex items-start gap-3 p-4 cursor-pointer hover:bg-card border-b border-border/5 last:border-b-0",
+                  !notification.read && "bg-info/5"
                 )}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className={cn(
                   "mt-0.5 h-2 w-2 rounded-full flex-shrink-0",
-                  !notification.read ? "bg-blue-500" : "bg-transparent"
+                  !notification.read ? "bg-info" : "bg-transparent"
                 )} />
                 <div className="flex-1 min-w-0">
                   <p className={cn(
                     "text-sm font-medium mb-0.5",
-                    !notification.read ? "text-white" : "text-gray-300"
+                    !notification.read ? "text-foreground" : "text-gray-300"
                   )}>
                     {notification.title}
                   </p>
@@ -180,11 +180,11 @@ const Notifications: React.FC = () => {
 
         {notifications.length > 5 && (
           <>
-            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuSeparator className="bg-secondary/50" />
             <div className="p-2">
               <Button
                 variant="ghost"
-                className="w-full justify-center text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5"
+                className="w-full justify-center text-sm text-info hover:text-info hover:bg-card"
                 onClick={() => {
                   navigate('/notifications');
                 }}

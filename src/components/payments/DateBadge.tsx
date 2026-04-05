@@ -16,22 +16,22 @@ export const DateBadge: React.FC<DateBadgeProps> = ({
 }) => {
   const variantConfig = {
     default: {
-      bg: 'bg-white/5',
-      text: 'text-white/80',
-      border: 'border-white/10',
-      icon: 'text-white/80',
+      bg: 'bg-card',
+      text: 'text-foreground/80',
+      border: 'border-border',
+      icon: 'text-foreground/80',
     },
     urgent: {
-      bg: 'bg-amber-500/20',
-      text: 'text-amber-400',
-      border: 'border-amber-400/20',
-      icon: 'text-amber-400',
+      bg: 'bg-warning/20',
+      text: 'text-warning',
+      border: 'border-warning/20',
+      icon: 'text-warning',
     },
     overdue: {
-      bg: 'bg-red-500/20',
-      text: 'text-red-400',
-      border: 'border-red-400/20',
-      icon: 'text-red-400',
+      bg: 'bg-destructive/20',
+      text: 'text-destructive',
+      border: 'border-destructive/20',
+      icon: 'text-destructive',
     },
   };
 

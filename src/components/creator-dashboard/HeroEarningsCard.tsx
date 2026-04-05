@@ -100,7 +100,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
         <CardContent className="relative z-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-[15px] font-semibold text-white tracking-[-0.2px]">
+              <h2 className="text-[15px] font-semibold text-foreground tracking-[-0.2px]">
                 This Month's Earnings
               </h2>
               {earningsHistory.length > 0 && (
@@ -116,7 +116,7 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-payments')}
-              className="text-[13px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 group active:scale-[0.97]"
+              className="text-[13px] text-primary hover:text-primary transition-colors flex items-center gap-1 group active:scale-[0.97]"
             >
               View Breakdown
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
@@ -124,13 +124,13 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
           </div>
 
           <div className="mb-4">
-            <div className="text-3xl font-bold text-white mb-2 tabular-nums tracking-tight">
+            <div className="text-3xl font-bold text-foreground mb-2 tabular-nums tracking-tight">
               ₹{displayValue.toLocaleString('en-IN')}
             </div>
             <div className="flex items-center gap-2 text-[13px]">
               <div className={cn(
                 "flex items-center gap-1 font-semibold",
-                isPositive ? "text-emerald-400" : "text-red-400"
+                isPositive ? "text-primary" : "text-destructive"
               )}>
                 <TrendingUp className={cn(
                   "w-3.5 h-3.5",
@@ -138,24 +138,24 @@ const HeroEarningsCard: React.FC<HeroEarningsCardProps> = ({
                 )} />
                 <span>₹{Math.abs(change).toLocaleString('en-IN')} ({Math.abs(changePercent)}%)</span>
               </div>
-              <span className="text-white/50">vs last month</span>
+              <span className="text-foreground/50">vs last month</span>
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-[13px]">
-              <span className="text-white/60">Monthly Goal Progress</span>
-              <span className="text-emerald-400 font-semibold">{progressPercent}% of ₹{goal.toLocaleString('en-IN')} goal</span>
+              <span className="text-foreground/60">Monthly Goal Progress</span>
+              <span className="text-primary font-semibold">{progressPercent}% of ₹{goal.toLocaleString('en-IN')} goal</span>
             </div>
-            <div className="relative h-2 rounded-full bg-white/10 overflow-hidden">
+            <div className="relative h-2 rounded-full bg-secondary/50 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(progressPercent, 100)}%` }}
                 transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-y-0 left-0 h-full rounded-full bg-emerald-500"
+                className="absolute inset-y-0 left-0 h-full rounded-full bg-primary"
               >
-                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
               </motion.div>
             </div>
           </div>

@@ -66,7 +66,7 @@ export const ChipInput: React.FC<ChipInputProps> = ({
   return (
     <div>
       <div className="relative">
-        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50 z-10" />
+        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/50 z-10" />
         <input
           type="text"
           value={value}
@@ -76,11 +76,11 @@ export const ChipInput: React.FC<ChipInputProps> = ({
           placeholder={placeholder}
           className={cn(
             "w-full pl-9 pr-4 py-3 rounded-xl",
-            "bg-white/10 border border-white/20 backdrop-blur-xl",
-            "text-white placeholder:text-white/40",
-            "focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/20",
+            "bg-secondary/50 border border-border backdrop-blur-xl",
+            "text-foreground placeholder:text-foreground/40",
+            "focus:outline-none focus:border-border focus:ring-2 focus:ring-white/20",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            error && "border-red-400/50 focus:border-red-400"
+            error && "border-destructive/50 focus:border-destructive"
           )}
         />
       </div>
@@ -96,8 +96,8 @@ export const ChipInput: React.FC<ChipInputProps> = ({
                 exit={{ opacity: 0, scale: 0.8 }}
                 className={cn(
                   "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg",
-                  "bg-white/10 border border-white/20 backdrop-blur-xl",
-                  "text-sm text-white/90"
+                  "bg-secondary/50 border border-border backdrop-blur-xl",
+                  "text-sm text-foreground/90"
                 )}
               >
                 <span>{chip}</span>
@@ -105,8 +105,8 @@ export const ChipInput: React.FC<ChipInputProps> = ({
                   onClick={() => removeChip(chip)}
                   disabled={disabled}
                   className={cn(
-                    "p-0.5 rounded hover:bg-white/20 transition-colors",
-                    "text-white/60 hover:text-white"
+                    "p-0.5 rounded hover:bg-secondary/20 transition-colors",
+                    "text-foreground/60 hover:text-foreground"
                   )}
                   aria-label={`Remove ${chip} tag`}
                 >
@@ -119,10 +119,10 @@ export const ChipInput: React.FC<ChipInputProps> = ({
       )}
       
       {error && (
-        <p className="text-red-400 text-sm mt-1">{error}</p>
+        <p className="text-destructive text-sm mt-1">{error}</p>
       )}
       
-      <p className="text-xs text-white/60 mt-1">
+      <p className="text-xs text-foreground/60 mt-1">
         Press Enter or comma to add a tag
       </p>
     </div>

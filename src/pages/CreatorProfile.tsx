@@ -774,7 +774,7 @@ const ProfileSettings = () => {
         handle: profile.youtube_channel_id,
         followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
         connected: true,
-        color: "bg-red-500"
+        color: "bg-destructive"
       });
     }
 
@@ -796,7 +796,7 @@ const ProfileSettings = () => {
         handle: profile.twitter_handle,
         followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
         connected: false,
-        color: "bg-blue-400"
+        color: "bg-info"
       });
     }
 
@@ -818,7 +818,7 @@ const ProfileSettings = () => {
         handle: profile.facebook_profile_url,
         followers: followers >= 1000 ? `${(followers / 1000).toFixed(0)}K` : followers.toString(),
         connected: false,
-        color: "bg-blue-600"
+        color: "bg-info"
       });
     }
 
@@ -1520,10 +1520,10 @@ const ProfileSettings = () => {
   // Loading state
   if (sessionLoading) {
     return (
-      <div className="nb-screen-height bg-black text-white flex items-center justify-center">
+      <div className="nb-screen-height bg-black text-foreground flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-slate-400" />
-          <p className="text-slate-200">Loading profile...</p>
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -1548,7 +1548,7 @@ const ProfileSettings = () => {
               }
               navigate('/creator-dashboard');
             }}
-            className="min-h-12 min-w-12 p-3 -m-2 flex items-center justify-center hover:bg-white/10 rounded-xl transition-colors touch-manipulation"
+            className="min-h-12 min-w-12 p-3 -m-2 flex items-center justify-center hover:bg-secondary/50 rounded-xl transition-colors touch-manipulation"
             aria-label="Back to dashboard"
           >
             <ArrowLeft className="w-7 h-7" />
@@ -1572,7 +1572,7 @@ const ProfileSettings = () => {
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
               </div>
             ) : (
-              <Check className="w-6 h-6 text-emerald-500" />
+              <Check className="w-6 h-6 text-primary" />
             )}
           </button>
         </div>
@@ -1653,7 +1653,7 @@ const ProfileSettings = () => {
               </div>
               <p className="text-xs text-muted-foreground mt-2">
                 Your typical rate for a single Instagram reel collaboration.
-                <span className="block mt-1 text-emerald-600 font-medium">💡 Creators with 10K-50K followers typically charge ₹2K-5K per reel.</span>
+                <span className="block mt-1 text-primary font-medium">💡 Creators with 10K-50K followers typically charge ₹2K-5K per reel.</span>
               </p>
             </div>
 
@@ -1836,8 +1836,8 @@ const ProfileSettings = () => {
             className={cn(
               "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'profile'
-                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
-                : "text-white/50 hover:text-white/80"
+                ? "bg-secondary/15 text-foreground shadow-sm ring-1 ring-white/15 border border-border"
+                : "text-foreground/50 hover:text-foreground/80"
             )}
           >
             <User className="w-4 h-4" />
@@ -1851,8 +1851,8 @@ const ProfileSettings = () => {
             className={cn(
               "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'account'
-                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
-                : "text-white/50 hover:text-white/80"
+                ? "bg-secondary/15 text-foreground shadow-sm ring-1 ring-white/15 border border-border"
+                : "text-foreground/50 hover:text-foreground/80"
             )}
           >
             <Lock className="w-4 h-4" />
@@ -1866,8 +1866,8 @@ const ProfileSettings = () => {
             className={cn(
               "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'collab'
-                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
-                : "text-white/50 hover:text-white/80"
+                ? "bg-secondary/15 text-foreground shadow-sm ring-1 ring-white/15 border border-border"
+                : "text-foreground/50 hover:text-foreground/80"
             )}
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -1881,8 +1881,8 @@ const ProfileSettings = () => {
             className={cn(
               "w-full sm:flex-1 min-h-[44px] px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-1.5",
               activeSection === 'support'
-                ? "bg-white/15 text-white shadow-sm ring-1 ring-white/15 border border-white/20"
-                : "text-white/50 hover:text-white/80"
+                ? "bg-secondary/15 text-foreground shadow-sm ring-1 ring-white/15 border border-border"
+                : "text-foreground/50 hover:text-foreground/80"
             )}
           >
             <HelpCircle className="w-4 h-4" />
@@ -1893,7 +1893,7 @@ const ProfileSettings = () => {
 
       {dealSettingsRequired && (
         <div className="px-4 pt-3">
-          <div className="max-w-2xl mx-auto rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+          <div className="max-w-2xl mx-auto rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
             Complete your Collab Settings to finish onboarding and start receiving collaboration offers.
           </div>
         </div>
@@ -1980,10 +1980,10 @@ const ProfileSettings = () => {
                     )}
                   </div>
                   <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-5 sm:h-5 bg-muted-foreground/50 rounded-full flex items-center justify-center border-2 border-border cursor-pointer hover:bg-muted-foreground transition-colors">
-                    <Camera className="w-3 h-3 sm:w-2.5 sm:h-2.5 text-white" />
+                    <Camera className="w-3 h-3 sm:w-2.5 sm:h-2.5 text-foreground" />
                   </div>
                   {userData.verified && (
-                    <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center border-2 border-border z-10">
+                    <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-info rounded-full flex items-center justify-center border-2 border-border z-10">
                       <Check className="w-3 h-3" />
                     </div>
                   )}
@@ -2001,11 +2001,11 @@ const ProfileSettings = () => {
                 {(userData.name || '').trim() ? (userData.name || '').trim().replace(/^\w/, c => c.toUpperCase()) : (userData.name || '')}
               </h1>
               <div className="mt-1">
-                <p className="text-xs text-white/60">
+                <p className="text-xs text-foreground/60">
                   Verified Creator Profile • Protection Active
                 </p>
               </div>
-              <p className="text-[10px] text-white/40 mt-1 sm:hidden">Tap camera icon to change photo</p>
+              <p className="text-[10px] text-foreground/40 mt-1 sm:hidden">Tap camera icon to change photo</p>
             </div>
 
             {/* View Stats Button - Full width on mobile */}
@@ -2055,7 +2055,7 @@ const ProfileSettings = () => {
               </h2>
               <div className="space-y-2.5">
                 <div>
-                  <label className="text-xs text-white/70 mb-1.5 block">Full Name *</label>
+                  <label className="text-xs text-foreground/70 mb-1.5 block">Full Name *</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -2066,9 +2066,9 @@ const ProfileSettings = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-white/70 mb-1.5 block">Email</label>
+                  <label className="text-xs text-foreground/70 mb-1.5 block">Email</label>
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <Mail className="w-4 h-4 text-foreground/50 flex-shrink-0" />
                     <input
                       type="email"
                       value={formData.email}
@@ -2077,12 +2077,12 @@ const ProfileSettings = () => {
                       className="flex-1 bg-muted/30 border border-border rounded-lg px-3 py-2 text-sm text-muted-foreground placeholder:text-muted-foreground/40 outline-none cursor-not-allowed"
                     />
                   </div>
-                  <p className="text-xs text-white/60 mt-1">Email cannot be changed for security reasons</p>
+                  <p className="text-xs text-foreground/60 mt-1">Email cannot be changed for security reasons</p>
                 </div>
                 <div>
-                  <label className="text-xs text-white/70 mb-1.5 block">Phone</label>
+                  <label className="text-xs text-foreground/70 mb-1.5 block">Phone</label>
                   <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <Phone className="w-4 h-4 text-foreground/50 flex-shrink-0" />
                     <input
                       type="tel"
                       value={formData.phone}
@@ -2108,9 +2108,9 @@ const ProfileSettings = () => {
                 </div>
                 {/* Address Line */}
                 <div>
-                  <label className="text-xs text-white/70 mb-1.5 block">Address Line *</label>
+                  <label className="text-xs text-foreground/70 mb-1.5 block">Address Line *</label>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-white/50 flex-shrink-0" />
+                    <MapPin className="w-4 h-4 text-foreground/50 flex-shrink-0" />
                     <input
                       type="text"
                       value={formData.addressLine}
@@ -2125,7 +2125,7 @@ const ProfileSettings = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Pincode with auto-fetch */}
                   <div>
-                    <label className="text-xs text-white/70 mb-1.5 block">Pincode *</label>
+                    <label className="text-xs text-foreground/70 mb-1.5 block">Pincode *</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
@@ -2140,7 +2140,7 @@ const ProfileSettings = () => {
                         className={`flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-all ${editMode ? 'focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-muted' : 'cursor-not-allowed opacity-70'}`}
                       />
                       {isLookingUpPincode && (
-                        <Loader2 className="w-4 h-4 animate-spin text-slate-400 flex-shrink-0" />
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground flex-shrink-0" />
                       )}
                     </div>
                     {pincodeError && (
@@ -2149,12 +2149,12 @@ const ProfileSettings = () => {
                     {formData.pincode.length === 6 && !isLookingUpPincode && !pincodeError && (
                       <p className="text-xs text-green-400 mt-1">✓ City and State auto-filled</p>
                     )}
-                    <p className="text-xs text-white/60 mt-1">Enter 6-digit pincode to auto-fill city and state</p>
+                    <p className="text-xs text-foreground/60 mt-1">Enter 6-digit pincode to auto-fill city and state</p>
                   </div>
 
                   {/* City */}
                   <div>
-                    <label className="text-xs text-white/70 mb-1.5 block">City *</label>
+                    <label className="text-xs text-foreground/70 mb-1.5 block">City *</label>
                     <input
                       type="text"
                       value={formData.city || ''}
@@ -2177,7 +2177,7 @@ const ProfileSettings = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* State */}
                   <div>
-                    <label className="text-xs text-white/70 mb-1.5 block">State *</label>
+                    <label className="text-xs text-foreground/70 mb-1.5 block">State *</label>
                     <input
                       type="text"
                       value={formData.state}
@@ -2192,7 +2192,7 @@ const ProfileSettings = () => {
             </div>
 
             {/* Social Profiles Section */}
-            <div className="bg-white/8 rounded-xl p-4 border border-white/15">
+            <div className="bg-secondary/8 rounded-xl p-4 border border-border">
               <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
                 <Instagram className="w-4 h-4" />
                 Social Profiles
@@ -2257,17 +2257,17 @@ const ProfileSettings = () => {
                     <div
                       key={achievement.id}
                       className={`p-3 rounded-lg border transition-colors ${achievement.earned
-                        ? 'bg-amber-500/5 border-amber-500/20'
+                        ? 'bg-warning/5 border-warning/20'
                         : 'bg-muted/40 border-border'
                         }`}
                     >
-                      <div className={`w-10 h-10 rounded-lg ${achievement.earned ? 'bg-amber-500/10' : 'bg-muted'
+                      <div className={`w-10 h-10 rounded-lg ${achievement.earned ? 'bg-warning/10' : 'bg-muted'
                         } flex items-center justify-center mb-2`}>
-                        <Icon className={`w-5 h-5 ${achievement.earned ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                        <Icon className={`w-5 h-5 ${achievement.earned ? 'text-warning' : 'text-muted-foreground'}`} />
                       </div>
                       <div className="font-medium text-sm mb-1">{achievement.title}</div>
                       {achievement.earned ? (
-                        <div className="text-xs text-amber-600/80 font-medium">Earned {achievement.date}</div>
+                        <div className="text-xs text-warning/80 font-medium">Earned {achievement.date}</div>
                       ) : (
                         <>
                           <div className="text-xs text-muted-foreground">{achievement.progress}% complete</div>
@@ -2478,7 +2478,7 @@ const ProfileSettings = () => {
 
             {/* Logout Button - At Bottom of Profile Section */}
             <div className="mt-6 mb-4">
-              <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
+              <div className="bg-destructive/5 rounded-lg p-3 border border-destructive/20">
                 <button type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -2491,7 +2491,7 @@ const ProfileSettings = () => {
                     setShowLogoutDialog(true);
                   }}
                   disabled={signOutMutation.isPending}
-                  className="w-full bg-transparent hover:bg-red-500/10 border border-red-500/40 text-red-300 font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[40px]"
+                  className="w-full bg-transparent hover:bg-destructive/10 border border-destructive/40 text-destructive font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[40px]"
                   aria-label="Log out of your account"
                   aria-describedby="logout-description"
                 >
@@ -2507,7 +2507,7 @@ const ProfileSettings = () => {
                     </>
                   )}
                 </button>
-                <p id="logout-description" className="text-xs text-center text-white/40 mt-2">
+                <p id="logout-description" className="text-xs text-center text-foreground/40 mt-2">
                   You'll be signed out of your account
                 </p>
               </div>
@@ -2529,7 +2529,7 @@ const ProfileSettings = () => {
         {activeSection === 'collab' && (
           <div className="space-y-3">
             <div className="bg-card rounded-xl p-4 border border-border">
-              <div className="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 mb-2">
+              <div className="inline-flex items-center rounded-full border border-warning/30 bg-warning/10 px-2.5 py-1 text-[11px] font-semibold text-warning dark:text-warning mb-2">
                 ⭐ Your Brand Entry Point
               </div>
               <h2 className="font-semibold text-base mb-2 flex items-center gap-2">
@@ -2538,7 +2538,7 @@ const ProfileSettings = () => {
               </h2>
               <p className="text-xs text-muted-foreground mb-1">Share this link so brands can send offers directly.</p>
               <p className="text-xs text-muted-foreground/80 mb-1.5">This replaces DM negotiations.</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-3">Verified deal flow — no agency middle layer</p>
+              <p className="text-xs text-primary dark:text-primary font-medium mb-3">Verified deal flow — no agency middle layer</p>
               {(() => {
                 const usernameForLink = formData.instagramHandle || profile?.instagram_handle || profile?.username;
                 const hasUsername = usernameForLink && usernameForLink.trim() !== '';
@@ -2547,7 +2547,7 @@ const ProfileSettings = () => {
 
                 if (!hasUsername) {
                   return (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">Add your Instagram username in Profile to activate your collab link.</p>
+                    <p className="text-xs text-warning dark:text-warning font-medium">Add your Instagram username in Profile to activate your collab link.</p>
                   );
                 }
 
@@ -2615,20 +2615,20 @@ const ProfileSettings = () => {
               }
               if (missingStats.length === 0) return null;
               return (
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+                <div className="rounded-xl border border-warning/30 bg-warning/5 p-4">
                   <div className="flex items-start gap-2.5 mb-3">
-                    <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-sm">⚡</span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-amber-700 dark:text-amber-100">Your public page is missing key stats</p>
-                      <p className="text-xs text-amber-600/70 dark:text-amber-200/60 mt-0.5">Brands see "—" for these fields. Fill them in to build trust.</p>
+                      <p className="text-sm font-semibold text-warning dark:text-warning">Your public page is missing key stats</p>
+                      <p className="text-xs text-warning/70 dark:text-warning/60 mt-0.5">Brands see "—" for these fields. Fill them in to build trust.</p>
                     </div>
                   </div>
                   <ul className="space-y-2">
                     {missingStats.map((stat) => (
                       <li key={stat.field} className="flex items-start gap-2.5">
-                        <div className="w-4 h-4 rounded border border-amber-500/40 bg-background flex-shrink-0 mt-0.5" />
+                        <div className="w-4 h-4 rounded border border-warning/40 bg-background flex-shrink-0 mt-0.5" />
                         <div>
                           <span className="text-xs font-semibold text-foreground/90">{stat.label}</span>
                           <span className="text-xs text-muted-foreground ml-1.5">— {stat.hint}</span>
@@ -2636,7 +2636,7 @@ const ProfileSettings = () => {
                       </li>
                     ))}
                   </ul>
-                  <p className="text-[11px] text-amber-600/60 dark:text-amber-200/40 mt-3 font-medium">Scroll down to fill these in ↓</p>
+                  <p className="text-[11px] text-warning/60 dark:text-warning/40 mt-3 font-medium">Scroll down to fill these in ↓</p>
                 </div>
               );
             })()}
@@ -2652,14 +2652,14 @@ const ProfileSettings = () => {
                     <Sparkles className="w-5 h-5 text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-100 italic">Optimization Wizard</h3>
-                    <p className="text-[11px] text-slate-400">Powered by Creator Armour AI</p>
+                    <h3 className="font-bold text-muted-foreground italic">Optimization Wizard</h3>
+                    <p className="text-[11px] text-muted-foreground">Powered by Creator Armour AI</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Button 
                     variant="outline" 
-                    className="h-auto py-3 px-4 flex flex-col items-center gap-1.5 bg-white/5 border-white/10 hover:bg-white/10"
+                    className="h-auto py-3 px-4 flex flex-col items-center gap-1.5 bg-card border-border hover:bg-secondary/50"
                     onClick={() => {
                       toast.info("AI is analyzing your content...", {
                         description: "Fetching latest metrics and optimizing your bio."
@@ -2671,12 +2671,12 @@ const ProfileSettings = () => {
                       }, 2000);
                     }}
                   >
-                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <Sparkles className="w-4 h-4 text-secondary" />
                     <span className="text-xs font-bold">Enhance Bio</span>
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="h-auto py-3 px-4 flex flex-col items-center gap-1.5 bg-white/5 border-white/10 hover:bg-white/10"
+                    className="h-auto py-3 px-4 flex flex-col items-center gap-1.5 bg-card border-border hover:bg-secondary/50"
                     onClick={() => {
                       toast.info("Scanning market rates...", {
                         description: "Calculating your optimal rate card."
@@ -2684,7 +2684,7 @@ const ProfileSettings = () => {
                       setFormData(prev => ({ ...prev, autoPricingEnabled: true }));
                     }}
                   >
-                    <Zap className="w-4 h-4 text-amber-400" />
+                    <Zap className="w-4 h-4 text-warning" />
                     <span className="text-xs font-bold">Smart Rates</span>
                   </Button>
                 </div>
@@ -2703,9 +2703,9 @@ const ProfileSettings = () => {
                 <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border mb-2">
                   <div className="pr-4">
                     <p className="text-sm font-medium flex items-center gap-1.5 flex-wrap">
-                      <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-info" />
                       Auto Pricing
-                      <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Premium</span>
+                      <span className="text-[10px] bg-info/20 text-info px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Premium</span>
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">Allow our engine to automatically recommend rates to brands based on your content stats.</p>
                   </div>
@@ -2716,11 +2716,11 @@ const ProfileSettings = () => {
                     }}
                     className={cn(
                       "flex-shrink-0 w-11 h-6 rounded-full transition-all duration-200 relative",
-                      formData.autoPricingEnabled ? "bg-blue-600" : "bg-muted"
+                      formData.autoPricingEnabled ? "bg-info" : "bg-muted"
                     )}
                   >
                     <div className={cn(
-                      "absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200",
+                      "absolute top-1 w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-200",
                       formData.autoPricingEnabled ? "left-6" : "left-1"
                     )} />
                   </button>
@@ -2796,8 +2796,8 @@ const ProfileSettings = () => {
                   </div>
                 </div>
 
-                {collabBudgetError && <p className="text-xs text-amber-300">{collabBudgetError}</p>}
-                <p className="text-[11px] text-white/60">This helps brands send relevant offers only.</p>
+                {collabBudgetError && <p className="text-xs text-warning">{collabBudgetError}</p>}
+                <p className="text-[11px] text-foreground/60">This helps brands send relevant offers only.</p>
 
                 <div>
                           <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Open To</label>
@@ -3143,7 +3143,7 @@ const ProfileSettings = () => {
                 Complete this to receive better-matched offers.
               </p>
               {positioningNudge && (
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mb-2 text-center transition-opacity duration-200">{positioningNudge}</p>
+                <p className="text-[11px] text-primary dark:text-primary font-medium mb-2 text-center transition-opacity duration-200">{positioningNudge}</p>
               )}
               <button type="button"
                 onClick={() => {
@@ -3186,7 +3186,7 @@ const ProfileSettings = () => {
                     || !isPushSupported
                     || (!isIOSNeedsInstall && !hasVapidKey)
                   }
-                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-white text-black hover:bg-slate-200 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold bg-card text-black hover:bg-background text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isPushBusy
                     ? 'Updating…'
@@ -3205,7 +3205,7 @@ const ProfileSettings = () => {
                     >
                       {isPushBusy ? 'Sending…' : 'Send Test Notification'}
                     </button>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Push alerts active</span>
+                    <span className="text-xs text-primary dark:text-primary font-medium">Push alerts active</span>
                   </>
                 )}
               </div>
@@ -3225,7 +3225,7 @@ const ProfileSettings = () => {
                   <div className="text-xl font-bold mb-1">{userData.subscription.plan} Plan</div>
                   <div className="text-sm text-muted-foreground">₹{userData.subscription.amount}/month</div>
                 </div>
-                <span className="px-2.5 py-1 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-semibold">
+                <span className="px-2.5 py-1 bg-primary/15 text-primary dark:text-primary border border-primary/20 rounded-full text-xs font-semibold">
                   Active
                 </span>
               </div>
@@ -3265,7 +3265,7 @@ const ProfileSettings = () => {
                     <Shield className="w-4 h-4 text-muted-foreground" />
                     <div className="text-left">
                       <div className="font-medium text-sm">Two-Factor Authentication</div>
-                      <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Enabled</div>
+                      <div className="text-xs text-primary dark:text-primary font-medium">Enabled</div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
@@ -3282,15 +3282,15 @@ const ProfileSettings = () => {
                   <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </button>
 
-                <button type="button" className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-red-500/10 transition-all group">
+                <button type="button" className="w-full flex items-center justify-between p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-destructive/10 transition-all group">
                   <div className="flex items-center gap-2.5">
-                    <Trash2 className="w-4 h-4 text-red-500/70 group-hover:text-red-500" />
+                    <Trash2 className="w-4 h-4 text-destructive/70 group-hover:text-destructive" />
                     <div className="text-left">
-                      <div className="font-medium text-sm text-red-500/80 group-hover:text-red-500 transition-colors">Delete Account</div>
-                      <div className="text-xs text-red-500/50 group-hover:text-red-500/70">Permanently remove your account</div>
+                      <div className="font-medium text-sm text-destructive/80 group-hover:text-destructive transition-colors">Delete Account</div>
+                      <div className="text-xs text-destructive/50 group-hover:text-destructive/70">Permanently remove your account</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-red-500/50 group-hover:text-red-500" />
+                  <ChevronRight className="w-4 h-4 text-destructive/50 group-hover:text-destructive" />
                 </button>
               </div>
             </div>
@@ -3342,7 +3342,7 @@ const ProfileSettings = () => {
                   className="w-full flex items-center justify-between min-h-[44px] p-2.5 bg-muted/40 rounded-lg border border-border hover:bg-muted/60 transition-all"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-amber-500/70" />
+                    <Sparkles className="w-4 h-4 text-warning/70" />
                     <div className="text-left">
                       <div className="font-medium text-sm">Restart Your Deals Tutorial</div>
                       <div className="text-xs text-muted-foreground">Show the guided tour again</div>
@@ -3380,7 +3380,7 @@ const ProfileSettings = () => {
             </div>
 
             {/* Divider before About */}
-            <div className="border-t border-white/10 my-4"></div>
+            <div className="border-t border-border my-4"></div>
 
             {/* App Info - Muted and Centered */}
             {/* App Info - Muted and Centered */}
@@ -3394,7 +3394,7 @@ const ProfileSettings = () => {
 
             {/* Logout Button - At Bottom */}
             <div className="mt-6 mb-4">
-              <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/20">
+              <div className="bg-destructive/5 rounded-lg p-3 border border-destructive/20">
                 <button type="button"
                   onClick={(e) => {
                     e.preventDefault();
@@ -3403,7 +3403,7 @@ const ProfileSettings = () => {
                     setShowLogoutDialog(true);
                   }}
                   disabled={signOutMutation.isPending}
-                  className="w-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 font-semibold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
+                  className="w-full bg-destructive/10 hover:bg-destructive/20 border border-destructive/30 text-destructive dark:text-destructive font-semibold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px]"
                   aria-label="Log out of your account"
                 >
                   {signOutMutation.isPending ? (
@@ -3418,7 +3418,7 @@ const ProfileSettings = () => {
                     </>
                   )}
                 </button>
-                <p className="text-[10px] text-center text-red-500/50 mt-2 font-medium">
+                <p className="text-[10px] text-center text-destructive/50 mt-2 font-medium">
                   You'll be signed out of your account
                 </p>
               </div>
@@ -3435,7 +3435,7 @@ const ProfileSettings = () => {
         <AlertDialogContent className="bg-card/95 backdrop-blur-xl border border-border text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground text-xl flex items-center gap-2 font-bold">
-              <LogOut className="w-5 h-5 text-red-500" />
+              <LogOut className="w-5 h-5 text-destructive" />
               Confirm Logout
             </AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground font-medium">
@@ -3454,7 +3454,7 @@ const ProfileSettings = () => {
             <AlertDialogAction
               onClick={handleLogout}
               disabled={signOutMutation.isPending}
-              className="bg-red-500 text-white hover:bg-red-600 border border-red-600 focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
+              className="bg-destructive text-foreground hover:bg-destructive border border-destructive focus:ring-2 focus:ring-red-400/50 disabled:opacity-50"
             >
               {signOutMutation.isPending ? (
                 <>

@@ -58,7 +58,7 @@ export const FullScreenLoader = ({
             ease: "easeInOut",
           }}
         >
-          <Shield className="w-12 h-12 text-emerald-600 drop-shadow-lg" strokeWidth={2} />
+          <Shield className="w-12 h-12 text-primary drop-shadow-lg" strokeWidth={2} />
           
           {/* Inner glow */}
           <motion.div
@@ -84,7 +84,7 @@ export const FullScreenLoader = ({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.3 }}
-        className="mt-6 text-lg text-slate-900 text-center font-medium"
+        className="mt-6 text-lg text-muted-foreground text-center font-medium"
       >
         {message}
       </motion.p>
@@ -94,7 +94,7 @@ export const FullScreenLoader = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.3 }}
-          className="mt-2 text-sm text-slate-600 text-center max-w-md"
+          className="mt-2 text-sm text-muted-foreground text-center max-w-md"
         >
           {secondaryMessage}
         </motion.p>
@@ -110,7 +110,7 @@ export const FullScreenLoader = ({
             transition={{ duration: 0.5 }}
             className="mt-12"
           >
-            <span className="text-sm text-white/30">Powered by CreatorArmour ©2026</span>
+            <span className="text-sm text-foreground/30">Powered by CreatorArmour ©2026</span>
           </motion.div>
         )}
       </AnimatePresence>

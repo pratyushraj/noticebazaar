@@ -48,14 +48,14 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          className="fixed top-16 left-0 right-0 z-[99] bg-purple-600/90 backdrop-blur-xl border-b border-purple-500/30 shadow-lg"
+          className="fixed top-16 left-0 right-0 z-[99] bg-secondary/90 backdrop-blur-xl border-b border-purple-500/30 shadow-lg"
         >
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <WifiOff className="w-5 h-5 text-white" />
+              <WifiOff className="w-5 h-5 text-foreground" />
               <div>
-                <p className="text-sm font-semibold text-white">Working offline</p>
-                <p className="text-xs text-white/80">Your changes will sync when you're back online</p>
+                <p className="text-sm font-semibold text-foreground">Working offline</p>
+                <p className="text-xs text-foreground/80">Your changes will sync when you're back online</p>
               </div>
             </div>
           </div>
@@ -69,8 +69,8 @@ const OfflineBanner: React.FC<OfflineBannerProps> = ({ onRetry }) => {
           className="fixed top-16 left-0 right-0 z-[99] bg-green-600/90 backdrop-blur-xl border-b border-green-500/30 shadow-lg"
         >
           <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-            <RefreshCw className="w-5 h-5 text-white animate-spin" />
-            <p className="text-sm font-semibold text-white">Syncing your data...</p>
+            <RefreshCw className="w-5 h-5 text-foreground animate-spin" />
+            <p className="text-sm font-semibold text-foreground">Syncing your data...</p>
           </div>
         </motion.div>
       )}

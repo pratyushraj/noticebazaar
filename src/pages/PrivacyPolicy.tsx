@@ -47,7 +47,7 @@ const PrivacyPolicy = () => {
           <h2 className="text-2xl font-bold text-foreground">3. Data Security and Storage</h2>
           <p>
             We take the security of your sensitive legal and financial documents seriously.
-            <Lock className="h-4 w-4 inline mx-1 text-purple-400" /> All data is stored on secure, compliant servers (Supabase) with end-to-end encryption for communications. Access to case data is strictly limited to your assigned legal and CA advisors.
+            <Lock className="h-4 w-4 inline mx-1 text-secondary" /> All data is stored on secure, compliant servers (Supabase) with end-to-end encryption for communications. Access to case data is strictly limited to your assigned legal and CA advisors.
           </p>
 
           <h2 className="text-2xl font-bold text-foreground">4. Disclosure of Information</h2>

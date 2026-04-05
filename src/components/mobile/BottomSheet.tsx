@@ -64,7 +64,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             onDragEnd={handleDragEnd}
             className={cn(
               "fixed bottom-0 left-0 right-0 z-[101]",
-              "bg-[#0B0F1A] backdrop-blur-xl border-t border-white/10",
+              "bg-[#0B0F1A] backdrop-blur-xl border-t border-border",
               "rounded-t-3xl shadow-2xl",
               "max-h-[90vh] overflow-hidden flex flex-col"
             )}
@@ -72,22 +72,22 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           >
             {/* Handle */}
             <div className="flex items-center justify-center pt-3 pb-2">
-              <div className="w-12 h-1.5 rounded-full bg-white/20" />
+              <div className="w-12 h-1.5 rounded-full bg-secondary/20" />
             </div>
 
             {/* Header */}
             {title && (
               <div className="flex items-center justify-between px-6 pb-4">
-                <h2 className="text-xl font-semibold text-white">{title}</h2>
+                <h2 className="text-xl font-semibold text-foreground">{title}</h2>
                 <button type="button"
                   onClick={() => {
                     triggerHaptic(HapticPatterns.light);
                     onClose();
                   }}
-                  className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full bg-card hover:bg-secondary/50 flex items-center justify-center transition-colors"
                   aria-label="Close"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-foreground" />
                 </button>
               </div>
             )}

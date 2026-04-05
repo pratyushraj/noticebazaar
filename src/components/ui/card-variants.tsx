@@ -80,11 +80,11 @@ export const SectionCard = ({
 }: SectionCardProps) => {
   const titleClass =
     theme === 'light'
-      ? "text-lg md:text-xl font-semibold text-slate-900"
+      ? "text-lg md:text-xl font-semibold text-muted-foreground"
       : typography.h3;
   const subtitleClass =
     theme === 'light'
-      ? "text-xs md:text-sm text-slate-600 mt-1"
+      ? "text-xs md:text-sm text-muted-foreground mt-1"
       : (typography.bodySmall + " mt-1");
 
   return (
@@ -143,8 +143,8 @@ export const StatCard = ({
       "text-left flex flex-col justify-between",
       "min-w-0 w-full px-2.5 py-2.5 md:px-4 md:py-4",
       theme === 'light'
-        ? "bg-white border border-slate-200 shadow-[0_18px_50px_rgba(15,23,42,0.08)]"
-        : "border border-white/8 shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
+        ? "bg-card border border-border shadow-[0_18px_50px_rgba(15,23,42,0.08)]"
+        : "border border-border/8 shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
       "scale-[0.96] sm:scale-100",
       className
     )}>
@@ -153,7 +153,7 @@ export const StatCard = ({
         <div className="flex items-center mb-2 md:mb-3">
           <div className={cn(
             "w-9 h-9 md:w-10 md:h-10 p-2 rounded-xl flex items-center justify-center",
-            theme === 'light' ? "bg-slate-100" : "bg-white/5"
+            theme === 'light' ? "bg-background" : "bg-card"
           )}>{icon}</div>
         </div>
       )}
@@ -161,13 +161,13 @@ export const StatCard = ({
       {/* Label */}
       <div className={cn(
         "text-xs md:text-sm tracking-wide opacity-80 mb-1 md:mb-2",
-        theme === 'light' ? "text-slate-600" : "text-white/80"
+        theme === 'light' ? "text-muted-foreground" : "text-foreground/80"
       )}>{label}</div>
 
       {/* Large Value */}
       <div className={cn(
         "text-2xl md:text-3xl font-semibold mb-1 md:mb-2",
-        theme === 'light' ? "text-slate-900" : "text-white"
+        theme === 'light' ? "text-muted-foreground" : "text-foreground"
       )}>
         {displayValue}
       </div>
@@ -178,15 +178,15 @@ export const StatCard = ({
           <div className={cn(
             "text-xs md:text-sm font-medium leading-relaxed",
             isEmpty
-              ? (theme === 'light' ? "text-slate-500" : "text-white/60")
-              : (trend?.isPositive ? "text-green-500" : (theme === 'light' ? "text-slate-700" : "text-white/70"))
+              ? (theme === 'light' ? "text-muted-foreground" : "text-foreground/60")
+              : (trend?.isPositive ? "text-green-500" : (theme === 'light' ? "text-muted-foreground" : "text-foreground/70"))
           )}>
             {subtitle}
           </div>
         ) : trend && (
           <div className={cn(
             "text-xs md:text-sm font-medium",
-            trend.isPositive ? "text-green-500" : "text-red-500"
+            trend.isPositive ? "text-green-500" : "text-destructive"
           )}>
             {trend.isPositive ? '+' : ''}{trend.value}%
           </div>
@@ -194,7 +194,7 @@ export const StatCard = ({
         {showAffordance && (
           <span className={cn(
             "text-lg leading-none ml-auto",
-            theme === 'light' ? "text-slate-400" : "text-purple-300/60"
+            theme === 'light' ? "text-muted-foreground" : "text-secondary/60"
           )}>›</span>
         )}
       </div>
@@ -239,7 +239,7 @@ export const ActionCard = ({
       onClick={handleClick}
       interactive
     >
-      <div className="p-3 rounded-xl bg-white/5 pointer-events-none">{icon}</div>
+      <div className="p-3 rounded-xl bg-card pointer-events-none">{icon}</div>
       <span className={cn(typography.bodySmall, "pointer-events-none")}>{label}</span>
     </BaseCard>
   );

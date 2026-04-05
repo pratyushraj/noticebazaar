@@ -46,10 +46,10 @@ export const NicheStep: React.FC<NicheStepProps> = ({
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
                 <GradientCard padding="lg" className="max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold leading-tight mb-4 text-center text-slate-900 dark:text-white">
+                    <h2 className="text-3xl font-bold leading-tight mb-4 text-center text-muted-foreground dark:text-foreground">
                         What is your niche?
                     </h2>
-                    <p className="text-slate-500 dark:text-white/60 text-center mb-8">
+                    <p className="text-muted-foreground dark:text-foreground/60 text-center mb-8">
                         Select the topics you create content about. This helps brands find you.
                     </p>
 
@@ -61,8 +61,8 @@ export const NicheStep: React.FC<NicheStepProps> = ({
                                     key={niche}
                                     onClick={() => onNicheToggle(niche)}
                                     className={`relative py-3 px-4 rounded-xl border transition-all text-sm font-medium ${isSelected
-                                        ? 'bg-blue-50 border-blue-500 text-blue-600 shadow-sm dark:bg-purple-600/30 dark:border-purple-400 dark:text-white dark:shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)]'
-                                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:border-slate-300 dark:bg-white/5 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10 dark:hover:border-white/20'
+                                        ? 'bg-info border-info text-info shadow-sm dark:bg-secondary/30 dark:border-purple-400 dark:text-foreground dark:shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)]'
+                                        : 'bg-background border-border text-muted-foreground hover:bg-background hover:border-border dark:bg-card dark:border-border dark:text-foreground/70 dark:hover:bg-secondary/50 dark:hover:border-border'
                                         }`}
                                     aria-label={`Select ${niche}`}
                                     aria-pressed={isSelected}
@@ -70,7 +70,7 @@ export const NicheStep: React.FC<NicheStepProps> = ({
                                     <div className="flex items-center justify-center gap-2">
                                         <span>{niche}</span>
                                         {isSelected && (
-                                            <CheckCircle className="w-4 h-4 text-blue-500 dark:text-purple-400" />
+                                            <CheckCircle className="w-4 h-4 text-info dark:text-secondary" />
                                         )}
                                     </div>
                                 </button>

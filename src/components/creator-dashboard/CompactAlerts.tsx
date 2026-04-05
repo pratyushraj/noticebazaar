@@ -64,14 +64,14 @@ const CompactAlerts: React.FC<CompactAlertsProps> = ({ brandDeals = [] }) => {
             key={alert.id}
             className={cn(
               "flex items-center gap-2 px-3 py-1.5 rounded-lg",
-              "bg-red-500/10 border border-red-500/30",
-              "text-red-400 text-xs font-medium",
-              "hover:bg-red-500/20 transition-colors cursor-pointer"
+              "bg-destructive/10 border border-destructive/30",
+              "text-destructive text-xs font-medium",
+              "hover:bg-destructive/20 transition-colors cursor-pointer"
             )}
           >
             <Icon className="h-3.5 w-3.5" />
             <span>{alert.label}</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-300 font-bold">
+            <span className="px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive font-bold">
               {alert.count}
             </span>
           </div>

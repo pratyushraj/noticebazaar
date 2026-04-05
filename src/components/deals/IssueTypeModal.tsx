@@ -90,22 +90,22 @@ export const IssueTypeModal: React.FC<IssueTypeModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[90vw] md:max-w-md bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-2xl border border-white/10 shadow-2xl z-50 overflow-hidden"
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[90vw] md:max-w-md bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 rounded-2xl border border-border shadow-2xl z-50 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-5 border-b border-white/10">
+            <div className="flex items-center justify-between p-5 border-b border-border">
               <div>
-                <h3 className="text-white font-semibold text-lg">Select Issue Type</h3>
-                <p className="text-sm text-purple-300 mt-1">
+                <h3 className="text-foreground font-semibold text-lg">Select Issue Type</h3>
+                <p className="text-sm text-secondary mt-1">
                   Choose the category that best describes your issue
                 </p>
               </div>
               <button type="button"
                 onClick={onClose}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
                 aria-label="Close"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-5 h-5 text-foreground" />
               </button>
             </div>
 
@@ -117,14 +117,14 @@ export const IssueTypeModal: React.FC<IssueTypeModalProps> = ({
                   <button type="button"
                     key={type.id}
                     onClick={() => handleSelect(type.id)}
-                    className="w-full p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] text-left flex items-start gap-4 group"
+                    className="w-full p-4 bg-card hover:bg-secondary/50 border border-border rounded-xl transition-all active:scale-[0.98] text-left flex items-start gap-4 group"
                   >
-                    <div className="p-2 bg-purple-500/20 rounded-lg group-hover:bg-purple-500/30 transition-colors">
-                      <Icon className="w-5 h-5 text-purple-300" />
+                    <div className="p-2 bg-secondary/20 rounded-lg group-hover:bg-secondary/30 transition-colors">
+                      <Icon className="w-5 h-5 text-secondary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-medium mb-1">{type.label}</h4>
-                      <p className="text-sm text-purple-300">{type.description}</p>
+                      <h4 className="text-foreground font-medium mb-1">{type.label}</h4>
+                      <p className="text-sm text-secondary">{type.description}</p>
                     </div>
                   </button>
                 );
@@ -133,26 +133,26 @@ export const IssueTypeModal: React.FC<IssueTypeModalProps> = ({
 
             {/* What happens next - trust signal */}
             <div className="px-5 pb-5">
-              <div className="bg-emerald-500/10 border border-emerald-400/20 rounded-xl p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 mb-3">What happens next</p>
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-primary mb-3">What happens next</p>
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <Clock className="h-3 w-3 text-emerald-400" />
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Clock className="h-3 w-3 text-primary" />
                     </div>
-                    <p className="text-xs text-white/80">Our team reviews within 24 hours</p>
+                    <p className="text-xs text-foreground/80">Our team reviews within 24 hours</p>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="h-3 w-3 text-emerald-400" />
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="h-3 w-3 text-primary" />
                     </div>
-                    <p className="text-xs text-white/80">We contact the brand on your behalf</p>
+                    <p className="text-xs text-foreground/80">We contact the brand on your behalf</p>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                      <Scale className="h-3 w-3 text-emerald-400" />
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Scale className="h-3 w-3 text-primary" />
                     </div>
-                    <p className="text-xs text-white/80">If unresolved after 7 days, we help with legal notice</p>
+                    <p className="text-xs text-foreground/80">If unresolved after 7 days, we help with legal notice</p>
                   </div>
                 </div>
               </div>

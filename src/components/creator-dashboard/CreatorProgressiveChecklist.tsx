@@ -306,7 +306,7 @@ export function CreatorProgressiveChecklist({
               <Label htmlFor="upi-id">UPI ID</Label>
               <Input id="upi-id" value={formState.upiId} onChange={(e) => setField('upiId', e.target.value)} placeholder="yourname@oksbi" />
             </div>
-            <label className="flex items-center gap-3 text-sm text-slate-200">
+            <label className="flex items-center gap-3 text-sm text-muted-foreground">
               <input type="checkbox" checked={formState.takesAdvance} onChange={(e) => setField('takesAdvance', e.target.checked)} />
               I usually take an advance before posting.
             </label>
@@ -346,24 +346,24 @@ export function CreatorProgressiveChecklist({
 
   return (
     <>
-      <section className="rounded-3xl border border-white/10 bg-[#111827]/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.45)]">
+      <section className="rounded-3xl border border-border bg-[#111827]/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.45)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
-            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-300">Creator Lifecycle</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-primary">Creator Lifecycle</p>
             <div>
-              <h2 className="text-2xl font-black text-white">Your collab page is {completion.profileCompletion}% complete.</h2>
-              <p className="mt-2 max-w-2xl text-sm text-slate-300">
+              <h2 className="text-2xl font-black text-foreground">Your collab page is {completion.profileCompletion}% complete.</h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                 Get your link live first. Add proof and profile details over time as more brands start sending offers.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-100">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-2 text-sm text-primary">
                 <Sparkles className="h-4 w-4" />
                 {STAGE_LABELS[lifecycle.creatorStage]}
               </div>
               {collabUrl && (
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
                   <Link2 className="h-4 w-4" />
                   {collabUrl.replace(/^https?:\/\//, '')}
                 </div>
@@ -372,15 +372,15 @@ export function CreatorProgressiveChecklist({
 
             {collabUrl && (
               <div className="flex flex-wrap items-center gap-2">
-                <Button type="button" size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => void handleShareLink('copy')}>
+                <Button type="button" size="sm" variant="outline" className="border-border bg-card text-foreground hover:bg-secondary/50" onClick={() => void handleShareLink('copy')}>
                   <Copy className="mr-2 h-4 w-4" />
                   Copy Link
                 </Button>
-                <Button type="button" size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => void handleShareLink('whatsapp')}>
+                <Button type="button" size="sm" variant="outline" className="border-border bg-card text-foreground hover:bg-secondary/50" onClick={() => void handleShareLink('whatsapp')}>
                   <MessageCircleMore className="mr-2 h-4 w-4" />
                   Share on WhatsApp
                 </Button>
-                <Button type="button" size="sm" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => void handleShareLink('open')}>
+                <Button type="button" size="sm" variant="outline" className="border-border bg-card text-foreground hover:bg-secondary/50" onClick={() => void handleShareLink('open')}>
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Open Link
                 </Button>
@@ -389,43 +389,43 @@ export function CreatorProgressiveChecklist({
           </div>
 
           <div className="grid min-w-[260px] gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-2xl border border-border bg-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Profile Completion</span>
-                <span className="text-lg font-black text-white">{completion.profileCompletion}%</span>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Profile Completion</span>
+                <span className="text-lg font-black text-foreground">{completion.profileCompletion}%</span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-emerald-400" style={{ width: `${completion.profileCompletion}%` }} />
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary/50">
+                <div className="h-full rounded-full bg-primary" style={{ width: `${completion.profileCompletion}%` }} />
               </div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-2xl border border-border bg-card p-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Storefront Strength</span>
-                <span className="text-lg font-black text-white">{completion.storefrontCompletion}%</span>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Storefront Strength</span>
+                <span className="text-lg font-black text-foreground">{completion.storefrontCompletion}%</span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-sky-400" style={{ width: `${completion.storefrontCompletion}%` }} />
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-secondary/50">
+                <div className="h-full rounded-full bg-info" style={{ width: `${completion.storefrontCompletion}%` }} />
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Offers received</p>
-            <p className="mt-2 text-2xl font-black text-white">{lifecycle.offersReceived}</p>
+          <div className="rounded-2xl border border-border bg-secondary/[0.04] p-4">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">Offers received</p>
+            <p className="mt-2 text-2xl font-black text-foreground">{lifecycle.offersReceived}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Completed deals</p>
-            <p className="mt-2 text-2xl font-black text-white">{lifecycle.completedDeals}</p>
+          <div className="rounded-2xl border border-border bg-secondary/[0.04] p-4">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">Completed deals</p>
+            <p className="mt-2 text-2xl font-black text-foreground">{lifecycle.completedDeals}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Total earnings</p>
-            <p className="mt-2 text-2xl font-black text-white">₹{lifecycle.totalEarnings.toLocaleString('en-IN')}</p>
+          <div className="rounded-2xl border border-border bg-secondary/[0.04] p-4">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">Total earnings</p>
+            <p className="mt-2 text-2xl font-black text-foreground">₹{lifecycle.totalEarnings.toLocaleString('en-IN')}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Storefront conversion</p>
-            <p className="mt-2 text-2xl font-black text-white">{lifecycle.conversionRate}%</p>
+          <div className="rounded-2xl border border-border bg-secondary/[0.04] p-4">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">Storefront conversion</p>
+            <p className="mt-2 text-2xl font-black text-foreground">{lifecycle.conversionRate}%</p>
           </div>
         </div>
 
@@ -443,17 +443,17 @@ export function CreatorProgressiveChecklist({
                     void handleShareLink('copy');
                   }
                 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-white/20 hover:bg-white/[0.08]"
+                className="rounded-2xl border border-border bg-secondary/[0.04] p-4 text-left transition hover:border-border hover:bg-secondary/[0.08]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-white">{nudge.title}</p>
-                    <p className="mt-1 text-sm text-slate-300">{nudge.description}</p>
+                    <p className="text-sm font-bold text-foreground">{nudge.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{nudge.description}</p>
                   </div>
-                  <TrendingUp className={`h-5 w-5 flex-shrink-0 ${nudge.tone === 'success' ? 'text-emerald-400' : nudge.tone === 'warning' ? 'text-amber-300' : 'text-sky-300'}`} />
+                  <TrendingUp className={`h-5 w-5 flex-shrink-0 ${nudge.tone === 'success' ? 'text-primary' : nudge.tone === 'warning' ? 'text-warning' : 'text-info'}`} />
                 </div>
                 {nudge.cta && (
-                  <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-emerald-300">
+                  <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary">
                     {nudge.cta}
                     <ChevronRight className="h-3.5 w-3.5" />
                   </div>
@@ -466,8 +466,8 @@ export function CreatorProgressiveChecklist({
         <div className="mt-5">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-white">{showCompactChecklist ? 'Your 3 most important next steps' : 'Progressive checklist'}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-sm font-bold text-foreground">{showCompactChecklist ? 'Your 3 most important next steps' : 'Progressive checklist'}</p>
+              <p className="text-xs text-muted-foreground">
                 {showCompactChecklist
                   ? 'Do these first. We will ask for the rest only when it actually helps you win deals.'
                   : `${pendingItems.length} items left before your storefront feels complete.`}
@@ -482,21 +482,21 @@ export function CreatorProgressiveChecklist({
                   key={item.id}
                   type="button"
                   onClick={() => setSelectedItem(item)}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-white/20 hover:bg-white/[0.08]"
+                  className="rounded-2xl border border-border bg-secondary/[0.04] p-4 text-left transition hover:border-border hover:bg-secondary/[0.08]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-bold text-white">{item.title}</p>
-                      <p className="mt-1 text-sm text-slate-300">{item.description}</p>
+                      <p className="text-sm font-bold text-foreground">{item.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
                     </div>
-                    <Circle className="h-5 w-5 flex-shrink-0 text-slate-500" />
+                    <Circle className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                   </div>
                   <div className="mt-4 flex items-center justify-between">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-2.5 py-1 text-xs text-slate-300">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-card px-2.5 py-1 text-xs text-muted-foreground">
                       <Gauge className="h-3.5 w-3.5" />
                       {item.weight}% impact
                     </div>
-                    <div className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-300">
+                    <div className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
                       Add now
                       <ChevronRight className="h-3.5 w-3.5" />
                     </div>
@@ -505,19 +505,19 @@ export function CreatorProgressiveChecklist({
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4 text-emerald-100">
+            <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4 text-primary">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                <CheckCircle2 className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm font-bold">Your core collab page checklist is complete.</p>
-                  <p className="mt-1 text-sm text-emerald-50/80">Keep sharing your link and adding fresh deal proof as new campaigns close.</p>
+                  <p className="mt-1 text-sm text-primary/80">Keep sharing your link and adding fresh deal proof as new campaigns close.</p>
                 </div>
               </div>
             </div>
           )}
 
           {showCompactChecklist && pendingItems.length > visiblePendingItems.length && (
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-3 text-xs text-muted-foreground">
               {pendingItems.length - visiblePendingItems.length} more optional improvements can wait until you start getting offers.
             </p>
           )}
@@ -525,10 +525,10 @@ export function CreatorProgressiveChecklist({
       </section>
 
       <Dialog open={Boolean(selectedItem)} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <DialogContent className="border-white/10 bg-[#111827] text-white sm:max-w-2xl">
+        <DialogContent className="border-border bg-[#111827] text-foreground sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{selectedItem?.title}</DialogTitle>
-            <DialogDescription className="text-slate-300">
+            <DialogDescription className="text-muted-foreground">
               {selectedItem?.prompt}
             </DialogDescription>
           </DialogHeader>
@@ -538,10 +538,10 @@ export function CreatorProgressiveChecklist({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10" onClick={() => setSelectedItem(null)}>
+            <Button type="button" variant="outline" className="border-border bg-card text-foreground hover:bg-secondary/50" onClick={() => setSelectedItem(null)}>
               Later
             </Button>
-            <Button type="button" className="bg-emerald-500 text-black hover:bg-emerald-400" onClick={handleSave} disabled={updateProfileMutation.isPending}>
+            <Button type="button" className="bg-primary text-black hover:bg-primary" onClick={handleSave} disabled={updateProfileMutation.isPending}>
               Save Section
             </Button>
           </DialogFooter>

@@ -33,21 +33,21 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       <Select value={value} onValueChange={onValueChange} disabled={disabled} required>
         <SelectTrigger 
           className={cn(
-            "bg-white/10 border border-white/20 rounded-xl backdrop-blur-xl",
-            "text-white placeholder:text-white/40",
+            "bg-secondary/50 border border-border rounded-xl backdrop-blur-xl",
+            "text-foreground placeholder:text-foreground/40",
             "px-4 py-3",
-            "focus:border-white/30 focus:ring-2 focus:ring-white/20",
-            error && "border-red-400/50 focus:border-red-400"
+            "focus:border-border focus:ring-2 focus:ring-white/20",
+            error && "border-destructive/50 focus:border-destructive"
           )}
         >
           <SelectValue placeholder="Select category" />
         </SelectTrigger>
-        <SelectContent className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl text-white">
+        <SelectContent className="bg-secondary/50 backdrop-blur-xl border border-border rounded-xl text-foreground">
           {EXPENSE_CATEGORIES.map((cat) => (
             <SelectItem 
               key={cat} 
               value={cat} 
-              className="hover:bg-white/10 focus:bg-white/10"
+              className="hover:bg-secondary/50 focus:bg-secondary/50"
             >
               {cat}
             </SelectItem>
@@ -55,7 +55,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
         </SelectContent>
       </Select>
       {error && (
-        <p className="text-red-400 text-sm mt-1">{error}</p>
+        <p className="text-destructive text-sm mt-1">{error}</p>
       )}
     </div>
   );

@@ -165,42 +165,42 @@ const CollaborationAgreementGenerator = () => {
       {/* FAQ Schema */}
       <FAQSchema faqs={faqs} />
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
         <div className="container mx-auto px-4 py-12 max-w-5xl">
           {/* SEO Content Above Fold */}
           <div className="mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-200 via-pink-200 to-purple-100 text-transparent bg-clip-text">
               Collaboration Agreement Generator
             </h1>
-            <p className="text-xl text-purple-200 mb-6 leading-relaxed">
+            <p className="text-xl text-secondary mb-6 leading-relaxed">
               Create professional collaboration agreements for brand partnerships. Our free tool helps influencers, creators, and brands draft legally compliant collaboration contracts that protect both parties and ensure clear terms for successful partnerships.
             </p>
 
             {/* Key Benefits */}
             <div className="grid md:grid-cols-3 gap-4 mb-8">
-              <Card className="bg-white/5 backdrop-blur-md border-white/10">
+              <Card className="bg-card backdrop-blur-md border-border">
                 <CardContent className="p-6">
-                  <Shield className="h-8 w-8 text-purple-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Protects Both Parties</h3>
-                  <p className="text-sm text-purple-200">
+                  <Shield className="h-8 w-8 text-secondary mb-3" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Protects Both Parties</h3>
+                  <p className="text-sm text-secondary">
                     Fair agreements that protect creators and brands. Includes standard clauses for Indian collaborations.
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/5 backdrop-blur-md border-white/10">
+              <Card className="bg-card backdrop-blur-md border-border">
                 <CardContent className="p-6">
-                  <FileText className="h-8 w-8 text-purple-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Supports All Types</h3>
-                  <p className="text-sm text-purple-200">
+                  <FileText className="h-8 w-8 text-secondary mb-3" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Supports All Types</h3>
+                  <p className="text-sm text-secondary">
                     Generate agreements for paid collaborations, barter deals, or hybrid partnerships.
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-white/5 backdrop-blur-md border-white/10">
+              <Card className="bg-card backdrop-blur-md border-border">
                 <CardContent className="p-6">
-                  <CheckCircle2 className="h-8 w-8 text-purple-400 mb-3" />
-                  <h3 className="text-lg font-semibold text-white mb-2">Legally Compliant</h3>
-                  <p className="text-sm text-purple-200">
+                  <CheckCircle2 className="h-8 w-8 text-secondary mb-3" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Legally Compliant</h3>
+                  <p className="text-sm text-secondary">
                     Agreements follow Indian contract law and include ASCI compliance guidelines for influencer marketing.
                   </p>
                 </CardContent>
@@ -208,37 +208,37 @@ const CollaborationAgreementGenerator = () => {
             </div>
 
             {/* Why Use This Tool */}
-            <div className="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">
+            <div className="bg-card backdrop-blur-md rounded-xl p-6 border border-border mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">
                 Why Use Our Collaboration Agreement Generator?
               </h2>
-              <p className="text-purple-200 leading-relaxed mb-4">
+              <p className="text-secondary leading-relaxed mb-4">
                 Whether you're a creator working with brands or a brand partnering with influencers, a clear collaboration agreement is essential. Our generator creates professional agreements that include:
               </p>
-              <ul className="space-y-2 text-purple-200">
+              <ul className="space-y-2 text-secondary">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Clear Scope of Work:</strong> Define deliverables, platforms, timelines, and content requirements</span>
+                  <span><strong className="text-foreground">Clear Scope of Work:</strong> Define deliverables, platforms, timelines, and content requirements</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Compensation Terms:</strong> Specify payment amounts, schedules, or barter product values</span>
+                  <span><strong className="text-foreground">Compensation Terms:</strong> Specify payment amounts, schedules, or barter product values</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Content Usage Rights:</strong> Define how brands can use your content, duration, and platforms</span>
+                  <span><strong className="text-foreground">Content Usage Rights:</strong> Define how brands can use your content, duration, and platforms</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Exclusivity Clauses:</strong> Specify exclusivity periods and restrictions if applicable</span>
+                  <span><strong className="text-foreground">Exclusivity Clauses:</strong> Specify exclusivity periods and restrictions if applicable</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">ASCI Compliance:</strong> Include required disclosures and compliance with advertising standards</span>
+                  <span><strong className="text-foreground">ASCI Compliance:</strong> Include required disclosures and compliance with advertising standards</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <span><strong className="text-white">Termination Terms:</strong> Fair termination clauses for both parties</span>
+                  <span><strong className="text-foreground">Termination Terms:</strong> Fair termination clauses for both parties</span>
                 </li>
               </ul>
             </div>
@@ -246,43 +246,43 @@ const CollaborationAgreementGenerator = () => {
 
           {/* Tool Section - Below Fold */}
           <div id="agreement-generator" className="scroll-mt-20">
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            <Card className="bg-secondary/50 backdrop-blur-md border-border">
               <CardContent className="p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-white mb-6">
+                <h2 className="text-2xl font-bold text-foreground mb-6">
                   Generate Your Collaboration Agreement
                 </h2>
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        Brand Name <span className="text-red-400">*</span>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Brand Name <span className="text-destructive">*</span>
                       </label>
                       <Input
                         value={brandName}
                         onChange={(e) => setBrandName(e.target.value)}
                         placeholder="Enter brand name"
-                        className="bg-white/5 border-white/20 text-white"
+                        className="bg-card border-border text-foreground"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        Creator/Influencer Name <span className="text-red-400">*</span>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Creator/Influencer Name <span className="text-destructive">*</span>
                       </label>
                       <Input
                         value={creatorName}
                         onChange={(e) => setCreatorName(e.target.value)}
                         placeholder="Your name"
-                        className="bg-white/5 border-white/20 text-white"
+                        className="bg-card border-border text-foreground"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Collaboration Type <span className="text-red-400">*</span>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      Collaboration Type <span className="text-destructive">*</span>
                     </label>
                     <Select value={collabType} onValueChange={(value: 'paid' | 'barter' | 'hybrid' | 'both') => setCollabType(value)}>
-                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                      <SelectTrigger className="bg-card border-border text-foreground">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -295,22 +295,22 @@ const CollaborationAgreementGenerator = () => {
 
                   {(collabType === 'paid' || collabType === 'both' || collabType === 'hybrid') && (
                     <div>
-                      <label className="block text-sm font-semibold text-white mb-2">
-                        Deal Amount (₹) <span className="text-red-400">*</span>
+                      <label className="block text-sm font-semibold text-foreground mb-2">
+                        Deal Amount (₹) <span className="text-destructive">*</span>
                       </label>
                       <Input
                         type="number"
                         value={dealAmount}
                         onChange={(e) => setDealAmount(e.target.value)}
                         placeholder="50000"
-                        className="bg-white/5 border-white/20 text-white"
+                        className="bg-card border-border text-foreground"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-semibold text-white mb-2">
-                      Deliverables <span className="text-red-400">*</span>
+                    <label className="block text-sm font-semibold text-foreground mb-2">
+                      Deliverables <span className="text-destructive">*</span>
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {['Instagram Reel', 'Instagram Post', 'Instagram Story', 'YouTube Video', 'YouTube Short', 'Blog Post'].map((item) => (
@@ -319,9 +319,9 @@ const CollaborationAgreementGenerator = () => {
                             id={item}
                             checked={deliverables.includes(item)}
                             onCheckedChange={() => handleDeliverableToggle(item)}
-                            className="border-white/30 data-[state=checked]:bg-purple-600"
+                            className="border-border data-[state=checked]:bg-secondary"
                           />
-                          <label htmlFor={item} className="text-sm text-purple-200 cursor-pointer">
+                          <label htmlFor={item} className="text-sm text-secondary cursor-pointer">
                             {item}
                           </label>
                         </div>
@@ -332,7 +332,7 @@ const CollaborationAgreementGenerator = () => {
                   <Button
                     onClick={handleGenerate}
                     disabled={isGenerating || !brandName || !creatorName || deliverables.length === 0 || ((collabType === 'paid' || collabType === 'both' || collabType === 'hybrid') && !dealAmount)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground"
                   >
                     {isGenerating ? (
                       <>
@@ -349,19 +349,19 @@ const CollaborationAgreementGenerator = () => {
 
                   {/* Collab Link CTA - Funnel */}
                   {agreementGenerated ? (
-                    <div className="mt-6 pt-6 border-t border-white/20">
+                    <div className="mt-6 pt-6 border-t border-border">
                       <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/30">
                         <CardContent className="p-4">
-                          <p className="text-white text-sm leading-relaxed mb-3">
+                          <p className="text-foreground text-sm leading-relaxed mb-3">
                             <strong>✅ Agreement Generated!</strong> This collaboration agreement can be sent via your collab link.
                           </p>
-                          <p className="text-purple-200 text-sm leading-relaxed mb-4">
+                          <p className="text-secondary text-sm leading-relaxed mb-4">
                             When brands submit collaboration requests through your collab link, agreements are automatically generated 
                             and managed securely—no manual sending needed.
                           </p>
                           <Button
                             asChild
-                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-foreground"
                           >
                             <Link to="/signup">
                               Get Your Free Collab Link <ArrowRight className="h-4 w-4 ml-2" />
@@ -371,12 +371,12 @@ const CollaborationAgreementGenerator = () => {
                       </Card>
                     </div>
                   ) : (
-                    <div className="mt-6 pt-6 border-t border-white/20">
-                      <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                        <p className="text-purple-200 text-sm leading-relaxed">
-                          <strong className="text-white">💡 Pro Tip:</strong> This collaboration agreement can be sent via your collab link. 
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <div className="bg-secondary/50 border border-purple-500/20 rounded-lg p-4">
+                        <p className="text-secondary text-sm leading-relaxed">
+                          <strong className="text-foreground">💡 Pro Tip:</strong> This collaboration agreement can be sent via your collab link. 
                           When brands submit collaboration requests through your collab link, agreements are automatically generated 
-                          and managed securely. <Link to="/signup" className="text-purple-300 hover:text-white underline font-medium">Get your free collab link →</Link>
+                          and managed securely. <Link to="/signup" className="text-secondary hover:text-foreground underline font-medium">Get your free collab link →</Link>
                         </p>
                       </div>
                     </div>
@@ -391,16 +391,16 @@ const CollaborationAgreementGenerator = () => {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-2">
+                  <h3 className="text-xl font-bold text-foreground mb-2">
                     Upgrade to CreatorArmour for Full Protection
                   </h3>
-                  <p className="text-purple-200">
+                  <p className="text-secondary">
                     Download agreements, track collaborations, get legal support, and manage all your brand partnerships in one secure platform.
                   </p>
                 </div>
                 <Button
                   asChild
-                  className="bg-white text-purple-600 hover:bg-purple-50"
+                  className="bg-card text-secondary hover:bg-secondary"
                 >
                   <Link to="/signup">
                     Upgrade Now <ArrowRight className="h-4 w-4 ml-2" />
@@ -412,17 +412,17 @@ const CollaborationAgreementGenerator = () => {
 
           {/* FAQs */}
           <div className="mt-12">
-            <h2 className="text-3xl font-bold text-white mb-6">
+            <h2 className="text-3xl font-bold text-foreground mb-6">
               Frequently Asked Questions
             </h2>
             <div className="space-y-4">
               {faqs.map((faq, index) => (
-                <Card key={index} className="bg-white/5 backdrop-blur-md border-white/10">
+                <Card key={index} className="bg-card backdrop-blur-md border-border">
                   <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-white mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {faq.question}
                     </h3>
-                    <p className="text-purple-200 leading-relaxed">
+                    <p className="text-secondary leading-relaxed">
                       {faq.answer}
                     </p>
                   </CardContent>

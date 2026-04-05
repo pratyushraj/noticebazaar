@@ -132,7 +132,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
   // Get urgency indicator
   const getUrgencyIndicator = () => {
     if (isOverdue && daysOverdue) {
-      return { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/20 border-red-500/30', text: `${daysOverdue} days` };
+      return { icon: AlertCircle, color: 'text-destructive', bg: 'bg-destructive/20 border-destructive/30', text: `${daysOverdue} days` };
     }
     if (daysLeft && daysLeft <= 3) {
       return { icon: Clock, color: 'text-yellow-500', bg: 'bg-yellow-500/20 border-yellow-500/30', text: `${daysLeft} days` };
@@ -146,13 +146,13 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
   const getStageConfig = () => {
     switch (stage) {
       case 'overdue':
-        return { gradient: 'from-red-600 to-orange-600', bg: 'bg-red-500/5 border-red-500/20', badge: 'bg-red-500/20 text-red-600 border-red-500/30' };
+        return { gradient: 'from-red-600 to-orange-600', bg: 'bg-destructive/5 border-destructive/20', badge: 'bg-destructive/20 text-destructive border-destructive/30' };
       case 'payment_pending':
         return { gradient: 'from-yellow-600 to-orange-600', bg: 'bg-yellow-500/5 border-yellow-500/20', badge: 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30' };
       case 'active':
-        return { gradient: 'from-blue-600 to-cyan-600', bg: 'bg-blue-500/5 border-blue-500/20', badge: 'bg-blue-500/20 text-blue-600 border-blue-500/30' };
+        return { gradient: 'from-blue-600 to-cyan-600', bg: 'bg-info/5 border-info/20', badge: 'bg-info/20 text-info border-info/30' };
       case 'paid':
-        return { gradient: 'from-emerald-600 to-teal-600', bg: 'bg-emerald-500/5 border-emerald-500/20', badge: 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30' };
+        return { gradient: 'from-emerald-600 to-teal-600', bg: 'bg-primary/5 border-primary/20', badge: 'bg-primary/20 text-primary border-primary/30' };
       case 'completed':
         return { gradient: 'from-green-600 to-emerald-600', bg: 'bg-green-500/5 border-green-500/20', badge: 'bg-green-500/20 text-green-600 border-green-500/30' };
       default:
@@ -191,14 +191,14 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 className="flex-shrink-0" 
               />
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-white truncate">
+                <h3 className="text-lg font-bold text-foreground truncate">
                   {deal.brand_name}
                 </h3>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                   {PlatformIcon && (
-                    <PlatformIcon className="w-4 h-4 text-slate-400" />
+                    <PlatformIcon className="w-4 h-4 text-muted-foreground" />
                   )}
-                  <span className="text-sm text-slate-400">
+                  <span className="text-sm text-muted-foreground">
                     {deal.platform || 'Campaign'}
                   </span>
                   {stage === 'completed' && (
@@ -229,14 +229,14 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
           <div className="grid grid-cols-2 gap-4 mb-4">
             <motion.div 
               whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-border transition-colors"
             >
-              <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30">
-                <IndianRupee className="w-5 h-5 text-emerald-400" />
+              <div className="p-2 rounded-lg bg-primary/20 border border-primary/30">
+                <IndianRupee className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-slate-400">Amount</div>
-                <div className="text-xl font-bold text-white">
+                <div className="text-xs text-muted-foreground">Amount</div>
+                <div className="text-xl font-bold text-foreground">
                   ₹{deal.deal_amount.toLocaleString('en-IN')}
                 </div>
               </div>
@@ -244,14 +244,14 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
 
             <motion.div 
               whileHover={{ scale: 1.05 }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors"
+              className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-border transition-colors"
             >
-              <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30">
-                <Calendar className="w-5 h-5 text-blue-400" />
+              <div className="p-2 rounded-lg bg-info/20 border border-info/30">
+                <Calendar className="w-5 h-5 text-info" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-slate-400">Due Date</div>
-                <div className="text-sm font-semibold text-white">
+                <div className="text-xs text-muted-foreground">Due Date</div>
+                <div className="text-sm font-semibold text-foreground">
                   {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',
@@ -265,12 +265,12 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-slate-600/30 border border-slate-500/30">
-                  <Package className="w-4 h-4 text-slate-300" />
+                <div className="p-1.5 rounded-lg bg-background/30 border border-border">
+                  <Package className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <span className="text-xs font-semibold text-slate-300">Deliverables</span>
+                <span className="text-xs font-semibold text-muted-foreground">Deliverables</span>
               </div>
-              <span className="text-xs text-slate-400 font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 {formattedDeliverables.filter(d => d.status === 'delivered').length}/{formattedDeliverables.length}
               </span>
             </div>
@@ -286,7 +286,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 const iconColor = deliverable.status === 'delivered'
                   ? 'text-green-500'
                   : deliverable.status === 'overdue'
-                  ? 'text-red-500'
+                  ? 'text-destructive'
                   : 'text-yellow-500';
 
                 return (
@@ -294,14 +294,14 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                     key={index}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center gap-2.5 text-sm p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/8 transition-colors"
+                    className="flex items-center gap-2.5 text-sm p-2 rounded-lg bg-card border border-border hover:bg-secondary/8 transition-colors"
                   >
                     <Icon className={cn("w-4 h-4 flex-shrink-0", iconColor)} />
-                    <span className="text-slate-200 flex-1 truncate">
+                    <span className="text-muted-foreground flex-1 truncate">
                       {deliverable.type}
                     </span>
                     {deliverable.status === 'delivered' && deliverable.date && (
-                      <span className="text-xs text-slate-400 flex-shrink-0">
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
                         ✓ {new Date(deliverable.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                       </span>
                     )}
@@ -311,7 +311,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
               {formattedDeliverables.length > 2 && !isExpanded && (
                 <button type="button"
                   onClick={() => setIsExpanded(true)}
-                  className="text-xs text-slate-400 hover:text-white transition-colors font-medium mt-1"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium mt-1"
                 >
                   +{formattedDeliverables.length - 2} more deliverables
                 </button>
@@ -321,11 +321,11 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
 
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
               <span>Progress</span>
-              <span className="text-white font-semibold">{progress}%</span>
+              <span className="text-foreground font-semibold">{progress}%</span>
             </div>
-            <div className="h-2.5 bg-slate-700/50 rounded-full overflow-hidden border border-slate-600/30">
+            <div className="h-2.5 bg-background/50 rounded-full overflow-hidden border border-border">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -348,13 +348,13 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 p-3 bg-gradient-to-br from-slate-600/20 to-slate-700/10 rounded-xl border border-slate-600/30 hover:border-slate-500/50 transition-colors"
+              className="mb-4 p-3 bg-gradient-to-br from-background/20 to-slate-700/10 rounded-xl border border-border hover:border-border/50 transition-colors"
             >
               <div className="flex items-start gap-2">
-                <TrendingUp className="w-4 h-4 text-slate-300 mt-0.5 flex-shrink-0" />
+                <TrendingUp className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-slate-400">Next Milestone</div>
-                  <div className="text-sm font-semibold text-slate-100 mt-0.5">{nextMilestone}</div>
+                  <div className="text-xs text-muted-foreground">Next Milestone</div>
+                  <div className="text-sm font-semibold text-muted-foreground mt-0.5">{nextMilestone}</div>
                 </div>
               </div>
             </motion.div>
@@ -368,17 +368,17 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                className="mb-4 pb-4 border-t border-white/10"
+                className="mb-4 pb-4 border-t border-border"
               >
                 <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-slate-400">Status</p>
-                    <p className="text-white font-semibold mt-1">{getStatusMessage()}</p>
+                  <div className="p-2 rounded-lg bg-card border border-border">
+                    <p className="text-muted-foreground">Status</p>
+                    <p className="text-foreground font-semibold mt-1">{getStatusMessage()}</p>
                   </div>
                   {deal.brand_contact && (
-                    <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-                      <p className="text-slate-400">Contact</p>
-                      <p className="text-white font-semibold mt-1 truncate">{deal.brand_contact}</p>
+                    <div className="p-2 rounded-lg bg-card border border-border">
+                      <p className="text-muted-foreground">Contact</p>
+                      <p className="text-foreground font-semibold mt-1 truncate">{deal.brand_contact}</p>
                     </div>
                   )}
                 </div>
@@ -387,7 +387,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
           </AnimatePresence>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
+          <div className="flex flex-col gap-2 pt-4 border-t border-border">
             <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
               {stage === 'overdue' || stage === 'payment_pending' ? (
                 <>
@@ -396,7 +396,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                       <Button
                         size="sm"
                         onClick={() => onSendReminder(deal)}
-                        className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-semibold shadow-lg shadow-red-600/20"
+                        className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-foreground font-semibold shadow-lg shadow-red-600/20"
                       >
                         <Send className="w-3 h-3 mr-1.5" />
                         Send Reminder
@@ -408,7 +408,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={() => onMarkPaid(deal)}
-                      className="w-full border-white/20 hover:bg-white/10 text-slate-200 hover:text-white"
+                      className="w-full border-border hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
                     >
                       <CheckCircle className="w-3 h-3 mr-1.5" />
                       Mark Paid
@@ -422,7 +422,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={() => onEdit(deal)}
-                      className="w-full border-white/20 hover:bg-white/10 text-slate-200 hover:text-white"
+                      className="w-full border-border hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
                     >
                       <FileText className="w-3 h-3 mr-1.5" />
                       Upload Draft
@@ -432,7 +432,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full border-white/20 hover:bg-white/10 text-slate-200 hover:text-white"
+                      className="w-full border-border hover:bg-secondary/50 text-muted-foreground hover:text-foreground"
                     >
                       <MessageSquare className="w-3 h-3 mr-1.5" />
                       Chat
@@ -445,7 +445,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                   size="sm"
                   variant="ghost"
                   onClick={() => onView(deal)}
-                  className="w-full text-slate-300 hover:text-white hover:bg-white/5"
+                  className="w-full text-muted-foreground hover:text-foreground hover:bg-card"
                 >
                   Details
                   <ChevronRight className="w-3 h-3 ml-1" />
@@ -457,7 +457,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
             <motion.button
               whileHover={{ scale: 1.02 }}
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-full px-3 py-2 text-xs font-semibold rounded-lg border border-white/10 hover:border-white/20 hover:bg-white/5 transition-colors text-slate-400 hover:text-slate-200"
+              className="w-full px-3 py-2 text-xs font-semibold rounded-lg border border-border hover:border-border hover:bg-card transition-colors text-muted-foreground hover:text-muted-foreground"
             >
               <ChevronDown className={cn('w-4 h-4 inline mr-1 transition-transform', isExpanded && 'rotate-180')} />
               {isExpanded ? 'Hide Details' : 'Show More'}
@@ -593,7 +593,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
   // Get urgency indicator
   const getUrgencyIndicator = () => {
     if (isOverdue && daysOverdue) {
-      return { icon: AlertCircle, color: 'text-red-500', text: `${daysOverdue} days` };
+      return { icon: AlertCircle, color: 'text-destructive', text: `${daysOverdue} days` };
     }
     if (daysLeft && daysLeft <= 3) {
       return { icon: Clock, color: 'text-yellow-500', text: `${daysLeft} days` };
@@ -613,7 +613,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
       <Card
         className={cn(
           "bg-gradient-to-br from-card to-card/50 border rounded-xl p-5 hover:shadow-lg transition-all cursor-pointer group",
-          isOverdue && 'border-red-500/30 bg-red-500/5'
+          isOverdue && 'border-destructive/30 bg-destructive/5'
         )}
         onClick={() => onView(deal)}
       >
@@ -657,7 +657,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
         {/* Amount and Due Date Row */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="flex items-center gap-2">
-            <IndianRupee className="w-5 h-5 text-emerald-500" />
+            <IndianRupee className="w-5 h-5 text-primary" />
             <div>
               <div className="text-xs text-muted-foreground">Amount</div>
               <div className="text-xl font-bold text-foreground">
@@ -666,7 +666,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-500" />
+            <Calendar className="w-5 h-5 text-info" />
             <div>
               <div className="text-xs text-muted-foreground">Due</div>
               <div className="text-sm font-medium text-foreground">
@@ -697,7 +697,7 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
               const iconColor = deliverable.status === 'delivered'
                 ? 'text-green-500'
                 : deliverable.status === 'overdue'
-                ? 'text-red-500'
+                ? 'text-destructive'
                 : 'text-yellow-500';
 
               return (
@@ -742,8 +742,8 @@ const EnhancedDealCard: React.FC<EnhancedDealCardProps> = ({
                 "h-full transition-all",
                 stage === 'completed' ? 'bg-green-500' :
                 stage === 'content_delivered' ? 'bg-yellow-500' :
-                isOverdue ? 'bg-red-500' :
-                stage === 'live_deal' || stage === 'content_making' || stage === 'fully_executed' ? 'bg-blue-400' :
+                isOverdue ? 'bg-destructive' :
+                stage === 'live_deal' || stage === 'content_making' || stage === 'fully_executed' ? 'bg-info' :
                 'bg-gray-400'
               )}
             />

@@ -128,7 +128,7 @@ const DualKPISnapshot = () => {
 
   // Component for a standard KPI card (Active Cases, Docs, Consultations)
   const KpiCard = ({ emoji, title, value, className = 'bg-card' }: { emoji: string, title: string, value: string | number, className?: string }) => (
-    <div className={cn("flex flex-col items-start justify-start p-6 rounded-xl border border-border text-left h-full bg-secondary/50", className)}>
+    <div className={cn("flex flex-col items-start justify-start p-6 rounded-xl border border-border text-left h-full bg-card0", className)}>
       {/* Emoji: Large, centered look */}
       <div className="mb-4 text-3xl">
         {emoji}
@@ -173,8 +173,8 @@ const DualKPISnapshot = () => {
       <CardHeader className="flex flex-row items-center space-x-3 pb-4">
         <div className="flex items-center space-x-1">
           <div className="h-3 w-3 bg-green-500 rounded-full" />
-          <div className="h-3 w-3 bg-red-500 rounded-full" />
-          <div className="h-3 w-3 bg-blue-500 rounded-full" />
+          <div className="h-3 w-3 bg-destructive rounded-full" />
+          <div className="h-3 w-3 bg-info rounded-full" />
         </div>
         <CardTitle className="text-xl font-bold text-foreground">Your Snapshot</CardTitle>
       </CardHeader>

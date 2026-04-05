@@ -67,18 +67,18 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
   const typeConfig: Record<string, { color: string; bgColor: string; icon: React.ReactNode }> = {
     payment: {
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-500/10 border-emerald-500/30',
+      color: 'text-primary',
+      bgColor: 'bg-primary/10 border-primary/30',
       icon: <DollarSign className="w-5 h-5" />,
     },
     deal: {
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10 border-blue-500/30',
+      color: 'text-info',
+      bgColor: 'bg-info/10 border-info/30',
       icon: <CheckCircle2 className="w-5 h-5" />,
     },
     message: {
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10 border-purple-500/30',
+      color: 'text-secondary',
+      bgColor: 'bg-secondary/50 border-purple-500/30',
       icon: <MessageSquare className="w-5 h-5" />,
     },
     milestone: {
@@ -110,21 +110,21 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className={cn(
             'text-base font-bold tracking-tight',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
             Recent Activity
           </h3>
           <span className={cn(
             'text-xs font-semibold px-2 py-1 rounded-full',
-            isDark ? 'bg-blue-500/20 text-blue-300' : 'bg-blue-100 text-blue-700'
+            isDark ? 'bg-info/20 text-info' : 'bg-info text-info'
           )}>
             {truncatedActivities.length} events
           </span>
@@ -152,7 +152,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   {/* Icon */}
                   <div className={cn(
                     'flex-shrink-0 p-2 rounded-lg mt-0.5',
-                    isDark ? 'bg-white/10' : 'bg-slate-100'
+                    isDark ? 'bg-secondary/50' : 'bg-background'
                   )}>
                     <div className={config.color}>
                       {activity.icon || config.icon}
@@ -163,13 +163,13 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   <div className="flex-1 min-w-0">
                     <p className={cn(
                       'text-sm font-semibold truncate',
-                      isDark ? 'text-white' : 'text-slate-900'
+                      isDark ? 'text-foreground' : 'text-muted-foreground'
                     )}>
                       {activity.title}
                     </p>
                     <p className={cn(
                       'text-xs truncate mt-0.5',
-                      isDark ? 'text-white/60' : 'text-slate-600'
+                      isDark ? 'text-foreground/60' : 'text-muted-foreground'
                     )}>
                       {activity.description}
                     </p>
@@ -178,7 +178,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   {/* Timestamp */}
                   <p className={cn(
                     'text-xs font-medium flex-shrink-0 whitespace-nowrap',
-                    isDark ? 'text-white/50' : 'text-slate-500'
+                    isDark ? 'text-foreground/50' : 'text-muted-foreground'
                   )}>
                     {getTimeAgo(activity.timestamp)}
                   </p>
@@ -194,7 +194,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
             animate={{ opacity: 1 }}
             className={cn(
               'text-center py-6',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}
           >
             <p className="text-sm">No recent activity</p>
@@ -208,8 +208,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
             className={cn(
               'w-full mt-3 py-2 text-xs font-bold rounded-lg border transition-colors',
               isDark
-                ? 'border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
-                : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                ? 'border-border text-foreground/70 hover:bg-secondary/50 hover:text-foreground'
+                : 'border-border text-muted-foreground hover:bg-background'
             )}
           >
             View all activity

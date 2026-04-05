@@ -313,7 +313,7 @@ export const CreatorMarketplace: React.FC = () => {
           <h1 className="text-2xl font-bold">Creator Marketplace</h1>
           <p className="text-muted-foreground">Find collaboration opportunities with top brands</p>
         </div>
-        <Button onClick={() => setShowPostProject(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setShowPostProject(true)} className="bg-info hover:bg-info">
           <Plus className="w-4 h-4 mr-2" />
           Post a Project
         </Button>
@@ -468,7 +468,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onApply, hasApplied 
   };
 
   return (
-    <Card className={`hover:shadow-lg transition-shadow ${project.featured ? 'border-blue-200 bg-blue-50/30' : ''}`}>
+    <Card className={`hover:shadow-lg transition-shadow ${project.featured ? 'border-info bg-info/30' : ''}`}>
       <CardContent className="p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Brand Info */}
@@ -477,7 +477,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onApply, hasApplied 
               {project.brand.logo ? (
                 <img src={project.brand.logo} alt={project.brand.name} className="w-8 h-8 rounded" />
               ) : (
-                <div className="w-8 h-8 bg-blue-500 rounded text-white flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 bg-info rounded text-foreground flex items-center justify-center font-bold text-sm">
                   {project.brand.name.charAt(0)}
                 </div>
               )}
@@ -485,7 +485,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onApply, hasApplied 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold truncate">{project.brand.name}</h3>
-                {project.brand.verified && <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+                {project.brand.verified && <CheckCircle className="w-4 h-4 text-info flex-shrink-0" />}
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Star className="w-3 h-3 fill-current" />
@@ -501,7 +501,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onApply, hasApplied 
             <div className="flex items-start justify-between gap-4 mb-2">
               <h4 className="text-lg font-semibold">{project.title}</h4>
               {project.featured && (
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                <Badge variant="secondary" className="bg-info text-info">
                   Featured
                 </Badge>
               )}

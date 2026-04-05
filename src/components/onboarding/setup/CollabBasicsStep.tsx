@@ -36,16 +36,16 @@ export const CollabBasicsStep: React.FC<CollabBasicsStepProps> = ({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <GradientCard padding="lg" className="max-w-2xl mx-auto">
-        <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-slate-900 dark:text-white">
+        <h2 className="text-3xl font-bold leading-tight mb-2 text-center text-muted-foreground dark:text-foreground">
           Collab page basics
         </h2>
-        <p className="text-base text-slate-500 dark:text-white/80 text-center mb-8">
+        <p className="text-base text-muted-foreground dark:text-foreground/80 text-center mb-8">
           Add audience location + response time so brands can evaluate fit fast.
         </p>
 
         <div className="space-y-4 mb-7">
           <label className="block">
-            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
               <MapPin className="w-4 h-4" />
               Top audience city
             </span>
@@ -54,14 +54,14 @@ export const CollabBasicsStep: React.FC<CollabBasicsStepProps> = ({
               value={city}
               onChange={(e) => onCityChange(e.target.value)}
               placeholder="e.g. Delhi, Mumbai, Bengaluru"
-              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-background dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3.5 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
             />
-            <p className="mt-2 text-xs text-slate-500 dark:text-white/60">This helps brands quickly judge audience fit and regional relevance.</p>
+            <p className="mt-2 text-xs text-muted-foreground dark:text-foreground/60">This helps brands quickly judge audience fit and regional relevance.</p>
             {cityError && <p className="mt-2 text-xs font-medium text-rose-600">{cityError}</p>}
           </label>
 
           <label className="block">
-            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-white/80">
+            <span className="mb-1.5 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground dark:text-foreground/80">
               <Clock3 className="w-4 h-4" />
               Typical response time (hours)
             </span>
@@ -72,7 +72,7 @@ export const CollabBasicsStep: React.FC<CollabBasicsStepProps> = ({
               value={responseHours}
               onChange={(e) => onResponseHoursChange(e.target.value)}
               placeholder="e.g. 3"
-              className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-background dark:bg-card border border-border dark:border-border rounded-xl px-4 py-3.5 text-base text-muted-foreground dark:text-foreground placeholder-slate-400 dark:placeholder-white/50 outline-none focus:border-primary transition-colors"
             />
           </label>
         </div>

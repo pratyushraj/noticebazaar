@@ -47,7 +47,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
         variant="ghost"
         size="icon"
         className={cn(
-          "h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-white/5 transition-all duration-200 focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none",
+          "h-9 w-9 text-gray-400/80 hover:text-gray-200 hover:bg-card transition-all duration-200 focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none",
           className
         )}
         onClick={() => setIsOpen(true)}
@@ -75,7 +75,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
               className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative bg-[#0F121A]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-2">
+              <div className="relative bg-[#0F121A]/95 backdrop-blur-xl border border-border rounded-xl shadow-2xl p-2">
                 <div className="flex items-center gap-2">
                   <Search className="h-5 w-5 text-gray-400 ml-2" />
                   <Input
@@ -83,13 +83,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
                     placeholder="Search deals, payments, contracts..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="flex-1 bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-12"
+                    className="flex-1 bg-transparent border-0 text-foreground placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-12"
                     autoFocus
                   />
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-gray-400 hover:text-gray-200 hover:bg-white/5"
+                    className="h-8 w-8 text-gray-400 hover:text-gray-200 hover:bg-card"
                     onClick={() => {
                       setIsOpen(false);
                       setQuery('');
@@ -105,7 +105,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ className }) => {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mt-2 pt-2 border-t border-white/10"
+                    className="mt-2 pt-2 border-t border-border"
                   >
                     <p className="text-sm text-gray-400 px-4 py-2">
                       Search results for "{query}"...

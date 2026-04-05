@@ -23,7 +23,7 @@ const ScanResultsPreview: React.FC<ScanResultsPreviewProps> = ({
   if (matches.length === 0) return null;
 
   const getSimilarityColor = (score: number) => {
-    if (score >= 80) return 'text-red-500 bg-red-500/10 border-red-500/20';
+    if (score >= 80) return 'text-destructive bg-destructive/10 border-destructive/20';
     if (score >= 60) return 'text-orange-500 bg-orange-500/10 border-orange-500/20';
     return 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20';
   };
@@ -48,7 +48,7 @@ const ScanResultsPreview: React.FC<ScanResultsPreviewProps> = ({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-500" />
+              <AlertTriangle className="w-5 h-5 text-destructive" />
               Scan Results
             </CardTitle>
             <Badge variant="destructive" className="text-sm">
@@ -74,7 +74,7 @@ const ScanResultsPreview: React.FC<ScanResultsPreviewProps> = ({
                   className={cn(
                     "p-4 rounded-lg border transition-all",
                     similarityScore >= 80
-                      ? "bg-red-500/10 border-red-500/30"
+                      ? "bg-destructive/10 border-destructive/30"
                       : similarityScore >= 60
                       ? "bg-orange-500/10 border-orange-500/30"
                       : "bg-yellow-500/10 border-yellow-500/30"
@@ -141,7 +141,7 @@ const ScanResultsPreview: React.FC<ScanResultsPreviewProps> = ({
                               <span>Ignored</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1 text-xs text-blue-500">
+                            <div className="flex items-center gap-1 text-xs text-info">
                               <Send className="w-3 h-3" />
                               <span>Action taken</span>
                             </div>
@@ -156,7 +156,7 @@ const ScanResultsPreview: React.FC<ScanResultsPreviewProps> = ({
                             size="sm"
                             variant="default"
                             onClick={() => onTakeAction(match)}
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs"
+                            className="bg-destructive hover:bg-destructive text-foreground text-xs"
                           >
                             <Send className="w-3 h-3 mr-1" />
                             Take Action

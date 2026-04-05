@@ -149,24 +149,24 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] bg-gradient-to-br from-purple-900 to-indigo-900 text-white border-white/10">
+      <DialogContent className="sm:max-w-[500px] bg-gradient-to-br from-purple-900 to-indigo-900 text-foreground border-border">
         <DialogHeader>
-          <DialogTitle className="text-white text-xl font-semibold">
+          <DialogTitle className="text-foreground text-xl font-semibold">
             Message {brandName}
           </DialogTitle>
           {dealTitle && (
-            <p className="text-sm text-purple-200 mt-1">
+            <p className="text-sm text-secondary mt-1">
               About: {dealTitle}
             </p>
           )}
-          <p className="text-sm text-purple-300 mt-2">
+          <p className="text-sm text-secondary mt-2">
             Ask anything about your deliverables, timelines, or expectations.
           </p>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div>
-            <Label htmlFor="message" className="text-white mb-2 block">
+            <Label htmlFor="message" className="text-foreground mb-2 block">
               Your Message
             </Label>
             <Textarea
@@ -175,7 +175,7 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Write your question for the brand... (or use AI Assistant to generate)"
-              className="min-h-[120px] bg-white/5 border-white/20 text-white placeholder:text-purple-300 resize-none px-4 py-3 shadow-inner"
+              className="min-h-[120px] bg-card border-border text-foreground placeholder:text-secondary resize-none px-4 py-3 shadow-inner"
               disabled={sendMessageMutation.isPending}
             />
             <AIEmailComposer
@@ -190,7 +190,7 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
           </div>
 
           <div>
-            <Label className="text-white mb-2 block flex items-center gap-2">
+            <Label className="text-foreground mb-2 block flex items-center gap-2">
               <Paperclip className="w-4 h-4" />
               Attach Files (Optional)
             </Label>
@@ -208,7 +208,7 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={sendMessageMutation.isPending}
-              className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10"
+              className="w-full bg-card border-border text-foreground hover:bg-secondary/50"
             >
               <Upload className="w-4 h-4 mr-2" />
               Choose Files
@@ -219,12 +219,12 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
                 {attachments.map((att, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between bg-white/5 rounded-lg p-2 border border-white/10"
+                    className="flex items-center justify-between bg-card rounded-lg p-2 border border-border"
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Paperclip className="w-4 h-4 text-purple-300 flex-shrink-0" />
-                      <span className="text-sm text-white truncate">{att.name}</span>
-                      <span className="text-xs text-purple-300 flex-shrink-0">
+                      <Paperclip className="w-4 h-4 text-secondary flex-shrink-0" />
+                      <span className="text-sm text-foreground truncate">{att.name}</span>
+                      <span className="text-xs text-secondary flex-shrink-0">
                         ({(att.file.size / 1024 / 1024).toFixed(2)} MB)
                       </span>
                     </div>
@@ -234,7 +234,7 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
                       size="sm"
                       onClick={() => handleRemoveAttachment(index)}
                       disabled={sendMessageMutation.isPending}
-                      className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/20"
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -251,7 +251,7 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
             variant="outline"
             onClick={handleClose}
             disabled={sendMessageMutation.isPending}
-            className="border-white/20 text-white hover:bg-white/10"
+            className="border-border text-foreground hover:bg-secondary/50"
           >
             Cancel
           </Button>
@@ -259,7 +259,7 @@ export const MessageBrandModal: React.FC<MessageBrandModalProps> = ({
             type="button"
             onClick={handleSend}
             disabled={sendMessageMutation.isPending || !message.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-info hover:bg-info text-foreground"
           >
             {sendMessageMutation.isPending ? (
               <>

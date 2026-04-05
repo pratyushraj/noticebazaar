@@ -63,7 +63,7 @@ const DealCard: React.FC<DealCardProps> = ({
       className={cn(
         "bg-card rounded-[12px] p-4 mb-3 border border-border/40 shadow-sm shadow-black/20 transition-all",
         "hover:bg-accent/10 hover:shadow-md cursor-pointer gap-3 flex flex-col",
-        isOverdue && 'border-red-500/30 bg-red-500/5'
+        isOverdue && 'border-destructive/30 bg-destructive/5'
       )}
       onClick={() => onView(deal)}
     >
@@ -107,9 +107,9 @@ const DealCard: React.FC<DealCardProps> = ({
             className={cn(
               "h-full transition-all duration-300",
               progressPercentage === 100 ? 'bg-green-500' :
-              progressPercentage >= 90 ? 'bg-blue-500' :
+              progressPercentage >= 90 ? 'bg-info' :
               progressPercentage >= 60 ? 'bg-yellow-500' :
-              progressPercentage >= 30 ? 'bg-blue-400' :
+              progressPercentage >= 30 ? 'bg-info' :
               'bg-gray-400'
             )}
             style={{ width: `${progressPercentage}%` }}
@@ -152,7 +152,7 @@ const DealCard: React.FC<DealCardProps> = ({
       </div>
 
       {/* Due Date Row - Date left, days-left badge right */}
-      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/30">
+      <div className="flex items-center justify-between gap-3 pt-3 border-t border-border">
         <div className="text-sm text-foreground">
           {new Date(deal.payment_expected_date || deal.due_date).toLocaleDateString('en-IN', {
             day: 'numeric',

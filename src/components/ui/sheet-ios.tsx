@@ -42,22 +42,22 @@ const IOSSheet: React.FC<IOSSheetProps> = ({
               damping: 30,
               stiffness: 300
             }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-white/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-t-3xl border-t border-white/10 shadow-[0_-8px_32px_rgba(0,0,0,0.3)] max-h-[90vh] overflow-hidden"
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-secondary/[0.08] backdrop-blur-[40px] saturate-[180%] rounded-t-3xl border-t border-border shadow-[0_-8px_32px_rgba(0,0,0,0.3)] max-h-[90vh] overflow-hidden"
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+              <div className="w-12 h-1.5 bg-secondary/20 rounded-full" />
             </div>
             
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-6 pb-4 border-b border-white/10">
-                <h2 className="text-lg font-semibold text-white">{title}</h2>
+              <div className="flex items-center justify-between px-6 pb-4 border-b border-border">
+                <h2 className="text-lg font-semibold text-foreground">{title}</h2>
                 <button type="button"
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50"
                 >
-                  <X className="w-5 h-5 text-white/70" />
+                  <X className="w-5 h-5 text-foreground/70" />
                 </button>
               </div>
             )}

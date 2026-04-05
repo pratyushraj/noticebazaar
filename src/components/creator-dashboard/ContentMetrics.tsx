@@ -23,7 +23,7 @@ const ContentMetrics: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.65 }}
     >
-      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-[#0E121A] to-[#111827] border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
         <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4 text-pink-400" />
@@ -34,7 +34,7 @@ const ContentMetrics: React.FC = () => {
             {/* Highest Performing Post */}
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
-                <Eye className="h-3.5 w-3.5 text-purple-400" />
+                <Eye className="h-3.5 w-3.5 text-secondary" />
                 <span className="text-xs text-muted-foreground">Highest performing post</span>
               </div>
               <p className="text-lg font-bold text-foreground">
@@ -56,10 +56,10 @@ const ContentMetrics: React.FC = () => {
             {/* New Followers */}
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-blue-400" />
+                <Users className="h-3.5 w-3.5 text-info" />
                 <span className="text-xs text-muted-foreground">New followers this month</span>
               </div>
-              <p className="text-lg font-bold text-emerald-400">
+              <p className="text-lg font-bold text-primary">
                 +{metrics.newFollowersThisMonth.toLocaleString('en-IN')}
               </p>
             </div>

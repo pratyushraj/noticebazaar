@@ -82,20 +82,20 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
 
   const statusConfig = {
     completed: {
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-500/10 border-emerald-500/30',
+      color: 'text-primary',
+      bgColor: 'bg-primary/10 border-primary/30',
       icon: <CheckCircle2 className="w-5 h-5" />,
       label: 'Completed',
     },
     pending: {
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10 border-blue-500/30',
+      color: 'text-info',
+      bgColor: 'bg-info/10 border-info/30',
       icon: <Clock className="w-5 h-5" />,
       label: 'Pending',
     },
     overdue: {
-      color: 'text-red-500',
-      bgColor: 'bg-red-500/10 border-red-500/30',
+      color: 'text-destructive',
+      bgColor: 'bg-destructive/10 border-destructive/30',
       icon: <AlertCircle className="w-5 h-5" />,
       label: 'Overdue',
     },
@@ -124,20 +124,20 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className={cn(
             'text-base font-bold tracking-tight',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
             💰 Payment Timeline
           </h3>
           <Badge variant="outline" className={cn(
-            isDark ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-blue-100 text-blue-700 border-blue-300'
+            isDark ? 'bg-info/20 text-info border-info/30' : 'bg-info text-info border-info'
           )}>
             {truncatedMilestones.length} events
           </Badge>
@@ -162,7 +162,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
                 {!isLast && (
                   <div className={cn(
                     'absolute left-6 top-14 bottom-0 w-0.5',
-                    isDark ? 'bg-white/10' : 'bg-slate-200'
+                    isDark ? 'bg-secondary/50' : 'bg-background'
                   )} />
                 )}
 
@@ -200,13 +200,13 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
                       <div>
                         <h4 className={cn(
                           'font-bold text-sm',
-                          isDark ? 'text-white' : 'text-slate-900'
+                          isDark ? 'text-foreground' : 'text-muted-foreground'
                         )}>
                           {milestone.label}
                         </h4>
                         <p className={cn(
                           'text-xs mt-0.5',
-                          isDark ? 'text-white/60' : 'text-slate-600'
+                          isDark ? 'text-foreground/60' : 'text-muted-foreground'
                         )}>
                           {milestone.brandName} • {milestone.description}
                         </p>
@@ -214,7 +214,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
                       <div className="text-right flex-shrink-0">
                         <p className={cn(
                           'font-bold text-sm',
-                          isDark ? 'text-white' : 'text-slate-900'
+                          isDark ? 'text-foreground' : 'text-muted-foreground'
                         )}>
                           ₹{milestone.amount.toLocaleString()}
                         </p>
@@ -226,7 +226,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
 
                     {/* Date and status */}
                     <div className="flex items-center justify-between text-xs">
-                      <p className={isDark ? 'text-white/50' : 'text-slate-500'}>
+                      <p className={isDark ? 'text-foreground/50' : 'text-muted-foreground'}>
                         {getFormattedDate(milestone.date)}
                       </p>
                       <Badge className={cn(
@@ -249,7 +249,7 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
             animate={{ opacity: 1 }}
             className={cn(
               'text-center py-8',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}
           >
             <p className="text-sm">No payment milestones yet</p>
@@ -263,19 +263,19 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
           transition={{ delay: 0.3 }}
           className={cn(
             'mt-6 pt-4 border-t grid grid-cols-3 gap-3',
-            isDark ? 'border-white/10' : 'border-slate-200'
+            isDark ? 'border-border' : 'border-border'
           )}
         >
           <div className="text-center">
             <p className={cn(
               'text-xs font-semibold mb-1',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}>
               Expected
             </p>
             <p className={cn(
               'text-lg font-bold',
-              isDark ? 'text-emerald-400' : 'text-emerald-600'
+              isDark ? 'text-primary' : 'text-primary'
             )}>
               ₹45K
             </p>
@@ -283,13 +283,13 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
           <div className="text-center">
             <p className={cn(
               'text-xs font-semibold mb-1',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}>
               Pending
             </p>
             <p className={cn(
               'text-lg font-bold',
-              isDark ? 'text-blue-400' : 'text-blue-600'
+              isDark ? 'text-info' : 'text-info'
             )}>
               ₹25K
             </p>
@@ -297,13 +297,13 @@ const PaymentTimeline: React.FC<PaymentTimelineProps> = ({
           <div className="text-center">
             <p className={cn(
               'text-xs font-semibold mb-1',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}>
               Overdue
             </p>
             <p className={cn(
               'text-lg font-bold',
-              isDark ? 'text-red-400' : 'text-red-600'
+              isDark ? 'text-destructive' : 'text-destructive'
             )}>
               ₹25K
             </p>

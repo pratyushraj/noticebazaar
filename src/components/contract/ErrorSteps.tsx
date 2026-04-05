@@ -49,17 +49,17 @@ export const ErrorSteps: React.FC<ErrorStepsProps> = ({
       {step === 'upload-error' && (
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center max-w-md">
-            <div className="w-24 h-24 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-6">
-              <XCircle className="w-12 h-12 text-red-400" />
+            <div className="w-24 h-24 rounded-full bg-destructive/20 flex items-center justify-center mx-auto mb-6">
+              <XCircle className="w-12 h-12 text-destructive" />
             </div>
 
             <h2 className="text-2xl font-bold mb-2">Upload Failed</h2>
-            <p className="text-white/70 mb-6">{uploadError || 'An error occurred during upload. Please try again.'}</p>
+            <p className="text-foreground/70 mb-6">{uploadError || 'An error occurred during upload. Please try again.'}</p>
 
             <div className="flex flex-col gap-3">
               <button type="button"
                 onClick={handleRetryUpload}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <Upload className="w-5 h-5" />
                 Try Again
@@ -73,13 +73,13 @@ export const ErrorSteps: React.FC<ErrorStepsProps> = ({
                   setFileName('');
                   setFileSize('');
                 }}
-                className="bg-white/10 hover:bg-white/15 px-6 py-3 rounded-xl font-medium transition-colors"
+                className="bg-secondary/50 hover:bg-secondary/15 px-6 py-3 rounded-xl font-medium transition-colors"
               >
                 Choose Different File
               </button>
               <button type="button"
                 onClick={() => navigate('/creator-dashboard')}
-                className="text-purple-300 hover:text-white text-sm transition-colors"
+                className="text-secondary hover:text-foreground text-sm transition-colors"
               >
                 Go Back to Dashboard
               </button>
@@ -97,12 +97,12 @@ export const ErrorSteps: React.FC<ErrorStepsProps> = ({
             </div>
 
             <h2 className="text-2xl font-bold mb-2">Review Failed</h2>
-            <p className="text-white/70 mb-6">{reviewError || 'An error occurred during contract review. Please try again.'}</p>
+            <p className="text-foreground/70 mb-6">{reviewError || 'An error occurred during contract review. Please try again.'}</p>
 
             <div className="flex flex-col gap-3">
               <button type="button"
                 onClick={handleRetryReview}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-5 h-5" />
                 Retry Review
@@ -116,13 +116,13 @@ export const ErrorSteps: React.FC<ErrorStepsProps> = ({
                   setFileName('');
                   setFileSize('');
                 }}
-                className="bg-white/10 hover:bg-white/15 px-6 py-3 rounded-xl font-medium transition-colors"
+                className="bg-secondary/50 hover:bg-secondary/15 px-6 py-3 rounded-xl font-medium transition-colors"
               >
                 Upload New Contract
               </button>
               <button type="button"
                 onClick={() => navigate('/creator-dashboard')}
-                className="text-purple-300 hover:text-white text-sm transition-colors"
+                className="text-secondary hover:text-foreground text-sm transition-colors"
               >
                 Go Back to Dashboard
               </button>
@@ -140,7 +140,7 @@ export const ErrorSteps: React.FC<ErrorStepsProps> = ({
             </div>
 
             <h2 className="text-2xl font-bold mb-2">Invalid Document Type</h2>
-            <p className="text-white/70 mb-6 whitespace-pre-line">{validationError || 'This document does not appear to be a brand deal contract.'}</p>
+            <p className="text-foreground/70 mb-6 whitespace-pre-line">{validationError || 'This document does not appear to be a brand deal contract.'}</p>
 
             <div className="flex flex-col gap-3">
               <button type="button"
@@ -154,14 +154,14 @@ export const ErrorSteps: React.FC<ErrorStepsProps> = ({
                     fileInputRef.current.value = '';
                   }
                 }}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                className="bg-secondary hover:bg-secondary px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <Upload className="w-5 h-5" />
                 Choose Different File
               </button>
               <button type="button"
                 onClick={() => navigate('/creator-dashboard')}
-                className="text-purple-300 hover:text-white text-sm transition-colors"
+                className="text-secondary hover:text-foreground text-sm transition-colors"
               >
                 Go Back to Dashboard
               </button>

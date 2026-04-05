@@ -73,13 +73,13 @@ export const CreatorAnalytics: React.FC<CreatorAnalyticsProps> = ({ data, classN
         <MetricCard
           title="This Month"
           value={`₹${data.monthlyEarnings.toLocaleString()}`}
-          icon={<Calendar className="h-5 w-5 text-blue-500" />}
+          icon={<Calendar className="h-5 w-5 text-info" />}
           subtitle="Current month earnings"
         />
         <MetricCard
           title="Total Deals"
           value={data.totalDeals.toString()}
-          icon={<Users className="h-5 w-5 text-purple-500" />}
+          icon={<Users className="h-5 w-5 text-secondary" />}
           trend={dealsGrowth}
         />
         <MetricCard
@@ -243,7 +243,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, trend, subt
           {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
           {trend !== undefined && (
             <div className={cn("flex items-center gap-1 mt-2 text-xs font-medium",
-              trend > 0 ? "text-green-600" : trend < 0 ? "text-red-600" : "text-muted-foreground"
+              trend > 0 ? "text-green-600" : trend < 0 ? "text-destructive" : "text-muted-foreground"
             )}>
               {trend > 0 ? (
                 <TrendingUp className="h-3 w-3" />

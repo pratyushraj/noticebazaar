@@ -54,7 +54,7 @@ const CADashboard = () => {
         <Card className="bg-card shadow-sm border border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Documents to Review</CardTitle>
-            <FileText className="h-4 w-4 text-orange-500" />
+            <FileText className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{dashboardData?.documentsToReviewCount || 0}</div>
@@ -66,7 +66,7 @@ const CADashboard = () => {
         <Card className="bg-card shadow-sm border border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Pending Consultations</CardTitle>
-            <CalendarDays className="h-4 w-4 text-blue-500" />
+            <CalendarDays className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{dashboardData?.pendingConsultationCount || 0}</div>

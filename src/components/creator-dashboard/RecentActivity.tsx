@@ -52,7 +52,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ brandDeals = [] }) => {
         title: 'Contract reviewed',
         description: `${deal.brand_name} contract`,
         timestamp: new Date(deal.created_at),
-        icon: <FileText className="w-4 h-4 text-blue-400" />,
+        icon: <FileText className="w-4 h-4 text-info" />,
       });
     });
 
@@ -64,7 +64,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ brandDeals = [] }) => {
         title: 'Advisor replied',
         description: 'Legal advisor responded to your query',
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        icon: <MessageSquare className="w-4 h-4 text-purple-400" />,
+        icon: <MessageSquare className="w-4 h-4 text-secondary" />,
         avatarUrl: generateAvatarUrl('Prateek', 'Sharma'),
         avatarName: 'Adv. Prateek Sharma',
       });
@@ -94,7 +94,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ brandDeals = [] }) => {
         title: 'Payment marked as received',
         description: `₹${deal.deal_amount.toLocaleString('en-IN')} from ${deal.brand_name}`,
         timestamp: new Date(deal.payment_received_date!),
-        icon: <DollarSign className="w-4 h-4 text-emerald-400" />,
+        icon: <DollarSign className="w-4 h-4 text-primary" />,
       });
     });
 
@@ -109,14 +109,14 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ brandDeals = [] }) => {
   }
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl shadow-[0_0_25px_-6px_rgba(0,0,0,0.45)]">
+    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-2xl shadow-[0_0_25px_-6px_rgba(0,0,0,0.45)]">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white">Recent Activity</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-white/10"></div>
+          <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-secondary/50"></div>
           
           <div className="space-y-4">
             {activities.map((activity, index) => (
@@ -128,28 +128,28 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ brandDeals = [] }) => {
                 className="relative flex items-start gap-3 pl-2"
               >
                 {/* Timeline dot */}
-                <div className="absolute left-0 top-2 w-3 h-3 rounded-full bg-white/20 border-2 border-gray-950 z-10"></div>
+                <div className="absolute left-0 top-2 w-3 h-3 rounded-full bg-secondary/20 border-2 border-gray-950 z-10"></div>
                 
                 {/* Avatar or Icon */}
                 <div className="flex-shrink-0 mt-1 relative z-10">
                   {activity.avatarUrl ? (
                     <Avatar className="h-8 w-8 border-2 border-gray-950">
                       <AvatarImage src={activity.avatarUrl} alt={activity.avatarName} />
-                      <AvatarFallback className="bg-purple-600 text-white text-xs">
+                      <AvatarFallback className="bg-secondary text-foreground text-xs">
                         {activity.avatarName ? getInitials(activity.avatarName.split(' ')[0], activity.avatarName.split(' ')[1] || '') : 'U'}
                       </AvatarFallback>
                     </Avatar>
                   ) : (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary/50">
                       {activity.icon}
                     </div>
                   )}
                 </div>
                 
                 <div className="flex-1 min-w-0 pt-1">
-                  <p className="text-sm font-medium text-white">{activity.title}</p>
-                  <p className="text-xs text-white/60 mt-0.5">{activity.description}</p>
-                  <p className="text-xs text-white/40 mt-1">
+                  <p className="text-sm font-medium text-foreground">{activity.title}</p>
+                  <p className="text-xs text-foreground/60 mt-0.5">{activity.description}</p>
+                  <p className="text-xs text-foreground/40 mt-1">
                     {formatTimeAgo(activity.timestamp)}
                   </p>
                 </div>

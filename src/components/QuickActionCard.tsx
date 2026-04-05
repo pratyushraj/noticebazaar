@@ -26,7 +26,7 @@ const QuickActionCard = React.forwardRef<HTMLDivElement, QuickActionCardProps>(
       >
         <CardContent className="p-0 flex flex-col space-y-4">
           {/* Icon container: large icon, white text */}
-          <div className={cn("h-10 w-10 flex items-center justify-center text-white", iconContainerClassName)}>
+          <div className={cn("h-10 w-10 flex items-center justify-center text-foreground", iconContainerClassName)}>
             {icon}
           </div>
           <div className="space-y-1">

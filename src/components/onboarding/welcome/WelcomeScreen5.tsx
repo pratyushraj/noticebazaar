@@ -36,11 +36,11 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
         <IconBubble icon={LifeBuoy} size="lg" color="green" animated />
       </div>
 
-      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">
+      <h1 className="text-2xl md:text-3xl font-bold leading-tight mb-3 text-muted-foreground dark:text-foreground">
         Expert Backup When Needed
       </h1>
 
-      <p className="text-lg md:text-xl font-semibold text-slate-600 dark:text-white/80 mb-5 md:mb-8">
+      <p className="text-lg md:text-xl font-semibold text-muted-foreground dark:text-foreground/80 mb-5 md:mb-8">
         Legal + tax support built for creators.
       </p>
 
@@ -49,7 +49,7 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
           return (
             <GradientCard key={index} padding="md" className="text-left">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full overflow-hidden border border-slate-200 shadow-sm flex-shrink-0 bg-white">
+                <div className="h-16 w-16 rounded-full overflow-hidden border border-border shadow-sm flex-shrink-0 bg-card">
                   <img
                     src={advisor.photo}
                     alt={advisor.name}
@@ -58,8 +58,8 @@ export const WelcomeScreen5: React.FC<WelcomeScreen5Props> = ({ onNext, onBack }
                   />
                 </div>
                 <div className="flex-1">
-                  <div className="text-base font-semibold mb-1 text-slate-900 dark:text-white">{advisor.name}</div>
-                  <div className="text-sm text-slate-500 dark:text-white/60">{advisor.role}</div>
+                  <div className="text-base font-semibold mb-1 text-muted-foreground dark:text-foreground">{advisor.name}</div>
+                  <div className="text-sm text-muted-foreground dark:text-foreground/60">{advisor.role}</div>
                 </div>
               </div>
             </GradientCard>

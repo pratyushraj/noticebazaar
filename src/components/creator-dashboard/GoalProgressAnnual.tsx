@@ -47,8 +47,8 @@ const GoalProgressAnnual: React.FC<GoalProgressAnnualProps> = ({ brandDeals = []
       <Card variant="partner" interactive>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-purple-500/10 border border-purple-500/20">
-              <Target className="h-5 w-5 text-purple-400" />
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-secondary/50 border border-purple-500/20">
+              <Target className="h-5 w-5 text-secondary" />
             </div>
             <CardTitle>Annual Goal Progress</CardTitle>
           </div>
@@ -57,36 +57,36 @@ const GoalProgressAnnual: React.FC<GoalProgressAnnualProps> = ({ brandDeals = []
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-small text-white/60">Goal</p>
-                <p className="text-2xl font-bold text-white number-large mt-1">
+                <p className="text-small text-foreground/60">Goal</p>
+                <p className="text-2xl font-bold text-foreground number-large mt-1">
                   ₹{(goalData.goal / 100000).toFixed(0)} lakh
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-small text-white/60">Progress</p>
-                <p className="text-2xl font-bold text-purple-400 number-large mt-1">
+                <p className="text-small text-foreground/60">Progress</p>
+                <p className="text-2xl font-bold text-secondary number-large mt-1">
                   {goalData.progressPercent}%
                 </p>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+            <div className="relative h-3 bg-secondary/50 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${goalData.progressPercent}%` }}
                 transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-purple-500 via-purple-400 to-indigo-400"
               >
-                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
               </motion.div>
             </div>
 
             <div className="flex items-center justify-between text-small">
-              <span className="text-white/70">
+              <span className="text-foreground/70">
                 ₹{(goalData.progress / 100000).toFixed(2)} lakh earned
               </span>
-              <span className="text-white/70">
+              <span className="text-foreground/70">
                 ₹{((goalData.goal - goalData.progress) / 100000).toFixed(2)} lakh to go
               </span>
             </div>

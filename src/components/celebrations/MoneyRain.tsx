@@ -122,17 +122,17 @@ export const MoneyRain: React.FC<MoneyRainProps> = ({ lifetimeEarnings, onComple
             >
               {milestone.emoji}
             </motion.div>
-            <h2 className="text-4xl font-bold text-white mb-2">
+            <h2 className="text-4xl font-bold text-foreground mb-2">
               Congratulations!
             </h2>
             <p className="text-2xl font-semibold text-yellow-200 mb-4">
               You just hit {milestone.label} lifetime earnings!
             </p>
-            <div className="flex items-center justify-center gap-2 text-3xl font-bold text-white">
+            <div className="flex items-center justify-center gap-2 text-3xl font-bold text-foreground">
               <IndianRupee className="w-8 h-8" />
               <span>{lifetimeEarnings.toLocaleString('en-IN')}</span>
             </div>
-            <p className="text-white/80 mt-4 text-sm">
+            <p className="text-foreground/80 mt-4 text-sm">
               Click anywhere to continue
             </p>
           </div>

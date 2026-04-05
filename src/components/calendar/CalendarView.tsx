@@ -150,9 +150,9 @@ export function CalendarView({
     <div className="w-full space-y-4 overflow-hidden" {...swipeHandlers} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {/* Sticky Header with Navigation */}
       <div className="sticky top-0 z-10 pb-4 backdrop-blur-xl">
-        <div className="w-full rounded-2xl bg-white/5 backdrop-blur-xl p-4 sm:p-6 flex flex-col gap-4 mx-auto max-w-[900px]">
+        <div className="w-full rounded-2xl bg-card backdrop-blur-xl p-4 sm:p-6 flex flex-col gap-4 mx-auto max-w-[900px]">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
-            <h2 className="text-xl md:text-2xl font-bold text-white flex-shrink-0">Your Deadlines</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-foreground flex-shrink-0">Your Deadlines</h2>
             
             {/* Navigation Controls and Month/Year - All in one line */}
             <div className="flex items-center gap-1 md:gap-2 w-full sm:w-auto justify-center sm:justify-end flex-wrap">
@@ -160,7 +160,7 @@ export function CalendarView({
                 variant="ghost"
                 size="sm"
                 onClick={goToPreviousMonth}
-                className="text-white/60 hover:text-white hover:bg-white/10 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
+                className="text-foreground/60 hover:text-foreground hover:bg-secondary/50 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -168,7 +168,7 @@ export function CalendarView({
                 variant="ghost"
                 size="sm"
                 onClick={goToToday}
-                className="text-white/80 hover:text-white hover:bg-white/10 flex-shrink-0 text-xs md:text-sm px-2 md:px-3 h-9 rounded-lg transition-all active:scale-95"
+                className="text-foreground/80 hover:text-foreground hover:bg-secondary/50 flex-shrink-0 text-xs md:text-sm px-2 md:px-3 h-9 rounded-lg transition-all active:scale-95"
               >
                 Today
               </Button>
@@ -176,11 +176,11 @@ export function CalendarView({
                 variant="ghost"
                 size="sm"
                 onClick={goToNextMonth}
-                className="text-white/60 hover:text-white hover:bg-white/10 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
+                className="text-foreground/60 hover:text-foreground hover:bg-secondary/50 flex-shrink-0 h-9 w-9 p-0 rounded-lg transition-all active:scale-95"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <div className="text-white font-semibold text-sm md:text-base px-2 flex-shrink-0">
+              <div className="text-foreground font-semibold text-sm md:text-base px-2 flex-shrink-0">
                 {monthYearLabel}
               </div>
             </div>
@@ -189,7 +189,7 @@ export function CalendarView({
 
         {/* Sticky View Mode Selector - Centered Segmented Control */}
         <div className="w-full flex justify-center pb-2">
-          <div className="flex items-center gap-2 bg-white/5 rounded-2xl p-1.5 sm:p-2 mx-auto sm:mx-0">
+          <div className="flex items-center gap-2 bg-card rounded-2xl p-1.5 sm:p-2 mx-auto sm:mx-0">
             {viewModes.map((mode) => {
               const Icon = mode.icon;
               const isActive = viewMode === mode.value;
@@ -202,8 +202,8 @@ export function CalendarView({
                     "flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[12px] sm:text-sm font-medium transition-all duration-200",
                     "active:scale-95",
                     isActive
-                      ? "bg-gradient-to-r from-[#7B2FF7] to-[#A855F7] text-white md:shadow-lg md:shadow-purple-500/20"
-                      : "text-white/40 hover:text-white/60"
+                      ? "bg-gradient-to-r from-[#7B2FF7] to-[#A855F7] text-foreground md:shadow-lg md:shadow-purple-500/20"
+                      : "text-foreground/40 hover:text-foreground/60"
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -229,7 +229,7 @@ export function CalendarView({
               {/* Weekday Headers */}
               <div className="grid grid-cols-7 mb-1 w-full">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="text-center text-[10px] md:text-sm font-semibold text-white/60 py-1.5 md:py-2">
+                  <div key={day} className="text-center text-[10px] md:text-sm font-semibold text-foreground/60 py-1.5 md:py-2">
                     {day}
                   </div>
                 ))}
@@ -252,13 +252,13 @@ export function CalendarView({
                       <div
                         key={index}
                         className={cn(
-                          "aspect-square rounded-xl bg-white/5 backdrop-blur-md flex flex-col items-center justify-center min-w-0 text-[13px] sm:text-[15px] font-medium transition-all cursor-pointer relative",
-                          "md:hover:bg-white/10",
+                          "aspect-square rounded-xl bg-card backdrop-blur-md flex flex-col items-center justify-center min-w-0 text-[13px] sm:text-[15px] font-medium transition-all cursor-pointer relative",
+                          "md:hover:bg-secondary/50",
                           isCurrentMonth 
-                            ? "text-white" 
-                            : "text-white/40 opacity-50",
-                          isToday && "ring-2 ring-white/40 bg-white/10 shadow-lg shadow-black/20",
-                          isSelected && "ring-2 ring-white/40 bg-white/10 shadow-lg shadow-black/20",
+                            ? "text-foreground" 
+                            : "text-foreground/40 opacity-50",
+                          isToday && "ring-2 ring-white/40 bg-secondary/50 shadow-lg shadow-black/20",
+                          isSelected && "ring-2 ring-white/40 bg-secondary/50 shadow-lg shadow-black/20",
                           dayEvents.length > 0 && "cursor-pointer"
                         )}
                         onClick={() => {
@@ -270,7 +270,7 @@ export function CalendarView({
                         {/* Date number */}
                         <div className={cn(
                           "text-[13px] sm:text-[15px] font-medium",
-                          isToday ? "text-white" : isCurrentMonth ? "text-white" : "text-white/40"
+                          isToday ? "text-foreground" : isCurrentMonth ? "text-foreground" : "text-foreground/40"
                         )}>
                           {day.getDate()}
                         </div>
@@ -281,16 +281,16 @@ export function CalendarView({
                             {dayEvents.slice(0, 3).map((event, idx) => {
                               const colorMap: Record<string, string> = {
                                 payment: 'bg-green-400',
-                                deliverable: 'bg-blue-400',
+                                deliverable: 'bg-info',
                                 tax: 'bg-yellow-400',
-                                deal: 'bg-purple-400',
+                                deal: 'bg-secondary',
                               };
                               return (
                                 <div
                                   key={idx}
                                   className={cn(
                                     "w-1.5 h-1.5 rounded-full",
-                                    colorMap[event.type] || 'bg-sky-400'
+                                    colorMap[event.type] || 'bg-info'
                                   )}
                                 />
                               );
@@ -348,11 +348,11 @@ export function CalendarView({
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="w-full max-w-[900px] mx-auto px-4 sm:px-6 min-w-0"
           >
-            <div className="w-full rounded-2xl bg-white/5 backdrop-blur-xl p-4 sm:p-6 min-w-0 mx-auto">
+            <div className="w-full rounded-2xl bg-card backdrop-blur-xl p-4 sm:p-6 min-w-0 mx-auto">
               {/* Week-day header row */}
               <div className="grid grid-cols-7 w-full text-center text-sm sm:text-base font-medium min-w-0 mb-4">
                 {weekDays.map((day, index) => (
-                  <div key={index} className="py-2 min-w-0 truncate text-white/60">
+                  <div key={index} className="py-2 min-w-0 truncate text-foreground/60">
                     {day.toLocaleDateString('en-US', { weekday: 'short' })}
                   </div>
                 ))}
@@ -371,12 +371,12 @@ export function CalendarView({
                     <div key={index} className="min-h-[300px] md:min-h-[400px] flex flex-col">
                       {/* Day header */}
                       <div className={cn(
-                        "rounded-xl bg-white/5 backdrop-blur-md aspect-square flex flex-col justify-center items-center min-w-0 mb-2",
-                        isToday && "ring-2 ring-white/40 bg-white/10 shadow-lg shadow-black/20"
+                        "rounded-xl bg-card backdrop-blur-md aspect-square flex flex-col justify-center items-center min-w-0 mb-2",
+                        isToday && "ring-2 ring-white/40 bg-secondary/50 shadow-lg shadow-black/20"
                       )}>
                         <div className={cn(
                           "text-base md:text-lg font-bold",
-                          isToday ? "text-white" : "text-white/60"
+                          isToday ? "text-foreground" : "text-foreground/60"
                         )}>
                           {day.getDate()}
                         </div>
@@ -389,7 +389,7 @@ export function CalendarView({
                             key={event.id}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            className="bg-blue-500/20 text-blue-200 px-2 py-1 rounded-lg text-xs font-semibold min-w-0 truncate cursor-pointer hover:opacity-80 transition-opacity"
+                            className="bg-info/20 text-info px-2 py-1 rounded-lg text-xs font-semibold min-w-0 truncate cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => onEventClick?.(event)}
                           >
                             {event.title}
@@ -412,19 +412,19 @@ export function CalendarView({
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <Card className="bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border border-white/8 md:shadow-lg md:shadow-black/20">
+            <Card className="bg-[rgba(255,255,255,0.06)] backdrop-blur-xl border border-border/8 md:shadow-lg md:shadow-black/20">
               <CardContent className="p-4">
                 <div className="text-center mb-6">
-                  <div className="text-2xl font-bold text-white mb-1">
+                  <div className="text-2xl font-bold text-foreground mb-1">
                     {currentDate.toLocaleDateString('en-US', { weekday: 'long' })}
                   </div>
-                  <div className="text-white/60">
+                  <div className="text-foreground/60">
                     {currentDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                   </div>
                 </div>
 
                 {dayEvents.length === 0 ? (
-                  <div className="text-center py-12 text-white/40">
+                  <div className="text-center py-12 text-foreground/40">
                     <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>No events scheduled for this day</p>
                   </div>
@@ -443,15 +443,15 @@ export function CalendarView({
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="font-semibold text-white mb-1">{event.title}</div>
+                            <div className="font-semibold text-foreground mb-1">{event.title}</div>
                             {event.description && (
-                              <div className="text-sm text-white/80">{event.description}</div>
+                              <div className="text-sm text-foreground/80">{event.description}</div>
                             )}
                             <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="outline" className="bg-white/10 text-white/60 border-white/20">
+                              <Badge variant="outline" className="bg-secondary/50 text-foreground/60 border-border">
                                 {event.type}
                               </Badge>
-                              <span className="text-xs text-white/40">
+                              <span className="text-xs text-foreground/40">
                                 {event.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>

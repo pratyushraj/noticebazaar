@@ -72,7 +72,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
 
           {/* Card */}
           <div
-            className={`relative bg-gradient-to-br ${tip.color} rounded-xl p-6 shadow-2xl border border-white/20`}
+            className={`relative bg-gradient-to-br ${tip.color} rounded-xl p-6 shadow-2xl border border-border`}
           >
             {/* Credit card shine effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none" />
@@ -97,34 +97,34 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
                 {!tip.persistent && (
                   <button type="button"
                     onClick={() => onDismiss(true)}
-                    className="absolute -top-1 -right-1 p-1 hover:bg-white/20 rounded-lg transition-colors"
+                    className="absolute -top-1 -right-1 p-1 hover:bg-secondary/20 rounded-lg transition-colors"
                     aria-label="Dismiss tip"
                   >
-                    <X className="w-5 h-5 text-white" />
+                    <X className="w-5 h-5 text-foreground" />
                   </button>
                 )}
                 
                 {/* Centered icon */}
                 <div className="flex justify-center mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 rounded-xl bg-secondary/20 backdrop-blur-sm flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-foreground" />
                   </div>
                 </div>
                 
                 {/* Centered title */}
                 <div className="text-center">
-                  <h3 className="font-bold text-lg text-white break-words">{tip.title}</h3>
+                  <h3 className="font-bold text-lg text-foreground break-words">{tip.title}</h3>
                 </div>
               </div>
 
               {/* Message */}
-              <p className="text-white/90 text-sm leading-relaxed mb-4 break-words text-center">{tip.message}</p>
+              <p className="text-foreground/90 text-sm leading-relaxed mb-4 break-words text-center">{tip.message}</p>
 
               {/* Details list */}
               {tip.details && (
                 <div className="space-y-2 mb-6">
                   {tip.details.map((detail, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm text-white/90">
+                    <div key={index} className="flex items-center gap-2 text-sm text-foreground/90">
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                       <span>{detail}</span>
                     </div>
@@ -137,7 +137,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
                 {!tip.persistent && (
                   <button type="button"
                     onClick={() => onDismiss(false)}
-                    className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm font-medium py-2.5 px-4 rounded-xl transition-colors text-white text-sm"
+                    className="flex-1 bg-secondary/20 hover:bg-secondary/30 backdrop-blur-sm font-medium py-2.5 px-4 rounded-xl transition-colors text-foreground text-sm"
                   >
                     Later
                   </button>
@@ -145,7 +145,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
                 {tip.action && (
                   <button type="button"
                     onClick={() => onAction(tip.action!)}
-                    className="flex-1 bg-white hover:bg-white/90 font-semibold py-2.5 px-4 rounded-xl transition-colors text-purple-600 text-sm flex items-center justify-center gap-2"
+                    className="flex-1 bg-card hover:bg-secondary/90 font-semibold py-2.5 px-4 rounded-xl transition-colors text-secondary text-sm flex items-center justify-center gap-2"
                   >
                     {tip.action.label}
                     {tip.action.type !== 'dismiss' && <ArrowRight className="w-4 h-4" />}
@@ -155,7 +155,7 @@ export const TipCard: React.FC<TipCardProps> = ({ tip, onDismiss, onAction }) =>
 
               {/* Persistent tip notice */}
               {tip.persistent && (
-                <div className="mt-4 pt-4 border-t border-white/20 text-xs text-white/70 text-center">
+                <div className="mt-4 pt-4 border-t border-border text-xs text-foreground/70 text-center">
                   This is important - take action to dismiss
                 </div>
               )}

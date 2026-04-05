@@ -32,7 +32,7 @@ const Accordion = ({ children, className, type = "single", collapsible = true, d
 
 const AccordionItem = ({ children, className, isOpen, onToggle, value }: any) => {
     return (
-        <div className={cn("border-b border-slate-200", className)}>
+        <div className={cn("border-b border-border", className)}>
             {React.Children.map(children, (child) => {
                 if (React.isValidElement(child)) {
                     return React.cloneElement(child as React.ReactElement<any>, {

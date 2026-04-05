@@ -16,7 +16,7 @@ interface QuickActionsWidgetProps {
 }
 
 const colorClasses = {
-    blue: 'from-blue-600/25 to-indigo-600/20 border-blue-400/40 hover:border-blue-400/60 shadow-blue-500/10',
+    blue: 'from-blue-600/25 to-indigo-600/20 border-info/40 hover:border-info/60 shadow-blue-500/10',
     green: 'from-green-600/25 to-emerald-600/20 border-green-400/40 hover:border-green-400/60 shadow-green-500/10',
     indigo: 'from-indigo-600/25 to-violet-600/20 border-indigo-400/40 hover:border-indigo-400/60 shadow-indigo-500/10',
     orange: 'from-orange-600/25 to-amber-600/20 border-orange-400/40 hover:border-orange-400/60 shadow-orange-500/10',
@@ -40,16 +40,16 @@ export const QuickActionsWidget = ({ actions }: QuickActionsWidgetProps) => {
                     )}
                 >
                     {action.badge !== undefined && action.badge > 0 && (
-                        <div className="absolute -top-1.5 -right-1.5 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 bg-red-500 text-white text-[10px] md:text-xs font-bold rounded-full flex items-center justify-center border-2 border-[#121722]">
+                        <div className="absolute -top-1.5 -right-1.5 md:-top-2 md:-right-2 w-5 h-5 md:w-6 md:h-6 bg-destructive text-foreground text-[10px] md:text-xs font-bold rounded-full flex items-center justify-center border-2 border-[#121722]">
                             {action.badge > 9 ? '9+' : action.badge}
                         </div>
                     )}
 
                     <div className="flex flex-col items-center gap-1.5 md:gap-2">
-                        <div className="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:bg-white/20 transition-colors">
+                        <div className="w-9 h-9 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-secondary/50 flex items-center justify-center text-foreground group-hover:bg-secondary/20 transition-colors">
                             {action.icon}
                         </div>
-                        <span className="text-[11px] md:text-xs font-bold text-white text-center leading-tight">
+                        <span className="text-[11px] md:text-xs font-bold text-foreground text-center leading-tight">
                             {action.label}
                         </span>
                     </div>

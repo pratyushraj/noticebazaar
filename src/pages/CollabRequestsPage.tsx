@@ -221,7 +221,7 @@ const CollabRequestsPage = () => {
         {pendingRequests.length === 0 ? (
           <Card className="rounded-2xl bg-card border border-border overflow-hidden">
             <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-5">
+              <div className="w-20 h-20 rounded-full bg-card0 flex items-center justify-center mx-auto mb-5">
                 <Briefcase className="h-10 w-10 text-info/80" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">No brand requests yet</h3>
@@ -341,7 +341,7 @@ const CollabRequestsPage = () => {
                         {deliverablesList.slice(0, 3).map((d, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-foreground/95 bg-secondary/50 border border-border"
+                            className="inline-flex px-3 py-1 rounded-full text-xs font-medium text-foreground/95 bg-card0 border border-border"
                           >
                             {d}
                           </span>

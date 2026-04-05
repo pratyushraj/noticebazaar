@@ -39,8 +39,8 @@ const achievements: Record<AchievementId, Achievement> = {
     title: 'Contract Reviewer',
     description: 'Reviewed your first contract',
     icon: Shield,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/20',
+    color: 'text-info',
+    bgColor: 'bg-info/20',
     rarity: 'common'
   },
   'first-message': {
@@ -48,8 +48,8 @@ const achievements: Record<AchievementId, Achievement> = {
     title: 'Connected',
     description: 'Sent your first message to advisor',
     icon: Zap,
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/20',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary/20',
     rarity: 'common'
   },
   'first-payment': {
@@ -93,8 +93,8 @@ const achievements: Record<AchievementId, Achievement> = {
     title: 'Lakh Club',
     description: 'Tracked ₹1L+ in earnings',
     icon: Trophy,
-    color: 'text-amber-400',
-    bgColor: 'bg-amber-500/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/20',
     rarity: 'rare'
   },
   'earnings-10l': {
@@ -133,7 +133,7 @@ export const AchievementBadge = ({ achievementId, showNotification = false, onCl
             initial={{ rotate: -10 }}
             animate={{ rotate: [0, -10, 10, -10, 0] }}
             transition={{ duration: 0.5 }}
-            className={`${achievement.bgColor} backdrop-blur-[40px] rounded-[24px] p-5 border-2 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-sm`}
+            className={`${achievement.bgColor} backdrop-blur-[40px] rounded-[24px] p-5 border-2 border-border shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-sm`}
           >
             <div className="flex items-start gap-4">
               <motion.div
@@ -146,20 +146,20 @@ export const AchievementBadge = ({ achievementId, showNotification = false, onCl
               </motion.div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[13px] font-semibold text-purple-400 uppercase tracking-wide">
+                  <span className="text-[13px] font-semibold text-secondary uppercase tracking-wide">
                     {achievement.rarity}
                   </span>
                   <Award className={`w-4 h-4 ${achievement.color}`} />
                 </div>
-                <h3 className="font-bold text-[17px] text-white mb-1">{achievement.title}</h3>
-                <p className="text-[13px] text-purple-200">{achievement.description}</p>
+                <h3 className="font-bold text-[17px] text-foreground mb-1">{achievement.title}</h3>
+                <p className="text-[13px] text-secondary">{achievement.description}</p>
               </div>
               {onClose && (
                 <button type="button"
                   onClick={onClose}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-1 hover:bg-secondary/50 rounded-lg transition-colors"
                 >
-                  <CheckCircle className="w-4 h-4 text-purple-300" />
+                  <CheckCircle className="w-4 h-4 text-secondary" />
                 </button>
               )}
             </div>
@@ -178,7 +178,7 @@ interface AchievementDisplayProps {
 export const AchievementDisplay = ({ earnedAchievements, className }: AchievementDisplayProps) => {
   return (
     <div className={className}>
-      <h3 className="font-semibold text-[17px] text-white mb-4">Achievements</h3>
+      <h3 className="font-semibold text-[17px] text-foreground mb-4">Achievements</h3>
       <div className="grid grid-cols-3 gap-3">
         {Object.values(achievements).map((achievement) => {
           const Icon = achievement.icon;
@@ -189,12 +189,12 @@ export const AchievementDisplay = ({ earnedAchievements, className }: Achievemen
               key={achievement.id}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`${achievement.bgColor} rounded-xl p-4 border border-white/10 text-center ${
+              className={`${achievement.bgColor} rounded-xl p-4 border border-border text-center ${
                 isEarned ? 'opacity-100' : 'opacity-40 grayscale'
               }`}
             >
               <Icon className={`w-6 h-6 ${achievement.color} mx-auto mb-2`} />
-              <p className="text-[11px] font-medium text-white">{achievement.title}</p>
+              <p className="text-[11px] font-medium text-foreground">{achievement.title}</p>
             </motion.div>
           );
         })}

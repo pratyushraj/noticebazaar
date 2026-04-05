@@ -63,35 +63,35 @@ export const PaymentErrorDialog: React.FC<PaymentErrorDialogProps> = ({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-red-500/30 text-white max-w-md">
+      <AlertDialogContent className="bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-destructive/30 text-foreground max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-              <XCircle className="w-6 h-6 text-red-400" />
+            <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center">
+              <XCircle className="w-6 h-6 text-destructive" />
             </div>
             <AlertDialogTitle className="text-xl font-bold">Payment Failed</AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-purple-200 mt-4">
+          <AlertDialogDescription className="text-secondary mt-4">
             {getErrorMessage()}
           </AlertDialogDescription>
           {paymentId && (
-            <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/10">
-              <p className="text-xs text-purple-300 mb-1">Payment ID:</p>
-              <p className="text-sm font-mono text-white/80">{paymentId}</p>
+            <div className="mt-3 p-3 bg-card rounded-lg border border-border">
+              <p className="text-xs text-secondary mb-1">Payment ID:</p>
+              <p className="text-sm font-mono text-foreground/80">{paymentId}</p>
             </div>
           )}
         </AlertDialogHeader>
         <AlertDialogFooter className="gap-2 sm:gap-0 mt-6">
           <AlertDialogAction
             onClick={() => onOpenChange(false)}
-            className="bg-white/10 text-white hover:bg-white/20 border-none"
+            className="bg-secondary/50 text-foreground hover:bg-secondary/20 border-none"
           >
             Close
           </AlertDialogAction>
           {onRetry && (
             <Button
               onClick={handleRetry}
-              className="bg-purple-600 text-white hover:bg-purple-700"
+              className="bg-secondary text-foreground hover:bg-secondary"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Retry Payment
@@ -102,7 +102,7 @@ export const PaymentErrorDialog: React.FC<PaymentErrorDialogProps> = ({
             onClick={() => {
               window.location.href = `mailto:support@creatorarmour.com?subject=Payment Issue&body=Payment ID: ${paymentId || 'N/A'}\nError: ${error || 'Unknown error'}`;
             }}
-            className="bg-white/10 text-white hover:bg-white/20 border-white/20"
+            className="bg-secondary/50 text-foreground hover:bg-secondary/20 border-border"
           >
             <Mail className="w-4 h-4 mr-2" />
             Contact Support

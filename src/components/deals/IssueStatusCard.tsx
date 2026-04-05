@@ -29,9 +29,9 @@ const statusConfig = {
   under_review: {
     label: 'Under Review',
     icon: HelpCircle,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/20',
-    borderColor: 'border-blue-500/30',
+    color: 'text-info',
+    bgColor: 'bg-info/20',
+    borderColor: 'border-info/30',
   },
   resolved: {
     label: 'Resolved',
@@ -43,8 +43,8 @@ const statusConfig = {
 };
 
 const teamConfig = {
-  legal: { label: 'Legal Team', color: 'text-purple-300' },
-  ca: { label: 'CA Team', color: 'text-blue-300' },
+  legal: { label: 'Legal Team', color: 'text-secondary' },
+  ca: { label: 'CA Team', color: 'text-info' },
   support: { label: 'Support Team', color: 'text-green-300' },
 };
 
@@ -71,7 +71,7 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-gradient-to-br from-purple-800/30 via-purple-900/20 to-indigo-900/20 backdrop-blur-xl rounded-2xl p-5 border border-white/10 shadow-lg"
+      className="bg-gradient-to-br from-purple-800/30 via-purple-900/20 to-indigo-900/20 backdrop-blur-xl rounded-2xl p-5 border border-border shadow-lg"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -80,8 +80,8 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
             <AlertCircle className={`w-5 h-5 ${status.color}`} />
           </div>
           <div>
-            <h3 className="text-white font-semibold">Issue Status</h3>
-            <p className="text-xs text-purple-300">ID: {issue.id}</p>
+            <h3 className="text-foreground font-semibold">Issue Status</h3>
+            <p className="text-xs text-secondary">ID: {issue.id}</p>
           </div>
         </div>
         <div
@@ -97,31 +97,31 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
       {/* Details */}
       <div className="space-y-3 mb-4">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-white/60">Issue Type:</span>
-          <span className="text-white font-medium capitalize">
+          <span className="text-foreground/60">Issue Type:</span>
+          <span className="text-foreground font-medium capitalize">
             {issue.issueType.replace(/_/g, ' ')}
           </span>
         </div>
 
         {team && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-white/60">Assigned Team:</span>
+            <span className="text-foreground/60">Assigned Team:</span>
             <span className={`font-medium ${team.color}`}>{team.label}</span>
           </div>
         )}
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-white/60">Last Updated:</span>
-          <span className="text-white/80">{formatDate(issue.lastUpdated)}</span>
+          <span className="text-foreground/60">Last Updated:</span>
+          <span className="text-foreground/80">{formatDate(issue.lastUpdated)}</span>
         </div>
 
         {issue.userLastMessage && (
-          <div className="pt-3 border-t border-white/10">
+          <div className="pt-3 border-t border-border">
             <div className="flex items-start gap-2">
-              <MessageSquare className="w-4 h-4 text-purple-300 mt-0.5 flex-shrink-0" />
+              <MessageSquare className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-white/60 mb-1">Your Last Message:</p>
-                <p className="text-sm text-white/80 line-clamp-2">
+                <p className="text-xs text-foreground/60 mb-1">Your Last Message:</p>
+                <p className="text-sm text-foreground/80 line-clamp-2">
                   {issue.userLastMessage}
                 </p>
               </div>
@@ -131,11 +131,11 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 pt-4 border-t border-white/10">
+      <div className="flex gap-2 pt-4 border-t border-border">
         {onViewHistory && (
           <button type="button"
             onClick={onViewHistory}
-            className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-white"
+            className="flex-1 px-4 py-2.5 bg-card hover:bg-secondary/50 border border-border rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm text-foreground"
           >
             <ExternalLink className="w-4 h-4" />
             View History
@@ -144,7 +144,7 @@ export const IssueStatusCard: React.FC<IssueStatusCardProps> = ({
         {onUpdateIssue && (
           <button type="button"
             onClick={onUpdateIssue}
-            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm"
+            className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-foreground font-medium rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 text-sm"
           >
             <MessageSquare className="w-4 h-4" />
             Update Issue

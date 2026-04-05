@@ -119,7 +119,7 @@ const ClientSubscription = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {initialPlan && (
-            <div className="bg-blue-500/10 text-blue-400 p-3 rounded-lg flex items-center">
+            <div className="bg-info/10 text-info p-3 rounded-lg flex items-center">
               <Lightbulb className="h-4 w-4 mr-2 flex-shrink-0" />
               <p className="text-sm">You selected the <strong>{initialPlan.charAt(0).toUpperCase() + initialPlan.slice(1)} Plan</strong>. Click 'Pay / Manage Subscription' to proceed with payment.</p>
             </div>

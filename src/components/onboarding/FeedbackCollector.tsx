@@ -72,11 +72,11 @@ const FeedbackCollector = ({ triggerAfter = 30000, onDismiss }: FeedbackCollecto
         exit={{ opacity: 0, y: 20 }}
         className="fixed bottom-4 right-4 z-50 max-w-sm"
       >
-        <div className="bg-white/[0.95] backdrop-blur-[40px] rounded-[24px] p-6 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <div className="bg-secondary/[0.95] backdrop-blur-[40px] rounded-[24px] p-6 border border-border shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-purple-400" />
+                <MessageSquare className="w-5 h-5 text-secondary" />
               </div>
               <div>
                 <h3 className="font-semibold text-[17px] text-gray-900 mb-1">How's it going?</h3>
@@ -133,7 +133,7 @@ const FeedbackCollector = ({ triggerAfter = 30000, onDismiss }: FeedbackCollecto
             <button type="button"
               onClick={handleSubmit}
               disabled={!rating || isSubmitting}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-[15px] font-semibold transition-all flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-foreground rounded-xl text-[15px] font-semibold transition-all flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 'Sending...'

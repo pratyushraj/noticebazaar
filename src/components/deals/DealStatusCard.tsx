@@ -94,45 +94,45 @@ export const DealStatusCard = ({
     if (!showContractCard) return null;
 
     return (
-        <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl border-2 border-blue-400/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 backdrop-blur-xl border-2 border-info/30 rounded-2xl p-6 shadow-lg relative overflow-hidden">
             {/* Subtle background glow for active state */}
             {step === 3 && (
-                <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none" />
+                <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
             )}
 
             {/* Header & Steps */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 relative z-10">
                 <div>
-                    <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                    <h2 className="text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
                         {step === 3 ? (
                             <>
                                 Deal Active & Signed
-                                <span className="inline-flex items-center justify-center bg-emerald-500/20 text-emerald-400 text-xs px-2 py-0.5 rounded-full border border-emerald-500/30">
+                                <span className="inline-flex items-center justify-center bg-primary/20 text-primary text-xs px-2 py-0.5 rounded-full border border-primary/30">
                                     Live
                                 </span>
                             </>
                         ) : (step === 2 ? 'Waiting for Brand Signature' : 'Contract Ready for Signature')}
                     </h2>
-                    <p className="text-white/60 text-sm">
+                    <p className="text-foreground/60 text-sm">
                         {step === 3 ? 'Legally executed agreement. You are protected.' : (step === 2 ? 'Your signature is secure. Awaiting brand signature.' : 'Brand identity verified. Ready to sign.')}
                     </p>
                 </div>
                 {/* Step Tracker */}
-                <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg self-start md:self-auto backdrop-blur-sm border border-white/5">
+                <div className="flex items-center gap-2 bg-black/20 p-2 rounded-lg self-start md:self-auto backdrop-blur-sm border border-border/5">
                     {/* Step 1: Creator */}
-                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 1 ? "text-green-400 bg-green-400/10" : "text-white/30")}>
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 1 ? "text-green-400 bg-green-400/10" : "text-foreground/30")}>
                         {step > 1 ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs font-bold border border-current w-4 h-4 rounded-full flex items-center justify-center">1</span>}
                         <span className="text-xs font-bold">Creator</span>
                     </div>
-                    <div className="w-4 h-0.5 bg-white/10" />
+                    <div className="w-4 h-0.5 bg-secondary/50" />
                     {/* Step 2: Brand */}
-                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 2 ? (step > 2 ? "text-green-400 bg-green-400/10" : "text-blue-400 bg-blue-400/10") : "text-white/30")}>
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 2 ? (step > 2 ? "text-green-400 bg-green-400/10" : "text-info bg-info/10") : "text-foreground/30")}>
                         {step > 2 ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs font-bold border border-current w-4 h-4 rounded-full flex items-center justify-center">2</span>}
                         <span className="text-xs font-bold">Brand</span>
                     </div>
-                    <div className="w-4 h-0.5 bg-white/10" />
+                    <div className="w-4 h-0.5 bg-secondary/50" />
                     {/* Step 3: Active */}
-                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 3 ? "text-emerald-400 bg-emerald-400/10" : "text-white/30")}>
+                    <div className={cn("flex items-center gap-1.5 px-2 py-1 rounded transition-colors", step >= 3 ? "text-primary bg-primary/10" : "text-foreground/30")}>
                         <ShieldCheck className="w-4 h-4" />
                         <span className="text-xs font-bold">Active</span>
                     </div>
@@ -149,17 +149,17 @@ export const DealStatusCard = ({
                                 onSignCreator();
                             }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-4 rounded-xl font-semibold text-white transition-all flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 group"
+                            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 px-6 py-4 rounded-xl font-semibold text-foreground transition-all flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 group"
                         >
                             <PenTool className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                             E-Sign Agreement as Creator
                         </motion.button>
 
                         <div className="text-center space-y-2 pt-2">
-                            <p className="text-xs text-white/40">Brand can only sign after creator signature is complete.</p>
+                            <p className="text-xs text-foreground/40">Brand can only sign after creator signature is complete.</p>
                             <button type="button"
                                 onClick={onDownloadContract}
-                                className="text-white/40 hover:text-white text-xs underline decoration-white/20 hover:decoration-white transition-colors flex items-center justify-center gap-1 mx-auto"
+                                className="text-foreground/40 hover:text-foreground text-xs underline decoration-white/20 hover:decoration-white transition-colors flex items-center justify-center gap-1 mx-auto"
                             >
                                 <Download className="w-3 h-3" />
                                 View Contract PDF
@@ -170,13 +170,13 @@ export const DealStatusCard = ({
 
                 {step === 2 && (
                     <>
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3 mb-2 animate-in fade-in zoom-in-95 duration-300">
+                        <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3 mb-2 animate-in fade-in zoom-in-95 duration-300">
                             <div className="w-10 h-10 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
                                 <CheckCircle className="w-5 h-5" />
                             </div>
                             <div>
-                                <p className="font-bold text-white text-sm">Creator Signature Verified</p>
-                                <p className="text-xs text-white/50">Signed by you. Now waiting for the brand.</p>
+                                <p className="font-bold text-foreground text-sm">Creator Signature Verified</p>
+                                <p className="text-xs text-foreground/50">Signed by you. Now waiting for the brand.</p>
                             </div>
                         </div>
 
@@ -191,7 +191,7 @@ export const DealStatusCard = ({
                                 }
                             }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 px-6 py-3 rounded-xl font-bold text-foreground transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
                         >
                             <Link2 className="w-4 h-4" />
                             Send Signature Link to Brand
@@ -200,22 +200,22 @@ export const DealStatusCard = ({
                 )}
 
                 {step === 3 && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 animate-in fade-in zoom-in-95 duration-500">
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 animate-in fade-in zoom-in-95 duration-500">
                         <div className="flex items-center gap-3 mb-2">
-                            <ShieldCheck className="w-6 h-6 text-emerald-400" />
-                            <h3 className="font-bold text-emerald-400 text-lg">Terms Locked & Active</h3>
+                            <ShieldCheck className="w-6 h-6 text-primary" />
+                            <h3 className="font-bold text-primary text-lg">Terms Locked & Active</h3>
                         </div>
-                        <p className="text-sm text-emerald-400/80 mb-4">
+                        <p className="text-sm text-primary/80 mb-4">
                             Both parties have signed. Funds are secured in escrow/audit log.
                         </p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-emerald-500/10 rounded-lg p-3">
-                                <p className="text-xs text-emerald-400/60 uppercase font-bold">Total Value</p>
-                                <p className="text-xl font-bold text-emerald-400">₹{Math.round(dealAmount).toLocaleString('en-IN')}</p>
+                            <div className="bg-primary/10 rounded-lg p-3">
+                                <p className="text-xs text-primary/60 uppercase font-bold">Total Value</p>
+                                <p className="text-xl font-bold text-primary">₹{Math.round(dealAmount).toLocaleString('en-IN')}</p>
                             </div>
-                            <div className="bg-emerald-500/10 rounded-lg p-3">
-                                <p className="text-xs text-emerald-400/60 uppercase font-bold">Signed On</p>
-                                <p className="text-sm font-bold text-emerald-400">
+                            <div className="bg-primary/10 rounded-lg p-3">
+                                <p className="text-xs text-primary/60 uppercase font-bold">Signed On</p>
+                                <p className="text-sm font-bold text-primary">
                                     {(() => {
                                         const dateToUse = signedAtDate || deal?.updated_at;
                                         if (!dateToUse) return 'N/A';
@@ -226,7 +226,7 @@ export const DealStatusCard = ({
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 mt-4">
-                            <button type="button" onClick={onDownloadContract} className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
+                            <button type="button" onClick={onDownloadContract} className="w-full bg-primary/20 hover:bg-primary/30 text-primary font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors text-sm">
                                 <Download className="w-4 h-4" />
                                 Contract PDF
                             </button>
@@ -243,8 +243,8 @@ export const DealStatusCard = ({
 
             {/* Footer - Filename & Actions */}
             {(deal?.contract_file_url || signedContractUrl) && (
-                <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between relative z-10">
-                    <div className="flex items-center gap-2 text-white/40 overflow-hidden">
+                <div className="mt-6 pt-4 border-t border-border flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-2 text-foreground/40 overflow-hidden">
                         <FileText className="w-4 h-4 shrink-0" />
                         <span className="text-xs font-mono truncate">
                             {/* Filename with middle truncation */}
@@ -258,14 +258,14 @@ export const DealStatusCard = ({
                         </span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[10px] text-white/30 uppercase font-bold px-2 py-0.5 bg-white/5 rounded border border-white/5">PDF</span>
+                        <span className="text-[10px] text-foreground/30 uppercase font-bold px-2 py-0.5 bg-card rounded border border-border/5">PDF</span>
                         <button type="button" onClick={() => {
                             copyToClipboard(deal?.contract_file_url || signedContractUrl || '');
                             toast.success('Contract link copied');
-                        }} className="text-white/20 hover:text-white transition-colors p-1">
+                        }} className="text-foreground/20 hover:text-foreground transition-colors p-1">
                             <Copy className="w-3 h-3" />
                         </button>
-                        <button type="button" onClick={onDownloadContract} className="text-white/20 hover:text-white transition-colors p-1">
+                        <button type="button" onClick={onDownloadContract} className="text-foreground/20 hover:text-foreground transition-colors p-1">
                             <Download className="w-3 h-3" />
                         </button>
                     </div>

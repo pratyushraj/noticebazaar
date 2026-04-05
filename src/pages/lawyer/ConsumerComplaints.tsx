@@ -63,17 +63,17 @@ interface Complaint {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; tooltip?: string }> = {
   draft_created: { label: 'Draft Created', color: 'text-gray-300', bgColor: 'bg-gray-500/20', tooltip: 'Complaint draft created, awaiting action' },
-  lawyer_review_requested: { label: 'Review Requested', color: 'text-purple-300', bgColor: 'bg-purple-500/20', tooltip: 'User requested lawyer review before filing' },
-  lawyer_review_completed: { label: 'Review Complete', color: 'text-blue-300', bgColor: 'bg-blue-500/20', tooltip: 'Lawyer review completed, ready for next step' },
-  notice_generated: { label: 'Notice Generated', color: 'text-blue-300', bgColor: 'bg-blue-500/20', tooltip: 'Legal notice has been drafted and uploaded' },
+  lawyer_review_requested: { label: 'Review Requested', color: 'text-secondary', bgColor: 'bg-secondary/20', tooltip: 'User requested lawyer review before filing' },
+  lawyer_review_completed: { label: 'Review Complete', color: 'text-info', bgColor: 'bg-info/20', tooltip: 'Lawyer review completed, ready for next step' },
+  notice_generated: { label: 'Notice Generated', color: 'text-info', bgColor: 'bg-info/20', tooltip: 'Legal notice has been drafted and uploaded' },
   ready_to_file: { label: 'Ready to File', color: 'text-green-300', bgColor: 'bg-green-500/20', tooltip: 'Draft prepared, user can proceed independently' },
-  filed_by_user: { label: 'Filed', color: 'text-emerald-300', bgColor: 'bg-emerald-500/20', tooltip: 'User has filed the complaint' },
+  filed_by_user: { label: 'Filed', color: 'text-primary', bgColor: 'bg-primary/20', tooltip: 'User has filed the complaint' },
 };
 
 const SEVERITY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   low: { label: 'Low', color: 'text-green-300', bgColor: 'bg-green-500/20' },
-  medium: { label: 'Medium', color: 'text-amber-300', bgColor: 'bg-amber-500/20' },
-  high: { label: 'High', color: 'text-red-300', bgColor: 'bg-red-500/20' },
+  medium: { label: 'Medium', color: 'text-warning', bgColor: 'bg-warning/20' },
+  high: { label: 'High', color: 'text-destructive', bgColor: 'bg-destructive/20' },
 };
 
 type StatusFilter = 'all' | 'lawyer_review_requested' | 'notice_generated' | 'ready_to_file';
@@ -279,7 +279,7 @@ export default function ConsumerComplaints() {
   if (loading) {
     return (
       <div className="min-h-[100dvh] bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-900 flex items-center justify-center">
-        <div className="text-white/60">Loading complaints...</div>
+        <div className="text-foreground/60">Loading complaints...</div>
       </div>
     );
   }
@@ -289,20 +289,20 @@ export default function ConsumerComplaints() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Consumer Complaints</h1>
-          <p className="text-white/60">Review and manage consumer complaints submitted by users</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Consumer Complaints</h1>
+          <p className="text-foreground/60">Review and manage consumer complaints submitted by users</p>
         </div>
 
         {/* Status Filter Bar */}
         <div className="mb-6 flex flex-wrap gap-2">
-          <Filter className="w-5 h-5 text-white/60 mt-1.5" />
+          <Filter className="w-5 h-5 text-foreground/60 mt-1.5" />
           <button type="button"
             onClick={() => setStatusFilter('all')}
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
               statusFilter === 'all'
-                ? "bg-purple-600 text-white"
-                : "bg-white/5 text-white/70 hover:bg-white/10"
+                ? "bg-secondary text-foreground"
+                : "bg-card text-foreground/70 hover:bg-secondary/50"
             )}
           >
             All
@@ -312,8 +312,8 @@ export default function ConsumerComplaints() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
               statusFilter === 'lawyer_review_requested'
-                ? "bg-purple-600 text-white"
-                : "bg-white/5 text-white/70 hover:bg-white/10"
+                ? "bg-secondary text-foreground"
+                : "bg-card text-foreground/70 hover:bg-secondary/50"
             )}
           >
             Review Requested
@@ -323,8 +323,8 @@ export default function ConsumerComplaints() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
               statusFilter === 'notice_generated'
-                ? "bg-purple-600 text-white"
-                : "bg-white/5 text-white/70 hover:bg-white/10"
+                ? "bg-secondary text-foreground"
+                : "bg-card text-foreground/70 hover:bg-secondary/50"
             )}
           >
             Notice Drafted
@@ -334,8 +334,8 @@ export default function ConsumerComplaints() {
             className={cn(
               "px-4 py-2 rounded-lg text-sm font-medium transition-all",
               statusFilter === 'ready_to_file'
-                ? "bg-purple-600 text-white"
-                : "bg-white/5 text-white/70 hover:bg-white/10"
+                ? "bg-secondary text-foreground"
+                : "bg-card text-foreground/70 hover:bg-secondary/50"
             )}
           >
             Ready to File
@@ -344,9 +344,9 @@ export default function ConsumerComplaints() {
 
         {/* Complaints List */}
         {filteredComplaints.length === 0 ? (
-          <div className="bg-white/5 backdrop-blur-md rounded-2xl p-12 text-center border border-white/10">
-            <FileText className="w-16 h-16 mx-auto mb-4 text-white/40" />
-            <p className="text-white/60 text-lg">
+          <div className="bg-card backdrop-blur-md rounded-2xl p-12 text-center border border-border">
+            <FileText className="w-16 h-16 mx-auto mb-4 text-foreground/40" />
+            <p className="text-foreground/60 text-lg">
               {statusFilter === 'all' ? 'No complaints found' : `No complaints with status "${STATUS_CONFIG[statusFilter]?.label || statusFilter}"`}
             </p>
           </div>
@@ -359,13 +359,13 @@ export default function ConsumerComplaints() {
                   key={complaint.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white/5 backdrop-blur-md rounded-xl p-5 border border-white/10 hover:border-white/20 transition-all"
+                  className="bg-card backdrop-blur-md rounded-xl p-5 border border-border hover:border-border transition-all"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <Building2 className="w-5 h-5 text-white/60 flex-shrink-0" />
-                        <h3 className="font-semibold text-white truncate">{complaint.company_name}</h3>
+                        <Building2 className="w-5 h-5 text-foreground/60 flex-shrink-0" />
+                        <h3 className="font-semibold text-foreground truncate">{complaint.company_name}</h3>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -378,7 +378,7 @@ export default function ConsumerComplaints() {
                               </span>
                             </TooltipTrigger>
                             {statusConfig.tooltip && (
-                              <TooltipContent className="bg-gray-900 border-gray-700 text-white max-w-xs">
+                              <TooltipContent className="bg-gray-900 border-gray-700 text-foreground max-w-xs">
                                 <p>{statusConfig.tooltip}</p>
                               </TooltipContent>
                             )}
@@ -397,7 +397,7 @@ export default function ConsumerComplaints() {
                                   {SEVERITY_CONFIG[complaint.severity].label}
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent className="bg-gray-900 border-gray-700 text-white max-w-xs">
+                              <TooltipContent className="bg-gray-900 border-gray-700 text-foreground max-w-xs">
                                 <p>AI-classified severity{complaint.confidence_score ? ` (${Math.round(complaint.confidence_score * 100)}% confidence)` : ''}</p>
                               </TooltipContent>
                             </Tooltip>
@@ -405,17 +405,17 @@ export default function ConsumerComplaints() {
                         )}
                       </div>
 
-                      <div className="space-y-1 text-sm text-white/70 ml-8">
+                      <div className="space-y-1 text-sm text-foreground/70 ml-8">
                         <div className="flex items-center gap-2">
-                          <span className="text-white/50">Issue:</span>
+                          <span className="text-foreground/50">Issue:</span>
                           <span>{complaint.issue_type}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-white/50" />
+                          <User className="w-4 h-4 text-foreground/50" />
                           <span>{getCreatorDisplayName(complaint)}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-white/50" />
+                          <Calendar className="w-4 h-4 text-foreground/50" />
                           <span>{formatDate(complaint.created_at)}</span>
                         </div>
                         {complaint.proof_file_url && (
@@ -429,7 +429,7 @@ export default function ConsumerComplaints() {
 
                     <Button
                       onClick={() => handleViewComplaint(complaint)}
-                      className="bg-purple-600 hover:bg-purple-500 text-white"
+                      className="bg-secondary hover:bg-secondary text-foreground"
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       View
@@ -442,8 +442,8 @@ export default function ConsumerComplaints() {
         )}
 
         {/* Legal Disclaimer Footer */}
-        <div className="mt-8 pt-6 border-t border-white/10">
-          <p className="text-xs text-white/40 text-center">
+        <div className="mt-8 pt-6 border-t border-border">
+          <p className="text-xs text-foreground/40 text-center">
             Drafting and review support only. Filing and legal action are outside platform scope.
           </p>
         </div>
@@ -453,7 +453,7 @@ export default function ConsumerComplaints() {
       <AnimatePresence>
         {isDetailOpen && selectedComplaint && (
           <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-            <DialogContent className="sm:max-w-3xl bg-gray-900 border-gray-800 text-white max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-3xl bg-gray-900 border-gray-800 text-foreground max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold">Complaint Details</DialogTitle>
                 <DialogDescription className="text-gray-300">
@@ -465,42 +465,42 @@ export default function ConsumerComplaints() {
                 {/* Company & Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-white/60">Company Name</label>
-                    <p className="text-white font-medium">{selectedComplaint.company_name}</p>
+                    <label className="text-sm text-foreground/60">Company Name</label>
+                    <p className="text-foreground font-medium">{selectedComplaint.company_name}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-white/60">Category</label>
-                    <p className="text-white font-medium">{selectedComplaint.category_name || selectedComplaint.category}</p>
+                    <label className="text-sm text-foreground/60">Category</label>
+                    <p className="text-foreground font-medium">{selectedComplaint.category_name || selectedComplaint.category}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-white/60">Issue Type</label>
-                    <p className="text-white font-medium">{selectedComplaint.issue_type}</p>
+                    <label className="text-sm text-foreground/60">Issue Type</label>
+                    <p className="text-foreground font-medium">{selectedComplaint.issue_type}</p>
                   </div>
                   {selectedComplaint.amount && (
                     <div>
-                      <label className="text-sm text-white/60">Amount</label>
-                      <p className="text-white font-medium">₹{selectedComplaint.amount.toLocaleString()}</p>
+                      <label className="text-sm text-foreground/60">Amount</label>
+                      <p className="text-foreground font-medium">₹{selectedComplaint.amount.toLocaleString()}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="text-sm text-white/60">Description</label>
-                  <p className="text-white mt-1 whitespace-pre-wrap">{selectedComplaint.description}</p>
+                  <label className="text-sm text-foreground/60">Description</label>
+                  <p className="text-foreground mt-1 whitespace-pre-wrap">{selectedComplaint.description}</p>
                 </div>
 
                 {/* Submitted By */}
                 <div>
-                  <label className="text-sm text-white/60">Submitted By</label>
-                  <p className="text-white font-medium">{getCreatorDisplayName(selectedComplaint)}</p>
-                  <p className="text-xs text-white/50 mt-1">{formatDate(selectedComplaint.created_at)}</p>
+                  <label className="text-sm text-foreground/60">Submitted By</label>
+                  <p className="text-foreground font-medium">{getCreatorDisplayName(selectedComplaint)}</p>
+                  <p className="text-xs text-foreground/50 mt-1">{formatDate(selectedComplaint.created_at)}</p>
                 </div>
 
                 {/* AI Severity Classification (Lawyers only) */}
                 {selectedComplaint.severity && (
                   <div>
-                    <label className="text-sm text-white/60 mb-2 block">AI Severity Classification</label>
+                    <label className="text-sm text-foreground/60 mb-2 block">AI Severity Classification</label>
                     <div className="flex items-center gap-2">
                       <span className={cn(
                         "px-3 py-1.5 rounded-full text-sm font-medium",
@@ -510,18 +510,18 @@ export default function ConsumerComplaints() {
                         {SEVERITY_CONFIG[selectedComplaint.severity].label}
                       </span>
                       {selectedComplaint.confidence_score !== null && (
-                        <span className="text-xs text-white/50">
+                        <span className="text-xs text-foreground/50">
                           ({Math.round(selectedComplaint.confidence_score * 100)}% confidence)
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/40 mt-1">For internal triage only</p>
+                    <p className="text-xs text-foreground/40 mt-1">For internal triage only</p>
                   </div>
                 )}
 
                 {/* Status Timeline */}
                 <div>
-                  <label className="text-sm text-white/60 mb-3 block">Status Timeline</label>
+                  <label className="text-sm text-foreground/60 mb-3 block">Status Timeline</label>
                   <div className="space-y-2">
                     <div className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-lg",
@@ -599,15 +599,15 @@ export default function ConsumerComplaints() {
                 {/* Toggle Indicators */}
                 <div className="flex gap-4">
                   {selectedComplaint.wants_lawyer_review && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 rounded-lg border border-purple-400/30">
-                      <Scale className="w-4 h-4 text-purple-300" />
-                      <span className="text-sm text-purple-300">Lawyer Review Requested</span>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-secondary/20 rounded-lg border border-purple-400/30">
+                      <Scale className="w-4 h-4 text-secondary" />
+                      <span className="text-sm text-secondary">Lawyer Review Requested</span>
                     </div>
                   )}
                   {selectedComplaint.wants_notice_draft && (
-                    <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/20 rounded-lg border border-blue-400/30">
-                      <FileText className="w-4 h-4 text-blue-300" />
-                      <span className="text-sm text-blue-300">Notice Drafting Requested</span>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-info/20 rounded-lg border border-info/30">
+                      <FileText className="w-4 h-4 text-info" />
+                      <span className="text-sm text-info">Notice Drafting Requested</span>
                     </div>
                   )}
                 </div>
@@ -615,12 +615,12 @@ export default function ConsumerComplaints() {
                 {/* Proof Files */}
                 {selectedComplaint.proof_file_url && (
                   <div>
-                    <label className="text-sm text-white/60 mb-2 block">Proof File</label>
+                    <label className="text-sm text-foreground/60 mb-2 block">Proof File</label>
                     <a
                       href={selectedComplaint.proof_file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-card hover:bg-secondary/50 rounded-lg border border-border transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       <span>Download Proof</span>
@@ -631,12 +631,12 @@ export default function ConsumerComplaints() {
                 {/* Drafted Notice */}
                 {selectedComplaint.notice_draft_url && (
                   <div>
-                    <label className="text-sm text-white/60 mb-2 block">Drafted Notice</label>
+                    <label className="text-sm text-foreground/60 mb-2 block">Drafted Notice</label>
                     <a
                       href={selectedComplaint.notice_draft_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-card hover:bg-secondary/50 rounded-lg border border-border transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       <span>Download Notice</span>
@@ -645,8 +645,8 @@ export default function ConsumerComplaints() {
                 )}
 
                 {/* Internal Notes */}
-                <div className="pt-4 border-t border-white/10">
-                  <Label htmlFor="internal-notes" className="text-white/60 text-sm mb-2 block">
+                <div className="pt-4 border-t border-border">
+                  <Label htmlFor="internal-notes" className="text-foreground/60 text-sm mb-2 block">
                     Internal notes (not visible to user)
                   </Label>
                   <Textarea
@@ -655,20 +655,20 @@ export default function ConsumerComplaints() {
                     onChange={(e) => setInternalNotes(e.target.value)}
                     placeholder="Add private notes for internal reference..."
                     rows={3}
-                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 resize-none"
+                    className="bg-gray-800 border-gray-700 text-foreground placeholder:text-gray-500 resize-none"
                   />
-                  <p className="text-xs text-white/40 mt-1">These notes are only visible to lawyers and admins</p>
+                  <p className="text-xs text-foreground/40 mt-1">These notes are only visible to lawyers and admins</p>
                 </div>
 
                 {/* Lawyer Actions */}
-                <div className="pt-4 border-t border-white/10">
-                  <h3 className="font-semibold text-white mb-3">Actions</h3>
+                <div className="pt-4 border-t border-border">
+                  <h3 className="font-semibold text-foreground mb-3">Actions</h3>
                   <div className="flex flex-wrap gap-3">
                     {selectedComplaint.status === 'lawyer_review_requested' && (
                       <Button
                         onClick={() => handleUpdateStatus('lawyer_review_completed')}
                         disabled={isUpdating}
-                        className="bg-purple-600 hover:bg-purple-500"
+                        className="bg-secondary hover:bg-secondary"
                       >
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Mark Review Complete
@@ -676,7 +676,7 @@ export default function ConsumerComplaints() {
                     )}
 
                     {selectedComplaint.wants_notice_draft && !selectedComplaint.notice_draft_url && (
-                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg cursor-pointer transition-colors">
+                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-info hover:bg-info rounded-lg cursor-pointer transition-colors">
                         <Upload className="w-4 h-4" />
                         <span>Upload Drafted Notice</span>
                         <input

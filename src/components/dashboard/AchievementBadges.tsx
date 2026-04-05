@@ -106,15 +106,15 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
     },
     rare: {
       bg: 'from-blue-500 to-cyan-600',
-      border: 'border-blue-500/30',
+      border: 'border-info/30',
       glow: 'shadow-blue-500/30',
-      text: 'text-blue-300',
+      text: 'text-info',
     },
     epic: {
       bg: 'from-purple-500 to-violet-600',
       border: 'border-purple-500/30',
       glow: 'shadow-purple-500/30',
-      text: 'text-purple-300',
+      text: 'text-secondary',
     },
     legendary: {
       bg: 'from-yellow-500 to-orange-600',
@@ -143,8 +143,8 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
           className={cn(
             'p-4 rounded-xl border text-center transition-all duration-300',
             isDark
-              ? `${config.border} bg-white/5 hover:bg-white/10 ${config.glow}`
-              : 'border-slate-200 bg-white shadow-sm hover:shadow-md'
+              ? `${config.border} bg-card hover:bg-secondary/50 ${config.glow}`
+              : 'border-border bg-card shadow-sm hover:shadow-md'
           )}
         >
           {/* Badge Glow Effect */}
@@ -164,10 +164,10 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
                 'mb-2 mx-auto w-12 h-12 rounded-full flex items-center justify-center',
                 isDark
                   ? `bg-gradient-to-br ${config.bg}`
-                  : 'bg-gradient-to-br from-slate-100 to-slate-200'
+                  : 'bg-gradient-to-br from-background to-slate-200'
               )}
             >
-              <span className={isDark ? 'text-white' : 'text-slate-600'}>
+              <span className={isDark ? 'text-foreground' : 'text-muted-foreground'}>
                 {achievement.icon}
               </span>
             </motion.div>
@@ -175,13 +175,13 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
             {/* Title & Description */}
             <h4 className={cn(
               'text-sm font-bold mb-1',
-              isDark ? 'text-white' : 'text-slate-900'
+              isDark ? 'text-foreground' : 'text-muted-foreground'
             )}>
               {achievement.title}
             </h4>
             <p className={cn(
               'text-xs mb-3',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}>
               {achievement.description}
             </p>
@@ -197,8 +197,8 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
             ) : (
               <div className="space-y-2">
                 <div className={cn(
-                  'h-1.5 bg-white/10 rounded-full overflow-hidden',
-                  isDark ? 'bg-white/10' : 'bg-slate-200'
+                  'h-1.5 bg-secondary/50 rounded-full overflow-hidden',
+                  isDark ? 'bg-secondary/50' : 'bg-background'
                 )}>
                   <motion.div
                     initial={{ width: 0 }}
@@ -212,7 +212,7 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
                 </div>
                 <p className={cn(
                   'text-xs font-semibold',
-                  isDark ? 'text-white/70' : 'text-slate-600'
+                  isDark ? 'text-foreground/70' : 'text-muted-foreground'
                 )}>
                   {achievement.progress}%
                 </p>
@@ -228,8 +228,8 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
           className={cn(
             'absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap pointer-events-none z-20',
             isDark
-              ? 'bg-slate-900 text-white border border-white/20'
-              : 'bg-slate-900 text-white'
+              ? 'bg-background text-foreground border border-border'
+              : 'bg-background text-foreground'
           )}
         >
           {achievement.requirement}
@@ -242,21 +242,21 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="mb-6">
           <h3 className={cn(
             'text-base font-bold tracking-tight mb-2',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
             🏆 Achievements
           </h3>
           <p className={cn(
             'text-sm',
-            isDark ? 'text-white/60' : 'text-slate-600'
+            isDark ? 'text-foreground/60' : 'text-muted-foreground'
           )}>
             {unlockedAchievements.length} unlocked • {lockedAchievements.length} to go
           </p>
@@ -267,7 +267,7 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
           <div className="mb-6">
             <p className={cn(
               'text-xs font-bold uppercase tracking-widest mb-3 opacity-60',
-              isDark ? 'text-white' : 'text-slate-600'
+              isDark ? 'text-foreground' : 'text-muted-foreground'
             )}>
               Unlocked
             </p>
@@ -284,7 +284,7 @@ const AchievementBadges: React.FC<AchievementBadgesProps> = ({
           <div>
             <p className={cn(
               'text-xs font-bold uppercase tracking-widest mb-3 opacity-60',
-              isDark ? 'text-white' : 'text-slate-600'
+              isDark ? 'text-foreground' : 'text-muted-foreground'
             )}>
               Next Goals
             </p>

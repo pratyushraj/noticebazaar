@@ -57,16 +57,16 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
 
   const handleDragOver = (e: React.DragEvent, columnId: string) => {
     e.preventDefault();
-    e.currentTarget.classList.add('bg-white/10');
+    e.currentTarget.classList.add('bg-secondary/50');
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    e.currentTarget.classList.remove('bg-white/10');
+    e.currentTarget.classList.remove('bg-secondary/50');
   };
 
   const handleDrop = (e: React.DragEvent, targetColumn: KanbanColumn) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('bg-white/10');
+    e.currentTarget.classList.remove('bg-secondary/50');
 
     if (!draggedDeal) return;
 
@@ -97,14 +97,14 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
             key={column.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex-shrink-0 w-80 bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-2xl p-4"
+            className="flex-shrink-0 w-80 bg-secondary/[0.06] backdrop-blur-[40px] border border-border rounded-2xl p-4"
             onDragOver={(e) => handleDragOver(e, column.id)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, column)}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white">{column.title}</h3>
-              <span className="text-xs text-white/60 bg-white/5 px-2 py-1 rounded-full">
+              <h3 className="text-sm font-semibold text-foreground">{column.title}</h3>
+              <span className="text-xs text-foreground/60 bg-card px-2 py-1 rounded-full">
                 {dealsByColumn[column.id]?.length || 0}
               </span>
             </div>
@@ -137,7 +137,7 @@ export const DealKanban: React.FC<DealKanbanProps> = ({ brandDeals, onDealUpdate
                 </motion.div>
               ))}
               {(!dealsByColumn[column.id] || dealsByColumn[column.id].length === 0) && (
-                <div className="text-center py-8 text-white/40 text-sm">
+                <div className="text-center py-8 text-foreground/40 text-sm">
                   No deals
                 </div>
               )}

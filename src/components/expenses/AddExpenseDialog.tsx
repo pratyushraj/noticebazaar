@@ -232,7 +232,7 @@ export const AddExpenseDialog: React.FC<AddExpenseDialogProps> = ({
           onFileChange={handleFileChange}
         />
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-white/10">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
           <AnimatedSubmitButton isLoading={isSubmitting}>
             Add Expense
           </AnimatedSubmitButton>
@@ -243,9 +243,9 @@ export const AddExpenseDialog: React.FC<AddExpenseDialogProps> = ({
             disabled={isSubmitting}
             className={cn(
               "w-full sm:w-auto",
-              "text-white/70 hover:text-white/90",
+              "text-foreground/70 hover:text-foreground/90",
               "py-3 bg-transparent border-0",
-              "hover:bg-white/5 rounded-xl",
+              "hover:bg-card rounded-xl",
               "transition-colors duration-200"
             )}
           >

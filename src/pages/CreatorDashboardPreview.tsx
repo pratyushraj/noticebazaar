@@ -79,15 +79,15 @@ const PillTabButton = ({
       className={cn(
         "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
         isActive
-          ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30"
-          : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+          ? "bg-info text-foreground shadow-lg shadow-blue-500/30"
+          : "bg-card text-foreground/70 hover:bg-secondary/50 hover:text-foreground"
       )}
     >
       {label}
       {count !== undefined && count > 0 && (
         <span className={cn(
           "ml-2 px-2 py-0.5 rounded-full text-xs",
-          isActive ? "bg-white/20" : "bg-white/10"
+          isActive ? "bg-secondary/20" : "bg-secondary/50"
         )}>
           {count}
         </span>
@@ -394,7 +394,7 @@ const CreatorDashboardPreview = () => {
   if (!dashboardData || !demoBrandDeals || demoBrandDeals.length === 0) {
     return (
       <div className="nb-screen-height flex items-center justify-center">
-        <div className="text-white/60">Loading preview...</div>
+        <div className="text-foreground/60">Loading preview...</div>
       </div>
     );
   }
@@ -408,9 +408,9 @@ const CreatorDashboardPreview = () => {
         <div className="fixed inset-0 animate-gradient-shift" />
         
         {/* Subtle animated orbs for depth */}
-        <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl animate-pulse pointer-events-none" />
+        <div className="fixed top-20 left-1/4 w-[500px] h-[500px] bg-info/5 rounded-full blur-3xl animate-pulse pointer-events-none" />
         <div 
-          className="fixed bottom-20 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-3xl animate-pulse pointer-events-none" 
+          className="fixed bottom-20 right-1/4 w-[500px] h-[500px] bg-card rounded-full blur-3xl animate-pulse pointer-events-none" 
           style={{ animationDelay: '2s' }} 
         />
         
@@ -466,11 +466,11 @@ const CreatorDashboardPreview = () => {
               <div className="mb-12">
                 <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight leading-tight">
+                    <h1 className="text-3xl font-semibold mb-2 text-foreground tracking-tight leading-tight">
                       Hey, Creator! 👋
                     </h1>
                     <div className="flex items-center gap-3 flex-wrap">
-                      <p className="text-base text-white/60">
+                      <p className="text-base text-foreground/60">
                         Content Creator
                       </p>
                       <NightOwlBadge />
@@ -482,17 +482,17 @@ const CreatorDashboardPreview = () => {
                 {/* Earnings Card */}
                 <div className="flex justify-center">
                   <div className="relative w-full max-w-lg">
-                    <div className="relative bg-white/[0.08] backdrop-blur-[40px] border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+                    <div className="relative bg-secondary/[0.08] backdrop-blur-[40px] border border-border rounded-3xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.1] via-transparent to-transparent pointer-events-none" />
                       
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                            <DollarSign className="h-6 w-6 text-white" />
+                          <div className="h-12 w-12 rounded-2xl bg-secondary/50 backdrop-blur-sm border border-border flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-foreground" />
                           </div>
-                          <span className="text-sm font-medium text-white/80">Earnings</span>
+                          <span className="text-sm font-medium text-foreground/80">Earnings</span>
                         </div>
-                        <div className="text-5xl font-semibold text-white mb-3 tracking-tight">
+                        <div className="text-5xl font-semibold text-foreground mb-3 tracking-tight">
                           <CountUp
                             start={0}
                             end={dashboardData.earnings.current}
@@ -502,7 +502,7 @@ const CreatorDashboardPreview = () => {
                             decimals={0}
                           />
                         </div>
-                        <div className="text-base text-white/60">
+                        <div className="text-base text-foreground/60">
                           This Month
                           {dashboardData.earnings.previous > 0 && (
                             <span className="ml-2 text-[#FF4DAA] font-medium">
@@ -519,14 +519,14 @@ const CreatorDashboardPreview = () => {
               {/* Financial Overview Section */}
             {/* Financial Overview Section */}
             <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-white mb-6">Financial Overview</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Financial Overview</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.08] transition-all">
+                <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-secondary/[0.08] transition-all">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-white/50 mb-2 font-medium">Pending Invoices</p>
-                        <p className="text-2xl font-semibold text-white">
+                        <p className="text-xs text-foreground/50 mb-2 font-medium">Pending Invoices</p>
+                        <p className="text-2xl font-semibold text-foreground">
                           ₹{dashboardData.moneyOverview.pendingPayments.toLocaleString('en-IN')}
                         </p>
                       </div>
@@ -537,15 +537,15 @@ const CreatorDashboardPreview = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-white/[0.08] transition-all">
+                <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:bg-secondary/[0.08] transition-all">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-xs text-white/50 mb-2 font-medium">Tax Liability (Q3)</p>
-                        <p className="text-2xl font-semibold text-white">₹85,000</p>
+                        <p className="text-xs text-foreground/50 mb-2 font-medium">Tax Liability (Q3)</p>
+                        <p className="text-2xl font-semibold text-foreground">₹85,000</p>
                       </div>
-                      <div className="h-12 w-12 rounded-2xl bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
-                        <Calendar className="h-5 w-5 text-orange-400" />
+                      <div className="h-12 w-12 rounded-2xl bg-warning/20 backdrop-blur-sm border border-orange-500/30 flex items-center justify-center">
+                        <Calendar className="h-5 w-5 text-warning" />
                       </div>
                     </div>
                   </CardContent>
@@ -555,44 +555,44 @@ const CreatorDashboardPreview = () => {
 
             {/* Recent Activity Section */}
             <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-white mb-6">Recent Activity</h2>
-              <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Recent Activity</h2>
+              <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                 <CardContent className="space-y-4 p-6">
-                  <div className="space-y-2 bg-white/5 rounded-2xl p-2 border border-white/5">
-                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5", "border-b border-white/5")}>
+                  <div className="space-y-2 bg-card rounded-2xl p-2 border border-border/5">
+                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
                       <div className="h-10 w-10 rounded-xl bg-green-500/20 backdrop-blur-sm flex items-center justify-center border border-green-500/30">
                         <CheckCircle className="h-5 w-5 text-green-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">Mamaearth collaboration agreement</p>
-                        <p className="text-xs text-white/60">Approved • 2 hours ago</p>
+                        <p className="text-sm font-medium text-foreground">Mamaearth collaboration agreement</p>
+                        <p className="text-xs text-foreground/60">Approved • 2 hours ago</p>
                       </div>
                     </div>
-                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5", "border-b border-white/5")}>
-                      <div className="h-10 w-10 rounded-xl bg-blue-500/20 backdrop-blur-sm flex items-center justify-center border border-blue-500/30">
-                        <Briefcase className="h-5 w-5 text-blue-400" />
+                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
+                      <div className="h-10 w-10 rounded-xl bg-info/20 backdrop-blur-sm flex items-center justify-center border border-info/30">
+                        <Briefcase className="h-5 w-5 text-info" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">boAt brand deal signed</p>
-                        <p className="text-xs text-white/60">Contract Reviewed • 5 hours ago</p>
+                        <p className="text-sm font-medium text-foreground">boAt brand deal signed</p>
+                        <p className="text-xs text-foreground/60">Contract Reviewed • 5 hours ago</p>
                       </div>
                     </div>
-                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5", "border-b border-white/5")}>
-                      <div className="h-10 w-10 rounded-xl bg-purple-500/20 backdrop-blur-sm flex items-center justify-center border border-purple-500/30">
-                        <DollarSign className="h-5 w-5 text-purple-400" />
+                    <div className={cn("flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card", "border-b border-border/5")}>
+                      <div className="h-10 w-10 rounded-xl bg-secondary/20 backdrop-blur-sm flex items-center justify-center border border-purple-500/30">
+                        <DollarSign className="h-5 w-5 text-secondary" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">Payment received from Zepto</p>
-                        <p className="text-xs text-white/60">Completed • 1 day ago</p>
+                        <p className="text-sm font-medium text-foreground">Payment received from Zepto</p>
+                        <p className="text-xs text-foreground/60">Completed • 1 day ago</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/5">
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-card">
                       <div className="h-10 w-10 rounded-xl bg-yellow-500/20 backdrop-blur-sm flex items-center justify-center border border-yellow-500/30">
                         <FileText className="h-5 w-5 text-yellow-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-white">Contract draft sent to L'Oreal</p>
-                        <p className="text-xs text-white/60">Pending Review • 3 days ago</p>
+                        <p className="text-sm font-medium text-foreground">Contract draft sent to L'Oreal</p>
+                        <p className="text-xs text-foreground/60">Pending Review • 3 days ago</p>
                       </div>
                     </div>
                   </div>
@@ -602,7 +602,7 @@ const CreatorDashboardPreview = () => {
 
             {/* Actions & Alerts */}
             <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-white mb-6">Actions & Alerts</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Actions & Alerts</h2>
               <div className="rounded-2xl overflow-hidden">
                 <ActionCenter
                   urgentActions={dashboardData.urgentActions || []}
@@ -651,11 +651,11 @@ const CreatorDashboardPreview = () => {
           {activeTab === 'deals' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-2xl font-semibold text-white">All Brand Deals</h2>
+              <h2 className="text-2xl font-semibold text-foreground">All Brand Deals</h2>
               <Button
                 onClick={() => setDealsView(prev => prev === 'list' ? 'kanban' : 'list')}
                 variant="outline"
-                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+                className="bg-card border-border text-foreground hover:bg-secondary/50"
               >
                 {dealsView === 'list' ? 'Kanban View' : 'List View'}
               </Button>
@@ -675,20 +675,20 @@ const CreatorDashboardPreview = () => {
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex-1 min-w-[200px]">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                   <Input
                     placeholder="Search deals..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 bg-white/5 text-white border-white/10 placeholder:text-white/40"
+                    className="pl-9 bg-card text-foreground border-border placeholder:text-foreground/40"
                   />
                 </div>
               </div>
               <Select value={quickFilter || 'all'} onValueChange={(value) => setQuickFilter(value === 'all' ? null : value)}>
-                <SelectTrigger className="w-[180px] bg-white/5 text-white border-white/10">
+                <SelectTrigger className="w-[180px] bg-card text-foreground border-border">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1E] border-white/5 text-white">
+                <SelectContent className="bg-card border-border/5 text-foreground">
                   <SelectItem value="all">All Deals</SelectItem>
                   <SelectItem value="overdue">Overdue</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
@@ -734,7 +734,7 @@ const CreatorDashboardPreview = () => {
             </div>
             
             {/* Payments Title */}
-            <h2 className="text-lg md:text-xl font-bold mt-2 text-white">Payments</h2>
+            <h2 className="text-lg md:text-xl font-bold mt-2 text-foreground">Payments</h2>
 
             {/* Filters */}
             <PaymentQuickFilters
@@ -746,12 +746,12 @@ const CreatorDashboardPreview = () => {
             {/* Search Bar */}
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                 <Input
                   placeholder="Search payments..."
                   value={paymentSearchTerm}
                   onChange={(e) => setPaymentSearchTerm(e.target.value)}
-                  className="pl-9 bg-white/5 text-white border-white/10 placeholder:text-white/40"
+                  className="pl-9 bg-card text-foreground border-border placeholder:text-foreground/40"
                 />
               </div>
             </div>
@@ -807,17 +807,17 @@ const CreatorDashboardPreview = () => {
             
             <ScanHistory scans={[]} />
             
-            <Card className="bg-white/[0.06] backdrop-blur-[40px] border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+            <Card className="bg-secondary/[0.06] backdrop-blur-[40px] border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
               <CardContent className="p-6">
                 <div className="text-center py-8">
-                  <p className="text-white/60 mb-4">
+                  <p className="text-foreground/60 mb-4">
                     Register your content to start protecting it from copyright violations.
                   </p>
                   <Button
                     onClick={() => {
                       toast.info('Content registration available after sign in');
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-info hover:bg-info text-foreground"
                   >
                     Register New Content
                   </Button>
@@ -832,7 +832,7 @@ const CreatorDashboardPreview = () => {
           
           {/* Footer */}
           <footer className="mt-6 pb-6 text-center">
-            <p className="text-[10px] sm:text-xs text-white/30">
+            <p className="text-[10px] sm:text-xs text-foreground/30">
               Powered by Creator Armour • Secure Legal Portal ©2025
             </p>
           </footer>

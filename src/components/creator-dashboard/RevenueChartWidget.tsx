@@ -30,13 +30,13 @@ export const RevenueChartWidget = ({ data, totalRevenue, trend }: RevenueChartWi
         >
             <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div>
-                    <h3 className="text-base md:text-lg font-bold text-white mb-0.5 md:mb-1">Revenue Trend</h3>
-                    <p className="text-xs md:text-sm text-white/60">Last 6 months</p>
+                    <h3 className="text-base md:text-lg font-bold text-foreground mb-0.5 md:mb-1">Revenue Trend</h3>
+                    <p className="text-xs md:text-sm text-foreground/60">Last 6 months</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         'flex items-center gap-1 text-[11px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full',
-                        trend.isPositive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                        trend.isPositive ? 'bg-green-500/20 text-green-400' : 'bg-destructive/20 text-destructive'
                     )}>
                         {trend.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                         {Math.abs(trend.value)}%
@@ -46,7 +46,7 @@ export const RevenueChartWidget = ({ data, totalRevenue, trend }: RevenueChartWi
 
             {/* Total Revenue */}
             <div className="mb-4 md:mb-6">
-                <p className="text-xs md:text-sm text-white/60 mb-1">Total Revenue</p>
+                <p className="text-xs md:text-sm text-foreground/60 mb-1">Total Revenue</p>
                 <p className="text-2xl md:text-3xl font-bold text-green-400">
                     {formatIndianCurrency(totalRevenue)}
                 </p>
@@ -68,13 +68,13 @@ export const RevenueChartWidget = ({ data, totalRevenue, trend }: RevenueChartWi
                             >
                                 {/* Tooltip on hover */}
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    <div className="bg-black/90 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                                    <div className="bg-black/90 text-foreground text-xs px-2 py-1 rounded whitespace-nowrap">
                                         {formatIndianCurrency(point.amount)}
                                     </div>
                                     <div className="w-2 h-2 bg-black/90 rotate-45 -mt-1 mx-auto"></div>
                                 </div>
                             </motion.div>
-                            <span className="text-[9px] md:text-[10px] text-white/40 font-medium">
+                            <span className="text-[9px] md:text-[10px] text-foreground/40 font-medium">
                                 {point.month}
                             </span>
                         </div>

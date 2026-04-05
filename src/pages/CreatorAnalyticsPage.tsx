@@ -17,7 +17,7 @@ const CreatorAnalyticsPage: React.FC = () => {
   if (sessionLoading) {
     return (
       <div className="nb-screen-height bg-[#0A0F1A] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-foreground">Loading...</div>
       </div>
     );
   }
@@ -34,7 +34,7 @@ const CreatorAnalyticsPage: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-dashboard')}
-              className="mb-4 text-white/70 hover:text-white hover:bg-white/10"
+              className="mb-4 text-foreground/70 hover:text-foreground hover:bg-secondary/50"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard

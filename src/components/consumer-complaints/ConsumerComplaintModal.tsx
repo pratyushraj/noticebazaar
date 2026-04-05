@@ -285,11 +285,11 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] bg-gray-900 border-gray-800 text-white">
+      <DialogContent className="sm:max-w-[600px] bg-gray-900 border-gray-800 text-foreground">
         {currentStep === 'success' ? (
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-primary" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center">
               Complaint Received!
@@ -317,7 +317,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   "w-full p-5 rounded-xl border-2 transition-all text-left",
                   "bg-gradient-to-br from-purple-900/50 to-indigo-900/50",
                   preFilingActions.wants_lawyer_review
-                    ? "border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20"
+                    ? "border-purple-400 bg-secondary/50 shadow-lg shadow-purple-500/20"
                     : "border-purple-500/30 hover:border-purple-400/50"
                 )}
               >
@@ -325,35 +325,35 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   <div className={cn(
                     "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
                     preFilingActions.wants_lawyer_review
-                      ? "bg-purple-500/20"
-                      : "bg-purple-500/10"
+                      ? "bg-secondary/20"
+                      : "bg-secondary/50"
                   )}>
-                    <Scale className="w-6 h-6 text-purple-300" />
+                    <Scale className="w-6 h-6 text-secondary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-foreground">
                         Lawyer Review (Free • Pilot)
                       </span>
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-secondary/20 text-secondary border border-purple-400/30">
                         Pilot
                       </span>
                     </div>
-                    <p className="text-sm text-white/70 mb-2">
+                    <p className="text-sm text-foreground/70 mb-2">
                       A legal advisor will review your complaint and suggest improvements before you file.
                     </p>
-                    <p className="text-xs text-white/50">
+                    <p className="text-xs text-foreground/50">
                       Best-effort review during beta. No legal representation.
                     </p>
                   </div>
                   <div className={cn(
                     "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0",
                     preFilingActions.wants_lawyer_review
-                      ? "bg-purple-500 border-purple-400"
+                      ? "bg-secondary border-purple-400"
                       : "border-purple-400/50"
                   )}>
                     {preFilingActions.wants_lawyer_review && (
-                      <CheckCircle2 className="w-4 h-4 text-white" />
+                      <CheckCircle2 className="w-4 h-4 text-foreground" />
                     )}
                   </div>
                 </div>
@@ -366,7 +366,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   "w-full p-5 rounded-xl border-2 transition-all text-left",
                   "bg-gradient-to-br from-purple-900/50 to-indigo-900/50",
                   preFilingActions.wants_notice_draft
-                    ? "border-purple-400 bg-purple-500/10 shadow-lg shadow-purple-500/20"
+                    ? "border-purple-400 bg-secondary/50 shadow-lg shadow-purple-500/20"
                     : "border-purple-500/30 hover:border-purple-400/50"
                 )}
               >
@@ -374,35 +374,35 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   <div className={cn(
                     "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
                     preFilingActions.wants_notice_draft
-                      ? "bg-purple-500/20"
-                      : "bg-purple-500/10"
+                      ? "bg-secondary/20"
+                      : "bg-secondary/50"
                   )}>
-                    <FileText className="w-6 h-6 text-purple-300" />
+                    <FileText className="w-6 h-6 text-secondary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold text-foreground">
                         Generate Legal Notice (Free • Pilot)
                       </span>
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-secondary/20 text-secondary border border-purple-400/30">
                         Pilot
                       </span>
                     </div>
-                    <p className="text-sm text-white/70 mb-2">
+                    <p className="text-sm text-foreground/70 mb-2">
                       We'll draft a formal legal notice you can send to the company.
                     </p>
-                    <p className="text-xs text-white/50">
+                    <p className="text-xs text-foreground/50">
                       Draft only. Sending and enforcement remain with you.
                     </p>
                   </div>
                   <div className={cn(
                     "w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0",
                     preFilingActions.wants_notice_draft
-                      ? "bg-purple-500 border-purple-400"
+                      ? "bg-secondary border-purple-400"
                       : "border-purple-400/50"
                   )}>
                     {preFilingActions.wants_notice_draft && (
-                      <CheckCircle2 className="w-4 h-4 text-white" />
+                      <CheckCircle2 className="w-4 h-4 text-foreground" />
                     )}
                   </div>
                 </div>
@@ -410,14 +410,14 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
 
               {/* Disclaimer */}
               <div className="pt-2 border-t border-purple-500/20">
-                <p className="text-xs text-white/50 text-center">
+                <p className="text-xs text-foreground/50 text-center">
                   These services are complimentary during a limited pilot. CreatorArmour does not act as legal counsel unless explicitly agreed.
                 </p>
               </div>
 
               {/* Helper text if neither selected */}
               {!preFilingActions.wants_lawyer_review && !preFilingActions.wants_notice_draft && (
-                <p className="text-sm text-white/60 text-center pt-2">
+                <p className="text-sm text-foreground/60 text-center pt-2">
                   You can file the complaint yourself without review.
                 </p>
               )}
@@ -435,7 +435,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
               <Button
                 onClick={handleContinue}
                 disabled={isSubmitting}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                className="bg-primary hover:bg-primary text-foreground"
               >
                 {isSubmitting ? 'Processing...' : 'Continue'}
               </Button>
@@ -452,7 +452,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   href="/#/consumer-complaints/how-it-works"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white hover:underline cursor-pointer flex-shrink-0 mt-1"
+                  className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-foreground hover:underline cursor-pointer flex-shrink-0 mt-1"
                   aria-label="Learn how consumer complaints work on CreatorArmour"
                 >
                   <HelpCircle className="h-4 w-4" />
@@ -462,7 +462,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
               </div>
               <DialogDescription className="text-gray-300">
                 {categoryName && (
-                  <span className="text-emerald-400">Category: {categoryName}</span>
+                  <span className="text-primary">Category: {categoryName}</span>
                 )}
               </DialogDescription>
             </DialogHeader>
@@ -470,7 +470,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
             <div className="space-y-6 py-4">
               {/* Company Name */}
               <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-white">
+                <Label htmlFor="companyName" className="text-foreground">
                   Company / Service Name *
                 </Label>
                 <Input
@@ -478,20 +478,20 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   value={formData.companyName}
                   onChange={(e) => handleInputChange('companyName', e.target.value)}
                   placeholder="e.g. Ola, Urban Company, Pronto, Porter"
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                  className="bg-gray-800 border-gray-700 text-foreground placeholder:text-gray-500"
                 />
               </div>
 
               {/* Issue Type */}
               <div className="space-y-2">
-                <Label htmlFor="issueType" className="text-white">
+                <Label htmlFor="issueType" className="text-foreground">
                   Issue Type *
                 </Label>
                 <Select
                   value={formData.issueType}
                   onValueChange={(value) => handleInputChange('issueType', value)}
                 >
-                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-foreground">
                     <SelectValue placeholder="Select issue type" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
@@ -499,7 +499,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                       <SelectItem
                         key={type}
                         value={type}
-                        className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                        className="text-foreground hover:bg-gray-700 focus:bg-gray-700"
                       >
                         {type}
                       </SelectItem>
@@ -510,7 +510,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-white">
+                <Label htmlFor="description" className="text-foreground">
                   Short Description *
                 </Label>
                 <Textarea
@@ -519,13 +519,13 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   placeholder="Describe your issue in detail..."
                   rows={4}
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 resize-none"
+                  className="bg-gray-800 border-gray-700 text-foreground placeholder:text-gray-500 resize-none"
                 />
               </div>
 
               {/* Amount (Optional) */}
               <div className="space-y-2">
-                <Label htmlFor="amount" className="text-white">
+                <Label htmlFor="amount" className="text-foreground">
                   Amount Involved (Optional)
                 </Label>
                 <Input
@@ -534,16 +534,16 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', e.target.value)}
                   placeholder="₹0"
-                  className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
+                  className="bg-gray-800 border-gray-700 text-foreground placeholder:text-gray-500"
                 />
               </div>
 
               {/* File Upload (Optional) */}
               <div className="space-y-2">
-                <Label className="text-white">Upload Proof (Optional)</Label>
+                <Label className="text-foreground">Upload Proof (Optional)</Label>
                 {uploadedFile ? (
                   <div className="flex items-center gap-2 p-3 bg-gray-800 border border-gray-700 rounded-lg">
-                    <span className="flex-1 text-sm text-white truncate">
+                    <span className="flex-1 text-sm text-foreground truncate">
                       {uploadedFile.name}
                     </span>
                     <Button
@@ -557,7 +557,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
                     </Button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-emerald-500/50 transition-colors bg-gray-800/50">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-gray-800/50">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-2 text-gray-400" />
                       <p className="text-sm text-gray-400">
@@ -590,7 +590,7 @@ const ConsumerComplaintModal: React.FC<ConsumerComplaintModalProps> = ({
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                className="bg-primary hover:bg-primary text-foreground"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Complaint'}
               </Button>

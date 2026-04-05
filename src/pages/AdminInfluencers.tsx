@@ -168,7 +168,7 @@ const AdminInfluencers = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">New</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.new}</div>
+              <div className="text-2xl font-bold text-info">{stats.new}</div>
             </CardContent>
           </Card>
           <Card>

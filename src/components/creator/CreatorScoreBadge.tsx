@@ -60,19 +60,19 @@ export const CreatorScoreBadge: React.FC<CreatorScoreBadgeProps> = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-2xl p-4"
+      className="bg-secondary/[0.06] backdrop-blur-[40px] border border-border rounded-2xl p-4"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Award className="w-5 h-5 text-purple-400" />
-          <h3 className="text-sm font-semibold text-white">Your Creator Score</h3>
+          <Award className="w-5 h-5 text-secondary" />
+          <h3 className="text-sm font-semibold text-foreground">Your Creator Score</h3>
         </div>
         <span className={cn(
           "text-xs px-2 py-1 rounded-full font-semibold",
           score >= 80 && "bg-green-500/20 text-green-400",
-          score >= 60 && score < 80 && "bg-blue-500/20 text-blue-400",
+          score >= 60 && score < 80 && "bg-info/20 text-info",
           score >= 40 && score < 60 && "bg-yellow-500/20 text-yellow-400",
-          score < 40 && "bg-red-500/20 text-red-400"
+          score < 40 && "bg-destructive/20 text-destructive"
         )}>
           {getScoreLabel(score)}
         </span>
@@ -109,12 +109,12 @@ export const CreatorScoreBadge: React.FC<CreatorScoreBadgeProps> = ({
             </defs>
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">{score}</span>
+            <span className="text-2xl font-bold text-foreground">{score}</span>
           </div>
         </div>
         <div className="flex-1">
-          <div className="text-xs text-white/60 mb-1">Based on:</div>
-          <div className="space-y-1 text-xs text-white/80">
+          <div className="text-xs text-foreground/60 mb-1">Based on:</div>
+          <div className="space-y-1 text-xs text-foreground/80">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-3 h-3" />
               <span>Payment timeliness</span>

@@ -46,11 +46,11 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ className, showHome = true })
         <>
           <Link
             to="/creator-dashboard"
-            className="text-white/60 hover:text-[#F472B6] transition-colors"
+            className="text-foreground/60 hover:text-[#F472B6] transition-colors"
           >
             <Home className="h-4 w-4" />
           </Link>
-          <ChevronRight className="h-4 w-4 text-white/40" />
+          <ChevronRight className="h-4 w-4 text-foreground/40" />
         </>
       )}
       {breadcrumbs.map((crumb, index) => {
@@ -62,18 +62,18 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ className, showHome = true })
             {crumb.path && !isLast ? (
               <Link
                 to={crumb.path}
-                className="text-white/60 hover:text-[#F472B6] transition-colors flex items-center gap-1"
+                className="text-foreground/60 hover:text-[#F472B6] transition-colors flex items-center gap-1"
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 <span>{crumb.label}</span>
               </Link>
             ) : (
-              <span className="text-white flex items-center gap-1">
+              <span className="text-foreground flex items-center gap-1">
                 {Icon && <Icon className="h-4 w-4" />}
                 <span className="font-medium">{crumb.label}</span>
               </span>
             )}
-            {!isLast && <ChevronRight className="h-4 w-4 text-white/40" />}
+            {!isLast && <ChevronRight className="h-4 w-4 text-foreground/40" />}
           </React.Fragment>
         );
       })}

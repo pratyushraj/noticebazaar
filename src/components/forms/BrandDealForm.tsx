@@ -49,12 +49,12 @@ const FormInput = ({
   required?: boolean;
 }) => (
   <div>
-    <Label htmlFor={id} className="text-purple-200/80 text-[13px] font-medium mb-1 block">
-      {label} {required && <span className="text-purple-300">*</span>}
+    <Label htmlFor={id} className="text-secondary/80 text-[13px] font-medium mb-1 block">
+      {label} {required && <span className="text-secondary">*</span>}
     </Label>
     <div className="relative">
       {Icon && (
-        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-purple-200/60 pointer-events-none" />
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-secondary/60 pointer-events-none" />
       )}
       <Input
         id={id}
@@ -63,7 +63,7 @@ const FormInput = ({
         onChange={onChange}
         disabled={disabled}
         placeholder={placeholder}
-        className={`h-12 px-4 ${Icon ? 'pl-10' : 'pl-4'} pr-4 rounded-xl w-full bg-white/5 border border-purple-300/20 text-white placeholder:text-purple-200/40 shadow-inner shadow-black/30 focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 ${type === 'date' ? '[color-scheme:dark]' : ''}`}
+        className={`h-12 px-4 ${Icon ? 'pl-10' : 'pl-4'} pr-4 rounded-xl w-full bg-card border border-purple-300/20 text-foreground placeholder:text-secondary/40 shadow-inner shadow-black/30 focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 ${type === 'date' ? '[color-scheme:dark]' : ''}`}
       />
     </div>
   </div>
@@ -87,8 +87,8 @@ const FormTextarea = ({
   required?: boolean;
 }) => (
   <div>
-    <Label htmlFor={id} className="text-purple-200/80 text-[13px] font-medium mb-1 block">
-      {label} {required && <span className="text-purple-300">*</span>}
+    <Label htmlFor={id} className="text-secondary/80 text-[13px] font-medium mb-1 block">
+      {label} {required && <span className="text-secondary">*</span>}
     </Label>
     <Textarea
       id={id}
@@ -96,7 +96,7 @@ const FormTextarea = ({
       onChange={onChange}
       disabled={disabled}
       placeholder={placeholder}
-      className="min-h-[100px] text-sm px-4 py-3 rounded-xl w-full bg-white/5 border border-purple-300/20 text-white placeholder:text-purple-200/40 shadow-inner shadow-black/30 focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 resize-none"
+      className="min-h-[100px] text-sm px-4 py-3 rounded-xl w-full bg-card border border-purple-300/20 text-foreground placeholder:text-secondary/40 shadow-inner shadow-black/30 focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200 resize-none"
     />
   </div>
 );
@@ -124,29 +124,29 @@ const FileUploader = ({
 }) => (
   <div>
     {label && (
-      <Label htmlFor={id} className="text-purple-200/80 text-[13px] font-medium mb-1 block">
+      <Label htmlFor={id} className="text-secondary/80 text-[13px] font-medium mb-1 block">
         {label}
       </Label>
     )}
     {existingFileUrl && !file && (
-      <div className="mb-2 flex items-center gap-2 text-xs text-purple-200/70">
+      <div className="mb-2 flex items-center gap-2 text-xs text-secondary/70">
         <FileText className="h-4 w-4" />
         <span>Existing File:</span>
         <button type="button"
           onClick={() => openContractFile(existingFileUrl)}
-          className="text-purple-300 hover:text-purple-200 underline transition-colors"
+          className="text-secondary hover:text-secondary underline transition-colors"
         >
           View {fileType === 'contract' ? 'Contract' : 'Invoice'}
         </button>
       </div>
     )}
     {file && (
-      <div className="mb-2 flex items-center gap-2 text-xs text-purple-200/70 bg-purple-900/20 rounded-lg p-2 border border-purple-400/10">
+      <div className="mb-2 flex items-center gap-2 text-xs text-secondary/70 bg-secondary/20 rounded-lg p-2 border border-purple-400/10">
         <FileText className="h-4 w-4" />
         <span className="flex-1 truncate">{file.name}</span>
         <button type="button"
           onClick={onRemove}
-          className="text-purple-200/50 hover:text-purple-200/80 transition-colors"
+          className="text-secondary/50 hover:text-secondary/80 transition-colors"
         >
           <X className="h-4 w-4" />
         </button>
@@ -154,7 +154,7 @@ const FileUploader = ({
     )}
     <label
       htmlFor={id}
-      className="flex items-center justify-center gap-2 h-12 px-4 rounded-xl border border-purple-300/20 bg-white/5 text-purple-200/80 hover:bg-purple-900/30 hover:text-purple-100 hover:border-purple-400/30 transition-all duration-200 cursor-pointer text-sm font-medium shadow-inner shadow-black/20"
+      className="flex items-center justify-center gap-2 h-12 px-4 rounded-xl border border-purple-300/20 bg-card text-secondary/80 hover:bg-secondary/30 hover:text-secondary hover:border-purple-400/30 transition-all duration-200 cursor-pointer text-sm font-medium shadow-inner shadow-black/20"
     >
       <Upload className="h-5 w-5" />
       {file ? 'Change File' : 'Upload File'}
@@ -192,22 +192,22 @@ const FormSelect = ({
   required?: boolean;
 }) => (
   <div>
-    <Label htmlFor={id} className="text-purple-200/80 text-[13px] font-medium mb-1 block">
-      {label} {required && <span className="text-purple-300">*</span>}
+    <Label htmlFor={id} className="text-secondary/80 text-[13px] font-medium mb-1 block">
+      {label} {required && <span className="text-secondary">*</span>}
     </Label>
     <Select onValueChange={onValueChange} value={value} disabled={disabled}>
       <SelectTrigger
         id={id}
-        className="h-12 px-4 rounded-xl w-full bg-white/5 border border-purple-300/20 text-white shadow-inner shadow-black/30 focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200"
+        className="h-12 px-4 rounded-xl w-full bg-card border border-purple-300/20 text-foreground shadow-inner shadow-black/30 focus:border-purple-400/40 focus:ring-2 focus:ring-purple-400/30 transition-all duration-200"
       >
         <div className="flex items-center gap-2">
-          {Icon && <Icon className="h-5 w-5 text-purple-200/60" />}
+          {Icon && <Icon className="h-5 w-5 text-secondary/60" />}
           <SelectValue placeholder={placeholder} />
         </div>
       </SelectTrigger>
       <SelectContent className="bg-gradient-to-b from-purple-900/95 to-purple-800/95 border-purple-400/20 backdrop-blur-xl">
         {options.map((opt) => (
-          <SelectItem key={opt} value={opt} className="text-white hover:bg-purple-700/30 focus:bg-purple-700/30">
+          <SelectItem key={opt} value={opt} className="text-foreground hover:bg-secondary/30 focus:bg-secondary/30">
             {opt}
           </SelectItem>
         ))}
@@ -237,7 +237,7 @@ const StickyFooter = ({
       type="button"
       onClick={onCancel}
       disabled={isSubmitting}
-      className="w-full h-12 rounded-xl bg-purple-900/40 text-purple-200 border border-purple-300/20 hover:bg-purple-900/50 transition-all duration-200"
+      className="w-full h-12 rounded-xl bg-secondary/40 text-secondary border border-purple-300/20 hover:bg-card0 transition-all duration-200"
     >
       Cancel
     </Button>
@@ -245,7 +245,7 @@ const StickyFooter = ({
       type="submit"
       onClick={onSubmit}
       disabled={isSubmitting || !isValid}
-      className="w-full h-12 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold shadow-lg shadow-purple-600/40 hover:opacity-90 active:scale-[0.97] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full h-12 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-foreground font-semibold shadow-lg shadow-purple-600/40 hover:opacity-90 active:scale-[0.97] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isSubmitting ? (
         <>
@@ -414,7 +414,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
         <div className="space-y-8">
           {/* 1. Deal Info */}
           <SectionCard>
-            <h3 className="text-white font-semibold text-[17px] tracking-wide mb-4">Deal Info</h3>
+            <h3 className="text-foreground font-semibold text-[17px] tracking-wide mb-4">Deal Info</h3>
             <div className="space-y-4">
               <FormInput
                 id="brandName"
@@ -452,7 +452,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
 
           {/* 2. Contract File */}
           <SectionCard>
-            <h3 className="text-white font-semibold text-[17px] tracking-wide mb-4">Contract File</h3>
+            <h3 className="text-foreground font-semibold text-[17px] tracking-wide mb-4">Contract File</h3>
             <FileUploader
               id="contractFile"
               label=""
@@ -468,7 +468,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
 
           {/* 3. Deliverables */}
           <SectionCard>
-            <h3 className="text-white font-semibold text-[17px] tracking-wide mb-4">Deliverables</h3>
+            <h3 className="text-foreground font-semibold text-[17px] tracking-wide mb-4">Deliverables</h3>
             <FormTextarea
               id="deliverables"
               label=""
@@ -482,7 +482,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
 
           {/* 4. Key Dates */}
           <SectionCard>
-            <h3 className="text-white font-semibold text-[17px] tracking-wide mb-4">Key Dates</h3>
+            <h3 className="text-foreground font-semibold text-[17px] tracking-wide mb-4">Key Dates</h3>
             <div className="space-y-4">
               <FormInput
                 id="dueDate"
@@ -509,7 +509,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
 
           {/* 5. Payment Details */}
           <SectionCard>
-            <h3 className="text-white font-semibold text-[17px] tracking-wide mb-4">Payment Details</h3>
+            <h3 className="text-foreground font-semibold text-[17px] tracking-wide mb-4">Payment Details</h3>
             <div className="space-y-4">
               <FormSelect
                 id="platform"
@@ -564,7 +564,7 @@ const BrandDealForm = ({ initialData, onSaveSuccess, onClose }: BrandDealFormPro
 
           {/* 6. Status */}
           <SectionCard>
-            <h3 className="text-white font-semibold text-[17px] tracking-wide mb-4">Status</h3>
+            <h3 className="text-foreground font-semibold text-[17px] tracking-wide mb-4">Status</h3>
             <FormSelect
               id="status"
               label=""

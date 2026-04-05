@@ -132,47 +132,47 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
               <div className={cn(
                 "h-10 w-10 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-200",
                 hasOverdue
-                  ? "bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/30 shadow-red-500/20"
-                  : "bg-gradient-to-br from-emerald-500/20 to-blue-500/10 border border-emerald-500/30 shadow-emerald-500/20"
+                  ? "bg-gradient-to-br from-red-500/20 to-red-600/10 border border-destructive/30 shadow-red-500/20"
+                  : "bg-gradient-to-br from-emerald-500/20 to-blue-500/10 border border-primary/30 shadow-emerald-500/20"
               )}>
                 <IndianRupee className={cn(
                   "h-5 w-5 transition-colors duration-200",
-                  hasOverdue ? "text-red-300" : "text-emerald-300"
+                  hasOverdue ? "text-destructive" : "text-primary"
                 )} />
               </div>
               <div>
-                <span className="text-[15px] font-semibold text-white tracking-[-0.2px] block">
+                <span className="text-[15px] font-semibold text-foreground tracking-[-0.2px] block">
                   Payments
                 </span>
-                <span className="text-[11px] text-white/50 font-medium uppercase tracking-wide">
+                <span className="text-[11px] text-foreground/50 font-medium uppercase tracking-wide">
                   Overview
                 </span>
               </div>
             </div>
             {hasOverdue && (
               <div className="relative">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
-                <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping opacity-75" />
+                <div className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-destructive animate-ping opacity-75" />
               </div>
             )}
           </div>
 
           <div className="space-y-3 mb-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-1 rounded-lg bg-white/10 backdrop-blur-sm text-white/70 text-[11px] font-medium border border-white/10">
+              <span className="px-2.5 py-1 rounded-lg bg-secondary/50 backdrop-blur-sm text-foreground/70 text-[11px] font-medium border border-border">
                 Pending ({pendingBrandCount})
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 backdrop-blur-sm text-amber-300 text-[11px] font-medium border border-amber-500/30">
+              <span className="px-2.5 py-1 rounded-lg bg-warning/20 backdrop-blur-sm text-warning text-[11px] font-medium border border-warning/30">
                 Due Soon ({dueThisWeekCount})
               </span>
             </div>
             
             <div className="flex items-baseline gap-2">
-              <div className="text-3xl font-bold text-white tabular-nums tracking-tight leading-none">
+              <div className="text-3xl font-bold text-foreground tabular-nums tracking-tight leading-none">
                 ₹{totalAmount.toLocaleString('en-IN')}
               </div>
               {hasOverdue && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold text-red-300 bg-red-500/20 border border-red-500/40">
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold text-destructive bg-destructive/20 border border-destructive/40">
                   Overdue
                 </span>
               )}
@@ -180,19 +180,19 @@ const CombinedPaymentsCard: React.FC<CombinedPaymentsCardProps> = ({
             
             {pendingBrands.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap pt-2">
-                <span className="text-[12px] text-white/50 font-medium">From:</span>
+                <span className="text-[12px] text-foreground/50 font-medium">From:</span>
                 {pendingBrands.map((brand, idx) => (
                   <span
                     key={idx}
                     className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-white/10 to-white/5 
-                               backdrop-blur-sm text-white/90 text-[13px] font-medium border border-white/10 
+                               backdrop-blur-sm text-foreground/90 text-[13px] font-medium border border-border 
                                shadow-sm hover:from-white/15 hover:to-white/10 transition-all duration-150"
                   >
                     {brand}
                   </span>
                 ))}
                 {pendingBrandCount > 3 && (
-                  <span className="text-[12px] text-white/50 font-medium">
+                  <span className="text-[12px] text-foreground/50 font-medium">
                     +{pendingBrandCount - 3} more
                   </span>
                 )}

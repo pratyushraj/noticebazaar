@@ -211,7 +211,7 @@ export const AdvancedAnalyticsDashboard: React.FC<{
         <MetricCard
           title="Total Reach"
           value={formatNumber(metrics.totalReach)}
-          icon={<Eye className="h-5 w-5 text-blue-500" />}
+          icon={<Eye className="h-5 w-5 text-info" />}
           trend={metrics.growthRate}
           subtitle="Across all content"
           color="blue"
@@ -219,7 +219,7 @@ export const AdvancedAnalyticsDashboard: React.FC<{
         <MetricCard
           title="Avg Engagement"
           value={`${metrics.avgEngagement.toFixed(1)}%`}
-          icon={<Heart className="h-5 w-5 text-red-500" />}
+          icon={<Heart className="h-5 w-5 text-destructive" />}
           trend={2.3}
           subtitle="Engagement rate"
           color="red"
@@ -286,7 +286,7 @@ export const AdvancedAnalyticsDashboard: React.FC<{
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Average ROI</span>
-                  <span className={`text-sm font-bold ${campaignSummary.avgROI > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-sm font-bold ${campaignSummary.avgROI > 0 ? 'text-green-600' : 'text-destructive'}`}>
                     {campaignSummary.avgROI > 0 ? '+' : ''}{campaignSummary.avgROI.toFixed(1)}%
                   </span>
                 </div>
@@ -339,7 +339,7 @@ export const AdvancedAnalyticsDashboard: React.FC<{
                   {creatorData.analytics.performance.hashtags.slice(0, 8).map((hashtag, index) => (
                     <div key={hashtag.tag} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium">
+                        <span className="w-6 h-6 rounded-full bg-info text-info flex items-center justify-center text-xs font-medium">
                           {index + 1}
                         </span>
                         <span className="font-medium">#{hashtag.tag}</span>
@@ -390,13 +390,13 @@ export const AdvancedAnalyticsDashboard: React.FC<{
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Predicted Reach</span>
-                  <span className="text-lg font-bold text-blue-600">
+                  <span className="text-lg font-bold text-info">
                     {formatNumber(predictiveInsights.content_performance.next_week_prediction.reach)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Predicted Engagement</span>
-                  <span className="text-lg font-bold text-red-600">
+                  <span className="text-lg font-bold text-destructive">
                     {predictiveInsights.content_performance.next_week_prediction.engagement.toFixed(1)}%
                   </span>
                 </div>
@@ -447,7 +447,7 @@ export const AdvancedAnalyticsDashboard: React.FC<{
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-2xl font-bold text-destructive">
                     {predictiveInsights.risk_assessment.content_quality_risk}%
                   </div>
                   <div className="text-sm text-muted-foreground">Content Quality Risk</div>
@@ -558,11 +558,11 @@ const MetricCard: React.FC<MetricCardProps> = ({
   color = 'blue'
 }) => {
   const colorClasses = {
-    blue: 'text-blue-600 bg-blue-50 border-blue-200',
+    blue: 'text-info bg-info border-info',
     green: 'text-green-600 bg-green-50 border-green-200',
-    red: 'text-red-600 bg-red-50 border-red-200',
+    red: 'text-destructive bg-destructive border-destructive',
     yellow: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-    purple: 'text-purple-600 bg-purple-50 border-purple-200'
+    purple: 'text-secondary bg-secondary border-purple-200'
   };
 
   return (
@@ -575,7 +575,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
             {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
             {trend !== undefined && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${
-                trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-muted-foreground'
+                trend > 0 ? 'text-green-600' : trend < 0 ? 'text-destructive' : 'text-muted-foreground'
               }`}>
                 {trend > 0 ? <TrendingUp className="h-3 w-3" /> :
                  trend < 0 ? <TrendingDown className="h-3 w-3" /> : null}

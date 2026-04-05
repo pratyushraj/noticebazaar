@@ -27,14 +27,14 @@ const CATEGORIES = [
 const CategorySelect: React.FC<CategorySelectProps> = ({ value, onChange, disabled }) => {
   return (
     <div className="space-y-2">
-      <Label htmlFor="category" className="text-white">Creator Category</Label>
+      <Label htmlFor="category" className="text-foreground">Creator Category</Label>
       <Select value={value || ''} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id="category" className="bg-[#0F121A] text-white border-white/10">
+        <SelectTrigger id="category" className="bg-[#0F121A] text-foreground border-border">
           <SelectValue placeholder="Select your category" />
         </SelectTrigger>
-        <SelectContent className="bg-[#0F121A] text-white border-white/10">
+        <SelectContent className="bg-[#0F121A] text-foreground border-border">
           {CATEGORIES.map((category) => (
-            <SelectItem key={category} value={category} className="hover:bg-white/10">
+            <SelectItem key={category} value={category} className="hover:bg-secondary/50">
               {category}
             </SelectItem>
           ))}

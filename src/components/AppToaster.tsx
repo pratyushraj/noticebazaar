@@ -23,7 +23,7 @@ const AppToaster = () => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg dark:group-[.toaster]:bg-slate-900",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg dark:group-[.toaster]:bg-background",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:hover:opacity-90",
@@ -32,9 +32,9 @@ const AppToaster = () => {
           closeButton:
             "group-[.toast]:bg-transparent group-[.toast]:border-muted group-[.toast]:text-muted-foreground",
           success: "group-[.toast]:border-green-500/30 dark:group-[.toast]:border-green-500/30",
-          error: "group-[.toast]:border-red-500/30 dark:group-[.toast]:border-red-500/30",
+          error: "group-[.toast]:border-destructive/30 dark:group-[.toast]:border-destructive/30",
           warning: "group-[.toast]:border-yellow-500/30 dark:group-[.toast]:border-yellow-500/30",
-          info: "group-[.toast]:border-blue-500/30 dark:group-[.toast]:border-blue-500/30",
+          info: "group-[.toast]:border-info/30 dark:group-[.toast]:border-info/30",
         },
       }}
       expand={false}

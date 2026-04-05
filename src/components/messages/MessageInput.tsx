@@ -68,12 +68,12 @@ export const MessageInput: React.FC<Props> = ({ onSend, isLoading = false, place
           onClick={handleSend}
           disabled={!value.trim() || isLoading}
           className={clsx(
-            "ml-2 p-2 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
+            "ml-2 p-2 rounded-full bg-info hover:bg-info transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
             value.trim() && "hover:shadow-[0_8px_24px_rgba(59,130,246,0.12)]"
           )}
           aria-label="Send message"
         >
-          <ArrowUp size={16} className="text-white" />
+          <ArrowUp size={16} className="text-foreground" />
         </button>
       </div>
     </div>

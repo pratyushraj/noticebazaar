@@ -55,16 +55,16 @@ const ThisWeeksSummary: React.FC<ThisWeeksSummaryProps> = ({ brandDeals = [] }) 
 
   const summaryItems = [
     {
-      icon: <Briefcase className="h-5 w-5 text-blue-400" />,
+      icon: <Briefcase className="h-5 w-5 text-info" />,
       label: 'Deals Closed',
       value: dealsClosed,
-      color: 'text-blue-400',
+      color: 'text-info',
     },
     {
-      icon: <FileText className="h-5 w-5 text-purple-400" />,
+      icon: <FileText className="h-5 w-5 text-secondary" />,
       label: 'Invoices Sent',
       value: invoicesSent,
-      color: 'text-purple-400',
+      color: 'text-secondary',
     },
     {
       icon: <DollarSign className="h-5 w-5 text-green-400" />,
@@ -81,16 +81,16 @@ const ThisWeeksSummary: React.FC<ThisWeeksSummaryProps> = ({ brandDeals = [] }) 
   ];
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-2xl">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white">This Week's Summary</CardTitle>
-        <p className="text-xs text-white/60 mt-1">Your performance at a glance</p>
+        <CardTitle className="text-lg font-semibold text-foreground">This Week's Summary</CardTitle>
+        <p className="text-xs text-foreground/60 mt-1">Your performance at a glance</p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           {summaryItems.map((item, index) => (
             <div key={index} className="space-y-2">
-              <div className="flex items-center gap-2 text-white/60 text-sm">
+              <div className="flex items-center gap-2 text-foreground/60 text-sm">
                 {item.icon}
                 <span>{item.label}</span>
               </div>

@@ -152,7 +152,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-full right-0 mb-4 w-72 rounded-t-3xl rounded-b-2xl bg-black/40 backdrop-blur-2xl border border-white/10 shadow-xl overflow-hidden relative before:absolute before:inset-0 before:-z-10 before:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent)] before:blur-2xl"
+              className="absolute bottom-full right-0 mb-4 w-72 rounded-t-3xl rounded-b-2xl bg-black/40 backdrop-blur-2xl border border-border shadow-xl overflow-hidden relative before:absolute before:inset-0 before:-z-10 before:bg-background before:blur-2xl"
             >
               {actions.map((action, index) => {
                 const Icon = action.icon;
@@ -170,19 +170,19 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={action.onClick}
-                      className="w-full flex items-center gap-3 px-5 py-4 text-left text-white/90 hover:bg-white/5 active:bg-white/10 transition-all"
+                      className="w-full flex items-center gap-3 px-5 py-4 text-left text-foreground/90 hover:bg-card active:bg-secondary/50 transition-all"
                     >
                       <div className={cn(
-                        "h-10 w-10 flex items-center justify-center rounded-xl bg-gradient-to-br backdrop-blur-xl shadow-[0_4px_12px_rgba(0,0,0,0.4)] border border-white/10",
+                        "h-10 w-10 flex items-center justify-center rounded-xl bg-gradient-to-br backdrop-blur-xl shadow-[0_4px_12px_rgba(0,0,0,0.4)] border border-border",
                         iconColorClass
                       )}>
-                        <Icon className="h-5 w-5 text-white/90" />
+                        <Icon className="h-5 w-5 text-foreground/90" />
                       </div>
                       <span className="font-medium text-sm">{action.label}</span>
                     </motion.button>
                     {/* Divider */}
                     {index < actions.length - 1 && (
-                      <div className="h-px bg-white/10 mx-4" />
+                      <div className="h-px bg-secondary/50 mx-4" />
                     )}
                   </div>
                 );
@@ -206,7 +206,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
               triggerHaptic(HapticPatterns.light);
             }
           }}
-          className="w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-white transition-all relative focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none min-h-[56px] min-w-[56px] group"
+          className="w-14 h-14 bg-info rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 flex items-center justify-center text-foreground transition-all relative focus-visible:ring-4 focus-visible:ring-purple-400/50 focus-visible:outline-none min-h-[56px] min-w-[56px] group"
           style={{ 
             boxShadow: '0 0 15px rgba(59,130,246,0.5), 0 4px 6px rgba(0,0,0,0.1)',
             transformOrigin: 'center'
@@ -235,7 +235,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg shadow-red-500/50"
+            className="absolute -top-1 -right-1 w-5 h-5 bg-destructive rounded-full flex items-center justify-center text-xs font-bold shadow-lg shadow-red-500/50"
           >
             3
           </motion.span>
@@ -245,7 +245,7 @@ const QuickActionsFAB: React.FC<QuickActionsFABProps> = ({
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="absolute right-full mr-3 px-3 py-2 bg-black/80 backdrop-blur-xl rounded-lg text-xs text-white whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              className="absolute right-full mr-3 px-3 py-2 bg-black/80 backdrop-blur-xl rounded-lg text-xs text-foreground whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             >
               Quick Actions
               <div className="absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-black/80" />

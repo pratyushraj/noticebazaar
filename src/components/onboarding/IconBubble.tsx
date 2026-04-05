@@ -41,9 +41,9 @@ export const IconBubble: React.FC<IconBubbleProps> = ({
   };
 
   const colorClasses = {
-    purple: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+    purple: 'bg-primary dark:bg-primary/20 text-primary dark:text-primary',
     green: 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400',
-    blue: 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400',
+    blue: 'bg-info dark:bg-info/20 text-info dark:text-info',
     pink: 'bg-pink-100 dark:bg-pink-500/20 text-pink-600 dark:text-pink-400',
     orange: 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400',
   };

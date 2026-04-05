@@ -229,7 +229,7 @@ const BrandDealConsole = () => {
             "bg-gradient-to-br from-emerald-50 via-white to-teal-50 text-muted-foreground dark:bg-[#0A0A0B] dark:text-muted-foreground"
         )}>
             {/* Top Bar */}
-            <header className="sticky top-0 z-50 border-b bg-secondary/70 border-slate-200/70 dark:border-border/5 dark:bg-[#0A0A0B]/80 backdrop-blur-xl">
+            <header className="sticky top-0 z-50 border-b bg-secondary/70 border-border/70 dark:border-border/5 dark:bg-[#0A0A0B]/80 backdrop-blur-xl">
                 <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-9 w-9 rounded-xl bg-card border border-border flex items-center justify-center overflow-hidden shadow-inner">
@@ -281,7 +281,7 @@ const BrandDealConsole = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="hidden sm:flex items-center gap-1 rounded-full border border-slate-200/80 bg-secondary/70 px-1 py-1 shadow-sm dark:border-border dark:bg-card">
+                        <div className="hidden sm:flex items-center gap-1 rounded-full border border-border/80 bg-secondary/70 px-1 py-1 shadow-sm dark:border-border dark:bg-card">
                             <button type="button"
                                 type="button"
                                 onClick={() => setThemePreference('system')}
@@ -328,7 +328,7 @@ const BrandDealConsole = () => {
             </header>
 
             {/* Hero / Stage Tracker */}
-            <section className="border-b border-slate-200/70 bg-secondary/60 dark:border-border/5 dark:bg-[#0D0D0F]">
+            <section className="border-b border-border/70 bg-secondary/60 dark:border-border/5 dark:bg-[#0D0D0F]">
                 <div className="max-w-[1440px] mx-auto px-6 py-12">
                     {isNewSubmission && (
                         <motion.div
@@ -421,7 +421,7 @@ const BrandDealConsole = () => {
                     {/* Left Column: Contextual State */}
                     <div className="space-y-8">
                         {/* Stage Summary Card */}
-                        <div className="bg-secondary/80 border border-slate-200/80 rounded-2xl p-8 backdrop-blur-sm shadow-sm dark:bg-background/40 dark:border-border/5 dark:shadow-none">
+                        <div className="bg-secondary/80 border border-border/80 rounded-2xl p-8 backdrop-blur-sm shadow-sm dark:bg-background/40 dark:border-border/5 dark:shadow-none">
                             <AnimatePresence mode="wait">
                                 {currentStage === 'PROPOSAL' && (
                                     <motion.div
@@ -444,7 +444,7 @@ const BrandDealConsole = () => {
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="bg-white rounded-xl p-5 border border-slate-200/80 dark:bg-card dark:border-border/5">
+                                            <div className="bg-card rounded-xl p-5 border border-border/80 dark:bg-card dark:border-border/5">
                                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Deliverables</p>
                                                 <ul className="space-y-3">
                                                     {Array.isArray(collabRequest?.deliverables) ? collabRequest.deliverables.map((d: any, i: number) => (
@@ -457,20 +457,20 @@ const BrandDealConsole = () => {
                                                     )}
                                                 </ul>
                                             </div>
-                                            <div className="bg-white rounded-xl p-5 border border-slate-200/80 dark:bg-card dark:border-border/5">
+                                            <div className="bg-card rounded-xl p-5 border border-border/80 dark:bg-card dark:border-border/5">
                                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Proposed Budget</p>
                                                 <div className="flex items-baseline gap-1">
                                                     <span className="text-2xl font-bold text-muted-foreground dark:text-foreground">₹{collabRequest?.exact_budget || collabRequest?.budget || 'N/A'}</span>
                                                     <span className="text-xs text-muted-foreground">Fixed Fee</span>
                                                 </div>
-                                                <div className="mt-4 pt-4 border-t border-slate-200/70 dark:border-border/5">
+                                                <div className="mt-4 pt-4 border-t border-border/70 dark:border-border/5">
                                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Payment Terms</p>
                                                     <p className="text-sm text-muted-foreground dark:text-muted-foreground">50% upfront, 50% on delivery</p>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="mt-8 flex flex-col items-center justify-center p-12 border border-dashed border-slate-300/70 dark:border-border rounded-2xl bg-secondary/60 dark:bg-secondary/[0.02]">
+                                        <div className="mt-8 flex flex-col items-center justify-center p-12 border border-dashed border-border/70 dark:border-border rounded-2xl bg-secondary/60 dark:bg-secondary/[0.02]">
                                             <Clock className="w-8 h-8 text-muted-foreground dark:text-muted-foreground mb-4" />
                                             <h3 className="text-muted-foreground dark:text-foreground font-medium">Awaiting Creator Confirmation</h3>
                                             <p className="text-muted-foreground dark:text-muted-foreground text-sm text-center mt-2 max-w-sm">
@@ -512,7 +512,7 @@ const BrandDealConsole = () => {
                                             </div>
 
                                             <div className="p-6 rounded-2xl border border-purple-500/30 bg-secondary/[0.02] flex flex-col items-center text-center">
-                                                <div className="w-10 h-10 rounded-full bg-secondary/50 flex items-center justify-center mb-4">
+                                                <div className="w-10 h-10 rounded-full bg-card0 flex items-center justify-center mb-4">
                                                     <Activity className="w-5 h-5 text-secondary" />
                                                 </div>
                                                 <h3 className="text-sm font-bold text-foreground mb-2">Brand Commitment</h3>
@@ -540,7 +540,7 @@ const BrandDealConsole = () => {
                                         animate={{ opacity: 1, x: 0 }}
                                     >
                                         <div className="mb-8">
-                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 text-orange-400 uppercase tracking-widest border border-orange-500/20">
+                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-warning/10 text-warning uppercase tracking-widest border border-orange-500/20">
                                                 EXECUTION_PHASE
                                             </span>
                                             <h2 className="text-xl font-semibold text-foreground mt-3">Content Production</h2>
@@ -566,12 +566,12 @@ const BrandDealConsole = () => {
                                                 <div className={cn(
                                                     "p-4 rounded-xl border flex flex-col items-center text-center gap-2",
                                                     brandDeal?.brand_approval_status === 'approved' ? "bg-primary/5 border-primary/20" :
-                                                        brandDeal?.brand_approval_status === 'changes_requested' ? "bg-orange-500/5 border-orange-500/20" : "bg-card border-border"
+                                                        brandDeal?.brand_approval_status === 'changes_requested' ? "bg-warning/5 border-orange-500/20" : "bg-card border-border"
                                                 )}>
                                                     <div className={cn(
                                                         "w-8 h-8 rounded-full flex items-center justify-center",
                                                         brandDeal?.brand_approval_status === 'approved' ? "bg-primary text-foreground" :
-                                                            brandDeal?.brand_approval_status === 'changes_requested' ? "bg-orange-500 text-foreground" : "bg-background text-muted-foreground"
+                                                            brandDeal?.brand_approval_status === 'changes_requested' ? "bg-warning text-foreground" : "bg-background text-muted-foreground"
                                                     )}>
                                                         <CheckCircle className="w-4 h-4" />
                                                     </div>
@@ -708,7 +708,7 @@ const BrandDealConsole = () => {
                                                                 onClick={() => handleBrandReview('changes_requested')}
                                                                 disabled={isReviewing}
                                                                 variant="outline"
-                                                                className="flex-1 border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+                                                                className="flex-1 border-orange-500/50 text-warning hover:bg-warning/10"
                                                             >
                                                                 <ThumbsDown className="w-4 h-4 mr-2" />
                                                                 Request Changes

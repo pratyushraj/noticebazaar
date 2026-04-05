@@ -327,7 +327,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative rounded-[26px] p-4 sm:p-6 pb-4 sm:pb-5 bg-white/12 backdrop-blur-xl border border-white/15 shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-white max-h-[calc(100dvh-120px)] overflow-y-auto overflow-x-hidden min-w-0 max-w-full"
+              className="relative rounded-[26px] p-4 sm:p-6 pb-4 sm:pb-5 bg-secondary/12 backdrop-blur-xl border border-border shadow-[0px_16px_40px_rgba(0,0,0,0.35)] text-foreground max-h-[calc(100dvh-120px)] overflow-y-auto overflow-x-hidden min-w-0 max-w-full"
             >
               {/* Center Arrow */}
               {step.pointer && (
@@ -365,7 +365,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                   transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                   className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <Sparkles className="w-8 h-8 text-white" />
+                  <Sparkles className="w-8 h-8 text-foreground" />
                 </motion.div>
               )}
 
@@ -376,7 +376,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                 </h2>
                 <button type="button"
                   onClick={handleNext}
-                  className="text-white/70 hover:text-white transition active:scale-95 flex-shrink-0 ml-2"
+                  className="text-foreground/70 hover:text-foreground transition active:scale-95 flex-shrink-0 ml-2"
                   aria-label="Skip this step"
                 >
                   ✕
@@ -384,13 +384,13 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
               </div>
 
               {/* Description */}
-              <p className="text-[15px] text-white/80 leading-relaxed mb-6 break-words">
+              <p className="text-[15px] text-foreground/80 leading-relaxed mb-6 break-words">
                 {step.description}
               </p>
 
               {/* Progress */}
               <div className="w-full mb-1">
-                <div className="w-full h-[6px] bg-white/10 rounded-full overflow-hidden">
+                <div className="w-full h-[6px] bg-secondary/50 rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercentage}%` }}
@@ -400,7 +400,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                 </div>
               </div>
 
-              <div className="text-center text-sm text-white/60 mb-4">
+              <div className="text-center text-sm text-foreground/60 mb-4">
                 {currentStep + 1} / {tutorialSteps.length}
               </div>
 
@@ -409,7 +409,7 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                 {currentStep > 0 ? (
                   <button type="button"
                     onClick={handlePrevious}
-                    className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center gap-0.5 sm:gap-1 text-[13px] sm:text-[14px] active:scale-95 transition flex-shrink-0 min-w-0"
+                    className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-secondary/50 border border-border text-foreground/80 flex items-center gap-0.5 sm:gap-1 text-[13px] sm:text-[14px] active:scale-95 transition flex-shrink-0 min-w-0"
                   >
                     <span className="text-sm sm:text-base">←</span> <span className="hidden sm:inline">Back</span>
                   </button>
@@ -419,14 +419,14 @@ const DashboardTutorial: React.FC<DashboardTutorialProps> = ({ onComplete, onSki
                 
                 <button type="button"
                   onClick={handleNext}
-                  className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 flex items-center justify-center text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
+                  className="px-2 sm:px-3 py-2 sm:py-2.5 rounded-full bg-secondary/50 border border-border text-foreground/80 flex items-center justify-center text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
                 >
                   Later
                 </button>
 
                 <button type="button"
                   onClick={step.interactive ? handleInteractiveClick : handleNext}
-                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-white font-medium flex items-center justify-center gap-1 sm:gap-1.5 text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
+                  className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-foreground font-medium flex items-center justify-center gap-1 sm:gap-1.5 text-[13px] sm:text-[14px] active:scale-95 transition flex-1 min-w-0"
                 >
                   <span className="truncate">{step.action || (currentStep === tutorialSteps.length - 1 ? 'Finish' : 'Next')}</span>
                   {currentStep < tutorialSteps.length - 1 && !step.action && (

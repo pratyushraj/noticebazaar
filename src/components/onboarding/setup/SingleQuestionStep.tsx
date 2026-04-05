@@ -38,11 +38,11 @@ export const SingleQuestionStep: React.FC<SingleQuestionStepProps> = ({
     >
       <GradientCard padding="lg" className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold leading-tight text-slate-900 dark:text-white">
+          <h2 className="text-3xl font-bold leading-tight text-muted-foreground dark:text-foreground">
             {title}
           </h2>
           {description ? (
-            <p className="mt-2 text-base text-slate-500 dark:text-white/80">
+            <p className="mt-2 text-base text-muted-foreground dark:text-foreground/80">
               {description}
             </p>
           ) : null}

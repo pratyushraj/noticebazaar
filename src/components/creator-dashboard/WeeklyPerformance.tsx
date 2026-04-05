@@ -112,8 +112,8 @@ const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [], 
       <Card variant="tertiary">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
-              <TrendingUp className="h-5 w-5 text-white/80" />
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-card backdrop-blur-sm">
+              <TrendingUp className="h-5 w-5 text-foreground/80" />
             </div>
             Weekly Performance
           </CardTitle>
@@ -133,90 +133,90 @@ const WeeklyPerformance: React.FC<WeeklyPerformanceProps> = ({ brandDeals = [], 
     <Card variant="metric" interactive>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20">
-            <TrendingUp className="h-5 w-5 text-emerald-400" />
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-primary/10 border border-primary/20">
+            <TrendingUp className="h-5 w-5 text-primary" />
           </div>
           <div>
             <CardTitle>Weekly Performance</CardTitle>
-            <p className="text-small text-white/60 mt-1">This week's activity and metrics</p>
+            <p className="text-small text-foreground/60 mt-1">This week's activity and metrics</p>
           </div>
         </div>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
         {/* Row 1 */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
-            <Briefcase className="h-3.5 w-3.5 text-blue-400" />
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
+            <Briefcase className="h-3.5 w-3.5 text-info" />
             <span>Deals Closed</span>
           </div>
-          <p className="text-3xl font-bold text-blue-400 tracking-tight">{dealsClosed}</p>
-          <p className="text-[12px] text-white/50">this week</p>
+          <p className="text-3xl font-bold text-info tracking-tight">{dealsClosed}</p>
+          <p className="text-[12px] text-foreground/50">this week</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
             <DollarSign className="h-3.5 w-3.5 text-green-400" />
             <span>Payments Collected</span>
           </div>
           <p className="text-3xl font-bold text-green-400 tracking-tight">₹{Math.round(paymentsCollected / 1000)}k</p>
-          <p className="text-[12px] text-white/50">this week</p>
+          <p className="text-[12px] text-foreground/50">this week</p>
         </div>
 
         {/* Row 2 */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
-            <FileText className="h-3.5 w-3.5 text-purple-400" />
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
+            <FileText className="h-3.5 w-3.5 text-secondary" />
             <span>Invoices Sent</span>
           </div>
-          <p className="text-3xl font-bold text-purple-400 tracking-tight">{invoicesSent}</p>
-          <p className="text-[12px] text-white/50">this week</p>
+          <p className="text-3xl font-bold text-secondary tracking-tight">{invoicesSent}</p>
+          <p className="text-[12px] text-foreground/50">this week</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
             <CheckCircle2 className="h-3.5 w-3.5 text-orange-400" />
             <span>Contracts Reviewed</span>
           </div>
           <p className="text-3xl font-bold text-orange-400 tracking-tight">{contractsReviewed}</p>
-          <p className="text-[12px] text-white/50">this week</p>
+          <p className="text-[12px] text-foreground/50">this week</p>
         </div>
 
         {/* Row 3 */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
             <FileText className="h-3.5 w-3.5" />
             <span>Brand Inquiries</span>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">+{brandInquiries}</p>
-          <p className="text-[12px] text-white/50">this week</p>
+          <p className="text-3xl font-bold text-foreground tracking-tight">+{brandInquiries}</p>
+          <p className="text-[12px] text-foreground/50">this week</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
             <DollarSign className="h-3.5 w-3.5" />
             <span>Est. Incoming</span>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">₹{Math.round(estimatedPayments / 1000)}k</p>
-          <p className="text-[12px] text-white/50">pending payments</p>
+          <p className="text-3xl font-bold text-foreground tracking-tight">₹{Math.round(estimatedPayments / 1000)}k</p>
+          <p className="text-[12px] text-foreground/50">pending payments</p>
         </div>
 
         {/* Row 4 */}
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
             <FileText className="h-3.5 w-3.5" />
             <span>Under Review</span>
           </div>
-          <p className="text-3xl font-bold text-white tracking-tight">{contractsReviewing}</p>
-          <p className="text-[12px] text-white/50">contracts</p>
+          <p className="text-3xl font-bold text-foreground tracking-tight">{contractsReviewing}</p>
+          <p className="text-[12px] text-foreground/50">contracts</p>
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-white/60 text-[13px]">
+          <div className="flex items-center gap-2 text-foreground/60 text-[13px]">
             <AlertCircle className="h-3.5 w-3.5 text-orange-400" />
             <span>Overdue</span>
           </div>
           <p className="text-3xl font-bold text-orange-400 tracking-tight">{overduePayments}</p>
-          <p className="text-[12px] text-white/50">payments</p>
+          <p className="text-[12px] text-foreground/50">payments</p>
         </div>
       </CardContent>
     </Card>

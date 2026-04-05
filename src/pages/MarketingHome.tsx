@@ -269,8 +269,8 @@ const MarketingHome = () => {
 
   if (loading) {
     return (
-      <div className="nb-screen-height flex flex-col items-center justify-center bg-[#0b1020] text-white">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="nb-screen-height flex flex-col items-center justify-center bg-[#0b1020] text-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-info" />
         <p className="mt-3 text-gray-400">Loading...</p>
       </div>
     );
@@ -283,25 +283,25 @@ const MarketingHome = () => {
   // Helper component for list items
   const ListItem = ({ children, Icon }: { children: React.ReactNode, Icon: React.ElementType }) => (
     <li className="flex items-start text-base text-gray-100">
-      <Icon className="h-5 w-5 text-blue-400 mr-2 flex-shrink-0 mt-1" />
+      <Icon className="h-5 w-5 text-info mr-2 flex-shrink-0 mt-1" />
       {children}
     </li>
   );
 
   const MobileMenu = () => (
     <Dialog open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-      <DialogContent className="fixed inset-y-0 right-0 h-full w-3/4 max-w-xs bg-card p-6 flex flex-col border-l border-white/5 rounded-none">
+      <DialogContent className="fixed inset-y-0 right-0 h-full w-3/4 max-w-xs bg-card p-6 flex flex-col border-l border-border/5 rounded-none">
         <DialogHeader className="mb-8">
-          <DialogTitle className="text-2xl font-bold text-white">Menu</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-foreground">Menu</DialogTitle>
         </DialogHeader>
         <nav className="flex flex-col space-y-4 text-lg text-gray-300 flex-1">
-          <a href="#for-creators" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">For Creators</a>
-          <Link to="/pricing-comparison" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Pricing</Link>
-          <a href="#testimonials" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Clients</a>
-          <a href="#contact" onClick={() => setIsMenuOpen(false)} className="hover:text-white py-2 border-b border-white/5">Contact</a>
+          <a href="#for-creators" onClick={() => setIsMenuOpen(false)} className="hover:text-foreground py-2 border-b border-border/5">For Creators</a>
+          <Link to="/pricing-comparison" onClick={() => setIsMenuOpen(false)} className="hover:text-foreground py-2 border-b border-border/5">Pricing</Link>
+          <a href="#testimonials" onClick={() => setIsMenuOpen(false)} className="hover:text-foreground py-2 border-b border-border/5">Clients</a>
+          <a href="#contact" onClick={() => setIsMenuOpen(false)} className="hover:text-foreground py-2 border-b border-border/5">Contact</a>
 
-          <div className="pt-6 space-y-4 border-t border-white/10">
-            <Link to="/login" className="w-full inline-flex justify-center text-lg border border-white/10 px-4 py-2 rounded-lg hover:bg-white/10">Client Login</Link>
+          <div className="pt-6 space-y-4 border-t border-border">
+            <Link to="/login" className="w-full inline-flex justify-center text-lg border border-border px-4 py-2 rounded-lg hover:bg-secondary/50">Client Login</Link>
             <button type="button"
               onClick={() => openCalendly(CALENDLY_URL)}
               className="w-full cta-secondary py-2 rounded-lg text-lg font-semibold"
@@ -442,20 +442,20 @@ const MarketingHome = () => {
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-sm border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-black/40 backdrop-blur-sm border-b border-border/5">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="font-bold text-lg text-white uppercase font-black tracking-tighter">
+            <span className="font-bold text-lg text-foreground uppercase font-black tracking-tighter">
               Creator Armour
             </span>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-300">
-            <a href="#for-creators" className="hover:text-white">For Creators</a>
-            <Link to="/pricing-comparison" className="hover:text-white">Pricing</Link>
-            <a href="#testimonials" className="hover:text-white">Clients</a>
-            <a href="#contact" className="hover:text-white">Contact</a>
+            <a href="#for-creators" className="hover:text-foreground">For Creators</a>
+            <Link to="/pricing-comparison" className="hover:text-foreground">Pricing</Link>
+            <a href="#testimonials" className="hover:text-foreground">Clients</a>
+            <a href="#contact" className="hover:text-foreground">Contact</a>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -470,14 +470,14 @@ const MarketingHome = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
               WhatsApp
             </a>
-            <Link to="/login" className="text-sm border border-white/10 px-3 py-2 rounded-lg hidden md:inline-block">Client Login</Link>
+            <Link to="/login" className="text-sm border border-border px-3 py-2 rounded-lg hidden md:inline-block">Client Login</Link>
 
             {/* Mobile Menu Trigger */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(true)}
-              className="md:hidden text-white hover:bg-white/10 active:bg-white/15 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
+              className="md:hidden text-foreground hover:bg-secondary/50 active:bg-secondary/15 min-h-[44px] min-w-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0b1020]"
               aria-label="Open menu"
             >
               <Menu className="h-6 w-6" />
@@ -496,20 +496,20 @@ const MarketingHome = () => {
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
 
           <div className="relative z-10">
-            <div className="badge bg-blue-500/10 text-blue-100 border border-blue-300/20">
-              <ShieldCheck className="h-4 w-4 text-blue-300" />
+            <div className="badge bg-info/10 text-info border border-info/20">
+              <ShieldCheck className="h-4 w-4 text-info" />
               Creator deal protection system
             </div>
             <h1 className="text-4xl md:text-6xl font-black leading-[1.02] mt-5 max-w-3xl">
               Stop losing money to vague brand deals.
             </h1>
-            <p className="mt-5 text-slate-300 max-w-2xl text-lg md:text-xl">
+            <p className="mt-5 text-muted-foreground max-w-2xl text-lg md:text-xl">
               Creator Armour gives you a professional workflow for contracts, payout tracking, proof collection, and escalation so a deal does not fall apart the moment a brand goes silent.
             </p>
 
             <ul className="mt-6 space-y-3 max-w-2xl">
               {heroProofPoints.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-slate-100">
+                <li key={item} className="flex items-start gap-3 text-muted-foreground">
                   <Check className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
@@ -543,8 +543,8 @@ const MarketingHome = () => {
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
               {heroStats.map((stat) => (
                 <div key={stat.label} className="mesh-card rounded-2xl p-4">
-                  <p className="text-2xl font-black text-white">{stat.value}</p>
-                  <p className="mt-1 text-sm text-slate-300">{stat.label}</p>
+                  <p className="text-2xl font-black text-foreground">{stat.value}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -552,49 +552,49 @@ const MarketingHome = () => {
 
           <div className="relative z-10">
             <div className="mesh-card rounded-[2rem] p-5 md:p-6">
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
                   <p className="section-kicker">Deal Command Center</p>
-                  <h2 className="text-2xl font-bold text-white mt-2">Know what is at risk before it hurts revenue.</h2>
+                  <h2 className="text-2xl font-bold text-foreground mt-2">Know what is at risk before it hurts revenue.</h2>
                 </div>
-                <div className="badge bg-emerald-500/10 text-emerald-100 border border-emerald-300/20">
-                  <Lock className="h-4 w-4 text-emerald-300" />
+                <div className="badge bg-primary/10 text-primary border border-primary/20">
+                  <Lock className="h-4 w-4 text-primary" />
                   Proof locked
                 </div>
               </div>
 
               <div className="mt-5 grid gap-4">
-                <div className="rounded-2xl border border-white/10 bg-[var(--card-strong)]/80 p-4">
-                  <div className="flex items-center justify-between text-sm text-slate-300">
+                <div className="rounded-2xl border border-border bg-[var(--card-strong)]/80 p-4">
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
                     <span>Pending recovery</span>
-                    <span className="font-semibold text-amber-300">2 deals</span>
+                    <span className="font-semibold text-warning">2 deals</span>
                   </div>
-                  <p className="mt-2 text-3xl font-black text-white">₹7,30,000</p>
-                  <p className="mt-1 text-sm text-slate-400">One overdue invoice and one unsigned contract with missing usage terms.</p>
+                  <p className="mt-2 text-3xl font-black text-foreground">₹7,30,000</p>
+                  <p className="mt-1 text-sm text-muted-foreground">One overdue invoice and one unsigned contract with missing usage terms.</p>
                 </div>
 
                 <div className="grid sm:grid-cols-[0.95fr_1.05fr] gap-4">
                   <img
                     src="/mobile_team_and_cases.png"
                     alt="Creator Armour creator dashboard on mobile"
-                    className="rounded-[1.75rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full h-full object-cover border border-white/10"
+                    className="rounded-[1.75rem] shadow-[0_40px_120px_rgba(2,6,23,0.55)] w-full h-full object-cover border border-border"
                     loading="lazy"
                     data-aos="zoom-in"
                     style={{ animation: 'fadeIn 1.8s ease-out' }}
                   />
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                  <div className="rounded-2xl border border-border bg-secondary/[0.03] p-4 space-y-3">
                     {creatorWorkflow.map(({ step, title, description, icon: Icon }) => (
-                      <div key={step} className="rounded-2xl border border-white/8 bg-black/10 p-4">
+                      <div key={step} className="rounded-2xl border border-border/8 bg-black/10 p-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-200">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-info/15 text-info">
                             <Icon className="h-5 w-5" />
                           </div>
                           <div>
-                            <p className="text-xs font-black tracking-[0.22em] text-blue-200/80">{step}</p>
-                            <p className="font-semibold text-white">{title}</p>
+                            <p className="text-xs font-black tracking-[0.22em] text-info/80">{step}</p>
+                            <p className="font-semibold text-foreground">{title}</p>
                           </div>
                         </div>
-                        <p className="mt-3 text-sm text-slate-300">{description}</p>
+                        <p className="mt-3 text-sm text-muted-foreground">{description}</p>
                       </div>
                     ))}
                   </div>
@@ -606,25 +606,25 @@ const MarketingHome = () => {
 
         {/* SECTION 1B — How It Works */}
         <section className="py-10 md:py-14" data-aos="fade-up">
-          <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+          <div className="rounded-[2rem] border border-border/8 bg-secondary/[0.03] p-6 md:p-8">
             <div className="max-w-3xl">
               <p className="section-kicker">How it works</p>
-              <h2 className="mt-3 text-3xl md:text-4xl font-bold text-white">A cleaner path from incoming brief to paid deal.</h2>
-              <p className="mt-3 text-lg text-slate-300">This is the workflow Creator Armour is built for: collect the right facts early, protect the contract, and keep a usable proof trail if payment slips.</p>
+              <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">A cleaner path from incoming brief to paid deal.</h2>
+              <p className="mt-3 text-lg text-muted-foreground">This is the workflow Creator Armour is built for: collect the right facts early, protect the contract, and keep a usable proof trail if payment slips.</p>
             </div>
             <div className="mt-8 grid gap-4 lg:grid-cols-3">
               {processSteps.map(({ step, title, description, icon: Icon }) => (
                 <div key={step} className="mesh-card rounded-[1.5rem] p-5">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/15 text-blue-100">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-info/15 text-info">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs font-black tracking-[0.24em] text-blue-200/80">{step}</p>
-                      <h3 className="text-lg font-bold text-white">{title}</h3>
+                      <p className="text-xs font-black tracking-[0.24em] text-info/80">{step}</p>
+                      <h3 className="text-lg font-bold text-foreground">{title}</h3>
                     </div>
                   </div>
-                  <p className="mt-4 text-slate-300">{description}</p>
+                  <p className="mt-4 text-muted-foreground">{description}</p>
                 </div>
               ))}
             </div>
@@ -639,10 +639,10 @@ const MarketingHome = () => {
             <p className="text-gray-400 mt-3 max-w-2xl mx-auto text-lg">Creator Armour is strongest when used before the fight starts: clean briefs, clear contracts, proof trails, and escalation when payment slips.</p>
           </div>
           <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 items-stretch">
-            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-[1.5rem] shadow-lg border border-blue-500/30 hover:border-blue-300/50 transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between">
+            <Link to="/pricing-comparison" id="for-creators" className="card p-8 rounded-[1.5rem] shadow-lg border border-info/30 hover:border-info/50 transition-all duration-300 hover:scale-[1.01] flex flex-col justify-between">
               <div>
                 <p className="section-kicker">For creators and influencers</p>
-                <h3 className="text-3xl font-bold text-blue-200 mt-3 mb-4">Run brand deals like a protected business, not a DM thread.</h3>
+                <h3 className="text-3xl font-bold text-info mt-3 mb-4">Run brand deals like a protected business, not a DM thread.</h3>
                 <ul className="space-y-2 text-gray-300 text-lg">
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Brand deal contract review</li>
                   <li className="flex items-center"><Check className="h-5 w-5 text-green-400 mr-2" /> Payment recovery</li>
@@ -659,31 +659,31 @@ const MarketingHome = () => {
 
             <div className="card p-8 rounded-[1.5rem]">
               <p className="section-kicker">Why it feels different</p>
-              <h3 className="text-2xl font-bold text-white mt-3">The product is shaped around creator disputes, not generic CRM features.</h3>
+              <h3 className="text-2xl font-bold text-foreground mt-3">The product is shaped around creator disputes, not generic CRM features.</h3>
               <div className="mt-6 space-y-4">
                 {trustHighlights.map((item) => (
-                  <div key={item} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 flex items-start gap-3">
-                    <ShieldCheck className="h-5 w-5 text-blue-300 mt-0.5 flex-shrink-0" />
-                    <p className="text-slate-200">{item}</p>
+                  <div key={item} className="rounded-2xl border border-border bg-secondary/[0.03] p-4 flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-info mt-0.5 flex-shrink-0" />
+                    <p className="text-muted-foreground">{item}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-400/10 p-4">
-                <p className="text-sm font-semibold text-amber-200">Best fit</p>
-                <p className="mt-1 text-slate-200">Creators doing paid brand deals, barter-plus-cash campaigns, retainers, or UGC who need stronger terms and a recovery path.</p>
+              <div className="mt-6 rounded-2xl border border-warning/15 bg-warning/10 p-4">
+                <p className="text-sm font-semibold text-warning">Best fit</p>
+                <p className="mt-1 text-muted-foreground">Creators doing paid brand deals, barter-plus-cash campaigns, retainers, or UGC who need stronger terms and a recovery path.</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* SECTION 3 — Inside the Creator Vault */}
-        <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">
+        <section className="py-16 bg-card rounded-xl shadow-lg border border-border/5" data-aos="fade-up">
           <div className="grid md:grid-cols-2 gap-12 items-center p-8">
             <div className="relative flex justify-center">
               <img
                 src="/mobile_portal_mockup.png"
                 alt="Creator legal vault"
-                className="rounded-[2rem] shadow-[0_30px_90px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-white/10"
+                className="rounded-[2rem] shadow-[0_30px_90px_rgba(2,6,23,0.55)] w-full max-w-md object-cover border border-border"
                 loading="lazy"
               />
             </div>
@@ -694,7 +694,7 @@ const MarketingHome = () => {
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="card p-4 flex items-start gap-3">
-                  <FileText className="h-5 w-5 text-blue-400 mt-1" />
+                  <FileText className="h-5 w-5 text-info mt-1" />
                   <div>
                     <p className="font-semibold text-foreground">Contract Protection</p>
                     <p className="text-xs text-muted">Scan contracts to identify risky clauses before you sign.</p>
@@ -708,7 +708,7 @@ const MarketingHome = () => {
                   </div>
                 </div>
                 <div className="card p-4 flex items-start gap-3">
-                  <MessageSquare className="h-5 w-5 text-blue-500 mt-1" />
+                  <MessageSquare className="h-5 w-5 text-info mt-1" />
                   <div>
                     <p className="font-semibold text-foreground">Legal Assistance</p>
                     <p className="text-xs text-muted">Talk to verified legal advisors when disputes arise.</p>
@@ -734,12 +734,12 @@ const MarketingHome = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {dashboardProofCards.map((card) => (
-              <div key={card.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] overflow-hidden shadow-lg">
-                <img src={card.image} alt={card.alt} className="w-full rounded-t-[1.5rem] border-b border-white/10" loading="lazy" />
+              <div key={card.title} className="rounded-[1.5rem] border border-border bg-secondary/[0.03] overflow-hidden shadow-lg">
+                <img src={card.image} alt={card.alt} className="w-full rounded-t-[1.5rem] border-b border-border" loading="lazy" />
                 <div className="p-4">
-                  <p className="text-sm font-black uppercase tracking-[0.18em] text-blue-200/75">Dashboard proof</p>
-                  <h3 className="mt-2 text-lg font-bold text-white">{card.title}</h3>
-                  <p className="mt-2 text-sm text-slate-300">{card.description}</p>
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-info/75">Dashboard proof</p>
+                  <h3 className="mt-2 text-lg font-bold text-foreground">{card.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{card.description}</p>
                 </div>
               </div>
             ))}
@@ -788,23 +788,23 @@ const MarketingHome = () => {
         {/* SECTION 6 — Creator Plans Section */}
         <section className="py-16">
           <div className="mb-12" data-aos="fade-up">
-            <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+            <div className="rounded-[2rem] border border-border/8 bg-secondary/[0.03] p-6 md:p-8">
               <div className="max-w-3xl">
                 <p className="section-kicker">Why this beats DMs</p>
-                <h2 className="mt-3 text-3xl md:text-4xl font-bold text-white">Instagram DMs are where deals start. They should not be where they stay.</h2>
-                <p className="mt-3 text-lg text-slate-300">Creator Armour works best when it replaces vague chat-based deal management with clearer terms, better proof, and a recovery-ready workflow.</p>
+                <h2 className="mt-3 text-3xl md:text-4xl font-bold text-foreground">Instagram DMs are where deals start. They should not be where they stay.</h2>
+                <p className="mt-3 text-lg text-muted-foreground">Creator Armour works best when it replaces vague chat-based deal management with clearer terms, better proof, and a recovery-ready workflow.</p>
               </div>
-              <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-white/10">
-                <div className="grid grid-cols-[0.85fr_1fr_1fr] bg-white/[0.04] text-sm font-bold text-white">
+              <div className="mt-8 overflow-hidden rounded-[1.5rem] border border-border">
+                <div className="grid grid-cols-[0.85fr_1fr_1fr] bg-secondary/[0.04] text-sm font-bold text-foreground">
                   <div className="p-4">What matters</div>
-                  <div className="border-l border-white/10 p-4 text-slate-300">Instagram DMs</div>
-                  <div className="border-l border-white/10 p-4 text-blue-100">Creator Armour</div>
+                  <div className="border-l border-border p-4 text-muted-foreground">Instagram DMs</div>
+                  <div className="border-l border-border p-4 text-info">Creator Armour</div>
                 </div>
                 {comparisonRows.map((row, index) => (
-                  <div key={row.label} className={cn("grid grid-cols-[0.85fr_1fr_1fr]", index !== comparisonRows.length - 1 && "border-t border-white/10")}>
-                    <div className="bg-white/[0.02] p-4 font-semibold text-white">{row.label}</div>
-                    <div className="border-l border-white/10 p-4 text-slate-400">{row.dm}</div>
-                    <div className="border-l border-white/10 bg-blue-500/[0.07] p-4 text-slate-100">{row.armour}</div>
+                  <div key={row.label} className={cn("grid grid-cols-[0.85fr_1fr_1fr]", index !== comparisonRows.length - 1 && "border-t border-border")}>
+                    <div className="bg-secondary/[0.02] p-4 font-semibold text-foreground">{row.label}</div>
+                    <div className="border-l border-border p-4 text-muted-foreground">{row.dm}</div>
+                    <div className="border-l border-border bg-info/[0.07] p-4 text-muted-foreground">{row.armour}</div>
                   </div>
                 ))}
               </div>
@@ -819,16 +819,16 @@ const MarketingHome = () => {
 
           {/* Monthly / Yearly Toggle */}
           <div className="flex justify-center mb-8" data-aos="fade-up">
-            <div className="relative flex p-1 bg-card rounded-full border border-white/10">
+            <div className="relative flex p-1 bg-card rounded-full border border-border">
               <button type="button"
                 onClick={() => setIsYearly(false)}
-                className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", !isYearly ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}
+                className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", !isYearly ? "bg-info text-foreground" : "text-gray-400 hover:text-foreground")}
               >
                 Monthly
               </button>
               <button type="button"
                 onClick={() => setIsYearly(true)}
-                className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", isYearly ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white")}
+                className={cn("px-4 py-2 rounded-full text-sm font-semibold transition-colors", isYearly ? "bg-info text-foreground" : "text-gray-400 hover:text-foreground")}
               >
                 Yearly (Save 20%)
               </button>
@@ -838,13 +838,13 @@ const MarketingHome = () => {
           <div className="grid lg:grid-cols-3 gap-6">
             {Object.values(CREATOR_PLAN_DETAILS).map((plan, index) => (
               <div key={plan.name} className={cn("card p-6 rounded-xl flex flex-col", plan.isPopular && 'border-2 border-purple-500 shadow-2xl')} data-aos="fade-up" data-aos-delay={index * 80}>
-                {plan.isPopular && <div className="absolute -top-4 right-6 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold">⭐ MOST POPULAR</div>}
-                <div className="mb-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-200/80">Best when</p>
-                  <p className="mt-2 font-semibold text-white">{pricingUseCases[plan.name]?.heading ?? 'For creators who need more support'}</p>
-                  <p className="mt-1 text-sm text-slate-300">{pricingUseCases[plan.name]?.description ?? 'Use this when your brand deal workflow needs more structure and protection.'}</p>
+                {plan.isPopular && <div className="absolute -top-4 right-6 bg-info px-3 py-1 rounded-full text-xs font-bold">⭐ MOST POPULAR</div>}
+                <div className="mb-4 rounded-2xl border border-border bg-secondary/[0.03] p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-info/80">Best when</p>
+                  <p className="mt-2 font-semibold text-foreground">{pricingUseCases[plan.name]?.heading ?? 'For creators who need more support'}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{pricingUseCases[plan.name]?.description ?? 'Use this when your brand deal workflow needs more structure and protection.'}</p>
                 </div>
-                <h3 className="text-xl font-bold text-blue-300">{plan.name}</h3>
+                <h3 className="text-xl font-bold text-info">{plan.name}</h3>
                 <div className="mt-4">
                   <div className="text-4xl font-extrabold">{getPrice(parseInt(plan.price.replace('₹', '').replace('/mo', '').replace(',', '')))}<span className="text-gray-400 text-base">{getPriceSuffix()}</span></div>
                   <p className="text-gray-400 mt-2 text-base">{plan.tagline}</p>
@@ -861,7 +861,7 @@ const MarketingHome = () => {
                   <Link to={plan.link} onClick={() => trackMarketingCta(`pricing_card_${plan.name.toLowerCase()}`)} className={cn("w-full inline-flex justify-center py-3 rounded-lg font-semibold text-lg", plan.isPopular ? 'cta-primary' : 'cta-secondary')}>
                     Get Started
                   </Link>
-                  <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-blue-400 hover:text-blue-300 font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
+                  <Link to={`/plan/${plan.name.toLowerCase().replace(' ', '-')}`} className="text-info hover:text-info font-medium text-sm mt-2 block text-center">[See All Features ↓]</Link>
                 </div>
               </div>
             ))}
@@ -885,14 +885,14 @@ const MarketingHome = () => {
                   <div className="flex text-yellow-400">
                     <Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" /><Star className="h-5 w-5 fill-current" />
                   </div>
-                  <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-200">
+                  <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                     {study.timeline}
                   </span>
                 </div>
-                <p className="mt-5 text-2xl font-black text-white">{study.result}</p>
+                <p className="mt-5 text-2xl font-black text-foreground">{study.result}</p>
                 <p className="mt-3 text-gray-300 leading-relaxed">{study.summary}</p>
-                <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                  <div className="font-bold text-white">{study.creator}</div>
+                <div className="mt-5 rounded-2xl border border-border bg-secondary/[0.03] p-4">
+                  <div className="font-bold text-foreground">{study.creator}</div>
                   <div className="text-sm text-gray-400">{study.role} • {study.audience}</div>
                 </div>
               </div>
@@ -902,7 +902,7 @@ const MarketingHome = () => {
 
 
         {/* SECTION 10 — WhatsApp Legal Vault (New Highlight) */}
-        <section className="py-16 bg-card rounded-xl shadow-lg border border-white/5" data-aos="fade-up">
+        <section className="py-16 bg-card rounded-xl shadow-lg border border-border/5" data-aos="fade-up">
           <div className="grid md:grid-cols-2 gap-12 items-center p-8">
             <div className="space-y-6">
               <h2 className="text-4xl font-extrabold leading-tight">Your WhatsApp is Now a <span className="gradient-text">Legal Evidence Vault</span></h2>
@@ -925,7 +925,7 @@ const MarketingHome = () => {
               <img
                 src="/iPhone-12-PRO-localhost.png" // Placeholder for WhatsApp vault screenshot
                 alt="WhatsApp Legal Vault Preview"
-                className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-white/10"
+                className="rounded-xl shadow-2xl w-full max-w-md object-cover border border-border"
                 loading="lazy"
                 data-aos="zoom-in"
               />
@@ -935,18 +935,18 @@ const MarketingHome = () => {
 
         {/* SECTION 11 — Human Trust */}
         <section className="py-16" data-aos="fade-up">
-          <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] p-6 md:p-8">
+          <div className="rounded-[2rem] border border-border/8 bg-secondary/[0.03] p-6 md:p-8">
             <div className="max-w-3xl">
               <p className="section-kicker">Who this is built with</p>
-              <h2 className="mt-3 text-3xl font-bold text-white">Software handles the workflow. Real specialists support the hard parts.</h2>
-              <p className="mt-3 text-lg text-slate-300">Creator Armour is not positioned as generic creator SaaS. The trust model is a product workflow backed by legal and compliance specialists when the situation needs real judgment.</p>
+              <h2 className="mt-3 text-3xl font-bold text-foreground">Software handles the workflow. Real specialists support the hard parts.</h2>
+              <p className="mt-3 text-lg text-muted-foreground">Creator Armour is not positioned as generic creator SaaS. The trust model is a product workflow backed by legal and compliance specialists when the situation needs real judgment.</p>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {trustPeople.map((person) => (
                 <div key={person.name} className="mesh-card rounded-[1.5rem] p-5">
-                  <p className="text-lg font-bold text-white">{person.name}</p>
-                  <p className="mt-1 text-sm font-semibold text-blue-200">{person.role}</p>
-                  <p className="mt-3 text-slate-300">{person.description}</p>
+                  <p className="text-lg font-bold text-foreground">{person.name}</p>
+                  <p className="mt-1 text-sm font-semibold text-info">{person.role}</p>
+                  <p className="mt-3 text-muted-foreground">{person.description}</p>
                 </div>
               ))}
             </div>
@@ -966,11 +966,11 @@ const MarketingHome = () => {
       </main>
 
       {/* Footer (Enhanced) */}
-      <footer className="border-t border-white/5 mt-20 bg-card">
+      <footer className="border-t border-border/5 mt-20 bg-card">
         <div className="container mx-auto px-6 py-10 text-gray-400 text-sm">
 
           {/* Legal Disclaimer Section */}
-          <div className="mb-8 p-4 rounded-lg bg-red-900/10 border border-red-800/30 text-red-300">
+          <div className="mb-8 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
             <p className="font-bold mb-2 flex items-center">
               <AlertTriangle className="h-4 w-4 mr-2" /> Legal Disclaimer
             </p>
@@ -980,11 +980,11 @@ const MarketingHome = () => {
           </div>
 
           {/* Main Footer Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 border-t border-white/5 pt-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 border-t border-border/5 pt-8">
 
             {/* Column 1 & 2 (Span 2 on desktop): Company Info & Newsletter */}
             <div className="md:col-span-2 space-y-6">
-              <div className="font-bold text-white text-xl">Creator Armour</div>
+              <div className="font-bold text-foreground text-xl">Creator Armour</div>
               <p className="text-gray-500 text-sm max-w-xs">
                 India's first subscription-based legal and CA team for content creators and influencers. Expert contract review, payment recovery, and tax compliance.
               </p>
@@ -995,7 +995,7 @@ const MarketingHome = () => {
                   href="https://x.com/CreatorArmour"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-foreground transition-colors"
                   aria-label="Follow us on X (Twitter)"
                 >
                   <Twitter className="w-5 h-5" />
@@ -1004,7 +1004,7 @@ const MarketingHome = () => {
                   href="https://www.linkedin.com/company/creatorarmour"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-foreground transition-colors"
                   aria-label="Follow us on LinkedIn"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1015,7 +1015,7 @@ const MarketingHome = () => {
                   href="https://www.instagram.com/creatorarmour"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-foreground transition-colors"
                   aria-label="Follow us on Instagram"
                 >
                   <Instagram className="w-5 h-5" />
@@ -1025,46 +1025,46 @@ const MarketingHome = () => {
 
             {/* Column 3: Services */}
             <div>
-              <div className="font-semibold text-white">Services</div>
-              <div className="mt-2"><Link to="/pricing-comparison" className="hover:text-white">Pricing</Link></div>
-              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Creator Legal</a></div>
-              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Tax & Compliance</a></div>
-              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Payment Recovery</a></div>
-              <div className="mt-1"><a href="#for-creators" className="hover:text-white">Contract Review</a></div>
+              <div className="font-semibold text-foreground">Services</div>
+              <div className="mt-2"><Link to="/pricing-comparison" className="hover:text-foreground">Pricing</Link></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-foreground">Creator Legal</a></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-foreground">Tax & Compliance</a></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-foreground">Payment Recovery</a></div>
+              <div className="mt-1"><a href="#for-creators" className="hover:text-foreground">Contract Review</a></div>
             </div>
 
             {/* Column 4: Company */}
             <div>
-              <div className="font-semibold text-white">Company</div>
-              <div className="mt-2"><a href="#testimonials" className="hover:text-white">Clients & Trust</a></div>
-              <div className="mt-1"><Link to="/blog" className="hover:text-white">Blog</Link></div>
-              <div className="mt-1"><Link to="/sitemap" className="hover:text-white">Sitemap</Link></div>
-              <div className="mt-1"><Link to="/login" className="hover:text-white">Client Login</Link></div>
+              <div className="font-semibold text-foreground">Company</div>
+              <div className="mt-2"><a href="#testimonials" className="hover:text-foreground">Clients & Trust</a></div>
+              <div className="mt-1"><Link to="/blog" className="hover:text-foreground">Blog</Link></div>
+              <div className="mt-1"><Link to="/sitemap" className="hover:text-foreground">Sitemap</Link></div>
+              <div className="mt-1"><Link to="/login" className="hover:text-foreground">Client Login</Link></div>
             </div>
 
             {/* Column 5: Legal & Support */}
             <div>
-              <div className="font-semibold text-white">Legal & Support</div>
-              <div className="mt-2"><Link to="/privacy-policy" className="hover:text-white">Privacy Policy</Link></div>
-              <div className="mt-1"><Link to="/terms-of-service" className="hover:text-white">Terms of Service</Link></div>
-              <div className="mt-1"><Link to="/refund-policy" className="hover:text-white">Refund Policy</Link></div>
+              <div className="font-semibold text-foreground">Legal & Support</div>
+              <div className="mt-2"><Link to="/privacy-policy" className="hover:text-foreground">Privacy Policy</Link></div>
+              <div className="mt-1"><Link to="/terms-of-service" className="hover:text-foreground">Terms of Service</Link></div>
+              <div className="mt-1"><Link to="/refund-policy" className="hover:text-foreground">Refund Policy</Link></div>
               <div className="mt-1 flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-400" />
-                <a href="tel:+919205376316" className="hover:text-white">+91 92053 76316</a>
+                <Phone className="h-4 w-4 text-info" />
+                <a href="tel:+919205376316" className="hover:text-foreground">+91 92053 76316</a>
               </div>
               <div className="mt-1 flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-blue-400" />
-                <a href="mailto:support@creatorarmour.com" className="hover:text-white">Email Support</a>
+                <MessageSquare className="h-4 w-4 text-info" />
+                <a href="mailto:support@creatorarmour.com" className="hover:text-foreground">Email Support</a>
               </div>
             </div>
           </div>
 
           {/* Security & Compliance Logos (Trust Seals) */}
-          <div className="mt-10 text-center border-t border-white/5 pt-6">
+          <div className="mt-10 text-center border-t border-border/5 pt-6">
             <p className="text-gray-500 mb-4 font-semibold">Security & Compliance:</p>
             <div className="flex justify-center items-center gap-8 flex-wrap">
               <span className="flex items-center gap-2 text-gray-300">
-                <Lock className="h-5 w-5 text-blue-500" /> ISO 27001 Certified
+                <Lock className="h-5 w-5 text-info" /> ISO 27001 Certified
               </span>
               <span className="flex items-center gap-2 text-gray-300">
                 <ShieldCheck className="h-5 w-5 text-green-400" /> SSL Secured
@@ -1073,13 +1073,13 @@ const MarketingHome = () => {
                 <Award className="h-5 w-5 text-yellow-400" /> Startup India Recognized
               </span>
               <span className="flex items-center gap-2 text-gray-300">
-                <Users className="h-5 w-5 text-blue-400" /> Supabase Security
+                <Users className="h-5 w-5 text-info" /> Supabase Security
               </span>
             </div>
           </div>
 
           {/* Copyright */}
-          <div className="mt-8 text-gray-500 text-center border-t border-white/5 pt-4">
+          <div className="mt-8 text-gray-500 text-center border-t border-border/5 pt-4">
             © 2025 Creator Armour. All rights reserved.
           </div>
         </div>
@@ -1097,8 +1097,8 @@ const MarketingHome = () => {
 
       {/* Floating WhatsApp CTA (bottom-right) */}
       <a href="https://wa.me/919205376316?text=Hi%20Creator Armour,%20I%20need%20help" target="_blank" rel="noopener" className="fixed bottom-6 right-6 bg-green-500 p-3 rounded-full shadow-xl z-50 hidden md:flex items-center gap-2 transition-all duration-300 hover:scale-105">
-        <MessageSquare className="h-6 w-6 text-white" />
-        <span className="text-white font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
+        <MessageSquare className="h-6 w-6 text-foreground" />
+        <span className="text-foreground font-semibold hidden sm:inline">Chat on WhatsApp Now</span>
       </a>
     </div>
   );

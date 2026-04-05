@@ -119,7 +119,7 @@ const BrandDirectory = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Search className="w-7 h-7 text-blue-500" />
+          <Search className="w-7 h-7 text-info" />
           Brand Directory
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -219,16 +219,16 @@ const BrandDirectory = () => {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="rounded-2xl border border-slate-200 bg-white p-5 animate-pulse">
+            <div key={i} className="rounded-2xl border border-border bg-card p-5 animate-pulse">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-slate-200" />
+                <div className="w-12 h-12 rounded-xl bg-background" />
                 <div className="flex-1">
-                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  <div className="h-4 bg-background rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-background rounded w-1/2" />
                 </div>
               </div>
-              <div className="h-3 bg-slate-100 rounded w-full mb-2" />
-              <div className="h-3 bg-slate-100 rounded w-2/3" />
+              <div className="h-3 bg-background rounded w-full mb-2" />
+              <div className="h-3 bg-background rounded w-2/3" />
             </div>
           ))}
         </div>
@@ -252,7 +252,7 @@ const BrandDirectory = () => {
               >
                 <Card className={cn(
                   "bg-gradient-to-br from-gray-900/50 to-gray-900/30 border rounded-xl p-5 hover:border-gray-700 transition-all backdrop-blur-sm",
-                  paymentStatus === 'poor' && "border-red-500/30",
+                  paymentStatus === 'poor' && "border-destructive/30",
                   paymentStatus === 'warning' && "border-yellow-500/30",
                   paymentStatus === 'good' && "border-green-500/30"
                 )}>
@@ -269,7 +269,7 @@ const BrandDirectory = () => {
                             loading="lazy"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-foreground font-bold text-lg flex-shrink-0">
                             {brand.name.charAt(0)}
                           </div>
                         )}
@@ -279,7 +279,7 @@ const BrandDirectory = () => {
                               {brand.name}
                             </h3>
                             {brand.verified && (
-                              <Badge variant="default" className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">
+                              <Badge variant="default" className="bg-info/20 text-info border-info/30 text-xs">
                                 Verified
                               </Badge>
                             )}
@@ -366,10 +366,10 @@ const BrandDirectory = () => {
 
                     {/* Active Opportunities */}
                     {(brand.active_opportunities_count || 0) > 0 && (
-                      <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                      <div className="mb-4 p-3 bg-info/10 border border-info/20 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
-                          <TrendingUp className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm font-semibold text-blue-400">
+                          <TrendingUp className="w-4 h-4 text-info" />
+                          <span className="text-sm font-semibold text-info">
                             {brand.active_opportunities_count} Active Opportunity{(brand.active_opportunities_count || 0) !== 1 ? 'ies' : ''}
                           </span>
                         </div>
@@ -383,7 +383,7 @@ const BrandDirectory = () => {
                     <div className="flex gap-2">
                       <Button
                         variant="default"
-                        className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+                        className="flex-1 bg-info hover:bg-info text-foreground"
                         onClick={() => navigate(`/brands/${brand.id}`)}
                       >
                         View Details
@@ -391,7 +391,7 @@ const BrandDirectory = () => {
                       {(brand.active_opportunities_count || 0) > 0 && (
                         <Button
                           variant="outline"
-                          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                          className="border-info/30 text-info hover:bg-info/10"
                           onClick={() => navigate(`/brands/${brand.id}/opportunities`)}
                         >
                           Opportunities

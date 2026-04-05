@@ -131,15 +131,15 @@ const DealComparison: React.FC<DealComparisonProps> = ({
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className={cn(
             'text-base font-bold tracking-tight',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
             ⚖️ Deal Comparison
           </h3>
@@ -150,11 +150,11 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                 'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
                 showSelector
                   ? isDark
-                    ? 'bg-blue-600/30 text-blue-300'
-                    : 'bg-blue-100 text-blue-700'
+                    ? 'bg-info/30 text-info'
+                    : 'bg-info text-info'
                   : isDark
-                  ? 'bg-white/10 text-white/70 hover:bg-white/15'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-secondary/50 text-foreground/70 hover:bg-secondary/15'
+                  : 'bg-background text-muted-foreground hover:bg-background'
               )}
             >
               <span>Select Deals</span>
@@ -169,7 +169,7 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                   exit={{ opacity: 0, y: -8 }}
                   className={cn(
                     'absolute right-0 top-full mt-2 rounded-lg border shadow-lg backdrop-blur-sm z-10 min-w-[180px]',
-                    isDark ? 'bg-slate-900/95 border-white/10' : 'bg-white border-slate-200'
+                    isDark ? 'bg-background/95 border-border' : 'bg-card border-border'
                   )}
                 >
                   {displayDeals.map((deal) => (
@@ -188,11 +188,11 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                         'w-full px-4 py-2.5 text-xs font-semibold text-left transition-colors flex items-center justify-between first:rounded-t-lg last:rounded-b-lg',
                         selectedDeals.includes(deal.id)
                           ? isDark
-                            ? 'bg-blue-600/30 text-blue-300'
-                            : 'bg-blue-50 text-blue-700'
+                            ? 'bg-info/30 text-info'
+                            : 'bg-info text-info'
                           : isDark
-                          ? 'text-white/70 hover:bg-white/10'
-                          : 'text-slate-700 hover:bg-slate-50'
+                          ? 'text-foreground/70 hover:bg-secondary/50'
+                          : 'text-muted-foreground hover:bg-background'
                       )}
                     >
                       <span>{deal.brandName}</span>
@@ -224,18 +224,18 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                         'border-b',
                         isDark
                           ? isHighlightRow
-                            ? 'border-white/5 bg-white/2'
-                            : 'border-white/5'
+                            ? 'border-border/5 bg-secondary/2'
+                            : 'border-border/5'
                           : isHighlightRow
-                          ? 'border-slate-200 bg-slate-50'
-                          : 'border-slate-200'
+                          ? 'border-border bg-background'
+                          : 'border-border'
                       )}
                     >
                       <td className={cn(
                         'py-3 px-4 font-semibold text-sm sticky left-0 w-36 min-w-[140px] z-10',
                         isDark
-                          ? 'bg-white/5 text-white'
-                          : 'bg-slate-100 text-slate-900'
+                          ? 'bg-card text-foreground'
+                          : 'bg-background text-muted-foreground'
                       )}>
                         {field.label}
                       </td>
@@ -244,7 +244,7 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                           key={deal.id}
                           className={cn(
                             'py-3 px-4 text-sm font-medium',
-                            isDark ? 'text-white/80' : 'text-slate-700'
+                            isDark ? 'text-foreground/80' : 'text-muted-foreground'
                           )}
                         >
                           {field.type === 'list' ? (
@@ -256,8 +256,8 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                                   className={cn(
                                     'text-xs',
                                     isDark
-                                      ? 'bg-white/10 text-white/70 border-white/20'
-                                      : 'bg-slate-100 text-slate-700 border-slate-200'
+                                      ? 'bg-secondary/50 text-foreground/70 border-border'
+                                      : 'bg-background text-muted-foreground border-border'
                                   )}
                                 >
                                   {item}
@@ -270,9 +270,9 @@ const DealComparison: React.FC<DealComparisonProps> = ({
                               className={cn(
                                 'text-xs',
                                 ((deal as any)[field.key] as string).toLowerCase() === 'completed'
-                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                  ? 'bg-primary/20 text-primary border-primary/30'
                                   : ((deal as any)[field.key] as string).toLowerCase() === 'active'
-                                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                  ? 'bg-info/20 text-info border-info/30'
                                   : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
                               )}
                             >
@@ -295,7 +295,7 @@ const DealComparison: React.FC<DealComparisonProps> = ({
             animate={{ opacity: 1 }}
             className={cn(
               'text-center py-8',
-              isDark ? 'text-white/60' : 'text-slate-600'
+              isDark ? 'text-foreground/60' : 'text-muted-foreground'
             )}
           >
             <p className="text-sm">Select 2-3 deals to compare</p>

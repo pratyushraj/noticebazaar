@@ -166,8 +166,8 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
           
           <CardHeader className="relative z-10 pb-3">
             <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
-                <TrendingUp className="h-5 w-5 text-white/80" />
+              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-card backdrop-blur-sm">
+                <TrendingUp className="h-5 w-5 text-foreground/80" />
               </div>
               <CardTitle>Active Campaigns</CardTitle>
             </div>
@@ -182,15 +182,15 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
                   e.stopPropagation();
                   onAddCampaign?.();
                 }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                className="px-4 py-2 bg-info hover:bg-info text-foreground text-sm font-medium"
               >
                 Start Your Campaign
               </Button>
             </div>
           ) : (
             <CardContent className="relative z-10">
-              <div className="text-2xl font-semibold text-white tracking-tight">{activeCampaigns} running</div>
-              <div className="text-[13px] text-white/60">
+              <div className="text-2xl font-semibold text-foreground tracking-tight">{activeCampaigns} running</div>
+              <div className="text-[13px] text-foreground/60">
                 {deliverablesDue} deliverable{deliverablesDue !== 1 ? 's' : ''} due
                 {campaignWithDeliverable && (
                   <span className="text-yellow-500"> in {Math.ceil((new Date(campaignWithDeliverable.payment_expected_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days</span>
@@ -201,7 +201,7 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
                 <div className="mt-3 p-3 bg-muted/50 rounded-lg border border-yellow-500/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xs text-white font-semibold">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-xs text-foreground font-semibold">
                         {getBrandInitials(campaignWithDeliverable.brand_name)}
                       </div>
                       <div>
@@ -218,8 +218,8 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
             </CardContent>
           )}
 
-          <div className="relative z-10 px-4 pb-4 pt-3 mt-0 border-t border-white/10">
-            <div className="flex items-center gap-1.5 text-sm text-blue-500 group-hover:text-blue-400 transition-colors cursor-pointer">
+          <div className="relative z-10 px-4 pb-4 pt-3 mt-0 border-t border-border">
+            <div className="flex items-center gap-1.5 text-sm text-info group-hover:text-info transition-colors cursor-pointer">
               <span className="whitespace-nowrap">Manage</span>
               <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -243,20 +243,20 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
           
           <CardHeader className="relative z-10 pb-3">
             <div className="flex items-center gap-2">
-              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5">
-                <CheckCircle className="h-5 w-5 text-white/80" />
+              <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-card">
+                <CheckCircle className="h-5 w-5 text-foreground/80" />
               </div>
               <CardTitle>Completed</CardTitle>
             </div>
           </CardHeader>
 
           <CardContent className="relative z-10 mb-4">
-            <div className="text-3xl font-bold text-white tabular-nums">{completed} this month</div>
+            <div className="text-3xl font-bold text-foreground tabular-nums">{completed} this month</div>
             {completedChange !== 0 && (
               <div className="flex items-center gap-2 text-sm">
                 <div className={cn(
                   "flex items-center text-green-500",
-                  completedChange < 0 && "text-red-500"
+                  completedChange < 0 && "text-destructive"
                 )}>
                   <TrendingUp className={cn(
                     "w-4 h-4 mr-1",
@@ -268,10 +268,10 @@ const MoneyOverview: React.FC<MoneyOverviewProps> = ({
                 </div>
               </div>
             )}
-            <div className="text-sm text-white/60">{onTimeRate}% on time delivery</div>
+            <div className="text-sm text-foreground/60">{onTimeRate}% on time delivery</div>
           </CardContent>
 
-          <div className="relative z-10 pt-3 border-t border-white/10">
+          <div className="relative z-10 pt-3 border-t border-border">
             <button type="button" className="w-full px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-medium rounded-lg transition-all flex items-center justify-between group-hover:border-green-500/50">
               <span>View History</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

@@ -7,9 +7,9 @@ interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const glassVariants = {
-  purple: 'bg-purple-500/20 text-purple-200 border border-purple-400/30 backdrop-blur-xl',
+  purple: 'bg-secondary/20 text-secondary border border-purple-400/30 backdrop-blur-xl',
   green: 'bg-green-500/20 text-green-300 border border-green-500/40 backdrop-blur-xl',
-  default: 'bg-white/10 text-white border border-white/20 backdrop-blur-xl',
+  default: 'bg-secondary/50 text-foreground border border-border backdrop-blur-xl',
 };
 
 export const GlassButton = ({

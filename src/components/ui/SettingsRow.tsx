@@ -36,14 +36,14 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
         spacing.cardPadding.tertiary,
         animations.cardPress,
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
-        onClick && "hover:bg-white/5",
+        onClick && "hover:bg-card",
         className
       )}
       aria-label={onClick ? label : undefined}
       role={onClick ? 'button' : undefined}
     >
       {Icon && (
-        <Icon className={cn(iconSizes.md, "text-white/70 flex-shrink-0")} />
+        <Icon className={cn(iconSizes.md, "text-foreground/70 flex-shrink-0")} />
       )}
       
       <div className="flex-1 min-w-0 text-left">
@@ -58,7 +58,7 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
       </div>
       
       {rightAction || (onClick && (
-        <ChevronRight className={cn(iconSizes.sm, "text-white/30 flex-shrink-0")} />
+        <ChevronRight className={cn(iconSizes.sm, "text-foreground/30 flex-shrink-0")} />
       ))}
     </Component>
   );

@@ -46,7 +46,7 @@ const SearchBar: React.FC<{
   setSearchQuery: (query: string) => void;
 }> = ({ searchQuery, setSearchQuery }) => {
   return (
-    <div className="sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border backdrop-blur-xl border-b border-slate-200 border-sidebar-border z-10 px-4 pt-4 pb-3">
+    <div className="sticky top-0 bg-background/95 backdrop-blur-xl border-b border-border backdrop-blur-xl border-b border-border border-sidebar-border z-10 px-4 pt-4 pb-3">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
@@ -75,7 +75,7 @@ const UserCard: React.FC<{
             src={avatarUrl || DEFAULT_AVATAR_URL}
             alt={name}
           />
-          <AvatarFallback className="bg-blue-500/20 text-blue-600 dark:text-blue-400 text-sm font-medium">
+          <AvatarFallback className="bg-info/20 text-info dark:text-info text-sm font-medium">
             {getInitials(name.split(' ')[0], name.split(' ')[1])}
           </AvatarFallback>
         </Avatar>
@@ -135,7 +135,7 @@ const SidebarItem: React.FC<{
 
       {/* PRO Badge */}
       {showProBadge && (
-        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-500/20 dark:border-blue-500/30 rounded-md text-blue-600 dark:text-blue-400 flex-shrink-0">
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-info/20 dark:border-info/30 rounded-md text-info dark:text-info flex-shrink-0">
           PRO
         </span>
       )}

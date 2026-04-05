@@ -356,11 +356,11 @@ const RateCalculator = () => {
         canonicalUrl="https://creatorarmour.com/rate-calculator"
       />
       {/* Header */}
-      <div className="mb-6 pb-4 border-b border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+      <div className="mb-6 pb-4 border-b border-border/5 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-              <Calculator className="w-7 h-7 text-emerald-500" />
+              <Calculator className="w-7 h-7 text-primary" />
               Rate Calculator
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -381,9 +381,9 @@ const RateCalculator = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Section */}
-        <Card className="bg-gradient-to-b from-white/5 to-white/[0.02] border border-white/5 shadow-[inset_0_0_25px_rgba(255,255,255,0.02),0_6px_28px_rgba(0,0,0,0.4)]">
+        <Card className="bg-gradient-to-b from-white/5 to-white/[0.02] border border-border/5 shadow-[inset_0_0_25px_rgba(255,255,255,0.02),0_6px_28px_rgba(0,0,0,0.4)]">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-white/90 tracking-wide">Your Metrics</CardTitle>
+            <CardTitle className="text-lg font-semibold text-foreground/90 tracking-wide">Your Metrics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Followers */}
@@ -417,7 +417,7 @@ const RateCalculator = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-card" />
 
             {/* Engagement Rate */}
             <div>
@@ -463,7 +463,7 @@ const RateCalculator = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-card" />
 
             {/* Platform */}
             <div>
@@ -491,7 +491,7 @@ const RateCalculator = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-card" />
 
             {/* Content Type */}
             <div>
@@ -519,7 +519,7 @@ const RateCalculator = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-card" />
 
             {/* Category */}
             <div>
@@ -559,7 +559,7 @@ const RateCalculator = () => {
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-white/5" />
+            <div className="h-px bg-card" />
 
             {/* Options */}
             <div className="space-y-3">
@@ -595,7 +595,7 @@ const RateCalculator = () => {
         {/* Results Section */}
         <div className="space-y-6">
           {/* Divider above Recommended Rate */}
-          <div className="h-px bg-white/10" />
+          <div className="h-px bg-secondary/50" />
           
           {/* Total Rate Card */}
           <motion.div
@@ -608,20 +608,20 @@ const RateCalculator = () => {
             <motion.div
               animate={isRatePulsing ? { opacity: [0.10, 0.20, 0.10] } : { opacity: 0.10 }}
               transition={{ duration: 0.25 }}
-              className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,171,0.10),transparent)] blur-2xl -z-10"
+              className="absolute inset-0 bg-background blur-2xl -z-10"
             />
             
-            <Card className="bg-gradient-to-br from-emerald-900/40 to-emerald-950/40 border border-white/5 relative overflow-hidden">
+            <Card className="bg-gradient-to-br from-emerald-900/40 to-emerald-950/40 border border-border/5 relative overflow-hidden">
               <CardContent className="p-6">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-2">Recommended Rate</p>
                   <motion.div
                     animate={isRatePulsing ? { scale: [1, 1.04, 1] } : { scale: 1 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
-                    className="text-5xl font-bold text-emerald-400 mb-3 tabular-nums relative"
+                    className="text-5xl font-bold text-primary mb-3 tabular-nums relative"
                   >
                     {/* Subtle glow behind the number */}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,255,171,0.15),transparent)] blur-xl -z-10" />
+                    <div className="absolute inset-0 bg-background blur-xl -z-10" />
                     {currencySymbols[currency]}{getDisplayRate().toLocaleString('en-IN')}
                   </motion.div>
                   
@@ -633,7 +633,7 @@ const RateCalculator = () => {
                   {/* Currency & Rounding Selectors */}
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <Select value={currency} onValueChange={(v) => setCurrency(v as Currency)}>
-                      <SelectTrigger className="w-24 h-8 text-xs border-white/10 bg-white/5">
+                      <SelectTrigger className="w-24 h-8 text-xs border-border bg-card">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -645,7 +645,7 @@ const RateCalculator = () => {
                     </Select>
                     
                     <Select value={rounding} onValueChange={(v) => setRounding(v as RoundingPreference)}>
-                      <SelectTrigger className="w-32 h-8 text-xs border-white/10 bg-white/5">
+                      <SelectTrigger className="w-32 h-8 text-xs border-border bg-card">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -661,7 +661,7 @@ const RateCalculator = () => {
                       variant="outline"
                       size="sm"
                       onClick={handleCopyRate}
-                      className="border-white/10 text-emerald-400 hover:bg-emerald-500/10 shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
+                      className="border-border text-primary hover:bg-primary/10 shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
                     >
                       <Copy className="w-4 h-4 mr-2" />
                       Copy
@@ -671,7 +671,7 @@ const RateCalculator = () => {
                         variant="outline"
                         size="sm"
                         onClick={handleNativeShare}
-                        className="border-white/10 text-emerald-400 hover:bg-emerald-500/10 shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
+                        className="border-border text-primary hover:bg-primary/10 shadow-[0_2px_10px_rgba(0,0,0,0.4)]"
                       >
                         <Share2 className="w-4 h-4 mr-2" />
                         Share
@@ -691,7 +691,7 @@ const RateCalculator = () => {
                               handleCopyRate();
                               setShareSheetOpen(false);
                             }}
-                            className="w-full justify-start border-white/10"
+                            className="w-full justify-start border-border"
                           >
                             <Copy className="w-4 h-4 mr-2" />
                             Copy Rate
@@ -702,7 +702,7 @@ const RateCalculator = () => {
                               handleCopyBreakdown();
                               setShareSheetOpen(false);
                             }}
-                            className="w-full justify-start border-white/10"
+                            className="w-full justify-start border-border"
                           >
                             <FileText className="w-4 h-4 mr-2" />
                             Copy Breakdown
@@ -713,7 +713,7 @@ const RateCalculator = () => {
                               handleDownloadReport();
                               setShareSheetOpen(false);
                             }}
-                            className="w-full justify-start border-white/10"
+                            className="w-full justify-start border-border"
                           >
                             <Download className="w-4 h-4 mr-2" />
                             Download PDF
@@ -724,7 +724,7 @@ const RateCalculator = () => {
                               handleShareWhatsApp();
                               setShareSheetOpen(false);
                             }}
-                            className="w-full justify-start border-white/10"
+                            className="w-full justify-start border-border"
                           >
                             <MessageCircle className="w-4 h-4 mr-2" />
                             Share to WhatsApp
@@ -759,10 +759,10 @@ const RateCalculator = () => {
           </motion.div>
 
           {/* Breakdown */}
-          <Card className="bg-card border border-white/5">
+          <Card className="bg-card border border-border/5">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-white/90 tracking-wide flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+              <CardTitle className="text-lg font-semibold text-foreground/90 tracking-wide flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-info" />
                 Rate Breakdown
               </CardTitle>
             </CardHeader>
@@ -814,13 +814,13 @@ const RateCalculator = () => {
           </Card>
 
           {/* Market Comparison */}
-          <Card className="bg-card border border-white/5 relative overflow-hidden shadow-[0_0_25px_rgba(139,92,246,0.15)]">
+          <Card className="bg-card border border-border/5 relative overflow-hidden shadow-[0_0_25px_rgba(139,92,246,0.15)]">
             {/* Purple glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.15),transparent)] blur-2xl pointer-events-none" />
+            <div className="absolute inset-0 bg-background blur-2xl pointer-events-none" />
             
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-white/90 tracking-wide flex items-center gap-2 relative z-10">
-                <Target className="w-5 h-5 text-purple-500" />
+              <CardTitle className="text-lg font-semibold text-foreground/90 tracking-wide flex items-center gap-2 relative z-10">
+                <Target className="w-5 h-5 text-secondary" />
                 Market Comparison
               </CardTitle>
             </CardHeader>
@@ -843,10 +843,10 @@ const RateCalculator = () => {
                   {currencySymbols[currency]}{Math.round(getDisplayRate() * 1.5).toLocaleString('en-IN')}
                 </span>
               </div>
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div className="p-3 bg-info/10 border border-info/20 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-400">
+                  <Info className="w-4 h-4 text-info shrink-0 mt-0.5" />
+                  <p className="text-xs text-info">
                     Your rate is {getDisplayRate() >= getDisplayRate() * 0.85 ? 'above' : 'below'} industry average. 
                     Consider negotiating based on your unique value proposition.
                   </p>

@@ -54,7 +54,7 @@ export const ListItem: React.FC<ListItemProps> = ({
         <div 
           className={cn(
             "w-[22px] h-[22px] flex items-center justify-center rounded-full flex-shrink-0",
-            iconColor ? `bg-[${iconColor}]26` : "bg-white/5"
+            iconColor ? `bg-[${iconColor}]26` : "bg-card"
           )}
           style={iconColor ? { backgroundColor: `${iconColor}26` } : undefined}
         >
@@ -66,7 +66,7 @@ export const ListItem: React.FC<ListItemProps> = ({
       )}
       
       <div className="flex-1 min-w-0 text-left">
-        <div className={cn(typography.body, isActive ? "text-white" : "text-white/90")}>
+        <div className={cn(typography.body, isActive ? "text-foreground" : "text-foreground/90")}>
           {title}
         </div>
         {subtitle && (
@@ -77,7 +77,7 @@ export const ListItem: React.FC<ListItemProps> = ({
       </div>
       
       {badge && (
-        <div className="flex-shrink-0 px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-semibold">
+        <div className="flex-shrink-0 px-2 py-1 rounded-full bg-destructive/20 text-destructive text-xs font-semibold">
           {badge}
         </div>
       )}
@@ -86,7 +86,7 @@ export const ListItem: React.FC<ListItemProps> = ({
         <ChevronRight className={cn(
           iconSizes.sm,
           "flex-shrink-0",
-          isActive ? "text-white/60" : "text-white/30"
+          isActive ? "text-foreground/60" : "text-foreground/30"
         )} />
       ))}
     </Component>

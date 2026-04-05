@@ -213,45 +213,45 @@ const Login = () => {
       }}
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]" />
       </div>
 
       <div
-        className="w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl border border-slate-800 bg-slate-900/50 relative z-10"
+        className="w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl border border-border bg-background/50 relative z-10"
         style={{ backdropFilter: 'blur(40px)' }}
       >
         {/* Branding */}
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
-            <ShieldCheck className="h-5 w-5 text-white" />
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
+            <ShieldCheck className="h-5 w-5 text-foreground" />
           </div>
-          <h1 className="text-xl font-black tracking-tight text-white">Creator Armour</h1>
+          <h1 className="text-xl font-black tracking-tight text-foreground">Creator Armour</h1>
         </div>
 
         {/* Title and Subtitle */}
         <div className="mb-10">
-          <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Sign In</h2>
-          <p className="text-slate-400 text-[15px] font-medium leading-relaxed">Sign in to see your brand offers and active deals.</p>
+          <h2 className="text-4xl font-black text-foreground mb-3 tracking-tight">Sign In</h2>
+          <p className="text-muted-foreground text-[15px] font-medium leading-relaxed">Sign in to see your brand offers and active deals.</p>
         </div>
 
         {/* Loading: wait for session (with timeout so user isn't stuck) */}
         {loading && !loadingTimedOut && !session && (
           <div className="mb-6 flex flex-col items-center justify-center py-10 gap-4">
-            <Loader2 className="h-10 w-10 animate-spin text-emerald-500" aria-hidden />
-            <p className="text-slate-400 text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
+            <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden />
+            <p className="text-muted-foreground text-sm font-bold tracking-widest uppercase">Checking your sign-in...</p>
           </div>
         )}
 
         {/* Already signed in */}
         {session && (
           <div className="mb-6 space-y-4">
-            <p className="text-slate-400 text-sm text-center font-medium">
+            <p className="text-muted-foreground text-sm text-center font-medium">
               {loading ? 'Authenticating…' : 'Signed in. Opening your deals…'}
             </p>
             <Button
               onClick={() => navigate(getDashboardPathForRole(profile?.role, profile?.onboarding_complete), { replace: true })}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
+              className="w-full bg-primary hover:bg-primary text-foreground font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs"
             >
               Continue
             </Button>
@@ -260,7 +260,7 @@ const Login = () => {
 
         {/* Timed out */}
         {loading && loadingTimedOut && !session && (
-          <p className="text-white/40 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
+          <p className="text-foreground/40 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
         )}
 
         {/* Primary: Email/Password Login */}
@@ -268,7 +268,7 @@ const Login = () => {
           <div className="mb-8">
             <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
+                <Label htmlFor="email" className="text-muted-foreground text-[11px] font-black uppercase tracking-widest ml-1">
                   Email
                 </Label>
                 <Input
@@ -277,20 +277,20 @@ const Login = () => {
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl focus:border-emerald-500/50 focus:ring-emerald-500/20 px-5 transition-all"
+                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-emerald-500/20 px-5 transition-all"
                   required
                   autoComplete="email"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                  <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
+                  <Label htmlFor="password" className="text-muted-foreground text-[11px] font-black uppercase tracking-widest">
                     Password
                   </Label>
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[11px] font-black text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors"
+                    className="text-[11px] font-black text-primary uppercase tracking-widest hover:text-primary transition-colors"
                   >
                     Forgot?
                   </button>
@@ -301,7 +301,7 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-slate-800/85 border-slate-700 text-white placeholder:text-slate-300 text-[16px] h-14 rounded-2xl focus:border-emerald-500/50 focus:ring-emerald-500/20 px-5 transition-all"
+                  className="bg-background/85 border-border text-foreground placeholder:text-muted-foreground text-[16px] h-14 rounded-2xl focus:border-primary/50 focus:ring-emerald-500/20 px-5 transition-all"
                   required
                   autoComplete="current-password"
                 />
@@ -309,7 +309,7 @@ const Login = () => {
 	              <Button
 	                type="submit"
 	                disabled={isLoading || !email.trim() || !password.trim()}
-	                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	                className="w-full bg-primary hover:bg-primary text-foreground font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                 style={{
                   WebkitTapHighlightColor: 'transparent',
                   touchAction: 'manipulation',
@@ -329,7 +329,7 @@ const Login = () => {
                       description: 'Sign in to preview Creator Armour.',
                     });
                   }}
-                  className="w-full h-12 rounded-2xl border border-slate-800 bg-white/5 hover:bg-white/10 text-white/80 font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.99]"
+                  className="w-full h-12 rounded-2xl border border-border bg-card hover:bg-secondary/50 text-foreground/80 font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.99]"
                 >
                   Try Demo Account
                 </button>
@@ -342,10 +342,10 @@ const Login = () => {
           <div className="mb-8">
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-800" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-[#0B0F14] px-4 text-slate-600">Or continue with</span>
+                <span className="bg-[#0B0F14] px-4 text-muted-foreground">Or continue with</span>
               </div>
             </div>
             <div className="space-y-3">
@@ -374,7 +374,7 @@ const Login = () => {
                   }
                 }}
                 variant="outline"
-                className="w-full bg-white/5 border-slate-800 text-white hover:bg-white/10 rounded-2xl h-14 font-bold text-sm shadow-sm transition-all active:scale-[0.98]"
+                className="w-full bg-card border-border text-foreground hover:bg-secondary/50 rounded-2xl h-14 font-bold text-sm shadow-sm transition-all active:scale-[0.98]"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -391,15 +391,15 @@ const Login = () => {
         {/* Sign Up Link */}
         {(!loading || loadingTimedOut) && !session && (
           <div className="text-center">
-            <Link to="/signup" className="text-slate-400 hover:text-white transition-all text-[13px] font-medium group inline-flex items-center gap-2">
-              Don't have an account? <span className="text-emerald-500 font-bold group-hover:underline">Create your creator link</span>
+            <Link to="/signup" className="text-muted-foreground hover:text-foreground transition-all text-[13px] font-medium group inline-flex items-center gap-2">
+              Don't have an account? <span className="text-primary font-bold group-hover:underline">Create your creator link</span>
             </Link>
           </div>
         )}
 
         {/* Back to Homepage */}
-        <div className="mt-8 pt-6 border-t border-slate-800">
-          <Link to="/" className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-300 transition-all text-[12px] font-black uppercase tracking-widest">
+        <div className="mt-8 pt-6 border-t border-border">
+          <Link to="/" className="flex items-center justify-center gap-2 text-muted-foreground hover:text-muted-foreground transition-all text-[12px] font-black uppercase tracking-widest">
             <ArrowLeft className="h-4 w-4" /> Exit To Homepage
           </Link>
         </div>
@@ -407,11 +407,11 @@ const Login = () => {
 
       {/* Legal Text */}
       <div className="mt-10 text-center px-4 max-w-sm">
-        <p className="text-slate-600 text-[11px] leading-relaxed font-medium">
+        <p className="text-muted-foreground text-[11px] leading-relaxed font-medium">
           Protected by Creator Armour Shield. By signing in, you agree to our{' '}
-          <a href="/terms" className="text-slate-500 hover:text-emerald-500 transition-colors">Terms</a>
+          <a href="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms</a>
           {' '}&{' '}
-          <a href="/privacy" className="text-slate-500 hover:text-emerald-500 transition-colors">Privacy</a>
+          <a href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy</a>
         </p>
       </div>
     </div>

@@ -84,26 +84,26 @@ const TasksWorkflowCard: React.FC<TasksWorkflowCardProps> = ({ brandDeals = [] }
   const renderDealItem = (deal: BrandDeal) => (
     <div
       key={deal.id}
-      className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+      className="flex items-center justify-between p-3 rounded-lg bg-card hover:bg-secondary/50 transition-colors cursor-pointer"
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="flex-shrink-0">
           {activeTab === 'completed' ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+            <CheckCircle2 className="h-5 w-5 text-primary" />
           ) : (
-            <Circle className="h-5 w-5 text-white/40" />
+            <Circle className="h-5 w-5 text-foreground/40" />
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white truncate">{deal.brand_name}</p>
+          <p className="text-sm font-medium text-foreground truncate">{deal.brand_name}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-white/50">
+            <span className="text-xs text-foreground/50">
               {deal.payment_expected_date && formatDate(deal.payment_expected_date)}
             </span>
             {deal.deal_amount > 0 && (
               <>
-                <span className="text-xs text-white/30">•</span>
-                <span className="text-xs text-white/50">₹{deal.deal_amount.toLocaleString('en-IN')}</span>
+                <span className="text-xs text-foreground/30">•</span>
+                <span className="text-xs text-foreground/50">₹{deal.deal_amount.toLocaleString('en-IN')}</span>
               </>
             )}
           </div>
@@ -113,21 +113,21 @@ const TasksWorkflowCard: React.FC<TasksWorkflowCardProps> = ({ brandDeals = [] }
   );
 
   return (
-    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-2xl">
+    <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-2xl">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-white">Tasks & Workflow</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground">Tasks & Workflow</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as WorkflowTab)}>
-          <TabsList className="grid w-full grid-cols-5 bg-white/5 border border-white/10 rounded-lg p-1">
+          <TabsList className="grid w-full grid-cols-5 bg-card border border-border rounded-lg p-1">
             {(['tasks', 'pending', 'drafts', 'submitted', 'completed'] as WorkflowTab[]).map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
                 className={cn(
                   "flex items-center gap-1.5 text-xs px-2 py-1.5 rounded-md transition-all",
-                  "data-[state=active]:bg-white/10 data-[state=active]:text-white",
-                  "data-[state=inactive]:text-white/50"
+                  "data-[state=active]:bg-secondary/50 data-[state=active]:text-foreground",
+                  "data-[state=inactive]:text-foreground/50"
                 )}
               >
                 {getTabIcon(tab)}
@@ -141,7 +141,7 @@ const TasksWorkflowCard: React.FC<TasksWorkflowCardProps> = ({ brandDeals = [] }
             <TabsContent key={tab} value={tab} className="mt-4">
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {categorizedDeals[tab].length === 0 ? (
-                  <div className="text-center py-8 text-white/50 text-sm">
+                  <div className="text-center py-8 text-foreground/50 text-sm">
                     No items in {tab}
                   </div>
                 ) : (

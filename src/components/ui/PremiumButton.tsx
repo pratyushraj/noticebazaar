@@ -58,25 +58,25 @@ export const PremiumButton: React.FC<PremiumButtonProps> = ({
   const variantClasses = {
     primary: cn(
       "bg-gradient-to-r from-[#6C4BFF] to-[#9A3DFF]",
-      "text-white font-semibold",
+      "text-foreground font-semibold",
       shadows.lg,
       "hover:shadow-xl hover:shadow-purple-500/20",
       "active:shadow-md"
     ),
     secondary: cn(
-      "bg-white/5 backdrop-blur-xl border border-white/10",
-      "text-white/90 hover:text-white",
-      "hover:bg-white/10",
+      "bg-card backdrop-blur-xl border border-border",
+      "text-foreground/90 hover:text-foreground",
+      "hover:bg-secondary/50",
       shadows.md
     ),
     tertiary: cn(
-      "text-white/60 hover:text-white/90",
-      "hover:bg-white/5"
+      "text-foreground/60 hover:text-foreground/90",
+      "hover:bg-card"
     ),
     glass: cn(
-      "bg-white/5 backdrop-blur-2xl border border-white/10",
-      "text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
-      "hover:bg-white/10",
+      "bg-card backdrop-blur-2xl border border-border",
+      "text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
+      "hover:bg-secondary/50",
       shadows.depth
     ),
     danger: cn(

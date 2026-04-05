@@ -24,7 +24,7 @@ const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
       className={cn(
         "fixed bottom-0 left-0 right-0 xl:hidden",
         "backdrop-blur-2xl",
-        isDark ? "bg-[#0D0F1A]/90 border-t border-white/10" : "bg-white/85 border-t border-slate-200",
+        isDark ? "bg-[#0D0F1A]/90 border-t border-border" : "bg-secondary/85 border-t border-border",
         shadows.depth,
         radius.xl,
         "progressive-blur transition-transform duration-300 ease-in-out",
@@ -49,7 +49,7 @@ const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
       }}
     >
       <div className={cn(spotlight.top, isDark ? "opacity-50" : "opacity-0")} />
-      <div className={cn("absolute inset-x-0 top-0 h-[1px]", isDark ? "bg-white/10" : "bg-slate-200")} />
+      <div className={cn("absolute inset-x-0 top-0 h-[1px]", isDark ? "bg-secondary/50" : "bg-background")} />
 
       <nav
         className="flex justify-around h-12 items-center px-2 md:px-4 relative z-10 pointer-events-auto"
@@ -69,8 +69,8 @@ const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
                 "flex flex-col items-center gap-1 px-4 py-2 rounded-2xl min-w-[64px]",
                 "transition-all duration-200 ease-in-out",
                 active
-                  ? (isDark ? "bg-purple-500/20 text-purple-400" : "bg-slate-900 text-white")
-                  : (isDark ? "text-white/50 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100")
+                  ? (isDark ? "bg-secondary/20 text-secondary" : "bg-background text-foreground")
+                  : (isDark ? "text-foreground/50 hover:text-foreground hover:bg-card" : "text-muted-foreground hover:text-muted-foreground hover:bg-background")
               )}
               whileTap={{ scale: 0.96 }}
               onClick={() => {
@@ -78,10 +78,10 @@ const BrandBottomNav: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
                 navigate(item.path);
               }}
             >
-              <Icon className={cn(iconSizes.sm, active ? (isDark ? "text-purple-400" : "text-white") : (isDark ? "text-white/60" : "text-slate-400"))} />
+              <Icon className={cn(iconSizes.sm, active ? (isDark ? "text-secondary" : "text-foreground") : (isDark ? "text-foreground/60" : "text-muted-foreground"))} />
               <span className={cn(
                 "text-[10px] font-black uppercase tracking-wider",
-                active ? (isDark ? "text-purple-400" : "text-white") : (isDark ? "text-white/50" : "text-slate-500")
+                active ? (isDark ? "text-secondary" : "text-foreground") : (isDark ? "text-foreground/50" : "text-muted-foreground")
               )}>
                 {item.label}
               </span>

@@ -51,9 +51,9 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
   }, [originalContent, matches, scansThisMonth]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-500';
+    if (score >= 80) return 'text-primary';
     if (score >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    return 'text-destructive';
   };
 
   const getScoreMessage = (score: number) => {
@@ -126,7 +126,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
             <div className="relative">
               {/* Shield Box Icon */}
               <div className="w-32 h-32 md:w-40 md:h-40 bg-gradient-to-br from-purple-500 via-indigo-600 to-blue-600 rounded-2xl shadow-2xl shadow-purple-500/40 flex items-center justify-center transform rotate-[-8deg] hover:rotate-[-5deg] transition-transform duration-300">
-                <Shield className="w-16 h-16 md:w-20 md:h-20 text-white drop-shadow-lg" />
+                <Shield className="w-16 h-16 md:w-20 md:h-20 text-foreground drop-shadow-lg" />
               </div>
               
               {/* Decorative Elements */}
@@ -140,7 +140,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
               
               {/* Arrow pointing up */}
               <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4">
-                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-purple-400 animate-pulse" />
+                <TrendingUp className="w-12 h-12 md:w-16 md:h-16 text-secondary animate-pulse" />
               </div>
             </div>
           </div>
@@ -150,7 +150,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
       {/* Title */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Shield className="w-7 h-7 text-purple-500" />
+          <Shield className="w-7 h-7 text-secondary" />
           Content Protection Center
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -165,10 +165,10 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-white/5 hover:border-purple-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-border/5 hover:border-purple-600/60 transition-all">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Shield className="w-5 h-5 text-purple-500" />
+                <Shield className="w-5 h-5 text-secondary" />
                 <span className="text-sm font-medium text-muted-foreground">Protected</span>
               </div>
               <div className="text-3xl font-bold text-foreground mb-1 tabular-nums">
@@ -184,10 +184,10 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-white/5 hover:border-blue-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-blue-900/20 to-blue-950/20 border border-border/5 hover:border-info/60 transition-all">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Search className="w-5 h-5 text-blue-500" />
+                <Search className="w-5 h-5 text-info" />
                 <span className="text-sm font-medium text-muted-foreground">Scans Run</span>
               </div>
               <div className="text-3xl font-bold text-foreground mb-1 tabular-nums">
@@ -203,13 +203,13 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-white/5 hover:border-emerald-600/60 transition-all">
+          <Card className="bg-gradient-to-br from-emerald-900/20 to-emerald-950/20 border border-border/5 hover:border-primary/60 transition-all">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                <CheckCircle className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium text-muted-foreground">Takedowns</span>
               </div>
-              <div className="text-3xl font-bold text-emerald-500 mb-1 tabular-nums">
+              <div className="text-3xl font-bold text-primary mb-1 tabular-nums">
                 {stats.successfulTakedowns}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -227,11 +227,11 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-white/5">
+          <Card className="bg-gradient-to-br from-purple-900/20 to-purple-950/20 border border-border/5">
             <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-purple-500" />
+                    <TrendingUp className="w-5 h-5 text-secondary" />
                     <span className="text-sm font-medium text-foreground">Protection Score</span>
                   </div>
                   <div className="relative">
@@ -265,7 +265,7 @@ const ProtectionDashboardHeader: React.FC<ProtectionDashboardHeaderProps> = ({
                     "bg-gradient-to-r from-red-600 to-red-800"
                   )}
                 >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
                 </motion.div>
               </div>
               <div className={cn("text-sm", getScoreColor(stats.protectionScore))}>

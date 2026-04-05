@@ -38,19 +38,19 @@ const TrialBanner: React.FC = () => {
             <div className="absolute inset-0 bg-orange-400/20 blur-xl"></div>
           </div>
           <div>
-            <p className="text-base font-bold text-white flex items-center gap-2">
+            <p className="text-base font-bold text-foreground flex items-center gap-2">
               You're on a 30-day free trial
               <span className="text-orange-300 font-semibold">•</span>
               <span className="text-orange-300">{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining</span>
             </p>
-            <p className="text-sm text-white/70 mt-1">
+            <p className="text-sm text-foreground/70 mt-1">
               Upgrade to unlock full CA + Lawyer support & advanced tools
             </p>
           </div>
         </div>
         <Button
           onClick={handleUpgrade}
-          className="bg-orange-500 hover:bg-orange-600 text-white whitespace-nowrap font-semibold shadow-lg hover:shadow-orange-500/30 transition-all"
+          className="bg-orange-500 hover:bg-orange-600 text-foreground whitespace-nowrap font-semibold shadow-lg hover:shadow-orange-500/30 transition-all"
           size="default"
         >
           Upgrade Now

@@ -21,14 +21,14 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   return (
     <div
       className={cn(
-        "relative inline-flex items-center gap-0.5 md:gap-1 p-0.5 md:p-1 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.45)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-2xl before:pointer-events-none after:absolute after:-inset-1 after:bg-white/5 after:blur-xl after:rounded-3xl after:pointer-events-none",
+        "relative inline-flex items-center gap-0.5 md:gap-1 p-0.5 md:p-1 bg-secondary/50 backdrop-blur-xl rounded-2xl border border-border shadow-[0_8px_30px_rgba(0,0,0,0.45)] before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:to-transparent before:rounded-2xl before:pointer-events-none after:absolute after:-inset-1 after:bg-card after:blur-xl after:rounded-3xl after:pointer-events-none",
         className
       )}
       role="tablist"
     >
       {/* Animated background indicator */}
       <div
-        className="absolute top-0.5 bottom-0.5 md:top-1 md:bottom-1 bg-white/20 backdrop-blur-xl rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] transition-transform duration-300 ease-out"
+        className="absolute top-0.5 bottom-0.5 md:top-1 md:bottom-1 bg-secondary/20 backdrop-blur-xl rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.15)] transition-transform duration-300 ease-out"
         style={{
           left: `${(activeIndex * 100) / options.length + 1}%`,
           width: `${100 / options.length - 2}%`,
@@ -44,8 +44,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
             className={cn(
               "relative z-10 flex-1 px-1.5 py-1.5 md:px-3 md:py-2 rounded-xl transition-all duration-150 min-w-0 text-center",
               isActive
-                ? "text-white"
-                : "text-white/70 hover:text-white/90"
+                ? "text-foreground"
+                : "text-foreground/70 hover:text-foreground/90"
             )}
             role="tab"
             aria-selected={isActive}
@@ -60,8 +60,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
                   className={cn(
                     "px-1.5 py-0.5 rounded-full text-[9px] md:text-[11px] font-semibold leading-none min-w-[18px] md:min-w-[22px] text-center flex-shrink-0",
                     isActive
-                      ? "bg-white/25 text-white"
-                      : "bg-white/10 text-white/60"
+                      ? "bg-secondary/25 text-foreground"
+                      : "bg-secondary/50 text-foreground/60"
                   )}
                 >
                   {option.count}

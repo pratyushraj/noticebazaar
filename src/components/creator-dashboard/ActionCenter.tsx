@@ -241,11 +241,11 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
       case 'high':
         return 'bg-[#FFB3BA]/20 border-[#FF6B9D]/40 text-[#FF6B9D]';
       case 'medium':
-        return 'bg-[#FFD89B]/20 border-[#FFB84D]/40 text-[#FFB84D]';
+        return 'bg-warning/20/20 border-[#FFB84D]/40 text-warning';
       case 'low':
-        return 'bg-[#B4D4FF]/20 border-[#7BAFFF]/40 text-[#7BAFFF]';
+        return 'bg-info/20/20 border-[#7BAFFF]/40 text-[#7BAFFF]';
       default:
-        return 'bg-[#E879F9]/20 border-[#F472B6]/40 text-[#F472B6]';
+        return 'bg-secondary/20 border-[#F472B6]/40 text-primary';
     }
   };
 
@@ -274,43 +274,43 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
   }
 
   return (
-    <div className="relative bg-white/[0.06] backdrop-blur-[40px] border border-white/10 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
-      <div className="flex flex-col space-y-2 p-4 md:p-6 pb-3 md:pb-4 border-b border-white/10">
+    <div className="relative bg-secondary/[0.06] backdrop-blur-[40px] border border-border rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] overflow-hidden">
+      <div className="flex flex-col space-y-2 p-4 md:p-6 pb-3 md:pb-4 border-b border-border">
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-            <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+          <div className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-secondary/50 backdrop-blur-sm border border-border flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+            <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-foreground" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg md:text-xl font-semibold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-lg md:text-xl font-semibold text-foreground tracking-tight flex items-center gap-2">
               Action Center
             </h3>
-            <p className="text-xs md:text-sm text-white/60 mt-1">Urgent items, warnings, and suggestions</p>
+            <p className="text-xs md:text-sm text-foreground/60 mt-1">Urgent items, warnings, and suggestions</p>
           </div>
         </div>
       </div>
       <div className="space-y-4 p-4 md:p-6">
         <Tabs defaultValue="urgent" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-[20px] saturate-[120%] p-1 rounded-2xl border border-white/10 shadow-[0_2px_8px_rgba(0,0,0,0.15)] gap-0.5 md:gap-1">
+          <TabsList className="grid w-full grid-cols-3 bg-card backdrop-blur-[20px] saturate-[120%] p-1 rounded-2xl border border-border shadow-[0_2px_8px_rgba(0,0,0,0.15)] gap-0.5 md:gap-1">
             <TabsTrigger 
               value="urgent" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
+              className="data-[state=active]:bg-secondary/20 data-[state=active]:text-foreground data-[state=inactive]:text-foreground/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
             >
               <span className="truncate">Urgent</span>
-              {totalUrgent > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalUrgent}</span>}
+              {totalUrgent > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-secondary/20 text-foreground text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalUrgent}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="warnings" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
+              className="data-[state=active]:bg-secondary/20 data-[state=active]:text-foreground data-[state=inactive]:text-foreground/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
             >
               <span className="truncate">Warnings</span>
-              {totalWarnings > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalWarnings}</span>}
+              {totalWarnings > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-secondary/20 text-foreground text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalWarnings}</span>}
             </TabsTrigger>
             <TabsTrigger 
               value="suggestions" 
-              className="data-[state=active]:bg-white/20 data-[state=active]:text-white data-[state=inactive]:text-white/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
+              className="data-[state=active]:bg-secondary/20 data-[state=active]:text-foreground data-[state=inactive]:text-foreground/60 transition-all text-xs md:text-sm font-medium rounded-xl flex items-center gap-1 py-1.5 md:py-2 px-1 md:px-2"
             >
               <span className="truncate">Suggestions</span>
-              {totalSuggestions > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalSuggestions}</span>}
+              {totalSuggestions > 0 && <span className="px-1 md:px-1.5 py-0.5 rounded-full bg-secondary/20 text-foreground text-[10px] md:text-xs font-semibold whitespace-nowrap flex-shrink-0">{totalSuggestions}</span>}
             </TabsTrigger>
           </TabsList>
 
@@ -323,7 +323,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                     key={action.dealId || `overdue-${action.brand}-${action.amount}`}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative p-4 md:p-5 rounded-2xl bg-white/[0.06] backdrop-blur-[30px] border border-orange-500/20 shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden"
+                    className="relative p-4 md:p-5 rounded-2xl bg-secondary/[0.06] backdrop-blur-[30px] border border-orange-500/20 shadow-[0_2px_12px_rgba(0,0,0,0.15)] overflow-hidden"
                   >
                     {/* Subtle gradient overlay - orange instead of red */}
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.03] via-transparent to-transparent pointer-events-none" />
@@ -335,10 +335,10 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                           <Icon className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
                       </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm md:text-base font-semibold text-white truncate">
+                          <h3 className="text-sm md:text-base font-semibold text-foreground truncate">
                             {action.brand || 'Payment'} Payment Overdue
                         </h3>
-                          <p className="text-xs text-white/50 mt-0.5">
+                          <p className="text-xs text-foreground/50 mt-0.5">
                             Due since {action.daysOverdue || 0} {action.daysOverdue === 1 ? 'day' : 'days'}
                         </p>
                         </div>
@@ -349,9 +349,9 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                     </div>
 
                     {/* Amount */}
-                    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-white/10 relative z-10 mb-3 md:mb-4">
-                      <p className="text-xl md:text-2xl font-semibold text-white">₹{action.amount?.toLocaleString('en-IN')}</p>
-                      <p className="text-xs text-white/50 mt-1">
+                    <div className="bg-card backdrop-blur-sm rounded-xl p-3 md:p-4 border border-border relative z-10 mb-3 md:mb-4">
+                      <p className="text-xl md:text-2xl font-semibold text-foreground">₹{action.amount?.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-foreground/50 mt-1">
                         Due: {formatDate(action.dueDate)}
                       </p>
                     </div>
@@ -360,14 +360,14 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                     <div className="flex flex-col sm:flex-row gap-2 relative z-10">
                       <button type="button"
                         onClick={() => onSendReminder?.(action.dealId!)}
-                        className="flex-1 min-h-[48px] py-3 rounded-xl bg-white/20 backdrop-blur-[20px] border border-white/30 hover:bg-white/30 active:scale-[0.98] text-white font-medium text-sm md:text-base transition-all"
+                        className="flex-1 min-h-[48px] py-3 rounded-xl bg-secondary/20 backdrop-blur-[20px] border border-border hover:bg-secondary/30 active:scale-[0.98] text-foreground font-medium text-sm md:text-base transition-all"
                         aria-label="Send payment reminder"
                       >
                         Send Reminder
                       </button>
                       <button type="button"
                         onClick={() => onEscalate?.(action.dealId!)}
-                        className="flex-1 min-h-[48px] py-3 rounded-xl bg-white/10 backdrop-blur-[20px] hover:bg-white/15 text-white font-medium text-sm md:text-base transition-all border border-white/20"
+                        className="flex-1 min-h-[48px] py-3 rounded-xl bg-secondary/50 backdrop-blur-[20px] hover:bg-secondary/15 text-foreground font-medium text-sm md:text-base transition-all border border-border"
                         aria-label="Escalate payment issue"
                       >
                         Escalate
@@ -383,11 +383,11 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 ? 'border-[#FFD89B]/40' 
                 : 'border-[#E879F9]/40';
               const actionIconBg = action.type === 'contract_review' 
-                ? 'bg-[#FFD89B]/20' 
-                : 'bg-[#E879F9]/20';
+                ? 'bg-warning/20/20' 
+                : 'bg-secondary/20';
               const actionIconColor = action.type === 'contract_review' 
-                ? 'text-[#FFB84D]' 
-                : 'text-[#F472B6]';
+                ? 'text-warning' 
+                : 'text-primary';
               return (
                 <motion.div
                   key={action.dealId || `urgent-${action.type}-${action.brand || action.title}`}
@@ -395,7 +395,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: idx * 0.1 }}
                   className={cn(
-                    "bg-white/[0.06] backdrop-blur-[30px] border border-white/10 rounded-3xl p-5 hover:bg-white/[0.08] transition-all cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.2)]",
+                    "bg-secondary/[0.06] backdrop-blur-[30px] border border-border rounded-3xl p-5 hover:bg-secondary/[0.08] transition-all cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.2)]",
                     actionBorderColor
                   )}
                   onClick={() => {
@@ -411,7 +411,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                       <Icon className={cn("w-6 h-6", actionIconColor)} />
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-white">{action.title}</h4>
+                      <h4 className="text-sm font-semibold text-foreground">{action.title}</h4>
                       <p className="text-xs text-gray-400 mt-1">
                         {action.type === 'contract_review' && `${action.brand || 'Contract'} deal • Received ${action.receivedDays} days ago`}
                         {action.type === 'content_stolen' && `@${action.topThief || 'fakepage'} • ${action.views ? `${(action.views / 1000).toFixed(1)}K` : '12.5K'} views`}
@@ -437,7 +437,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-green-500/20 backdrop-blur-sm saturate-[150%] border border-green-500/30 mb-4 shadow-[0_4px_16px_rgba(34,197,94,0.2)]">
                   <CheckCircle className="h-8 w-8 text-green-400" />
                 </div>
-                <p className="text-base text-white/50">No urgent actions at this time</p>
+                <p className="text-base text-foreground/50">No urgent actions at this time</p>
               </div>
             )}
           </TabsContent>
@@ -457,8 +457,8 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                   {alert.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white">{alert.title}</p>
-                  <p className="text-small text-white/60 mt-0.5">{alert.description}</p>
+                  <p className="text-sm font-semibold text-foreground">{alert.title}</p>
+                  <p className="text-small text-foreground/60 mt-0.5">{alert.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -467,7 +467,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-green-500/20 backdrop-blur-sm saturate-[150%] border border-green-500/30 mb-4 shadow-[0_4px_16px_rgba(34,197,94,0.2)]">
                   <CheckCircle className="h-8 w-8 text-green-400" />
                 </div>
-                <p className="text-base text-white/50">No warnings at this time</p>
+                <p className="text-base text-foreground/50">No warnings at this time</p>
               </div>
             )}
           </TabsContent>
@@ -481,13 +481,13 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 className={cn("flex items-start gap-3 p-5 rounded-3xl border backdrop-blur-[30px] shadow-[0_4px_24px_rgba(0,0,0,0.2)]", getPriorityColor(suggestion.priority))}
               >
-                <div className="flex-shrink-0 mt-0.5 text-[#FF4DAA]">
+                <div className="flex-shrink-0 mt-0.5 text-primary">
                   {suggestion.icon}
                 </div>
                 <div className="flex-1 min-w-0 relative z-10">
-                  <p className="text-sm font-semibold text-white">{suggestion.title}</p>
-                  <p className="text-xs text-white/50 mt-1">{suggestion.description}</p>
-                  <button type="button" className="text-sm text-[#FF4DAA] hover:text-[#FF84C5] mt-2 font-medium transition-all rounded px-2 py-1">
+                  <p className="text-sm font-semibold text-foreground">{suggestion.title}</p>
+                  <p className="text-xs text-foreground/50 mt-1">{suggestion.description}</p>
+                  <button type="button" className="text-sm text-primary hover:text-primary mt-2 font-medium transition-all rounded px-2 py-1">
                     {suggestion.action} →
                   </button>
                 </div>
@@ -498,7 +498,7 @@ const ActionCenter: React.FC<ActionCenterProps> = ({
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-green-500/20 backdrop-blur-sm saturate-[150%] border border-green-500/30 mb-4 shadow-[0_4px_16px_rgba(34,197,94,0.2)]">
                   <CheckCircle className="h-8 w-8 text-green-400" />
                 </div>
-                <p className="text-base text-white/50">No suggestions at this time</p>
+                <p className="text-base text-foreground/50">No suggestions at this time</p>
               </div>
             )}
           </TabsContent>

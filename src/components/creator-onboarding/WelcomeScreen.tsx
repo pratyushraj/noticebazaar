@@ -15,7 +15,7 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
       icon: Briefcase,
       title: 'Track Brand Deals',
       description: 'Manage all your partnerships in one place',
-      color: 'text-blue-400'
+      color: 'text-info'
     },
     {
       icon: CreditCard,
@@ -27,7 +27,7 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
       icon: Shield,
       title: 'Content Protection',
       description: 'Register and protect your original content',
-      color: 'text-purple-400'
+      color: 'text-secondary'
     },
   ];
 
@@ -47,14 +47,14 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg"
         >
-          <Sparkles className="w-10 h-10 text-white" />
+          <Sparkles className="w-10 h-10 text-foreground" />
         </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="text-4xl md:text-5xl font-bold text-white"
+          className="text-4xl md:text-5xl font-bold text-foreground"
         >
           Welcome{userName ? `, ${userName}` : ''}! 👋
         </motion.h1>
@@ -63,7 +63,7 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-xl text-purple-200 max-w-lg mx-auto"
+          className="text-xl text-secondary max-w-lg mx-auto"
         >
           Let's set up your Creator Armour account in just 2 minutes
         </motion.p>
@@ -84,16 +84,16 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 + index * 0.1 }}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all"
+              className="bg-secondary/50 backdrop-blur-md rounded-2xl p-6 border border-border hover:bg-secondary/15 transition-all"
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto ${feature.color === 'text-blue-400' ? 'bg-gradient-to-br from-blue-500/20 to-blue-400/10' :
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 mx-auto ${feature.color === 'text-info' ? 'bg-gradient-to-br from-blue-500/20 to-blue-400/10' :
                 feature.color === 'text-green-400' ? 'bg-gradient-to-br from-green-500/20 to-green-400/10' :
                   'bg-gradient-to-br from-purple-500/20 to-purple-400/10'
                 }`}>
                 <Icon className={`w-6 h-6 ${feature.color}`} />
               </div>
-              <h3 className="font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="text-sm text-purple-200">{feature.description}</p>
+              <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
+              <p className="text-sm text-secondary">{feature.description}</p>
             </motion.div>
           );
         })}
@@ -109,12 +109,12 @@ const WelcomeScreen = ({ onNext, userName }: WelcomeScreenProps) => {
         <Button
           onClick={onNext}
           size="lg"
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-foreground px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
         >
           Get Started
           <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
-        <p className="text-sm text-purple-300 mt-4">
+        <p className="text-sm text-secondary mt-4">
           Takes less than 2 minutes • No credit card required
         </p>
       </motion.div>

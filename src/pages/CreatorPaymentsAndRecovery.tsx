@@ -445,7 +445,7 @@ const CreatorPaymentsAndRecovery = () => {
         {/* Stats Overview - Refactored for Mobile */}
         <div className="mb-4 grid grid-cols-1 gap-3">
           {/* Primary Card: Pending Amount (Highlighted) */}
-          <div className="bg-secondary/50 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
+          <div className="bg-card0 backdrop-blur-xl border-2 border-yellow-500/30 rounded-2xl p-4 shadow-lg shadow-yellow-500/10">
             <div className="text-sm text-foreground/70 mb-1">Pending Amount</div>
             <div className="text-3xl font-bold text-yellow-400 mb-1">{formatIndianCurrency(totalPending)}</div>
             <div className="text-xs text-foreground/60">Across active signed deals</div>

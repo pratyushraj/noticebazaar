@@ -17,18 +17,18 @@ const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions
   // Helper function to determine the color class based on severity
   const getSeverityColorClass = (severity?: 'urgent' | 'warning' | 'info') => {
     switch (severity) {
-      case 'urgent': return 'border-red-500 bg-red-500/5';
+      case 'urgent': return 'border-destructive bg-destructive/5';
       case 'warning': return 'border-yellow-500 bg-yellow-500/5';
-      case 'info': return 'border-blue-500 bg-blue-500/5';
+      case 'info': return 'border-info bg-info/5';
       default: return 'border-gray-500';
     }
   };
 
   // Helper function to determine the color class for the left bar (fallback)
   const getActionColorClass = (icon: LucideIcon) => {
-    if (icon === FileText) return 'border-blue-500'; // Contracts
+    if (icon === FileText) return 'border-info'; // Contracts
     if (icon === IndianRupee) return 'border-yellow-500'; // Taxes
-    if (icon === Clock) return 'border-red-500'; // Overdue
+    if (icon === Clock) return 'border-destructive'; // Overdue
     if (icon === MessageSquare) return 'border-purple-500'; // Messages
     return 'border-gray-500'; // Default
   };
@@ -37,7 +37,7 @@ const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions
     <Card className="creator-card-base shadow-sm"> {/* Applied new base card class */}
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">AI Action Center</CardTitle>
-        <Bot className="h-4 w-4 text-blue-500" />
+        <Bot className="h-4 w-4 text-info" />
       </CardHeader>
       <CardContent>
         <ul className="space-y-3"> {/* Increased vertical spacing */}
@@ -52,9 +52,9 @@ const CreatorAIActionCenter: React.FC<CreatorAIActionCenterProps> = ({ aiActions
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <action.icon className={cn(
                   "h-4 w-4 flex-shrink-0",
-                  action.severity === 'urgent' ? 'text-red-500' :
+                  action.severity === 'urgent' ? 'text-destructive' :
                   action.severity === 'warning' ? 'text-yellow-500' :
-                  action.severity === 'info' ? 'text-blue-500' :
+                  action.severity === 'info' ? 'text-info' :
                   'text-muted-foreground'
                 )} />
                 <div className="flex-1 min-w-0">

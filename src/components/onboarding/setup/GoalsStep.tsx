@@ -64,20 +64,20 @@ export const GoalsStep: React.FC<GoalsStepProps> = ({
                 onClick={() => onGoalToggle(goal.id)}
                 className={`w-full p-4 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
                   isSelected
-                    ? 'bg-purple-600/30 border-purple-400'
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    ? 'bg-secondary/30 border-purple-400'
+                    : 'bg-card border-border hover:bg-secondary/50'
                 }`}
                 aria-label={`Select ${goal.label}`}
                 aria-pressed={isSelected}
               >
                 <Icon
                   className={`w-5 h-5 flex-shrink-0 ${
-                    isSelected ? 'text-purple-300' : 'text-purple-400'
+                    isSelected ? 'text-secondary' : 'text-secondary'
                   }`}
                 />
-                <span className="flex-1 text-base text-white/80">{goal.label}</span>
+                <span className="flex-1 text-base text-foreground/80">{goal.label}</span>
                 {isSelected && (
-                  <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                  <CheckCircle className="w-5 h-5 text-secondary flex-shrink-0" />
                 )}
               </button>
             );

@@ -68,7 +68,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
         title: 'Total Deals',
         value: totalDeals,
         icon: Briefcase,
-        color: 'text-blue-500',
+        color: 'text-info',
         description: 'Deals ever created',
       },
       {
@@ -82,7 +82,7 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
         title: 'Pending Payments',
         value: pendingPayments,
         icon: IndianRupee,
-        color: 'text-red-500',
+        color: 'text-destructive',
         description: 'Awaiting payment',
       },
       {
@@ -96,14 +96,14 @@ const BrandDealsStats: React.FC<BrandDealsStatsProps> = ({ allDeals, isLoading }
         title: 'Revenue This Month',
         value: formatCurrency(revenueThisMonth),
         icon: TrendingUp,
-        color: 'text-emerald-500',
+        color: 'text-primary',
         description: 'Paid this month',
       },
       {
         title: 'Deals Closing Soon',
         value: dealsClosingSoon,
         icon: AlertCircle,
-        color: 'text-amber-500',
+        color: 'text-warning',
         description: 'Due within 7 days',
       },
     ];

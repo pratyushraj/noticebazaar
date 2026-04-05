@@ -80,8 +80,8 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
       <Card variant="secondary">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
-              <Shield className="h-5 w-5 text-white/80" />
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-card backdrop-blur-sm">
+              <Shield className="h-5 w-5 text-foreground/80" />
             </div>
             Deal Protection Score
           </CardTitle>
@@ -112,11 +112,11 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
           <div className={`text-6xl font-bold number-large ${getScoreColor(score)}`}>
             {score}
           </div>
-          <p className="text-body text-white/60 mt-2">protection score</p>
+          <p className="text-body text-foreground/60 mt-2">protection score</p>
         </div>
 
         <div className="space-y-2">
-          <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-3 bg-secondary/50 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${score}%` }}
@@ -129,19 +129,19 @@ const LegalHealthScore: React.FC<LegalHealthScoreProps> = ({ brandDeals = [], is
         <div className="space-y-3 pt-2">
           <div className="flex items-center gap-3 text-body">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="text-white/80">Contracts or scopes documented</span>
+            <span className="text-foreground/80">Contracts or scopes documented</span>
           </div>
           <div className="flex items-center gap-3 text-body">
             <XCircle className="h-5 w-5 text-warning" />
-            <span className="text-white/80">Some contract safeguards still missing</span>
+            <span className="text-foreground/80">Some contract safeguards still missing</span>
           </div>
           <div className="flex items-center gap-3 text-body">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="text-white/80">No active disputes on record</span>
+            <span className="text-foreground/80">No active disputes on record</span>
           </div>
           <div className="flex items-center gap-3 text-body">
             <CheckCircle2 className="h-5 w-5 text-success" />
-            <span className="text-white/80">Delayed payment risk flagged</span>
+            <span className="text-foreground/80">Delayed payment risk flagged</span>
           </div>
         </div>
       </CardContent>

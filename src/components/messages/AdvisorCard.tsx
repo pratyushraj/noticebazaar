@@ -42,7 +42,7 @@ export const AdvisorCard: React.FC<Props> = ({ advisor, selected, onClick }) => 
         <div className="text-xs text-muted-foreground truncate">{advisor.role}</div>
       </div>
 
-      <div className={clsx('p-1 rounded-md flex-shrink-0', selected ? 'text-blue-400' : 'text-muted-foreground/40')}>
+      <div className={clsx('p-1 rounded-md flex-shrink-0', selected ? 'text-info' : 'text-muted-foreground/40')}>
         <MessageSquare size={16} />
       </div>
     </button>

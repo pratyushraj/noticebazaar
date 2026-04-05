@@ -81,9 +81,9 @@ const ProfileTrustScore: React.FC<ProfileTrustScoreProps> = ({ profile, brandDea
   }, [profile, brandDeals]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-[#A8E6CF]';
-    if (score >= 60) return 'text-[#FFD89B]';
-    return 'text-[#FFB84D]';
+    if (score >= 80) return 'text-primary';
+    if (score >= 60) return 'text-warning';
+    return 'text-warning';
   };
 
   const getScoreLabel = (score: number) => {
@@ -102,9 +102,9 @@ const ProfileTrustScore: React.FC<ProfileTrustScoreProps> = ({ profile, brandDea
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/30 shadow-lg">
-              <BadgeCheck className="h-5 w-5 text-white" />
+              <BadgeCheck className="h-5 w-5 text-foreground" />
             </div>
-            <CardTitle className="text-white">Profile & Trust Score</CardTitle>
+            <CardTitle className="text-foreground">Profile & Trust Score</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -113,48 +113,48 @@ const ProfileTrustScore: React.FC<ProfileTrustScoreProps> = ({ profile, brandDea
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <Award className="h-12 w-12 text-[#FFD89B]" />
-                <div className="absolute inset-0 bg-[#FFD89B]/20 blur-xl"></div>
+                <Award className="h-12 w-12 text-warning" />
+                <div className="absolute inset-0 bg-warning/20/20 blur-xl"></div>
               </div>
               <div>
-                <p className="text-small text-white/60">Trust Score</p>
+                <p className="text-small text-foreground/60">Trust Score</p>
                 <p className={cn("text-4xl font-bold number-large flex items-center gap-2 mt-1", getScoreColor(badgeData.trustScore))}>
                   {badgeData.trustScore}
-                  <span className="text-white/40 text-xl">/ 100</span>
+                  <span className="text-foreground/40 text-xl">/ 100</span>
                 </p>
-                <p className="text-small text-white/50 mt-1">{getScoreLabel(badgeData.trustScore)}</p>
+                <p className="text-small text-foreground/50 mt-1">{getScoreLabel(badgeData.trustScore)}</p>
               </div>
             </div>
-            <Star className="h-7 w-7 text-[#FFD89B] fill-[#FFD89B]" />
+            <Star className="h-7 w-7 text-warning fill-[#FFD89B]" />
           </div>
 
           {/* Creator Since & Verified Badges */}
           <div className="space-y-4 pt-4 border-t border-[#4A3A4F]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-white/60" />
+                <Calendar className="h-5 w-5 text-foreground/60" />
                 <div>
-                  <p className="text-small text-white/60">Creator Since</p>
-                  <p className="text-body font-semibold text-white mt-0.5">{badgeData.creatorSince}</p>
+                  <p className="text-small text-foreground/60">Creator Since</p>
+                  <p className="text-body font-semibold text-foreground mt-0.5">{badgeData.creatorSince}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {badgeData.verified.pan && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#A8E6CF]/20 border border-[#A8E6CF]/40">
-                    <Shield className="h-4 w-4 text-[#A8E6CF]" />
-                    <span className="text-small text-[#A8E6CF] font-medium">PAN</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/20/20 border border-[#A8E6CF]/40">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <span className="text-small text-primary font-medium">PAN</span>
                   </div>
                 )}
                 {badgeData.verified.instagram && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F472B6]/20 border border-[#F472B6]/40">
-                    <Instagram className="h-4 w-4 text-[#F472B6]" />
-                    <span className="text-small text-[#F472B6] font-medium">IG</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/20/20 border border-[#F472B6]/40">
+                    <Instagram className="h-4 w-4 text-primary" />
+                    <span className="text-small text-primary font-medium">IG</span>
                   </div>
                 )}
                 {badgeData.verified.bank && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#B4D4FF]/20 border border-[#B4D4FF]/40">
-                    <CreditCard className="h-4 w-4 text-[#B4D4FF]" />
-                    <span className="text-small text-[#B4D4FF] font-medium">Bank</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-info/20/20 border border-[#B4D4FF]/40">
+                    <CreditCard className="h-4 w-4 text-info" />
+                    <span className="text-small text-info font-medium">Bank</span>
                   </div>
                 )}
               </div>
@@ -163,16 +163,16 @@ const ProfileTrustScore: React.FC<ProfileTrustScoreProps> = ({ profile, brandDea
             {/* Performance Metrics */}
             <div className="space-y-3 pt-3 border-t border-[#4A3A4F]">
               <div className="flex items-center gap-3 text-body">
-                <CheckCircle2 className="h-5 w-5 text-[#A8E6CF]" />
-                <span className="text-white/80">On-time deliveries: <span className="font-semibold text-white">{badgeData.onTimeRate}%</span></span>
+                <CheckCircle2 className="h-5 w-5 text-primary" />
+                <span className="text-foreground/80">On-time deliveries: <span className="font-semibold text-foreground">{badgeData.onTimeRate}%</span></span>
               </div>
               <div className="flex items-center gap-3 text-body">
-                <TrendingUp className="h-5 w-5 text-[#B4D4FF]" />
-                <span className="text-white/80">Payment collection: <span className="font-semibold text-white">{badgeData.collectionRate}%</span></span>
+                <TrendingUp className="h-5 w-5 text-info" />
+                <span className="text-foreground/80">Payment collection: <span className="font-semibold text-foreground">{badgeData.collectionRate}%</span></span>
               </div>
               <div className="flex items-center gap-3 text-body">
-                <Shield className="h-5 w-5 text-[#E879F9]" />
-                <span className="text-white/80">No open disputes</span>
+                <Shield className="h-5 w-5 text-secondary" />
+                <span className="text-foreground/80">No open disputes</span>
               </div>
             </div>
           </div>

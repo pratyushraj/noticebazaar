@@ -44,19 +44,19 @@ const GSTImpactSummary: React.FC<GSTImpactSummaryProps> = ({ brandDeals = [] }) 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
     >
-      <Card className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 border border-white/5 hover:border-white/10 transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
+      <Card className="bg-gradient-to-br from-emerald-900/30 to-emerald-950/30 border border-border/5 hover:border-border transition-all rounded-2xl shadow-[0px_4px_24px_rgba(0,0,0,0.25)] px-5 py-4">
         <CardContent className="p-0">
           <div className="flex items-center gap-2 mb-3">
-            <Receipt className="h-4 w-4 text-emerald-400" />
-            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide">GST Impact Summary</span>
+            <Receipt className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold text-primary uppercase tracking-wide">GST Impact Summary</span>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="h-4 w-4 text-emerald-400" />
+              <TrendingDown className="h-4 w-4 text-primary" />
               <p className="text-xs text-muted-foreground">You saved this month through GST Input Credit:</p>
             </div>
-            <p className="text-2xl font-bold text-emerald-400">
+            <p className="text-2xl font-bold text-primary">
               ₹{gstSavings.toLocaleString('en-IN')}
             </p>
             <p className="text-xs text-muted-foreground">

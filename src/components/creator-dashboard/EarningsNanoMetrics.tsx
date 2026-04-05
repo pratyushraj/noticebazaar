@@ -58,19 +58,19 @@ const EarningsNanoMetrics: React.FC<EarningsNanoMetricsProps> = ({ brandDeals = 
   }, [brandDeals]);
 
   return (
-    <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-white/10">
+    <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-border">
       <div className="flex items-center gap-1.5 text-xs">
-        <TrendingUp className="h-3.5 w-3.5 text-emerald-400/70" />
+        <TrendingUp className="h-3.5 w-3.5 text-primary/70" />
         <span className="text-gray-300">Avg deal size:</span>
-        <span className="text-white/90 font-semibold">₹{metrics.avgDealSize.toLocaleString('en-IN')}</span>
+        <span className="text-foreground/90 font-semibold">₹{metrics.avgDealSize.toLocaleString('en-IN')}</span>
       </div>
       
       <div className="flex items-center gap-1.5 text-xs">
-        <CheckCircle className="h-3.5 w-3.5 text-emerald-400/70" />
+        <CheckCircle className="h-3.5 w-3.5 text-primary/70" />
         <span className="text-gray-300">On-time payment rate:</span>
         <span className={cn(
           "font-semibold",
-          metrics.onTimeRate >= 90 ? "text-emerald-400" :
+          metrics.onTimeRate >= 90 ? "text-primary" :
           metrics.onTimeRate >= 70 ? "text-yellow-400" :
           "text-orange-400"
         )}>
@@ -79,9 +79,9 @@ const EarningsNanoMetrics: React.FC<EarningsNanoMetricsProps> = ({ brandDeals = 
       </div>
       
       <div className="flex items-center gap-1.5 text-xs">
-        <Clock className="h-3.5 w-3.5 text-blue-400/70" />
+        <Clock className="h-3.5 w-3.5 text-info/70" />
         <span className="text-gray-300">Avg payment cycle:</span>
-        <span className="text-white/90 font-semibold">{metrics.avgPaymentCycle} days</span>
+        <span className="text-foreground/90 font-semibold">{metrics.avgPaymentCycle} days</span>
       </div>
     </div>
   );

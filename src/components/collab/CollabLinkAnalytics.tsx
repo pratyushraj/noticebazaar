@@ -114,9 +114,9 @@ const CollabLinkAnalytics: React.FC = () => {
 
   if (loading) {
     return (
-      <Card className="bg-white/5 backdrop-blur-md border-white/10">
+      <Card className="bg-card backdrop-blur-md border-border">
         <CardContent className="p-4">
-          <div className="flex items-center justify-center gap-2 py-3 text-purple-300/80 text-sm">
+          <div className="flex items-center justify-center gap-2 py-3 text-secondary/80 text-sm">
             <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
             <span>Loading analytics…</span>
           </div>
@@ -128,13 +128,13 @@ const CollabLinkAnalytics: React.FC = () => {
   // No data yet — compact placeholder
   if (!analytics) {
     return (
-      <Card className="bg-white/5 backdrop-blur-md border-white/10">
+      <Card className="bg-card backdrop-blur-md border-border">
         <CardContent className="p-3">
           <div className="flex items-center gap-2 mb-2">
-            <BarChart3 className="h-4 w-4 text-purple-400" />
-            <h3 className="text-sm font-semibold text-white break-words">Collab Link Analytics</h3>
+            <BarChart3 className="h-4 w-4 text-secondary" />
+            <h3 className="text-sm font-semibold text-foreground break-words">Collab Link Analytics</h3>
           </div>
-          <p className="text-xs text-purple-300/70 break-words">Share your link to get your first view</p>
+          <p className="text-xs text-secondary/70 break-words">Share your link to get your first view</p>
         </CardContent>
       </Card>
     );
@@ -154,11 +154,11 @@ const CollabLinkAnalytics: React.FC = () => {
     direction: 'up' | 'down' | 'neutral' 
   }) => {
     if (direction === 'neutral' || trend === 0) {
-      return <span className="text-purple-300/50 text-xs">—</span>;
+      return <span className="text-secondary/50 text-xs">—</span>;
     }
     
     const Icon = direction === 'up' ? TrendingUp : TrendingDown;
-    const color = direction === 'up' ? 'text-green-400' : 'text-red-400';
+    const color = direction === 'up' ? 'text-green-400' : 'text-destructive';
     
     return (
       <div className={`flex items-center gap-0.5 ${color}`}>
@@ -178,13 +178,13 @@ const CollabLinkAnalytics: React.FC = () => {
   };
 
   return (
-    <Card className="bg-white/5 backdrop-blur-md border-white/10">
+    <Card className="bg-card backdrop-blur-md border-border">
       <CardContent className="p-3">
         {/* Header — default 30 days */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-purple-400" />
-            <h3 className="text-sm font-semibold text-white">
+            <BarChart3 className="h-4 w-4 text-secondary" />
+            <h3 className="text-sm font-semibold text-foreground">
               Collab Link Analytics
             </h3>
           </div>
@@ -194,8 +194,8 @@ const CollabLinkAnalytics: React.FC = () => {
               aria-label="Last 7 days"
               className={`px-2 py-0.5 text-[10px] rounded border transition-colors ${
                 period === '7'
-                  ? 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
-                  : 'bg-white/10 text-purple-200 border-white/20 hover:bg-white/15'
+                  ? 'bg-secondary text-foreground border-purple-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
+                  : 'bg-secondary/50 text-secondary border-border hover:bg-secondary/15'
               }`}
             >
               7d
@@ -205,8 +205,8 @@ const CollabLinkAnalytics: React.FC = () => {
               aria-label="Last 30 days"
               className={`px-2 py-0.5 text-[10px] rounded border transition-colors ${
                 period === '30'
-                  ? 'bg-purple-600 text-white border-purple-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
-                  : 'bg-white/10 text-purple-200 border-white/20 hover:bg-white/15'
+                  ? 'bg-secondary text-foreground border-purple-400/40 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]'
+                  : 'bg-secondary/50 text-secondary border-border hover:bg-secondary/15'
               }`}
             >
               30d
@@ -217,13 +217,13 @@ const CollabLinkAnalytics: React.FC = () => {
         {/* Stats Grid - Compact */}
         <div className="grid grid-cols-3 gap-2 mb-2">
           {/* Total Views */}
-          <div className="bg-white/8 rounded-lg p-2 border border-white/15">
+          <div className="bg-secondary/8 rounded-lg p-2 border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <Eye className="h-3 w-3 text-purple-400" />
-              <span className="text-[10px] text-purple-300">Views</span>
+              <Eye className="h-3 w-3 text-secondary" />
+              <span className="text-[10px] text-secondary">Views</span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-lg font-bold text-white">
+              <span className="text-lg font-bold text-foreground">
                 {analytics.views.total.toLocaleString()}
               </span>
               <TrendIndicator 
@@ -231,7 +231,7 @@ const CollabLinkAnalytics: React.FC = () => {
                 direction={analytics.views.trendDirection} 
               />
             </div>
-            <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
+            <div className="mt-1 h-1 rounded-full bg-secondary/50 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-purple-400/80 to-indigo-400/80"
                 style={{ width: `${metricWidth(analytics.views.total)}%` }}
@@ -240,13 +240,13 @@ const CollabLinkAnalytics: React.FC = () => {
           </div>
 
           {/* Requests Received */}
-          <div className="bg-white/8 rounded-lg p-2 border border-white/15">
+          <div className="bg-secondary/8 rounded-lg p-2 border border-border">
             <div className="flex items-center gap-1 mb-1">
               <Send className="h-3 w-3 text-green-400" />
-              <span className="text-[10px] text-purple-300">Requests</span>
+              <span className="text-[10px] text-secondary">Requests</span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-lg font-bold text-white">
+              <span className="text-lg font-bold text-foreground">
                 {analytics.submissions.total.toLocaleString()}
               </span>
               <TrendIndicator 
@@ -254,7 +254,7 @@ const CollabLinkAnalytics: React.FC = () => {
                 direction={analytics.submissions.trendDirection} 
               />
             </div>
-            <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
+            <div className="mt-1 h-1 rounded-full bg-secondary/50 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-green-400/80 to-emerald-400/80"
                 style={{ width: `${metricWidth(analytics.submissions.total)}%` }}
@@ -263,13 +263,13 @@ const CollabLinkAnalytics: React.FC = () => {
           </div>
 
           {/* Request Rate (submissions / views) */}
-          <div className="bg-white/8 rounded-lg p-2 border border-white/15">
+          <div className="bg-secondary/8 rounded-lg p-2 border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <BarChart3 className="h-3 w-3 text-purple-400" />
-              <span className="text-[10px] text-purple-300">Request Rate</span>
+              <BarChart3 className="h-3 w-3 text-secondary" />
+              <span className="text-[10px] text-secondary">Request Rate</span>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-lg font-bold text-white">
+              <span className="text-lg font-bold text-foreground">
                 {requestRateValue.toFixed(1)}%
               </span>
               <TrendIndicator
@@ -277,13 +277,13 @@ const CollabLinkAnalytics: React.FC = () => {
                 direction={analytics.conversionRate.trendDirection}
               />
             </div>
-            <div className="mt-1 h-1 rounded-full bg-white/10 overflow-hidden">
+            <div className="mt-1 h-1 rounded-full bg-secondary/50 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-purple-400/80 to-pink-400/80"
                 style={{ width: `${requestRateWidth}%` }}
               />
             </div>
-            <p className="mt-1 text-[10px] text-purple-300/70">
+            <p className="mt-1 text-[10px] text-secondary/70">
               {analytics.submissions.total.toLocaleString()} of {analytics.views.total.toLocaleString()} views submitted
             </p>
           </div>
@@ -293,29 +293,29 @@ const CollabLinkAnalytics: React.FC = () => {
         {analytics.deviceBreakdown && (analytics.deviceBreakdown.mobile > 0 || analytics.deviceBreakdown.desktop > 0 || analytics.deviceBreakdown.tablet > 0) && (
           <div className="flex gap-1.5">
             {analytics.deviceBreakdown.mobile > 0 && (
-              <div className="flex-1 bg-white/5 rounded px-2 py-1 flex items-center justify-center gap-1 border border-white/10">
-                <Smartphone className="h-3 w-3 text-purple-400 flex-shrink-0" aria-hidden />
-                <span className="text-xs font-semibold text-white">{analytics.deviceBreakdown.mobile}</span>
+              <div className="flex-1 bg-card rounded px-2 py-1 flex items-center justify-center gap-1 border border-border">
+                <Smartphone className="h-3 w-3 text-secondary flex-shrink-0" aria-hidden />
+                <span className="text-xs font-semibold text-foreground">{analytics.deviceBreakdown.mobile}</span>
               </div>
             )}
             {analytics.deviceBreakdown.desktop > 0 && (
-              <div className="flex-1 bg-white/5 rounded px-2 py-1 flex items-center justify-center gap-1 border border-white/10">
-                <Monitor className="h-3 w-3 text-purple-400 flex-shrink-0" aria-hidden />
-                <span className="text-xs font-semibold text-white">{analytics.deviceBreakdown.desktop}</span>
+              <div className="flex-1 bg-card rounded px-2 py-1 flex items-center justify-center gap-1 border border-border">
+                <Monitor className="h-3 w-3 text-secondary flex-shrink-0" aria-hidden />
+                <span className="text-xs font-semibold text-foreground">{analytics.deviceBreakdown.desktop}</span>
               </div>
             )}
             {analytics.deviceBreakdown.tablet > 0 && (
-              <div className="flex-1 bg-white/5 rounded px-2 py-1 flex items-center justify-center gap-1 border border-white/10">
-                <Tablet className="h-3 w-3 text-purple-400 flex-shrink-0" aria-hidden />
-                <span className="text-xs font-semibold text-white">{analytics.deviceBreakdown.tablet}</span>
+              <div className="flex-1 bg-card rounded px-2 py-1 flex items-center justify-center gap-1 border border-border">
+                <Tablet className="h-3 w-3 text-secondary flex-shrink-0" aria-hidden />
+                <span className="text-xs font-semibold text-foreground">{analytics.deviceBreakdown.tablet}</span>
               </div>
             )}
           </div>
         )}
 
         {/* Helper text — one primary line */}
-        <div className="mt-2 pt-2 border-t border-white/10">
-          <p className="text-xs text-purple-300/70 text-center">
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-xs text-secondary/70 text-center">
             {analytics.views.total === 0
               ? 'Share your link to get your first view'
               : analytics.submissions.total > 0

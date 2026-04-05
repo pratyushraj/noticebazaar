@@ -60,7 +60,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <div 
-          className="lg:hidden w-[38px] h-[38px] rounded-full hover:bg-[#1f1f1f] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          className="lg:hidden w-[38px] h-[38px] rounded-full hover:bg-secondary active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center"
         >
           <AppsGridIcon />
         </div>
@@ -68,25 +68,25 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
 
       <SheetContent
         side="left"
-        className="w-[84%] sm:w-[320px] bg-[#0C111C] backdrop-blur-xl border-r border-white/10 p-4 transition-all duration-300 ease-in-out flex flex-col rounded-r-2xl"
+        className="w-[84%] sm:w-[320px] bg-[#0C111C] backdrop-blur-xl border-r border-border p-4 transition-all duration-300 ease-in-out flex flex-col rounded-r-2xl"
       >
         {/* Profile Header at Top */}
         <div className="mb-6 flex-shrink-0">
           <div className="flex items-center gap-3 mb-4">
-            <Avatar className="h-12 w-12 ring-2 ring-blue-500/40 border-2 border-blue-500/20 rounded-full flex-shrink-0">
+            <Avatar className="h-12 w-12 ring-2 ring-blue-500/40 border-2 border-info/20 rounded-full flex-shrink-0">
               <AvatarImage 
                 src={profile?.avatar_url || DEFAULT_AVATAR_URL} 
                 alt={fullName}
               />
-              <AvatarFallback className="bg-blue-500/20 text-blue-400 text-sm font-semibold">
+              <AvatarFallback className="bg-info/20 text-info text-sm font-semibold">
                 {getInitials(profile?.first_name, profile?.last_name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-white truncate mb-0.5">
+              <h3 className="text-base font-bold text-foreground truncate mb-0.5">
                 {fullName}
               </h3>
-              <p className="text-sm text-[#b0b0b0] truncate">
+              <p className="text-sm text-muted-foreground truncate">
                 {email}
               </p>
             </div>
@@ -96,7 +96,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
             <span className={cn(
               "px-2.5 py-1 rounded-full text-xs font-medium",
               profile?.role === 'creator' 
-                ? "bg-[#6740FF] text-white" 
+                ? "bg-[#6740FF] text-foreground" 
                 : "bg-[#363636] text-gray-300"
             )}>
               {role}
@@ -108,7 +108,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
         </div>
 
         {/* Divider after Profile */}
-        <div className="h-[1px] bg-[#1A2333] mb-4" />
+        <div className="h-[1px] bg-secondary mb-4" />
 
         {/* Main Navigation - Scrollable */}
         <nav className="flex-1 flex flex-col space-y-1 overflow-y-auto min-h-0 -mx-2 px-2">
@@ -123,15 +123,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
                   onClick={() => setOpen(false)}
                   className={cn(
                     "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150",
-                    "hover:bg-[#1C2433] active:scale-[0.98]",
+                    "hover:bg-secondary active:scale-[0.98]",
                     active
-                      ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-white"
-                      : "text-[#9FA8B7] hover:text-white"
+                      ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-foreground"
+                      : "text-[#9FA8B7] hover:text-foreground"
                   )}
                 >
                   <Icon className={cn(
                     "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-all duration-150",
-                    active ? "text-white" : "text-[#A8B0C0] group-hover:text-white"
+                    active ? "text-foreground" : "text-[#A8B0C0] group-hover:text-foreground"
                   )} />
                   <span className="flex-1 relative z-10">{tab.label}</span>
                 </Link>
@@ -139,33 +139,33 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ tabs, profilePath }) => {
           })}
 
           {/* Divider before Settings */}
-          <div className="h-[1px] bg-[#1A2333] my-3" />
+          <div className="h-[1px] bg-secondary my-3" />
           
           <Link
             to={profilePath}
             onClick={() => setOpen(false)}
             className={cn(
               "group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-150",
-              "hover:bg-[#1C2433] active:scale-[0.98]",
+              "hover:bg-secondary active:scale-[0.98]",
               isActive(profilePath)
-                ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-white"
-                : "text-[#9FA8B7] hover:text-white"
+                ? "bg-gradient-to-r from-[#0A3AFF] to-[#003A9F] text-foreground"
+                : "text-[#9FA8B7] hover:text-foreground"
             )}
           >
             <Settings className={cn(
               "h-[18px] w-[18px] flex-shrink-0 relative z-10 transition-all duration-150",
-              isActive(profilePath) ? "text-white" : "text-[#A8B0C0] group-hover:text-white"
+              isActive(profilePath) ? "text-foreground" : "text-[#A8B0C0] group-hover:text-foreground"
             )} />
             <span className="relative z-10">Settings</span>
           </Link>
 
           {/* Divider before Logout */}
-          <div className="h-[1px] bg-[#1A2333] my-3" />
+          <div className="h-[1px] bg-secondary my-3" />
 
           <button type="button"
             onClick={handleLogout}
             disabled={signOutMutation.isPending}
-            className="group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium text-red-400 hover:bg-red-500/10 active:scale-[0.98] w-full text-left transition-all duration-150 disabled:opacity-50"
+            className="group relative flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm font-medium text-destructive hover:bg-destructive/10 active:scale-[0.98] w-full text-left transition-all duration-150 disabled:opacity-50"
           >
             <LogOut className="h-[18px] w-[18px] flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5" />
             <span>Logout</span>

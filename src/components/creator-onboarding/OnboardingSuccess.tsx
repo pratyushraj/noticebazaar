@@ -32,7 +32,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
         className="relative"
       >
         <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-2xl">
-          <CheckCircle className="w-12 h-12 text-white" />
+          <CheckCircle className="w-12 h-12 text-foreground" />
         </div>
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
@@ -49,10 +49,10 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
         transition={{ delay: 0.3 }}
         className="space-y-4"
       >
-        <h1 className="text-4xl md:text-5xl font-bold text-white">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground">
           Your Deal Workspace Is Ready
         </h1>
-        <p className="text-xl text-purple-200">
+        <p className="text-xl text-secondary">
           Welcome to Creator Armour, {userName || 'Creator'}.
         </p>
       </motion.div>
@@ -62,18 +62,18 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 space-y-4"
+        className="bg-secondary/50 backdrop-blur-md rounded-2xl p-6 border border-border space-y-4"
       >
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-purple-400" />
-          <h3 className="font-semibold text-white">What's Next?</h3>
+          <Sparkles className="w-5 h-5 text-secondary" />
+          <h3 className="font-semibold text-foreground">What's Next?</h3>
         </div>
         <ul className="space-y-3 text-left">
           <motion.li
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-            className="flex items-start gap-3 text-purple-200"
+            className="flex items-start gap-3 text-secondary"
           >
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             <span>Your creator workspace is active</span>
@@ -82,7 +82,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.7 }}
-            className="flex items-start gap-3 text-purple-200"
+            className="flex items-start gap-3 text-secondary"
           >
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             <span>Add your first brand deal to start tracking risk and payment status</span>
@@ -91,7 +91,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.8 }}
-            className="flex items-start gap-3 text-purple-200"
+            className="flex items-start gap-3 text-secondary"
           >
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             <span>Use your dashboard to organize contracts, proofs, and payouts</span>
@@ -109,7 +109,7 @@ const OnboardingSuccess = ({ userName }: OnboardingSuccessProps) => {
         <Button
           onClick={handleGoToDashboard}
           size="lg"
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-foreground px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
         >
           Open Deal Dashboard
           <ArrowRight className="ml-2 w-5 h-5" />

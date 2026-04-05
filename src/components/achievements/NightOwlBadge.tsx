@@ -14,7 +14,7 @@ export const NightOwlBadge: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 text-xs font-semibold"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/20 border border-purple-500/30 text-secondary text-xs font-semibold"
     >
       <Moon className="w-3 h-3" />
       <span>Night Owl</span>

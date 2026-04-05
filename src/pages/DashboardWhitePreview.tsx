@@ -21,7 +21,7 @@ export default function DashboardWhitePreview() {
         </div>
 
         {/* Earnings Card - White Style */}
-        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-card border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-[15px] font-semibold text-gray-900 tracking-tight">
@@ -39,7 +39,7 @@ export default function DashboardWhitePreview() {
                 ₹2,85,700
               </div>
               <div className="flex items-center gap-2 text-[13px]">
-                <div className="flex items-center gap-1 font-semibold text-emerald-600">
+                <div className="flex items-center gap-1 font-semibold text-primary">
                   <TrendingUp className="w-3.5 h-3.5" />
                   <span>₹30,500 (12%)</span>
                 </div>
@@ -64,7 +64,7 @@ export default function DashboardWhitePreview() {
         </Card>
 
         {/* Needs Attention - White Style */}
-        <Card className="bg-white border border-gray-200 shadow-sm">
+        <Card className="bg-card border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -111,7 +111,7 @@ export default function DashboardWhitePreview() {
                 </p>
               </div>
               <div className="space-y-2 pt-1">
-                <button type="button" className="w-full py-3 rounded-[12px] bg-gray-900 text-white font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150">
+                <button type="button" className="w-full py-3 rounded-[12px] bg-gray-900 text-foreground font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150">
                   Send Reminder
                 </button>
                 <button type="button" className="w-full py-3 rounded-[12px] bg-gray-100 text-gray-700 font-semibold text-[15px] active:scale-[0.97] active:opacity-80 transition-all duration-150 border border-gray-200">
@@ -123,7 +123,7 @@ export default function DashboardWhitePreview() {
         </Card>
 
         {/* Payments - White Style */}
-        <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+        <Card className="bg-card border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
           <CardContent>
             <div className="flex items-center justify-between mb-4 pt-1">
               <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export default function DashboardWhitePreview() {
         </Card>
 
         {/* Upcoming Deadlines - White Style */}
-        <Card className="bg-white border border-gray-200 shadow-sm">
+        <Card className="bg-card border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -166,7 +166,7 @@ export default function DashboardWhitePreview() {
           <CardContent>
             <div className="space-y-2.5">
               {/* Deadline Item 1 */}
-              <div className="flex gap-3 p-3.5 rounded-[12px] border border-gray-200 hover:bg-gray-50 active:bg-gray-50 transition-all duration-150 cursor-pointer group bg-white">
+              <div className="flex gap-3 p-3.5 rounded-[12px] border border-gray-200 hover:bg-gray-50 active:bg-gray-50 transition-all duration-150 cursor-pointer group bg-card">
                 <div className="flex flex-col items-center justify-center w-14 h-14 rounded-[12px] shrink-0 border border-gray-300 bg-gray-50">
                   <div className="text-[10px] font-semibold uppercase tracking-wide leading-tight text-gray-700">
                     NOV
@@ -189,7 +189,7 @@ export default function DashboardWhitePreview() {
               </div>
 
               {/* Deadline Item 2 */}
-              <div className="flex gap-3 p-3.5 rounded-[12px] border border-gray-200 hover:bg-gray-50 active:bg-gray-50 transition-all duration-150 cursor-pointer group bg-white">
+              <div className="flex gap-3 p-3.5 rounded-[12px] border border-gray-200 hover:bg-gray-50 active:bg-gray-50 transition-all duration-150 cursor-pointer group bg-card">
                 <div className="flex flex-col items-center justify-center w-14 h-14 rounded-[12px] shrink-0 border border-gray-300 bg-gray-50">
                   <div className="text-[10px] font-semibold uppercase tracking-wide leading-tight text-gray-700">
                     NOV
@@ -212,7 +212,7 @@ export default function DashboardWhitePreview() {
               </div>
 
               {/* Deadline Item 3 */}
-              <div className="flex gap-3 p-3.5 rounded-[12px] border border-gray-200 hover:bg-gray-50 active:bg-gray-50 transition-all duration-150 cursor-pointer group bg-white">
+              <div className="flex gap-3 p-3.5 rounded-[12px] border border-gray-200 hover:bg-gray-50 active:bg-gray-50 transition-all duration-150 cursor-pointer group bg-card">
                 <div className="flex flex-col items-center justify-center w-14 h-14 rounded-[12px] shrink-0 border border-gray-300 bg-gray-50">
                   <div className="text-[10px] font-semibold uppercase tracking-wide leading-tight text-gray-700">
                     DEC
@@ -239,7 +239,7 @@ export default function DashboardWhitePreview() {
 
         {/* Campaigns - White Style */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="bg-card border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="relative z-10 pb-3">
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gray-100">
@@ -256,7 +256,7 @@ export default function DashboardWhitePreview() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="bg-card border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <CardHeader className="relative z-10 pb-3">
               <div className="flex items-center gap-2">
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gray-100">
@@ -276,7 +276,7 @@ export default function DashboardWhitePreview() {
 
         {/* Performance Cards - White Style */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="bg-white border border-gray-200 shadow-sm">
+          <Card className="bg-card border border-gray-200 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-gray-900">
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gray-100">
@@ -305,7 +305,7 @@ export default function DashboardWhitePreview() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border border-gray-200 shadow-sm">
+          <Card className="bg-card border border-gray-200 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-gray-900">
                 <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gray-100">
@@ -332,7 +332,7 @@ export default function DashboardWhitePreview() {
         <div className="mt-8 p-4 rounded-xl bg-gray-50 border border-gray-200">
           <p className="text-sm text-gray-600 text-center">
             This is a preview of the minimal white/black/gray palette applied across the dashboard.
-            All components use <code className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">bg-white</code>, <code className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">border-gray-200</code>, and <code className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">text-gray-900</code> for a clean, professional SaaS look.
+            All components use <code className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">bg-card</code>, <code className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">border-gray-200</code>, and <code className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">text-gray-900</code> for a clean, professional SaaS look.
           </p>
         </div>
       </div>

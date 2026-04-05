@@ -1160,11 +1160,11 @@ export default function LawyerDashboard() {
   };
 
   return (
-    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white fixed inset-0">
+    <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground fixed inset-0">
       <div className="flex h-full">
         {/* Left Sidebar - Filters & Conversation List */}
         <aside className={cn(
-          "w-full md:w-80 border-r border-white/10 bg-white/5 backdrop-blur-xl",
+          "w-full md:w-80 border-r border-border bg-card backdrop-blur-xl",
           "transition-transform duration-300 ease-in-out",
           showListOnMobile ? "block" : "hidden md:block"
         )}>
@@ -1180,7 +1180,7 @@ export default function LawyerDashboard() {
                 </div>
                 <div>
                   <div className="font-semibold">Legal Advisor</div>
-                  <div className="text-xs text-white/60">Contract Review</div>
+                  <div className="text-xs text-foreground/60">Contract Review</div>
                 </div>
               </div>
               <motion.button
@@ -1205,7 +1205,7 @@ export default function LawyerDashboard() {
                 whileTap={animations.microTap}
                 className={cn(
                   "p-2 rounded-lg transition-colors",
-                  "text-white/70 hover:text-white hover:bg-white/10",
+                  "text-foreground/70 hover:text-foreground hover:bg-secondary/50",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
                 aria-label="Log out"
@@ -1220,7 +1220,7 @@ export default function LawyerDashboard() {
 
             {/* Search */}
             <div className="relative">
-              <Search className={cn(iconSizes.sm, "absolute left-3 top-1/2 -translate-y-1/2 text-white/40")} />
+              <Search className={cn(iconSizes.sm, "absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40")} />
               <input
                 type="text"
                 placeholder="Search conversations..."
@@ -1229,8 +1229,8 @@ export default function LawyerDashboard() {
                 className={cn(
                   "w-full pl-10 pr-4 py-2 rounded-xl",
                   glass.appleSubtle,
-                  "border border-white/10",
-                  "text-white placeholder:text-white/40",
+                  "border border-border",
+                  "text-foreground placeholder:text-foreground/40",
                   "focus:outline-none focus:ring-2 focus:ring-purple-400/50"
                 )}
               />
@@ -1248,8 +1248,8 @@ export default function LawyerDashboard() {
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
                     filter === f
-                      ? "bg-purple-500 text-white"
-                      : "bg-white/10 text-white/70 hover:bg-white/15"
+                      ? "bg-secondary text-foreground"
+                      : "bg-secondary/50 text-foreground/70 hover:bg-secondary/15"
                   )}
                 >
                   {f.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -1269,8 +1269,8 @@ export default function LawyerDashboard() {
                   className={cn(
                     "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
                     selectedAdvisor === advisor
-                      ? "bg-purple-500 text-white"
-                      : "bg-white/10 text-white/70 hover:bg-white/15"
+                      ? "bg-secondary text-foreground"
+                      : "bg-secondary/50 text-foreground/70 hover:bg-secondary/15"
                   )}
                 >
                   {advisor === 'all' ? 'All' : advisor === 'legal_advisor' ? 'Legal Advisor' : 'Anjali Sharma'}
@@ -1282,9 +1282,9 @@ export default function LawyerDashboard() {
           {/* Conversation List */}
           <div className="overflow-y-auto h-[calc(100dvh-200px)]">
             {isLoading ? (
-              <div className="p-4 text-center text-white/50">Loading...</div>
+              <div className="p-4 text-center text-foreground/50">Loading...</div>
             ) : filteredConversations.length === 0 ? (
-              <div className="p-4 text-center text-white/50">No conversations found</div>
+              <div className="p-4 text-center text-foreground/50">No conversations found</div>
             ) : (
               filteredConversations.map((conv) => (
                 <motion.button
@@ -1292,9 +1292,9 @@ export default function LawyerDashboard() {
                   onClick={() => handleSelectConversation(conv.id)}
                   whileTap={animations.microTap}
                   className={cn(
-                    "w-full p-4 text-left border-b border-white/5",
-                    "hover:bg-white/5 transition-colors",
-                    selectedConversation === conv.id && "bg-white/10"
+                    "w-full p-4 text-left border-b border-border/5",
+                    "hover:bg-card transition-colors",
+                    selectedConversation === conv.id && "bg-secondary/50"
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -1314,8 +1314,8 @@ export default function LawyerDashboard() {
                           {getConversationDisplayMeta(conv).meta && (
                             <span className={cn(
                               "px-2 py-0.5 rounded text-xs font-medium",
-                              getConversationDisplayMeta(conv).meta === 'High Risk' && "bg-red-500/20 text-red-300",
-                              getConversationDisplayMeta(conv).meta === 'Barter' && "bg-orange-500/20 text-orange-300",
+                              getConversationDisplayMeta(conv).meta === 'High Risk' && "bg-destructive/20 text-destructive",
+                              getConversationDisplayMeta(conv).meta === 'Barter' && "bg-warning/20 text-warning",
                               getConversationDisplayMeta(conv).meta === 'Paid' && "bg-green-500/20 text-green-300"
                             )}>
                               {getConversationDisplayMeta(conv).meta}
@@ -1323,7 +1323,7 @@ export default function LawyerDashboard() {
                           )}
                           {/* Unread count */}
                         {conv.unread_count_advisor > 0 && (
-                          <span className="px-2 py-0.5 rounded-full bg-purple-500 text-xs font-semibold">
+                          <span className="px-2 py-0.5 rounded-full bg-secondary text-xs font-semibold">
                             {conv.unread_count_advisor}
                           </span>
                         )}
@@ -1401,7 +1401,7 @@ export default function LawyerDashboard() {
             />
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-white/50">
+              <div className="text-center text-foreground/50">
                 <Scale className={cn(iconSizes.xl, "mx-auto mb-4 opacity-50")} />
                 <p>Select a conversation to review contracts</p>
               </div>
@@ -1514,14 +1514,14 @@ function ConversationView({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className={cn("p-4 border-b border-white/10 flex-shrink-0", glass.apple)}>
+      <div className={cn("p-4 border-b border-border flex-shrink-0", glass.apple)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Back button for mobile */}
             {onBack && (
               <button type="button"
                 onClick={onBack}
-                className="md:hidden p-2 -ml-2 rounded-lg hover:bg-white/10 transition-colors"
+                className="md:hidden p-2 -ml-2 rounded-lg hover:bg-secondary/50 transition-colors"
                 aria-label="Back to conversations"
               >
                 <ChevronLeft className={iconSizes.md} />
@@ -1534,7 +1534,7 @@ function ConversationView({
               <div className="font-semibold">
                 {getConversationDisplayMeta(conversation).title}
               </div>
-              <div className="text-sm text-white/60">
+              <div className="text-sm text-foreground/60">
                 {getConversationDisplayMeta(conversation).subtitle}
               </div>
             </div>
@@ -1546,7 +1546,7 @@ function ConversationView({
                 onClick={() => setNewMessage(reply)}
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-xs",
-                  "bg-white/10 hover:bg-white/15",
+                  "bg-secondary/50 hover:bg-secondary/15",
                   "transition-colors"
                 )}
               >
@@ -1602,11 +1602,11 @@ function ConversationView({
                 // WhatsApp/iMessage style rounded corners
                 isOwn
                   ? cn(
-                      "bg-purple-600 text-white",
+                      "bg-secondary text-foreground",
                       showTail ? "rounded-2xl rounded-br-sm" : "rounded-2xl"
                     )
                   : cn(
-                      "bg-white/10 text-white",
+                      "bg-secondary/50 text-foreground",
                       showTail ? "rounded-2xl rounded-bl-sm" : "rounded-2xl"
                     )
               )}>
@@ -1619,7 +1619,7 @@ function ConversationView({
                         href={att.signed_download_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-xs text-white/80 hover:text-white"
+                        className="flex items-center gap-2 text-xs text-foreground/80 hover:text-foreground"
                       >
                         <FileText className={iconSizes.sm} />
                         {att.file_name}
@@ -1630,7 +1630,7 @@ function ConversationView({
                 )}
                 <div className={cn(
                   "text-[10px] mt-1 flex items-center gap-1",
-                  isOwn ? "text-white/70 justify-end" : "text-white/50"
+                  isOwn ? "text-foreground/70 justify-end" : "text-foreground/50"
                 )}>
                   {new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
@@ -1641,7 +1641,7 @@ function ConversationView({
       </div>
 
       {/* Input */}
-      <div className={cn("p-4 border-t border-white/10 flex-shrink-0", glass.apple)}>
+      <div className={cn("p-4 border-t border-border flex-shrink-0", glass.apple)}>
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -1653,8 +1653,8 @@ function ConversationView({
             className={cn(
               "flex-1 px-4 py-2 rounded-xl",
               glass.appleSubtle,
-              "border border-white/10",
-              "text-white placeholder:text-white/40",
+              "border border-border",
+              "text-foreground placeholder:text-foreground/40",
               "focus:outline-none focus:ring-2 focus:ring-purple-400/50"
             )}
           />
@@ -1664,7 +1664,7 @@ function ConversationView({
             whileTap={animations.microTap}
             className={cn(
               "px-6 py-2 rounded-xl font-medium",
-              "bg-purple-500 hover:bg-purple-600",
+              "bg-secondary hover:bg-secondary",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "transition-colors"
             )}

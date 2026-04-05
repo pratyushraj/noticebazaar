@@ -18,7 +18,7 @@ const InfluencerRateCalculator = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md border border-gray-200">
+    <div className="p-6 bg-card rounded-lg shadow-md border border-gray-200">
       <h2 className="text-xl font-bold mb-4">Influencer Rate Calculator</h2>
       
       <div className="space-y-4">
@@ -40,7 +40,7 @@ const InfluencerRateCalculator = () => {
           </select>
         </div>
 
-        <button type="button" onClick={calculateRate} className="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">
+        <button type="button" onClick={calculateRate} className="w-full bg-indigo-600 text-foreground p-2 rounded hover:bg-indigo-700">
           Calculate Rate
         </button>
 
@@ -48,7 +48,7 @@ const InfluencerRateCalculator = () => {
           <div className="mt-4 p-4 bg-indigo-50 rounded text-center">
             <p className="text-sm">Estimated Deal Rate</p>
             <p className="text-2xl font-bold text-indigo-700">₹{rate.toLocaleString()}</p>
-            <a href="/contract-generator" className="mt-4 block w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 text-sm font-bold">
+            <a href="/contract-generator" className="mt-4 block w-full bg-green-600 text-foreground p-2 rounded hover:bg-green-700 text-sm font-bold">
               Generate Protected Contract
             </a>
           </div>

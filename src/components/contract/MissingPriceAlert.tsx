@@ -22,7 +22,7 @@ export const MissingPriceAlert: React.FC<MissingPriceAlertProps> = ({ onAskBrand
       id="deal-breaker-alert"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mb-6 bg-red-500/20 border-2 border-red-500/50 rounded-xl p-5 md:p-6 relative overflow-hidden"
+      className="mb-6 bg-destructive/20 border-2 border-destructive/50 rounded-xl p-5 md:p-6 relative overflow-hidden"
     >
       {/* Pulse animation */}
       <motion.div
@@ -35,18 +35,18 @@ export const MissingPriceAlert: React.FC<MissingPriceAlertProps> = ({ onAskBrand
           repeat: Infinity,
           ease: 'easeInOut',
         }}
-        className="absolute inset-0 bg-red-500/10 rounded-xl"
+        className="absolute inset-0 bg-destructive/10 rounded-xl"
       />
       <div className="relative z-10">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
+          <div className="w-10 h-10 rounded-full bg-destructive/30 flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-6 h-6 text-destructive" />
           </div>
           <div className="flex-1">
-            <h4 className="font-bold text-lg md:text-xl text-red-300 mb-2">
+            <h4 className="font-bold text-lg md:text-xl text-destructive mb-2">
               🔴 DEAL BREAKER ALERT: Payment amount is missing
             </h4>
-            <p className="text-sm text-red-200/80 leading-relaxed">
+            <p className="text-sm text-destructive/80 leading-relaxed">
               This contract does not specify the payment amount. This is a critical issue that must be addressed before proceeding.
             </p>
           </div>
@@ -55,7 +55,7 @@ export const MissingPriceAlert: React.FC<MissingPriceAlertProps> = ({ onAskBrand
           onClick={onAskBrand}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
+          className="bg-destructive hover:bg-destructive text-foreground px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center gap-2"
         >
           <Mail className="w-4 h-4" />
           Ask Brand to Add Price

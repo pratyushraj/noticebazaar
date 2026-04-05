@@ -28,11 +28,11 @@ const EmptyActionButton: React.FC<{
     onClick={onClick}
     whileHover={{ y: -2, scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
-    className="flex items-center justify-center gap-2 h-12 md:h-14 rounded-xl bg-white/10 border-2 border-white/20 backdrop-blur-xl text-white/90 text-[12px] md:text-[14px] font-medium transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:shadow-[0_6px_16px_rgba(0,0,0,0.25)] relative group"
+    className="flex items-center justify-center gap-2 h-12 md:h-14 rounded-xl bg-secondary/50 border-2 border-border backdrop-blur-xl text-foreground/90 text-[12px] md:text-[14px] font-medium transition-all shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-secondary/20 hover:border-border hover:shadow-[0_6px_16px_rgba(0,0,0,0.25)] relative group"
   >
-    <div className="text-white/80 scale-90 md:scale-100">{icon}</div>
+    <div className="text-foreground/80 scale-90 md:scale-100">{icon}</div>
     <span className="leading-tight">{label}</span>
-    <svg className="w-4 h-4 text-white/60 group-hover:text-white/80 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
     </svg>
   </motion.button>
@@ -57,18 +57,18 @@ export const NoMessagesEmptyState: React.FC<NoMessagesEmptyStateProps> = ({
           repeat: Infinity,
           ease: "easeInOut"
         }}
-        className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)] relative z-10"
+        className="w-12 h-12 md:w-20 md:h-20 rounded-full bg-secondary/50 backdrop-blur-xl border border-border flex items-center justify-center mb-3 md:mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)] relative z-10"
       >
-        <MessageSquare className="w-6 h-6 md:w-10 md:h-10 text-white/70" />
+        <MessageSquare className="w-6 h-6 md:w-10 md:h-10 text-foreground/70" />
       </motion.div>
 
       {/* Title */}
-      <h2 className="text-[18px] md:text-[22px] font-semibold text-white mb-1.5 md:mb-2 text-center relative z-10">
+      <h2 className="text-[18px] md:text-[22px] font-semibold text-foreground mb-1.5 md:mb-2 text-center relative z-10">
         No Messages Yet
       </h2>
 
       {/* Subtitle - More emotional */}
-      <p className="text-center text-[12px] md:text-[15px] leading-snug md:leading-relaxed text-white/80 mb-4 md:mb-6 px-2 max-w-sm mx-auto relative z-10">
+      <p className="text-center text-[12px] md:text-[15px] leading-snug md:leading-relaxed text-foreground/80 mb-4 md:mb-6 px-2 max-w-sm mx-auto relative z-10">
         Your legal advisor is ready when you are.
       </p>
 
@@ -123,7 +123,7 @@ export const NoContractsEmptyState: React.FC<NoContractsEmptyStateProps> = ({
       variant={variant}
       illustration={
         <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center mb-4 md:mb-6">
-          <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-purple-400" />
+          <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-secondary" />
         </div>
       }
     />

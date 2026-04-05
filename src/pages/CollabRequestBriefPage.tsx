@@ -630,7 +630,7 @@ const CollabRequestBriefPage = () => {
                     <span>Platform fee</span>
                     <span className="font-semibold text-foreground">₹0</span>
                   </div>
-                  <div className="h-px bg-secondary/50 my-3" />
+                  <div className="h-px bg-card0 my-3" />
                 </>
               )}
               <div className="flex items-center justify-between text-foreground">
@@ -786,7 +786,7 @@ const CollabRequestBriefPage = () => {
                 <button type="button"
                   onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
                   disabled={isAccepting || isDeclining}
-                  className="h-14 px-6 rounded-xl border border-border text-foreground/85 hover:text-foreground hover:bg-secondary/50 text-base font-bold transition-colors"
+                  className="h-14 px-6 rounded-xl border border-border text-foreground/85 hover:text-foreground hover:bg-card0 text-base font-bold transition-colors"
                 >
                   Counter offer
                 </button>

@@ -54,7 +54,7 @@ const Layout = ({ children }: LayoutProps) => {
             {children}
           </main>
 
-          <div className="hidden md:block text-center py-4 text-sm text-white/30 mt-auto">
+          <div className="hidden md:block text-center py-4 text-sm text-foreground/30 mt-auto">
             <span>© 2026 Creator Armour</span>
           </div>
         </div>

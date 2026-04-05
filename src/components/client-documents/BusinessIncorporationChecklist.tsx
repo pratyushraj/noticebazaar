@@ -64,11 +64,11 @@ const BusinessIncorporationChecklist: React.FC<BusinessIncorporationChecklistPro
         case 'Awaiting Review':
           return { status: 'Awaiting Verification', variant: 'secondary', icon: <Clock className="h-4 w-4 text-orange-500" /> };
         case 'Action Required':
-          return { status: 'Action Required', variant: 'destructive', icon: <FileWarning className="h-4 w-4 text-red-500" /> };
+          return { status: 'Action Required', variant: 'destructive', icon: <FileWarning className="h-4 w-4 text-destructive" /> };
         case 'Rejected':
-          return { status: 'Rejected', variant: 'destructive', icon: <XCircle className="h-4 w-4 text-red-500" /> };
+          return { status: 'Rejected', variant: 'destructive', icon: <XCircle className="h-4 w-4 text-destructive" /> };
         default:
-          return { status: 'Uploaded', variant: 'default', icon: <FileText className="h-4 w-4 text-blue-500" /> };
+          return { status: 'Uploaded', variant: 'default', icon: <FileText className="h-4 w-4 text-info" /> };
       }
     }
     return { status: 'Pending Upload', variant: 'outline', icon: <FileUp className="h-4 w-4 text-muted-foreground" /> };

@@ -132,20 +132,20 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-2xl"
         >
-          <Card className="border-white/20 shadow-2xl">
+          <Card className="border-border shadow-2xl">
             <CardContent className="p-0">
-              <div className="flex items-center gap-3 p-4 border-b border-white/10">
-                <Search className="h-5 w-5 text-white/60 shrink-0" />
+              <div className="flex items-center gap-3 p-4 border-b border-border">
+                <Search className="h-5 w-5 text-foreground/60 shrink-0" />
                 <Input
                   ref={inputRef}
                   type="text"
                   placeholder="Search deals, payments, deadlines..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="flex-1 bg-transparent border-0 text-white placeholder:text-white/40 focus:ring-0 focus-visible:ring-0 text-[15px]"
+                  className="flex-1 bg-transparent border-0 text-foreground placeholder:text-foreground/40 focus:ring-0 focus-visible:ring-0 text-[15px]"
                 />
                 <div className="flex items-center gap-2 shrink-0">
-                  <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-white/20 bg-white/5 px-1.5 font-mono text-[10px] font-medium text-white/60">
+                  <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-card px-1.5 font-mono text-[10px] font-medium text-foreground/60">
                     <Command className="h-3 w-3" />K
                   </kbd>
                   <button type="button"
@@ -153,10 +153,10 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                       if (controlledOpen === undefined) setInternalOpen(false);
                       onClose?.();
                     }}
-                    className="h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                    className="h-8 w-8 rounded-lg bg-card hover:bg-secondary/50 flex items-center justify-center transition-colors"
                     aria-label="Close search"
                   >
-                    <X className="h-4 w-4 text-white/60" />
+                    <X className="h-4 w-4 text-foreground/60" />
                   </button>
                 </div>
               </div>
@@ -169,22 +169,22 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                       <button type="button"
                         key={`${result.type}-${result.id}`}
                         onClick={() => handleResultClick(result)}
-                        className="w-full p-4 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 flex items-center gap-3 group"
+                        className="w-full p-4 text-left hover:bg-card transition-colors border-b border-border/5 last:border-0 flex items-center gap-3 group"
                       >
-                        <div className="h-9 w-9 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors">
-                          <Icon className="h-4 w-4 text-white/60" />
+                        <div className="h-9 w-9 rounded-lg bg-card flex items-center justify-center shrink-0 group-hover:bg-secondary/50 transition-colors">
+                          <Icon className="h-4 w-4 text-foreground/60" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-[15px] font-semibold text-white">
+                            <span className="text-[15px] font-semibold text-foreground">
                               {result.title}
                             </span>
-                            <span className="text-[11px] text-white/40 px-1.5 py-0.5 rounded bg-white/5">
+                            <span className="text-[11px] text-foreground/40 px-1.5 py-0.5 rounded bg-card">
                               {typeLabels[result.type]}
                             </span>
                           </div>
                           {result.subtitle && (
-                            <div className="text-[13px] text-white/60">
+                            <div className="text-[13px] text-foreground/60">
                               {result.subtitle}
                             </div>
                           )}
@@ -195,7 +195,7 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                   {query.trim().length > 0 && (
                     <button type="button"
                       onClick={handleViewAll}
-                      className="w-full p-3 text-center text-[13px] text-white/60 hover:text-white hover:bg-white/5 transition-colors border-t border-white/5"
+                      className="w-full p-3 text-center text-[13px] text-foreground/60 hover:text-foreground hover:bg-card transition-colors border-t border-border/5"
                     >
                       View all results →
                     </button>
@@ -205,8 +205,8 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
 
               {query.trim().length > 0 && results.length === 0 && (
                 <div className="p-8 text-center">
-                  <p className="text-[15px] text-white/60">No results found</p>
-                  <p className="text-[13px] text-white/40 mt-1">
+                  <p className="text-[15px] text-foreground/60">No results found</p>
+                  <p className="text-[13px] text-foreground/40 mt-1">
                     Try searching for deals, payments, contracts, or notifications
                   </p>
                 </div>
@@ -216,28 +216,28 @@ export function QuickSearch({ onClose, onSelect, isOpen: controlledOpen }: Quick
                 <div className="p-6">
                   {suggestions.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-[12px] text-white/40 mb-2 px-2">Recent Searches</p>
+                      <p className="text-[12px] text-foreground/40 mb-2 px-2">Recent Searches</p>
                       <div className="space-y-1">
                         {suggestions.map((suggestion, idx) => (
                           <button type="button"
                             key={idx}
                             onClick={() => handleSuggestionClick(suggestion)}
-                            className="w-full p-2 text-left text-[13px] text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors flex items-center gap-2"
+                            className="w-full p-2 text-left text-[13px] text-foreground/60 hover:text-foreground hover:bg-card rounded-lg transition-colors flex items-center gap-2"
                           >
-                            <Clock className="h-3.5 w-3.5 text-white/40" />
+                            <Clock className="h-3.5 w-3.5 text-foreground/40" />
                             {suggestion}
                           </button>
                         ))}
                       </div>
                     </div>
                   )}
-                  <div className="pt-4 border-t border-white/5">
-                    <p className="text-[12px] text-white/40 mb-3 px-2">Search for</p>
+                  <div className="pt-4 border-t border-border/5">
+                    <p className="text-[12px] text-foreground/40 mb-3 px-2">Search for</p>
                     <div className="flex flex-wrap gap-2">
                       {['Deals', 'Payments', 'Contracts', 'Notifications'].map((tag) => (
                         <span
                           key={tag}
-                          className="px-3 py-1.5 rounded-full bg-white/5 text-white/60 text-[12px] border border-white/10"
+                          className="px-3 py-1.5 rounded-full bg-card text-foreground/60 text-[12px] border border-border"
                         >
                           {tag}
                         </span>

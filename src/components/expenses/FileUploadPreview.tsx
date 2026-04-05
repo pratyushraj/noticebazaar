@@ -25,7 +25,7 @@ export const FileUploadPreview: React.FC<FileUploadPreviewProps> = ({
       exit={{ opacity: 0, y: -10 }}
       className={cn(
         "flex items-center gap-3 p-3 rounded-xl",
-        "bg-white/10 border border-white/20 backdrop-blur-xl",
+        "bg-secondary/50 border border-border backdrop-blur-xl",
         className
       )}
     >
@@ -36,18 +36,18 @@ export const FileUploadPreview: React.FC<FileUploadPreviewProps> = ({
           className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
         />
       ) : isPdf ? (
-        <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-          <FileText className="w-6 h-6 text-white/80" />
+        <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
+          <FileText className="w-6 h-6 text-foreground/80" />
         </div>
       ) : (
-        <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-          <Image className="w-6 h-6 text-white/80" />
+        <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center flex-shrink-0">
+          <Image className="w-6 h-6 text-foreground/80" />
         </div>
       )}
       
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-white/90 truncate font-medium">{file.name}</p>
-        <p className="text-xs text-white/60">
+        <p className="text-sm text-foreground/90 truncate font-medium">{file.name}</p>
+        <p className="text-xs text-foreground/60">
           {(file.size / 1024).toFixed(1)} KB
         </p>
       </div>
@@ -56,8 +56,8 @@ export const FileUploadPreview: React.FC<FileUploadPreviewProps> = ({
         onClick={onRemove}
         className={cn(
           "p-1.5 rounded-lg",
-          "bg-white/10 hover:bg-white/20",
-          "text-white/70 hover:text-white",
+          "bg-secondary/50 hover:bg-secondary/20",
+          "text-foreground/70 hover:text-foreground",
           "transition-colors duration-200",
           "flex-shrink-0"
         )}

@@ -87,14 +87,14 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <h3 className={cn(
           'text-base font-bold tracking-tight mb-6',
-          isDark ? 'text-white' : 'text-slate-900'
+          isDark ? 'text-foreground' : 'text-muted-foreground'
         )}>
           🎯 Deal Status Flow
         </h3>
@@ -121,15 +121,15 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                       className={cn(
                         'w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all relative',
                         isCompletedStage
-                          ? `bg-gradient-to-br ${stage.color} border-white/40`
+                          ? `bg-gradient-to-br ${stage.color} border-border/40`
                           : isDark
-                          ? 'bg-white/10 border-white/20'
-                          : 'bg-slate-100 border-slate-300'
+                          ? 'bg-secondary/50 border-border'
+                          : 'bg-background border-border'
                       )}
                     >
                       <div className={cn(
                         'text-lg',
-                        isCompletedStage ? 'text-white' : isDark ? 'text-white/60' : 'text-slate-600'
+                        isCompletedStage ? 'text-foreground' : isDark ? 'text-foreground/60' : 'text-muted-foreground'
                       )}>
                         {stage.icon}
                       </div>
@@ -153,17 +153,17 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                         'text-xs font-bold',
                         isCompletedStage
                           ? isDark
-                            ? 'text-white'
-                            : 'text-slate-900'
+                            ? 'text-foreground'
+                            : 'text-muted-foreground'
                           : isDark
-                          ? 'text-white/60'
-                          : 'text-slate-600'
+                          ? 'text-foreground/60'
+                          : 'text-muted-foreground'
                       )}>
                         {stage.label}
                       </p>
                       <p className={cn(
                         'text-[10px] mt-0.5',
-                        isDark ? 'text-white/40' : 'text-slate-500'
+                        isDark ? 'text-foreground/40' : 'text-muted-foreground'
                       )}>
                         {stage.duration}
                       </p>
@@ -182,10 +182,10 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                         className={cn(
                           'w-5 h-5 flex-shrink-0',
                           isPreviousStage
-                            ? 'text-emerald-500'
+                            ? 'text-primary'
                             : isDark
-                            ? 'text-white/30'
-                            : 'text-slate-300'
+                            ? 'text-foreground/30'
+                            : 'text-muted-foreground'
                         )}
                       />
                     </motion.div>
@@ -204,8 +204,8 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
             className={cn(
               'p-4 rounded-xl border',
               isDark
-                ? 'bg-white/5 border-white/10'
-                : 'bg-slate-50 border-slate-200'
+                ? 'bg-card border-border'
+                : 'bg-background border-border'
             )}
           >
             {(() => {
@@ -214,13 +214,13 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                 <>
                   <p className={cn(
                     'text-sm font-bold mb-1',
-                    isDark ? 'text-white' : 'text-slate-900'
+                    isDark ? 'text-foreground' : 'text-muted-foreground'
                   )}>
                     {stage.label} Stage
                   </p>
                   <p className={cn(
                     'text-xs mb-3',
-                    isDark ? 'text-white/60' : 'text-slate-600'
+                    isDark ? 'text-foreground/60' : 'text-muted-foreground'
                   )}>
                     {stage.description}
                   </p>
@@ -228,7 +228,7 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                   {stage.stage === 'draft' && (
                     <p className={cn(
                       'text-xs',
-                      isDark ? 'text-blue-200/80' : 'text-blue-900'
+                      isDark ? 'text-info/80' : 'text-info'
                     )}>
                       📋 Next: Send contract to brand for signature
                     </p>
@@ -236,7 +236,7 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                   {stage.stage === 'active' && (
                     <p className={cn(
                       'text-xs',
-                      isDark ? 'text-blue-200/80' : 'text-blue-900'
+                      isDark ? 'text-info/80' : 'text-info'
                     )}>
                       ⚡ You are here! Create and polish your content
                     </p>
@@ -244,7 +244,7 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                   {stage.stage === 'delivered' && (
                     <p className={cn(
                       'text-xs',
-                      isDark ? 'text-blue-200/80' : 'text-blue-900'
+                      isDark ? 'text-info/80' : 'text-info'
                     )}>
                       ✅ Content uploaded. Waiting for brand approval
                     </p>
@@ -252,7 +252,7 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                   {stage.stage === 'payment' && (
                     <p className={cn(
                       'text-xs',
-                      isDark ? 'text-blue-200/80' : 'text-blue-900'
+                      isDark ? 'text-info/80' : 'text-info'
                     )}>
                       💰 Payment is being processed. Should arrive within 7 days
                     </p>
@@ -260,7 +260,7 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                   {stage.stage === 'completed' && (
                     <p className={cn(
                       'text-xs',
-                      isDark ? 'text-emerald-200/80' : 'text-emerald-900'
+                      isDark ? 'text-primary/80' : 'text-primary'
                     )}>
                       🎉 Congrats! Deal completed. View in portfolio to showcase
                     </p>
@@ -281,19 +281,19 @@ const DealStatusFlow: React.FC<DealStatusFlowProps> = ({
                 className={cn(
                   'p-3 rounded-lg text-center border transition-all',
                   isDark
-                    ? 'bg-white/5 border-white/10 hover:bg-white/10'
-                    : 'bg-slate-50 border-slate-200 hover:bg-white'
+                    ? 'bg-card border-border hover:bg-secondary/50'
+                    : 'bg-background border-border hover:bg-card'
                 )}
               >
                 <p className={cn(
                   'text-2xl font-bold',
-                  isDark ? 'text-white' : 'text-slate-900'
+                  isDark ? 'text-foreground' : 'text-muted-foreground'
                 )}>
                   {dealCount[stage.stage]}
                 </p>
                 <p className={cn(
                   'text-xs mt-1 font-semibold',
-                  isDark ? 'text-white/60' : 'text-slate-600'
+                  isDark ? 'text-foreground/60' : 'text-muted-foreground'
                 )}>
                   {stage.label}
                 </p>

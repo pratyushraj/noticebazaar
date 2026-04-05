@@ -58,10 +58,10 @@ const FeedbackPage = () => {
 
   if (loading) {
     return (
-      <div className={cn("nb-screen-height flex items-center justify-center", gradients.page, "text-white")}>
+      <div className={cn("nb-screen-height flex items-center justify-center", gradients.page, "text-foreground")}>
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-400" />
-          <p className="text-white/70">Loading report...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-secondary" />
+          <p className="text-foreground/70">Loading report...</p>
         </div>
       </div>
     );
@@ -69,16 +69,16 @@ const FeedbackPage = () => {
 
   if (error || !report) {
     return (
-      <div className={cn("nb-screen-height flex items-center justify-center p-4", gradients.page, "text-white")}>
+      <div className={cn("nb-screen-height flex items-center justify-center p-4", gradients.page, "text-foreground")}>
         <div className="text-center max-w-md">
-          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-400" />
+          <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-destructive" />
           <h1 className={cn(typography.h2, "mb-2")}>Report Not Found</h1>
-          <p className="text-white/70 mb-6">{error || 'The report you are looking for does not exist or has been removed.'}</p>
+          <p className="text-foreground/70 mb-6">{error || 'The report you are looking for does not exist or has been removed.'}</p>
           <motion.button
             onClick={() => navigate('/creator-dashboard')}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold transition-all"
+            className="px-6 py-3 bg-secondary hover:bg-secondary rounded-xl font-semibold transition-all"
           >
             <ArrowLeft className="w-4 h-4 inline mr-2" />
             Return to Dashboard
@@ -95,8 +95,8 @@ const FeedbackPage = () => {
 
   const getRiskColor = (score: number) => {
     if (score >= 71) return 'text-green-400';
-    if (score >= 41) return 'text-orange-400';
-    return 'text-red-400';
+    if (score >= 41) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getRiskLabel = (score: number) => {
@@ -106,7 +106,7 @@ const FeedbackPage = () => {
   };
 
   return (
-    <div className={cn("nb-screen-height", gradients.page, "text-white pb-24")}>
+    <div className={cn("nb-screen-height", gradients.page, "text-foreground pb-24")}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -114,17 +114,17 @@ const FeedbackPage = () => {
             onClick={() => navigate(-1)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="mb-4 flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+            className="mb-4 flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back</span>
           </motion.button>
           
           <div className="flex items-center gap-3 mb-4">
-            <Shield className="w-8 h-8 text-purple-400" />
+            <Shield className="w-8 h-8 text-secondary" />
             <h1 className={cn(typography.h1)}>Contract Analysis Report</h1>
           </div>
-          <p className="text-white/60">
+          <p className="text-foreground/60">
             Report ID: {reportId}
           </p>
         </div>
@@ -133,7 +133,7 @@ const FeedbackPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-lg mb-6"
+          className="bg-secondary/50 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-border shadow-lg mb-6"
         >
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -146,8 +146,8 @@ const FeedbackPage = () => {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-white/60">Issues Found</p>
-              <p className="text-3xl font-bold text-white">{issues.length}</p>
+              <p className="text-sm text-foreground/60">Issues Found</p>
+              <p className="text-3xl font-bold text-foreground">{issues.length}</p>
             </div>
           </div>
         </motion.div>
@@ -158,31 +158,31 @@ const FeedbackPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-lg mb-6"
+            className="bg-secondary/50 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-border shadow-lg mb-6"
           >
             <h2 className={cn(typography.h3, "mb-4")}>Key Terms</h2>
             <div className="space-y-3">
               {keyTerms.dealValue && (
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70">Deal Value</span>
+                <div className="flex justify-between items-center py-2 border-b border-border">
+                  <span className="text-foreground/70">Deal Value</span>
                   <span className="font-semibold">{keyTerms.dealValue}</span>
                 </div>
               )}
               {keyTerms.deliverables && (
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70">Deliverables</span>
+                <div className="flex justify-between items-center py-2 border-b border-border">
+                  <span className="text-foreground/70">Deliverables</span>
                   <span className="font-semibold">{keyTerms.deliverables}</span>
                 </div>
               )}
               {keyTerms.paymentSchedule && (
-                <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white/70">Payment Schedule</span>
+                <div className="flex justify-between items-center py-2 border-b border-border">
+                  <span className="text-foreground/70">Payment Schedule</span>
                   <span className="font-semibold">{keyTerms.paymentSchedule}</span>
                 </div>
               )}
               {keyTerms.duration && (
                 <div className="flex justify-between items-center py-2">
-                  <span className="text-white/70">Duration</span>
+                  <span className="text-foreground/70">Duration</span>
                   <span className="font-semibold">{keyTerms.duration}</span>
                 </div>
               )}
@@ -196,7 +196,7 @@ const FeedbackPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-lg mb-6"
+            className="bg-secondary/50 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-border shadow-lg mb-6"
           >
             <h2 className={cn(typography.h3, "mb-4")}>Issues Found</h2>
             <div className="space-y-4">
@@ -205,37 +205,37 @@ const FeedbackPage = () => {
                   key={index}
                   className={cn(
                     "p-4 rounded-xl border",
-                    issue.severity === 'high' ? "bg-red-500/10 border-red-500/30" :
-                    issue.severity === 'medium' ? "bg-orange-500/10 border-orange-500/30" :
+                    issue.severity === 'high' ? "bg-destructive/10 border-destructive/30" :
+                    issue.severity === 'medium' ? "bg-warning/10 border-orange-500/30" :
                     "bg-yellow-500/10 border-yellow-500/30"
                   )}
                 >
                   <div className="flex items-start gap-3">
                     <AlertTriangle className={cn(
                       "w-5 h-5 mt-0.5 flex-shrink-0",
-                      issue.severity === 'high' ? "text-red-400" :
-                      issue.severity === 'medium' ? "text-orange-400" :
+                      issue.severity === 'high' ? "text-destructive" :
+                      issue.severity === 'medium' ? "text-warning" :
                       "text-yellow-400"
                     )} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-white">{issue.title}</h3>
+                        <h3 className="font-semibold text-foreground">{issue.title}</h3>
                         <span className={cn(
                           "text-xs px-2 py-1 rounded-full",
-                          issue.severity === 'high' ? "bg-red-500/20 text-red-300" :
-                          issue.severity === 'medium' ? "bg-orange-500/20 text-orange-300" :
+                          issue.severity === 'high' ? "bg-destructive/20 text-destructive" :
+                          issue.severity === 'medium' ? "bg-warning/20 text-warning" :
                           "bg-yellow-500/20 text-yellow-300"
                         )}>
                           {issue.severity?.toUpperCase() || 'WARNING'}
                         </span>
                       </div>
                       {issue.description && (
-                        <p className="text-white/70 text-sm mb-2">{issue.description}</p>
+                        <p className="text-foreground/70 text-sm mb-2">{issue.description}</p>
                       )}
                       {issue.recommendation && (
-                        <div className="mt-2 p-2 bg-white/5 rounded-lg">
-                          <p className="text-xs text-white/60 mb-1">Recommendation:</p>
-                          <p className="text-sm text-white/90">{issue.recommendation}</p>
+                        <div className="mt-2 p-2 bg-card rounded-lg">
+                          <p className="text-xs text-foreground/60 mb-1">Recommendation:</p>
+                          <p className="text-sm text-foreground/90">{issue.recommendation}</p>
                         </div>
                       )}
                     </div>
@@ -256,12 +256,12 @@ const FeedbackPage = () => {
           >
             <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-400" />
             <h2 className={cn(typography.h3, "mb-2")}>No Issues Found</h2>
-            <p className="text-white/70">This contract looks safe to sign!</p>
+            <p className="text-foreground/70">This contract looks safe to sign!</p>
           </motion.div>
         )}
 
         {/* Footer Note */}
-        <div className="text-center text-white/50 text-sm mt-8">
+        <div className="text-center text-foreground/50 text-sm mt-8">
           <p>This is a read-only view of the contract analysis report.</p>
           <p className="mt-2">For questions or to request changes, please contact the creator.</p>
         </div>

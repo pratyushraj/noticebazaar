@@ -26,16 +26,16 @@ const QuickOverview: React.FC<QuickOverviewProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0 }}
       >
-        <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-xl hover:border-white/10 transition-colors">
+        <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-xl hover:border-border transition-colors">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <TrendingUp className="h-4 w-4 text-emerald-400" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <TrendingUp className="h-4 w-4 text-primary" />
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-white/50 uppercase tracking-wide">Month Revenue</p>
-              <p className="text-2xl font-bold text-white tabular-nums">
+              <p className="text-xs text-foreground/50 uppercase tracking-wide">Month Revenue</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">
                 ₹{monthRevenue.toLocaleString('en-IN')}
               </p>
             </div>
@@ -49,16 +49,16 @@ const QuickOverview: React.FC<QuickOverviewProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-xl hover:border-white/10 transition-colors">
+        <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-xl hover:border-border transition-colors">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <Users className="h-4 w-4 text-blue-400" />
+              <div className="p-2 rounded-lg bg-info/10">
+                <Users className="h-4 w-4 text-info" />
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-white/50 uppercase tracking-wide">Active Clients</p>
-              <p className="text-2xl font-bold text-white tabular-nums">{activeClients}</p>
+              <p className="text-xs text-foreground/50 uppercase tracking-wide">Active Clients</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">{activeClients}</p>
             </div>
           </CardContent>
         </Card>
@@ -70,7 +70,7 @@ const QuickOverview: React.FC<QuickOverviewProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
       >
-        <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-white/5 rounded-xl hover:border-white/10 transition-colors">
+        <Card className="bg-[#0F121A]/80 backdrop-blur-xl border border-border/5 rounded-xl hover:border-border transition-colors">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 rounded-lg bg-yellow-500/10">
@@ -78,8 +78,8 @@ const QuickOverview: React.FC<QuickOverviewProps> = ({
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-white/50 uppercase tracking-wide">Pending Notices</p>
-              <p className="text-2xl font-bold text-white tabular-nums">{pendingNotices}</p>
+              <p className="text-xs text-foreground/50 uppercase tracking-wide">Pending Notices</p>
+              <p className="text-2xl font-bold text-foreground tabular-nums">{pendingNotices}</p>
             </div>
           </CardContent>
         </Card>

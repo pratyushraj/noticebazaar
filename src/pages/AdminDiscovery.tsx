@@ -260,14 +260,14 @@ const AdminDiscovery = () => {
                 {lastScanResult.status === 'running' ? (
                   <>
                     <div className="flex items-center gap-2">
-                      <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                      <Loader2 className="h-5 w-5 text-info animate-spin" />
                       <span className="font-semibold">Scan Running</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {lastScanResult.message || 'The scan is running in the background. Check the influencers list in a few minutes to see results.'}
                     </p>
-                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <p className="text-sm text-blue-900 dark:text-blue-100">
+                    <div className="mt-4 p-3 bg-info dark:bg-info rounded-lg">
+                      <p className="text-sm text-info dark:text-info">
                         💡 <strong>Tip:</strong> The scan typically takes 2-3 minutes. Navigate to the "Manage Influencers" page to see results as they're discovered.
                       </p>
                     </div>

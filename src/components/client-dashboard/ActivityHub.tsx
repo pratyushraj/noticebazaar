@@ -31,7 +31,7 @@ const getCaseProgressBar = (status: string) => {
   let width = '0%';
   let bgColor = 'bg-gray-400';
   switch (status) {
-    case 'In Progress': width = '50%'; bgColor = 'bg-blue-500'; break;
+    case 'In Progress': width = '50%'; bgColor = 'bg-info'; break;
     case 'Awaiting Review': width = '75%'; bgColor = 'bg-orange-500'; break;
     case 'Completed': width = '100%'; bgColor = 'bg-green-500'; break;
     case 'On Hold': width = '25%'; bgColor = 'bg-gray-500'; break;
@@ -47,16 +47,16 @@ const getCaseProgressBar = (status: string) => {
 const getActivityOriginTag = (description: string) => {
   const lowerDescription = description.toLowerCase();
   if (lowerDescription.includes('document') || lowerDescription.includes('case') || lowerDescription.includes('consultation') || lowerDescription.includes('legal')) {
-    return <Badge className="rounded-full px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 border-blue-500/30">Legal</Badge>;
+    return <Badge className="rounded-full px-2 py-0.5 text-xs bg-info/20 text-info border-info/30">Legal</Badge>;
   }
   if (lowerDescription.includes('profile') || lowerDescription.includes('account')) {
     return <Badge className="rounded-full px-2 py-0.5 text-xs bg-green-500/20 text-green-400 border-green-500/30">Account</Badge>;
   }
   if (lowerDescription.includes('message') || lowerDescription.includes('chat')) {
-    return <Badge className="rounded-full px-2 py-0.5 text-xs bg-purple-500/20 text-purple-400 border-purple-500/30">Communication</Badge>;
+    return <Badge className="rounded-full px-2 py-0.5 text-xs bg-secondary/20 text-secondary border-purple-500/30">Communication</Badge>;
   }
   if (lowerDescription.includes('subscription') || lowerDescription.includes('plan') || lowerDescription.includes('billing')) {
-    return <Badge className="rounded-full px-2 py-0.5 text-xs bg-red-500/20 text-red-400 border-red-500/30">Billing</Badge>;
+    return <Badge className="rounded-full px-2 py-0.5 text-xs bg-destructive/20 text-destructive border-destructive/30">Billing</Badge>;
   }
   return <Badge className="rounded-full px-2 py-0.5 text-xs bg-gray-500/20 text-gray-400 border-gray-500/30">General</Badge>;
 };

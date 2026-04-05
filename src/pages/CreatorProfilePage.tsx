@@ -100,7 +100,7 @@ const CreatorProfilePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-white" />
+        <Loader2 className="h-8 w-8 animate-spin text-foreground" />
       </div>
     );
   }
@@ -183,55 +183,55 @@ const CreatorProfilePage = () => {
       {/* Breadcrumb Schema */}
       <BreadcrumbSchema items={breadcrumbItems} />
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-foreground">
         <div className="container mx-auto px-4 py-12 max-w-5xl">
           {/* Breadcrumb Navigation */}
-          <nav className="mb-8 text-sm text-purple-300" aria-label="Breadcrumb">
+          <nav className="mb-8 text-sm text-secondary" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2">
               <li>
-                <Link to="/" className="hover:text-white transition-colors">
+                <Link to="/" className="hover:text-foreground transition-colors">
                   Home
                 </Link>
               </li>
               <li>/</li>
               <li>
-                <Link to="/creators" className="hover:text-white transition-colors">
+                <Link to="/creators" className="hover:text-foreground transition-colors">
                   Creators
                 </Link>
               </li>
               <li>/</li>
-              <li className="text-white font-medium" aria-current="page">
+              <li className="text-foreground font-medium" aria-current="page">
                 {creatorName}
               </li>
             </ol>
           </nav>
 
           {/* Creator Profile Header */}
-          <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
+          <Card className="bg-secondary/50 backdrop-blur-md border-border mb-8">
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-4xl font-bold text-white">{creator.name}</h1>
-                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
+                    <h1 className="text-4xl font-bold text-foreground">{creator.name}</h1>
+                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-foreground border-0">
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Verified
                     </Badge>
                   </div>
                   {creator.category && (
-                    <Badge variant="outline" className="text-purple-200 border-purple-400/50 mb-3">
+                    <Badge variant="outline" className="text-secondary border-purple-400/50 mb-3">
                       {creator.category}
                     </Badge>
                   )}
-                  <p className="text-purple-300 mb-4">@{creator.username}</p>
+                  <p className="text-secondary mb-4">@{creator.username}</p>
                   {creator.bio && (
-                    <p className="text-purple-200 leading-relaxed mb-4">{creator.bio}</p>
+                    <p className="text-secondary leading-relaxed mb-4">{creator.bio}</p>
                   )}
 
                   {/* SEO Copy */}
-                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mt-4">
-                    <p className="text-purple-200 leading-relaxed">
-                      <strong className="text-white">Brands can collaborate securely with {creator.name}</strong> through CreatorArmour's
+                  <div className="bg-secondary/50 border border-purple-500/20 rounded-lg p-4 mt-4">
+                    <p className="text-secondary leading-relaxed">
+                      <strong className="text-foreground">Brands can collaborate securely with {creator.name}</strong> through CreatorArmour's
                       secure collaboration system. Submit collaboration requests, manage contracts, and track payments all in one place.
                     </p>
                   </div>
@@ -242,9 +242,9 @@ const CreatorProfilePage = () => {
 
           {/* Platforms Section */}
           {creator.platforms.length > 0 && (
-            <Card className="bg-white/10 backdrop-blur-md border-white/20 mb-8">
+            <Card className="bg-secondary/50 backdrop-blur-md border-border mb-8">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold text-white mb-6">
+                <h2 className="text-2xl font-bold text-foreground mb-6">
                   Active Platforms
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,26 +253,26 @@ const CreatorProfilePage = () => {
                     return (
                       <div
                         key={idx}
-                        className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10"
+                        className="flex items-center gap-4 p-4 bg-card rounded-lg border border-border"
                       >
                         {getPlatformIcon(platform.name)}
                         <div className="flex-1">
-                          <p className="font-semibold text-white">{platform.name}</p>
+                          <p className="font-semibold text-foreground">{platform.name}</p>
                           {isInstagram && platform.handle ? (
                             <a
                               href={`https://instagram.com/${platform.handle.replace('@', '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-purple-300 hover:text-white transition-colors flex items-center gap-1"
+                              className="text-sm text-secondary hover:text-foreground transition-colors flex items-center gap-1"
                             >
                               @{platform.handle.replace('@', '')}
                               <ExternalLink className="h-3 w-3 opacity-60" />
                             </a>
                           ) : (
-                            <p className="text-sm text-purple-300">{platform.handle}</p>
+                            <p className="text-sm text-secondary">{platform.handle}</p>
                           )}
                           {platform.followers && (
-                            <p className="text-sm text-purple-200 mt-1">
+                            <p className="text-sm text-secondary mt-1">
                               {platform.followers >= 1000
                                 ? `${(platform.followers / 1000).toFixed(1)}K followers`
                                 : `${platform.followers} followers`}
@@ -290,30 +290,30 @@ const CreatorProfilePage = () => {
           {/* Collaboration Link */}
           <Card className="bg-gradient-to-r from-purple-600/30 to-pink-600/30 backdrop-blur-md border-purple-500/30">
             <CardContent className="p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">
+              <h2 className="text-2xl font-bold text-foreground mb-4">
                 Collaborate with {creator.name}
               </h2>
-              <p className="text-purple-200 mb-4">
+              <p className="text-secondary mb-4">
                 Submit a collaboration request through our secure system. All deals are handled with proper contracts,
                 payment tracking, and legal protection.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 flex items-center gap-2 bg-white/10 px-4 py-3 rounded-lg border border-white/20">
-                  <code className="text-sm text-purple-200 flex-1">
+                <div className="flex-1 flex items-center gap-2 bg-secondary/50 px-4 py-3 rounded-lg border border-border">
+                  <code className="text-sm text-secondary flex-1">
                     creatorarmour.com/{creator.username}
                   </code>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={copyCollabLink}
-                    className="h-8 w-8 p-0 text-purple-300 hover:text-white"
+                    className="h-8 w-8 p-0 text-secondary hover:text-foreground"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
                 </div>
                 <Button
                   asChild
-                  className="bg-white text-purple-600 hover:bg-purple-50"
+                  className="bg-card text-secondary hover:bg-secondary"
                 >
                   <Link to={`/${creator.username}`}>
                     View Collaboration Page <ExternalLink className="h-4 w-4 ml-2" />
@@ -324,11 +324,11 @@ const CreatorProfilePage = () => {
           </Card>
 
           {/* Additional SEO Content */}
-          <div className="mt-8 bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10">
-            <h2 className="text-2xl font-bold text-white mb-4">
+          <div className="mt-8 bg-card backdrop-blur-md rounded-xl p-6 border border-border">
+            <h2 className="text-2xl font-bold text-foreground mb-4">
               About {creator.name}
             </h2>
-            <p className="text-purple-200 leading-relaxed mb-4">
+            <p className="text-secondary leading-relaxed mb-4">
               {(() => {
                 const instagramPlatform = creator.platforms.find(p => p.name.toLowerCase() === 'instagram');
                 const instagramHandle = instagramPlatform?.handle?.replace('@', '');
@@ -338,7 +338,7 @@ const CreatorProfilePage = () => {
                 return `${creator.name} is a verified ${creator.category || 'content'} creator based in India, working with brands to create authentic content and meaningful collaborations. Brands can collaborate securely with ${creator.name} through CreatorArmour's platform, which ensures proper contracts, payment protection, and professional workflow management.`;
               })()}
             </p>
-            <p className="text-purple-200 leading-relaxed">
+            <p className="text-secondary leading-relaxed">
               This creator profile is part of CreatorArmour's verified creator directory, helping brands discover and
               connect with influencers for marketing campaigns and brand partnerships.
             </p>

@@ -57,24 +57,24 @@ export const TaxSeasonMonster: React.FC = () => {
         </motion.div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-4 h-4 text-purple-400" />
-            <h3 className="text-sm font-semibold text-white">
+            <Calendar className="w-4 h-4 text-secondary" />
+            <h3 className="text-sm font-semibold text-foreground">
               Tax season is coming!
             </h3>
           </div>
-          <p className="text-xs text-white/70 mb-2">
+          <p className="text-xs text-foreground/70 mb-2">
             {daysLeft} day{daysLeft !== 1 ? 's' : ''} until July 31st deadline
           </p>
-          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-secondary/50 rounded-full h-2 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 1 }}
               className={cn(
                 "h-full rounded-full",
-                daysLeft > 30 && "bg-purple-500",
+                daysLeft > 30 && "bg-secondary",
                 daysLeft <= 30 && daysLeft > 14 && "bg-orange-500",
-                daysLeft <= 14 && "bg-red-500"
+                daysLeft <= 14 && "bg-destructive"
               )}
             />
           </div>

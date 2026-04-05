@@ -76,24 +76,24 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
 
   const statusConfig = {
     draft: { color: 'bg-gray-500/20 text-gray-300', label: 'Draft', icon: '📝' },
-    active: { color: 'bg-blue-500/20 text-blue-300', label: 'Active', icon: '⚡' },
+    active: { color: 'bg-info/20 text-info', label: 'Active', icon: '⚡' },
     pending: { color: 'bg-yellow-500/20 text-yellow-300', label: 'Pending', icon: '⏳' },
-    completed: { color: 'bg-emerald-500/20 text-emerald-300', label: 'Completed', icon: '✅' },
+    completed: { color: 'bg-primary/20 text-primary', label: 'Completed', icon: '✅' },
   };
 
   return (
     <Card className={cn(
       'border transition-all duration-300',
       isDark
-        ? 'bg-gradient-to-br from-slate-900/50 to-slate-800/30 border-slate-700/30'
-        : 'bg-white border-slate-200 shadow-sm'
+        ? 'bg-gradient-to-br from-background/50 to-slate-800/30 border-border'
+        : 'bg-card border-border shadow-sm'
     )}>
       <CardContent className="p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className={cn(
             'text-base font-bold tracking-tight',
-            isDark ? 'text-white' : 'text-slate-900'
+            isDark ? 'text-foreground' : 'text-muted-foreground'
           )}>
             📅 Deal Timeline
           </h3>
@@ -102,14 +102,14 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
               className={cn(
                 'p-2 rounded-lg transition-colors',
-                isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                isDark ? 'hover:bg-secondary/50' : 'hover:bg-background'
               )}
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <span className={cn(
               'text-sm font-semibold min-w-[120px] text-center',
-              isDark ? 'text-white' : 'text-slate-900'
+              isDark ? 'text-foreground' : 'text-muted-foreground'
             )}>
               {currentMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
             </span>
@@ -117,7 +117,7 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
               onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
               className={cn(
                 'p-2 rounded-lg transition-colors',
-                isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                isDark ? 'hover:bg-secondary/50' : 'hover:bg-background'
               )}
             >
               <ChevronRight className="w-4 h-4" />
@@ -134,7 +134,7 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
                 key={day}
                 className={cn(
                   'text-center text-xs font-bold py-2 rounded',
-                  isDark ? 'text-white/60' : 'text-slate-600'
+                  isDark ? 'text-foreground/60' : 'text-muted-foreground'
                 )}
               >
                 {day}
@@ -161,22 +161,22 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
                     'p-2 rounded-lg text-sm font-semibold transition-all relative overflow-hidden cursor-pointer',
                     isToday
                       ? isDark
-                        ? 'bg-blue-600/20 border-blue-500/50 border-2'
-                        : 'bg-blue-100 border-blue-300 border-2'
+                        ? 'bg-info/20 border-info/50 border-2'
+                        : 'bg-info border-info border-2'
                       : selectedDate?.toDateString() === date.toDateString()
                       ? isDark
-                        ? 'bg-white/20 border-white/30 border'
-                        : 'bg-slate-100 border-slate-300 border'
+                        ? 'bg-secondary/20 border-border border'
+                        : 'bg-background border-border border'
                       : isDark
-                      ? 'bg-white/5 border-white/10 border hover:bg-white/10'
-                      : 'bg-slate-50 border-slate-200 border hover:bg-white',
-                    isDark ? 'text-white' : 'text-slate-900'
+                      ? 'bg-card border-border border hover:bg-secondary/50'
+                      : 'bg-background border-border border hover:bg-card',
+                    isDark ? 'text-foreground' : 'text-muted-foreground'
                   )}
                 >
                   <div className="text-center">
                     {day}
                     {event && (
-                      <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                      <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-primary rounded-full" />
                     )}
                   </div>
                 </motion.button>
@@ -195,13 +195,13 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
               className={cn(
                 'p-4 rounded-lg border',
                 isDark
-                  ? 'bg-white/5 border-white/10'
-                  : 'bg-slate-50 border-slate-200'
+                  ? 'bg-card border-border'
+                  : 'bg-background border-border'
               )}
             >
               <h4 className={cn(
                 'text-sm font-bold mb-3',
-                isDark ? 'text-white' : 'text-slate-900'
+                isDark ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {selectedDate.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
               </h4>
@@ -217,19 +217,19 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
                         animate={{ opacity: 1, x: 0 }}
                         className={cn(
                           'p-3 rounded-lg border flex items-start justify-between gap-3',
-                          isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                          isDark ? 'bg-card border-border' : 'bg-card border-border'
                         )}
                       >
                         <div>
                           <p className={cn(
                             'text-sm font-semibold',
-                            isDark ? 'text-white' : 'text-slate-900'
+                            isDark ? 'text-foreground' : 'text-muted-foreground'
                           )}>
                             {deal.brandName}
                           </p>
                           <p className={cn(
                             'text-xs mt-0.5',
-                            isDark ? 'text-white/60' : 'text-slate-600'
+                            isDark ? 'text-foreground/60' : 'text-muted-foreground'
                           )}>
                             ₹{deal.amount.toLocaleString()}
                           </p>
@@ -244,7 +244,7 @@ const DealTimelineView: React.FC<DealTimelineViewProps> = ({
               ) : (
                 <p className={cn(
                   'text-sm',
-                  isDark ? 'text-white/60' : 'text-slate-600'
+                  isDark ? 'text-foreground/60' : 'text-muted-foreground'
                 )}>
                   No deals scheduled
                 </p>

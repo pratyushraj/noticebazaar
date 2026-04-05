@@ -76,7 +76,7 @@ const PlanComparisonTable = ({ currentPlanName }: { currentPlanName: PlanName })
                 <TableCell colSpan={4} className="text-left font-bold text-primary text-sm py-3">{section.category}</TableCell>
               </TableRow>
               {section.features.map((feature) => (
-                <TableRow key={feature.name} className="border-border hover:bg-secondary/50">
+                <TableRow key={feature.name} className="border-border hover:bg-card0">
                   <TableCell className="font-medium text-foreground">{feature.name}</TableCell>
                   {plans.map((plan) => (
                     <FeatureCell 
@@ -128,7 +128,7 @@ const PlanDetailLayout: React.FC<PlanDetailLayoutProps> = ({ plan }) => {
           </div>
           <p className="text-lg text-muted-foreground">{plan.tagline}</p>
           {plan.isPopular && (
-            <span className="inline-block mt-2 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold text-white">MOST POPULAR</span>
+            <span className="inline-block mt-2 bg-info px-3 py-1 rounded-full text-xs font-bold text-foreground">MOST POPULAR</span>
           )}
         </header>
 

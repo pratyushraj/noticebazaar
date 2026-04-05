@@ -102,7 +102,7 @@ const SocialSyncButton: React.FC<SocialSyncButtonProps> = ({
         size="sm"
         onClick={handleSync}
         disabled={isLoading || (!handle && !channelId && !url)}
-        className="border-white/20 text-white hover:bg-white/10 h-8"
+        className="border-border text-foreground hover:bg-secondary/50 h-8"
       >
         {isLoading ? (
           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
@@ -112,7 +112,7 @@ const SocialSyncButton: React.FC<SocialSyncButtonProps> = ({
         Sync
       </Button>
       {lastSynced && (
-        <span className="text-xs text-white/40">Synced</span>
+        <span className="text-xs text-foreground/40">Synced</span>
       )}
     </div>
   );

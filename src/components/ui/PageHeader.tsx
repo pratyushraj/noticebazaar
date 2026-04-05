@@ -65,8 +65,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       className={cn(
         "sticky top-0 z-50 w-full relative",
         premium 
-          ? "bg-gradient-to-br from-purple-900/95 via-indigo-900/95 to-purple-800/95 backdrop-blur-xl border-b border-white/15"
-          : "bg-purple-900/95 backdrop-blur-xl border-b border-white/10",
+          ? "bg-gradient-to-br from-purple-900/95 via-indigo-900/95 to-purple-800/95 backdrop-blur-xl border-b border-border"
+          : "bg-secondary/95 backdrop-blur-xl border-b border-border",
         "shadow-lg",
         className
       )}
@@ -103,7 +103,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <button type="button"
               onClick={handleBack}
               className={cn(
-                "flex items-center gap-1 text-white",
+                "flex items-center gap-1 text-foreground",
                 animations.cardPress,
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2",
                 (premium || backIconOnly) && "w-9 h-9 justify-center"
@@ -133,11 +133,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {/* Center: Title + Subtitle — or empty when hideTitle (Payments/Deals style) */}
         {!hideTitle && (
           <div className="flex-1 min-w-0 text-center px-2 overflow-visible max-w-full">
-            <h1 className="text-white font-semibold leading-snug break-words whitespace-normal text-lg sm:text-xl">
+            <h1 className="text-foreground font-semibold leading-snug break-words whitespace-normal text-lg sm:text-xl">
               {title}
             </h1>
             {subtitle && (
-              <p className="text-white/70 mt-1 break-words whitespace-normal text-xs sm:text-sm leading-snug">
+              <p className="text-foreground/70 mt-1 break-words whitespace-normal text-xs sm:text-sm leading-snug">
                 {subtitle}
               </p>
             )}

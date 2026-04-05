@@ -22,7 +22,7 @@ const statusConfig = {
   overdue: {
     label: 'Overdue',
     icon: AlertCircle,
-    className: 'bg-red-500/20 text-red-400 border-red-500/30',
+    className: 'bg-destructive/20 text-destructive border-destructive/30',
   },
 };
 

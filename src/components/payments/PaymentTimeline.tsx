@@ -33,23 +33,23 @@ export const TimelineItem = ({ icon, label, date, highlight = false }: TimelineI
         'flex items-start gap-4 p-4 rounded-xl border backdrop-blur-xl transition-all',
         highlight
           ? 'bg-green-500/20 border-green-500/30 text-green-300'
-          : 'bg-white/10 border-white/20 text-white/80',
-        'hover:bg-white/15'
+          : 'bg-secondary/50 border-border text-foreground/80',
+        'hover:bg-secondary/15'
       )}
     >
       <div
         className={cn(
           'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0',
-          highlight ? 'bg-green-500/30' : 'bg-white/10'
+          highlight ? 'bg-green-500/30' : 'bg-secondary/50'
         )}
       >
-        <Icon className={cn('w-5 h-5', highlight ? 'text-green-400' : 'text-white/60')} />
+        <Icon className={cn('w-5 h-5', highlight ? 'text-green-400' : 'text-foreground/60')} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className={cn('font-semibold mb-1', highlight ? 'text-green-300' : 'text-white')}>
+        <div className={cn('font-semibold mb-1', highlight ? 'text-green-300' : 'text-foreground')}>
           {label}
         </div>
-        <div className={cn('text-sm', highlight ? 'text-green-400/80' : 'text-white/60')}>
+        <div className={cn('text-sm', highlight ? 'text-green-400/80' : 'text-foreground/60')}>
           {formattedDate}
         </div>
       </div>
@@ -72,7 +72,7 @@ export const PaymentTimeline = ({
 }: PaymentTimelineProps) => {
   return (
     <div className={cn('space-y-3', className)}>
-      <h3 className="text-lg font-semibold text-white mb-4">Payment History</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-4">Payment History</h3>
       <div className="space-y-3">
         <TimelineItem icon="clock" label="Payment Created" date={createdAt} />
         {invoiceDate && <TimelineItem icon="file" label="Invoice Generated" date={invoiceDate} />}

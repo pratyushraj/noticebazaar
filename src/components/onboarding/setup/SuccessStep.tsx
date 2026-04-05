@@ -125,27 +125,27 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
         </motion.div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold leading-tight mb-4 text-slate-900 dark:text-white">
+        <h1 className="text-3xl font-bold leading-tight mb-4 text-muted-foreground dark:text-foreground">
           Your Creator Armour workspace is ready
         </h1>
 
         {/* Subtitle */}
-        <p className="text-xl font-semibold text-slate-600 dark:text-white/80 mb-6">
+        <p className="text-xl font-semibold text-muted-foreground dark:text-foreground/80 mb-6">
           Welcome to Creator Armour, {userName}.
         </p>
 
         {/* Share your collab link — prominent after onboarding */}
         {collabLink && collabShortLabel && (
-          <GradientCard padding="md" className="mb-6 text-left max-w-md mx-auto border border-slate-200 dark:border-white/20">
-            <p className="text-sm font-semibold text-slate-900 dark:text-white/90 mb-2">Share your collab link</p>
-            <p className="text-xs text-slate-500 dark:text-white/60 mb-3">Add it to your bio or send it directly to brands so offers arrive with better structure.</p>
+          <GradientCard padding="md" className="mb-6 text-left max-w-md mx-auto border border-border dark:border-border">
+            <p className="text-sm font-semibold text-muted-foreground dark:text-foreground/90 mb-2">Share your collab link</p>
+            <p className="text-xs text-muted-foreground dark:text-foreground/60 mb-3">Add it to your bio or send it directly to brands so offers arrive with better structure.</p>
             <div className="flex items-center gap-2 mb-3">
-              <code className="flex-1 min-w-0 truncate text-xs text-slate-900 dark:text-white/90 bg-slate-50 dark:bg-white/10 px-2 py-1.5 rounded border border-slate-200 dark:border-white/10">
+              <code className="flex-1 min-w-0 truncate text-xs text-muted-foreground dark:text-foreground/90 bg-background dark:bg-secondary/50 px-2 py-1.5 rounded border border-border dark:border-border">
                 {collabShortLabel}
               </code>
               <button type="button"
                 onClick={handleCopy}
-                className="flex-shrink-0 h-8 px-3 rounded bg-slate-100 dark:bg-white/20 hover:bg-slate-200 dark:hover:bg-white/30 border border-slate-200 dark:border-white/20 text-slate-700 dark:text-white text-xs font-medium flex items-center gap-1.5"
+                className="flex-shrink-0 h-8 px-3 rounded bg-background dark:bg-secondary/20 hover:bg-background dark:hover:bg-secondary/30 border border-border dark:border-border text-muted-foreground dark:text-foreground text-xs font-medium flex items-center gap-1.5"
                 aria-label="Copy link"
               >
                 {copied ? <span className="text-green-600 dark:text-green-400">Copied!</span> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
@@ -154,14 +154,14 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
             <div className="flex gap-2">
               <button type="button"
                 onClick={handleShareWhatsApp}
-                className="flex-1 h-9 rounded border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white text-xs font-medium flex items-center justify-center gap-1.5"
+                className="flex-1 h-9 rounded border border-border dark:border-border bg-background dark:bg-card hover:bg-background dark:hover:bg-secondary/50 text-muted-foreground dark:text-foreground text-xs font-medium flex items-center justify-center gap-1.5"
                 aria-label="Share via WhatsApp"
               >
                 <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
               </button>
               <button type="button"
                 onClick={handleShareInstagram}
-                className="flex-1 h-9 rounded border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white text-xs font-medium flex items-center justify-center gap-1.5"
+                className="flex-1 h-9 rounded border border-border dark:border-border bg-background dark:bg-card hover:bg-background dark:hover:bg-secondary/50 text-muted-foreground dark:text-foreground text-xs font-medium flex items-center justify-center gap-1.5"
                 aria-label="Share via Instagram (copy link)"
               >
                 <Instagram className="w-3.5 h-3.5" /> Instagram
@@ -171,9 +171,9 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
         )}
 
         {/* Collab Page Readiness */}
-        <GradientCard padding="md" className="mb-8 text-left max-w-md mx-auto border border-slate-200 dark:border-white/20">
-          <p className="text-sm font-semibold text-slate-900 dark:text-white/90 mb-1">🚀 Make Your Collab Page Brand-Ready</p>
-          <p className="text-xs text-slate-500 dark:text-white/60 mb-3">
+        <GradientCard padding="md" className="mb-8 text-left max-w-md mx-auto border border-border dark:border-border">
+          <p className="text-sm font-semibold text-muted-foreground dark:text-foreground/90 mb-1">🚀 Make Your Collab Page Brand-Ready</p>
+          <p className="text-xs text-muted-foreground dark:text-foreground/60 mb-3">
             Brands are more likely to send clean offers when these basics are in place.
           </p>
           <div className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium mb-3 ${readinessTone}`}>
@@ -188,24 +188,24 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({
               { label: 'Campaign Ready', done: readiness.rank >= 5, help: 'Media kit or first deal completed' },
             ].map((item) => (
               <div key={item.label} className="flex items-start gap-2 text-xs">
-                <CheckCircle className={`w-3.5 h-3.5 mt-0.5 ${item.done ? 'text-green-600 dark:text-green-400' : 'text-slate-300 dark:text-white/30'}`} />
+                <CheckCircle className={`w-3.5 h-3.5 mt-0.5 ${item.done ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground dark:text-foreground/30'}`} />
                 <div>
-                  <span className={item.done ? 'text-slate-700 dark:text-white/80' : 'text-slate-400 dark:text-white/50'}>{item.label}</span>
-                  {!item.done && <p className="text-[11px] text-slate-400 dark:text-white/40 mt-0.5">{item.help}</p>}
+                  <span className={item.done ? 'text-muted-foreground dark:text-foreground/80' : 'text-muted-foreground dark:text-foreground/50'}>{item.label}</span>
+                  {!item.done && <p className="text-[11px] text-muted-foreground dark:text-foreground/40 mt-0.5">{item.help}</p>}
                 </div>
               </div>
             ))}
           </div>
           {!readinessComplete && (
-            <p className="text-xs text-slate-500 dark:text-white/60 mb-3">{readinessNudge}</p>
+            <p className="text-xs text-muted-foreground dark:text-foreground/60 mb-3">{readinessNudge}</p>
           )}
           {readinessComplete && (
-            <p className="text-xs text-green-600 dark:text-emerald-300/90 mb-3">Your page now communicates clearly enough to support stronger inbound deal requests.</p>
+            <p className="text-xs text-green-600 dark:text-primary/90 mb-3">Your page now communicates clearly enough to support stronger inbound deal requests.</p>
           )}
           {!readinessComplete && onCompleteCollabProfile && (
             <button type="button"
               onClick={onCompleteCollabProfile}
-              className="w-full h-10 rounded-lg border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-white text-sm font-medium"
+              className="w-full h-10 rounded-lg border border-border dark:border-border bg-background dark:bg-card hover:bg-background dark:hover:bg-secondary/50 text-muted-foreground dark:text-foreground text-sm font-medium"
             >
               Improve my deal profile
             </button>

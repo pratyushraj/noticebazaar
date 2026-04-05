@@ -36,8 +36,8 @@ const ProjectedEarnings: React.FC<ProjectedEarningsProps> = ({ brandDeals = [] }
     <Card variant="default" interactive>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-blue-500/10 border border-blue-500/20">
-          <TrendingUp className="h-5 w-5 text-blue-400" />
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-info/10 border border-info/20">
+          <TrendingUp className="h-5 w-5 text-info" />
           </div>
           <CardTitle>Projected Earnings</CardTitle>
         </div>
@@ -45,15 +45,15 @@ const ProjectedEarnings: React.FC<ProjectedEarningsProps> = ({ brandDeals = [] }
       <CardContent>
         <div className="space-y-4">
           <div>
-            <p className="text-4xl font-bold text-white number-large">₹{projectedEarnings.toLocaleString('en-IN')}</p>
-            <p className="text-body text-white/60 mt-2">Next 30 days</p>
+            <p className="text-4xl font-bold text-foreground number-large">₹{projectedEarnings.toLocaleString('en-IN')}</p>
+            <p className="text-body text-foreground/60 mt-2">Next 30 days</p>
           </div>
 
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-            <Calendar className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
+            <Calendar className="h-5 w-5 text-info mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-small text-white/70">
-                <span className="font-semibold text-blue-400">Calculation:</span> Based on pending payments due within 30 days and estimated completion value of active deals.
+              <p className="text-small text-foreground/70">
+                <span className="font-semibold text-info">Calculation:</span> Based on pending payments due within 30 days and estimated completion value of active deals.
               </p>
             </div>
           </div>

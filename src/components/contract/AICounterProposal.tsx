@@ -134,27 +134,27 @@ export function AICounterProposal({
         {/* Header with back button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-400" />
-            <h3 className="text-lg font-semibold text-white">AI Generated Counter-Proposal</h3>
+            <Sparkles className="w-5 h-5 text-secondary" />
+            <h3 className="text-lg font-semibold text-foreground">AI Generated Counter-Proposal</h3>
           </div>
           <button type="button"
             onClick={() => setShowProposal(false)}
-            className="text-white/60 hover:text-white transition-colors"
+            className="text-foreground/60 hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
         </div>
 
         {/* Key Changes */}
-        <div className="bg-purple-500/10 rounded-xl p-4 border border-purple-500/20">
-          <h4 className="text-sm font-semibold text-purple-300 mb-3 flex items-center gap-2">
+        <div className="bg-secondary/50 rounded-xl p-4 border border-purple-500/20">
+          <h4 className="text-sm font-semibold text-secondary mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             Key Changes
           </h4>
           <ul className="space-y-2">
             {proposal.key_changes.map((change, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm text-white/90">
-                <span className="text-purple-400 mt-0.5">•</span>
+              <li key={index} className="flex items-start gap-2 text-sm text-foreground/90">
+                <span className="text-secondary mt-0.5">•</span>
                 <span>{change}</span>
               </li>
             ))}
@@ -167,28 +167,28 @@ export function AICounterProposal({
             "px-3 py-1.5 rounded-lg text-xs font-semibold",
             proposal.risk_level === 'low' ? "bg-green-500/20 text-green-300 border border-green-500/30" :
               proposal.risk_level === 'medium' ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30" :
-                "bg-red-500/20 text-red-300 border border-red-500/30"
+                "bg-destructive/20 text-destructive border border-destructive/30"
           )}>
             Risk: {proposal.risk_level.toUpperCase()}
           </div>
-          <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+          <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-secondary/20 text-secondary border border-purple-500/30">
             Approval: {proposal.approval_probability}
           </div>
-          <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+          <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-info/20 text-info border border-info/30">
             Tone: {proposal.tone}
           </div>
         </div>
 
         {/* Generated Message Preview */}
-        <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-          <h4 className="text-sm font-semibold text-white mb-2">Generated Message</h4>
-          <p className="text-sm text-white/80 whitespace-pre-wrap leading-relaxed">
+        <div className="bg-card rounded-xl p-4 border border-border">
+          <h4 className="text-sm font-semibold text-foreground mb-2">Generated Message</h4>
+          <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
             {proposal.message}
           </p>
         </div>
 
         {/* Disclaimer */}
-        <p className="text-xs text-white/50 italic text-center">
+        <p className="text-xs text-foreground/50 italic text-center">
           This proposal is AI-generated. You can edit before sending.
         </p>
 
@@ -198,7 +198,7 @@ export function AICounterProposal({
             onClick={handleUseProposal}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-foreground px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
           >
             <CheckCircle className="w-5 h-5" />
             Use This Proposal
@@ -239,7 +239,7 @@ export function AICounterProposal({
             disabled={isGenerating}
             whileHover={!isGenerating ? { scale: 1.02 } : {}}
             whileTap={!isGenerating ? { scale: 0.98 } : {}}
-            className="px-4 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-xl font-semibold transition-all border border-red-500/30 disabled:opacity-50"
+            className="px-4 py-3 bg-destructive/20 hover:bg-destructive/30 text-destructive rounded-xl font-semibold transition-all border border-destructive/30 disabled:opacity-50"
           >
             {isGenerating ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -260,7 +260,7 @@ export function AICounterProposal({
       whileTap={!isGenerating ? { scale: 0.99 } : {}}
       className={cn(
         "w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
-        "text-white px-6 py-4 rounded-xl font-semibold transition-all",
+        "text-foreground px-6 py-4 rounded-xl font-semibold transition-all",
         "flex items-center justify-center gap-3 shadow-lg shadow-purple-500/30",
         "disabled:opacity-50 disabled:cursor-not-allowed"
       )}
@@ -275,7 +275,7 @@ export function AICounterProposal({
           <Sparkles className="w-5 h-5" />
           <div className="flex flex-col items-start flex-1">
             <span className="text-lg">✨ AI Suggest Counter-Proposal</span>
-            <span className="text-sm text-purple-100/80 font-normal">Optimized for faster brand approval</span>
+            <span className="text-sm text-secondary/80 font-normal">Optimized for faster brand approval</span>
           </div>
         </>
       )}

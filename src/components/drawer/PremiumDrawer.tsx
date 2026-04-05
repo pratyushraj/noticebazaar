@@ -75,8 +75,8 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         onClick={handleProfileClick}
         className={cn(
           "flex items-center gap-3 w-full p-3 rounded-2xl",
-          "bg-slate-100 border border-slate-200 dark:bg-white/5 dark:border-white/10",
-          "hover:bg-slate-200 dark:hover:bg-white/[0.08] active:scale-[0.98]",
+          "bg-background border border-border dark:bg-card dark:border-border",
+          "hover:bg-background dark:hover:bg-secondary/[0.08] active:scale-[0.98]",
           "transition-all duration-150 focus:outline-none"
         )}
         whileTap={{ scale: 0.97 }}
@@ -84,16 +84,16 @@ function DrawerHeader({ userName, userHandle, userAvatar, userInitials, onProfil
         <motion.div style={{ y: avatarSpring }}>
           <Avatar className="h-11 w-11 ring-2 ring-slate-200 dark:ring-white/10 shadow-lg">
             <AvatarImage src={userAvatar || DEFAULT_AVATAR_URL} alt={displayName} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-sm font-bold">
+            <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 text-foreground text-sm font-bold">
               {userInitials}
             </AvatarFallback>
           </Avatar>
         </motion.div>
         <div className="flex-1 text-left min-w-0">
-          <p className="text-slate-900 dark:text-white text-[15px] font-bold truncate leading-tight">{displayName}</p>
-          <p className="text-slate-500 dark:text-white/40 text-[11px] font-medium truncate mt-0.5">@{userHandle}</p>
+          <p className="text-muted-foreground dark:text-foreground text-[15px] font-bold truncate leading-tight">{displayName}</p>
+          <p className="text-muted-foreground dark:text-foreground/40 text-[11px] font-medium truncate mt-0.5">@{userHandle}</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-white/30 flex-shrink-0" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground dark:text-foreground/30 flex-shrink-0" />
       </motion.button>
     </div>
   );
@@ -108,8 +108,8 @@ interface DrawerSectionProps {
 function DrawerSection({ title, children, showSeparator = true }: DrawerSectionProps) {
   return (
     <div className="mt-1">
-      {showSeparator && <div className="h-[1px] w-full bg-slate-200 dark:bg-white/5 my-4" />}
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/30 mb-2 px-1">
+      {showSeparator && <div className="h-[1px] w-full bg-background dark:bg-card my-4" />}
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground dark:text-foreground/30 mb-2 px-1">
         {title}
       </p>
       <div className="space-y-1.5">
@@ -144,8 +144,8 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
         "rounded-2xl px-4 py-3",
         "transition-all duration-150 focus:outline-none",
         isActive
-          ? "bg-blue-600 shadow-lg shadow-blue-600/25 text-white"
-          : "bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 hover:text-slate-900 dark:bg-white/5 dark:border-white/[0.06] dark:hover:bg-white/[0.09] dark:text-white/75 dark:hover:text-white"
+          ? "bg-info shadow-lg shadow-blue-600/25 text-foreground"
+          : "bg-background border border-border hover:bg-background text-muted-foreground hover:text-muted-foreground dark:bg-card dark:border-border/[0.06] dark:hover:bg-secondary/[0.09] dark:text-foreground/75 dark:hover:text-foreground"
       )}
     >
       {isActive && (
@@ -153,11 +153,11 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
       )}
       <Icon className={cn(
         "w-4 h-4 flex-shrink-0 mr-3 relative z-10 transition-colors",
-        isActive ? "text-white" : "text-slate-500 group-hover:text-slate-700 dark:text-white/50 dark:group-hover:text-white/80"
+        isActive ? "text-foreground" : "text-muted-foreground group-hover:text-muted-foreground dark:text-foreground/50 dark:group-hover:text-foreground/80"
       )} />
       <span className={cn(
         "text-[13px] font-semibold flex-1 text-left relative z-10 tracking-tight",
-        isActive ? "text-white" : "text-slate-800 dark:text-white/80"
+        isActive ? "text-foreground" : "text-muted-foreground dark:text-foreground/80"
       )}>
         {item.label}
       </span>
@@ -166,7 +166,7 @@ function DrawerItem({ item, isActive, onClick }: DrawerItemProps) {
         <motion.span
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-          className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-red-500 text-white ml-2 relative z-10"
+          className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-destructive text-foreground ml-2 relative z-10"
         >
           {item.badge}
         </motion.span>
@@ -188,9 +188,9 @@ function LogoutButton({ onClick }: { onClick: () => void }) {
       whileTap={{ scale: 0.97 }}
       className={cn(
         "w-full flex items-center gap-3 rounded-2xl px-4 py-3",
-        "bg-red-50 border border-red-200 dark:bg-red-500/8 dark:border-red-400/15",
-        "hover:bg-red-100 dark:hover:bg-red-500/15 hover:border-red-300 dark:hover:border-red-400/25",
-        "text-red-600 dark:text-red-400 transition-all duration-150 focus:outline-none"
+        "bg-destructive border border-destructive dark:bg-destructive/8 dark:border-destructive/15",
+        "hover:bg-destructive dark:hover:bg-destructive/15 hover:border-destructive dark:hover:border-destructive/25",
+        "text-destructive dark:text-destructive transition-all duration-150 focus:outline-none"
       )}
     >
       <LogOut className="w-4 h-4 relative z-10 flex-shrink-0" />
@@ -331,8 +331,8 @@ export default function PremiumDrawer({
             className={cn(
               "fixed top-0 left-0 h-full",
               "w-[82vw] max-w-[300px]",
-              "bg-white dark:bg-[#0B0F14]",
-              "border-r border-slate-200 dark:border-white/8",
+              "bg-card dark:bg-background",
+              "border-r border-border dark:border-border/8",
               "shadow-[4px_0_40px_rgba(15,23,42,0.18)] dark:shadow-[4px_0_60px_rgba(0,0,0,0.6)]",
               "overflow-y-auto",
               "px-4 py-6",
@@ -351,13 +351,13 @@ export default function PremiumDrawer({
             {/* Logo + App Label */}
             <div className="flex items-center gap-3 px-1 mb-6 relative z-10">
               <div className="w-9 h-9 bg-gradient-to-br from-emerald-600 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-600/25">
-                <Shield className="w-5 h-5 text-white" />
+                <Shield className="w-5 h-5 text-foreground" />
               </div>
               <div>
-                <p className="text-[13px] font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                <p className="text-[13px] font-black tracking-tight text-muted-foreground dark:text-foreground leading-none">
                   CreatorArmour
                 </p>
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/30 mt-0.5">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground dark:text-foreground/30 mt-0.5">
                   Console
                 </p>
               </div>
@@ -417,7 +417,7 @@ export default function PremiumDrawer({
             </div>
 
             {/* Logout */}
-            <div className="relative z-10 mt-4 pt-4 border-t border-slate-200 dark:border-white/5 pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]">
+            <div className="relative z-10 mt-4 pt-4 border-t border-border dark:border-border/5 pb-[max(calc(env(safe-area-inset-bottom,0px)+12px),12px)]">
               <LogoutButton onClick={handleLogout} />
             </div>
 

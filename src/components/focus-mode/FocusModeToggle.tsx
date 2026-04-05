@@ -25,8 +25,8 @@ const FocusModeToggle: React.FC<FocusModeToggleProps> = ({ onToggle }) => {
       variant="outline"
       size="sm"
       className={cn(
-        "bg-white/5 border-white/10 text-white hover:bg-white/10",
-        isEnabled && "bg-blue-500/20 border-blue-500/30 text-blue-400"
+        "bg-card border-border text-foreground hover:bg-secondary/50",
+        isEnabled && "bg-info/20 border-info/30 text-info"
       )}
       aria-label={isEnabled ? "Disable focus mode" : "Enable focus mode"}
     >

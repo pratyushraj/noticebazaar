@@ -9,7 +9,7 @@ const badgeVariants = cva(
       variant: {
         // Green — default (success/active/verified)
         default:
-          "bg-emerald-500/15 text-emerald-500 border border-emerald-500/20",
+          "bg-primary/15 text-primary border border-primary/20",
         // Subtle grey
         secondary:
           "bg-secondary text-muted-foreground border border-border",
@@ -18,16 +18,16 @@ const badgeVariants = cva(
           "bg-transparent text-foreground border border-border",
         // Red destructive
         destructive:
-          "bg-red-500/15 text-red-500 border border-red-500/20",
+          "bg-destructive/15 text-destructive border border-destructive/20",
         // Amber warning
         warning:
-          "bg-amber-500/15 text-amber-500 border border-amber-500/20",
+          "bg-warning/15 text-warning border border-warning/20",
         // Success alias (same as default but explicit)
         success:
-          "bg-emerald-500/15 text-emerald-500 border border-emerald-500/20",
+          "bg-primary/15 text-primary border border-primary/20",
         // Blue info
         info:
-          "bg-blue-500/15 text-blue-500 border border-blue-500/20",
+          "bg-info/15 text-info border border-info/20",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",

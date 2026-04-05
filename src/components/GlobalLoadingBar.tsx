@@ -12,7 +12,7 @@ export function GlobalLoadingBar() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[9999] h-[2px] overflow-hidden">
       <div
-        className="h-full bg-emerald-500 animate-loading-bar"
+        className="h-full bg-primary animate-loading-bar"
         style={{
           width: '40%',
           animation: 'loading-slide 1.5s ease-in-out infinite',

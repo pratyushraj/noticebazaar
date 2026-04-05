@@ -16,7 +16,7 @@ const CreatorKpiCards: React.FC<CreatorKpiCardsProps> = ({ kpiCards }) => {
       {kpiCards.map((kpi, index) => {
         const Icon = kpi.icon;
         const ChangeIcon = kpi.changeDirection === 'up' ? ArrowUp : kpi.changeDirection === 'down' ? ArrowDown : Minus;
-        const changeColor = kpi.changeDirection === 'up' ? 'text-green-500' : kpi.changeDirection === 'down' ? 'text-red-500' : 'text-muted-foreground';
+        const changeColor = kpi.changeDirection === 'up' ? 'text-green-500' : kpi.changeDirection === 'down' ? 'text-destructive' : 'text-muted-foreground';
 
         return (
           <Card key={index} className="creator-card-base shadow-lg p-3 md:p-4 aspect-square flex flex-col"> {/* Square tiles on mobile */}

@@ -173,7 +173,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-md bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/20 rounded-[24px] p-6 shadow-2xl"
+          className="w-full max-w-md bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-border rounded-[24px] p-6 shadow-2xl"
         >
           <div className="text-center">
             <motion.div
@@ -184,21 +184,21 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
             >
               <CheckCircle className="w-10 h-10 text-green-400" />
             </motion.div>
-            <h2 className="text-2xl font-bold text-white mb-2">Payment Request Sent!</h2>
-            <p className="text-white/70 mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Payment Request Sent!</h2>
+            <p className="text-foreground/70 mb-6">
               Your payment request has been sent to {selectedDeal?.brand_name || 'the brand'}.
               {generateInvoice && ' An invoice has been generated and attached.'}
             </p>
             <div className="flex gap-3">
               <Button
                 onClick={() => navigate('/creator-payments')}
-                className="flex-1 bg-white/10 text-white hover:bg-white/20"
+                className="flex-1 bg-secondary/50 text-foreground hover:bg-secondary/20"
               >
                 View Payments
               </Button>
               <Button
                 onClick={onClose}
-                className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
+                className="flex-1 bg-secondary text-foreground hover:bg-secondary"
               >
                 Close
               </Button>
@@ -214,26 +214,26 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-white/20 rounded-[24px] shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        className="w-full max-w-2xl bg-gradient-to-br from-purple-900/95 via-purple-800/95 to-indigo-900/95 backdrop-blur-xl border border-border rounded-[24px] shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+        <div className="p-6 border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">Request Payment</h2>
-            <p className="text-sm text-white/60 mt-1">
+            <h2 className="text-xl font-bold text-foreground">Request Payment</h2>
+            <p className="text-sm text-foreground/60 mt-1">
               {steps[currentStepIndex]?.description}
             </p>
           </div>
           <button type="button"
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 hover:bg-secondary/50 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-white/60" />
+            <X className="w-5 h-5 text-foreground/60" />
           </button>
         </div>
 
         {/* Progress Steps */}
-        <div className="px-6 py-4 border-b border-white/10">
+        <div className="px-6 py-4 border-b border-border">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.key} className="flex items-center flex-1">
@@ -242,8 +242,8 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                     className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all",
                       index <= currentStepIndex
-                        ? "bg-purple-600 text-white"
-                        : "bg-white/10 text-white/40"
+                        ? "bg-secondary text-foreground"
+                        : "bg-secondary/50 text-foreground/40"
                     )}
                   >
                     {index < currentStepIndex ? (
@@ -254,7 +254,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                   </div>
                   <p className={cn(
                     "text-xs mt-2 text-center",
-                    index <= currentStepIndex ? "text-white" : "text-white/40"
+                    index <= currentStepIndex ? "text-foreground" : "text-foreground/40"
                   )}>
                     {step.title}
                   </p>
@@ -262,7 +262,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                 {index < steps.length - 1 && (
                   <div className={cn(
                     "h-0.5 flex-1 mx-2 transition-colors",
-                    index < currentStepIndex ? "bg-purple-600" : "bg-white/10"
+                    index < currentStepIndex ? "bg-secondary" : "bg-secondary/50"
                   )} />
                 )}
               </div>
@@ -281,11 +281,11 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
-                <p className="text-white/70 mb-4">Select a deal with pending payment:</p>
+                <p className="text-foreground/70 mb-4">Select a deal with pending payment:</p>
                 {pendingDeals.length === 0 ? (
-                  <Card className="bg-white/5 border-white/10 p-8 text-center">
-                    <Briefcase className="w-12 h-12 mx-auto mb-4 text-white/40" />
-                    <p className="text-white/60">No pending payments found</p>
+                  <Card className="bg-card border-border p-8 text-center">
+                    <Briefcase className="w-12 h-12 mx-auto mb-4 text-foreground/40" />
+                    <p className="text-foreground/60">No pending payments found</p>
                   </Card>
                 ) : (
                   <div className="space-y-3">
@@ -294,15 +294,15 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                         key={deal.id}
                         onClick={() => setSelectedDealId(deal.id)}
                         className={cn(
-                          "bg-white/[0.08] border-white/15 cursor-pointer transition-all hover:bg-white/[0.12]",
+                          "bg-secondary/[0.08] border-border cursor-pointer transition-all hover:bg-secondary/[0.12]",
                           selectedDealId === deal.id && "ring-2 ring-purple-500"
                         )}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <h3 className="font-semibold text-white mb-1">{deal.brand_name}</h3>
-                              <div className="flex items-center gap-4 text-sm text-white/60">
+                              <h3 className="font-semibold text-foreground mb-1">{deal.brand_name}</h3>
+                              <div className="flex items-center gap-4 text-sm text-foreground/60">
                                 <span className="flex items-center gap-1">
                                   <IndianRupee className="w-4 h-4" />
                                   {deal.deal_amount?.toLocaleString('en-IN') || '0'}
@@ -313,7 +313,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                                 </span>
                               </div>
                             </div>
-                            <ChevronRight className="w-5 h-5 text-white/40" />
+                            <ChevronRight className="w-5 h-5 text-foreground/40" />
                           </div>
                         </CardContent>
                       </Card>
@@ -333,44 +333,44 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Invoice Details</h3>
-                    <p className="text-sm text-white/60">Invoice will be auto-generated from deal information</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-1">Invoice Details</h3>
+                    <p className="text-sm text-foreground/60">Invoice will be auto-generated from deal information</p>
                   </div>
                   <Button
                     onClick={handlePreviewInvoice}
                     variant="outline"
                     size="sm"
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    className="bg-secondary/50 border-border text-foreground hover:bg-secondary/20"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     Preview
                   </Button>
                 </div>
 
-                <Card className="bg-white/[0.08] border-white/15">
+                <Card className="bg-secondary/[0.08] border-border">
                   <CardContent className="p-4 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-white/60 text-sm">Invoice Number</Label>
-                        <p className="text-white font-mono text-sm mt-1">
+                        <Label className="text-foreground/60 text-sm">Invoice Number</Label>
+                        <p className="text-foreground font-mono text-sm mt-1">
                           {generateInvoiceNumber(selectedDeal.id)}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-white/60 text-sm">Amount</Label>
-                        <p className="text-white font-semibold mt-1">
+                        <Label className="text-foreground/60 text-sm">Amount</Label>
+                        <p className="text-foreground font-semibold mt-1">
                           ₹{selectedDeal.deal_amount?.toLocaleString('en-IN') || '0'}
                         </p>
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-white/60 text-sm mb-2 block">Additional Notes (Optional)</Label>
+                      <Label className="text-foreground/60 text-sm mb-2 block">Additional Notes (Optional)</Label>
                       <Textarea
                         value={invoiceNotes}
                         onChange={(e) => setInvoiceNotes(e.target.value)}
                         placeholder="Add any additional notes for the invoice..."
-                        className="bg-white/5 border-white/10 text-white placeholder:text-white/40 min-h-[100px]"
+                        className="bg-card border-border text-foreground placeholder:text-foreground/40 min-h-[100px]"
                       />
                     </div>
 
@@ -380,9 +380,9 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                         id="generate-invoice-check"
                         checked={generateInvoice}
                         onChange={(e) => setGenerateInvoice(e.target.checked)}
-                        className="w-4 h-4 rounded border-white/20 bg-white/5"
+                        className="w-4 h-4 rounded border-border bg-card"
                       />
-                      <Label htmlFor="generate-invoice-check" className="text-white/80 cursor-pointer">
+                      <Label htmlFor="generate-invoice-check" className="text-foreground/80 cursor-pointer">
                         Generate and attach invoice PDF
                       </Label>
                     </div>
@@ -400,24 +400,24 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Customize Message</h3>
-                  <p className="text-sm text-white/60">Personalize your payment request message</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-1">Customize Message</h3>
+                  <p className="text-sm text-foreground/60">Personalize your payment request message</p>
                 </div>
 
-                <Card className="bg-white/[0.08] border-white/15">
+                <Card className="bg-secondary/[0.08] border-border">
                   <CardContent className="p-4">
-                    <Label className="text-white/60 text-sm mb-2 block">Message</Label>
+                    <Label className="text-foreground/60 text-sm mb-2 block">Message</Label>
                     <Textarea
                       value={customMessage || getDefaultMessage()}
                       onChange={(e) => setCustomMessage(e.target.value)}
                       placeholder="Enter your message..."
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/40 min-h-[200px]"
+                      className="bg-card border-border text-foreground placeholder:text-foreground/40 min-h-[200px]"
                     />
                     <Button
                       onClick={() => setCustomMessage(getDefaultMessage())}
                       variant="ghost"
                       size="sm"
-                      className="mt-2 text-white/60 hover:text-white"
+                      className="mt-2 text-foreground/60 hover:text-foreground"
                     >
                       Reset to default
                     </Button>
@@ -435,33 +435,33 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                 className="space-y-4"
               >
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Review & Send</h3>
-                  <p className="text-sm text-white/60">Review your payment request before sending</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-1">Review & Send</h3>
+                  <p className="text-sm text-foreground/60">Review your payment request before sending</p>
                 </div>
 
-                <Card className="bg-white/[0.08] border-white/15">
+                <Card className="bg-secondary/[0.08] border-border">
                   <CardContent className="p-4 space-y-4">
                     <div>
-                      <Label className="text-white/60 text-sm">Recipient</Label>
-                      <p className="text-white mt-1">{selectedDeal.brand_name}</p>
+                      <Label className="text-foreground/60 text-sm">Recipient</Label>
+                      <p className="text-foreground mt-1">{selectedDeal.brand_name}</p>
                       {selectedDeal.brand_email && (
-                        <p className="text-white/60 text-sm mt-1">{selectedDeal.brand_email}</p>
+                        <p className="text-foreground/60 text-sm mt-1">{selectedDeal.brand_email}</p>
                       )}
                     </div>
 
                     <div>
-                      <Label className="text-white/60 text-sm">Amount</Label>
-                      <p className="text-white font-semibold text-lg mt-1">
+                      <Label className="text-foreground/60 text-sm">Amount</Label>
+                      <p className="text-foreground font-semibold text-lg mt-1">
                         ₹{selectedDeal.deal_amount?.toLocaleString('en-IN') || '0'}
                       </p>
                     </div>
 
                     {generateInvoice && (
                       <div>
-                        <Label className="text-white/60 text-sm">Invoice</Label>
+                        <Label className="text-foreground/60 text-sm">Invoice</Label>
                         <div className="flex items-center gap-2 mt-1">
-                          <FileText className="w-4 h-4 text-white/60" />
-                          <p className="text-white text-sm">
+                          <FileText className="w-4 h-4 text-foreground/60" />
+                          <p className="text-foreground text-sm">
                             {generateInvoiceNumber(selectedDeal.id)}.pdf
                           </p>
                           <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -472,9 +472,9 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
                     )}
 
                     <div>
-                      <Label className="text-white/60 text-sm">Message Preview</Label>
-                      <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
-                        <p className="text-white/80 text-sm whitespace-pre-wrap">
+                      <Label className="text-foreground/60 text-sm">Message Preview</Label>
+                      <div className="mt-2 p-3 bg-card rounded-lg border border-border">
+                        <p className="text-foreground/80 text-sm whitespace-pre-wrap">
                           {customMessage || getDefaultMessage()}
                         </p>
                       </div>
@@ -487,12 +487,12 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-white/10 flex items-center justify-between">
+        <div className="p-6 border-t border-border flex items-center justify-between">
           <Button
             onClick={handleBack}
             disabled={currentStepIndex === 0}
             variant="ghost"
-            className="text-white/60 hover:text-white hover:bg-white/10"
+            className="text-foreground/60 hover:text-foreground hover:bg-secondary/50"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Back
@@ -501,7 +501,7 @@ export function PaymentRequestFlow({ onClose, initialDealId }: PaymentRequestFlo
           <Button
             onClick={handleNext}
             disabled={isSending || (currentStep === 'select-deal' && !selectedDealId)}
-            className="bg-purple-600 text-white hover:bg-purple-700 min-w-[120px]"
+            className="bg-secondary text-foreground hover:bg-secondary min-w-[120px]"
           >
             {isSending ? (
               <>

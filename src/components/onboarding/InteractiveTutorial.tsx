@@ -170,17 +170,17 @@ const InteractiveTutorial = ({ steps, storageKey = 'onboarding-tutorial', onComp
           style={tooltipStyle}
           className="pointer-events-auto"
         >
-          <div className="bg-white/[0.95] backdrop-blur-[40px] rounded-[24px] p-6 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-sm">
+          <div className="bg-secondary/[0.95] backdrop-blur-[40px] rounded-[24px] p-6 border border-border shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-sm">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-purple-500" />
-                <span className="text-[13px] text-purple-400 font-medium">
+                <HelpCircle className="w-5 h-5 text-secondary" />
+                <span className="text-[13px] text-secondary font-medium">
                   Step {currentStep + 1} of {steps.length}
                 </span>
               </div>
               <button type="button"
                 onClick={handleDismiss}
-                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-1 hover:bg-secondary/20 rounded-lg transition-colors"
                 aria-label="Dismiss tutorial"
               >
                 <X className="w-4 h-4 text-gray-600" />
@@ -201,7 +201,7 @@ const InteractiveTutorial = ({ steps, storageKey = 'onboarding-tutorial', onComp
               </button>
               <button type="button"
                 onClick={handleNext}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-[15px] font-semibold transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-foreground rounded-xl text-[15px] font-semibold transition-all flex items-center gap-2"
               >
                 {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
                 {currentStep < steps.length - 1 && <ArrowRight className="w-4 h-4" />}

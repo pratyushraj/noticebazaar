@@ -131,8 +131,8 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
   const quickStats = [
     {
       icon: Briefcase,
-      iconColor: 'text-[#B4D4FF]',
-      iconBg: 'bg-[#B4D4FF]/20',
+      iconColor: 'text-info',
+      iconBg: 'bg-info/20/20',
       label: 'Deals closed',
       value: dealsClosed,
       unit: '',
@@ -141,8 +141,8 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
     },
     {
       icon: Send,
-      iconColor: 'text-[#F472B6]',
-      iconBg: 'bg-[#F472B6]/20',
+      iconColor: 'text-primary',
+      iconBg: 'bg-primary/20/20',
       label: 'Brand pitches',
       value: pitchesSent,
       unit: 'sent',
@@ -151,8 +151,8 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
     },
     {
       icon: Shield,
-      iconColor: 'text-[#E879F9]',
-      iconBg: 'bg-[#E879F9]/20',
+      iconColor: 'text-secondary',
+      iconBg: 'bg-secondary/20',
       label: 'Takedowns',
       value: takedownsSuccessful,
       unit: 'successful',
@@ -177,10 +177,10 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
               <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#E879F9] to-[#F472B6] border border-[#FF6B9D]/30 flex-shrink-0 shadow-lg">
-                <BarChart3 className="w-5 h-5 text-white" />
+                <BarChart3 className="w-5 h-5 text-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-h3 font-semibold text-white tracking-tight">
+                <h2 className="text-h3 font-semibold text-foreground tracking-tight">
                   This Month's Overview
                 </h2>
                 {earningsHistory.length > 0 && (
@@ -199,7 +199,7 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => navigate('/creator-payments')}
-              className="text-body text-[#F472B6] hover:text-[#FF8FAB] hover:bg-[#F472B6]/10 transition-fast flex items-center gap-2 group focus-ring rounded-lg px-3 py-2 flex-shrink-0"
+              className="text-body text-primary hover:text-primary hover:bg-primary/20/10 transition-fast flex items-center gap-2 group focus-ring rounded-lg px-3 py-2 flex-shrink-0"
             >
               View Breakdown
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -209,12 +209,12 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
           {/* Earnings Section - More Prominent */}
           <div className="space-y-2">
             <div className="flex items-baseline gap-3">
-              <div className="text-5xl font-bold text-white number-large leading-none">
+              <div className="text-5xl font-bold text-foreground number-large leading-none">
                 ₹{displayValue.toLocaleString('en-IN')}
               </div>
               <div className={cn(
                 "flex items-center gap-1.5 font-semibold px-3 py-1.5 rounded-lg text-small",
-                isPositive ? "bg-[#A8E6CF]/20 text-[#A8E6CF] border border-[#A8E6CF]/40" : "bg-[#FFB3BA]/20 text-[#FF6B9D] border border-[#FF6B9D]/40"
+                isPositive ? "bg-primary/20/20 text-primary border border-[#A8E6CF]/40" : "bg-[#FFB3BA]/20 text-[#FF6B9D] border border-[#FF6B9D]/40"
               )}>
                 <TrendingUp className={cn(
                   "w-3.5 h-3.5",
@@ -223,15 +223,15 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
                 <span>{isPositive ? '+' : ''}₹{Math.abs(change).toLocaleString('en-IN')} ({Math.abs(changePercent)}%)</span>
               </div>
             </div>
-            <div className="text-body text-white/60">
+            <div className="text-body text-foreground/60">
               vs last month
             </div>
 
             {/* Progress Bar */}
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-body">
-                <span className="text-white/70">Monthly Goal Progress</span>
-                <span className="text-[#A8E6CF] font-semibold">{progressPercent}% of ₹{goal.toLocaleString('en-IN')} goal</span>
+                <span className="text-foreground/70">Monthly Goal Progress</span>
+                <span className="text-primary font-semibold">{progressPercent}% of ₹{goal.toLocaleString('en-IN')} goal</span>
               </div>
               <div className="relative h-3 rounded-full bg-[#1F1B2E] overflow-hidden border border-[#4A3A4F]">
                 <motion.div
@@ -240,18 +240,18 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
                   transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-y-0 left-0 h-full rounded-full bg-gradient-to-r from-[#E879F9] via-[#F472B6] to-[#FB7185]"
                 >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                  <div className="absolute inset-0 bg-secondary/20 animate-pulse"></div>
                 </motion.div>
               </div>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="border-t border-white/10"></div>
+          <div className="border-t border-border"></div>
 
           {/* Quick Stats Grid - Improved */}
           <div>
-            <h3 className="text-micro font-semibold text-white/70 mb-3 uppercase tracking-wider">Quick Metrics</h3>
+            <h3 className="text-micro font-semibold text-foreground/70 mb-3 uppercase tracking-wider">Quick Metrics</h3>
             <div className="grid grid-cols-3 gap-3">
               {quickStats.map((stat, index) => {
                 const Icon = stat.icon;
@@ -268,22 +268,22 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
                     </div>
                     <div className="text-center space-y-2 w-full">
                       <div className="space-y-1">
-                        <div className="text-3xl font-bold text-white number-large leading-none">
+                        <div className="text-3xl font-bold text-foreground number-large leading-none">
                           {stat.value}
                         </div>
                         {stat.unit && (
-                          <div className="text-small text-white/50 font-medium">
+                          <div className="text-small text-foreground/50 font-medium">
                             {stat.unit}
                           </div>
                         )}
                       </div>
-                      <div className="text-small text-white/70 font-medium leading-tight px-2">
+                      <div className="text-small text-foreground/70 font-medium leading-tight px-2">
                         {stat.label}
                       </div>
                       {stat.change !== null && (
                         <div className={cn(
                           "flex items-center justify-center gap-1.5 text-small font-semibold mt-2 pt-2 border-t border-[#4A3A4F]",
-                          stat.positive ? "text-[#A8E6CF]" : "text-[#FF6B9D]"
+                          stat.positive ? "text-primary" : "text-[#FF6B9D]"
                         )}>
                           <TrendingUp className={cn("w-3.5 h-3.5 flex-shrink-0", !stat.positive && "rotate-180")} />
                           <span>{stat.positive ? '↑' : '↓'} {Math.abs(stat.change)} from last month</span>
@@ -297,37 +297,37 @@ const MonthlyOverviewCard: React.FC<MonthlyOverviewCardProps> = ({
           </div>
 
           {/* Divider */}
-          <div className="border-t border-white/10"></div>
+          <div className="border-t border-border"></div>
 
           {/* Performance Metrics - Improved */}
           <div>
-            <h3 className="text-micro font-semibold text-white/70 mb-4 uppercase tracking-wider">Performance Metrics</h3>
+            <h3 className="text-micro font-semibold text-foreground/70 mb-4 uppercase tracking-wider">Performance Metrics</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
-                <div className="p-2 rounded-lg bg-[#A8E6CF]/20 border border-[#A8E6CF]/40">
-                  <TrendingUp className="h-4 w-4 text-[#A8E6CF]" />
+                <div className="p-2 rounded-lg bg-primary/20/20 border border-[#A8E6CF]/40">
+                  <TrendingUp className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-small text-white/60">Avg deal size</div>
-                  <div className="text-lg font-bold text-white number-large">₹{avgDealSize.toLocaleString('en-IN')}</div>
+                  <div className="text-small text-foreground/60">Avg deal size</div>
+                  <div className="text-lg font-bold text-foreground number-large">₹{avgDealSize.toLocaleString('en-IN')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
-                <div className="p-2 rounded-lg bg-[#A8E6CF]/20 border border-[#A8E6CF]/40">
-                  <TrendingUp className="h-4 w-4 text-[#A8E6CF]" />
+                <div className="p-2 rounded-lg bg-primary/20/20 border border-[#A8E6CF]/40">
+                  <TrendingUp className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-small text-white/60">On-time rate</div>
-                  <div className="text-lg font-bold text-white number-large">{onTimeRate}%</div>
+                  <div className="text-small text-foreground/60">On-time rate</div>
+                  <div className="text-lg font-bold text-foreground number-large">{onTimeRate}%</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1F1B2E] border border-[#4A3A4F] hover:bg-[#2A1F2E] transition-all">
-                <div className="p-2 rounded-lg bg-[#A8E6CF]/20 border border-[#A8E6CF]/40">
-                  <TrendingUp className="h-4 w-4 text-[#A8E6CF]" />
+                <div className="p-2 rounded-lg bg-primary/20/20 border border-[#A8E6CF]/40">
+                  <TrendingUp className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-small text-white/60">Payment cycle</div>
-                  <div className="text-lg font-bold text-white number-large">{avgPaymentCycle} days</div>
+                  <div className="text-small text-foreground/60">Payment cycle</div>
+                  <div className="text-lg font-bold text-foreground number-large">{avgPaymentCycle} days</div>
                 </div>
               </div>
             </div>

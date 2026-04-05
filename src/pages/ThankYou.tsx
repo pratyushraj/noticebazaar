@@ -75,11 +75,11 @@ const ThankYou = () => {
         {/* Trust and Pro Tip */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left mb-8">
           <div className="space-y-2">
-            <h4 className="font-bold text-foreground flex items-center"><Lock className="h-4 w-4 mr-2 text-purple-400" /> 100% Confidential</h4>
+            <h4 className="font-bold text-foreground flex items-center"><Lock className="h-4 w-4 mr-2 text-secondary" /> 100% Confidential</h4>
             <p className="text-xs text-muted-foreground">Your data stays private — always. We never share or resell your information.</p>
           </div>
           <div className="space-y-2">
-            <h4 className="font-bold text-foreground flex items-center"><AlertTriangle className="h-4 w-4 mr-2 text-red-400" /> Pro Tip</h4>
+            <h4 className="font-bold text-foreground flex items-center"><AlertTriangle className="h-4 w-4 mr-2 text-destructive" /> Pro Tip</h4>
             <p className="text-xs text-muted-foreground">Businesses that fix gaps within 7 days of audit improve compliance readiness by up to 80% before investor or tax review.</p>
           </div>
         </div>

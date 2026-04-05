@@ -80,24 +80,24 @@ const ResetPassword = () => {
       >
         {/* Branding */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-            <Scale className="h-6 w-6 text-white" />
+          <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center">
+            <Scale className="h-6 w-6 text-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-white">CreatorArmour</h1>
+          <h1 className="text-2xl font-bold text-foreground">CreatorArmour</h1>
         </div>
 
         {!isLinkValid ? (
           <>
-            <h2 className="text-3xl font-bold text-white mb-3">
+            <h2 className="text-3xl font-bold text-foreground mb-3">
               Link expired or invalid
             </h2>
-            <p className="text-white/80 text-sm mb-6">
+            <p className="text-foreground/80 text-sm mb-6">
               This password reset link is no longer valid. Please request a new
               reset email from the sign-in page.
             </p>
             <Button
               variant="outline"
-              className="w-full border-white/30 text-white hover:bg-white/10"
+              className="w-full border-border text-foreground hover:bg-secondary/50"
               onClick={() => navigate("/login", { replace: true })}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -107,10 +107,10 @@ const ResetPassword = () => {
         ) : (
           <>
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">
+              <h2 className="text-3xl font-bold text-foreground mb-2">
                 Set a New Password
               </h2>
-              <p className="text-white/80 text-sm">
+              <p className="text-foreground/80 text-sm">
                 Enter a new password for your CreatorArmour account.
               </p>
             </div>
@@ -119,7 +119,7 @@ const ResetPassword = () => {
               <div>
                 <Label
                   htmlFor="new-password"
-                  className="text-white text-sm mb-2 block"
+                  className="text-foreground text-sm mb-2 block"
                 >
                   New password
                 </Label>
@@ -129,7 +129,7 @@ const ResetPassword = () => {
                   placeholder="Enter a new password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
+                  className="bg-secondary/50 border-border text-foreground placeholder:text-secondary/60 text-base h-12 rounded-xl"
                   autoComplete="new-password"
                   required
                 />
@@ -137,7 +137,7 @@ const ResetPassword = () => {
               <div>
                 <Label
                   htmlFor="confirm-password"
-                  className="text-white text-sm mb-2 block"
+                  className="text-foreground text-sm mb-2 block"
                 >
                   Confirm new password
                 </Label>
@@ -147,7 +147,7 @@ const ResetPassword = () => {
                   placeholder="Re-enter your new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-purple-200/60 text-base h-12 rounded-xl"
+                  className="bg-secondary/50 border-border text-foreground placeholder:text-secondary/60 text-base h-12 rounded-xl"
                   autoComplete="new-password"
                   required
                 />
@@ -156,7 +156,7 @@ const ResetPassword = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold h-12 rounded-xl shadow-lg mt-2"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-foreground font-semibold h-12 rounded-xl shadow-lg mt-2"
               >
                 {isSubmitting ? "Updating password..." : "Update Password"}
               </Button>

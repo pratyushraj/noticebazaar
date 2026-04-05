@@ -209,7 +209,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-white overflow-y-auto"
+        className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 to-indigo-900/95 backdrop-blur-xl border border-purple-500/30 text-foreground overflow-y-auto"
         onOpenAutoFocus={(e) => {
           // Try native share when modal opens
           if (typeof navigator.share === 'function') {
@@ -219,24 +219,24 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+          <DialogTitle className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
             <Share2 className="w-6 h-6" />
             Share with Brand
           </DialogTitle>
-          <DialogDescription className="text-purple-200">
+          <DialogDescription className="text-secondary">
             Choose how you'd like to share your contract feedback
           </DialogDescription>
         </DialogHeader>
 
         {!hasValidLink ? (
-          <div className="mt-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl">
-            <p className="text-red-300 font-semibold mb-2">⚠️ Deal not saved</p>
-            <p className="text-red-200 text-sm">
+          <div className="mt-4 p-4 bg-destructive/20 border border-destructive/50 rounded-xl">
+            <p className="text-destructive font-semibold mb-2">⚠️ Deal not saved</p>
+            <p className="text-destructive text-sm">
               Please wait a moment while we save your deal, then try sharing again.
             </p>
             <button type="button"
               onClick={onClose}
-              className="mt-3 px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg font-semibold transition-all"
+              className="mt-3 px-4 py-2 bg-destructive/80 hover:bg-destructive text-foreground rounded-lg font-semibold transition-all"
             >
               Close
             </button>
@@ -256,7 +256,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
               }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 shadow-lg shadow-purple-500/30"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-foreground px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 shadow-lg shadow-purple-500/30"
             >
               <Share2 className="w-6 h-6" />
               <span>{primaryCtaText}</span>
@@ -271,8 +271,8 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 className={cn(
                   "p-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
                   copiedItem === 'full'
-                    ? "bg-purple-600/80 text-white border border-purple-400/50"
-                    : "bg-white/5 hover:bg-white/10 border border-white/10 text-white/90"
+                    ? "bg-secondary/80 text-foreground border border-purple-400/50"
+                    : "bg-card hover:bg-secondary/50 border border-border text-foreground/90"
                 )}
               >
                 {copiedItem === 'full' ? (
@@ -295,8 +295,8 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 className={cn(
                   "p-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2",
                   copiedItem === 'link'
-                    ? "bg-purple-600/80 text-white border border-purple-400/50"
-                    : "bg-white/5 hover:bg-white/10 border border-white/10 text-white/90"
+                    ? "bg-secondary/80 text-foreground border border-purple-400/50"
+                    : "bg-card hover:bg-secondary/50 border border-border text-foreground/90"
                 )}
               >
                 {copiedItem === 'link' ? (
@@ -319,7 +319,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 onClick={handleOpenWhatsApp}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+                className="w-full bg-card hover:bg-secondary/50 border border-border text-foreground px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
               >
                 <MessageSquare className="w-6 h-6" />
                 <span>Open WhatsApp</span>
@@ -329,7 +329,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 onClick={handleOpenEmail}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+                className="w-full bg-card hover:bg-secondary/50 border border-border text-foreground px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
               >
                 <Mail className="w-6 h-6" />
                 <span>Open Email</span>
@@ -339,7 +339,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
                 onClick={handleOpenInstagram}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
+                className="w-full bg-card hover:bg-secondary/50 border border-border text-foreground px-6 py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-3"
               >
                 <Instagram className="w-6 h-6" />
                 <span>Copy for Instagram DM</span>
@@ -349,7 +349,7 @@ export const UniversalShareModal: React.FC<UniversalShareModalProps> = ({
             {/* Close Button */}
             <button type="button"
               onClick={onClose}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-card hover:bg-secondary/50 border border-border text-foreground/80 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 mt-2"
             >
               <X className="w-5 h-5" />
               Close
