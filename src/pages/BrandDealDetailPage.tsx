@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowLeft, Loader2, Clock, CheckCircle2, XCircle, IndianRupee,
   FileText, Copy, ExternalLink, Calendar, ShieldCheck, Link as LinkIcon,
-  ThumbsUp, ThumbsDown, MessageSquare, AlertCircle, Send, Check
+  ThumbsUp, ThumbsDown, MessageSquare, AlertCircle, Send, Check, WifiOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -267,28 +267,6 @@ const BrandDealDetailPage: React.FC = () => {
                   Approve
                 </Button>
               </div>
-
-              {/* Sticky action bar — mobile only when content submitted */}
-              <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F1A] via-[#0B0F1A]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
-                <div className="flex gap-2 max-w-lg mx-auto">
-                  <button
-                    type="button"
-                    onClick={() => setShowChangesModal(true)}
-                    className="flex-1 h-12 rounded-xl bg-white/10 border border-white/20 text-white/80 font-bold text-sm flex items-center justify-center gap-2"
-                  >
-                    <ThumbsDown className="h-4 w-4" />
-                    Changes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowApproveModal(true)}
-                    className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2"
-                  >
-                    <ThumbsUp className="h-4 w-4" />
-                    Approve
-                  </button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         )}
@@ -433,6 +411,47 @@ const BrandDealDetailPage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* ===== STICKY ACTION BAR — Mobile Only ===== */}
+      {/* Content review actions */}
+      {isContentSubmitted && !isContentApproved && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F1A] via-[#0B0F1A]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
+          <div className="flex gap-2 max-w-lg mx-auto">
+            <button
+              type="button"
+              onClick={() => setShowChangesModal(true)}
+              className="flex-1 h-12 rounded-xl bg-white/10 border border-white/20 text-white/80 font-bold text-sm flex items-center justify-center gap-2"
+            >
+              <ThumbsDown className="h-4 w-4" />
+              Changes
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowApproveModal(true)}
+              className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2"
+            >
+              <ThumbsUp className="h-4 w-4" />
+              Approve
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment actions */}
+      {isContentApproved && !isPaymentSent && deal.deal_type !== 'barter' && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F1A] via-[#0B0F1A]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
+          <div className="max-w-lg mx-auto">
+            <button
+              type="button"
+              onClick={() => setShowMarkPaidModal(true)}
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold text-sm flex items-center justify-center gap-2"
+            >
+              <Check className="h-4 w-4" />
+              I've Paid — Mark as Sent
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ===== APPROVE MODAL ===== */}
       {showApproveModal && (

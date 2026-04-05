@@ -777,10 +777,10 @@ const Signup = () => {
                   </div>
                 )}
 
-	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
+	              <h2 className="text-4xl font-black text-white mb-3 tracking-tight">
 	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create my collab link'}
 	              </h2>
-	              <p className="text-slate-600 font-medium leading-relaxed">
+	              <p className="text-white/70 font-medium leading-relaxed">
 	                {showLogin
 	                  ? 'Sign in to see your brand offers and active deals.'
 	                  : accountMode === 'brand'
@@ -925,7 +925,7 @@ const Signup = () => {
 	                      placeholder="name@example.com"
                       value={email}
                       onChange={(e) => handleEmailChange(e.target.value)}
-                      className={`bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
+                      className={`bg-white/10 border-white/20 text-white placeholder:text-white/40 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
                       required
                       autoComplete="email"
                     />
