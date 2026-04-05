@@ -81,6 +81,24 @@ const BrandDashboard: React.FC = () => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
+  // Human-readable status labels (match CreatorDashboard)
+  const getStatusLabel = (status: string | null): string => {
+    if (!status) return 'Unknown';
+    const s = status.toLowerCase();
+    if (s.includes('contract_ready')) return 'Contract ready';
+    if (s.includes('brand_signed') || s.includes('signed_by_brand')) return 'Brand signed';
+    if (s.includes('fully_executed') || s.includes('fully_signed') || s.includes('executed')) return 'Ready to start';
+    if (s.includes('live') || s.includes('in_progress')) return 'In progress';
+    if (s.includes('content') && s.includes('making')) return 'Making content';
+    if (s.includes('content_delivered') || s.includes('content delivered')) return 'Content delivered';
+    if (s.includes('needs_changes') || s.includes('brand_requested_changes')) return 'Changes needed';
+    if (s.includes('declined') || s.includes('rejected')) return 'Declined';
+    if (s.includes('completed')) return 'Done';
+    if (s.includes('awaiting') && s.includes('product')) return 'Waiting for product';
+    // Clean up underscored status
+    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
   if (!isBrandUser) {
     return (
       <div className="min-h-screen bg-[#0D0F1A] text-white flex items-center justify-center p-4">
@@ -189,7 +207,7 @@ const BrandDashboard: React.FC = () => {
                           {deal.brand_name || 'Brand'}
                         </h3>
                         <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
-                          {deal.status || 'Unknown'}
+                          {getStatusLabel(deal.status)}
                         </span>
                       </div>
                       <p className="text-sm text-white/60 mt-1">
