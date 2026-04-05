@@ -1139,14 +1139,18 @@ const PaymentDetailPage = () => {
                 <CheckCircle className="w-6 h-6 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Confirm you got the money</h3>
+                <h3 className="text-lg font-semibold text-white">Confirm payment received</h3>
               </div>
             </div>
             
-            <p className="text-white/80 mb-6">
-              Only do this after the money reaches your bank account. You can still add notes or upload proof later.
+            <p className="text-white/80 mb-4">
+              Confirm only after checking your bank account. Make sure the received amount matches:
             </p>
-            
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+              <div className="text-xs text-white/50 mb-1">Expected amount</div>
+              <div className="text-2xl font-black text-white">₹{paymentData.amount.toLocaleString('en-IN')}</div>
+              <div className="text-xs text-white/50 mt-1">from {paymentData.brandName}</div>
+            </div>
             <div className="flex gap-3">
               <button type="button"
                 onClick={() => {

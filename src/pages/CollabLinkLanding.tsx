@@ -3337,10 +3337,11 @@ const CollabLinkLanding = () => {
                                 type="number"
                                 value={exactBudget}
                                 onChange={(e) => setExactBudget(e.target.value)}
-                                placeholder="Enter your budget"
+                                placeholder="Enter your exact budget"
                                 className="h-14 pl-10 pr-6 rounded-2xl border-white bg-white font-black text-[15px] shadow-sm focus:border-slate-300 transition-all"
                               />
                             </div>
+                            <p className="text-[11px] text-slate-500 mt-2">Enter the exact amount you'd pay. The creator will see this directly.</p>
                           </div>
                         )}
 
@@ -3384,8 +3385,15 @@ const CollabLinkLanding = () => {
                             type="date"
                             value={deadline}
                             onChange={(e) => setDeadline(e.target.value)}
+                            min={new Date().toISOString().split('T')[0]}
                             className="h-14 rounded-2xl border-white bg-white px-4 font-bold text-[15px] shadow-sm"
                           />
+                          {isDeadlineTooSoon && (
+                            <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                              <AlertTriangle className="h-3.5 w-3.5" />
+                              Creator needs {creator.min_lead_time_days} days notice — choose a later date.
+                            </p>
+                          )}
                         </div>
 
                         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">

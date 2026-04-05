@@ -169,7 +169,7 @@ export default function ShipPage() {
               type="text"
               value={courierName}
               onChange={(e) => setCourierName(e.target.value)}
-              placeholder="e.g. Blue Dart, Delhivery"
+              placeholder="e.g. Blue Dart, Delhivery, India Post"
               className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
               required
             />

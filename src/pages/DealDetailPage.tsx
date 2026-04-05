@@ -101,7 +101,7 @@ type GuidedDealState =
   | 'PAID'
   | 'COMPLETED';
 
-const GUIDED_PROGRESS_STEPS = ['Offer', 'Confirm', 'Make', 'Upload', 'Review', 'Payment', 'Complete'] as const;
+const GUIDED_PROGRESS_STEPS = ['Offer', 'Confirm', 'Make', 'Share', 'Review', 'Payment', 'Complete'] as const;
 
 const getSimpleStatusLabel = (state: GuidedDealState) => {
   switch (state) {
@@ -120,11 +120,11 @@ const getSimpleStatusLabel = (state: GuidedDealState) => {
     case 'CONTENT_SUBMITTED':
       return 'Awaiting brand review';
     case 'APPROVED':
-      return 'Waiting for payment';
+      return 'Brand approved — awaiting payment';
     case 'PAYMENT_PENDING':
       return 'Payment incoming';
     case 'PAID':
-      return 'Got the money? Confirm here';
+      return 'Payment sent — confirm received';
     case 'COMPLETED':
       return 'Done!';
     default:
@@ -2072,6 +2072,11 @@ Best regards`;
                       ? 'The brand asked for changes. Paste the revised reel, post, or story link here.'
                       : 'Once your content is live, paste the reel, post, or story link here for brand review.'}
                 </p>
+                {guidedDealState !== 'CONTENT_SUBMITTED' && guidedDealState !== 'REVISION_REQUESTED' && (
+                  <p className="text-xs text-white/40">
+                    💡 The brand will review within 7 days. If changes are needed, you can resubmit.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

@@ -688,7 +688,7 @@ const CollabRequestBriefPage = () => {
                     <button type="button"
                       onClick={() => { setCounterPrice(request.exact_budget ? String(request.exact_budget) : ''); setCounterNotes(''); setShowCounterDialog(true); }}
                       disabled={isAccepting || isDeclining}
-                      className="flex-1 h-12 rounded-xl border border-white/20 text-white/80 hover:text-white hover:bg-white/10 text-sm font-bold transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black"
+                      className="flex-1 h-12 rounded-xl border border-blue-400/40 text-blue-200 hover:text-white hover:bg-blue-500/20 text-sm font-bold transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:ring-offset-2 focus:ring-offset-black"
                       aria-label="Make a counter offer to negotiate terms"
                     >
                       Counter offer
@@ -810,9 +810,10 @@ const CollabRequestBriefPage = () => {
                   id="pending-address"
                   value={pendingAddress}
                   onChange={(e) => setPendingAddress(e.target.value)}
-                  placeholder="Flat, area, city, state, pincode"
+                  placeholder="Flat/House, Area, City, State, Pincode"
                   className="border-white/10 bg-white/5 text-white"
                 />
+                <p className="text-xs text-white/40">Include full address so the brand can ship products to you.</p>
               </div>
             )}
           </div>
