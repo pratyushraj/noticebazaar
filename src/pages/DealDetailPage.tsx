@@ -3,7 +3,7 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef, Fragment } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
+import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp, WifiOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -132,6 +132,24 @@ const getSimpleStatusLabel = (state: GuidedDealState) => {
   }
 };
 
+  // Content deadline countdown
+  const getContentDeadline = (dueDate: string | null | undefined) => {
+    if (!dueDate) return null;
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffMs = due.getTime() - now.getTime();
+    if (diffMs < 0) return { label: 'OVERDUE', tone: 'danger' as const };
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    if (days >= 7) return { label: `Due ${days}d`, tone: 'normal' as const };
+    if (days >= 1) return { label: `Due ${days}d ${hours}h`, tone: 'warning' as const };
+    if (hours >= 1) return { label: `Due ${hours}h`, tone: 'danger' as const };
+    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return { label: `Due ${mins}m`, tone: 'danger' as const };
+  };
+
+  const contentDeadline = getContentDeadline(deal.due_date);
+
 const getTimelineEntryCopy = (eventName?: string) => {
   const event = String(eventName || '').toLowerCase();
 
@@ -227,6 +245,19 @@ function DealDetailPageContent() {
   // Removed tempSafeContractUrl and contractHtml state - DOCX-first architecture
   const [contractGenerationError, setContractGenerationError] = useState<string | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  // Offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Brand details submission state
   const [brandSubmissionDetails, setBrandSubmissionDetails] = useState<any>(null);
@@ -1375,6 +1406,7 @@ function DealDetailPageContent() {
       }
 
       toast.success(guidedDealState === 'REVISION_REQUESTED' ? 'Updated post link shared.' : 'Post link shared.');
+      if (deal?.id) localStorage.removeItem(`draft_content_${deal.id}`);
       await refreshAll();
     } catch (error: any) {
       toast.error(error?.message || 'Could not submit your post link');
@@ -1988,6 +2020,14 @@ Best regards`;
       {/* Content */}
       <div className="space-y-4 md:space-y-6 pb-40 md:pb-24 md:p-6">
 
+        {/* Offline banner */}
+        {!isOnline && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+            <WifiOff className="w-4 h-4 flex-shrink-0" />
+            You're offline — changes will sync when you reconnect
+          </div>
+        )}
+
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex flex-col gap-4">
             <div>
@@ -2000,6 +2040,13 @@ Best regards`;
               <Clock className="h-3.5 w-3.5 text-blue-300" />
               {getSimpleStatusLabel(guidedDealState)}
             </div>
+
+            {contentDeadline && (
+              <div className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.16em] ${contentDeadline.tone === 'danger' ? 'border-red-500/30 bg-red-500/10 text-red-400' : contentDeadline.tone === 'warning' ? 'border-amber-500/30 bg-amber-500/10 text-amber-400' : 'border-white/10 bg-white/5 text-white/60'}`}>
+                <Calendar className="h-3.5 w-3.5" />
+                {contentDeadline.label}
+              </div>
+            )}
 
             <div className="flex items-center gap-3">
               {GUIDED_PROGRESS_STEPS.map((step, index) => {
@@ -2020,7 +2067,7 @@ Best regards`;
                     {index < GUIDED_PROGRESS_STEPS.length - 1 && (
                       <div className={`w-6 h-0.5 rounded-full mb-5 flex-shrink-0 ${index < guidedProgressIndex ? 'bg-emerald-400' : 'bg-white/10'}`} />
                     )}
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </div>
@@ -2097,7 +2144,16 @@ Best regards`;
                   id="deal-content-link"
                   type="url"
                   value={contentLinkInput}
-                  onChange={(e) => setContentLinkInput(e.target.value)}
+                  onChange={(e) => {
+                    setContentLinkInput(e.target.value);
+                    if (deal?.id) localStorage.setItem(`draft_content_${deal.id}`, e.target.value);
+                  }}
+                  onFocus={() => {
+                    if (deal?.id && !contentLinkInput) {
+                      const draft = localStorage.getItem(`draft_content_${deal.id}`);
+                      if (draft) { setContentLinkInput(draft); }
+                    }
+                  }}
                   placeholder="https://instagram.com/reel/..."
                   className="h-12 w-full rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-white placeholder:text-white/35 focus:border-emerald-400/50 focus:outline-none"
                 />

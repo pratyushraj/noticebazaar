@@ -17,10 +17,23 @@ const BrandDealDetailPage: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
   const { profile } = useSession();
+    // Offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const { data: deal, isLoading } = useBrandDealById(dealId, profile?.id, 'brand');
   const updateDeal = useUpdateBrandDeal();
 
   const [showMarkPaidModal, setShowMarkPaidModal] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showChangesModal, setShowChangesModal] = useState(false);
   const [brandFeedback, setBrandFeedback] = useState('');
@@ -196,6 +209,12 @@ const BrandDealDetailPage: React.FC = () => {
       </div>
 
       <div className="px-4 py-6 space-y-5">
+        {!isOnline && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+            <WifiOff className="w-4 h-4 flex-shrink-0" />
+            You're offline — changes will sync when you reconnect
+          </div>
+        )}
 
         {/* ===== ACTION CARD: Content Review ===== */}
         {isContentSubmitted && !isContentApproved && (

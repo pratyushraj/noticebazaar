@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info } from 'lucide-react';
+import { WifiOff, ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -189,6 +189,18 @@ const PaymentDetailPage = () => {
   }, [profile?.bank_upi]);
 
   const hasSavedUpi = Boolean(String(profile?.bank_upi || '').trim());
+
+  // Offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Handle undo deadline expiration
   useEffect(() => {
@@ -506,6 +518,12 @@ const PaymentDetailPage = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
+        {!isOnline && (
+          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+            <WifiOff className="w-4 h-4 flex-shrink-0" />
+            You're offline — changes will sync when you reconnect
+          </div>
+        )}
         {/* Deal Complete Celebration Banner */}
         {paymentData.status === 'received' && paymentData.receivedAt && (
           <motion.div

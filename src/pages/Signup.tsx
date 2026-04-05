@@ -751,7 +751,7 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'creator'
-                            ? 'bg-white/20 text-white border border-white/20
+                            ? 'bg-white/20 text-white border border-white/20'
                             : 'bg-transparent text-white/60 hover:text-white'
                         )}
                       >
@@ -767,7 +767,7 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'brand'
-                            ? 'bg-white/20 text-white border border-white/20
+                            ? 'bg-white/20 text-white border border-white/20'
                             : 'bg-transparent text-white/60 hover:text-white'
                         )}
                       >

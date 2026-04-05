@@ -5,7 +5,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { CreatorNavigationWrapper } from '@/components/navigation/CreatorNavigationWrapper';
 import { cn } from '@/lib/utils';
 import { spacing } from '@/lib/design-system';
-import { AlertTriangle, CheckCircle2, Clock, Instagram, Loader2, Lock, ShieldCheck, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, Instagram, Loader2, Lock, ShieldCheck, XCircle, WifiOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useUpdateProfile } from '@/lib/hooks/useProfiles';
@@ -139,6 +139,7 @@ const CollabRequestBriefPage = () => {
   const [pendingAddress, setPendingAddress] = useState('');
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
   const [brandVerified, setBrandVerified] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [showCounterDialog, setShowCounterDialog] = useState(false);
   const [counterPrice, setCounterPrice] = useState('');
   const [counterNotes, setCounterNotes] = useState('');
@@ -207,6 +208,18 @@ const CollabRequestBriefPage = () => {
     };
     void fetchBrandVerified();
   }, [request?.id]);
+
+  // Offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   if (!effectiveRequestId) {
     navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
@@ -375,8 +388,14 @@ const CollabRequestBriefPage = () => {
       return;
     }
 
-    if (requiresAddress && pendingAddress.trim().length < 10) {
-      toast.error('Please add your full address');
+    if (requiresAddress && pendingAddress.trim().length < 15) {
+      toast.error('Address too short — please include flat/house, area, city, state, and 6-digit pincode');
+      return;
+    }
+    // Validate pincode format (6 digits)
+    const pincodeMatch = pendingAddress.match(/\b(\d{6})\b/);
+    if (requiresAddress && !pincodeMatch) {
+      toast.error('Please include a valid 6-digit PIN code in your address');
       return;
     }
 
@@ -481,6 +500,12 @@ const CollabRequestBriefPage = () => {
 
   return (
     <>
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-600 text-white px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
+          <WifiOff className="w-4 h-4 flex-shrink-0" />
+          You're offline — changes will sync when you reconnect
+        </div>
+      )}
       <CreatorNavigationWrapper
         title="Offer details"
         subtitle={subtitle}

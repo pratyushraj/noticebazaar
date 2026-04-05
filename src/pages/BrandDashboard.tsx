@@ -124,6 +124,18 @@ const BrandDashboard: React.FC = () => {
     return 'Just now';
   };
 
+  const getExpiresIn = (expiresAt: string | null | undefined): { label: string; tone: 'danger' | 'warning' | 'normal' } | null => {
+    if (!expiresAt) return null;
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (diff < 0) return { label: 'Expired', tone: 'danger' };
+    if (days >= 3) return { label: `Expires in ${days}d`, tone: 'normal' };
+    if (days >= 1) return { label: `Expires in ${days}d`, tone: 'warning' };
+    if (hours > 0) return { label: `Expires in ${hours}h`, tone: 'danger' };
+    return { label: 'Expiring soon', tone: 'danger' };
+  };
+
   if (!isBrandUser) {
     return (
       <div className="min-h-screen bg-[#0D0F1A] text-white flex items-center justify-center p-4">
@@ -256,6 +268,15 @@ const BrandDashboard: React.FC = () => {
                       {tab === 'sent' && (
                         <p className="text-xs text-yellow-400 mt-1 flex items-center gap-1">
                           <Clock className="w-3 h-3" /> Sent {getTimeAgo(deal.created_at)}
+                          {(() => {
+                            const exp = getExpiresIn((deal as any).expires_at);
+                            if (!exp) return null;
+                            return (
+                              <span className={`ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${exp.tone === 'danger' ? 'bg-red-500/20 text-red-400' : exp.tone === 'warning' ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-white/60'}`}>
+                                {exp.label}
+                              </span>
+                            );
+                          })()}
                         </p>
                       )}
                     </div>
