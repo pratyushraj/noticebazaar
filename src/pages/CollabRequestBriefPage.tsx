@@ -618,8 +618,8 @@ const CollabRequestBriefPage = () => {
             </div>
           </div>
 
-          {/* Simple next-step explainer */}
-          <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4">
+          {/* Simple next-step explainer — extra bottom margin prevents overlap with sticky CTA */}
+          <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 mb-[160px] md:mb-0">
             <p className="text-[11px] font-medium text-blue-300/60 uppercase tracking-wider mb-3">If you accept</p>
             <div className="grid grid-cols-1 gap-3 text-[13px] md:text-[12px] text-white/80">
               <div className="flex items-center gap-3">

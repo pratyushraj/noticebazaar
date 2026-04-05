@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const LOGIN_LOADING_TIMEOUT_MS = 4000;
+const LOGIN_LOADING_TIMEOUT_MS = 2000;
 const DEMO_BRAND_EMAIL = 'brand-demo@noticebazaar.com';
 const DEMO_BRAND_PASSWORD = 'BrandDemo123!@#';
 // Demo brand account for exploring the brand experience
@@ -260,7 +260,7 @@ const Login = () => {
 
         {/* Timed out */}
         {loading && loadingTimedOut && !session && (
-          <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest text-center mb-6">Network delay detected. Use credentials below.</p>
+          <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest text-center mb-6">Still loading? Use the form below to sign in.</p>
         )}
 
         {/* Primary: Email/Password Login */}

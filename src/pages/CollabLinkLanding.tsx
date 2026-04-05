@@ -2749,6 +2749,36 @@ const CollabLinkLanding = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Sticky offer bar — mobile only, appears after package is selected */}
+              {selectedTemplate && !showCustomFlow && (
+                <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-white via-white to-white/95 pt-8 pb-4 px-4 md:hidden border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+                  <div className="flex items-center gap-3 max-w-lg mx-auto">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-0.5">Selected</p>
+                      <p className="text-sm font-black text-slate-900 truncate">{selectedTemplate.label}</p>
+                      <p className="text-xs text-slate-500">
+                        {selectedTemplate.type === 'barter' ? 'Free products' : `₹${selectedTemplate.budget.toLocaleString('en-IN')}`}
+                        {' · '}{selectedTemplate.deadlineDays || 7} days
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCustomFlow(true);
+                        setCurrentStep(2);
+                        setTimeout(() => {
+                          document.getElementById('offer-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                      }}
+                      className="shrink-0 h-12 px-5 rounded-2xl bg-[#0FA47F] text-white font-black text-[11px] uppercase tracking-widest shadow-lg hover:bg-emerald-600 active:scale-[0.98] transition-all whitespace-nowrap"
+                    >
+                      Continue →
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className={`mt-3.5 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-[0_8px_20px_rgba(15,23,42,0.06)] ${showPastWorkSection ? '' : 'hidden'}`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <h3 className="text-[14px] font-black text-slate-900 tracking-tight">
