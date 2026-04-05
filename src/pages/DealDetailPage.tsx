@@ -3,7 +3,7 @@
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef, Fragment } from 'react';
 import type { ChangeEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp, WifiOff } from 'lucide-react';
+import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp, WifiOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
@@ -25,7 +25,7 @@ import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } f
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
 import { MessageBrandModal } from '@/components/brand-messages/MessageBrandModal';
 import ProgressUpdateSheet from '@/components/deals/ProgressUpdateSheet';
-import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
+import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal, useUpdateBrandDeal, useBrandDeals, getDealStageFromStatus } from '@/lib/hooks/useBrandDeals';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
 import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
@@ -204,6 +204,28 @@ function DealDetailPageContent() {
   const createIssue = useCreateIssue();
   const addIssueHistory = useAddIssueHistory();
   const createActionLog = useCreateActionLog();
+
+  // All creator deals for deal switching
+  const { data: allDeals = [] } = useBrandDeals({
+    userId: profile?.id,
+    role: 'creator',
+    status: undefined,
+  });
+
+  // Compute prev/next deals for navigation
+  const activeDeals = useMemo(() => {
+    return allDeals.filter(d => {
+      const s = String(d.status || '').toLowerCase();
+      return s !== 'completed' && s !== 'fully_executed';
+    });
+  }, [allDeals]);
+
+  const currentIndex = useMemo(() =>
+    activeDeals.findIndex(d => d.id === dealId),
+  [activeDeals, dealId]);
+
+  const prevDeal = currentIndex > 0 ? activeDeals[currentIndex - 1] : null;
+  const nextDeal = currentIndex < activeDeals.length - 1 ? activeDeals[currentIndex + 1] : null;
 
   // State
   const [showContractPreview, setShowContractPreview] = useState(false);
@@ -2005,16 +2027,45 @@ Best regards`;
       subtitle="Everything about this collaboration, organized and protected in one place."
       showBackButton
       rightActions={
-        <button type="button"
-          onClick={() => {
-            triggerHaptic(HapticPatterns.light);
-            setShowDeleteConfirm(true);
-          }}
-          className="p-2 hover:bg-red-500/20 rounded-lg transition-colors active:scale-95"
-          aria-label="Delete Deal"
-        >
-          <Trash2 className="w-6 h-6 text-red-400" />
-        </button>
+        <div className="flex items-center gap-1">
+          {prevDeal && (
+            <button
+              type="button"
+              onClick={() => navigate(`/creator-deal/${prevDeal.id}`)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+              aria-label={`Previous deal: ${prevDeal.brand_name}`}
+              title={prevDeal.brand_name}
+            >
+              <ChevronLeft className="w-5 h-5 text-white/70" />
+            </button>
+          )}
+          {activeDeals.length > 1 && (
+            <span className="text-xs text-white/40 font-medium px-1 select-none">
+              {currentIndex + 1}/{activeDeals.length}
+            </span>
+          )}
+          {nextDeal && (
+            <button
+              type="button"
+              onClick={() => navigate(`/creator-deal/${nextDeal.id}`)}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
+              aria-label={`Next deal: ${nextDeal.brand_name}`}
+              title={nextDeal.brand_name}
+            >
+              <ChevronRight className="w-5 h-5 text-white/70" />
+            </button>
+          )}
+          <button type="button"
+            onClick={() => {
+              triggerHaptic(HapticPatterns.light);
+              setShowDeleteConfirm(true);
+            }}
+            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors active:scale-95"
+            aria-label="Delete Deal"
+          >
+            <Trash2 className="w-6 h-6 text-red-400" />
+          </button>
+        </div>
       }
     >
       {/* Content */}

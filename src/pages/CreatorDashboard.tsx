@@ -150,77 +150,134 @@ interface DealCardProps {
 const DealCard = ({ deal, onOpenDeal }: DealCardProps) => {
   const progress = deal.progress_percentage ?? STAGE_TO_PROGRESS[getDealStageFromStatus(deal.status, deal.progress_percentage ?? undefined)] ?? 20;
 
-  // Compute deadline urgency
+  const status = String(deal.status || '').toLowerCase();
+  const needsAction = status === 'contract_sent' || status === 'revision_requested';
+  const waitingOnBrand = status === 'content_submitted' || status === 'approved';
+
+  // Action label based on deal stage
+  const actionLabel = (() => {
+    if (status === 'contract_sent') return 'Sign to unlock content form';
+    if (status === 'revision_requested') return 'Make requested changes';
+    if (status === 'content_in_progress') return 'Submit your post link';
+    return null;
+  })();
+
+  // Deadline urgency
   const deadlineUrgency = (() => {
     if (!deal.due_date) return null;
     const due = new Date(deal.due_date);
-    due.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = Math.ceil((due.getTime() - today.getTime()) / 86400000);
-    if (diff < 0) return { label: `${Math.abs(diff)}d overdue`, tone: 'danger' as const };
-    if (diff === 0) return { label: 'Due today', tone: 'danger' as const };
-    if (diff === 1) return { label: 'Due tomorrow', tone: 'warn' as const };
+    due.setHours(23, 59, 59, 999);
+    const diff = due.getTime() - Date.now();
+    if (diff < 0) return { label: `${Math.ceil(Math.abs(diff) / 86400000)}d overdue`, tone: 'danger' as const };
+    const days = Math.ceil(diff / 86400000);
+    if (days === 0) return { label: 'Due today', tone: 'danger' as const };
+    if (days === 1) return { label: 'Due tomorrow', tone: 'warn' as const };
+    if (days <= 3) return { label: `${days}d left`, tone: 'warn' as const };
     return null;
   })();
   
   return (
     <article 
-      className="rounded-[24px] border border-white/10 bg-white/5 p-5 transition-all duration-200 hover:bg-white/[0.07] focus-within:ring-2 focus-within:ring-emerald-400/50"
+      className={cn(
+        "rounded-[24px] border bg-white/5 p-5 transition-all duration-200 hover:bg-white/[0.07] focus-within:ring-2 focus-within:ring-emerald-400/50",
+        needsAction ? "border-amber-500/40" : waitingOnBrand ? "border-blue-500/30" : "border-white/10"
+      )}
       role="article"
       aria-labelledby={`deal-title-${deal.id}`}
     >
+      {/* Urgency label */}
+      {needsAction && (
+        <div className="flex items-center gap-1.5 mb-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-amber-400">
+            ⚡ Your action needed
+          </span>
+          {deadlineUrgency && (
+            <span className={cn(
+              "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
+              deadlineUrgency.tone === 'danger' ? "bg-red-500/20 text-red-400" : "bg-amber-500/20 text-amber-400"
+            )}>
+              {deadlineUrgency.label}
+            </span>
+          )}
+        </div>
+      )}
+      {waitingOnBrand && (
+        <div className="flex items-center gap-1.5 mb-3">
+          <span className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-400">
+            👀 Waiting on brand
+          </span>
+        </div>
+      )}
+
+      {/* Brand + stage */}
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-300">
-            {progress < 100 ? 'Active' : 'Done'}
-          </p>
-          <h3 id={`deal-title-${deal.id}`} className="mt-2 text-xl font-black text-white flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <h3 id={`deal-title-${deal.id}`} className="text-xl font-black text-white flex items-center gap-2">
             {deal.brand_name}
             {(deal as any).brand_verified && <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />}
           </h3>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="mt-1.5 text-sm text-slate-300">
             {formatDealStageLabel(deal.status, deal.progress_percentage)} • {formatCurrency(deal.deal_amount)}
           </p>
           <div className="mt-2 h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-emerald-400 transition-all duration-500" 
+              className={cn("h-full transition-all duration-500", 
+                needsAction ? "bg-amber-400" : waitingOnBrand ? "bg-blue-400" : "bg-emerald-400"
+              )}
               style={{ width: `${progress}%` }} 
             />
           </div>
         </div>
         <div 
-          className="rounded-full border border-white/10 px-3 py-1 text-sm font-bold text-white flex items-center gap-1.5"
+          className="rounded-full border border-white/10 px-3 py-1 text-sm font-bold text-white flex items-center gap-1.5 flex-shrink-0"
           role="progressbar"
           aria-valuenow={progress}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={`${progress}% complete`}
         >
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className={cn("w-2 h-2 rounded-full animate-pulse", 
+            needsAction ? "bg-amber-400" : waitingOnBrand ? "bg-blue-400" : "bg-emerald-400"
+          )} />
           {progress}%
         </div>
       </div>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10" role="presentation">
-        <div 
-          className="h-full rounded-full bg-emerald-400 transition-all duration-300" 
-          style={{ width: `${progress}%` }} 
-          aria-hidden="true"
-        />
-      </div>
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-300">
-        <span className={deadlineUrgency ? (
-          deadlineUrgency.tone === 'danger' ? 'text-red-400 font-semibold' : 'text-amber-400 font-semibold'
-        ) : undefined}>
-          {deadlineUrgency ? deadlineUrgency.label : deal.due_date ? `Due ${formatDeadline(deal.due_date)}` : 'No due date yet'}
+
+      {/* Action prompt */}
+      {actionLabel && (
+        <div className={cn(
+          "mt-3 rounded-xl border px-3 py-2.5 text-sm font-semibold",
+          needsAction 
+            ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+            : "bg-blue-500/10 border-blue-500/30 text-blue-300"
+        )}>
+          👉 {actionLabel}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="mt-3 flex items-center justify-between text-sm">
+        <span className={cn(
+          deadlineUrgency?.tone === 'danger' ? "text-red-400 font-semibold" 
+            : deadlineUrgency?.tone === 'warn' ? "text-amber-400 font-semibold" 
+            : "text-slate-400"
+        )}>
+          {deadlineUrgency ? deadlineUrgency.label 
+            : deal.due_date ? `Due ${formatDeadline(deal.due_date)}` 
+            : 'No deadline'}
         </span>
         <button
           type="button"
-          className="font-semibold text-emerald-300 transition hover:text-emerald-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded"
+          className={cn(
+            "font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 rounded px-3 py-1.5",
+            needsAction
+              ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+              : "text-emerald-300 hover:text-emerald-200"
+          )}
           onClick={onOpenDeal}
           aria-label={`Open deal with ${deal.brand_name}`}
         >
-          Open deal
+          {needsAction ? 'Take Action →' : 'View deal'}
         </button>
       </div>
     </article>
@@ -613,15 +670,48 @@ const CreatorDashboard = () => {
     brandDeals as DashboardBrandDeal[]
   ), [brandDeals]);
 
+  // Urgency tiers: lower = more urgent
+  const urgencyTier = (deal: DashboardBrandDeal): number => {
+    const s = String(deal.status || '').toLowerCase();
+    if (s === 'contract_sent') return 0; // Must sign — unlocks everything
+    if (s === 'revision_requested') return 1; // Brand wants changes
+    if (s === 'content_in_progress') return 2; // Creator is working
+    if (s === 'content_submitted') return 3; // Under brand review
+    if (s === 'approved') return 4; // Brand approved
+    if (s === 'payment_pending') return 5; // Waiting for payment
+    if (s === 'payment_received') return 6; // Done
+    return 9;
+  };
+
   const dealsForFirstView = useMemo(() => {
     return normalizedBrandDeals
       .filter((deal) => {
         const status = String(deal.status || '').toLowerCase();
-        return status !== 'completed';
+        return status !== 'completed' && status !== 'fully_executed';
       })
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .sort((a, b) => {
+        const urgencyDiff = urgencyTier(a) - urgencyTier(b);
+        if (urgencyDiff !== 0) return urgencyDiff;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      })
       .slice(0, DEAL_CARDS_LIMIT);
   }, [normalizedBrandDeals]);
+
+  // Deals that need creator action now (for action-required card)
+  const actionRequiredDeals = useMemo(() =>
+    dealsForFirstView.filter(deal => {
+      const s = String(deal.status || '').toLowerCase();
+      return s === 'contract_sent' || s === 'revision_requested';
+    }),
+  [dealsForFirstView]);
+
+  // Deals creator is waiting on brand
+  const waitingOnBrandDeals = useMemo(() =>
+    dealsForFirstView.filter(deal => {
+      const s = String(deal.status || '').toLowerCase();
+      return s === 'content_submitted' || s === 'approved';
+    }),
+  [dealsForFirstView]);
 
   const dashboardAlerts = useMemo(() => (
     creatorNotifications.filter((notification) => ['deal', 'contract', 'payment'].includes(notification.type)).slice(0, 2)
@@ -1250,6 +1340,38 @@ const CreatorDashboard = () => {
           {creatorStage === 'active_deal' && (
             <div className="space-y-6">
               <NextStepCard data={nextStepData} />
+
+              {/* Action Required Summary */}
+              {actionRequiredDeals.length > 0 && (
+                <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-400">
+                      ⚡ Do this first
+                    </p>
+                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full">
+                      {actionRequiredDeals.length}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {actionRequiredDeals.slice(0, 3).map(deal => (
+                      <button
+                        key={deal.id}
+                        type="button"
+                        onClick={() => navigate(`/creator-deal/${deal.id}`)}
+                        className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-left transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{deal.brand_name}</p>
+                          <p className="text-xs text-amber-400 font-medium">
+                            {String(deal.status || '').toLowerCase() === 'contract_sent' ? 'Sign agreement' : 'Make requested changes'}
+                          </p>
+                        </div>
+                        <span className="text-emerald-400 text-sm font-semibold flex-shrink-0 ml-2">→</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
               
               <section aria-labelledby="deals-heading">
                 <h2 id="deals-heading" className="text-2xl font-black text-white mb-4">Your deal</h2>
@@ -1292,7 +1414,53 @@ const CreatorDashboard = () => {
           {creatorStage === 'completed' && (
             <div className="space-y-6">
               <NextStepCard data={nextStepData} />
-              
+
+              {/* Action Required Summary — shown when deals need attention */}
+              {(actionRequiredDeals.length > 0 || collabRequestsPreview.length > 0) && (
+                <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-400">
+                      ⚡ Things to do right now
+                    </p>
+                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full">
+                      {actionRequiredDeals.length + collabRequestsPreview.length}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {actionRequiredDeals.slice(0, 3).map(deal => (
+                      <button
+                        key={deal.id}
+                        type="button"
+                        onClick={() => navigate(`/creator-deal/${deal.id}`)}
+                        className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-left transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{deal.brand_name}</p>
+                          <p className="text-xs text-amber-400 font-medium">
+                            {String(deal.status || '').toLowerCase() === 'contract_sent' ? 'Sign agreement' : 'Make requested changes'}
+                          </p>
+                        </div>
+                        <span className="text-emerald-400 text-sm font-semibold flex-shrink-0 ml-2">→</span>
+                      </button>
+                    ))}
+                    {collabRequestsPreview.slice(0, 2 - Math.min(actionRequiredDeals.length, 1)).map(request => (
+                      <button
+                        key={request.id}
+                        type="button"
+                        onClick={() => navigate(`/collab-requests/${request.id}/brief`, { state: { request } })}
+                        className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-3 py-2.5 text-left transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{request.brand_name}</p>
+                          <p className="text-xs text-amber-400 font-medium">Review offer — expires soon</p>
+                        </div>
+                        <span className="text-emerald-400 text-sm font-semibold flex-shrink-0 ml-2">→</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* Earnings summary */}
               <section 
                 className="rounded-[28px] border border-sky-400/20 bg-sky-500/10 p-5"
