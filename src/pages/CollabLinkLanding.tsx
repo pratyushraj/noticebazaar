@@ -1088,13 +1088,15 @@ const CollabLinkLanding = () => {
       const apiBaseUrl = getApiBaseUrl();
       const apiUrl = `${apiBaseUrl}/api/collab/${encodeURIComponent(normalizedUsername)}`;
 
-      console.log('[CollabLinkLanding] Fetching creator:', {
+      if (import.meta.env.DEV) {
+        console.log('[CollabLinkLanding] Fetching creator:', {
         originalUsername: username,
         normalizedUsername,
         apiUrl,
         currentUrl: window.location.href,
         hash: window.location.hash,
       });
+      }
 
       try {
         const response = await fetch(apiUrl, { signal: controller.signal });
@@ -1132,7 +1134,9 @@ const CollabLinkLanding = () => {
         const data = await response.json();
 
         if (data.success && data.creator) {
-          console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
+          if (import.meta.env.DEV) {
+            console.log('[CollabLinkLanding] Creator loaded successfully:', data.creator);
+          }
           setCreator(data.creator);
           trackEvent('collab_link_viewed', { username: normalizedUsername });
           // Track page view event (anonymous, no auth required)

@@ -7,6 +7,7 @@ import { getAllTips, UserState } from '@/lib/contextual-tips/tips';
 import { analytics } from '@/utils/analytics';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDeals } from '@/lib/hooks/useBrandDeals';
+import { useProtectionScore } from '@/lib/hooks/useProtectionReports';
 
 const STORAGE_KEY_PREFIX = 'contextual-tip-dismissed-';
 const TEMP_STORAGE_KEY_PREFIX = 'contextual-tip-temp-dismissed-';
@@ -32,6 +33,8 @@ export const useContextualTips = (currentView?: string) => {
     enabled: !!profile?.id,
   });
 
+  const { score: protectionScore } = useProtectionScore({ userId: profile?.id, enabled: !!profile?.id });
+
   // Calculate user state (dealsDataReady only true once deals have finished loading)
   const userState: UserState = useMemo(() => {
     const hasUploadedContract = brandDeals.length > 0;
@@ -40,7 +43,6 @@ export const useContextualTips = (currentView?: string) => {
     const earnings = brandDeals
       .filter((deal) => deal.status === 'Completed' && deal.payment_received_date)
       .reduce((sum, deal) => sum + (deal.deal_amount || 0), 0);
-    const protectionScore = 85; // TODO: Calculate from actual protection data
     const daysActive = (profile as any)?.created_at
       ? Math.floor((Date.now() - new Date((profile as any).created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
@@ -49,7 +51,14 @@ export const useContextualTips = (currentView?: string) => {
         ? new Date(deal.payment_expected_date) < new Date()
         : false
     );
-    const hasExpiringContract = false; // TODO: Check for expiring contracts
+    const inProgressStates = ['In Progress', 'Content Submitted', 'Payment Pending', 'Completed'];
+    const hasExpiringContract = brandDeals.some((deal) => {
+      if (!deal.due_date || !inProgressStates.includes(deal.status)) return false;
+      const due = new Date(deal.due_date);
+      const now = new Date();
+      const daysUntilDue = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntilDue >= 0 && daysUntilDue <= 7;
+    });
     const messagesSent = userActions.messagesSent;
 
     return {
