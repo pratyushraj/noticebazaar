@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CreatorSearch from '@/components/brand-dashboard/CreatorSearch';
 import type { CreatorProfile } from '@/lib/hooks/useCreators';
@@ -32,17 +32,42 @@ const CATEGORY_COLORS: Record<string, string> = {
   Business: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
 };
 
+const SORT_OPTIONS = [
+  { id: 'followers', label: 'Most Followers' },
+  { id: 'followers_asc', label: 'Fewest Followers' },
+  { id: 'name', label: 'Name A–Z' },
+] as const;
+type SortOption = typeof SORT_OPTIONS[number]['id'];
+
+const getPrimaryFollowers = (creator: CreatorProfile) => {
+  const instagram = creator.platforms?.find(p => p.name === 'Instagram');
+  return instagram?.followers ?? 0;
+};
+
 const BrandDiscoverPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedCreator, setSelectedCreator] = useState<CreatorProfile | null>(null);
   const [category, setCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sort, setSort] = useState<SortOption>('followers');
 
   const { data: creators = [], isLoading, isFetching } = useCreators({
     search: searchQuery,
     category: category === 'all' ? undefined : category,
     limit: 30,
   });
+
+  const sortedCreators = useMemo(() => {
+    return [...creators].sort((a, b) => {
+      if (sort === 'followers') {
+        return getPrimaryFollowers(b) - getPrimaryFollowers(a);
+      } else if (sort === 'followers_asc') {
+        return getPrimaryFollowers(a) - getPrimaryFollowers(b);
+      } else {
+        return (a.username || '').localeCompare(b.username || '');
+      }
+    });
+  }, [creators, sort]);
 
   const handleSendOffer = (creator: CreatorProfile) => {
     window.location.href = `/collab/${creator.username}`;
@@ -88,6 +113,23 @@ const BrandDiscoverPage: React.FC = () => {
           ))}
         </div>
 
+        {/* Sort */}
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-white/30">{creators.length} creator{creators.length !== 1 ? 's' : ''}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-white/30">Sort:</span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortOption)}
+              className="bg-white/5 border border-white/10 text-white/60 text-[11px] rounded-lg px-2 py-1.5 focus:outline-none focus:border-purple-400/50"
+            >
+              {SORT_OPTIONS.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* Results */}
         {isLoading || isFetching ? (
           <div className="flex items-center justify-center py-16 gap-3">
@@ -111,7 +153,7 @@ const BrandDiscoverPage: React.FC = () => {
             <p className="text-xs text-white/30">
               {creators.length} creator{creators.length !== 1 ? 's' : ''} found
             </p>
-            {creators.map((creator) => (
+            {sortedCreators.map((creator) => (
               <div
                 key={creator.id}
                 className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-purple-400/30 transition-all"
