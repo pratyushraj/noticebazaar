@@ -75,7 +75,7 @@ const UserCard: React.FC<{
             src={avatarUrl || DEFAULT_AVATAR_URL}
             alt={name}
           />
-          <AvatarFallback className="bg-info/20 text-info dark:text-info text-sm font-medium">
+          <AvatarFallback className="bg-secondary text-muted-foreground text-sm font-medium">
             {getInitials(name.split(' ')[0], name.split(' ')[1])}
           </AvatarFallback>
         </Avatar>
@@ -135,7 +135,7 @@ const SidebarItem: React.FC<{
 
       {/* PRO Badge */}
       {showProBadge && (
-        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-info/20 dark:border-info/30 rounded-md text-info dark:text-info flex-shrink-0">
+        <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-primary/15 text-primary border border-primary/20 rounded-md flex-shrink-0">
           PRO
         </span>
       )}

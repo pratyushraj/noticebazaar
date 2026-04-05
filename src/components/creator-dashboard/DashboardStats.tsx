@@ -13,84 +13,55 @@ interface StatCardProps {
         isPositive: boolean;
     };
     icon: React.ReactNode;
-    color: 'blue' | 'green' | 'indigo' | 'orange';
+    accent?: boolean; // true = use green, false = neutral
     delay?: number;
 }
 
-const colorClasses = {
-    blue: {
-        bg: 'from-blue-500/20 to-indigo-500/20',
-        border: 'border-info/30',
-        icon: 'bg-info/20 text-info',
-        text: 'text-info',
-    },
-    green: {
-        bg: 'from-green-500/20 to-emerald-500/20',
-        border: 'border-green-400/30',
-        icon: 'bg-green-500/20 text-green-400',
-        text: 'text-green-400',
-    },
-    indigo: {
-        bg: 'from-indigo-500/20 to-violet-500/20',
-        border: 'border-indigo-400/30',
-        icon: 'bg-indigo-500/20 text-indigo-400',
-        text: 'text-indigo-400',
-    },
-    orange: {
-        bg: 'from-orange-500/20 to-red-500/20',
-        border: 'border-orange-400/30',
-        icon: 'bg-orange-500/20 text-orange-400',
-        text: 'text-orange-400',
-    },
-};
-
-export const StatCard = ({ label, value, prefix, suffix, trend, icon, color, delay = 0 }: StatCardProps) => {
-    const colors = colorClasses[color];
-
+export const StatCard = ({ label, value, prefix, suffix, trend, icon, accent = false, delay = 0 }: StatCardProps) => {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.3 }}
+            transition={{ delay, duration: 0.3, ease: 'easeOut' }}
             className={cn(
-                'bg-gradient-to-br backdrop-blur-xl border rounded-xl md:rounded-2xl p-4 md:p-5 shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[110px] md:min-h-[140px]',
-                colors.bg,
-                colors.border
+                'rounded-2xl border border-border bg-card p-5 flex flex-col gap-4',
+                accent ? 'shadow-md' : 'shadow-sm'
             )}
         >
-            {/* Background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col h-full justify-between gap-3">
-                <div className="flex items-start justify-between">
-                    <div className={cn('w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shrink-0', colors.icon)}>
-                        {icon}
+            <div className="flex items-start justify-between">
+                <div className={cn(
+                    'w-9 h-9 rounded-xl flex items-center justify-center',
+                    accent ? 'bg-primary/15 text-primary' : 'bg-secondary text-muted-foreground'
+                )}>
+                    {icon}
+                </div>
+                {trend && (
+                    <div className={cn(
+                        'flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full',
+                        trend.isPositive ? 'bg-primary/15 text-primary' : 'bg-destructive/15 text-destructive'
+                    )}>
+                        {trend.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                        {Math.abs(trend.value)}%
                     </div>
-                    {trend && (
-                        <div className={cn(
-                            'flex items-center gap-1 text-[10px] md:text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-full shrink-0',
-                            trend.isPositive ? 'bg-green-500/20 text-green-400' : 'bg-destructive/20 text-destructive'
-                        )}>
-                            {trend.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                            {Math.abs(trend.value)}%
-                        </div>
-                    )}
-                </div>
+                )}
+            </div>
 
-                <div>
-                    <p className="text-foreground/70 text-[11px] md:text-sm font-medium mb-0.5 md:mb-1">{label}</p>
-                    <p className={cn('text-xl md:text-3xl font-bold leading-none truncate', colors.text)}>
-                        {prefix}
-                        <CountUp
-                            end={value}
-                            duration={1.5}
-                            delay={delay}
-                            separator=","
-                            decimals={0}
-                        />
-                        {suffix}
-                    </p>
-                </div>
+            <div>
+                <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                <p className={cn(
+                    'text-2xl font-semibold tracking-tight',
+                    accent ? 'text-foreground' : 'text-foreground'
+                )}>
+                    {prefix}
+                    <CountUp
+                        end={value}
+                        duration={1.5}
+                        delay={delay}
+                        separator=","
+                        decimals={0}
+                    />
+                    {suffix}
+                </p>
             </div>
         </motion.div>
     );
@@ -111,38 +82,38 @@ interface DashboardStatsProps {
 
 export const DashboardStats = ({ stats, trends }: DashboardStatsProps) => {
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
                 label="Total Earnings"
                 value={stats.totalEarnings}
                 prefix="₹"
-                icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6" />}
-                color="green"
+                icon={<IndianRupee className="w-4 h-4" />}
+                accent={true}
                 trend={trends?.earnings ? { value: trends.earnings, isPositive: trends.earnings > 0 } : undefined}
                 delay={0}
             />
             <StatCard
                 label="Active Deals"
                 value={stats.activeDeals}
-                icon={<FileText className="w-5 h-5 md:w-6 md:h-6" />}
-                color="blue"
+                icon={<FileText className="w-4 h-4" />}
+                accent={false}
                 trend={trends?.deals ? { value: trends.deals, isPositive: trends.deals > 0 } : undefined}
-                delay={0.1}
+                delay={0.05}
             />
             <StatCard
                 label="Pending Payments"
                 value={stats.pendingPayments}
                 prefix="₹"
-                icon={<Clock className="w-5 h-5 md:w-6 md:h-6" />}
-                color="orange"
-                delay={0.2}
+                icon={<Clock className="w-4 h-4" />}
+                accent={false}
+                delay={0.1}
             />
             <StatCard
                 label="Completed"
                 value={stats.completedDeals}
-                icon={<CheckCircle className="w-5 h-5 md:w-6 md:h-6" />}
-                color="indigo"
-                delay={0.3}
+                icon={<CheckCircle className="w-4 h-4" />}
+                accent={false}
+                delay={0.15}
             />
         </div>
     );
