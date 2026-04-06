@@ -62,6 +62,19 @@ const readPersistedSupabaseAuth = (): { userId: string | null; accessToken: stri
   return { userId: null, accessToken: null };
 };
 
+const readCachedDealById = (dealId?: string) => {
+  if (typeof window === 'undefined' || !dealId) return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(`deal-cache:${dealId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && String(parsed?.id || '') === String(dealId) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,7 +84,7 @@ const PaymentDetailPage = () => {
   const persistedAuth = readPersistedSupabaseAuth();
   const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(persistedAuth.userId);
   const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(persistedAuth.accessToken);
-  const [serverDealFallback, setServerDealFallback] = useState<any | null>(null);
+  const [serverDealFallback, setServerDealFallback] = useState<any | null>(() => readCachedDealById(dealId));
   const [isLoadingServerDeal, setIsLoadingServerDeal] = useState(false);
   const routeDeal = (location.state as { deal?: any } | null)?.deal || null;
   const actorId = profile?.id || user?.id || session?.user?.id || authFallbackUserId;
