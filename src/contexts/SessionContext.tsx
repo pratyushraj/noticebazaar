@@ -26,6 +26,13 @@ type RedirectProfile = {
   profile_completion?: number | null;
 };
 
+const getMetadataRole = (user: { user_metadata?: Record<string, unknown> | null } | null | undefined): string | null => {
+  const metadata = user?.user_metadata || {};
+  if (typeof metadata.role === 'string') return metadata.role;
+  if (typeof metadata.account_mode === 'string') return metadata.account_mode;
+  return null;
+};
+
 const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | null> => {
   const fullResult = await (supabase
     .from('profiles')
@@ -459,7 +466,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               } else if (sessionData.session) {
                 debugLog('[SessionContext] Session set successfully via manual token parsing');
                 // Use path-based route (BrowserRouter).
-                let redirectPath = '/creator-onboarding';
+                const metadataRole = getMetadataRole(sessionData.session.user as any);
+                let redirectPath =
+                  metadataRole === 'brand' ? '/brand-dashboard' :
+                  metadataRole === 'admin' ? '/admin-dashboard' :
+                  metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
+                  metadataRole === 'lawyer' ? '/lawyer-dashboard' :
+                  '/creator-onboarding';
 
                 if (intendedRoute && intendedRoute !== 'login' && intendedRoute !== 'signup') {
                   redirectPath = `/${intendedRoute}`;
@@ -486,6 +499,8 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                       } else {
                         redirectPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
                       }
+                    } else if (metadataRole === 'brand') {
+                      redirectPath = '/brand-dashboard';
                     }
                   } catch (error) {
                     debugError('[SessionContext] Error fetching profile in initializeSession:', error);
@@ -553,7 +568,14 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             !hasRouteInHash
           ) {
             debugLog('[SessionContext] Session exists on bare root/login, navigating to dashboard...');
-            navigate('/creator-dashboard', { replace: true });
+            const metadataRole = getMetadataRole(currentSession.user as any);
+            const defaultPath =
+              metadataRole === 'brand' ? '/brand-dashboard' :
+              metadataRole === 'admin' ? '/admin-dashboard' :
+              metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
+              metadataRole === 'lawyer' ? '/lawyer-dashboard' :
+              '/creator-dashboard';
+            navigate(defaultPath, { replace: true });
           }
         }
       } catch (e: any) {
@@ -717,7 +739,13 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
             userEmail: session?.user?.email
           });
 
-          let targetPath = '/creator-onboarding';
+          const metadataRole = getMetadataRole(session.user as any);
+          let targetPath =
+            metadataRole === 'brand' ? '/brand-dashboard' :
+            metadataRole === 'admin' ? '/admin-dashboard' :
+            metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
+            metadataRole === 'lawyer' ? '/lawyer-dashboard' :
+            '/creator-onboarding';
 
           // Routes that should redirect admin users to admin dashboard instead
           const adminOnlyRoutes = ['admin-influencers', 'admin-discovery'];
@@ -780,12 +808,22 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                   targetPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
                 }
               } else {
-                debugLog('[SessionContext] No profile data / timeout, defaulting to creator-onboarding');
-                targetPath = '/creator-onboarding';
+                debugLog('[SessionContext] No profile data / timeout, defaulting by metadata role');
+                targetPath =
+                  metadataRole === 'brand' ? '/brand-dashboard' :
+                  metadataRole === 'admin' ? '/admin-dashboard' :
+                  metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
+                  metadataRole === 'lawyer' ? '/lawyer-dashboard' :
+                  '/creator-onboarding';
               }
             } catch (error) {
-              debugWarn('[SessionContext] Profile fetch for redirect failed, redirecting to creator-onboarding:', error);
-              targetPath = '/creator-onboarding';
+              debugWarn('[SessionContext] Profile fetch for redirect failed, redirecting by metadata role:', error);
+              targetPath =
+                metadataRole === 'brand' ? '/brand-dashboard' :
+                metadataRole === 'admin' ? '/admin-dashboard' :
+                metadataRole === 'chartered_accountant' ? '/ca-dashboard' :
+                metadataRole === 'lawyer' ? '/lawyer-dashboard' :
+                '/creator-onboarding';
             }
           }
 

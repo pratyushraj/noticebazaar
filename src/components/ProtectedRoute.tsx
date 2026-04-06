@@ -98,7 +98,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     : typeof user?.user_metadata?.account_mode === 'string'
       ? user.user_metadata.account_mode
       : null;
-  const canBootstrapBrandWithoutProfile = !!session && !profile && requestedRole === 'brand' && metadataRole === 'brand';
+  const canBootstrapBrandWithoutProfile = !!session && !profile && requestedRole === 'brand';
 
   const isLoading = authStatus === 'loading' || (isCreatingProfile && !canBootstrapBrandWithoutProfile);
 
@@ -122,7 +122,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
         ? user.user_metadata.account_mode
         : null;
 
-    if (requestedRole === 'brand' && metadataRole === 'brand') {
+    if (requestedRole === 'brand') {
       refetchProfile?.();
       setIsCreatingProfile(false);
       return;
