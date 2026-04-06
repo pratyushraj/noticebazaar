@@ -466,10 +466,10 @@ export function CreatorProgressiveChecklist({
         <div className="mt-5">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-white">{showCompactChecklist ? 'Your 3 most important next steps' : 'Progressive checklist'}</p>
+              <p className="text-sm font-bold text-white">{showCompactChecklist ? 'Improve your page later' : 'Progressive checklist'}</p>
               <p className="text-xs text-slate-400">
                 {showCompactChecklist
-                  ? 'Do these first. We will ask for the rest only when it actually helps you win deals.'
+                  ? 'Only these three things matter early. Everything else can wait until you start getting offers.'
                   : `${pendingItems.length} items left before your storefront feels complete.`}
               </p>
             </div>

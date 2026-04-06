@@ -285,6 +285,22 @@ export default function CreatorOnboarding() {
                 </div>
               </div>
 
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">What happens next</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {[
+                    'Share this link when a brand asks to work with you',
+                    'The first offer appears in your dashboard',
+                    'We only ask for price, address, or UPI when needed',
+                  ].map((item, index) => (
+                    <div key={item} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">0{index + 1}</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-900">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <Button
                 type="button"
                 onClick={handleSaveLink}
@@ -332,7 +348,7 @@ export default function CreatorOnboarding() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <Button type="button" onClick={() => void handleShareWhatsApp()} className="h-14 rounded-2xl bg-emerald-600 text-white hover:bg-emerald-500">
                 <MessageCircleMore className="mr-2 h-5 w-5" />
                 Share on WhatsApp
@@ -340,6 +356,15 @@ export default function CreatorOnboarding() {
               <Button type="button" variant="outline" onClick={() => void handleCopyLink()} className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50">
                 <Copy className="mr-2 h-5 w-5" />
                 Copy Link
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => window.open(collabUrl, '_blank', 'noopener,noreferrer')}
+                className="h-14 rounded-2xl border-slate-300 bg-white text-slate-900 hover:bg-slate-50"
+              >
+                <Instagram className="mr-2 h-5 w-5" />
+                Preview Page
               </Button>
             </div>
 

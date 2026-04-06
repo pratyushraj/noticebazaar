@@ -189,6 +189,15 @@ const PaymentDetailPage = () => {
   }, [profile?.bank_upi]);
 
   const hasSavedUpi = Boolean(String(profile?.bank_upi || '').trim());
+  const paymentProgressSteps = useMemo(() => {
+    const status = paymentData?.status;
+    const isReceived = status === 'received';
+    return [
+      { label: 'Waiting', complete: Boolean(paymentData && !isReceived), current: status === 'pending' || status === 'overdue' },
+      { label: 'Sent', complete: isReceived, current: status === 'pending' || status === 'overdue' },
+      { label: 'Confirmed', complete: isReceived, current: false },
+    ];
+  }, [paymentData]);
 
   // Handle undo deadline expiration
   useEffect(() => {
@@ -586,6 +595,39 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.04, duration: 0.3 }}
+          className="rounded-2xl border border-white/10 bg-white/[0.04] p-5"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">Payment status</p>
+              <h2 className="mt-2 text-xl font-black text-white">
+                {paymentData.status === 'received' ? 'Payment confirmed' : 'One last step before this deal is done'}
+              </h2>
+              <p className="mt-2 text-sm text-white/70">
+                {paymentData.status === 'received'
+                  ? 'You already confirmed this payment. Keep the receipt here if you need it later.'
+                  : hasSavedUpi
+                    ? 'Wait for the money to reach your bank account, then confirm it here.'
+                    : 'Save your UPI now so you can confirm payment in one tap once it arrives.'}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:min-w-[260px]">
+              {paymentProgressSteps.map((step) => (
+                <div key={step.label} className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 text-center">
+                  <div className={`mx-auto h-2 w-full rounded-full ${step.complete || step.current ? 'bg-emerald-400' : 'bg-white/10'}`} />
+                  <p className={`mt-2 text-[10px] font-black uppercase tracking-[0.16em] ${step.complete ? 'text-emerald-300' : step.current ? 'text-white' : 'text-white/45'}`}>
+                    {step.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
         {!paymentData.receivedAt && !hasSavedUpi && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -598,9 +640,9 @@ const PaymentDetailPage = () => {
                 <AlertCircle className="h-4 w-4 text-amber-300" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">Add your UPI only when payment is near</p>
+                <p className="text-sm font-semibold text-white">Add your UPI now</p>
                 <p className="mt-1 text-sm text-white/70">
-                  This keeps onboarding short. Save it now so you can confirm payment in one tap later.
+                  This is the only payment detail we need from you before you can confirm money received.
                 </p>
                 <div className="mt-4 space-y-2">
                   <Label htmlFor="payment-upi" className="text-xs uppercase tracking-[0.18em] text-white/60">
@@ -655,7 +697,7 @@ const PaymentDetailPage = () => {
                   )}
                 </motion.button>
                 <motion.button
-                  onClick={() => toast.info('Send Payment Reminder feature coming soon')}
+                  onClick={() => toast.info('Payment reminder is not ready yet')}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all flex items-center justify-center gap-2 text-sm font-medium"
                 >
@@ -666,12 +708,12 @@ const PaymentDetailPage = () => {
             ) : paymentData.status === 'overdue' ? (
               <>
                 <motion.button
-                  onClick={() => toast.info('Send Payment Reminder feature coming soon')}
+                  onClick={() => toast.info('Payment reminder is not ready yet')}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:flex-1 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-semibold px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">Send Payment Reminder</span>
+                  <span className="text-xs sm:text-sm">Remind brand</span>
                 </motion.button>
                 <motion.button
                   onClick={handleMarkAsReceived}

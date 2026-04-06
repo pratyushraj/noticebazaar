@@ -2291,13 +2291,25 @@ const CollabLinkLanding = () => {
                 </div>
               </div>
 
-              {/* 1. Trust Indicators (Consolidated) */}
+              {/* 1. Trust Indicators (Creator-specific) */}
 	              <div className={`mb-3 md:mb-4 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 ${showTrustSections ? '' : 'hidden'}`}>
                 <div className="grid grid-cols-3 gap-2.5 px-0">
                   {[
-                    { label: 'Legally Binding', icon: <FileCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />, desc: 'Auto-contract' },
-                    { label: 'Secure Payment', icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />, desc: 'Dispute protected' },
-                    { label: 'Trusted by 50+ Brands', icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />, desc: 'Trust Armour' },
+                    {
+                      label: `Replies in ${displayResponseLine.replace('~', '')}`,
+                      icon: <Zap className="h-5 w-5 md:h-6 md:w-6 text-emerald-700" />,
+                      desc: 'Fast response',
+                    },
+                    {
+                      label: `${Math.round(Number(creator.trust_stats?.completion_rate ?? completionRate) || 0) || 95}% delivery success`,
+                      icon: <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-teal-700" />,
+                      desc: 'Reliability',
+                    },
+                    {
+                      label: `${creator.trust_stats?.brands_count || recentCollaborations.length || 3} brand collaborations`,
+                      icon: <BadgeCheck className="h-5 w-5 md:h-6 md:w-6 text-blue-700" />,
+                      desc: 'Social proof',
+                    },
                   ].map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center text-center gap-1.5 rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(15,23,42,0.06)] border border-slate-200/90 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(15,23,42,0.10)] hover:border-slate-300 active:scale-[0.985]">
                       <div className={`shrink-0 rounded-xl p-2.5 border ${idx === 0 ? 'bg-emerald-100 border-emerald-200 text-emerald-700' :
@@ -2691,21 +2703,19 @@ const CollabLinkLanding = () => {
               </div>
 
               {!showCustomFlow && (
-                <div className="mt-5 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/65 px-4 py-4">
-                  <p className="text-[12px] text-slate-500 font-black uppercase tracking-[0.14em] mb-3">OR CREATE CUSTOM DEAL</p>
-                  <Button
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
                     onClick={() => {
                       setShowCustomFlow(true);
                       setCurrentStep(1);
                       setSelectedTemplateId(null);
                       triggerHaptic(HapticPatterns.success);
                     }}
-                    variant="outline"
-                    className="w-full h-12 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all group active:scale-[0.98]" style={{ background: "white", border: "1.5px solid #CBD5E1", color: "#334155" }}
+                    className="text-[11px] font-black uppercase tracking-[0.14em] text-slate-500 hover:text-slate-900"
                   >
-                    Propose Custom Deal
-                    <ArrowRight className="ml-2 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
+                    Need something custom? Create a custom deal
+                  </button>
                 </div>
               )}
 
@@ -2714,16 +2724,16 @@ const CollabLinkLanding = () => {
                   <div className="absolute -top-12 -right-8 w-28 h-28 bg-slate-300/20 blur-2xl rounded-full" />
                   <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1.5">How It Works</p>
                   <h3 className="text-[18px] lg:text-[22px] leading-[1.2] font-black text-slate-900 mb-2">
-                    How collaboration works
+                    Send an offer in under a minute
                   </h3>
                   <p className="text-[12px] lg:text-[13px] text-slate-600 font-semibold leading-relaxed max-w-xl">
-                    Choose a service above or start a custom deal. We auto-fill legal terms and prepare your offer for creator approval.
+                    Choose a service, add a short brief, and send the offer. Legal details come later only if the creator is interested.
                   </p>
 	                  <div className="mt-2.5 grid grid-cols-3 gap-2">
 	                    {[
 	                      { n: 1, title: 'Choose service', icon: <Package className="w-3.5 h-3.5 text-slate-700" /> },
-	                      { n: 2, title: 'Customize campaign', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
-	                      { n: 3, title: 'Send proposal', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
+	                      { n: 2, title: 'Add brief + budget', icon: <PenLine className="w-3.5 h-3.5 text-slate-700" /> },
+	                      { n: 3, title: 'Creator reviews it', icon: <Send className="w-3.5 h-3.5 text-slate-700" /> },
 	                    ].map((step) => (
 	                      <div key={step.n} className="rounded-xl bg-white border border-slate-200 px-2 py-1.5 flex flex-col gap-0.5">
 	                        <div className="flex items-center justify-end">
@@ -3050,34 +3060,12 @@ const CollabLinkLanding = () => {
               <div id="core-offer-form" className={`mt-2 lg:mt-0 w-full rounded-[28px] p-5 md:p-8 lg:p-10 mb-6 text-slate-900 bg-white relative transition-all duration-200 ease-out`} style={{ border: "1.5px solid #E2EAE8", boxShadow: "0 18px 42px rgba(0,77,64,0.10),0 4px 12px rgba(0,0,0,0.06)" }}>
                 {!showCustomFlow && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-5">
-                    <div className="grid gap-3">
-                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                          <Package className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-slate-900">Choose a service</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Starter, Engagement, or Product Review options are ready to use.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                          <PenLine className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-slate-900">Customize campaign details</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Adjust deliverables, budget, and deadline before sending.</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                        <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[11px] font-black flex items-center justify-center shrink-0 mt-0.5">
-                          <Send className="w-3.5 h-3.5" />
-                        </div>
-                        <div>
-                          <p className="text-[13px] font-black text-slate-900">Send secure proposal</p>
-                          <p className="text-[12px] text-slate-600 font-medium">Creator receives a structured offer with the deal details ready.</p>
-                        </div>
-                      </div>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Start here</p>
+                      <p className="mt-2 text-[15px] font-black text-slate-900">Choose a ready-made service first</p>
+                      <p className="mt-2 text-[12px] font-medium leading-relaxed text-slate-600">
+                        The quick offer form asks only for your brand name, work email, brief, budget or product value, and deadline.
+                      </p>
                     </div>
 
                     <div className="space-y-3">

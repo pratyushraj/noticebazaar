@@ -294,7 +294,10 @@ const EmptyState = ({ hasUrl }: EmptyStateProps) => (
 
 const ProgressiveSetupCard = () => (
   <section className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5" aria-labelledby="progressive-setup-heading">
-    <p id="progressive-setup-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">How setup works now</p>
+    <p id="progressive-setup-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">You do not need a long profile first</p>
+    <p className="mt-2 max-w-2xl text-sm text-slate-300">
+      We collect only the one missing thing needed for the next deal step.
+    </p>
     <div className="mt-4 grid gap-3 sm:grid-cols-3">
       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-300">Paid offer</p>
@@ -1031,48 +1034,66 @@ const CreatorDashboard = () => {
           {(creatorStage === 'new' || creatorStage === 'link_shared') && (
             <div className="space-y-4 pb-32 md:pb-6">
               <section 
-                className="rounded-[24px] md:rounded-[28px] border border-white/10 bg-white/5 p-4 md:p-5 shadow-[0_20px_60px_rgba(15,23,42,0.35)]"
+                className="rounded-[24px] md:rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(16,185,129,0.14),rgba(15,23,42,0.55))] p-5 md:p-6 shadow-[0_20px_60px_rgba(15,23,42,0.35)]"
                 aria-labelledby="collab-page-heading"
               >
-                <div>
-                  <p id="collab-page-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">Your link</p>
-                  {collabUrlShort ? (
-                    <>
-                      <p className="mt-2 break-all text-xl md:text-2xl font-black text-white">{collabUrlShort}</p>
-                      <p className="mt-2 text-sm text-slate-300">
-                        Send this when a brand DMs you.
-                      </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => window.open(`${collabUrl}?preview=1`, '_blank')}
-                          className="flex items-center gap-1.5 text-sm font-bold text-emerald-300 hover:text-emerald-200"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          Preview your page
-                        </button>
-                        {storefrontViews > 0 && (
-                          <span className="text-xs text-slate-400">
-                            {storefrontViews.toLocaleString('en-IN')} profile view{storefrontViews === 1 ? '' : 's'}
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="mt-2 text-xl md:text-2xl font-black text-white/60">Not set up yet</p>
-                      <p className="mt-2 text-sm text-slate-300">
-                        Add your Instagram handle to get your collab link.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/creator-profile?section=profile')}
-                        className="mt-3 text-sm font-bold text-emerald-300 hover:text-emerald-200 underline"
-                      >
-                        Add Instagram →
-                      </button>
-                    </>
-                  )}
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                  <div>
+                    <p id="collab-page-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300">Your next step</p>
+                    <h2 className="mt-2 text-2xl md:text-3xl font-black text-white">Share your creator link</h2>
+                    <p className="mt-2 max-w-2xl text-sm text-slate-200">
+                      This is the page brands open to send you an offer. Copy it, share it in DMs, and your first offer will appear here.
+                    </p>
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-black/15 px-4 py-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/55">Your link</p>
+                      {collabUrlShort ? (
+                        <>
+                          <p className="mt-2 break-all text-lg md:text-xl font-black text-white">{collabUrlShort}</p>
+                          {storefrontViews > 0 && (
+                            <p className="mt-2 text-xs text-white/55">
+                              {storefrontViews.toLocaleString('en-IN')} brand page view{storefrontViews === 1 ? '' : 's'} so far
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="mt-2 break-all text-lg md:text-xl font-black text-white/60">Add your Instagram first</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-3 lg:w-[360px]">
+                    <Button
+                      type="button"
+                      className="h-12 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-black"
+                      onClick={() => void handleShareWhatsApp()}
+                      disabled={!collabUrl}
+                    >
+                      <MessageCircleMore className="mr-2 h-4 w-4" />
+                      Share
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-12 border-white/15 bg-white/5 text-white hover:bg-white/10 font-black"
+                      onClick={() => {
+                        void copyText(collabUrl, 'Link copied. Paste it in DM');
+                        void trackEvent('collab_link_copied', { creator_id: profile?.id });
+                      }}
+                      disabled={!collabUrl}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-12 border-white/15 bg-white/5 text-white hover:bg-white/10 font-black"
+                      onClick={() => window.open(collabUrl, '_blank', 'noopener,noreferrer')}
+                      disabled={!collabUrl}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Preview
+                    </Button>
+                  </div>
                 </div>
               </section>
 
@@ -1120,21 +1141,22 @@ const CreatorDashboard = () => {
               })()}
 
               <section 
-                className="rounded-[24px] md:rounded-[28px] border border-emerald-400/20 bg-emerald-500/10 p-4 md:p-5"
+                className="rounded-[24px] md:rounded-[28px] border border-white/10 bg-white/[0.04] p-4 md:p-5"
                 aria-labelledby="waiting-heading"
               >
-                <p id="waiting-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200">Waiting for your first offer</p>
-                <p className="mt-2 text-base md:text-lg font-black text-white">
-                  Share your link to start receiving offers.
-                </p>
-                <p className="mt-1 text-sm text-emerald-50/85">
-                  When a brand sends an offer, it shows up here.
-                </p>
-                {storefrontViews > 0 && (
-                  <p className="mt-2 text-xs text-emerald-200/60">
-                    {storefrontViews.toLocaleString('en-IN')} people have viewed your collab page
-                  </p>
-                )}
+                <p id="waiting-heading" className="text-[11px] font-black uppercase tracking-[0.2em] text-sky-300">What happens after you share</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {[
+                    'A brand opens your page',
+                    'They send an offer in under a minute',
+                    'You review it here and decide',
+                  ].map((item, index) => (
+                    <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">0{index + 1}</p>
+                      <p className="mt-2 text-sm font-semibold text-white">{item}</p>
+                    </div>
+                  ))}
+                </div>
               </section>
 
               <ProgressiveSetupCard />

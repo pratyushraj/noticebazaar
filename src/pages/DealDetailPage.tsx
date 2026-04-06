@@ -1990,7 +1990,7 @@ Best regards`;
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">What is happening now</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">Your next move</p>
               <h2 className="mt-2 text-2xl font-bold text-white">{guidedDealCard.title}</h2>
               <p className="mt-2 text-sm text-white/70">{guidedDealCard.explanation}</p>
             </div>
@@ -2041,7 +2041,7 @@ Best regards`;
 
             {guidedDealChecklist.length > 0 && (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">Do this next</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/50">What to do right now</p>
                 <div className="mt-3 space-y-2">
                   {guidedDealChecklist.map((item, index) => (
                     <div key={item} className="flex items-start gap-3 text-sm text-white/80">
@@ -2059,12 +2059,12 @@ Best regards`;
 
         {showContentSubmissionPanel && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
-            <div className="flex flex-col gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Share your content</p>
-                <h2 className="mt-2 text-xl font-bold text-white">
-                  {guidedDealState === 'REVISION_REQUESTED' ? 'Share the updated post link' : 'Share your Instagram post link'}
-                </h2>
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Share your content</p>
+              <h2 className="mt-2 text-xl font-bold text-white">
+                {guidedDealState === 'REVISION_REQUESTED' ? 'Share the updated post link' : 'Share your Instagram post link'}
+              </h2>
                 <p className="mt-2 text-sm text-white/70">
                   {guidedDealState === 'CONTENT_SUBMITTED'
                     ? 'You already shared a link. Update it here only if you need to replace it.'
