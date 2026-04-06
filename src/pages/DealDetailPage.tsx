@@ -2,7 +2,7 @@
 
 import { useState, useCallback, lazy, Suspense, useMemo, useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Download, Flag, Loader2, Building2, Calendar, FileText, CheckCircle, Clock, Trash2, AlertCircle, XCircle, Bell, Mail, Phone, Edit, X, Check, Share2, Copy, Link2, ChevronDown, ChevronUp, Lock, Package, ExternalLink, ShieldCheck, PenTool, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
@@ -4659,8 +4659,10 @@ ${link}`;
 // Main component with DealProvider wrapper
 export default function DealDetailPage() {
   const { dealId } = useParams<{ dealId: string }>();
+  const location = useLocation();
+  const initialDeal = (location.state as { deal?: unknown } | null)?.deal;
   return (
-    <DealProvider dealId={dealId}>
+    <DealProvider dealId={dealId} initialDeal={initialDeal as any}>
       <DealDetailPageContent />
     </DealProvider>
   );

@@ -26,15 +26,78 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+const readPersistedSupabaseAuth = (): { userId: string | null; accessToken: string | null } => {
+  if (typeof window === 'undefined') {
+    return { userId: null, accessToken: null };
+  }
+
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (!key || !key.includes('auth-token')) continue;
+
+    const raw = window.localStorage.getItem(key);
+    if (!raw) continue;
+
+    try {
+      const parsed = JSON.parse(raw);
+      const candidates = [
+        parsed,
+        parsed?.currentSession,
+        parsed?.session,
+        Array.isArray(parsed) ? parsed[0] : null,
+      ].filter(Boolean);
+
+      for (const candidate of candidates) {
+        const accessToken = candidate?.access_token || null;
+        const userId = candidate?.user?.id || null;
+        if (accessToken || userId) {
+          return { userId, accessToken };
+        }
+      }
+    } catch {
+      // Ignore malformed persisted auth state.
+    }
+  }
+
+  return { userId: null, accessToken: null };
+};
+
+const readCachedDeal = (dealId?: string, userId?: string | null) => {
+  if (typeof window === 'undefined' || !dealId) return null;
+
+  try {
+    const directDealRaw = window.sessionStorage.getItem(`deal-cache:${dealId}`);
+    if (directDealRaw) {
+      const directDeal = JSON.parse(directDealRaw);
+      if (directDeal && String(directDeal?.id || '') === String(dealId)) {
+        return directDeal;
+      }
+    }
+
+    if (!userId) return null;
+
+    const raw = window.sessionStorage.getItem(`creator-deals:${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.find((deal) => String(deal?.id || '') === String(dealId)) || null;
+  } catch {
+    return null;
+  }
+};
+
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { dealId } = useParams<{ dealId: string }>();
   const { profile, user, session, isAuthInitializing } = useSession();
   const updateProfileMutation = useUpdateProfile();
-  const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(null);
-  const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(null);
-  const [serverDealFallback, setServerDealFallback] = useState<any | null>(null);
+  const persistedAuth = readPersistedSupabaseAuth();
+  const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(persistedAuth.userId);
+  const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(persistedAuth.accessToken);
+  const [serverDealFallback, setServerDealFallback] = useState<any | null>(() => (
+    readCachedDeal(dealId, profile?.id || user?.id || session?.user?.id || persistedAuth.userId)
+  ));
   const [isLoadingServerDeal, setIsLoadingServerDeal] = useState(false);
   const routeDeal = (location.state as { deal?: any } | null)?.deal || null;
   const actorId = profile?.id || user?.id || session?.user?.id || authFallbackUserId;
@@ -104,7 +167,6 @@ const PaymentDetailPage = () => {
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [savedUpiValue, setSavedUpiValue] = useState(profile?.bank_upi || '');
   const [pendingUpi, setPendingUpi] = useState(profile?.bank_upi || '');
   const [isSavingUpi, setIsSavingUpi] = useState(false);
@@ -294,11 +356,11 @@ const PaymentDetailPage = () => {
 
   // Handle mark as received (opens confirmation modal)
   const handleMarkAsReceived = () => {
-    if (!String(profile?.bank_upi || '').trim()) {
+    if (!String(savedUpiValue || profile?.bank_upi || pendingUpi || '').trim()) {
       toast.error('Add your UPI ID before closing this payment');
       return;
     }
-    setShowConfirmModal(true);
+    void handleConfirmMarkAsReceived();
   };
 
   const handleSaveUpi = async () => {
@@ -328,7 +390,6 @@ const PaymentDetailPage = () => {
   const handleConfirmMarkAsReceived = async () => {
     if (!resolvedDeal || !actorId || !paymentData) {
       toast.error('Cannot mark payment as received: Missing data');
-      setShowConfirmModal(false);
       return;
     }
 
@@ -340,8 +401,6 @@ const PaymentDetailPage = () => {
       payment_proof_url: (resolvedDeal as any).proof_of_payment_url || null,
       utr_number: resolvedDeal.utr_number || null,
     });
-
-    setShowConfirmModal(false);
 
     try {
       const now = new Date().toISOString();
@@ -1252,56 +1311,6 @@ const PaymentDetailPage = () => {
       )}
 
       {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 max-w-md w-full border border-white/10 shadow-2xl"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Confirm you got the money</h3>
-              </div>
-            </div>
-            
-            <p className="text-white/80 mb-6">
-              Only do this after the money reaches your bank account. You can still add notes or upload proof later.
-            </p>
-            
-            <div className="flex gap-3">
-              <button type="button"
-                onClick={() => {
-                  setShowConfirmModal(false);
-                }}
-                disabled={updateDealMutation.isPending}
-                className="flex-1 px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl font-medium transition-all disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <motion.button
-                onClick={handleConfirmMarkAsReceived}
-                disabled={updateDealMutation.isPending}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-xl font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {updateDealMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Yes, I Got It'
-                )}
-              </motion.button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 };

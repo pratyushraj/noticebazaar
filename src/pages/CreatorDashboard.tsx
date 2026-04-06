@@ -685,6 +685,19 @@ const CreatorDashboard = () => {
     return serverDealsFallback;
   }, [brandDeals, serverDealsFallback]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || !activeProfile?.id || normalizedBrandDeals.length === 0) return;
+
+    try {
+      window.sessionStorage.setItem(
+        `creator-deals:${activeProfile.id}`,
+        JSON.stringify(normalizedBrandDeals.slice(0, 25))
+      );
+    } catch {
+      // Ignore cache write failures.
+    }
+  }, [activeProfile?.id, normalizedBrandDeals]);
+
   const dealsForFirstView = useMemo(() => {
     return normalizedBrandDeals
       .filter((deal) => {
@@ -758,7 +771,8 @@ const CreatorDashboard = () => {
     };
     const openPayment = (deal: any) => navigate(`/payment/${deal.id}`, { state: { deal } });
     const openDeliveryDetails = (dealId: string) => navigate(`/deal-delivery-details/${dealId}`);
-    const openDealDetails = (dealId: string) => navigate(`/deal/${dealId}`);
+    const openDealDetails = (dealId: string, deal?: DashboardBrandDeal) =>
+      navigate(`/deal/${dealId}`, { state: deal ? { deal } : undefined });
 
     const paymentConfirmationDeal = normalizedBrandDeals.find((deal) => {
       const status = String(deal.status || '').toLowerCase();
@@ -771,9 +785,9 @@ const CreatorDashboard = () => {
         title: 'I got the money',
         helper: 'The brand says they sent the money. Confirm when it hits your account.',
         primaryLabel: 'Confirm payment',
-        primaryAction: () => openDealDetails(paymentConfirmationDeal.id),
+        primaryAction: () => openPayment(paymentConfirmationDeal),
         secondaryLabel: 'View Deal',
-        secondaryAction: () => openDealDetails(paymentConfirmationDeal.id),
+        secondaryAction: () => openDealDetails(paymentConfirmationDeal.id, paymentConfirmationDeal),
         deal: paymentConfirmationDeal,
       };
     }
@@ -796,7 +810,7 @@ const CreatorDashboard = () => {
           ? `The brand has approved your content. Expected by ${expectedDate}.`
           : 'The brand has approved your content. Payment will be sent to you shortly.',
         secondaryLabel: 'View Deal',
-        secondaryAction: () => openDealDetails(approvedWaitingPaymentDeal.id),
+        secondaryAction: () => openDealDetails(approvedWaitingPaymentDeal.id, approvedWaitingPaymentDeal),
         deal: approvedWaitingPaymentDeal,
       };
     }
@@ -811,7 +825,7 @@ const CreatorDashboard = () => {
         title: 'Changes requested',
         helper: 'Open the deal, check what the brand changed, and share the updated post link.',
         primaryLabel: 'Open deal',
-        primaryAction: () => openDealDetails(revisionRequestedDeal.id),
+        primaryAction: () => openDealDetails(revisionRequestedDeal.id, revisionRequestedDeal),
         deal: revisionRequestedDeal,
       };
     }
@@ -827,7 +841,7 @@ const CreatorDashboard = () => {
         title: 'Share post link',
         helper: 'Open the deal and share your Instagram post link for brand review.',
         primaryLabel: 'Open deal',
-        primaryAction: () => openDealDetails(contentRequestedDeal.id),
+        primaryAction: () => openDealDetails(contentRequestedDeal.id, contentRequestedDeal),
         deal: contentRequestedDeal,
       };
     }
@@ -845,7 +859,7 @@ const CreatorDashboard = () => {
         primaryLabel: 'Add address',
         primaryAction: () => openDeliveryDetails(deliveryDetailsDeal.id),
         secondaryLabel: 'View Deal',
-        secondaryAction: () => openDealDetails(deliveryDetailsDeal.id),
+        secondaryAction: () => openDealDetails(deliveryDetailsDeal.id, deliveryDetailsDeal),
         deal: deliveryDetailsDeal,
       };
     }
@@ -860,7 +874,7 @@ const CreatorDashboard = () => {
         title: 'Make your content',
         helper: 'Deal confirmed. Open it to review the brief and start making your content.',
         primaryLabel: 'Open deal',
-        primaryAction: () => openDealDetails(acceptedNotStartedDeal.id),
+        primaryAction: () => openDealDetails(acceptedNotStartedDeal.id, acceptedNotStartedDeal),
         deal: acceptedNotStartedDeal,
       };
     }
@@ -892,7 +906,7 @@ const CreatorDashboard = () => {
         primaryLabel: 'Download Invoice',
         primaryAction: () => window.open(completedDealWithInvoice.invoice_url || '', '_blank', 'noopener,noreferrer'),
         secondaryLabel: 'View Deal',
-        secondaryAction: () => openDealDetails(completedDealWithInvoice.id),
+        secondaryAction: () => openDealDetails(completedDealWithInvoice.id, completedDealWithInvoice),
         deal: completedDealWithInvoice,
       };
     }

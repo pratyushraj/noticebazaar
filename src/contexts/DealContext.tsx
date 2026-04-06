@@ -43,6 +43,20 @@ const readPersistedSupabaseAuth = (): { userId: string | null; accessToken: stri
   return { userId: null, accessToken: null };
 };
 
+const readCachedDeal = (dealId?: string, userId?: string | null) => {
+  if (typeof window === 'undefined' || !dealId || !userId) return null;
+
+  try {
+    const raw = window.sessionStorage.getItem(`creator-deals:${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.find((deal) => String(deal?.id || '') === String(dealId)) || null;
+  } catch {
+    return null;
+  }
+};
+
 interface DealContextValue {
   // Data
   deal: ReturnType<typeof useBrandDealById>['data'];
@@ -74,17 +88,21 @@ const DealContext = createContext<DealContextValue | undefined>(undefined);
 
 interface DealProviderProps {
   dealId: string | undefined;
+  initialDeal?: ReturnType<typeof useBrandDealById>['data'];
   children: ReactNode;
 }
 
-export function DealProvider({ dealId, children }: DealProviderProps) {
+export function DealProvider({ dealId, initialDeal = null, children }: DealProviderProps) {
   const { profile, session, user } = useSession();
   const queryClient = useQueryClient();
-  const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(() => readPersistedSupabaseAuth().userId);
-  const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(() => readPersistedSupabaseAuth().accessToken);
+  const persistedAuth = readPersistedSupabaseAuth();
+  const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(() => persistedAuth.userId);
+  const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(() => persistedAuth.accessToken);
   const resolvedUserId = profile?.id || session?.user?.id || user?.id || authFallbackUserId;
   const accessToken = session?.access_token || authFallbackAccessToken;
-  const [serverDealFallback, setServerDealFallback] = useState<DealContextValue['deal']>(null);
+  const [serverDealFallback, setServerDealFallback] = useState<DealContextValue['deal']>(() => (
+    initialDeal || readCachedDeal(dealId, profile?.id || session?.user?.id || user?.id || persistedAuth.userId)
+  ));
   const [isLoadingServerDeal, setIsLoadingServerDeal] = useState(false);
 
   // Fetch deal data
@@ -156,6 +174,35 @@ export function DealProvider({ dealId, children }: DealProviderProps) {
   const resolvedDeal = deal || serverDealFallback;
   const resolvedDealError = (dealError as Error | null) && !resolvedDeal ? (dealError as Error | null) : null;
   const resolvedIsLoadingDeal = !resolvedDeal && (isLoadingDeal || isLoadingServerDeal);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !resolvedDeal || !dealId) return;
+
+    try {
+      window.sessionStorage.setItem(`deal-cache:${dealId}`, JSON.stringify(resolvedDeal));
+
+      if (resolvedUserId) {
+        const existingRaw = window.sessionStorage.getItem(`creator-deals:${resolvedUserId}`);
+        const existingDeals = (() => {
+          try {
+            const parsed = existingRaw ? JSON.parse(existingRaw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })();
+
+        const nextDeals = [
+          resolvedDeal,
+          ...existingDeals.filter((item) => String(item?.id || '') !== String(resolvedDeal?.id || '')),
+        ].slice(0, 25);
+
+        window.sessionStorage.setItem(`creator-deals:${resolvedUserId}`, JSON.stringify(nextDeals));
+      }
+    } catch {
+      // Best-effort cache only.
+    }
+  }, [dealId, resolvedDeal, resolvedUserId]);
 
   // Fetch issues
   const {

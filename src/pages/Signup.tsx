@@ -176,9 +176,9 @@ const Signup = () => {
         },
       });
 
-      // Best-effort enhancement: in fresh signups the profile row may not exist yet,
-      // and some environments may not have this endpoint. Treat 404 as non-fatal.
-      if (response.status === 404) {
+      // Best-effort enhancement: in fresh signups the session/profile may not be ready yet,
+      // and some environments may not expose this endpoint. Treat auth/not-found as non-fatal.
+      if ([401, 403, 404].includes(response.status)) {
         if (typeof window !== 'undefined') {
           sessionStorage.setItem(endpointDisabledKey, 'true');
         }
