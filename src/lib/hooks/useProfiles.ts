@@ -8,7 +8,10 @@ import { useGenerateTaxFilings } from './useTaxFilings'; // NEW: Import the new 
 import { logger } from '@/lib/utils/logger';
 import { getApiBaseUrl } from '@/lib/utils/api';
 
-const unsupportedProfileColumns = new Set<string>();
+const unsupportedProfileColumns = new Set<string>([
+  'creator_stage',
+  'reel_price',
+]);
 
 const UNSUPPORTED_PROFILE_COLUMNS_STORAGE_KEY = 'nb_unsupported_profile_columns_v1';
 

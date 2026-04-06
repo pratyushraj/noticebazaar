@@ -23,14 +23,13 @@ const debugError = (...args: unknown[]) => {
 type RedirectProfile = {
   role: string | null;
   onboarding_complete: boolean | null;
-  creator_stage?: string | null;
   profile_completion?: number | null;
 };
 
 const fetchRedirectProfile = async (userId: string): Promise<RedirectProfile | null> => {
   const fullResult = await (supabase
     .from('profiles')
-    .select('role, onboarding_complete, creator_stage, profile_completion') as any)
+    .select('role, onboarding_complete, profile_completion') as any)
     .eq('id', userId)
     .single();
 
@@ -485,7 +484,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                       } else if (p?.role === 'lawyer') {
                         redirectPath = '/lawyer-dashboard';
                       } else {
-                        redirectPath = (p?.creator_stage === 'new' && !p?.onboarding_complete) ? '/creator-onboarding' : '/creator-dashboard';
+                        redirectPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
                       }
                     }
                   } catch (error) {
@@ -743,7 +742,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
               debugLog('[SessionContext] Fetching profile for user:', session.user.id);
                 const profilePromise = (supabase
                   .from('profiles')
-                  .select('role, onboarding_complete, creator_stage, profile_completion') as any)
+                  .select('role, onboarding_complete, profile_completion') as any)
                   .eq('id', session.user.id)
                   .single();
               const timeoutFallback = { data: null as { role: string; onboarding_complete?: boolean } | null, error: { message: 'timeout' } };
@@ -778,7 +777,7 @@ export const SessionContextProvider = ({ children }: { children: ReactNode }) =>
                 } else if (p?.role === 'lawyer') {
                   targetPath = '/lawyer-dashboard';
                 } else {
-                  targetPath = (p?.creator_stage === 'new' && !p?.onboarding_complete) ? '/creator-onboarding' : '/creator-dashboard';
+                  targetPath = p?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
                 }
               } else {
                 debugLog('[SessionContext] No profile data / timeout, defaulting to creator-onboarding');

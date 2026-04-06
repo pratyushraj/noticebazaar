@@ -151,7 +151,7 @@ export function CreatorProgressiveChecklist({
       window.open(collabUrl, '_blank', 'noopener,noreferrer');
     }
 
-    if (!profile.link_shared_at || profile.creator_stage === 'new' || profile.creator_stage === 'priced') {
+    if (!profile.link_shared_at) {
       await saveProfile({
         link_shared_at: profile.link_shared_at || new Date().toISOString(),
       });
@@ -167,7 +167,6 @@ export function CreatorProgressiveChecklist({
     switch (selectedItem.id) {
       case 'pricing':
         payload.avg_rate_reel = Number(formState.reelPrice) || null;
-        payload.reel_price = Number(formState.reelPrice) || null;
         payload.story_price = Number(formState.storyPrice) || null;
         payload.typical_story_rate = Number(formState.storyPrice) || null;
         break;

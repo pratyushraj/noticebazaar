@@ -822,7 +822,25 @@ export const useBrandDealById = (dealId: string | undefined, userId: string | un
           error.message?.includes('not found');
 
         if (isMissingTableError) {
-          return null;
+          const fallback = await (supabase
+            .from('brand_deals')
+            .select('*')
+            .eq('id', dealId as any)
+            .maybeSingle() as any);
+
+          if (fallback.error) {
+            return null;
+          }
+
+          const fallbackData = fallback.data as BrandDeal | null;
+          if (!fallbackData) return null;
+
+          const expectedOwnerId = role === 'brand' ? (fallbackData as any).brand_id : (fallbackData as any).creator_id;
+          if (expectedOwnerId && String(expectedOwnerId) !== String(userId)) {
+            return null;
+          }
+
+          return fallbackData;
         }
         throw error;
       }

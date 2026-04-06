@@ -198,6 +198,32 @@ const Login = () => {
     }
   };
 
+  const handleDemoBrandLogin = async () => {
+    setEmail(DEMO_BRAND_EMAIL);
+    setPassword(DEMO_BRAND_PASSWORD);
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: DEMO_BRAND_EMAIL,
+        password: DEMO_BRAND_PASSWORD,
+      });
+
+      if (error) {
+        toast.error('Demo brand sign-in failed: ' + error.message);
+        return;
+      }
+
+      if (data.session) {
+        toast.success('Opened demo brand account');
+      }
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Failed to sign in with the demo brand account'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div
       className="nb-screen-height flex flex-col items-center justify-center bg-[#0B0F14] p-4 font-inter"
@@ -320,16 +346,10 @@ const Login = () => {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setEmail(DEMO_BRAND_EMAIL);
-                    setPassword(DEMO_BRAND_PASSWORD);
-                    toast.message('Demo brand credentials filled', {
-                      description: 'Sign in to preview the Brand Console UI.',
-                    });
-                  }}
+                  onClick={handleDemoBrandLogin}
                   className="w-full h-12 rounded-2xl border border-slate-800 bg-white/5 hover:bg-white/10 text-white/80 font-black uppercase tracking-widest text-[11px] transition-all active:scale-[0.99]"
                 >
-                  Use Demo Brand Login
+                  Open Demo Brand Account
                 </button>
 	            </form>
 	          </div>

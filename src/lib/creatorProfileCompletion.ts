@@ -254,7 +254,6 @@ export const getCreatorProgressPatch = (
   const lifecycle = getCreatorLifecycleMetrics(profile, context);
 
   return {
-    creator_stage: lifecycle.creatorStage,
     profile_completion: lifecycle.profileCompletion,
     storefront_completion: lifecycle.storefrontCompletion,
     offers_received: lifecycle.offersReceived,

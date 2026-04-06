@@ -138,7 +138,9 @@ const CollabRequestBriefPage = () => {
   const [pendingReelPrice, setPendingReelPrice] = useState('');
   const [pendingAddress, setPendingAddress] = useState('');
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
-  const [brandVerified, setBrandVerified] = useState(false);
+  const [brandVerified] = useState(
+    Boolean((requestFromState as any)?.brand_verified || (requestFromState as any)?.raw?.brand_verified)
+  );
   const [showCounterDialog, setShowCounterDialog] = useState(false);
   const [counterPrice, setCounterPrice] = useState('');
   const [counterNotes, setCounterNotes] = useState('');
@@ -193,20 +195,6 @@ const CollabRequestBriefPage = () => {
       request_id: request.id,
     });
   }, [request?.id, profile?.id]);
-
-  useEffect(() => {
-    if (!request?.id) return;
-    const fetchBrandVerified = async () => {
-      try {
-        const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${request.id}/brand-status`);
-        const data = await res.json();
-        if (data?.success) setBrandVerified(Boolean(data.brand_verified));
-      } catch {
-        // Non-critical - don't block UI
-      }
-    };
-    void fetchBrandVerified();
-  }, [request?.id]);
 
   if (!effectiveRequestId) {
     navigate('/creator-dashboard?tab=collabs&subtab=pending', { replace: true });
@@ -386,7 +374,6 @@ const CollabRequestBriefPage = () => {
         id: profile.id,
         ...(requiresPaidRate ? {
           avg_rate_reel: Number(pendingReelPrice) || null,
-          reel_price: Number(pendingReelPrice) || null,
         } : {}),
         ...(requiresAddress ? {
           address: pendingAddress.trim(),

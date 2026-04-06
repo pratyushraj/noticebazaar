@@ -78,17 +78,24 @@ test.describe('Creator Brand Loop', () => {
     await expect(brandPage.locator('h1')).toContainText(/has your offer|offer sent/i);
 
     // Creator receives and reviews offer
-    await creatorPage.goto(`${BASE_URL}/creator-dashboard`, { waitUntil: 'load' });
-    await creatorPage.waitForSelector('h1', { timeout: 15000 }).catch(() => {});
+    let reviewOpened = false;
+    for (let attempt = 0; attempt < 5 && !reviewOpened; attempt++) {
+      await creatorPage.goto(`${BASE_URL}/creator-dashboard`, { waitUntil: 'load' });
+      await creatorPage.waitForTimeout(3000);
 
-    const reviewOfferButton = creatorPage.getByRole('button', { name: /review offer/i }).first();
-    const reviewOfferLink = creatorPage.getByRole('link', { name: /review offer/i }).first();
+      const reviewOfferButton = creatorPage.getByRole('button', { name: /review offer/i }).first();
+      const reviewOfferLink = creatorPage.getByRole('link', { name: /review offer/i }).first();
 
-    if (await reviewOfferButton.isVisible()) {
-      await reviewOfferButton.click();
-    } else {
-      await reviewOfferLink.click();
+      if (await reviewOfferButton.isVisible().catch(() => false)) {
+        await reviewOfferButton.click();
+        reviewOpened = true;
+      } else if (await reviewOfferLink.isVisible().catch(() => false)) {
+        await reviewOfferLink.click();
+        reviewOpened = true;
+      }
     }
+
+    expect(reviewOpened).toBe(true);
 
     await creatorPage.waitForURL(/collab-requests\//, { timeout: 20000 });
     await expect(
@@ -119,7 +126,7 @@ test.describe('Creator Brand Loop', () => {
     await expect(postLinkInput).toBeVisible({ timeout: 20000 });
     await postLinkInput.fill('https://www.instagram.com/reel/C5TESTQA123/');
     await creatorPage.locator('#deal-content-note').fill('QA submission from automated flow.');
-    await creatorPage.getByRole('button', { name: /share your post link|share the updated post link|submit/i }).first().click();
+    await creatorPage.getByRole('button', { name: /share post link|share updated link|update shared link|submit/i }).last().click();
 
     await creatorPage.waitForTimeout(2000);
 

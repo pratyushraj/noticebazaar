@@ -1218,11 +1218,13 @@ function DealDetailPageContent() {
         return {
           title: 'Share your post link',
           explanation: 'Share your Instagram post link from this deal so the brand can review it.',
-          actionLabel: 'Share post link',
+          actionLabel: 'Open content form',
           action: () => {
-            // Scroll to content submission panel
-            const target = document.getElementById('deal-brief-section');
+            const target = document.getElementById('deal-content-link');
             target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (target instanceof HTMLElement) {
+              window.setTimeout(() => target.focus(), 250);
+            }
           },
         };
       case 'REVISION_REQUESTED':
@@ -1374,6 +1376,7 @@ function DealDetailPageContent() {
       }
 
       toast.success(guidedDealState === 'REVISION_REQUESTED' ? 'Updated post link shared.' : 'Post link shared.');
+      setContentNoteInput('');
       await refreshAll();
     } catch (error: any) {
       toast.error(error?.message || 'Could not submit your post link');

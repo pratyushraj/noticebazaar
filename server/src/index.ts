@@ -64,6 +64,7 @@ import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
 import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import brandDashboardRouter from './routes/brandDashboard.js';
+import esignRouter, { publicRouter as esignPublicRouter } from './routes/esign.js';
 import { sendCollabRequestAcceptedEmail, sendCollabRequestCreatorNotificationEmail } from './services/collabRequestEmailService.js';
 import { createContractReadyToken } from './services/contractReadyTokenService.js';
 // Log router import for debugging
@@ -385,6 +386,7 @@ app.use('/api/deal-details-tokens', dealDetailsTokensRouter); // Public routes (
 app.use('/api/contract-ready-tokens', contractReadyTokensRouter); // Public routes for contract ready page
 app.use('/api/creator-sign', creatorSignRouter); // Public creator signing magic link routes
 app.use('/api/gst', gstRouter); // Public GST lookup route
+app.use('/api/esign', esignPublicRouter); // Public eSign config + webhook routes
 // OTP routes are mounted below with auth/rate-limit middleware.
 app.use('/api/collab', collabRequestsRouter); // Public collab link routes (/:username and /:username/submit)
 app.use('/api/collab-analytics', collabAnalyticsRouter); // Public analytics tracking + authenticated analytics endpoints
@@ -648,6 +650,7 @@ app.use('/api/influencers', authMiddleware, rateLimitMiddleware, influencersRout
 app.use('/api/collab-requests', authMiddleware, rateLimitMiddleware, collabRequestsRouter); // Protected collab request management routes
 app.use('/api/reminders', remindersRouter);
 app.use('/api/brand-dashboard', authMiddleware, rateLimitMiddleware, brandDashboardRouter);
+app.use('/api/esign', authMiddleware, rateLimitMiddleware, esignRouter);
 // Note: /api/collab-analytics is already mounted as public route above (line 284)
 // OTP routes - protected routes require auth
 app.use('/api/otp', authMiddleware, rateLimitMiddleware, otpRouter);

@@ -27,12 +27,12 @@ import { Label } from '@/components/ui/label';
 
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
-  const { paymentId } = useParams<{ paymentId: string }>();
+  const { dealId } = useParams<{ dealId: string }>();
   const { profile } = useSession();
   const updateProfileMutation = useUpdateProfile();
 
   // Fetch the deal data (paymentId is actually the dealId)
-  const { data: brandDeal, isLoading, error } = useBrandDealById(paymentId, profile?.id);
+  const { data: brandDeal, isLoading, error } = useBrandDealById(dealId, profile?.id);
   const updateDealMutation = useUpdateBrandDeal();
 
   // State for optional enhancements

@@ -510,11 +510,26 @@ const CreatorDashboard = () => {
     }
   }, []);
 
-  // Fetch collab requests on mount
+  // Fetch collab requests on mount and while the page is in focus so new offers appear quickly.
   useEffect(() => {
     const controller = new AbortController();
     void fetchPendingCollabRequestsPreview(controller.signal);
     return () => controller.abort();
+  }, [fetchPendingCollabRequestsPreview, session?.user?.id]);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const refresh = () => void fetchPendingCollabRequestsPreview();
+    const intervalId = window.setInterval(refresh, 15000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
   }, [fetchPendingCollabRequestsPreview, session?.user?.id]);
 
   // Fetch collab page views
@@ -834,16 +849,12 @@ const CreatorDashboard = () => {
     // Note: storefront_completion, offers_received, offers_accepted, completed_deals,
     // total_deals, total_earnings, storefront_views, conversion_rate, first_offer_at,
     // first_deal_at, last_active_at do NOT exist in the database schema
-    const hasDiff = (
-      (profile.creator_stage ?? 'new') !== (progressPatch.creator_stage ?? 'new') ||
-      Number(profile.profile_completion || 0) !== progressPatch.profile_completion
-    );
+    const hasDiff = Number(profile.profile_completion || 0) !== progressPatch.profile_completion;
 
     if (!hasDiff) return;
 
     void updateProfileMutation.mutateAsync({
       id: profile.id,
-      creator_stage: progressPatch.creator_stage,
       profile_completion: progressPatch.profile_completion,
     }).catch(() => {
       // Ignore dashboard lifecycle sync errors.
