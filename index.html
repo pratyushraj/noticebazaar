@@ -140,6 +140,10 @@
   <!-- Google tag (gtag.js) - Google Analytics -->
   <script>
     (function () {
+      const host = window.location.hostname;
+      const isLocalQa = host === 'localhost' || host === '127.0.0.1';
+      if (isLocalQa) return;
+
       window.dataLayer = window.dataLayer || [];
       function gtag() { dataLayer.push(arguments); }
       window.gtag = gtag;

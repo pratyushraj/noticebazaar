@@ -18,6 +18,34 @@ interface ProtectedRouteProps {
 const LOADER_TIMEOUT_MS = 8000;
 const MAX_PROFILE_RETRIES = 5;
 
+function hasPersistedSupabaseAuth(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (!key || !key.includes('auth-token')) continue;
+      const raw = window.localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      const candidates = [
+        parsed,
+        parsed?.currentSession,
+        parsed?.session,
+        Array.isArray(parsed) ? parsed[0] : null,
+      ].filter(Boolean);
+
+      if (candidates.some((candidate) => candidate?.access_token && candidate?.user?.id)) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
 /** Check if creator collab profile is complete */
 function isCollabProfileComplete(profile: any): boolean {
   if (!profile) return false;
@@ -98,8 +126,11 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     : typeof user?.user_metadata?.account_mode === 'string'
       ? user.user_metadata.account_mode
       : null;
+  const hasPersistedAuth = hasPersistedSupabaseAuth();
   const canBootstrapSessionOwnedRouteWithoutProfile = !!session && !profile && (requestedRole === 'brand' || requestedRole === 'creator');
-  const canRenderProtectedRouteImmediately = !!session && (requestedRole === 'brand' || requestedRole === 'creator');
+  const canRenderProtectedRouteImmediately =
+    (requestedRole === 'brand' || requestedRole === 'creator') &&
+    (!!session || hasPersistedAuth);
 
   const isLoading = ((authStatus === 'loading') && !canRenderProtectedRouteImmediately) || (isCreatingProfile && !canBootstrapSessionOwnedRouteWithoutProfile);
 
@@ -201,7 +232,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   // --- Render logic ---
 
   // Show auth init screen while bootstrapping
-  if (isAuthInitializing && session && !profile) {
+  if (isAuthInitializing && session && !profile && !canRenderProtectedRouteImmediately) {
     return <AuthLoadingScreen />;
   }
 
@@ -225,7 +256,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   }
 
   // No session
-  if (!session) return null;
+  if (!session && !canRenderProtectedRouteImmediately) return null;
 
   // Session but no profile — show error
   if (session && !profile && user) {

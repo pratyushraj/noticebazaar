@@ -62,30 +62,6 @@ const readPersistedSupabaseAuth = (): { userId: string | null; accessToken: stri
   return { userId: null, accessToken: null };
 };
 
-const readCachedDeal = (dealId?: string, userId?: string | null) => {
-  if (typeof window === 'undefined' || !dealId) return null;
-
-  try {
-    const directDealRaw = window.sessionStorage.getItem(`deal-cache:${dealId}`);
-    if (directDealRaw) {
-      const directDeal = JSON.parse(directDealRaw);
-      if (directDeal && String(directDeal?.id || '') === String(dealId)) {
-        return directDeal;
-      }
-    }
-
-    if (!userId) return null;
-
-    const raw = window.sessionStorage.getItem(`creator-deals:${userId}`);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return null;
-    return parsed.find((deal) => String(deal?.id || '') === String(dealId)) || null;
-  } catch {
-    return null;
-  }
-};
-
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -95,9 +71,7 @@ const PaymentDetailPage = () => {
   const persistedAuth = readPersistedSupabaseAuth();
   const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(persistedAuth.userId);
   const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(persistedAuth.accessToken);
-  const [serverDealFallback, setServerDealFallback] = useState<any | null>(() => (
-    readCachedDeal(dealId, profile?.id || user?.id || session?.user?.id || persistedAuth.userId)
-  ));
+  const [serverDealFallback, setServerDealFallback] = useState<any | null>(null);
   const [isLoadingServerDeal, setIsLoadingServerDeal] = useState(false);
   const routeDeal = (location.state as { deal?: any } | null)?.deal || null;
   const actorId = profile?.id || user?.id || session?.user?.id || authFallbackUserId;
@@ -125,7 +99,7 @@ const PaymentDetailPage = () => {
   }, [actorId]);
 
   useEffect(() => {
-    if (!dealId || serverDealFallback || !accessToken) return;
+    if (!dealId || !accessToken) return;
     let cancelled = false;
 
     const loadDealFallback = async () => {
@@ -153,7 +127,7 @@ const PaymentDetailPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [dealId, serverDealFallback, accessToken]);
+  }, [dealId, accessToken]);
 
   // Fetch the deal data (paymentId is actually the dealId)
   const { data: brandDeal, isLoading, error } = useBrandDealById(dealId, actorId);
@@ -323,6 +297,7 @@ const PaymentDetailPage = () => {
   }, [profile?.bank_upi]);
 
   const hasSavedUpi = Boolean(String(savedUpiValue || profile?.bank_upi || '').trim());
+  const hasReadyUpi = Boolean(String(savedUpiValue || profile?.bank_upi || pendingUpi || '').trim());
   const paymentProgressSteps = useMemo(() => {
     const status = paymentData?.status;
     const isReceived = status === 'received';
@@ -821,7 +796,7 @@ const PaymentDetailPage = () => {
               <>
                 <motion.button
                   onClick={handleMarkAsReceived}
-                  disabled={updateDealMutation.isPending || !hasSavedUpi}
+                  disabled={updateDealMutation.isPending || !hasReadyUpi}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold px-4 py-3 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
@@ -834,7 +809,7 @@ const PaymentDetailPage = () => {
                     <>
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                       <span className="text-xs sm:text-sm">
-                        {hasSavedUpi ? 'Confirm payment received' : 'Add UPI to confirm'}
+                        {hasReadyUpi ? 'Confirm payment received' : 'Add UPI to confirm'}
                       </span>
                     </>
                   )}
@@ -860,7 +835,7 @@ const PaymentDetailPage = () => {
                 </motion.button>
                 <motion.button
                   onClick={handleMarkAsReceived}
-                  disabled={updateDealMutation.isPending || !hasSavedUpi}
+                  disabled={updateDealMutation.isPending || !hasReadyUpi}
                   whileTap={{ scale: 0.98 }}
                   className="w-full sm:w-auto px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/20 text-white rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium"
                 >
@@ -873,7 +848,7 @@ const PaymentDetailPage = () => {
                     <>
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                       <span className="text-xs sm:text-sm">
-                        {hasSavedUpi ? 'Confirm payment received' : 'Add UPI to confirm'}
+                        {hasReadyUpi ? 'Confirm payment received' : 'Add UPI to confirm'}
                       </span>
                     </>
                   )}
