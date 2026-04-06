@@ -230,10 +230,16 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
         }
       )
       .subscribe((status) => {
+        const isLocalDev =
+          typeof window !== 'undefined' &&
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
         if (status === 'SUBSCRIBED') {
           console.log('[Notifications] Real-time subscription active');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[Notifications] Real-time subscription error');
+          if (!isLocalDev) {
+            console.warn('[Notifications] Real-time subscription error');
+          }
         }
       });
 
@@ -257,4 +263,3 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     isDeleting: deleteNotificationMutation.isPending,
   };
 };
-

@@ -2,7 +2,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/contexts/SessionContext';
-import { getApiBaseUrl } from '@/lib/utils/api';
 
 export interface SignatureStatus {
     signed: boolean;
@@ -56,32 +55,7 @@ export const useDealSignatures = (dealId: string | undefined, enabled: boolean =
             const creatorSigRecord = signatures.find((s: any) => s.signer_role === 'creator' && s.signed === true);
             const brandSigRecord = signatures.find((s: any) => s.signer_role === 'brand' && s.signed === true);
 
-            // 2. Fetch from API (Secondary/Validation Source)
-            // We use 'as any' since getApiBaseUrl() is correctly imported
-            const apiBaseUrl = getApiBaseUrl();
-
-            let apiBrandStatus = false;
-            let apiSignedAt = undefined;
-
-            try {
-                // Only fetch if session is valid to avoid 401s spamming console
-                if (session?.access_token) {
-                    const resp = await fetch(`${apiBaseUrl}/api/esign/status/${dealId}`, {
-                        headers: { Authorization: `Bearer ${session.access_token}` }
-                    });
-                    if (resp.ok) {
-                        const data = await resp.json();
-                        if (data.success && (data.status === 'signed' || data.meonStatus === 'SIGNED')) {
-                            apiBrandStatus = true;
-                            apiSignedAt = data.signedAt;
-                        }
-                    }
-                }
-            } catch (err) {
-                // Silently fail API check and rely on DB
-            }
-
-            const brandSigned = !!brandSigRecord || apiBrandStatus;
+            const brandSigned = !!brandSigRecord;
 
             return {
                 creatorSignature: creatorSigRecord ? {
@@ -92,7 +66,7 @@ export const useDealSignatures = (dealId: string | undefined, enabled: boolean =
                 } : null,
                 brandSignature: brandSigned ? {
                     signed: true,
-                    signedAt: brandSigRecord?.signed_at || apiSignedAt || new Date().toISOString(),
+                    signedAt: brandSigRecord?.signed_at || new Date().toISOString(),
                 } : null,
                 isCreatorSigned: !!creatorSigRecord,
                 isBrandSigned: brandSigned
