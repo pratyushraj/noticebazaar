@@ -98,9 +98,10 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     : typeof user?.user_metadata?.account_mode === 'string'
       ? user.user_metadata.account_mode
       : null;
-  const canBootstrapBrandWithoutProfile = !!session && !profile && requestedRole === 'brand';
+  const canBootstrapSessionOwnedRouteWithoutProfile = !!session && !profile && (requestedRole === 'brand' || requestedRole === 'creator');
+  const canRenderProtectedRouteImmediately = !!session && (requestedRole === 'brand' || requestedRole === 'creator');
 
-  const isLoading = authStatus === 'loading' || (isCreatingProfile && !canBootstrapBrandWithoutProfile);
+  const isLoading = ((authStatus === 'loading') && !canRenderProtectedRouteImmediately) || (isCreatingProfile && !canBootstrapSessionOwnedRouteWithoutProfile);
 
   // Loader timeout — give user an escape hatch after 8s
   useEffect(() => {
@@ -228,7 +229,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
   // Session but no profile — show error
   if (session && !profile && user) {
-    if (canBootstrapBrandWithoutProfile) {
+    if (canBootstrapSessionOwnedRouteWithoutProfile) {
       return <>{children}</>;
     }
     return (

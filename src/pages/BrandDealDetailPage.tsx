@@ -73,7 +73,8 @@ const BrandDealDetailPage: React.FC = () => {
 
   const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
   const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
-  const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !deal?.payment_received_date;
+  const paymentMarkedSent = Boolean((deal as any)?.payment_released_at) || normalizedStatus === 'PAYMENT_RELEASED';
+  const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !paymentMarkedSent;
   const directContentLink = String((deal as any)?.content_submission_url || (deal as any)?.content_url || '').trim();
   const directContentNotes = String((deal as any)?.content_notes || '').trim();
   const contentLink = directContentLink || loggedContentLink;
@@ -192,9 +193,9 @@ const BrandDealDetailPage: React.FC = () => {
     if (canReviewContent) return 'Review the creator content';
     if (canReleasePayment) return 'Mark payment as sent';
     if (brandApprovalStatus === 'changes_requested') return 'Waiting for creator revision';
-    if (brandApprovalStatus === 'approved' && deal?.payment_received_date) return 'Waiting for creator confirmation';
+    if (brandApprovalStatus === 'approved' && paymentMarkedSent) return 'Waiting for creator confirmation';
     return 'Track this deal';
-  }, [brandApprovalStatus, canReleasePayment, canReviewContent, deal?.payment_received_date]);
+  }, [brandApprovalStatus, canReleasePayment, canReviewContent, paymentMarkedSent]);
 
   const getStageColor = (status: string | null) => {
     if (!status) return 'bg-slate-500/20 text-slate-400';
@@ -450,7 +451,7 @@ const BrandDealDetailPage: React.FC = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">Status</span>
                   <span className="font-semibold text-white">
-                    {deal.payment_received_date ? 'Sent to creator' : 'Pending'}
+                    {paymentMarkedSent ? 'Sent to creator' : 'Pending'}
                   </span>
                 </div>
               </div>
@@ -495,14 +496,14 @@ const BrandDealDetailPage: React.FC = () => {
                 </div>
               )}
 
-              {deal.payment_received_date && (
+              {paymentMarkedSent && (
                 <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
                   <p className="text-sm font-semibold text-emerald-200 flex items-center gap-2">
                     <Wallet className="h-4 w-4" />
                     Payment sent to creator
                   </p>
                   <p className="mt-1 text-sm text-emerald-100/80">
-                    Marked on {formatDate(deal.payment_received_date)}{deal.utr_number ? ` • Ref ${deal.utr_number}` : ''}.
+                    Marked on {formatDate((deal as any).payment_released_at || deal.updated_at)}{deal.utr_number ? ` • Ref ${deal.utr_number}` : ''}.
                   </p>
                 </div>
               )}

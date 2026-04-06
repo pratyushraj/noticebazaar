@@ -439,14 +439,17 @@ const CreatorDashboard = () => {
     document.title = 'Creator Dashboard | Creator Armour';
   }, []);
   const navigate = useNavigate();
-  const { profile, session, loading: sessionLoading } = useSession();
+  const { profile, session, user, loading: sessionLoading } = useSession();
   const updateProfileMutation = useUpdateProfile();
+  const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(null);
   
   // State
   const [pendingCollabRequestsCount, setPendingCollabRequestsCount] = useState(0);
   const [totalOffersReceived, setTotalOffersReceived] = useState(0);
   const [storefrontViews, setStorefrontViews] = useState(0);
   const [collabRequestsPreview, setCollabRequestsPreview] = useState<CollabRequestPreview[]>([]);
+  const [serverDealsFallback, setServerDealsFallback] = useState<DashboardBrandDeal[]>([]);
+  const [isLoadingServerDeals, setIsLoadingServerDeals] = useState(false);
   const [declineRequestId, setDeclineRequestId] = useState<string | null>(null);
   const [showDeclineRequestDialog, setShowDeclineRequestDialog] = useState(false);
   const [copiedDm, setCopiedDm] = useState(false);
@@ -456,6 +459,37 @@ const CreatorDashboard = () => {
   const lastFocusedElementRef = useRef<HTMLButtonElement | null>(null);
 
   const creatorId = profile?.id || session?.user?.id;
+  const accessToken = session?.access_token || authFallbackAccessToken;
+  const fallbackName = String(user?.user_metadata?.full_name || '').trim();
+  const fallbackHandle = String(user?.user_metadata?.instagram_handle || '').replace(/^@+/, '').trim().toLowerCase();
+  const activeProfile = profile ?? ({
+    id: creatorId,
+    first_name: fallbackName.split(' ')[0] || '',
+    last_name: fallbackName.split(' ').slice(1).join(' '),
+    username: fallbackHandle || null,
+    instagram_handle: fallbackHandle || null,
+    onboarding_complete: true,
+    role: 'creator',
+    link_shared_at: null,
+    profile_completion: 0,
+  } as any);
+
+  useEffect(() => {
+    if (accessToken) return;
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      const fallbackToken = data.session?.access_token || null;
+      if (fallbackToken) {
+        setAuthFallbackAccessToken(fallbackToken);
+      }
+    }).catch(() => {
+      // Best-effort only.
+    });
+    return () => {
+      active = false;
+    };
+  }, [accessToken]);
 
   // ============================================
   // DATA FETCHING
@@ -537,7 +571,7 @@ const CreatorDashboard = () => {
     let cancelled = false;
 
     const fetchCollabPageViews = async () => {
-      if (!profile?.username) return;
+      if (!activeProfile?.username) return;
 
       try {
         const { data: sessionData } = await supabase.auth.getSession();
@@ -562,13 +596,46 @@ const CreatorDashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [profile?.username, session?.user?.id]);
+  }, [activeProfile?.username, session?.user?.id]);
 
   // Brand deals query
   const { data: brandDeals = [], isLoading: isLoadingDeals, error: brandDealsError, refetch: refetchBrandDeals } = useBrandDeals({
     creatorId,
     enabled: !sessionLoading && !!creatorId,
   });
+  useEffect(() => {
+    if (!accessToken || !creatorId || serverDealsFallback.length > 0) return;
+    let cancelled = false;
+
+    const loadServerDeals = async () => {
+      try {
+        setIsLoadingServerDeals(true);
+        const response = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        if (!cancelled && payload?.success && Array.isArray(payload.deals)) {
+          setServerDealsFallback(payload.deals as DashboardBrandDeal[]);
+        }
+      } catch {
+        // Best-effort only.
+      } finally {
+        if (!cancelled) {
+          setIsLoadingServerDeals(false);
+        }
+      }
+    };
+
+    void loadServerDeals();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, creatorId, serverDealsFallback.length]);
   const { notifications: creatorNotifications, markAsRead } = useNotifications({
     enabled: !!creatorId,
     limit: 3,
@@ -582,7 +649,7 @@ const CreatorDashboard = () => {
   const completedDealsCount = useMemo(() => (
     brandDeals.filter((deal) => {
       const status = String(deal.status || '').toLowerCase();
-      return status === 'completed' || status === 'fully_executed' || Boolean(deal.payment_received_date);
+      return status === 'completed' || status === 'fully_executed' || status.includes('payment_received');
     }).length
   ), [brandDeals]);
 
@@ -591,8 +658,8 @@ const CreatorDashboard = () => {
   ), [brandDeals]);
 
   const collabHandle = useMemo(() =>
-    normalizeInstagramHandle(profile?.instagram_handle || profile?.username || ''),
-    [profile?.instagram_handle, profile?.username]
+    normalizeInstagramHandle(activeProfile?.instagram_handle || activeProfile?.username || ''),
+    [activeProfile?.instagram_handle, activeProfile?.username]
   );
   
   const collabUrl = useMemo(() =>
@@ -608,13 +675,15 @@ const CreatorDashboard = () => {
   
   const dmTemplate = useMemo(() => {
     if (!collabUrl) return '';
-    const creatorName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
+    const creatorName = `${activeProfile?.first_name || ''} ${activeProfile?.last_name || ''}`.trim();
     return buildCreatorDmMessage({ creatorName, collabUrl });
-  }, [collabUrl, profile?.first_name, profile?.last_name]);
+  }, [collabUrl, activeProfile?.first_name, activeProfile?.last_name]);
   
-  const normalizedBrandDeals = useMemo<DashboardBrandDeal[]>(() => (
-    brandDeals as DashboardBrandDeal[]
-  ), [brandDeals]);
+  const normalizedBrandDeals = useMemo<DashboardBrandDeal[]>(() => {
+    const primaryDeals = (brandDeals as DashboardBrandDeal[]) || [];
+    if (primaryDeals.length > 0) return primaryDeals;
+    return serverDealsFallback;
+  }, [brandDeals, serverDealsFallback]);
 
   const dealsForFirstView = useMemo(() => {
     return normalizedBrandDeals
@@ -638,9 +707,9 @@ const CreatorDashboard = () => {
     if (completedDealsCount > 0) return 'completed';
     if (dealsForFirstView.length > 0) return 'active_deal';
     if (collabRequestsPreview.length > 0) return 'has_offer';
-    if (profile?.link_shared_at) return 'link_shared';
+    if (activeProfile?.link_shared_at) return 'link_shared';
     return 'new';
-  }, [completedDealsCount, dealsForFirstView.length, collabRequestsPreview.length, profile?.link_shared_at]);
+  }, [completedDealsCount, dealsForFirstView.length, collabRequestsPreview.length, activeProfile?.link_shared_at]);
 
   // ============================================
   // HANDLERS (defined after collabUrl, before nextStepData)
@@ -685,23 +754,24 @@ const CreatorDashboard = () => {
         return;
       }
       void copyText(collabUrl, 'Collab page copied');
-      void trackEvent('collab_link_copied', { creator_id: profile?.id });
+      void trackEvent('collab_link_copied', { creator_id: activeProfile?.id });
     };
-    const openPayment = (dealId: string) => navigate(`/payment/${dealId}`);
+    const openPayment = (deal: any) => navigate(`/payment/${deal.id}`, { state: { deal } });
     const openDeliveryDetails = (dealId: string) => navigate(`/deal-delivery-details/${dealId}`);
     const openDealDetails = (dealId: string) => navigate(`/deal/${dealId}`);
 
     const paymentConfirmationDeal = normalizedBrandDeals.find((deal) => {
       const status = String(deal.status || '').toLowerCase();
-      return !deal.payment_received_date && (status.includes('paid') || status.includes('payment_released') || status.includes('payment sent'));
+      const creatorConfirmedPayment = status.includes('payment_received') || status.includes('completed');
+      return !creatorConfirmedPayment && (status.includes('payment_released') || status.includes('payment sent'));
     });
     if (paymentConfirmationDeal) {
       return {
         state: 'payment_confirmation_needed',
         title: 'I got the money',
         helper: 'The brand says they sent the money. Confirm when it hits your account.',
-        primaryLabel: 'I got the money',
-        primaryAction: () => openPayment(paymentConfirmationDeal.id),
+        primaryLabel: 'Confirm payment',
+        primaryAction: () => openDealDetails(paymentConfirmationDeal.id),
         secondaryLabel: 'View Deal',
         secondaryAction: () => openDealDetails(paymentConfirmationDeal.id),
         deal: paymentConfirmationDeal,
@@ -710,7 +780,10 @@ const CreatorDashboard = () => {
 
     const approvedWaitingPaymentDeal = normalizedBrandDeals.find((deal) => {
       const approvalStatus = String(deal.brand_approval_status || '').toLowerCase();
-      return approvalStatus === 'approved' && !deal.payment_received_date;
+      const status = String(deal.status || '').toLowerCase();
+      const creatorConfirmedPayment = status.includes('payment_received') || status.includes('completed');
+      const paymentAlreadySent = status.includes('payment_released') || status.includes('payment sent');
+      return approvalStatus === 'approved' && !creatorConfirmedPayment && !paymentAlreadySent;
     });
     if (approvedWaitingPaymentDeal) {
       const expectedDate = approvedWaitingPaymentDeal.payment_expected_date
@@ -806,7 +879,11 @@ const CreatorDashboard = () => {
       };
     }
 
-    const completedDealWithInvoice = normalizedBrandDeals.find((deal) => Boolean(deal.payment_received_date) && Boolean(deal.invoice_url));
+    const completedDealWithInvoice = normalizedBrandDeals.find((deal) => {
+      const status = String(deal.status || '').toLowerCase();
+      const creatorConfirmedPayment = status.includes('payment_received') || status.includes('completed');
+      return creatorConfirmedPayment && Boolean(deal.invoice_url);
+    });
     if (completedDealWithInvoice) {
       return {
         state: 'deal_completed',
@@ -827,7 +904,7 @@ const CreatorDashboard = () => {
           ? 'Send this link when a brand asks to work with you. Their offers will appear here.'
           : 'Add your Instagram first.',
       };
-  }, [collabRequestsPreview, collabUrl, copyText, handleShareWhatsApp, navigate, normalizedBrandDeals, profile?.id]);
+  }, [collabRequestsPreview, collabUrl, copyText, handleShareWhatsApp, navigate, normalizedBrandDeals, activeProfile?.id]);
 
   // ============================================
   // PROFILE SYNC EFFECT
@@ -951,7 +1028,7 @@ const CreatorDashboard = () => {
   // ============================================
 
   // Loading state with skeleton
-  if ((sessionLoading && !session) || (isLoadingDeals && !!creatorId && !brandDealsError)) {
+  if ((sessionLoading && !session) || ((isLoadingDeals || isLoadingServerDeals) && !!creatorId && !brandDealsError && normalizedBrandDeals.length === 0)) {
     return <EnhancedDashboardSkeleton />;
   }
 
@@ -1001,17 +1078,6 @@ const CreatorDashboard = () => {
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white" role="status" aria-label="Loading">
-        <div className="text-center">
-          <Loader2 className="mx-auto mb-3 h-10 w-10 animate-spin text-emerald-400" aria-hidden="true" />
-          <p>Loading your deals...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-[radial-gradient(circle_at_top,#1e293b_0%,#0f172a_45%,#020617_100%)] text-white">
@@ -1020,9 +1086,9 @@ const CreatorDashboard = () => {
         <main id="main-content" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           <header className="mb-6 flex flex-col gap-2">
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-emerald-300">Creator Armour</p>
-            {profile?.first_name && (
+            {activeProfile?.first_name && (
               <p className="text-sm text-white/50">
-                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {profile.first_name}
+                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {activeProfile.first_name}
               </p>
             )}
             <h1 className="text-3xl font-black tracking-tight sm:text-4xl">

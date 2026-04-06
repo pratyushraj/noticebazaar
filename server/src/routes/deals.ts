@@ -51,6 +51,57 @@ const inferRequiresShipping = (deal: any) => {
   return false;
 };
 
+const hasBrandRouteAccess = async (userId: string, role: string, userEmail?: string | null) => {
+  if (role === 'brand' || role === 'admin') return true;
+  if (!userId) return false;
+
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, business_name')
+      .eq('id', userId)
+      .maybeSingle();
+
+    const profileRole = String((profile as any)?.role || '').toLowerCase();
+    const hasBrandProfile = profileRole === 'brand' || !!String((profile as any)?.business_name || '').trim();
+    const normalizedEmail = String(userEmail || '').toLowerCase();
+    const isDemoBrand = normalizedEmail === 'brand-demo@noticebazaar.com';
+
+    return hasBrandProfile || isDemoBrand;
+  } catch {
+    return false;
+  }
+};
+
+const fetchDealForBrandAction = async (dealId: string) => {
+  const selectAttempts = [
+    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_amount, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_amount',
+  ];
+
+  let lastError: any = null;
+  for (const select of selectAttempts) {
+    const { data, error } = await supabase
+      .from('brand_deals')
+      .select(select)
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (!error) return data || null;
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      throw error;
+    }
+  }
+
+  if (lastError) throw lastError;
+  return null;
+};
+
 const notifyCreatorForDealEvent = async (
   template: Parameters<typeof getCreatorNotificationContent>[0],
   deal: any,
@@ -114,6 +165,24 @@ const notifyCreatorForDealEvent = async (
   } catch (error: any) {
     console.warn(`[Deals] Failed to notify creator for ${template}:`, error?.message || error);
   }
+};
+
+const canAccessDeal = async (deal: any, userId: string, role: string, userEmail?: string | null) => {
+  if (!deal || !userId) return false;
+  const normalizedEmail = String(userEmail || '').toLowerCase();
+  const dealBrandEmail = String(deal?.brand_email || '').toLowerCase();
+  const isCreatorOwner = String(deal?.creator_id || '') === String(userId);
+  const isBrandOwner =
+    String(deal?.brand_id || '') === String(userId) ||
+    (!!normalizedEmail && !!dealBrandEmail && normalizedEmail === dealBrandEmail);
+
+  if (isCreatorOwner || isBrandOwner || role === 'admin') return true;
+
+  if (role === 'brand') {
+    return hasBrandRouteAccess(userId, role, userEmail);
+  }
+
+  return false;
 };
 
 // Multer configuration for signed contract uploads (in-memory, PDF only, max 10MB)
@@ -227,6 +296,66 @@ router.post('/log-share', async (req: AuthenticatedRequest, res: Response) => {
       success: false,
       error: error.message || 'Internal server error'
     });
+  }
+});
+
+router.get('/mine', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const { data, error } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('creator_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return res.json({
+      success: true,
+      deals: Array.isArray(data) ? data : [],
+    });
+  } catch (error: any) {
+    console.error('[Deals] get mine error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+router.get('/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const role = String(req.user?.role || '').toLowerCase();
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const { data: deal, error } = await supabase
+      .from('brand_deals')
+      .select('*')
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const hasAccess = await canAccessDeal(deal, userId, role, userEmail);
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    return res.json({ success: true, deal });
+  } catch (error: any) {
+    console.error('[Deals] get deal error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
 
@@ -793,7 +922,8 @@ router.patch('/:dealId/shipping/update', authMiddleware, async (req: Authenticat
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
-    if (role !== 'brand' && role !== 'admin') {
+    const isBrandUser = await hasBrandRouteAccess(userId, role, userEmail);
+    if (!isBrandUser && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
 
@@ -1560,17 +1690,13 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
-    if (role !== 'brand' && role !== 'admin') {
+    const isBrandUser = await hasBrandRouteAccess(userId, role, userEmail);
+    if (!isBrandUser && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage')
-      .eq('id', dealId)
-      .maybeSingle();
-
-    if (dealError || !deal) {
+    const deal = await fetchDealForBrandAction(dealId);
+    if (!deal) {
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
@@ -1694,17 +1820,13 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     if (!userId) {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
-    if (role !== 'brand' && role !== 'admin') {
+    const isBrandUser = await hasBrandRouteAccess(userId, role, userEmail);
+    if (!isBrandUser && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required')
-      .eq('id', dealId)
-      .maybeSingle();
-
-    if (dealError || !deal) {
+    const deal = await fetchDealForBrandAction(dealId);
+    if (!deal) {
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
@@ -1730,11 +1852,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     const paymentReference = String(req.body?.paymentReference || req.body?.utrNumber || '').trim();
     const paymentProofUrl = String(req.body?.paymentProofUrl || '').trim() || null;
     const paymentNotes = String(req.body?.paymentNotes || '').trim() || null;
-    const paymentReceivedDateRaw = String(req.body?.paymentReceivedDate || '').trim();
-    const paymentReceivedDate = paymentReceivedDateRaw
-      ? new Date(paymentReceivedDateRaw).toISOString()
-      : new Date().toISOString();
-
     if (!paymentReference) {
       return res.status(400).json({ success: false, error: 'Payment reference is required before release.' });
     }
@@ -1743,7 +1860,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
     const fullUpdate: any = {
       status: 'PAYMENT_RELEASED',
       payment_released_at: now,
-      payment_received_date: paymentReceivedDate,
       utr_number: paymentReference,
       updated_at: now,
     };
@@ -1773,7 +1889,6 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       metadata: {
         released_at: now,
         payment_reference: paymentReference,
-        payment_received_date: paymentReceivedDate,
         payment_proof_url: paymentProofUrl,
         payment_notes: paymentNotes,
       },
@@ -1796,7 +1911,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       status: 'PAYMENT_RELEASED',
     }, {
       payment_reference: paymentReference,
-      payment_received_date: paymentReceivedDate,
+      payment_released_at: now,
       payment_proof_url: paymentProofUrl,
       payment_notes: paymentNotes,
     });
@@ -1805,7 +1920,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       success: true,
       message: 'Payment released.',
       payment_reference: paymentReference,
-      payment_received_date: paymentReceivedDate,
+      payment_released_at: now,
       payment_proof_url: paymentProofUrl,
       payment_notes: paymentNotes,
     });
@@ -1830,23 +1945,19 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
-    if (role !== 'brand' && role !== 'admin') {
+    const isBrandUser = await hasBrandRouteAccess(userId, role, userEmail);
+    if (!isBrandUser && role !== 'admin') {
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, status, brand_id, brand_email, collab_type, deal_type, deal_amount, shipping_required, shipping_status')
-      .eq('id', dealId)
-      .maybeSingle();
-
-    if (dealError || !deal) {
+    const deal = await fetchDealForBrandAction(dealId);
+    if (!deal) {
       return res.status(404).json({ success: false, error: 'Deal not found' });
     }
 
-    const dealBrandEmail = String(deal.brand_email || '').toLowerCase() || null;
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
     const hasAccess =
-      String(deal.brand_id || '') === String(userId) ||
+      String((deal as any).brand_id || '') === String(userId) ||
       (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail) ||
       role === 'admin';
 
@@ -1854,7 +1965,7 @@ router.patch('/:id/mark-complete', authMiddleware, async (req: AuthenticatedRequ
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    const normalizedCurrent = String(deal.status || '').trim().toUpperCase().replaceAll(' ', '_');
+    const normalizedCurrent = String((deal as any).status || '').trim().toUpperCase().replaceAll(' ', '_');
     if (normalizedCurrent === 'COMPLETED') {
       return res.json({ success: true, alreadyCompleted: true, message: 'Deal already marked complete.' });
     }

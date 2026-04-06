@@ -16,6 +16,7 @@ import { useDealActionLogs } from '@/lib/hooks/useActionLogs';
 import { useCreateIssue, useAddIssueHistory } from '@/lib/hooks/useIssues';
 import { useCreateActionLog } from '@/lib/hooks/useActionLogs';
 import { useSession } from '@/contexts/SessionContext';
+import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { downloadFile, getFilenameFromUrl } from '@/lib/utils/fileDownload';
 import { downloadContractSecure } from '@/lib/utils/secureContractDownload';
 import { trackEvent } from '@/lib/utils/analytics';
@@ -36,6 +37,8 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { generateContractSummaryPDF, extractBrandContactInfo, ContractSummaryData } from '@/lib/utils/contractSummaryPDF';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 // Lazy load heavy components
 const ContractPreviewModal = lazy(() => import('@/components/deals/ContractPreviewModal').then(m => ({ default: m.ContractPreviewModal })));
@@ -177,6 +180,7 @@ function DealDetailPageContent() {
   const navigate = useNavigate();
   const { dealId } = useParams<{ dealId: string }>();
   const { profile, session, user } = useSession();
+  const updateProfileMutation = useUpdateProfile();
 
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
@@ -196,6 +200,10 @@ function DealDetailPageContent() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [reportIssueMessage, setReportIssueMessage] = useState('');
   const [showInvoiceGenerator, setShowInvoiceGenerator] = useState(false);
+  const [paymentUpiInput, setPaymentUpiInput] = useState(profile?.bank_upi || '');
+  const [savedUpiValue, setSavedUpiValue] = useState(profile?.bank_upi || '');
+  const [isSavingPaymentUpi, setIsSavingPaymentUpi] = useState(false);
+  const [isConfirmingPaymentReceived, setIsConfirmingPaymentReceived] = useState(false);
 
   // Deal progress update
   const updateDealProgress = useUpdateDealProgress();
@@ -212,6 +220,7 @@ function DealDetailPageContent() {
   const [isEditingBrandPhone, setIsEditingBrandPhone] = useState(false);
   const [brandPhoneInput, setBrandPhoneInput] = useState('+91 ');
   const updateBrandDealMutation = useUpdateBrandDeal();
+  const creatorActorId = profile?.id || session?.user?.id || user?.id;
 
   // PDF generation state
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -1136,9 +1145,9 @@ function DealDetailPageContent() {
       && !(deal as any)?.delivery_address;
     const isPaidDrafting = dealTypeLower !== 'barter' && statusLower === 'drafting';
 
-    if (deal?.payment_received_date) return 'COMPLETED';
+    if (statusLower.includes('completed') || statusLower.includes('payment_received')) return 'COMPLETED';
     if (statusLower.includes('paid') || statusLower.includes('payment_released') || statusLower.includes('payment sent')) return 'PAID';
-    if (statusLower.includes('payment pending') || (approvalStatus === 'approved' && !deal?.payment_received_date)) return approvalStatus === 'approved' ? 'APPROVED' : 'PAYMENT_PENDING';
+    if (statusLower.includes('payment pending') || approvalStatus === 'approved') return approvalStatus === 'approved' ? 'APPROVED' : 'PAYMENT_PENDING';
     if (approvalStatus === 'changes_requested') return 'REVISION_REQUESTED';
     if (deal?.content_submitted_at && approvalStatus !== 'approved') return 'CONTENT_SUBMITTED';
     if (isPaidDrafting) return 'CONTENT_IN_PROGRESS';
@@ -1252,8 +1261,11 @@ function DealDetailPageContent() {
         return {
           title: 'Confirm payment received',
           explanation: 'Tap this only after the money reaches your bank account.',
-          actionLabel: 'Confirm payment',
-          action: () => dealIdValue && navigate(`/payment/${dealIdValue}`),
+          actionLabel: 'Open payment confirmation',
+          action: () => {
+            const target = document.getElementById('deal-payment-confirmation');
+            target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          },
         };
       case 'COMPLETED':
         return {
@@ -1330,6 +1342,58 @@ function DealDetailPageContent() {
         return [];
     }
   }, [guidedDealState]);
+
+  useEffect(() => {
+    setSavedUpiValue(profile?.bank_upi || '');
+    setPaymentUpiInput(profile?.bank_upi || '');
+  }, [profile?.bank_upi]);
+
+  const handleSavePaymentUpi = useCallback(async () => {
+    if (!creatorActorId) return;
+    const normalizedUpi = paymentUpiInput.trim().toLowerCase();
+    if (!/^[a-z0-9.\-_]{2,}@[a-z]{2,}$/i.test(normalizedUpi)) {
+      toast.error('Enter a valid UPI ID');
+      return;
+    }
+
+    try {
+      setIsSavingPaymentUpi(true);
+      await updateProfileMutation.mutateAsync({
+        id: creatorActorId,
+        bank_upi: normalizedUpi,
+      } as any);
+      setSavedUpiValue(normalizedUpi);
+      toast.success('UPI saved');
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not save your UPI ID');
+    } finally {
+      setIsSavingPaymentUpi(false);
+    }
+  }, [creatorActorId, paymentUpiInput, updateProfileMutation]);
+
+  const handleConfirmPaymentReceivedInline = useCallback(async () => {
+    if (!deal?.id || !creatorActorId) return;
+    if (!String(savedUpiValue || paymentUpiInput || '').trim()) {
+      toast.error('Save your UPI first');
+      return;
+    }
+
+    try {
+      setIsConfirmingPaymentReceived(true);
+      await updateBrandDealMutation.mutateAsync({
+        id: deal.id,
+        creator_id: creatorActorId,
+        status: 'Payment Received',
+        payment_received_date: new Date().toISOString(),
+      } as any);
+      await refreshAll();
+      toast.success('Payment confirmed');
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not confirm payment');
+    } finally {
+      setIsConfirmingPaymentReceived(false);
+    }
+  }, [creatorActorId, deal?.id, paymentUpiInput, refreshAll, savedUpiValue, updateBrandDealMutation]);
 
   const showContentSubmissionPanel = guidedDealState === 'CONTRACT_SIGNED'
     || guidedDealState === 'CONTENT_IN_PROGRESS'
@@ -2059,6 +2123,63 @@ Best regards`;
             )}
           </div>
         </div>
+
+        {guidedDealState === 'PAID' && (
+          <div id="deal-payment-confirmation" className="bg-emerald-500/10 backdrop-blur-xl border border-emerald-400/20 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">
+            <div className="flex flex-col gap-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-300">Payment sent by brand</p>
+                <h2 className="mt-2 text-xl font-bold text-white">Confirm it from this deal</h2>
+                <p className="mt-2 text-sm text-white/70">
+                  Check your bank or UPI app first. Once the money is actually there, save your UPI here if needed and confirm payment received.
+                </p>
+              </div>
+
+              {!savedUpiValue && (
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <Label htmlFor="deal-payment-upi" className="text-xs uppercase tracking-[0.18em] text-white/60">
+                    UPI ID
+                  </Label>
+                  <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                    <Input
+                      id="deal-payment-upi"
+                      value={paymentUpiInput}
+                      onChange={(event) => setPaymentUpiInput(event.target.value)}
+                      placeholder="name@oksbi"
+                      className="border-white/15 bg-white/5 text-white placeholder:text-white/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSavePaymentUpi}
+                      disabled={isSavingPaymentUpi}
+                      className="h-11 shrink-0 rounded-xl bg-white text-slate-900 px-4 text-sm font-semibold hover:bg-white/90 disabled:opacity-60"
+                    >
+                      {isSavingPaymentUpi ? 'Saving...' : 'Save UPI'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={handleConfirmPaymentReceivedInline}
+                  disabled={isConfirmingPaymentReceived || (!savedUpiValue && !String(paymentUpiInput || '').trim())}
+                  className="inline-flex items-center justify-center rounded-xl bg-emerald-400 px-5 py-3 h-12 w-full sm:w-auto text-base sm:text-sm font-bold text-slate-950 transition hover:bg-emerald-300 active:scale-[0.98] disabled:opacity-60"
+                >
+                  {isConfirmingPaymentReceived ? 'Confirming...' : 'Confirm payment received'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deal?.id && navigate(`/payment/${deal.id}`)}
+                  className="inline-flex items-center justify-center rounded-xl bg-white/10 border border-white/20 px-5 py-3 h-12 w-full sm:w-auto text-base sm:text-sm font-bold text-white transition hover:bg-white/20 active:scale-[0.98]"
+                >
+                  Open payment screen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showContentSubmissionPanel && (
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 md:p-6 shadow-lg shadow-black/20">

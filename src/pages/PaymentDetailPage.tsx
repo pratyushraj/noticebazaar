@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, AlertCircle, FileText, Edit, Trash2, Eye, Loader2, Download, Upload, X, MessageSquare, Info } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { trackEvent } from '@/lib/utils/analytics';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import { extractTaxInfo, getTaxDisplayMessage, calculateFinalAmount } from '@/lib/utils/taxExtraction';
 import { calculatePaymentRiskLevel, getPaymentRiskConfig, getPaymentRiskTooltip } from '@/lib/utils/paymentRisk';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,12 +28,73 @@ import { Label } from '@/components/ui/label';
 
 const PaymentDetailPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { dealId } = useParams<{ dealId: string }>();
-  const { profile } = useSession();
+  const { profile, user, session, isAuthInitializing } = useSession();
   const updateProfileMutation = useUpdateProfile();
+  const [authFallbackUserId, setAuthFallbackUserId] = useState<string | null>(null);
+  const [authFallbackAccessToken, setAuthFallbackAccessToken] = useState<string | null>(null);
+  const [serverDealFallback, setServerDealFallback] = useState<any | null>(null);
+  const [isLoadingServerDeal, setIsLoadingServerDeal] = useState(false);
+  const routeDeal = (location.state as { deal?: any } | null)?.deal || null;
+  const actorId = profile?.id || user?.id || session?.user?.id || authFallbackUserId;
+  const accessToken = session?.access_token || authFallbackAccessToken;
+
+  useEffect(() => {
+    if (actorId) return;
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      const fallbackId = data.session?.user?.id || null;
+      const fallbackToken = data.session?.access_token || null;
+      if (fallbackId) {
+        setAuthFallbackUserId(fallbackId);
+      }
+      if (fallbackToken) {
+        setAuthFallbackAccessToken(fallbackToken);
+      }
+    }).catch(() => {
+      // Best-effort only.
+    });
+    return () => {
+      active = false;
+    };
+  }, [actorId]);
+
+  useEffect(() => {
+    if (!dealId || serverDealFallback || !accessToken) return;
+    let cancelled = false;
+
+    const loadDealFallback = async () => {
+      try {
+        setIsLoadingServerDeal(true);
+        const response = await fetch(`${getApiBaseUrl()}/api/deals/${dealId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => null);
+        if (!cancelled && payload?.success && payload?.deal) {
+          setServerDealFallback(payload.deal);
+        }
+      } catch {
+        // Best-effort only.
+      } finally {
+        if (!cancelled) {
+          setIsLoadingServerDeal(false);
+        }
+      }
+    };
+
+    void loadDealFallback();
+    return () => {
+      cancelled = true;
+    };
+  }, [dealId, serverDealFallback, accessToken]);
 
   // Fetch the deal data (paymentId is actually the dealId)
-  const { data: brandDeal, isLoading, error } = useBrandDealById(dealId, profile?.id);
+  const { data: brandDeal, isLoading, error } = useBrandDealById(dealId, actorId);
+  const resolvedDeal = routeDeal || brandDeal || serverDealFallback;
   const updateDealMutation = useUpdateBrandDeal();
 
   // State for optional enhancements
@@ -43,6 +105,7 @@ const PaymentDetailPage = () => {
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [savedUpiValue, setSavedUpiValue] = useState(profile?.bank_upi || '');
   const [pendingUpi, setPendingUpi] = useState(profile?.bank_upi || '');
   const [isSavingUpi, setIsSavingUpi] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,18 +123,24 @@ const PaymentDetailPage = () => {
 
   // Transform deal data to payment format
   const paymentData = useMemo(() => {
-    if (!brandDeal) return null;
+    if (!resolvedDeal) return null;
 
-    const amount = brandDeal.deal_amount || 0;
-    const paymentReceivedDate = brandDeal.payment_received_date ? new Date(brandDeal.payment_received_date) : null;
-    const paymentExpectedDate = brandDeal.payment_expected_date ? new Date(brandDeal.payment_expected_date) : null;
+    const amount = resolvedDeal.deal_amount || 0;
+    const paymentReceivedDate = resolvedDeal.payment_received_date ? new Date(resolvedDeal.payment_received_date) : null;
+    const paymentExpectedDate = resolvedDeal.payment_expected_date ? new Date(resolvedDeal.payment_expected_date) : null;
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
+    const normalizedDealStatus = String(resolvedDeal.status || '').trim().toUpperCase().replaceAll(' ', '_');
+    const creatorConfirmedPayment = ['PAYMENT_RECEIVED', 'PAYMENT_CONFIRMED', 'COMPLETED'].includes(normalizedDealStatus);
+    const brandMarkedPaymentSent = normalizedDealStatus === 'PAYMENT_RELEASED';
+
     // Determine status
-    let status: 'received' | 'pending' | 'overdue' = 'pending';
-    if (paymentReceivedDate) {
+    let status: 'received' | 'pending' | 'overdue' | 'sent' = 'pending';
+    if (creatorConfirmedPayment) {
       status = 'received';
+    } else if (brandMarkedPaymentSent) {
+      status = 'sent';
     } else if (paymentExpectedDate && paymentExpectedDate < now) {
       status = 'overdue';
     }
@@ -94,7 +163,7 @@ const PaymentDetailPage = () => {
     }
 
     // Extract tax information from contract text
-    const contractText = brandDeal.deliverables || '';
+    const contractText = resolvedDeal.deliverables || '';
     const taxInfo = extractTaxInfo(contractText);
     const taxDisplay = getTaxDisplayMessage(taxInfo);
     
@@ -107,7 +176,7 @@ const PaymentDetailPage = () => {
     );
 
     // Generate or extract invoice number
-    let invoiceNumber = (brandDeal as any).invoice_number;
+    let invoiceNumber = (resolvedDeal as any).invoice_number;
     if (!invoiceNumber) {
       const invoicePatterns = [
         /invoice\s*(?:number|#|no\.?|id)?\s*:?\s*([A-Z0-9\-]+)/i,
@@ -132,7 +201,7 @@ const PaymentDetailPage = () => {
         invoiceNumber = extractedInvoice;
       } else {
         const year = new Date().getFullYear();
-        const shortId = brandDeal.id.substring(0, 8).toUpperCase();
+        const shortId = resolvedDeal.id.substring(0, 8).toUpperCase();
         const random4 = Math.floor(1000 + Math.random() * 9000);
         invoiceNumber = `INV-${year}-${shortId}-${random4}`;
       }
@@ -150,31 +219,33 @@ const PaymentDetailPage = () => {
     }
 
     return {
-      id: brandDeal.id,
+      id: resolvedDeal.id,
       amount,
       netAmount: finalAmountCalc.finalAmount,
       tax: taxInfo.gstRate ? (amount * taxInfo.gstRate / 100) : 0,
       status,
       riskLevel: finalRiskLevel,
       daysInfo,
-      brandName: brandDeal.brand_name || 'Unknown Brand',
-      contractName: `${brandDeal.brand_name} Campaign`,
-      platform: brandDeal.platform || 'Multiple',
+      brandName: resolvedDeal.brand_name || 'Unknown Brand',
+      contractName: `${resolvedDeal.brand_name} Campaign`,
+      platform: resolvedDeal.platform || 'Multiple',
       paymentMethod: 'Bank Transfer', // Default, could be from deal data
-      category: brandDeal.platform || 'Brand Partnership',
+      category: resolvedDeal.platform || 'Brand Partnership',
       invoiceNumber,
-      invoiceFileUrl: (brandDeal as any).invoice_file_url,
-      createdDate: brandDeal.created_at ? new Date(brandDeal.created_at) : new Date(),
+      invoiceFileUrl: (resolvedDeal as any).invoice_file_url,
+      createdDate: resolvedDeal.created_at ? new Date(resolvedDeal.created_at) : new Date(),
       expectedDate: paymentExpectedDate,
       receivedDate: paymentReceivedDate,
       receivedAt: paymentReceivedDate, // New field for timeline
-      utrNumber: brandDeal.utr_number,
+      brandMarkedPaymentSent,
+      creatorConfirmedPayment,
+      utrNumber: resolvedDeal.utr_number,
       taxInfo: taxDisplay,
       taxDetails: taxInfo,
-      notes: (brandDeal as any).payment_notes || '',
-      proofOfPaymentUrl: (brandDeal as any).proof_of_payment_url || null,
+      notes: (resolvedDeal as any).payment_notes || '',
+      proofOfPaymentUrl: (resolvedDeal as any).proof_of_payment_url || null,
     };
-  }, [brandDeal]);
+  }, [resolvedDeal]);
 
   // Initialize notes and proof of payment URL when data loads
   useEffect(() => {
@@ -185,16 +256,18 @@ const PaymentDetailPage = () => {
   }, [paymentData]);
 
   useEffect(() => {
+    setSavedUpiValue(profile?.bank_upi || '');
     setPendingUpi(profile?.bank_upi || '');
   }, [profile?.bank_upi]);
 
-  const hasSavedUpi = Boolean(String(profile?.bank_upi || '').trim());
+  const hasSavedUpi = Boolean(String(savedUpiValue || profile?.bank_upi || '').trim());
   const paymentProgressSteps = useMemo(() => {
     const status = paymentData?.status;
     const isReceived = status === 'received';
+    const isSent = status === 'sent';
     return [
-      { label: 'Waiting', complete: Boolean(paymentData && !isReceived), current: status === 'pending' || status === 'overdue' },
-      { label: 'Sent', complete: isReceived, current: status === 'pending' || status === 'overdue' },
+      { label: 'Waiting', complete: Boolean(paymentData && !isReceived && !isSent), current: status === 'pending' || status === 'overdue' },
+      { label: 'Sent', complete: isSent || isReceived, current: isSent },
       { label: 'Confirmed', complete: isReceived, current: false },
     ];
   }, [paymentData]);
@@ -229,7 +302,7 @@ const PaymentDetailPage = () => {
   };
 
   const handleSaveUpi = async () => {
-    if (!profile?.id) return;
+    if (!actorId) return;
     const normalizedUpi = pendingUpi.trim().toLowerCase();
     if (!/^[a-z0-9.\-_]{2,}@[a-z]{2,}$/i.test(normalizedUpi)) {
       toast.error('Enter a valid UPI ID');
@@ -239,9 +312,10 @@ const PaymentDetailPage = () => {
     try {
       setIsSavingUpi(true);
       await updateProfileMutation.mutateAsync({
-        id: profile.id,
+        id: actorId,
         bank_upi: normalizedUpi,
       } as any);
+      setSavedUpiValue(normalizedUpi);
       toast.success('UPI saved');
     } catch (error: any) {
       toast.error(error?.message || 'Could not save your UPI ID');
@@ -252,7 +326,7 @@ const PaymentDetailPage = () => {
 
   // Confirm and mark as received
   const handleConfirmMarkAsReceived = async () => {
-    if (!brandDeal || !profile?.id || !paymentData) {
+    if (!resolvedDeal || !actorId || !paymentData) {
       toast.error('Cannot mark payment as received: Missing data');
       setShowConfirmModal(false);
       return;
@@ -260,11 +334,11 @@ const PaymentDetailPage = () => {
 
     // Store previous state for undo
     setPreviousPaymentState({
-      status: brandDeal.status || 'Payment Pending',
-      payment_received_date: brandDeal.payment_received_date || null,
-      payment_received_amount: (brandDeal as any).payment_received_amount || null,
-      payment_proof_url: (brandDeal as any).proof_of_payment_url || null,
-      utr_number: brandDeal.utr_number || null,
+      status: resolvedDeal.status || 'Payment Pending',
+      payment_received_date: resolvedDeal.payment_received_date || null,
+      payment_received_amount: (resolvedDeal as any).payment_received_amount || null,
+      payment_proof_url: (resolvedDeal as any).proof_of_payment_url || null,
+      utr_number: resolvedDeal.utr_number || null,
     });
 
     setShowConfirmModal(false);
@@ -273,8 +347,8 @@ const PaymentDetailPage = () => {
       const now = new Date().toISOString();
       
       await updateDealMutation.mutateAsync({
-        id: brandDeal.id,
-        creator_id: profile.id,
+        id: resolvedDeal.id,
+        creator_id: actorId,
         status: 'Payment Received',
         payment_received_date: now,
         // Note: payment_received_amount column doesn't exist - amount is stored in deal_amount
@@ -285,7 +359,7 @@ const PaymentDetailPage = () => {
 
       void trackEvent('payment_confirmed', {
         creator_id: profile.id,
-        deal_id: brandDeal.id,
+        deal_id: resolvedDeal.id,
         amount: paymentData.amount,
       });
 
@@ -316,7 +390,7 @@ const PaymentDetailPage = () => {
 
   // Handle undo payment
   const handleUndoPayment = async () => {
-    if (!brandDeal || !profile?.id || !previousPaymentState) {
+    if (!resolvedDeal || !actorId || !previousPaymentState) {
       toast.error('Cannot undo: Previous state not available');
       return;
     }
@@ -331,8 +405,8 @@ const PaymentDetailPage = () => {
 
     try {
       await updateDealMutation.mutateAsync({
-        id: brandDeal.id,
-        creator_id: profile.id,
+        id: resolvedDeal.id,
+        creator_id: actorId,
         status: previousPaymentState.status,
         payment_received_date: previousPaymentState.payment_received_date,
         // Note: payment_received_amount column doesn't exist - amount is stored in deal_amount
@@ -359,7 +433,7 @@ const PaymentDetailPage = () => {
     }
   };
 
-  if (isLoading) {
+  if ((isAuthInitializing && !actorId && !serverDealFallback) || ((isLoading || isLoadingServerDeal) && !serverDealFallback)) {
     return (
       <>
         <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
@@ -368,7 +442,7 @@ const PaymentDetailPage = () => {
     );
   }
 
-  if (error || !paymentData) {
+  if ((error && !serverDealFallback) || !paymentData) {
     return (
       <div className="nb-screen-height bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 text-white flex items-center justify-center">
         <div className="text-center">
@@ -414,13 +488,13 @@ const PaymentDetailPage = () => {
 
   // Handle proof of payment upload
   const handleUploadProof = async () => {
-    if (!proofOfPaymentFile || !profile?.id || !paymentData) return;
+    if (!proofOfPaymentFile || !actorId || !paymentData) return;
 
     setIsUploadingProof(true);
     try {
       const fileExtension = proofOfPaymentFile.name.split('.').pop();
       const sanitizedBrandName = paymentData.brandName.trim().replace(/\s/g, '_').replace(/[^a-zA-Z0-9_.-]/g, '');
-      const filePath = `${profile.id}/payments/${sanitizedBrandName}-proof-${Date.now()}.${fileExtension}`;
+      const filePath = `${actorId}/payments/${sanitizedBrandName}-proof-${Date.now()}.${fileExtension}`;
 
       // Delete old proof if exists
       if (proofOfPaymentUrl) {
@@ -454,7 +528,7 @@ const PaymentDetailPage = () => {
       // Update deal with proof of payment URL
       await updateDealMutation.mutateAsync({
         id: paymentData.id,
-        creator_id: profile.id,
+        creator_id: actorId,
         proof_of_payment_url: publicUrl,
       } as any);
 
@@ -477,13 +551,13 @@ const PaymentDetailPage = () => {
 
   // Handle notes save
   const handleSaveNotes = async () => {
-    if (!profile?.id || !paymentData) return;
+    if (!actorId || !paymentData) return;
 
     setIsSavingNotes(true);
     try {
       await updateDealMutation.mutateAsync({
         id: paymentData.id,
-        creator_id: profile.id,
+        creator_id: actorId,
         payment_notes: notes.trim() || null,
       } as any);
 
@@ -536,6 +610,10 @@ const PaymentDetailPage = () => {
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
                     Received
                   </span>
+                ) : paymentData.status === 'sent' ? (
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    Sent by brand
+                  </span>
                 ) : paymentData.status === 'overdue' ? (
                   <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30">
                     Overdue
@@ -551,6 +629,8 @@ const PaymentDetailPage = () => {
                 <div className="text-sm text-white/70">
                 {paymentData.status === 'received' && paymentData.receivedAt ? (
                   `Payment received on ${paymentData.receivedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                ) : paymentData.status === 'sent' ? (
+                  'Brand says payment has been sent. Confirm once it reaches your account.'
                 ) : paymentData.status === 'overdue' && paymentData.expectedDate ? (
                   `Payment overdue by ${Math.abs(Math.ceil((new Date().getTime() - paymentData.expectedDate.getTime()) / (1000 * 60 * 60 * 24)))} days`
                 ) : paymentData.expectedDate ? (
@@ -610,6 +690,10 @@ const PaymentDetailPage = () => {
               <p className="mt-2 text-sm text-white/70">
                 {paymentData.status === 'received'
                   ? 'You already confirmed this payment. Keep the receipt here if you need it later.'
+                  : paymentData.status === 'sent'
+                    ? hasSavedUpi
+                      ? 'The brand marked payment as sent. Confirm it here once it reaches your account.'
+                      : 'Save your UPI now so you can confirm this payment as soon as it reaches your account.'
                   : hasSavedUpi
                     ? 'Wait for the money to reach your bank account, then confirm it here.'
                     : 'Save your UPI now so you can confirm payment in one tap once it arrives.'}
@@ -628,7 +712,7 @@ const PaymentDetailPage = () => {
           </div>
         </motion.div>
 
-        {!paymentData.receivedAt && !hasSavedUpi && (
+        {paymentData.status !== 'received' && !hasSavedUpi && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -674,7 +758,7 @@ const PaymentDetailPage = () => {
         {/* SECTION 2: Primary Action Bar (Sticky) */}
         <div className="sticky top-[73px] z-40 bg-slate-950/95 backdrop-blur-xl border-b border-white/10 -mx-4 px-4 py-3 mb-6 safe-area-top">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row gap-3">
-            {paymentData.status === 'pending' ? (
+            {paymentData.status === 'pending' || paymentData.status === 'sent' ? (
               <>
                 <motion.button
                   onClick={handleMarkAsReceived}
@@ -972,11 +1056,11 @@ const PaymentDetailPage = () => {
                     fileInputRef.current.value = '';
                   }
                   // Update deal to remove proof URL
-                  if (brandDeal && profile?.id) {
+                  if (resolvedDeal && actorId) {
                     try {
                       await updateDealMutation.mutateAsync({
-                        id: brandDeal.id,
-                        creator_id: profile.id,
+                        id: resolvedDeal.id,
+                        creator_id: actorId,
                         proof_of_payment_url: null,
                       });
                       toast.success('Proof of payment removed');
