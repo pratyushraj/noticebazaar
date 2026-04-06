@@ -197,6 +197,13 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   // Real-time subscription
   useEffect(() => {
     if (!userId || !enabled) return;
+    const isLocalDev =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+    if (isLocalDev) {
+      return;
+    }
 
     const channel = supabase
       .channel(`notifications:${userId}`)
@@ -230,16 +237,10 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
         }
       )
       .subscribe((status) => {
-        const isLocalDev =
-          typeof window !== 'undefined' &&
-          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
         if (status === 'SUBSCRIBED') {
           console.log('[Notifications] Real-time subscription active');
         } else if (status === 'CHANNEL_ERROR') {
-          if (!isLocalDev) {
-            console.warn('[Notifications] Real-time subscription error');
-          }
+          console.warn('[Notifications] Real-time subscription error');
         }
       });
 
