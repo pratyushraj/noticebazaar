@@ -92,8 +92,15 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [loaderTimedOut, setLoaderTimedOut] = useState(false);
+  const requestedRole = inferRequestedRole(location.pathname, allowedRoles, (user?.user_metadata || {}) as Record<string, unknown>);
+  const metadataRole = typeof user?.user_metadata?.role === 'string'
+    ? user.user_metadata.role
+    : typeof user?.user_metadata?.account_mode === 'string'
+      ? user.user_metadata.account_mode
+      : null;
+  const canBootstrapBrandWithoutProfile = !!session && !profile && requestedRole === 'brand' && metadataRole === 'brand';
 
-  const isLoading = authStatus === 'loading' || isCreatingProfile;
+  const isLoading = authStatus === 'loading' || (isCreatingProfile && !canBootstrapBrandWithoutProfile);
 
   // Loader timeout — give user an escape hatch after 8s
   useEffect(() => {
@@ -109,6 +116,17 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     setIsCreatingProfile(true);
     let attempt = 0;
     const requestedRole = inferRequestedRole(location.pathname, allowedRoles, (user.user_metadata || {}) as Record<string, unknown>);
+    const metadataRole = typeof user.user_metadata?.role === 'string'
+      ? user.user_metadata.role
+      : typeof user.user_metadata?.account_mode === 'string'
+        ? user.user_metadata.account_mode
+        : null;
+
+    if (requestedRole === 'brand' && metadataRole === 'brand') {
+      refetchProfile?.();
+      setIsCreatingProfile(false);
+      return;
+    }
 
     const tryGetProfile = async () => {
       if (attempt >= MAX_PROFILE_RETRIES) {
@@ -210,6 +228,9 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
   // Session but no profile — show error
   if (session && !profile && user) {
+    if (canBootstrapBrandWithoutProfile) {
+      return <>{children}</>;
+    }
     return (
       <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-4">
         <div className="text-center max-w-md">

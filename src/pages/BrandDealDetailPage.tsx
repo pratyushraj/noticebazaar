@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { useBrandDealById } from '@/lib/hooks/useBrandDeals';
 import { getApiBaseUrl } from '@/lib/utils/api';
+import { supabase } from '@/integrations/supabase/client';
+import { BrandDeal } from '@/types';
 import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,21 +20,104 @@ import { Label } from '@/components/ui/label';
 const BrandDealDetailPage: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
-  const { profile, session } = useSession();
+  const { session } = useSession();
 
-  const { data: deal, isLoading, refetch } = useBrandDealById(dealId, profile?.id, 'brand');
+  const [deal, setDeal] = useState<BrandDeal | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [brandFeedback, setBrandFeedback] = useState('');
   const [paymentReference, setPaymentReference] = useState('');
   const [paymentNotes, setPaymentNotes] = useState('');
   const [isReviewingContent, setIsReviewingContent] = useState(false);
   const [isReleasingPayment, setIsReleasingPayment] = useState(false);
+  const [loggedContentLink, setLoggedContentLink] = useState('');
+  const [loggedContentNotes, setLoggedContentNotes] = useState('');
+
+  const loadDeal = async () => {
+    if (!dealId || !session?.access_token) {
+      setDeal(null);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/deals`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      const json = await response.json().catch(() => ({}));
+
+      if (!response.ok || !json?.success) {
+        console.error('[BrandDealDetailPage] Failed to fetch deals:', json);
+        setDeal(null);
+        return;
+      }
+
+      const matchedDeal = ((json.deals as BrandDeal[] | undefined) || []).find(
+        (item) => String(item?.id || '') === String(dealId)
+      ) || null;
+
+      setDeal(matchedDeal);
+    } catch (error) {
+      console.error('[BrandDealDetailPage] Failed to fetch deal:', error);
+      setDeal(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadDeal();
+  }, [dealId, session?.access_token]);
 
   const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
   const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
   const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !deal?.payment_received_date;
-  const contentLink = String((deal as any)?.content_submission_url || '').trim();
-  const contentNotes = String((deal as any)?.content_notes || '').trim();
+  const directContentLink = String((deal as any)?.content_submission_url || (deal as any)?.content_url || '').trim();
+  const directContentNotes = String((deal as any)?.content_notes || '').trim();
+  const contentLink = directContentLink || loggedContentLink;
+  const contentNotes = directContentNotes || loggedContentNotes;
   const brandApprovalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLoggedContent = async () => {
+      if (!deal?.id || directContentLink) {
+        setLoggedContentLink('');
+        setLoggedContentNotes('');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('deal_action_logs')
+        .select('event, metadata, created_at')
+        .eq('deal_id', deal.id)
+        .in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED'])
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (cancelled || error || !data?.length) return;
+
+      const latest = data[0] as any;
+      const metadata = latest?.metadata || {};
+      const links = Array.isArray(metadata?.content_links) ? metadata.content_links : [];
+      const fallbackLink = String(metadata?.content_url || links[0] || '').trim();
+      const fallbackNotes = String(metadata?.notes || '').trim();
+
+      if (!cancelled) {
+        setLoggedContentLink(fallbackLink);
+        setLoggedContentNotes(fallbackNotes);
+      }
+    };
+
+    void loadLoggedContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deal?.id, directContentLink]);
 
   const patchDeal = async (path: string, body?: Record<string, unknown>) => {
     const token = session?.access_token;
@@ -72,7 +156,7 @@ const BrandDealDetailPage: React.FC = () => {
       if (status === 'approved') {
         setBrandFeedback('');
       }
-      await refetch();
+      await loadDeal();
     } catch (error: any) {
       toast.error(error?.message || 'Could not update content review.');
     } finally {
@@ -96,7 +180,7 @@ const BrandDealDetailPage: React.FC = () => {
       toast.success('Payment marked as sent.');
       setPaymentReference('');
       setPaymentNotes('');
-      await refetch();
+      await loadDeal();
     } catch (error: any) {
       toast.error(error?.message || 'Could not mark payment as sent.');
     } finally {

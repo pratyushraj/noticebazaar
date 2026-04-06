@@ -76,6 +76,23 @@ export function getApiBaseUrl(): string {
   // Cleanup: No trailing slashes
   let cleanedUrl = (apiUrl || '').replace(/\/$/, '');
 
+  // Local dev safety: keep frontend and API on the same hostname family.
+  // Mixing 127.0.0.1 and localhost causes flaky local QA behavior in some browsers/tooling.
+  if (typeof window !== 'undefined' && localhostPattern.test(cleanedUrl)) {
+    const frontendHost = window.location.hostname.toLowerCase();
+    if (frontendHost === '127.0.0.1' || frontendHost === 'localhost') {
+      try {
+        const parsed = new URL(cleanedUrl);
+        if (parsed.hostname !== frontendHost) {
+          parsed.hostname = frontendHost;
+          cleanedUrl = parsed.toString().replace(/\/$/, '');
+        }
+      } catch {
+        // Ignore invalid URL parsing and keep the original cleanedUrl.
+      }
+    }
+  }
+
   // Production safety: never point to localhost when the app is on a public domain.
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();

@@ -815,11 +815,13 @@ export const useBrandDealById = (dealId: string | undefined, userId: string | un
       if (error) {
         const isMissingTableError =
           error.code === 'PGRST116' ||
+          (error as any).status === 406 ||
           error.code === '42P01' ||
           (error as any).status === 404 ||
           error.message?.includes('does not exist') ||
           error.message?.includes('relation') ||
-          error.message?.includes('not found');
+          error.message?.includes('not found') ||
+          error.message?.includes('0 rows');
 
         if (isMissingTableError) {
           const fallback = await (supabase

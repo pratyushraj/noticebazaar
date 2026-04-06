@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { supabase } from '@/integrations/supabase/client';
 import { BrandDeal } from '@/types';
 import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import BrandDealsStats from '@/components/creator-contracts/BrandDealsStats';
@@ -9,40 +8,57 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 type BrandTab = 'active' | 'all';
 
 const BrandDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { profile } = useSession();
+  const { profile, user, session } = useSession();
   const [tab, setTab] = useState<BrandTab>('active');
   const [deals, setDeals] = useState<BrandDeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const isBrandUser = profile?.role === 'brand';
+  const metadataRole = typeof user?.user_metadata?.role === 'string'
+    ? user.user_metadata.role
+    : typeof user?.user_metadata?.account_mode === 'string'
+      ? user.user_metadata.account_mode
+      : '';
+  const isBrandUser = profile?.role === 'brand' || metadataRole === 'brand';
 
   useEffect(() => {
-    if (!profile?.id || !isBrandUser) {
+    if (!isBrandUser || !session?.access_token) {
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
-    supabase
-      .from('brand_deals')
-      .select('*')
-      .eq('brand_id', profile.id as any)
-      .order('created_at', { ascending: false })
-      .limit(50)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error('[BrandDashboard] Failed to fetch deals:', error);
+    const loadDeals = async () => {
+      try {
+        const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/deals`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        const json = await response.json().catch(() => ({}));
+
+        if (!response.ok || !json?.success) {
+          console.error('[BrandDashboard] Failed to fetch deals:', json);
           setDeals([]);
-        } else {
-          setDeals((data as unknown as BrandDeal[]) || []);
+          setIsLoading(false);
+          return;
         }
+
+        setDeals((json.deals as BrandDeal[]) || []);
+      } catch (error) {
+        console.error('[BrandDashboard] Failed to fetch deals:', error);
+        setDeals([]);
+      } finally {
         setIsLoading(false);
-      });
-  }, [profile?.id, isBrandUser]);
+      }
+    };
+
+    void loadDeals();
+  }, [isBrandUser, session?.access_token]);
 
   // Filter deals by stage
   const activeDeals = deals.filter(deal => {
@@ -176,50 +192,52 @@ const BrandDashboard: React.FC = () => {
         ) : (
           <div className="space-y-3">
             {displayedDeals.map((deal) => (
-              <Card
+              <Link
                 key={deal.id}
-                className="bg-white/5 border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
-                onClick={() => navigate(`/brand-deal/${deal.id}`)}
+                to={`/brand-deal/${deal.id}`}
+                data-deal-id={deal.id}
+                className="block"
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-bold text-white truncate">
-                          {deal.brand_name || 'Brand'}
-                        </h3>
-                        <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
-                          {deal.status || 'Unknown'}
-                        </span>
+                <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors cursor-pointer">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-base font-bold text-white truncate">
+                            {deal.brand_name || 'Brand'}
+                          </h3>
+                          <span className={cn('text-[10px] px-2 py-0.5 rounded-full font-medium', getStageColor(deal.status))}>
+                            {deal.status || 'Unknown'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-white/60 mt-1">
+                          {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
+                        </p>
                       </div>
-                      <p className="text-sm text-white/60 mt-1">
-                        {deal.deliverables ? `${deal.deliverables} · ` : ''}{formatDate(deal.due_date || deal.created_at)}
-                      </p>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-base font-bold text-white">
+                          {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
+                        </p>
+                        {deal.deal_type !== 'barter' && (
+                          <p className="text-xs text-white/40">deal value</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-base font-bold text-white">
-                        {deal.deal_type === 'barter' ? 'Barter' : formatCurrency(deal.deal_amount)}
-                      </p>
-                      {deal.deal_type !== 'barter' && (
-                        <p className="text-xs text-white/40">deal value</p>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Progress bar */}
-                  {deal.progress_percentage != null && (
-                    <div className="mt-3">
-                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-purple-500 rounded-full transition-all"
-                          style={{ width: `${deal.progress_percentage}%` }}
-                        />
+                    {deal.progress_percentage != null && (
+                      <div className="mt-3">
+                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-purple-500 rounded-full transition-all"
+                            style={{ width: `${deal.progress_percentage}%` }}
+                          />
+                        </div>
+                        <p className="text-[10px] text-white/40 mt-1">{deal.progress_percentage}% complete</p>
                       </div>
-                      <p className="text-[10px] text-white/40 mt-1">{deal.progress_percentage}% complete</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

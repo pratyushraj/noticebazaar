@@ -2,9 +2,9 @@ import { lazy } from "react";
 import { Route, Navigate } from "react-router-dom";
 import ProtectedLayout from "@/components/ProtectedLayout";
 import { LazyRoute } from "./routeElements";
+import BrandDealDetailPage from "@/pages/BrandDealDetailPage";
 
 const BrandDashboard = lazy(() => import("@/pages/BrandDashboard"));
-const BrandDealDetailPage = lazy(() => import("@/pages/BrandDealDetailPage"));
 const BrandNewDealPage = lazy(() => import("@/pages/BrandNewDealPage"));
 const BrandDiscoverPage = lazy(() => import("@/pages/BrandDiscoverPage"));
 
