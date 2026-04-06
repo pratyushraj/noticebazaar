@@ -1,24 +1,116 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
 import { useBrandDealById } from '@/lib/hooks/useBrandDeals';
+import { getApiBaseUrl } from '@/lib/utils/api';
 import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, Loader2, Clock, CheckCircle2, XCircle, IndianRupee,
-  FileText, Copy, ExternalLink, Calendar, ShieldCheck
+  FileText, Copy, ExternalLink, Calendar, ShieldCheck, MessageSquare, Send, Wallet
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const BrandDealDetailPage: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
-  const { profile } = useSession();
+  const { profile, session } = useSession();
 
-  const { data: deal, isLoading } = useBrandDealById(dealId, profile?.id, 'brand');
+  const { data: deal, isLoading, refetch } = useBrandDealById(dealId, profile?.id, 'brand');
+  const [brandFeedback, setBrandFeedback] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [isReviewingContent, setIsReviewingContent] = useState(false);
+  const [isReleasingPayment, setIsReleasingPayment] = useState(false);
+
+  const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
+  const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
+  const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !deal?.payment_received_date;
+  const contentLink = String((deal as any)?.content_submission_url || '').trim();
+  const contentNotes = String((deal as any)?.content_notes || '').trim();
+  const brandApprovalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
+
+  const patchDeal = async (path: string, body?: Record<string, unknown>) => {
+    const token = session?.access_token;
+    if (!token) throw new Error('Please log in again.');
+
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.success) {
+      throw new Error((data as any)?.error || 'Request failed');
+    }
+    return data;
+  };
+
+  const handleReviewContent = async (status: 'approved' | 'changes_requested') => {
+    if (!deal?.id) return;
+    if (status === 'changes_requested' && !brandFeedback.trim()) {
+      toast.error('Add feedback before requesting changes.');
+      return;
+    }
+
+    try {
+      setIsReviewingContent(true);
+      await patchDeal(`/api/deals/${deal.id}/review-content`, {
+        status,
+        feedback: brandFeedback.trim() || undefined,
+      });
+      toast.success(status === 'approved' ? 'Content approved.' : 'Changes requested.');
+      if (status === 'approved') {
+        setBrandFeedback('');
+      }
+      await refetch();
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not update content review.');
+    } finally {
+      setIsReviewingContent(false);
+    }
+  };
+
+  const handleReleasePayment = async () => {
+    if (!deal?.id) return;
+    if (!paymentReference.trim()) {
+      toast.error('Payment reference is required.');
+      return;
+    }
+
+    try {
+      setIsReleasingPayment(true);
+      await patchDeal(`/api/deals/${deal.id}/release-payment`, {
+        paymentReference: paymentReference.trim(),
+        paymentNotes: paymentNotes.trim() || undefined,
+      });
+      toast.success('Payment marked as sent.');
+      setPaymentReference('');
+      setPaymentNotes('');
+      await refetch();
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not mark payment as sent.');
+    } finally {
+      setIsReleasingPayment(false);
+    }
+  };
+
+  const nextStepLabel = useMemo(() => {
+    if (canReviewContent) return 'Review the creator content';
+    if (canReleasePayment) return 'Mark payment as sent';
+    if (brandApprovalStatus === 'changes_requested') return 'Waiting for creator revision';
+    if (brandApprovalStatus === 'approved' && deal?.payment_received_date) return 'Waiting for creator confirmation';
+    return 'Track this deal';
+  }, [brandApprovalStatus, canReleasePayment, canReviewContent, deal?.payment_received_date]);
 
   const getStageColor = (status: string | null) => {
     if (!status) return 'bg-slate-500/20 text-slate-400';
@@ -136,12 +228,106 @@ const BrandDealDetailPage: React.FC = () => {
           </CardContent>
         </Card>
 
+        <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+          <CardContent className="p-4 space-y-2">
+            <p className="text-[11px] uppercase tracking-wider text-white/40">Next Step</p>
+            <p className="text-lg font-bold text-white">{nextStepLabel}</p>
+            <p className="text-sm text-white/60">
+              {canReviewContent
+                ? 'Check the submitted post and either approve it or ask for one clear change.'
+                : canReleasePayment
+                  ? 'Once the content is approved, add your payment reference so the creator gets notified.'
+                  : brandApprovalStatus === 'changes_requested'
+                    ? 'The creator has been notified. Review the updated link when they re-submit.'
+                    : 'Use this page to monitor the collaboration, content, and payment progress.'}
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Deliverables */}
         {deal.deliverables && (
           <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
             <CardContent className="p-4">
               <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Deliverables</p>
               <p className="text-base font-medium text-white">{deal.deliverables}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {(contentLink || contentNotes || canReviewContent || brandApprovalStatus === 'changes_requested' || brandApprovalStatus === 'approved') && (
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Creator Content</p>
+                {contentLink ? (
+                  <a
+                    href={contentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-300 hover:text-purple-200 break-all"
+                  >
+                    <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                    {contentLink}
+                  </a>
+                ) : (
+                  <p className="text-sm text-white/60">The creator has not shared a live post link yet.</p>
+                )}
+              </div>
+
+              {contentNotes && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-[11px] uppercase tracking-wider text-white/40 mb-2">Creator note</p>
+                  <p className="text-sm text-white/80 whitespace-pre-wrap">{contentNotes}</p>
+                </div>
+              )}
+
+              {(canReviewContent || brandApprovalStatus === 'changes_requested' || brandApprovalStatus === 'approved') && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-white">Review status</p>
+                    <span className={cn('text-[10px] px-2 py-1 rounded-full font-medium', getStageColor(deal.status))}>
+                      {brandApprovalStatus ? brandApprovalStatus.replace('_', ' ') : 'pending'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="brand-feedback" className="text-[11px] uppercase tracking-wider text-white/50">
+                      Feedback for creator
+                    </Label>
+                    <Textarea
+                      id="brand-feedback"
+                      value={brandFeedback}
+                      onChange={(e) => setBrandFeedback(e.target.value)}
+                      placeholder="Optional when approving. Required if you need changes."
+                      className="min-h-[96px] bg-white/5 border-white/10 text-white placeholder:text-white/35"
+                    />
+                  </div>
+
+                  {canReviewContent && (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isReviewingContent}
+                        onClick={() => handleReviewContent('changes_requested')}
+                        className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:text-amber-200"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Request Changes
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={isReviewingContent}
+                        onClick={() => handleReviewContent('approved')}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Approve Content
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -166,7 +352,7 @@ const BrandDealDetailPage: React.FC = () => {
         {/* Payment Info */}
         {deal.deal_type !== 'barter' && (
           <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-4">
               <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Payment</p>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
@@ -180,18 +366,61 @@ const BrandDealDetailPage: React.FC = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-white/60">Status</span>
                   <span className="font-semibold text-white">
-                    {deal.payment_received_date ? 'Received' : 'Pending'}
+                    {deal.payment_received_date ? 'Sent to creator' : 'Pending'}
                   </span>
                 </div>
               </div>
-              {!deal.payment_received_date && (
-                <Button
-                  onClick={() => toast.success('Payment marked as received!')}
-                  className="w-full h-11 mt-4 bg-emerald-600 hover:bg-emerald-500 font-bold text-white rounded-xl flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  Confirm Payment Received
-                </Button>
+
+              {canReleasePayment && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-reference" className="text-[11px] uppercase tracking-wider text-white/50">
+                      Payment reference
+                    </Label>
+                    <Input
+                      id="payment-reference"
+                      value={paymentReference}
+                      onChange={(e) => setPaymentReference(e.target.value)}
+                      placeholder="UTR, transaction ID, or bank reference"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/35"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-notes" className="text-[11px] uppercase tracking-wider text-white/50">
+                      Note to creator
+                    </Label>
+                    <Textarea
+                      id="payment-notes"
+                      value={paymentNotes}
+                      onChange={(e) => setPaymentNotes(e.target.value)}
+                      placeholder="Optional note about when the payment should reflect."
+                      className="min-h-[96px] bg-white/5 border-white/10 text-white placeholder:text-white/35"
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleReleasePayment}
+                    disabled={isReleasingPayment}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 font-bold text-white"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {isReleasingPayment ? 'Marking Payment...' : 'Mark Payment Sent'}
+                  </Button>
+                </div>
+              )}
+
+              {deal.payment_received_date && (
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+                  <p className="text-sm font-semibold text-emerald-200 flex items-center gap-2">
+                    <Wallet className="h-4 w-4" />
+                    Payment sent to creator
+                  </p>
+                  <p className="mt-1 text-sm text-emerald-100/80">
+                    Marked on {formatDate(deal.payment_received_date)}{deal.utr_number ? ` • Ref ${deal.utr_number}` : ''}.
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
