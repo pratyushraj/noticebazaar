@@ -78,7 +78,6 @@ export function ProfileProvider({ children }: ProfileProviderProps) {
             username,
             instagram_handle,
             business_name,
-            creator_stage,
             profile_completion
           `) as any)
           .eq('id', user.id)
