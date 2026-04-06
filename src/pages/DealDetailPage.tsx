@@ -20,7 +20,7 @@ import { useUpdateProfile } from '@/lib/hooks/useProfiles';
 import { downloadFile, getFilenameFromUrl } from '@/lib/utils/fileDownload';
 import { downloadContractSecure } from '@/lib/utils/secureContractDownload';
 import { trackEvent } from '@/lib/utils/analytics';
-import { generateIssueMessage, IssueType } from '@/components/deals/IssueTypeModal';
+import { generateIssueMessage, IssueType, IssueTypeModal } from '@/components/deals/IssueTypeModal';
 import { createCalendarEvent, downloadEventAsICal, openEventInGoogleCalendar } from '@/lib/utils/createCalendarEvent';
 // Note: copyToClipboard is defined locally below (Safari-compatible version)
 import { DeliverableAutoInfo } from '@/components/deals/DeliverableAutoInfo';
@@ -30,6 +30,7 @@ import { useUpdateDealProgress, DealStage, STAGE_TO_PROGRESS, useDeleteBrandDeal
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 import { DealProgressTracker } from '@/components/deals/DealProgressTracker';
 import { InvoiceGeneratorModal } from '@/components/deals/CreatorInvoiceGenerator';
+import { ActionLog } from '@/components/deals/ActionLog';
 
 import { motion } from 'framer-motion';
 import { NativeLoadingSheet } from '@/components/mobile/NativeLoadingSheet';
@@ -42,9 +43,7 @@ import { Label } from '@/components/ui/label';
 
 // Lazy load heavy components
 const ContractPreviewModal = lazy(() => import('@/components/deals/ContractPreviewModal').then(m => ({ default: m.ContractPreviewModal })));
-const IssueTypeModal = lazy(() => import('@/components/deals/IssueTypeModal').then(m => ({ default: m.IssueTypeModal })));
 const IssueStatusCard = lazy(() => import('@/components/deals/IssueStatusCard').then(m => ({ default: m.IssueStatusCard })));
-const ActionLog = lazy(() => import('@/components/deals/ActionLog').then(m => ({ default: m.ActionLog })));
 const OverduePaymentCard = lazy(() => import('@/components/deals/OverduePaymentCard').then(m => ({ default: m.OverduePaymentCard })));
 
 // Safari-compatible clipboard copy helper

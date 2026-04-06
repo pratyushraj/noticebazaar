@@ -24,7 +24,9 @@ router.post('/welcome', async (req: AuthenticatedRequest, res: Response) => {
       .single();
 
     if (profileError || !profile) {
-      return res.status(404).json({ success: false, error: 'Profile not found' });
+      // Fresh signup flows can reach this endpoint before the profile row is readable.
+      // Treat that as a non-fatal no-op so the browser does not surface a fake broken route.
+      return res.status(202).json({ success: true, skipped: true, reason: 'profile_not_ready' });
     }
 
     const sentList = Array.isArray(profile.onboarding_emails_sent) ? profile.onboarding_emails_sent : [];
@@ -72,4 +74,3 @@ router.post('/welcome', async (req: AuthenticatedRequest, res: Response) => {
 });
 
 export default router;
-
