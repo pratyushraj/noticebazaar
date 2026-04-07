@@ -58,6 +58,14 @@ const CreatorAppModeGate: React.FC<CreatorAppModeGateProps> = ({ enabled, childr
   const shouldBlock = useMemo(() => {
     if (!enabled) return false;
     if (typeof window === 'undefined') return false;
+    const pathname = window.location.pathname || '';
+    const isProtectedCreatorWorkflow =
+      pathname.startsWith('/creator-dashboard') ||
+      pathname.startsWith('/collab-requests/') ||
+      pathname.startsWith('/deal/') ||
+      pathname.startsWith('/payment/') ||
+      pathname.startsWith('/deal-delivery-details/');
+    if (isProtectedCreatorWorkflow) return false;
     const bypass = new URLSearchParams(window.location.search).get('allowBrowser') === '1';
     const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
     return !bypass && !allowBrowserMode && !isLocalhost && isMobile && !isStandalone;

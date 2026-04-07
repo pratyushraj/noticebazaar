@@ -604,38 +604,8 @@ const CreatorDashboard = () => {
     enabled: !sessionLoading && !!creatorId,
   });
   useEffect(() => {
-    if (!accessToken || !creatorId || serverDealsFallback.length > 0) return;
-    let cancelled = false;
-
-    const loadServerDeals = async () => {
-      try {
-        setIsLoadingServerDeals(true);
-        const response = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) return;
-        const payload = await response.json().catch(() => null);
-        if (!cancelled && payload?.success && Array.isArray(payload.deals)) {
-          setServerDealsFallback(payload.deals as DashboardBrandDeal[]);
-        }
-      } catch {
-        // Best-effort only.
-      } finally {
-        if (!cancelled) {
-          setIsLoadingServerDeals(false);
-        }
-      }
-    };
-
-    void loadServerDeals();
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken, creatorId, serverDealsFallback.length]);
+    setIsLoadingServerDeals(false);
+  }, []);
   const { notifications: creatorNotifications, markAsRead } = useNotifications({
     enabled: !!creatorId,
     limit: 3,
