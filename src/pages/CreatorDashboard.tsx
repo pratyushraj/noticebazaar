@@ -448,8 +448,6 @@ const CreatorDashboard = () => {
   const [totalOffersReceived, setTotalOffersReceived] = useState(0);
   const [storefrontViews, setStorefrontViews] = useState(0);
   const [collabRequestsPreview, setCollabRequestsPreview] = useState<CollabRequestPreview[]>([]);
-  const [serverDealsFallback, setServerDealsFallback] = useState<DashboardBrandDeal[]>([]);
-  const [isLoadingServerDeals, setIsLoadingServerDeals] = useState(false);
   const [declineRequestId, setDeclineRequestId] = useState<string | null>(null);
   const [showDeclineRequestDialog, setShowDeclineRequestDialog] = useState(false);
   const [copiedDm, setCopiedDm] = useState(false);
@@ -603,39 +601,6 @@ const CreatorDashboard = () => {
     creatorId,
     enabled: !sessionLoading && !!creatorId,
   });
-  useEffect(() => {
-    if (!accessToken || !creatorId || serverDealsFallback.length > 0) return;
-    let cancelled = false;
-
-    const loadServerDeals = async () => {
-      try {
-        setIsLoadingServerDeals(true);
-        const response = await fetch(`${getApiBaseUrl()}/api/deals/mine`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) return;
-        const payload = await response.json().catch(() => null);
-        if (!cancelled && payload?.success && Array.isArray(payload.deals)) {
-          setServerDealsFallback(payload.deals as DashboardBrandDeal[]);
-        }
-      } catch {
-        // Best-effort only.
-      } finally {
-        if (!cancelled) {
-          setIsLoadingServerDeals(false);
-        }
-      }
-    };
-
-    void loadServerDeals();
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken, creatorId, serverDealsFallback.length]);
   const { notifications: creatorNotifications, markAsRead } = useNotifications({
     enabled: !!creatorId,
     limit: 3,
@@ -681,9 +646,8 @@ const CreatorDashboard = () => {
   
   const normalizedBrandDeals = useMemo<DashboardBrandDeal[]>(() => {
     const primaryDeals = (brandDeals as DashboardBrandDeal[]) || [];
-    if (primaryDeals.length > 0) return primaryDeals;
-    return serverDealsFallback;
-  }, [brandDeals, serverDealsFallback]);
+    return primaryDeals;
+  }, [brandDeals]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !activeProfile?.id || normalizedBrandDeals.length === 0) return;
@@ -1042,7 +1006,7 @@ const CreatorDashboard = () => {
   // ============================================
 
   // Loading state with skeleton
-  if ((sessionLoading && !session) || ((isLoadingDeals || isLoadingServerDeals) && !!creatorId && !brandDealsError && normalizedBrandDeals.length === 0)) {
+  if ((sessionLoading && !session) || (isLoadingDeals && !!creatorId && !brandDealsError && normalizedBrandDeals.length === 0)) {
     return <EnhancedDashboardSkeleton />;
   }
 
