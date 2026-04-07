@@ -494,8 +494,6 @@ const Signup = () => {
                     if (accountMode === 'creator' && normalizedHandle) {
                       await ensureCreatorProfileSeed(currentSession.user.id, name.trim(), normalizedHandle);
                     }
-                    // Fire-and-forget: welcome email trigger (only after profile exists to avoid 404 noise)
-                    void triggerWelcomeEmail(currentSession.access_token);
                   }
                   if (accountMode === 'brand') {
                     try {
@@ -517,9 +515,6 @@ const Signup = () => {
               });
 
               if (signInData.session) {
-                // Fire-and-forget: welcome email trigger
-                void triggerWelcomeEmail(signInData.session.access_token);
-
                 sessionStorage.removeItem('just_signed_up');
                 setSignupPhase('opening');
                 // Wait a moment for profile creation
