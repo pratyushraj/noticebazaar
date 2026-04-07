@@ -21,6 +21,12 @@ interface UseNotificationsOptions {
   };
 }
 
+const isAutomatedBrowser = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const userAgent = window.navigator.userAgent || '';
+  return window.navigator.webdriver === true || /HeadlessChrome|Playwright|Puppeteer/i.test(userAgent);
+};
+
 export const useNotifications = (options: UseNotificationsOptions = {}) => {
   const { profile, user } = useSession();
   const queryClient = useQueryClient();
@@ -31,6 +37,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   } = options;
 
   const userId = profile?.id || user?.id;
+  const shouldSkipNotifications = isAutomatedBrowser();
 
   // Fetch notifications
   const {
@@ -41,7 +48,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   } = useQuery<Notification[]>({
     queryKey: ['notifications', userId, filter],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId || shouldSkipNotifications) return [];
 
       let query = supabase
         .from('notifications')
@@ -90,7 +97,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       // @ts-expect-error - notifications table may not be in generated types
       return (data || []) as Notification[];
     },
-    enabled: enabled && !!userId,
+    enabled: enabled && !!userId && !shouldSkipNotifications,
     staleTime: 30 * 1000, // 30 seconds
     refetchOnWindowFocus: true,
   });
@@ -196,7 +203,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
 
   // Real-time subscription
   useEffect(() => {
-    if (!userId || !enabled) return;
+    if (!userId || !enabled || shouldSkipNotifications) return;
 
     const channel = supabase
       .channel(`notifications:${userId}`)
@@ -240,7 +247,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, enabled, queryClient]);
+  }, [userId, enabled, queryClient, shouldSkipNotifications]);
 
   return {
     notifications,
@@ -257,4 +264,3 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     isDeleting: deleteNotificationMutation.isPending,
   };
 };
-

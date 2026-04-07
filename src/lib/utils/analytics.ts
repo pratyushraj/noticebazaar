@@ -117,6 +117,18 @@ const getMixpanel = (): any => {
   return (window as any).mixpanel || null;
 };
 
+const shouldSkipClientAnalytics = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  const hostname = window.location.hostname || '';
+  const userAgent = window.navigator.userAgent || '';
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    window.navigator.webdriver === true ||
+    /HeadlessChrome|Playwright|Puppeteer/i.test(userAgent)
+  );
+};
+
 /**
  * Track an analytics event
  */
@@ -125,6 +137,8 @@ export async function trackEvent(
   properties?: AnalyticsProperties
 ): Promise<void> {
   try {
+    if (shouldSkipClientAnalytics()) return;
+
     // Try Mixpanel first
     if (isMixpanelAvailable()) {
       const mixpanel = getMixpanel();
@@ -152,6 +166,8 @@ async function trackEventToSupabase(
   properties?: AnalyticsProperties
 ): Promise<void> {
   try {
+    if (shouldSkipClientAnalytics()) return;
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return;
 

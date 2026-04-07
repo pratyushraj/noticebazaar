@@ -17,6 +17,18 @@ class Analytics {
   private userId: string | null = null;
   private enabled: boolean = true;
 
+  private shouldSkipClientAnalytics(): boolean {
+    if (typeof window === 'undefined') return true;
+    const hostname = window.location.hostname || '';
+    const userAgent = window.navigator.userAgent || '';
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      window.navigator.webdriver === true ||
+      /HeadlessChrome|Playwright|Puppeteer/i.test(userAgent)
+    );
+  }
+
   /**
    * Initialize analytics with user ID
    */
@@ -31,6 +43,10 @@ class Analytics {
   track(event: string, properties?: Record<string, unknown>) {
     if (!this.enabled) {
       console.log('[Analytics]', event, properties);
+      return;
+    }
+
+    if (this.shouldSkipClientAnalytics()) {
       return;
     }
 
@@ -114,6 +130,10 @@ class Analytics {
    * Send event to backend API (Supabase Edge Function)
    */
   private async sendToBackend(event: string, data: AnalyticsEvent): Promise<void> {
+    if (this.shouldSkipClientAnalytics()) {
+      return;
+    }
+
     // Get Supabase URL and anon key from environment
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
