@@ -138,7 +138,6 @@ const CollabRequestBriefPage = () => {
   const [pendingReelPrice, setPendingReelPrice] = useState('');
   const [pendingAddress, setPendingAddress] = useState('');
   const [isSavingRequirements, setIsSavingRequirements] = useState(false);
-  const [brandVerified, setBrandVerified] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [showCounterDialog, setShowCounterDialog] = useState(false);
   const [counterPrice, setCounterPrice] = useState('');
@@ -194,20 +193,6 @@ const CollabRequestBriefPage = () => {
       request_id: request.id,
     });
   }, [request?.id, profile?.id]);
-
-  useEffect(() => {
-    if (!request?.id) return;
-    const fetchBrandVerified = async () => {
-      try {
-        const res = await fetch(`${getApiBaseUrl()}/api/collab-requests/${request.id}/brand-status`);
-        const data = await res.json();
-        if (data?.success) setBrandVerified(Boolean(data.brand_verified));
-      } catch {
-        // Non-critical - don't block UI
-      }
-    };
-    void fetchBrandVerified();
-  }, [request?.id]);
 
   // Offline detection
   useEffect(() => {
@@ -361,12 +346,16 @@ const CollabRequestBriefPage = () => {
       toast.success(data?.needs_delivery_details ? 'Offer accepted. Add your address next.' : 'Offer accepted.');
       const acceptedDealId = typeof data?.deal?.id === 'string' ? data.deal.id : null;
       if (acceptedDealId) {
-        navigate(
-          data?.needs_delivery_details
-            ? `/deal-delivery-details/${acceptedDealId}`
-            : `/deal/${acceptedDealId}`,
-          { replace: true }
-        );
+        const targetPath = data?.needs_delivery_details
+          ? `/deal-delivery-details/${acceptedDealId}`
+          : `/deal/${acceptedDealId}`;
+
+        if (typeof window !== 'undefined') {
+          window.location.replace(targetPath);
+          return;
+        }
+
+        navigate(targetPath, { replace: true });
       } else {
         navigate('/creator-dashboard?tab=collabs&subtab=active', { replace: true });
       }
@@ -405,7 +394,6 @@ const CollabRequestBriefPage = () => {
         id: profile.id,
         ...(requiresPaidRate ? {
           avg_rate_reel: Number(pendingReelPrice) || null,
-          reel_price: Number(pendingReelPrice) || null,
         } : {}),
         ...(requiresAddress ? {
           address: pendingAddress.trim(),
@@ -521,7 +509,6 @@ const CollabRequestBriefPage = () => {
             <div className="min-w-0">
               <h2 className="text-lg md:text-[18px] font-bold text-foreground tracking-tight break-words flex items-center gap-2">
                 {request.brand_name ?? 'Brand'}
-                {brandVerified && <ShieldCheck className="h-5 w-5 text-info flex-shrink-0" aria-label="Verified brand" />}
               </h2>
               <div className="flex items-center gap-2 mt-1.5 text-sm md:text-xs text-info/70">
                 {request.brand_email ? <span className="truncate">{request.brand_email}</span> : <span>Protected offer</span>}
