@@ -51,6 +51,37 @@ const inferRequiresShipping = (deal: any) => {
   return false;
 };
 
+const fetchDealForBrandMutation = async (dealId: string) => {
+  const selectAttempts = [
+    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount, shipping_required',
+    'id, status, brand_id, brand_email, brand_name, creator_id, deal_type, deal_amount',
+    'id, status, brand_email, brand_name, creator_id, deal_type, deal_amount',
+    'id, status, brand_email, brand_name, creator_id',
+  ];
+
+  let lastError: any = null;
+  for (const select of selectAttempts) {
+    const { data, error } = await supabase
+      .from('brand_deals')
+      .select(select)
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (!error) {
+      return { deal: data, error: null };
+    }
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      return { deal: null, error };
+    }
+  }
+
+  return { deal: null, error: lastError };
+};
+
 const notifyCreatorForDealEvent = async (
   template: Parameters<typeof getCreatorNotificationContent>[0],
   deal: any,
@@ -1564,11 +1595,7 @@ router.patch('/:id/review-content', authMiddleware, async (req: AuthenticatedReq
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, progress_percentage')
-      .eq('id', dealId)
-      .maybeSingle();
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) {
       return res.status(404).json({ success: false, error: 'Deal not found' });
@@ -1698,11 +1725,7 @@ router.patch('/:id/release-payment', authMiddleware, async (req: AuthenticatedRe
       return res.status(403).json({ success: false, error: 'Brand access required' });
     }
 
-    const { data: deal, error: dealError } = await supabase
-      .from('brand_deals')
-      .select('id, status, brand_id, brand_email, brand_name, creator_id, collab_type, deal_type, deal_amount, shipping_required')
-      .eq('id', dealId)
-      .maybeSingle();
+    const { deal, error: dealError } = await fetchDealForBrandMutation(dealId);
 
     if (dealError || !deal) {
       return res.status(404).json({ success: false, error: 'Deal not found' });
