@@ -2628,6 +2628,7 @@ router.post('/accept/confirm', async (req: AuthenticatedRequest, res: Response) 
 
     const dealData: any = {
       creator_id: userId,
+      brand_id: request.brand_id || null,
       brand_name: request.brand_name,
       brand_email: request.brand_email,
       deal_amount: dealAmount,
@@ -2924,6 +2925,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     // Create brand deal
     const dealData: any = {
       creator_id: userId,
+      brand_id: request.brand_id || null,
       brand_name: request.brand_name,
       brand_email: request.brand_email,
       deal_amount: dealAmount,
@@ -2942,6 +2944,7 @@ router.patch('/:id/accept', async (req: AuthenticatedRequest, res: Response) => 
     };
 
     const dealOptionalFields = new Set([
+      'brand_id',
       'collab_type',
       'shipping_required',
       'created_via',
