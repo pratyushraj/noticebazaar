@@ -254,15 +254,6 @@ export const getCreatorProgressPatch = (
   const lifecycle = getCreatorLifecycleMetrics(profile, context);
 
   return {
-    creator_stage: lifecycle.creatorStage,
     profile_completion: lifecycle.profileCompletion,
-    storefront_completion: lifecycle.storefrontCompletion,
-    offers_received: lifecycle.offersReceived,
-    offers_accepted: lifecycle.offersAccepted,
-    completed_deals: lifecycle.completedDeals,
-    total_deals: lifecycle.totalDeals,
-    total_earnings: lifecycle.totalEarnings,
-    storefront_views: lifecycle.storefrontViews,
-    conversion_rate: lifecycle.conversionRate,
   };
 };
