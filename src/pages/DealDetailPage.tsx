@@ -132,23 +132,20 @@ const getSimpleStatusLabel = (state: GuidedDealState) => {
   }
 };
 
-  // Content deadline countdown
-  const getContentDeadline = (dueDate: string | null | undefined) => {
-    if (!dueDate) return null;
-    const now = new Date();
-    const due = new Date(dueDate);
-    const diffMs = due.getTime() - now.getTime();
-    if (diffMs < 0) return { label: 'OVERDUE', tone: 'danger' as const };
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    if (days >= 7) return { label: `Due ${days}d`, tone: 'normal' as const };
-    if (days >= 1) return { label: `Due ${days}d ${hours}h`, tone: 'warning' as const };
-    if (hours >= 1) return { label: `Due ${hours}h`, tone: 'danger' as const };
-    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    return { label: `Due ${mins}m`, tone: 'danger' as const };
-  };
-
-  const contentDeadline = getContentDeadline(deal.due_date);
+const getContentDeadline = (dueDate: string | null | undefined) => {
+  if (!dueDate) return null;
+  const now = new Date();
+  const due = new Date(dueDate);
+  const diffMs = due.getTime() - now.getTime();
+  if (diffMs < 0) return { label: 'OVERDUE', tone: 'danger' as const };
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  if (days >= 7) return { label: `Due ${days}d`, tone: 'normal' as const };
+  if (days >= 1) return { label: `Due ${days}d ${hours}h`, tone: 'warning' as const };
+  if (hours >= 1) return { label: `Due ${hours}h`, tone: 'danger' as const };
+  const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  return { label: `Due ${mins}m`, tone: 'danger' as const };
+};
 
 const getTimelineEntryCopy = (eventName?: string) => {
   const event = String(eventName || '').toLowerCase();
@@ -198,6 +195,7 @@ function DealDetailPageContent() {
 
   // Hooks
   const { deal, isLoadingDeal, refreshAll } = useDeal();
+  const contentDeadline = getContentDeadline(deal?.due_date);
   const queryClient = useQueryClient();
   const { data: issues } = useIssues(dealId);
   const { data: logs } = useDealActionLogs(dealId);
