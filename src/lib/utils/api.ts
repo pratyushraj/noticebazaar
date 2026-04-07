@@ -93,7 +93,9 @@ export function getApiBaseUrl(): string {
     }
   }
 
-  // Production safety: never point to localhost when the app is on a public domain.
+  // Production safety: never point to localhost or same-origin frontend routes
+  // when the app is on a public domain. The production frontend and backend are
+  // deployed separately, so same-origin `/api/...` may not exist for all routes.
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
@@ -103,10 +105,19 @@ export function getApiBaseUrl(): string {
       host.endsWith('netlify.app') ||
       host.endsWith('trycloudflare.com');
 
-    if (isPublicHost && localhostPattern.test(cleanedUrl)) {
-      // Never allow localhost API on public frontend hosts.
-      // Route directly to production API domain.
-      cleanedUrl = 'https://noticebazaar-api.onrender.com';
+    if (isPublicHost) {
+      const origin = window.location.origin.replace(/\/$/, '');
+      const pointsToFrontendOrigin =
+        cleanedUrl === '' ||
+        cleanedUrl === '/' ||
+        cleanedUrl === '/api' ||
+        cleanedUrl === origin;
+
+      if (localhostPattern.test(cleanedUrl) || pointsToFrontendOrigin) {
+        // Never allow localhost or same-origin API on public frontend hosts.
+        // Route directly to production API domain.
+        cleanedUrl = 'https://noticebazaar-api.onrender.com';
+      }
     }
   }
 

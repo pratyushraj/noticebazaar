@@ -20,6 +20,16 @@ type ProfileRoleLookup = Pick<Tables<'profiles'>, 'role' | 'onboarding_complete'
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
 
+const isMissingColumnError = (error: { message?: string } | null | undefined) => {
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    message.includes('column') ||
+    message.includes('schema cache') ||
+    message.includes('does not exist') ||
+    message.includes('could not find')
+  );
+};
+
 const getCreatorTargetPath = (profile?: ProfileRoleLookup | null) =>
   profile?.onboarding_complete ? '/creator-dashboard' : '/creator-onboarding';
 
@@ -102,19 +112,45 @@ const Signup = () => {
       return;
     }
 
-    const { error } = await profilesTable
-      .update({
+    const updateAttempts = [
+      {
         first_name: firstName,
         last_name: lastName,
         username: cleanHandle,
         instagram_handle: cleanHandle,
         open_to_collabs: true,
-      })
-      .eq('id', userId);
+      },
+      {
+        first_name: firstName,
+        last_name: lastName,
+        username: cleanHandle,
+        instagram_handle: cleanHandle,
+      },
+      {
+        username: cleanHandle,
+        instagram_handle: cleanHandle,
+      },
+      {
+        username: cleanHandle,
+      },
+    ];
 
-    if (error) {
-      console.warn('[Signup] Failed to seed creator handle onto profile row:', error);
+    for (const payload of updateAttempts) {
+      const { error } = await profilesTable
+        .update(payload)
+        .eq('id', userId);
+
+      if (!error) {
+        return;
+      }
+
+      if (!isMissingColumnError(error)) {
+        console.warn('[Signup] Failed to seed creator handle onto profile row:', error);
+        return;
+      }
     }
+
+    console.warn('[Signup] Could not seed creator handle with current production schema');
   };
 
   const ensureBrandWorkspace = async (userId: string, emailToUse: string) => {
