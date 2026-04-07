@@ -212,9 +212,9 @@ const Signup = () => {
         },
       });
 
-      // Best-effort enhancement: in fresh signups the profile row may not exist yet,
-      // and some environments may not have this endpoint. Treat 404 as non-fatal.
-      if (response.status === 404) {
+      // Best-effort enhancement: in fresh signups the session/profile may not be ready yet,
+      // and some environments may not expose this endpoint. Treat auth/not-found as non-fatal.
+      if ([401, 403, 404].includes(response.status)) {
         if (typeof window !== 'undefined') {
           sessionStorage.setItem(endpointDisabledKey, 'true');
         }
@@ -233,9 +233,9 @@ const Signup = () => {
   // Password strength calculator
   const getPasswordStrength = (pwd: string) => {
     if (pwd.length === 0) return { strength: 0, label: '', color: '' };
-    if (pwd.length < 6) return { strength: 1, label: 'Too short', color: 'bg-destructive' };
+    if (pwd.length < 6) return { strength: 1, label: 'Too short', color: 'bg-red-500' };
     if (pwd.length < 8) return { strength: 2, label: 'Weak', color: 'bg-yellow-500' };
-    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Fair', color: 'bg-primary' };
+    if (!/[A-Z]/.test(pwd) || !/[0-9]/.test(pwd)) return { strength: 3, label: 'Fair', color: 'bg-emerald-500' };
     return { strength: 4, label: 'Strong', color: 'bg-green-500' };
   };
 
@@ -494,6 +494,8 @@ const Signup = () => {
                     if (accountMode === 'creator' && normalizedHandle) {
                       await ensureCreatorProfileSeed(currentSession.user.id, name.trim(), normalizedHandle);
                     }
+                    // Fire-and-forget: welcome email trigger (only after profile exists to avoid 404 noise)
+                    void triggerWelcomeEmail(currentSession.access_token);
                   }
                   if (accountMode === 'brand') {
                     try {
@@ -515,6 +517,9 @@ const Signup = () => {
               });
 
               if (signInData.session) {
+                // Fire-and-forget: welcome email trigger
+                void triggerWelcomeEmail(signInData.session.access_token);
+
                 sessionStorage.removeItem('just_signed_up');
                 setSignupPhase('opening');
                 // Wait a moment for profile creation
@@ -652,7 +657,7 @@ const Signup = () => {
       icon: Link2,
       title: 'Collab Link',
       description: 'Share one link to receive brand deals safely',
-      color: 'text-primary'
+      color: 'text-emerald-400'
     },
     {
       icon: Shield,
@@ -664,7 +669,7 @@ const Signup = () => {
       icon: TrendingUp,
       title: 'Track Brand Earnings',
       description: 'Know what you earned from every collab',
-      color: 'text-info'
+      color: 'text-blue-400'
     },
     {
       icon: MessageCircle,
@@ -676,7 +681,7 @@ const Signup = () => {
 
   return (
     <div
-      className="nb-screen-height bg-[#0B0F14] relative flex items-start justify-start md:items-center md:justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
+      className="nb-screen-height bg-[#F4F7FB] relative flex items-start justify-start md:items-center md:justify-center p-4 font-inter overflow-x-hidden overflow-y-auto"
       style={{
         minHeight: '100dvh',
         paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
@@ -687,8 +692,8 @@ const Signup = () => {
       }}
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 rounded-full blur-[120px]" />
       </div>
 
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center relative z-10">
@@ -697,12 +702,12 @@ const Signup = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="hidden md:block text-foreground space-y-12"
+          className="hidden md:block text-slate-900 space-y-12"
         >
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-10">
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-emerald-600/25">
-                <ShieldCheck className="w-6 h-6 text-foreground" />
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
+                <ShieldCheck className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-xl font-black tracking-tight">Creator Armour</h1>
             </div>
@@ -711,7 +716,7 @@ const Signup = () => {
               Protect and scale<br />
               your creator business
             </h2>
-            <p className="text-xl text-foreground/70 font-medium leading-relaxed max-w-md">
+            <p className="text-xl text-slate-600 font-medium leading-relaxed max-w-md">
               Create your creator link, get brand offers, and track active deals in one place.
             </p>
           </div>
@@ -728,26 +733,26 @@ const Signup = () => {
                   transition={{ delay: index * 0.1, duration: 0.5 }}
                   className="flex items-start gap-5"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-card border border-border flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <Icon className={`w-6 h-6 ${colorClass}`} />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg mb-1">{feature.title}</h3>
-                    <p className="text-foreground/60 text-sm font-medium">{feature.description}</p>
+                    <p className="text-slate-600 text-sm font-medium">{feature.description}</p>
                   </div>
                 </motion.div>
               );
             })}
           </div>
 
-          <div className="pt-10 border-t border-border flex gap-10">
+          <div className="pt-10 border-t border-slate-200 flex gap-10">
             <div>
-              <p className="text-foreground text-xl font-black">10,000+</p>
-              <p className="text-foreground/40 text-[11px] font-black uppercase tracking-widest mt-1">Contracts Analyzed</p>
+              <p className="text-slate-900 text-xl font-black">10,000+</p>
+              <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Contracts Analyzed</p>
             </div>
             <div>
-              <p className="text-foreground text-xl font-black">₹2Cr+</p>
-              <p className="text-foreground/40 text-[11px] font-black uppercase tracking-widest mt-1">Value Protected</p>
+              <p className="text-slate-900 text-xl font-black">₹2Cr+</p>
+              <p className="text-slate-500 text-[11px] font-black uppercase tracking-widest mt-1">Value Protected</p>
             </div>
           </div>
         </motion.div>
@@ -759,19 +764,19 @@ const Signup = () => {
           transition={{ duration: 0.5 }}
           className="w-full"
         >
-          <div className="bg-[#0B0F14]/90 backdrop-blur-xl shadow-xl rounded-[2.5rem] p-10 border border-border">
+          <div className="bg-white shadow-xl rounded-[2.5rem] p-10 border border-slate-200">
             {/* Mobile Logo */}
             <div className="md:hidden flex items-center gap-3 mb-10">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-emerald-600/25">
-                <ShieldCheck className="w-5 h-5 text-foreground" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
+                <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-lg font-black text-foreground tracking-tight">Creator Armour</h1>
+              <h1 className="text-lg font-black text-slate-900 tracking-tight">Creator Armour</h1>
 	            </div>
 	
 	            <div className="mb-10">
                 {!showLogin && (
                   <div className="mb-6">
-                    <div className="inline-flex rounded-2xl border border-border bg-card p-1 w-full">
+                    <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 w-full">
                       <button
                         type="button"
                         onClick={() => {
@@ -782,8 +787,8 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'creator'
-                            ? 'bg-secondary/20 text-foreground border border-border'
-                            : 'bg-transparent text-foreground/60 hover:text-foreground'
+                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                            : 'bg-transparent text-slate-600 hover:text-slate-900'
                         )}
                       >
                         Creator
@@ -798,8 +803,8 @@ const Signup = () => {
                         className={cn(
                           'flex-1 h-11 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
                           accountMode === 'brand'
-                            ? 'bg-secondary/20 text-foreground border border-border'
-                            : 'bg-transparent text-foreground/60 hover:text-foreground'
+                            ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                            : 'bg-transparent text-slate-600 hover:text-slate-900'
                         )}
                       >
                         Brand
@@ -808,10 +813,10 @@ const Signup = () => {
                   </div>
                 )}
 
-	              <h2 className="text-4xl font-black text-foreground mb-3 tracking-tight">
-	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create my collab link'}
+	              <h2 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">
+	                {showLogin ? 'Sign In' : accountMode === 'brand' ? 'Create Brand Account' : 'Create your page'}
 	              </h2>
-	              <p className="text-foreground/70 font-medium leading-relaxed">
+	              <p className="text-slate-600 font-medium leading-relaxed">
 	                {showLogin
 	                  ? 'Sign in to see your brand offers and active deals.'
 	                  : accountMode === 'brand'
@@ -826,7 +831,7 @@ const Signup = () => {
               <div className="mb-8">
                 <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+                    <Label htmlFor="email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
                       Email
                     </Label>
                     <Input
@@ -835,20 +840,20 @@ const Signup = () => {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="email"
                     />
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center px-1">
-                      <Label htmlFor="password" className="text-muted-foreground text-[11px] font-black uppercase tracking-widest">
+                      <Label htmlFor="password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest">
                         Password
                       </Label>
                       <button
                         type="button"
                         onClick={handleForgotPassword}
-                        className="text-[11px] font-black text-primary uppercase tracking-widest"
+                        className="text-[11px] font-black text-emerald-500 uppercase tracking-widest"
                       >
                         Forgot?
                       </button>
@@ -859,7 +864,7 @@ const Signup = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5"
+                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                       required
                       autoComplete="current-password"
                     />
@@ -867,7 +872,7 @@ const Signup = () => {
                   <Button
                     type="submit"
                     disabled={isLoading || !email.trim() || !password.trim()}
-                    className="w-full bg-primary hover:bg-primary text-foreground font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
                   </Button>
@@ -880,7 +885,7 @@ const Signup = () => {
               <div className="mb-8">
 	                <form onSubmit={handleEmailPasswordSignup} className="space-y-4">
 	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-name" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+	                    <Label htmlFor="signup-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
 	                      {accountMode === 'brand' ? 'Your Name' : 'Name'}
 	                    </Label>
 	                    <Input
@@ -889,14 +894,14 @@ const Signup = () => {
 	                      placeholder="e.g. Pratyush Raj"
 	                      value={name}
 	                      onChange={(e) => setName(e.target.value)}
-	                      className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5"
+	                      className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
 	                      required
 	                      autoComplete="name"
 	                    />
 	                  </div>
                     {accountMode === 'creator' && (
                       <div className="space-y-2">
-                        <Label htmlFor="signup-instagram-handle" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+                        <Label htmlFor="signup-instagram-handle" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
                           Your Instagram username
                         </Label>
                         <Input
@@ -905,11 +910,11 @@ const Signup = () => {
                           placeholder="sana.reels.delhi"
                           value={instagramHandle}
                           onChange={(e) => setInstagramHandle(e.target.value)}
-                          className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5"
+                          className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                           required
                           autoComplete="username"
                         />
-                        <p className="px-1 text-xs text-muted-foreground">
+                        <p className="px-1 text-xs text-slate-500">
                           Just your username, not the full URL
                         </p>
                       </div>
@@ -917,7 +922,7 @@ const Signup = () => {
                     {accountMode === 'brand' && (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="signup-brand-name" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+                          <Label htmlFor="signup-brand-name" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
                             Brand Name
                           </Label>
                           <Input
@@ -926,13 +931,13 @@ const Signup = () => {
                             placeholder="e.g. Demo Brand Co"
                             value={brandName}
                             onChange={(e) => setBrandName(e.target.value)}
-                            className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5"
+                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                             required
                             autoComplete="organization"
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="signup-brand-industry" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+                          <Label htmlFor="signup-brand-industry" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
                             Industry
                           </Label>
                           <Input
@@ -941,13 +946,13 @@ const Signup = () => {
                             placeholder="e.g. Fashion"
                             value={brandIndustry}
                             onChange={(e) => setBrandIndustry(e.target.value)}
-                            className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5"
+                            className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5"
                           />
                         </div>
                       </>
                     )}
 	                  <div className="space-y-2">
-	                    <Label htmlFor="signup-email" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+	                    <Label htmlFor="signup-email" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
 	                      {accountMode === 'brand' ? 'Work Email' : 'Email'}
 	                    </Label>
 	                    <Input
@@ -956,16 +961,16 @@ const Signup = () => {
 	                      placeholder="name@example.com"
                       value={email}
                       onChange={(e) => handleEmailChange(e.target.value)}
-                      className={`bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-destructive/50' : ''}`}
+                      className={`bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 ${emailError ? 'border-red-500/50' : ''}`}
                       required
                       autoComplete="email"
                     />
                     {emailError && (
-                      <p className="text-xs text-destructive mt-1 font-bold">{emailError}</p>
+                      <p className="text-xs text-red-400 mt-1 font-bold">{emailError}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-foreground/50 text-[11px] font-black uppercase tracking-widest ml-1">
+                    <Label htmlFor="signup-password" className="text-slate-500 text-[11px] font-black uppercase tracking-widest ml-1">
                       Password
                     </Label>
                     <div className="relative">
@@ -975,7 +980,7 @@ const Signup = () => {
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="bg-secondary/50 border-border text-foreground placeholder:text-foreground/40 text-[16px] h-14 rounded-2xl px-5 pr-12"
+                        className="bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 text-[16px] h-14 rounded-2xl px-5 pr-12"
                         required
                         autoComplete="new-password"
                         minLength={6}
@@ -983,42 +988,16 @@ const Signup = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/50 hover:text-foreground transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-
-                    {/* Password strength */}
-                    {password.length > 0 && (
-                      <div className="mt-1.5 space-y-1">
-                        <div className="flex gap-1">
-                          {[1,2,3,4].map((level) => (
-                            <div
-                              key={level}
-                              className={`h-1 flex-1 rounded-full transition-all ${
-                                level <= getPasswordStrength(password).strength
-                                  ? getPasswordStrength(password).color
-                                  : 'bg-secondary/50'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <p className={`text-[10px] font-black ${
-                          getPasswordStrength(password).strength <= 1 ? 'text-destructive' :
-                          getPasswordStrength(password).strength === 2 ? 'text-yellow-400' :
-                          getPasswordStrength(password).strength === 3 ? 'text-primary' :
-                          'text-green-400'
-                        }`}>
-                          {getPasswordStrength(password).label}
-                        </p>
-                      </div>
-                    )}
 	                  </div>
 	                  <Button
 	                    type="submit"
 	                    disabled={isLoading || !name.trim() || (accountMode === 'creator' && !instagramHandle.trim()) || (accountMode === 'brand' && !brandName.trim()) || !email.trim() || !password.trim() || password.length < 6 || !!emailError}
-	                    className="w-full bg-primary hover:bg-primary text-foreground font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
+	                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest text-xs mt-2"
 	                  >
 	                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
 	                    {isLoading
@@ -1032,7 +1011,7 @@ const Signup = () => {
                           : 'Create My Page'}
 	                  </Button>
                     {!showLogin && accountMode === 'creator' && (
-                      <p className="text-center text-xs text-muted-foreground mt-3">
+                      <p className="text-center text-xs text-slate-500 mt-3">
                         Takes 1 minute. No long forms.
                       </p>
                     )}
@@ -1042,10 +1021,10 @@ const Signup = () => {
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border"></div>
+                <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]">
-                <span className="bg-[#0B0F14] px-4 text-foreground/40">Or continue with</span>
+                <span className="bg-white px-4 text-slate-500">Or continue with</span>
               </div>
             </div>
 
@@ -1068,7 +1047,7 @@ const Signup = () => {
 	                  } catch (err) { toast.error('Failed to start Google sign-up'); }
 	                }}
                 variant="outline"
-                className="w-full bg-secondary/50 border-border text-foreground hover:bg-secondary/15 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
+                className="w-full bg-white border-slate-300 text-slate-900 hover:bg-slate-50 rounded-2xl h-14 font-bold text-sm transition-all active:scale-[0.98]"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -1080,27 +1059,27 @@ const Signup = () => {
               </Button>
             </div>
 
-            <div className="text-center pt-6 border-t border-border">
+            <div className="text-center pt-6 border-t border-slate-200">
               <button type="button"
                 onClick={() => setShowLogin(!showLogin)}
-                className="text-foreground/50 hover:text-foreground font-medium text-[13px] transition-all group inline-flex items-center gap-2"
+                className="text-slate-600 hover:text-slate-900 font-medium text-[13px] transition-all group inline-flex items-center gap-2"
               >
                 {showLogin ? "Don't have an account?" : 'Already have an account?'}
-                <span className="text-primary font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
+                <span className="text-emerald-500 font-bold group-hover:underline">{showLogin ? 'Start for free' : 'Sign in here'}</span>
               </button>
             </div>
 
             {/* Back to Homepage */}
-            <div className="mt-8 text-center pt-6 border-t border-border">
-              <Link to="/" className="text-foreground/40 hover:text-primary text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
+            <div className="mt-8 text-center pt-6 border-t border-slate-200">
+              <Link to="/" className="text-slate-500 hover:text-emerald-500 text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-colors">
                 <ArrowLeft className="w-3 h-3" /> Back to Home
               </Link>
             </div>
           </div>
 
           <div className="mt-8 text-center px-4">
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.1em]">
-              By continuing, you agree to our <Link to="/terms-of-service" className="text-muted-foreground hover:text-primary underline">Terms</Link> & <Link to="/privacy-policy" className="text-muted-foreground hover:text-primary underline">Privacy</Link>
+            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.1em]">
+              By continuing, you agree to our <Link to="/terms-of-service" className="text-slate-400 hover:text-emerald-500 underline">Terms</Link> & <Link to="/privacy-policy" className="text-slate-400 hover:text-emerald-500 underline">Privacy</Link>
             </p>
           </div>
         </motion.div>

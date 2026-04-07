@@ -18,6 +18,34 @@ interface ProtectedRouteProps {
 const LOADER_TIMEOUT_MS = 8000;
 const MAX_PROFILE_RETRIES = 5;
 
+function hasPersistedSupabaseAuth(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (!key || !key.includes('auth-token')) continue;
+      const raw = window.localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      const candidates = [
+        parsed,
+        parsed?.currentSession,
+        parsed?.session,
+        Array.isArray(parsed) ? parsed[0] : null,
+      ].filter(Boolean);
+
+      if (candidates.some((candidate) => candidate?.access_token && candidate?.user?.id)) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
 /** Check if creator collab profile is complete */
 function isCollabProfileComplete(profile: any): boolean {
   if (!profile) return false;
@@ -53,12 +81,31 @@ function getTargetDashboard(profile: any): string {
   }
 }
 
+type AppRole = 'client' | 'admin' | 'chartered_accountant' | 'creator' | 'lawyer' | 'brand';
+
+const inferRequestedRole = (
+  path: string,
+  allowedRoles?: AppRole[],
+  metadata?: Record<string, unknown> | null,
+): AppRole => {
+  const metadataRole = typeof metadata?.role === 'string' ? metadata.role : typeof metadata?.account_mode === 'string' ? metadata.account_mode : null;
+  if (metadataRole === 'brand') return 'brand';
+  if (metadataRole === 'admin' || metadataRole === 'lawyer' || metadataRole === 'chartered_accountant' || metadataRole === 'client') {
+    return metadataRole;
+  }
+  if (path.startsWith('/brand-') || allowedRoles?.includes('brand')) return 'brand';
+  if (path.startsWith('/admin-') || allowedRoles?.includes('admin')) return 'admin';
+  if (path.startsWith('/lawyer-') || allowedRoles?.includes('lawyer')) return 'lawyer';
+  if (path.startsWith('/ca-') || allowedRoles?.includes('chartered_accountant')) return 'chartered_accountant';
+  return 'creator';
+};
+
 /** Fallback: create profile if DB trigger failed */
-async function createProfileFallback(userId: string): Promise<boolean> {
+async function createProfileFallback(userId: string, role: AppRole): Promise<boolean> {
   try {
     const { error } = await supabase
       .from('profiles')
-      .insert({ id: userId, role: 'creator', onboarding_complete: false, created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .insert({ id: userId, role, onboarding_complete: role === 'brand', created_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .select()
       .single();
     return !error || error.code === '23505';
@@ -73,8 +120,19 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   const { session, authStatus, profile, refetchProfile, user, isAuthInitializing } = useSession();
   const [isCreatingProfile, setIsCreatingProfile] = useState(false);
   const [loaderTimedOut, setLoaderTimedOut] = useState(false);
+  const requestedRole = inferRequestedRole(location.pathname, allowedRoles, (user?.user_metadata || {}) as Record<string, unknown>);
+  const metadataRole = typeof user?.user_metadata?.role === 'string'
+    ? user.user_metadata.role
+    : typeof user?.user_metadata?.account_mode === 'string'
+      ? user.user_metadata.account_mode
+      : null;
+  const hasPersistedAuth = hasPersistedSupabaseAuth();
+  const canBootstrapSessionOwnedRouteWithoutProfile = !!session && !profile && (requestedRole === 'brand' || requestedRole === 'creator');
+  const canRenderProtectedRouteImmediately =
+    (requestedRole === 'brand' || requestedRole === 'creator') &&
+    (!!session || hasPersistedAuth);
 
-  const isLoading = authStatus === 'loading' || isCreatingProfile;
+  const isLoading = ((authStatus === 'loading') && !canRenderProtectedRouteImmediately) || (isCreatingProfile && !canBootstrapSessionOwnedRouteWithoutProfile);
 
   // Loader timeout — give user an escape hatch after 8s
   useEffect(() => {
@@ -89,10 +147,22 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
 
     setIsCreatingProfile(true);
     let attempt = 0;
+    const requestedRole = inferRequestedRole(location.pathname, allowedRoles, (user.user_metadata || {}) as Record<string, unknown>);
+    const metadataRole = typeof user.user_metadata?.role === 'string'
+      ? user.user_metadata.role
+      : typeof user.user_metadata?.account_mode === 'string'
+        ? user.user_metadata.account_mode
+        : null;
+
+    if (requestedRole === 'brand') {
+      refetchProfile?.();
+      setIsCreatingProfile(false);
+      return;
+    }
 
     const tryGetProfile = async () => {
       if (attempt >= MAX_PROFILE_RETRIES) {
-        await createProfileFallback(user.id);
+        await createProfileFallback(user.id, requestedRole);
         refetchProfile?.();
         setIsCreatingProfile(false);
         return;
@@ -100,7 +170,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
       refetchProfile?.();
       attempt++;
       setTimeout(async () => {
-        const { data } = await supabase.from('profiles').select('id').eq('id', user.id as any).single();
+        const { data } = await supabase.from('profiles').select('id').eq('id', user.id).single();
         if (data) {
           refetchProfile?.();
           setIsCreatingProfile(false);
@@ -111,7 +181,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     };
 
     tryGetProfile();
-  }, [session, profile, user, authStatus, refetchProfile]);
+  }, [session, profile, user, authStatus, refetchProfile, location.pathname, allowedRoles]);
 
   // Route guard logic
   useEffect(() => {
@@ -162,7 +232,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   // --- Render logic ---
 
   // Show auth init screen while bootstrapping
-  if (isAuthInitializing && session && !profile) {
+  if (isAuthInitializing && session && !profile && !canRenderProtectedRouteImmediately) {
     return <AuthLoadingScreen />;
   }
 
@@ -171,9 +241,12 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
     if (loaderTimedOut && session) {
       return (
         <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 px-4">
-          <p className="text-lg text-muted-foreground text-center font-semibold mb-2">Taking longer than usual?</p>
-          <p className="text-sm text-muted-foreground text-center max-w-md mb-6">You can continue to your dashboard. Your profile will finish loading there.</p>
-          <button onClick={() => navigate('/creator-dashboard', { replace: true })} className="px-6 py-3 bg-primary hover:bg-primary text-foreground rounded-xl font-semibold transition-colors shadow-lg">
+          <p className="text-lg text-slate-900 text-center font-semibold mb-2">Taking longer than usual?</p>
+          <p className="text-sm text-slate-600 text-center max-w-md mb-6">You can continue to your dashboard. Your profile will finish loading there.</p>
+          <button
+            onClick={() => navigate(inferRequestedRole(location.pathname, allowedRoles, (user?.user_metadata || {}) as Record<string, unknown>) === 'brand' ? '/brand-dashboard' : '/creator-dashboard', { replace: true })}
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors shadow-lg"
+          >
             Continue to dashboard
           </button>
         </div>
@@ -183,16 +256,19 @@ const ProtectedRoute = ({ children, allowedRoles, requiredRole }: ProtectedRoute
   }
 
   // No session
-  if (!session) return null;
+  if (!session && !canRenderProtectedRouteImmediately) return null;
 
   // Session but no profile — show error
   if (session && !profile && user) {
+    if (canBootstrapSessionOwnedRouteWithoutProfile) {
+      return <>{children}</>;
+    }
     return (
       <div className="nb-screen-height flex flex-col items-center justify-center bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-4">
         <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold text-muted-foreground mb-4">Account Setup Issue</h2>
-          <p className="text-muted-foreground mb-6">We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.</p>
-          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-primary hover:bg-primary text-foreground rounded-lg font-semibold transition-colors">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Account Setup Issue</h2>
+          <p className="text-slate-600 mb-6">We're having trouble setting up your account. Please try refreshing the page or contact support if the issue persists.</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition-colors">
             Refresh Page
           </button>
         </div>
