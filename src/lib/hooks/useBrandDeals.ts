@@ -192,17 +192,6 @@ export const useBrandDeals = (options: UseBrandDealsOptions) => {
         return [];
       }
 
-      // Get current session to verify auth.uid() matches creatorId
-      const { data: { session } } = await supabase.auth.getSession();
-      const authUserId = session?.user?.id;
-
-      if (authUserId !== creatorId) {
-        logger.warn('[useBrandDeals] auth.uid() does not match creatorId. This may cause RLS issues.', {
-          authUserId,
-          creatorId,
-        });
-      }
-
       // Define signed statuses that should be visible (includes barter: Drafting, Awaiting Product Shipment)
       const signedStatuses = [
         'sent', // Awaiting creator signature
@@ -803,7 +792,35 @@ export const useBrandDealById = (dealId: string | undefined, userId: string | un
   return useSupabaseQuery<BrandDeal | null, Error>(
     queryKey,
     async () => {
-      if (!dealId || !userId) return null;
+      if (!dealId) return null;
+
+      if (!userId) {
+        const { data, error } = await (supabase
+          .from('brand_deals')
+          .select('*')
+          .eq('id', dealId as any)
+          .maybeSingle() as any);
+
+        if (error) {
+          const isMissingTableError =
+            error.code === 'PGRST116' ||
+            (error as any).status === 406 ||
+            error.code === '42P01' ||
+            (error as any).status === 404 ||
+            error.message?.includes('does not exist') ||
+            error.message?.includes('relation') ||
+            error.message?.includes('not found') ||
+            error.message?.includes('0 rows');
+
+          if (isMissingTableError) {
+            return null;
+          }
+
+          throw error;
+        }
+
+        return (data as unknown as BrandDeal) ?? null;
+      }
 
       const { data, error } = await (supabase
         .from('brand_deals')
@@ -815,14 +832,34 @@ export const useBrandDealById = (dealId: string | undefined, userId: string | un
       if (error) {
         const isMissingTableError =
           error.code === 'PGRST116' ||
+          (error as any).status === 406 ||
           error.code === '42P01' ||
           (error as any).status === 404 ||
           error.message?.includes('does not exist') ||
           error.message?.includes('relation') ||
-          error.message?.includes('not found');
+          error.message?.includes('not found') ||
+          error.message?.includes('0 rows');
 
         if (isMissingTableError) {
-          return null;
+          const fallback = await (supabase
+            .from('brand_deals')
+            .select('*')
+            .eq('id', dealId as any)
+            .maybeSingle() as any);
+
+          if (fallback.error) {
+            return null;
+          }
+
+          const fallbackData = fallback.data as BrandDeal | null;
+          if (!fallbackData) return null;
+
+          const expectedOwnerId = role === 'brand' ? (fallbackData as any).brand_id : (fallbackData as any).creator_id;
+          if (expectedOwnerId && String(expectedOwnerId) !== String(userId)) {
+            return null;
+          }
+
+          return fallbackData;
         }
         throw error;
       }
@@ -830,7 +867,7 @@ export const useBrandDealById = (dealId: string | undefined, userId: string | un
       return (data as unknown as BrandDeal) ?? null;
     },
     {
-      enabled: !!dealId && !!userId,
+      enabled: !!dealId,
       errorMessage: 'Failed to fetch brand deal',
       retry: false,
     }

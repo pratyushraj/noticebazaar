@@ -1,84 +1,212 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSession } from '@/contexts/SessionContext';
-import { useBrandDealById, useUpdateBrandDeal } from '@/lib/hooks/useBrandDeals';
+import { getApiBaseUrl } from '@/lib/utils/api';
+import { supabase } from '@/integrations/supabase/client';
+import { BrandDeal } from '@/types';
 import BrandBottomNav from '@/components/brand-dashboard/BrandBottomNav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowLeft, Loader2, Clock, CheckCircle2, XCircle, IndianRupee,
-  FileText, Copy, ExternalLink, Calendar, ShieldCheck, Link as LinkIcon,
-  ThumbsUp, ThumbsDown, MessageSquare, AlertCircle, Send, Check, WifiOff
+  FileText, Copy, ExternalLink, Calendar, ShieldCheck, MessageSquare, Send, Wallet
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const BrandDealDetailPage: React.FC = () => {
   const { dealId } = useParams<{ dealId: string }>();
   const navigate = useNavigate();
-  const { profile } = useSession();
-    // Offline detection
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  const { session } = useSession();
 
-  const { data: deal, isLoading } = useBrandDealById(dealId, profile?.id, 'brand');
-  const updateDeal = useUpdateBrandDeal();
-
-  const [showMarkPaidModal, setShowMarkPaidModal] = useState(false);
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-  const [showApproveModal, setShowApproveModal] = useState(false);
-  const [showChangesModal, setShowChangesModal] = useState(false);
+  const [deal, setDeal] = useState<BrandDeal | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [brandFeedback, setBrandFeedback] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('UPI');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [isReviewingContent, setIsReviewingContent] = useState(false);
+  const [isReleasingPayment, setIsReleasingPayment] = useState(false);
+  const [loggedContentLink, setLoggedContentLink] = useState('');
+  const [loggedContentNotes, setLoggedContentNotes] = useState('');
 
-  const isContentSubmitted = deal?.status?.toLowerCase().includes('submitted') ||
-    deal?.status?.toLowerCase().includes('delivered') ||
-    deal?.content_submission_url;
-  const isContentApproved = deal?.status?.toLowerCase().includes('approved') ||
-    deal?.brand_approval_status?.toLowerCase() === 'approved';
-  const isPaymentSent = !!(deal as any)?.payment_sent_at;
-  const isPaymentReceived = !!(deal as any)?.payment_received_date;
-  const isCompleted = deal?.status?.toLowerCase().includes('completed') ||
-    deal?.status?.toLowerCase().includes('vested');
+  const loadDeal = async () => {
+    if (!dealId || !session?.access_token) {
+      setDeal(null);
+      setIsLoading(false);
+      return;
+    }
 
-  const getStageColor = (status: string | null | undefined) => {
-    if (!status) return 'bg-background/20 text-muted-foreground';
-    const s = status.toLowerCase();
-    if (s.includes('awaiting') || s.includes('pending') || s.includes('sent') && !s.includes('paid')) return 'bg-yellow-500/20 text-yellow-400';
-    if (s.includes('content') && s.includes('making')) return 'bg-info/20 text-info';
-    if (s.includes('delivered') || s.includes('submitted')) return 'bg-secondary/20 text-secondary';
-    if (s.includes('approved')) return 'bg-primary/20 text-primary';
-    if (s.includes('payment') && s.includes('sent')) return 'bg-green-500/20 text-green-400';
-    if (s.includes('payment') && s.includes('received')) return 'bg-green-500/20 text-green-400';
-    if (s.includes('revision') || s.includes('change')) return 'bg-warning/20 text-warning';
-    if (s.includes('completed') || s.includes('vested')) return 'bg-green-500/20 text-green-400';
-    if (s.includes('declined') || s.includes('rejected')) return 'bg-destructive/20 text-destructive';
-    return 'bg-info/20 text-info';
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/brand-dashboard/deals`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      const json = await response.json().catch(() => ({}));
+
+      if (!response.ok || !json?.success) {
+        console.error('[BrandDealDetailPage] Failed to fetch deals:', json);
+        setDeal(null);
+        return;
+      }
+
+      const matchedDeal = ((json.deals as BrandDeal[] | undefined) || []).find(
+        (item) => String(item?.id || '') === String(dealId)
+      ) || null;
+
+      setDeal(matchedDeal);
+    } catch (error) {
+      console.error('[BrandDealDetailPage] Failed to fetch deal:', error);
+      setDeal(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getStatusLabel = (status: string | null | undefined): string => {
-    if (!status) return 'Unknown';
+  useEffect(() => {
+    void loadDeal();
+  }, [dealId, session?.access_token]);
+
+  const normalizedStatus = String(deal?.status || '').trim().toUpperCase().replaceAll(' ', '_');
+  const canReviewContent = normalizedStatus === 'CONTENT_DELIVERED' || normalizedStatus === 'REVISION_DONE';
+  const paymentMarkedSent = Boolean((deal as any)?.payment_released_at) || normalizedStatus === 'PAYMENT_RELEASED';
+  const canReleasePayment = normalizedStatus === 'CONTENT_APPROVED' && !paymentMarkedSent;
+  const directContentLink = String((deal as any)?.content_submission_url || (deal as any)?.content_url || '').trim();
+  const directContentNotes = String((deal as any)?.content_notes || '').trim();
+  const contentLink = directContentLink || loggedContentLink;
+  const contentNotes = directContentNotes || loggedContentNotes;
+  const brandApprovalStatus = String((deal as any)?.brand_approval_status || '').trim().toLowerCase();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLoggedContent = async () => {
+      if (!deal?.id || directContentLink) {
+        setLoggedContentLink('');
+        setLoggedContentNotes('');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('deal_action_logs')
+        .select('event, metadata, created_at')
+        .eq('deal_id', deal.id)
+        .in('event', ['CONTENT_SUBMITTED', 'REVISION_SUBMITTED'])
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (cancelled || error || !data?.length) return;
+
+      const latest = data[0] as any;
+      const metadata = latest?.metadata || {};
+      const links = Array.isArray(metadata?.content_links) ? metadata.content_links : [];
+      const fallbackLink = String(metadata?.content_url || links[0] || '').trim();
+      const fallbackNotes = String(metadata?.notes || '').trim();
+
+      if (!cancelled) {
+        setLoggedContentLink(fallbackLink);
+        setLoggedContentNotes(fallbackNotes);
+      }
+    };
+
+    void loadLoggedContent();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [deal?.id, directContentLink]);
+
+  const patchDeal = async (path: string, body?: Record<string, unknown>) => {
+    const token = session?.access_token;
+    if (!token) throw new Error('Please log in again.');
+
+    const response = await fetch(`${getApiBaseUrl()}${path}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.success) {
+      throw new Error((data as any)?.error || 'Request failed');
+    }
+    return data;
+  };
+
+  const handleReviewContent = async (status: 'approved' | 'changes_requested') => {
+    if (!deal?.id) return;
+    if (status === 'changes_requested' && !brandFeedback.trim()) {
+      toast.error('Add feedback before requesting changes.');
+      return;
+    }
+
+    try {
+      setIsReviewingContent(true);
+      await patchDeal(`/api/deals/${deal.id}/review-content`, {
+        status,
+        feedback: brandFeedback.trim() || undefined,
+      });
+      toast.success(status === 'approved' ? 'Content approved.' : 'Changes requested.');
+      if (status === 'approved') {
+        setBrandFeedback('');
+      }
+      await loadDeal();
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not update content review.');
+    } finally {
+      setIsReviewingContent(false);
+    }
+  };
+
+  const handleReleasePayment = async () => {
+    if (!deal?.id) return;
+    if (!paymentReference.trim()) {
+      toast.error('Payment reference is required.');
+      return;
+    }
+
+    try {
+      setIsReleasingPayment(true);
+      await patchDeal(`/api/deals/${deal.id}/release-payment`, {
+        paymentReference: paymentReference.trim(),
+        paymentNotes: paymentNotes.trim() || undefined,
+      });
+      toast.success('Payment marked as sent.');
+      setPaymentReference('');
+      setPaymentNotes('');
+      await loadDeal();
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not mark payment as sent.');
+    } finally {
+      setIsReleasingPayment(false);
+    }
+  };
+
+  const nextStepLabel = useMemo(() => {
+    if (canReviewContent) return 'Review the creator content';
+    if (canReleasePayment) return 'Mark payment as sent';
+    if (brandApprovalStatus === 'changes_requested') return 'Waiting for creator revision';
+    if (brandApprovalStatus === 'approved' && paymentMarkedSent) return 'Waiting for creator confirmation';
+    return 'Track this deal';
+  }, [brandApprovalStatus, canReleasePayment, canReviewContent, paymentMarkedSent]);
+
+  const getStageColor = (status: string | null) => {
+    if (!status) return 'bg-slate-500/20 text-slate-400';
     const s = status.toLowerCase();
-    if (s.includes('awaiting') && s.includes('response')) return 'Awaiting response';
-    if (s.includes('content') && s.includes('making')) return 'Content in progress';
-    if (s.includes('delivered') || s.includes('submitted')) return 'Content submitted';
-    if (s.includes('approved')) return 'Approved';
-    if (s.includes('payment') && s.includes('sent')) return 'Payment sent';
-    if (s.includes('payment') && s.includes('received')) return 'Payment received';
-    if (s.includes('revision') || s.includes('change')) return 'Changes requested';
-    if (s.includes('completed') || s.includes('vested')) return 'Completed';
-    if (s.includes('declined') || s.includes('rejected')) return 'Declined';
-    if (s.includes('awaiting') && s.includes('product')) return 'Awaiting product';
-    return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    if (s.includes('content') && s.includes('making')) return 'bg-blue-500/20 text-blue-400';
+    if (s.includes('delivered') || s.includes('submitted')) return 'bg-purple-500/20 text-purple-400';
+    if (s.includes('approved') || s.includes('signed')) return 'bg-emerald-500/20 text-emerald-400';
+    if (s.includes('payment') || s.includes('paid')) return 'bg-green-500/20 text-green-400';
+    if (s.includes('revision')) return 'bg-amber-500/20 text-amber-400';
+    if (s.includes('completed')) return 'bg-green-500/20 text-green-400';
+    return 'bg-blue-500/20 text-blue-400';
   };
 
   const formatDate = (dateStr: string | null | undefined) => {
@@ -94,279 +222,209 @@ const BrandDealDetailPage: React.FC = () => {
   const copyDealLink = () => {
     if (deal?.id) {
       const link = `${window.location.origin}/deal/${deal.id}`;
-      navigator.clipboard.writeText(link).then(() => toast.success('Deal link copied!')).catch(() => toast.error('Failed to copy'));
-    }
-  };
-
-  const handleApproveContent = async () => {
-    if (!deal?.id) return;
-    setIsUpdating(true);
-    try {
-      await updateDeal.mutateAsync({
-        id: deal.id,
-        creator_id: deal.creator_id,
-        brand_approval_status: 'approved',
-        status: 'Approved',
-      } as any);
-      toast.success('Content approved!');
-      setShowApproveModal(false);
-    } catch {
-      toast.error('Failed to approve content');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleRequestChanges = async () => {
-    if (!deal?.id || !brandFeedback.trim()) {
-      toast.error('Please describe what needs to be changed');
-      return;
-    }
-    setIsUpdating(true);
-    try {
-      await updateDeal.mutateAsync({
-        id: deal.id,
-        creator_id: deal.creator_id,
-        brand_approval_status: 'changes_requested',
-        brand_feedback: brandFeedback.trim(),
-        status: 'Changes Requested',
-      } as any);
-      toast.success('Feedback sent to creator');
-      setShowChangesModal(false);
-      setBrandFeedback('');
-    } catch {
-      toast.error('Failed to send feedback');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleMarkPaymentSent = async () => {
-    if (!deal?.id) return;
-    setIsUpdating(true);
-    try {
-      await updateDeal.mutateAsync({
-        id: deal.id,
-        creator_id: deal.creator_id,
-        payment_sent_at: new Date().toISOString(),
-        status: 'Payment Sent',
-      } as any);
-      toast.success('Payment marked as sent!');
-      setShowMarkPaidModal(false);
-    } catch {
-      toast.error('Failed to mark payment as sent');
-    } finally {
-      setIsUpdating(false);
+      navigator.clipboard.writeText(link).then(() => {
+        toast.success('Deal link copied!');
+      }).catch(() => {
+        toast.error('Failed to copy link');
+      });
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0F1A] text-foreground flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+      <div className="min-h-screen bg-[#0D0F1A] text-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
       </div>
     );
   }
 
   if (!deal) {
     return (
-      <div className="min-h-screen bg-[#0D0F1A] text-foreground flex items-center justify-center">
+      <div className="min-h-screen bg-[#0D0F1A] text-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-bold mb-3">Deal not found</h2>
-          <Button onClick={() => navigate('/brand-dashboard')} className="bg-secondary hover:bg-secondary">Back to Dashboard</Button>
+          <Button onClick={() => navigate('/brand-dashboard')} className="bg-purple-600 hover:bg-purple-500">
+            Back to Dashboard
+          </Button>
         </div>
       </div>
     );
   }
 
-  const contentLinks: string[] = [];
-  if ((deal as any)?.content_links) {
-    try {
-      const parsed = JSON.parse((deal as any).content_links);
-      if (Array.isArray(parsed)) contentLinks.push(...parsed);
-    } catch {}
-  }
-  if (deal?.content_submission_url) contentLinks.push(deal.content_submission_url);
-  const uniqueLinks = [...new Set(contentLinks)].filter(Boolean);
-
   return (
-    <div className="min-h-screen bg-[#0D0F1A] text-foreground pb-24">
+    <div className="min-h-screen bg-[#0D0F1A] text-white pb-24">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-900 to-purple-800 px-4 pt-12 pb-6">
-        <button onClick={() => navigate('/brand-dashboard')} className="flex items-center gap-2 text-foreground/60 hover:text-foreground mb-4 transition-colors">
+        <button
+          onClick={() => navigate('/brand-dashboard')}
+          className="flex items-center gap-2 text-white/60 hover:text-white mb-4 transition-colors"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back
         </button>
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-foreground">{deal.brand_name || 'Deal'}</h1>
-            <p className="text-sm text-foreground/60 mt-1">with {deal.platform || 'Instagram'} · {deal.deliverables || 'Collab'}</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black text-white">{deal.brand_name || 'Deal'}</h1>
+            {(deal as any).brand_verified && (
+              <ShieldCheck className="h-5 w-5 text-blue-400 flex-shrink-0" aria-label="Verified brand" />
+            )}
           </div>
           <span className={cn('text-xs px-3 py-1 rounded-full font-medium', getStageColor(deal.status))}>
-            {getStatusLabel(deal.status)}
+            {deal.status || 'Unknown'}
           </span>
         </div>
       </div>
 
       <div className="px-4 py-6 space-y-5">
-        {!isOnline && (
-          <div className="fixed top-0 left-0 right-0 z-50 bg-warning text-foreground px-4 py-2.5 flex items-center gap-2 text-sm font-bold shadow-lg">
-            <WifiOff className="w-4 h-4 flex-shrink-0" />
-            You're offline — changes will sync when you reconnect
-          </div>
-        )}
-
-        {/* ===== ACTION CARD: Content Review ===== */}
-        {isContentSubmitted && !isContentApproved && (
-          <Card className="bg-secondary/30 border-purple-500/30 rounded-2xl overflow-hidden">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                  <LinkIcon className="w-4 h-4 text-secondary" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-wider text-secondary">Creator submitted content</p>
-                  <p className="text-xs text-secondary/60">Review and approve or request changes</p>
-                </div>
-              </div>
-
-              {/* Content Links */}
-              {uniqueLinks.length > 0 && (
-                <div className="bg-card rounded-xl p-3 mb-4 space-y-2">
-                  {uniqueLinks.map((link, i) => (
-                    <a key={i} href={link} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-secondary hover:text-secondary break-all">
-                      <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                      {link}
-                    </a>
-                  ))}
-                </div>
-              )}
-
-              {/* Creator's note */}
-              {(deal as any)?.content_notes && (
-                <div className="bg-card rounded-xl p-3 mb-4">
-                  <p className="text-xs text-foreground/50 mb-1">Note from creator</p>
-                  <p className="text-sm text-foreground/80">{(deal as any).content_notes}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => setShowChangesModal(true)}
-                  className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-bold rounded-xl flex items-center justify-center gap-2"
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  Request Changes
-                </Button>
-                <Button
-                  onClick={() => setShowApproveModal(true)}
-                  className="flex-1 h-11 bg-primary hover:bg-primary font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Approve
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ===== ACTION CARD: Payment ===== */}
-        {isContentApproved && !isPaymentSent && deal.deal_type !== 'barter' && (
-          <Card className="bg-primary/30 border-primary/30 rounded-2xl overflow-hidden">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <IndianRupee className="w-4 h-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-wider text-primary">Payment pending</p>
-                  <p className="text-xs text-primary/60">Pay outside the platform, then mark as sent</p>
-                </div>
-              </div>
-
-              {/* Brand trust signal */}
-              <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 mb-4">
-                <div className="flex items-start gap-2">
-                  <ShieldCheck className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-semibold text-primary">Your payment is protected</p>
-                    <p className="text-[11px] text-primary/70 mt-0.5">You only pay after approving content. If creator doesn't deliver, contact support for a resolution.</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-card rounded-xl p-4 mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-foreground/60">Amount to pay</span>
-                  <span className="text-xl font-black text-foreground">{formatCurrency(deal.deal_amount)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-foreground/60">Pay by</span>
-                  <span className="text-sm text-foreground/80">{formatDate(deal.payment_expected_date)}</span>
-                </div>
-              </div>
-
-              <Button
-                onClick={() => setShowMarkPaidModal(true)}
-                className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
-              >
-                <Check className="h-4 w-4" />
-                I've Paid — Mark as Sent
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ===== Deal Value Card ===== */}
-        <Card className="bg-card border-border rounded-2xl overflow-hidden">
+        {/* Deal Value Card */}
+        <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
           <CardContent className="p-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-foreground/40 mb-1">Deal Value</p>
-                <p className="text-2xl font-black text-foreground">
+                <p className="text-[11px] uppercase tracking-wider text-white/40 mb-1">Deal Value</p>
+                <p className="text-2xl font-black text-white">
                   {deal.deal_type === 'barter' ? 'Free products' : formatCurrency(deal.deal_amount)}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-foreground/40 mb-1">Due Date</p>
-                <p className="text-base font-semibold text-foreground flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-foreground/40" />
+                <p className="text-[11px] uppercase tracking-wider text-white/40 mb-1">Due Date</p>
+                <p className="text-base font-semibold text-white flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-white/40" />
                   {formatDate(deal.due_date)}
                 </p>
               </div>
             </div>
+
+            {/* Progress */}
             {deal.progress_percentage != null && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex justify-between text-xs text-foreground/60 mb-2">
-                  <span>Progress</span><span>{deal.progress_percentage}%</span>
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex justify-between text-xs text-white/60 mb-2">
+                  <span>Progress</span>
+                  <span>{deal.progress_percentage}%</span>
                 </div>
-                <div className="h-2 bg-card0 rounded-full overflow-hidden">
-                  <div className="h-full bg-secondary rounded-full" style={{ width: `${deal.progress_percentage}%` }} />
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-purple-500 rounded-full transition-all"
+                    style={{ width: `${deal.progress_percentage}%` }}
+                  />
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* ===== Deliverables ===== */}
+        <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+          <CardContent className="p-4 space-y-2">
+            <p className="text-[11px] uppercase tracking-wider text-white/40">Next Step</p>
+            <p className="text-lg font-bold text-white">{nextStepLabel}</p>
+            <p className="text-sm text-white/60">
+              {canReviewContent
+                ? 'Check the submitted post and either approve it or ask for one clear change.'
+                : canReleasePayment
+                  ? 'Once the content is approved, add your payment reference so the creator gets notified.'
+                  : brandApprovalStatus === 'changes_requested'
+                    ? 'The creator has been notified. Review the updated link when they re-submit.'
+                    : 'Use this page to monitor the collaboration, content, and payment progress.'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Deliverables */}
         {deal.deliverables && (
-          <Card className="bg-card border-border rounded-2xl overflow-hidden">
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
             <CardContent className="p-4">
-              <p className="text-[11px] uppercase tracking-wider text-foreground/40 mb-3">Deliverables</p>
-              <p className="text-base font-medium text-foreground">{deal.deliverables}</p>
+              <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Deliverables</p>
+              <p className="text-base font-medium text-white">{deal.deliverables}</p>
             </CardContent>
           </Card>
         )}
 
-        {/* ===== Contract ===== */}
+        {(contentLink || contentNotes || canReviewContent || brandApprovalStatus === 'changes_requested' || brandApprovalStatus === 'approved') && (
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              <div>
+                <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Creator Content</p>
+                {contentLink ? (
+                  <a
+                    href={contentLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-purple-300 hover:text-purple-200 break-all"
+                  >
+                    <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                    {contentLink}
+                  </a>
+                ) : (
+                  <p className="text-sm text-white/60">The creator has not shared a live post link yet.</p>
+                )}
+              </div>
+
+              {contentNotes && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+                  <p className="text-[11px] uppercase tracking-wider text-white/40 mb-2">Creator note</p>
+                  <p className="text-sm text-white/80 whitespace-pre-wrap">{contentNotes}</p>
+                </div>
+              )}
+
+              {(canReviewContent || brandApprovalStatus === 'changes_requested' || brandApprovalStatus === 'approved') && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-white">Review status</p>
+                    <span className={cn('text-[10px] px-2 py-1 rounded-full font-medium', getStageColor(deal.status))}>
+                      {brandApprovalStatus ? brandApprovalStatus.replace('_', ' ') : 'pending'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="brand-feedback" className="text-[11px] uppercase tracking-wider text-white/50">
+                      Feedback for creator
+                    </Label>
+                    <Textarea
+                      id="brand-feedback"
+                      value={brandFeedback}
+                      onChange={(e) => setBrandFeedback(e.target.value)}
+                      placeholder="Optional when approving. Required if you need changes."
+                      className="min-h-[96px] bg-white/5 border-white/10 text-white placeholder:text-white/35"
+                    />
+                  </div>
+
+                  {canReviewContent && (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isReviewingContent}
+                        onClick={() => handleReviewContent('changes_requested')}
+                        className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:text-amber-200"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Request Changes
+                      </Button>
+                      <Button
+                        type="button"
+                        disabled={isReviewingContent}
+                        onClick={() => handleReviewContent('approved')}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Approve Content
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Contract */}
         {deal.contract_file_url && (
-          <Card className="bg-card border-border rounded-2xl overflow-hidden">
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
             <CardContent className="p-4">
-              <p className="text-[11px] uppercase tracking-wider text-foreground/40 mb-3">Contract</p>
+              <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Contract</p>
               <Button
                 onClick={() => window.open(deal.contract_file_url!, '_blank')}
-                className="w-full h-12 bg-secondary hover:bg-secondary font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
+                className="w-full h-12 bg-purple-600 hover:bg-purple-500 font-bold text-white rounded-xl flex items-center justify-center gap-2"
               >
                 <FileText className="h-5 w-5" />
                 View Contract
@@ -376,201 +434,94 @@ const BrandDealDetailPage: React.FC = () => {
           </Card>
         )}
 
-        {/* ===== Payment Status ===== */}
+        {/* Payment Info */}
         {deal.deal_type !== 'barter' && (
-          <Card className="bg-card border-border rounded-2xl overflow-hidden">
-            <CardContent className="p-4">
-              <p className="text-[11px] uppercase tracking-wider text-foreground/40 mb-3">Payment</p>
+          <Card className="bg-white/5 border-white/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              <p className="text-[11px] uppercase tracking-wider text-white/40 mb-3">Payment</p>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-foreground/60">Amount</span>
-                  <span className="font-semibold text-foreground">{formatCurrency(deal.deal_amount)}</span>
+                  <span className="text-white/60">Amount</span>
+                  <span className="font-semibold text-white">{formatCurrency(deal.deal_amount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-foreground/60">Expected date</span>
-                  <span className="font-semibold text-foreground">{formatDate(deal.payment_expected_date)}</span>
+                  <span className="text-white/60">Expected date</span>
+                  <span className="font-semibold text-white">{formatDate(deal.payment_expected_date)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-foreground/60">Status</span>
-                  <span className={cn('font-semibold', isPaymentReceived ? 'text-green-400' : isPaymentSent ? 'text-yellow-400' : 'text-foreground/60')}>
-                    {isPaymentReceived ? 'Received' : isPaymentSent ? 'Sent — awaiting confirmation' : 'Pending'}
+                  <span className="text-white/60">Status</span>
+                  <span className="font-semibold text-white">
+                    {paymentMarkedSent ? 'Sent to creator' : 'Pending'}
                   </span>
                 </div>
-                {isPaymentSent && !isPaymentReceived && (
-                  <div className="mt-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                    <p className="text-xs text-yellow-300">⏳ Waiting for creator to confirm receipt. They'll get a notification.</p>
-                  </div>
-                )}
-                {isPaymentReceived && (
-                  <div className="mt-2 p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <p className="text-xs text-green-300">✅ Creator confirmed payment received. Deal complete!</p>
-                  </div>
-                )}
               </div>
+
+              {canReleasePayment && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-reference" className="text-[11px] uppercase tracking-wider text-white/50">
+                      Payment reference
+                    </Label>
+                    <Input
+                      id="payment-reference"
+                      value={paymentReference}
+                      onChange={(e) => setPaymentReference(e.target.value)}
+                      placeholder="UTR, transaction ID, or bank reference"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/35"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-notes" className="text-[11px] uppercase tracking-wider text-white/50">
+                      Note to creator
+                    </Label>
+                    <Textarea
+                      id="payment-notes"
+                      value={paymentNotes}
+                      onChange={(e) => setPaymentNotes(e.target.value)}
+                      placeholder="Optional note about when the payment should reflect."
+                      className="min-h-[96px] bg-white/5 border-white/10 text-white placeholder:text-white/35"
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleReleasePayment}
+                    disabled={isReleasingPayment}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 font-bold text-white"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {isReleasingPayment ? 'Marking Payment...' : 'Mark Payment Sent'}
+                  </Button>
+                </div>
+              )}
+
+              {paymentMarkedSent && (
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+                  <p className="text-sm font-semibold text-emerald-200 flex items-center gap-2">
+                    <Wallet className="h-4 w-4" />
+                    Payment sent to creator
+                  </p>
+                  <p className="mt-1 text-sm text-emerald-100/80">
+                    Marked on {formatDate((deal as any).payment_released_at || deal.updated_at)}{deal.utr_number ? ` • Ref ${deal.utr_number}` : ''}.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {/* ===== Actions ===== */}
+        {/* Actions */}
         <div className="space-y-3">
           <Button
             onClick={copyDealLink}
-            className="w-full h-12 bg-card0 hover:bg-secondary/20 border border-border font-bold text-foreground rounded-xl flex items-center justify-center gap-2"
+            className="w-full h-12 bg-white/10 hover:bg-white/20 border border-white/20 font-bold text-white rounded-xl flex items-center justify-center gap-2"
           >
             <Copy className="h-4 w-4" />
             Copy Deal Link
           </Button>
         </div>
       </div>
-
-      {/* ===== STICKY ACTION BAR — Mobile Only ===== */}
-      {/* Content review actions */}
-      {isContentSubmitted && !isContentApproved && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F1A] via-[#0B0F1A]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
-          <div className="flex gap-2 max-w-lg mx-auto">
-            <button
-              type="button"
-              onClick={() => setShowChangesModal(true)}
-              className="flex-1 h-12 rounded-xl bg-card0 border border-border text-foreground/80 font-bold text-sm flex items-center justify-center gap-2"
-            >
-              <ThumbsDown className="h-4 w-4" />
-              Changes
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowApproveModal(true)}
-              className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary text-foreground font-bold text-sm flex items-center justify-center gap-2"
-            >
-              <ThumbsUp className="h-4 w-4" />
-              Approve
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Payment actions */}
-      {isContentApproved && !isPaymentSent && deal.deal_type !== 'barter' && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-[#0B0F1A] via-[#0B0F1A]/95 to-transparent pt-8 pb-4 px-4 md:hidden">
-          <div className="max-w-lg mx-auto">
-            <button
-              type="button"
-              onClick={() => setShowMarkPaidModal(true)}
-              className="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-foreground font-bold text-sm flex items-center justify-center gap-2"
-            >
-              <Check className="h-4 w-4" />
-              I've Paid — Mark as Sent
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ===== APPROVE MODAL ===== */}
-      {showApproveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-md w-full border border-border">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <ThumbsUp className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Approve content</h3>
-            </div>
-            <p className="text-foreground/70 mb-4 text-sm">
-              Once approved, payment will be due within 7 days. Make sure you've reviewed the content.
-            </p>
-            <div className="bg-card rounded-xl p-3 mb-6">
-              <p className="text-xs text-foreground/50 mb-1">Amount due to creator</p>
-              <p className="text-2xl font-black text-foreground">{formatCurrency(deal.deal_amount)}</p>
-            </div>
-            <div className="flex gap-3">
-              <Button onClick={() => setShowApproveModal(false)} className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
-                Cancel
-              </Button>
-              <Button onClick={handleApproveContent} disabled={isUpdating} className="flex-1 h-11 bg-primary hover:bg-primary font-bold text-foreground rounded-xl flex items-center justify-center gap-2">
-                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                Approve
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===== REQUEST CHANGES MODAL ===== */}
-      {showChangesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-md w-full border border-border">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center">
-                <ThumbsDown className="w-5 h-5 text-warning" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Request changes</h3>
-            </div>
-            <p className="text-foreground/70 mb-3 text-sm">Tell the creator exactly what needs to be different.</p>
-            <textarea
-              value={brandFeedback}
-              onChange={(e) => setBrandFeedback(e.target.value)}
-              placeholder="e.g. The product wasn't visible in the reel. Can you redo with the pack clearly shown for 5+ seconds?"
-              rows={4}
-              className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none mb-4"
-            />
-            <div className="flex gap-3">
-              <Button onClick={() => { setShowChangesModal(false); setBrandFeedback(''); }} className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
-                Cancel
-              </Button>
-              <Button onClick={handleRequestChanges} disabled={isUpdating || !brandFeedback.trim()} className="flex-1 h-11 bg-warning hover:bg-warning font-bold text-foreground rounded-xl flex items-center justify-center gap-2">
-                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                Send Feedback
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===== MARK PAYMENT SENT MODAL ===== */}
-      {showMarkPaidModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#1a1a2e] rounded-2xl p-6 max-w-md w-full border border-border">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                <Check className="w-5 h-5 text-green-400" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">Mark payment as sent</h3>
-            </div>
-            <p className="text-foreground/70 mb-4 text-sm">
-              Confirm that you've transferred the payment outside Creator Armour. The creator will be notified to confirm receipt.
-            </p>
-            <div className="bg-card rounded-xl p-4 mb-4 space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-foreground/60">Amount</span>
-                <span className="font-bold text-foreground">{formatCurrency(deal.deal_amount)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-foreground/60">Method</span>
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="bg-card0 border border-border rounded-lg px-3 py-1.5 text-sm text-foreground"
-                >
-                  <option value="UPI">UPI</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="GPay">GPay</option>
-                  <option value="PhonePe">PhonePe</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button onClick={() => setShowMarkPaidModal(false)} className="flex-1 h-11 bg-card0 hover:bg-secondary/20 border border-border text-foreground font-medium rounded-xl">
-                Cancel
-              </Button>
-              <Button onClick={handleMarkPaymentSent} disabled={isUpdating} className="flex-1 h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 font-bold text-foreground rounded-xl flex items-center justify-center gap-2">
-                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                Yes, Payment Sent
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <BrandBottomNav />
     </div>
