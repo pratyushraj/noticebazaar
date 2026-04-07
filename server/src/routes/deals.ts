@@ -82,6 +82,66 @@ const fetchDealForBrandMutation = async (dealId: string) => {
   return { deal: null, error: lastError };
 };
 
+const fetchDealForViewer = async (dealId: string) => {
+  const selectAttempts = [
+    'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at',
+    'id, status, creator_id, brand_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at',
+    'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at',
+    'id, status, creator_id, brand_email, brand_name, created_at',
+  ];
+
+  let lastError: any = null;
+  for (const select of selectAttempts) {
+    const { data, error } = await supabase
+      .from('brand_deals')
+      .select(select)
+      .eq('id', dealId)
+      .maybeSingle();
+
+    if (!error) {
+      return { deal: data, error: null };
+    }
+
+    lastError = error;
+    if (!isMissingColumnError(error)) {
+      return { deal: null, error };
+    }
+  }
+
+  return { deal: null, error: lastError };
+};
+
+const fetchDealsForCreator = async (creatorId: string, creatorEmail?: string | null) => {
+  const selectAttempts = [
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, progress_percentage, payment_released_at, payment_received_date, utr_number, shipping_required, content_submission_url, content_url, content_notes, brand_approval_status, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_id, brand_email, brand_name, collab_type, deal_type, deal_amount, due_date, payment_released_at, payment_received_date, utr_number, content_submission_url, content_url, content_notes, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at, updated_at', canUseCreatorId: true },
+    { select: 'id, status, creator_id, brand_email, brand_name, deal_type, deal_amount, due_date, created_at', canUseCreatorId: true },
+  ];
+
+  for (const attempt of selectAttempts) {
+    let query: any = supabase.from('brand_deals').select(attempt.select).order('created_at', { ascending: false });
+    query = query.eq('creator_id', creatorId);
+
+    const { data, error } = await query;
+    if (!error) {
+      return { deals: (data || []) as any[], error: null };
+    }
+
+    if (!isMissingColumnError(error)) {
+      return { deals: [], error };
+    }
+  }
+
+  if (!creatorEmail) {
+    return { deals: [], error: null };
+  }
+
+  return { deals: [], error: null };
+};
+
 const notifyCreatorForDealEvent = async (
   template: Parameters<typeof getCreatorNotificationContent>[0],
   deal: any,
@@ -331,6 +391,74 @@ router.post('/log-reminder', authMiddleware, async (req: AuthenticatedRequest, r
       success: false,
       error: error.message || 'Internal server error'
     });
+  }
+});
+
+// GET /api/deals/mine
+// Lightweight creator-facing deals list fallback for older clients and route bootstraps.
+router.get('/mine', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+    if (role !== 'creator' && role !== 'admin' && role !== 'client') {
+      return res.status(403).json({ success: false, error: 'Creator access required' });
+    }
+
+    const { deals, error } = await fetchDealsForCreator(userId, userEmail);
+    if (error) {
+      throw error;
+    }
+
+    return res.json({ success: true, deals });
+  } catch (error: any) {
+    console.error('[Deals] mine error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
+  }
+});
+
+// GET /api/deals/:id
+// Authenticated creator/brand deal fetch used by direct route bootstraps.
+router.get('/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const dealId = req.params.id;
+    const userId = req.user?.id;
+    const userEmail = String(req.user?.email || '').toLowerCase() || null;
+    const role = String(req.user?.role || '').toLowerCase();
+
+    if (!dealId) {
+      return res.status(400).json({ success: false, error: 'Deal ID is required' });
+    }
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
+
+    const { deal, error } = await fetchDealForViewer(dealId);
+    if (error || !deal) {
+      return res.status(404).json({ success: false, error: 'Deal not found' });
+    }
+
+    const dealBrandEmail = String((deal as any).brand_email || '').toLowerCase() || null;
+    const creatorId = String((deal as any).creator_id || '');
+    const brandId = String((deal as any).brand_id || '');
+    const hasAccess =
+      role === 'admin' ||
+      creatorId === String(userId) ||
+      brandId === String(userId) ||
+      (!!userEmail && !!dealBrandEmail && userEmail === dealBrandEmail);
+
+    if (!hasAccess) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    return res.json({ success: true, deal });
+  } catch (error: any) {
+    console.error('[Deals] fetch deal error:', error);
+    return res.status(500).json({ success: false, error: error?.message || 'Internal server error' });
   }
 });
 
