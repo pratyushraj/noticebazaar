@@ -76,7 +76,26 @@ export function getApiBaseUrl(): string {
   // Cleanup: No trailing slashes
   let cleanedUrl = (apiUrl || '').replace(/\/$/, '');
 
-  // Production safety: never point to localhost when the app is on a public domain.
+  // Local dev safety: keep frontend and API on the same hostname family.
+  // Mixing 127.0.0.1 and localhost causes flaky local QA behavior in some browsers/tooling.
+  if (typeof window !== 'undefined' && localhostPattern.test(cleanedUrl)) {
+    const frontendHost = window.location.hostname.toLowerCase();
+    if (frontendHost === '127.0.0.1' || frontendHost === 'localhost') {
+      try {
+        const parsed = new URL(cleanedUrl);
+        if (parsed.hostname !== frontendHost) {
+          parsed.hostname = frontendHost;
+          cleanedUrl = parsed.toString().replace(/\/$/, '');
+        }
+      } catch {
+        // Ignore invalid URL parsing and keep the original cleanedUrl.
+      }
+    }
+  }
+
+  // Production safety: never point to localhost or same-origin frontend routes
+  // when the app is on a public domain. The production frontend and backend are
+  // deployed separately, so same-origin `/api/...` may not exist for all routes.
   if (typeof window !== 'undefined') {
     const host = window.location.hostname.toLowerCase();
     const isPublicHost =
@@ -86,10 +105,19 @@ export function getApiBaseUrl(): string {
       host.endsWith('netlify.app') ||
       host.endsWith('trycloudflare.com');
 
-    if (isPublicHost && localhostPattern.test(cleanedUrl)) {
-      // Never allow localhost API on public frontend hosts.
-      // Route directly to production API domain.
-      cleanedUrl = 'https://noticebazaar-api.onrender.com';
+    if (isPublicHost) {
+      const origin = window.location.origin.replace(/\/$/, '');
+      const pointsToFrontendOrigin =
+        cleanedUrl === '' ||
+        cleanedUrl === '/' ||
+        cleanedUrl === '/api' ||
+        cleanedUrl === origin;
+
+      if (localhostPattern.test(cleanedUrl) || pointsToFrontendOrigin) {
+        // Never allow localhost or same-origin API on public frontend hosts.
+        // Route directly to production API domain.
+        cleanedUrl = 'https://noticebazaar-api.onrender.com';
+      }
     }
   }
 
