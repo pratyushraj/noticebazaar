@@ -82,14 +82,14 @@ const StatusBadge = ({ status }: { status: string }) => {
 const renderBudgetValue = (item: any) => {
     const exact = Number(item?.deal_amount || item?.exact_budget);
     if (Number.isFinite(exact) && exact > 0) return `₹${exact.toLocaleString()}`;
-    
+
     // Check for budget range in nested properties
     const min = Number(item?.budget_range?.min || item?.form_data?.budget_range?.min || (item?.budget_range && typeof item.budget_range === 'object' && item.budget_range.min));
     if (Number.isFinite(min) && min > 0) return `₹${min.toLocaleString()}+`;
-    
+
     const barter = Number(item?.barter_value || item?.form_data?.barter_value);
     if (Number.isFinite(barter) && barter > 0) return `₹${barter.toLocaleString()} (Free products)`;
-    
+
     return 'Flexible Budget';
 };
 
@@ -327,20 +327,20 @@ const parseLocationParts = (location?: string | null) => {
     if (!raw) return { address: '', city: '', pincode: '' };
     const pincodeMatch = raw.match(/\b\d{6}\b/);
     const pincode = pincodeMatch?.[0] || '';
-    
+
     const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
     const nonPincodeParts = parts.filter(p => !/\b\d{6}\b/.test(p));
-    
+
     let city = '';
     let address = '';
-    
+
     if (nonPincodeParts.length >= 2) {
         city = nonPincodeParts[nonPincodeParts.length - 1];
         address = nonPincodeParts.slice(0, -1).join(', ');
     } else if (nonPincodeParts.length === 1) {
         city = nonPincodeParts[0];
     }
-    
+
     return { address, city, pincode };
 };
 
@@ -1202,28 +1202,28 @@ const MobileDashboardDemo = ({
                 if (normalizedHandle.length < 3) {
                     toast.warning('Instagram handle must be at least 3 characters.');
                 } else {
-                const { error: handleError } = await (supabase as any)
-                    .from('profiles')
-                    .update({
-                        instagram_handle: normalizedHandle,
-                        username: normalizedHandle,
-                    })
-                    .eq('id', session.user.id);
+                    const { error: handleError } = await (supabase as any)
+                        .from('profiles')
+                        .update({
+                            instagram_handle: normalizedHandle,
+                            username: normalizedHandle,
+                        })
+                        .eq('id', session.user.id);
 
-                if (handleError) {
-                    console.error('[handleSaveProfile] Instagram handle update failed:', {
-                        message: handleError.message,
-                        code: handleError.code,
-                        details: handleError.details,
-                        hint: handleError.hint,
-                    });
-                    // Show specific error for handle (unique constraint, RLS, etc.)
-                    const msg = handleError.code === '23505'
-                        ? 'That Instagram handle is already taken by another account.'
-                        : `Could not update handle: ${handleError.message}`;
-                    toast.warning(msg);
-                    // Don't rethrow — core save succeeded, only handle failed
-                }
+                    if (handleError) {
+                        console.error('[handleSaveProfile] Instagram handle update failed:', {
+                            message: handleError.message,
+                            code: handleError.code,
+                            details: handleError.details,
+                            hint: handleError.hint,
+                        });
+                        // Show specific error for handle (unique constraint, RLS, etc.)
+                        const msg = handleError.code === '23505'
+                            ? 'That Instagram handle is already taken by another account.'
+                            : `Could not update handle: ${handleError.message}`;
+                        toast.warning(msg);
+                        // Don't rethrow — core save succeeded, only handle failed
+                    }
                 }
             }
 
@@ -1281,6 +1281,23 @@ const MobileDashboardDemo = ({
             }
         } catch (e) {
             console.error("Share failed", e);
+        }
+    };
+
+    const handleShareOnWhatsApp = async () => {
+        const url = `https://creatorarmour.com/${username}`;
+        const text = `Hey! For collaborations, please send your brief here:\n${url}`;
+
+        try {
+            trackEvent('collab_link_shared', { method: 'whatsapp' });
+            triggerHaptic(HapticPatterns.light);
+
+            // WhatsApp deep-link (works on mobile + desktop web)
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(waUrl, '_blank', 'noopener,noreferrer');
+        } catch (e) {
+            // Fallback: copy link
+            await handleCopyStorefront();
         }
     };
 
@@ -1446,16 +1463,16 @@ const MobileDashboardDemo = ({
         if (!onAcceptRequest) return;
         triggerHaptic();
         setProcessingDeal(req.id);
-        try { 
-            await onAcceptRequest(req); 
+        try {
+            await onAcceptRequest(req);
             closeItemDetail();
             // Celebration: confetti burst on first accept
             confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 }, colors: ['#10B981', '#059669', '#34D399'] });
             toast.success('🎉 Collab accepted! Check your deals tab.');
         } catch (error) {
             console.error("Accept error:", error);
-        } finally { 
-            setProcessingDeal(null); 
+        } finally {
+            setProcessingDeal(null);
         }
     };
 
@@ -1830,24 +1847,24 @@ const MobileDashboardDemo = ({
                                 </div>
                             </div>
 
-                                <SectionHeader title="Status" isDark={isDark} />
-                                <SettingsGroup isDark={isDark}>
-                                    <SettingsRow
-                                        icon={<CheckCircle2 />} iconBg="bg-primary"
-                                        label="Open for Collaborations"
-                                        subtext={profileFormData.open_to_collabs ? "Brands can send you offers" : "Profile currently hidden from search"}
-                                        isDark={isDark} textColor={textColor}
-                                        rightElement={
-                                            <ToggleSwitch
-                                                active={profileFormData.open_to_collabs}
-                                                onToggle={(val) => setProfileFormData((p: any) => ({ ...p, open_to_collabs: val }))}
-                                                isDark={isDark}
-                                            />
-                                        }
-                                    />
-                                </SettingsGroup>
+                            <SectionHeader title="Status" isDark={isDark} />
+                            <SettingsGroup isDark={isDark}>
+                                <SettingsRow
+                                    icon={<CheckCircle2 />} iconBg="bg-primary"
+                                    label="Open for Collaborations"
+                                    subtext={profileFormData.open_to_collabs ? "Brands can send you offers" : "Profile currently hidden from search"}
+                                    isDark={isDark} textColor={textColor}
+                                    rightElement={
+                                        <ToggleSwitch
+                                            active={profileFormData.open_to_collabs}
+                                            onToggle={(val) => setProfileFormData((p: any) => ({ ...p, open_to_collabs: val }))}
+                                            isDark={isDark}
+                                        />
+                                    }
+                                />
+                            </SettingsGroup>
 
-                                {/* Optimization Wizard - Moved to Collab Link */}
+                            {/* Optimization Wizard - Moved to Collab Link */}
                             <div className="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-[2.5rem] p-6 border border-info/20 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-500">
                                     <Zap className="w-16 h-16 text-info fill-blue-500" />
@@ -1860,11 +1877,11 @@ const MobileDashboardDemo = ({
                                         <h3 className={cn("font-black text-[17px] tracking-tight", textColor)}>Optimization Wizard</h3>
                                     </div>
                                     <p className={cn("text-[13px] font-medium opacity-60 mb-5 leading-relaxed", textColor)}>
-                                        Your profile conversion is currently <span className="text-info font-black">Good</span>. 
+                                        Your profile conversion is currently <span className="text-info font-black">Good</span>.
                                         Let AI analyze your bio and historical rates to boost brand appeal.
                                     </p>
                                     <div className="flex flex-wrap gap-2.5">
-                                        <button type="button" 
+                                        <button type="button"
                                             onClick={() => {
                                                 triggerHaptic();
                                                 toast.promise(new Promise(r => setTimeout(r, 1500)), {
@@ -1877,7 +1894,7 @@ const MobileDashboardDemo = ({
                                         >
                                             Enhance Bio
                                         </button>
-                                        <button type="button" 
+                                        <button type="button"
                                             onClick={() => {
                                                 triggerHaptic();
                                                 toast.promise(new Promise(r => setTimeout(r, 2000)), {
@@ -1897,7 +1914,7 @@ const MobileDashboardDemo = ({
                             {/* Fiverr Packages - Moved to Collab Link */}
                             <SectionHeader title="Collaboration Packages" isDark={isDark} />
                             <div className="px-0">
-                                <FiverrPackageEditor 
+                                <FiverrPackageEditor
                                     packages={profileFormData.deal_templates || []}
                                     onChange={(pkgs) => setProfileFormData(p => ({ ...p, deal_templates: pkgs }))}
                                 />
@@ -2044,79 +2061,79 @@ const MobileDashboardDemo = ({
 
                             {/* Public Portfolio */}
                             <SettingsGroup title="Public Portfolio" icon={<Search className="w-5 h-5 text-info" />} isDark={isDark}>
-                                    <div className="space-y-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Featured Work Gallery</p>
-                                        <p className={cn("text-[10px] font-semibold opacity-60 mb-2 pl-1", textColor)}>Add links to your top-performing Reels or Posts</p>
-                                        <div className="flex flex-col gap-2 mb-3">
-                                            {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-2 px-3 py-2.5 rounded-[1rem] border text-[11px] font-black w-full shadow-sm backdrop-blur-sm", isDark ? "bg-info/10 border-info/20 text-info shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-info border-info text-info")}>
-                                                    <Link2 className="w-4 h-4 shrink-0 opacity-70" />
-                                                    <span className="truncate flex-1 mt-0.5">{link}</span>
-                                                    <X className="w-4 h-4 cursor-pointer shrink-0 opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
-                                                        const newLinks = [...profileFormData.portfolio_links];
-                                                        newLinks.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, portfolio_links: newLinks });
-                                                    }} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="relative group">
-                                            <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
-                                            <input
-                                                type="url"
-                                                placeholder="https://instagram.com/reel/..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        const target = e.target as HTMLInputElement;
-                                                        if (target.value.trim()) {
-                                                            setProfileFormData({ ...profileFormData, portfolio_links: [...(profileFormData.portfolio_links || []), target.value.trim()] });
-                                                            target.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-primary" />
+                                <div className="space-y-2">
+                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Featured Work Gallery</p>
+                                    <p className={cn("text-[10px] font-semibold opacity-60 mb-2 pl-1", textColor)}>Add links to your top-performing Reels or Posts</p>
+                                    <div className="flex flex-col gap-2 mb-3">
+                                        {(profileFormData.portfolio_links || []).map((link: string, idx: number) => (
+                                            <div key={idx} className={cn("flex items-center gap-2 px-3 py-2.5 rounded-[1rem] border text-[11px] font-black w-full shadow-sm backdrop-blur-sm", isDark ? "bg-info/10 border-info/20 text-info shadow-[0_0_15px_rgba(59,130,246,0.1)]" : "bg-info border-info text-info")}>
+                                                <Link2 className="w-4 h-4 shrink-0 opacity-70" />
+                                                <span className="truncate flex-1 mt-0.5">{link}</span>
+                                                <X className="w-4 h-4 cursor-pointer shrink-0 opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
+                                                    const newLinks = [...profileFormData.portfolio_links];
+                                                    newLinks.splice(idx, 1);
+                                                    setProfileFormData({ ...profileFormData, portfolio_links: newLinks });
+                                                }} />
                                             </div>
+                                        ))}
+                                    </div>
+                                    <div className="relative group">
+                                        <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
+                                        <input
+                                            type="url"
+                                            placeholder="https://instagram.com/reel/..."
+                                            className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (target.value.trim()) {
+                                                        setProfileFormData({ ...profileFormData, portfolio_links: [...(profileFormData.portfolio_links || []), target.value.trim()] });
+                                                        target.value = '';
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
+                                            <Plus className="w-4 h-4 group-focus-within:text-primary" />
                                         </div>
                                     </div>
-                                    
-                                    <div className="space-y-2 pt-2">
-                                        <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Past Brands</p>
-                                        <div className="flex flex-wrap gap-2 mb-3">
-                                            {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
-                                                <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-card border-border text-foreground shadow-sm" : "bg-background border-border text-muted-foreground")}>
-                                                    {brand}
-                                                    <X className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
-                                                        const newBrands = [...profileFormData.past_brands];
-                                                        newBrands.splice(idx, 1);
-                                                        setProfileFormData({ ...profileFormData, past_brands: newBrands });
-                                                    }} />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="relative group">
-                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
-                                            <input
-                                                type="text"
-                                                placeholder="Add past brand & press enter..."
-                                                className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        const target = e.target as HTMLInputElement;
-                                                        if (target.value.trim()) {
-                                                            setProfileFormData({ ...profileFormData, past_brands: [...(profileFormData.past_brands || []), target.value.trim()] });
-                                                            target.value = '';
-                                                        }
-                                                    }
-                                                }}
-                                            />
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
-                                                <Plus className="w-4 h-4 group-focus-within:text-primary" />
+                                </div>
+
+                                <div className="space-y-2 pt-2">
+                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.15em] opacity-50 pl-1", textColor)}>Past Brands</p>
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        {(profileFormData.past_brands || []).map((brand: string, idx: number) => (
+                                            <div key={idx} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider backdrop-blur-sm", isDark ? "bg-card border-border text-foreground shadow-sm" : "bg-background border-border text-muted-foreground")}>
+                                                {brand}
+                                                <X className="w-3 h-3 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onClick={() => {
+                                                    const newBrands = [...profileFormData.past_brands];
+                                                    newBrands.splice(idx, 1);
+                                                    setProfileFormData({ ...profileFormData, past_brands: newBrands });
+                                                }} />
                                             </div>
+                                        ))}
+                                    </div>
+                                    <div className="relative group">
+                                        <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40 group-focus-within:opacity-100 group-focus-within:text-primary transition-colors" />
+                                        <input
+                                            type="text"
+                                            placeholder="Add past brand & press enter..."
+                                            className={cn("w-full pl-11 pr-12 py-3.5 rounded-[1.25rem] border text-[13px] font-semibold transition-all duration-300 outline-none", isDark ? "bg-[#0B0F14]/50 border-border/[0.08] text-foreground focus:border-primary/50 focus:bg-[#0B0F14] shadow-inner hover:border-border" : "bg-background border-border focus:bg-card focus:border-info shadow-sm")}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (target.value.trim()) {
+                                                        setProfileFormData({ ...profileFormData, past_brands: [...(profileFormData.past_brands || []), target.value.trim()] });
+                                                        target.value = '';
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-card opacity-50 group-focus-within:opacity-100 group-focus-within:bg-primary/20 transition-all pointer-events-none">
+                                            <Plus className="w-4 h-4 group-focus-within:text-primary" />
                                         </div>
                                     </div>
+                                </div>
                             </SettingsGroup>
 
                             {/* Performance & Availability */}
@@ -2234,10 +2251,10 @@ const MobileDashboardDemo = ({
                                 </div>
                             </SettingsGroup>
 
-                                <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
-                                    {isSavingProfile ? 'Saving...' : 'Save All Collab Settings'}
-                                </button>
-                        {/* Analytics Grid */}
+                            <button type="button" onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full bg-info text-foreground font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest text-[12px] disabled:opacity-50 disabled:active:scale-100">
+                                {isSavingProfile ? 'Saving...' : 'Save All Collab Settings'}
+                            </button>
+                            {/* Analytics Grid */}
                             <SectionHeader title="Performance Metrics" isDark={isDark} />
                             <div className="grid grid-cols-3 gap-3">
                                 <div className={cn("p-4 rounded-2xl border", isDark ? "bg-card border-border/5" : "bg-card border-border shadow-sm")}>
@@ -2617,7 +2634,7 @@ const MobileDashboardDemo = ({
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     onScroll={e => { if (e.currentTarget.scrollTop > 10 && pullDistance > 0) { setPullDistance(0); setStartY(0); } }}
-                    className="flex-1 overflow-y-auto overflow-x-hidden pb-[100px] scrollbar-hide"
+                    className="flex-1 overflow-y-auto overflow-x-hidden pb-[140px] scrollbar-hide"
                     style={{ WebkitOverflowScrolling: 'touch' }}
                 >
                     <div style={{ height: isRefreshingProp ? '60px' : '0' }} className="transition-all duration-300" />
@@ -2626,13 +2643,20 @@ const MobileDashboardDemo = ({
                     {activeTab === 'dashboard' && (
                         <>
                             {/* Complete Your Collab Link Banner */}
-                            {!completionDismissed && profile && (!profile.instagram_handle || !profile.bio || (!profile.pricing_min && !profile.avg_rate_reel) || !profile.bank_upi) && (() => {
+                            {!completionDismissed && profile && (() => {
+                                const hasMonetizableActivity = Array.isArray(brandDeals) && brandDeals.some((d: any) =>
+                                    ['Payment Pending', 'Completed', 'Approved', 'Active', 'confirmed'].includes(String(d?.status || ''))
+                                );
+
                                 const tasks = [
                                     { done: !!profile.instagram_handle, label: 'Add Instagram', focus: 'instagram' },
                                     { done: !!profile.bio, label: 'Add intro line', focus: 'bio' },
                                     { done: !!(profile.pricing_min || profile.avg_rate_reel), label: 'Set rates', focus: 'rates' },
-                                    { done: !!profile.bank_upi, label: 'Add payout', focus: 'payout', tabLink: true },
+                                    // Only ask for payout when it's actually needed (reduces day-0 drop-off)
+                                    ...(hasMonetizableActivity ? [{ done: !!profile.bank_upi, label: 'Add payout', focus: 'payout', tabLink: true }] : []),
                                 ];
+                                const shouldShow = tasks.some(t => !t.done);
+                                if (!shouldShow) return null;
                                 const completed = tasks.filter(t => t.done).length;
                                 const remaining = tasks.filter(t => !t.done);
                                 const pct = Math.round((completed / tasks.length) * 100);
@@ -2644,7 +2668,7 @@ const MobileDashboardDemo = ({
                                                     <ShieldCheck className="w-5 h-5 text-foreground" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[14px] font-bold text-muted-foreground">Complete Your Brand Deal Page</p>
+                                                    <p className="text-[14px] font-bold text-muted-foreground">Finish setup to start receiving brand deals</p>
                                                     <p className="text-[12px] text-muted-foreground">{completed}/{tasks.length} done • {pct}%</p>
                                                 </div>
                                             </div>
@@ -2657,15 +2681,12 @@ const MobileDashboardDemo = ({
                                             <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                                         </div>
                                         <div className="flex flex-wrap gap-2">
-                                            {remaining.map(task => (
-                                                <button
-                                                    key={task.focus}
-                                                    onClick={() => navigate((task as any).tabLink ? '/creator-profile?section=profile' : `/creator-profile?section=collab&focus=${task.focus}`)}
-                                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95"
-                                                >
-                                                    {task.label}
-                                                </button>
-                                            ))}
+                                            <button onClick={() => navigate('/creator-profile?section=profile')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95">
+                                                Set rates
+                                            </button>
+                                            <button onClick={() => navigate('/creator-profile?section=collab')} className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-card border border-primary text-primary active:scale-95">
+                                                Add payout method
+                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -2948,9 +2969,9 @@ const MobileDashboardDemo = ({
                                                 isDark ? "bg-card border-[#2C2C2E]" : "bg-white border-[#E5E7EB] shadow-sm"
                                             )}
                                         >
-                                            <h2 className={cn("text-[22px] font-black mb-2 tracking-tight", isDark ? "text-foreground" : "text-[#0F172A]")}>No offers yet 👀</h2>
+                                            <h2 className={cn("text-[22px] font-black mb-2 tracking-tight", isDark ? "text-foreground" : "text-[#0F172A]")}>No brand requests yet 👀</h2>
                                             <p className={cn("text-[14px] font-medium mb-5 leading-relaxed", isDark ? "text-foreground/70" : "text-[#64748B]")}>
-                                                Start by sharing your link
+                                                Share your link to start getting offers
                                             </p>
 
                                             <button
@@ -2958,15 +2979,14 @@ const MobileDashboardDemo = ({
                                                 onClick={() => {
                                                     triggerHaptic();
                                                     setShowActionSheet(false);
-                                                    setActiveTab('deals');
-                                                    setCollabSubTab('pending');
+                                                    handleShareOnWhatsApp();
                                                 }}
                                                 className={cn(
                                                     "h-12 px-6 rounded-2xl flex items-center justify-center font-black text-[14px] active:scale-[0.98] transition-all",
                                                     isDark ? "bg-primary text-foreground" : "bg-[#16A34A] text-white"
                                                 )}
                                             >
-                                                Share Link Now
+                                                Share on WhatsApp
                                             </button>
                                         </motion.div>
                                     </div>
@@ -2986,7 +3006,7 @@ const MobileDashboardDemo = ({
                                             <div className="flex gap-2">
                                                 <button type="button"
                                                     onClick={() => {
-                                                        handleShareStorefront();
+                                                        handleShareOnWhatsApp();
                                                     }}
                                                     className={cn(
                                                         "flex-1 h-10 rounded-xl flex items-center justify-center font-black text-[12px] active:scale-95 transition-all",
@@ -3152,63 +3172,63 @@ const MobileDashboardDemo = ({
                                 </div>
 
                                 <AnimatePresence mode="popLayout">
-	                                    {(() => {
-	                                        const fakeDemoOffer = {
-	                                            id: 'demo-offer',
-	                                            brand_name: 'Zepto (Demo)',
-	                                            brand_logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Zepto_logo.svg/100px-Zepto_logo.svg.png',
-	                                            category: 'Quick Commerce',
-	                                            collab_type: 'paid',
-	                                            exact_budget: 35000,
-	                                            deliverables: ['1 Reel', '2 Stories'],
-	                                            deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-	                                            status: 'new',
-	                                            isDemo: true
-	                                        };
-	                                        const displayOffers = [
-	                                            ...(collabRequests || []),
-	                                            ...(brandDeals || [])
-	                                                .filter(d => {
-	                                                    const s = (d.status || '').toLowerCase();
-	                                                    return s !== 'completed' && s !== 'cancelled';
-	                                                })
-	                                                .map(d => ({ ...d, isConfirmedDeal: true }))
-	                                                .slice(0, 5)
-	                                        ];
-	                                        
-	                                        if (displayOffers.length === 0 && isDemoOfferEnabled) {
-	                                            displayOffers.push(fakeDemoOffer);
-	                                        }
-	                                        return (
-	                                            <div className="space-y-10">
-	                                                {displayOffers.length === 0 ? (
-                                                            <div className={cn(
-                                                                "p-6 rounded-[2rem] border text-center",
-                                                                isDark ? "bg-card border-border" : "bg-card border-border shadow-sm"
-                                                            )}>
-                                                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                                                    <Briefcase className="w-7 h-7 text-white" />
-                                                                </div>
-                                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No offers yet</h3>
-                                                                <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
-                                                                    Share your creator link to start receiving verified brand offers.
-                                                                </p>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        triggerHaptic();
-                                                                        handleShareStorefront();
-                                                                    }}
-                                                                    className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
-                                                                >
-                                                                    Share Link Now
-                                                                </button>
-                                                            </div>
-                                                        ) : null}
-	                                                {displayOffers.map((req: any, idx) => {
-	                                                    // Format deliverables accurately
-	                                                    let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
-	                                                    const rawDeliv = req.raw?.deliverables || req.deliverables;
+                                    {(() => {
+                                        const fakeDemoOffer = {
+                                            id: 'demo-offer',
+                                            brand_name: 'Zepto (Demo)',
+                                            brand_logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Zepto_logo.svg/100px-Zepto_logo.svg.png',
+                                            category: 'Quick Commerce',
+                                            collab_type: 'paid',
+                                            exact_budget: 35000,
+                                            deliverables: ['1 Reel', '2 Stories'],
+                                            deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+                                            status: 'new',
+                                            isDemo: true
+                                        };
+                                        const displayOffers = [
+                                            ...(collabRequests || []),
+                                            ...(brandDeals || [])
+                                                .filter(d => {
+                                                    const s = (d.status || '').toLowerCase();
+                                                    return s !== 'completed' && s !== 'cancelled';
+                                                })
+                                                .map(d => ({ ...d, isConfirmedDeal: true }))
+                                                .slice(0, 5)
+                                        ];
+
+                                        if (displayOffers.length === 0 && isDemoOfferEnabled) {
+                                            displayOffers.push(fakeDemoOffer);
+                                        }
+                                        return (
+                                            <div className="space-y-10">
+                                                {displayOffers.length === 0 ? (
+                                                    <div className={cn(
+                                                        "p-6 rounded-[2rem] border text-center",
+                                                        isDark ? "bg-card border-border" : "bg-card border-border shadow-sm"
+                                                    )}>
+                                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                                            <Briefcase className="w-7 h-7 text-white" />
+                                                        </div>
+                                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No brand requests yet</h3>
+                                                        <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
+                                                            Share your link to start getting offers.
+                                                        </p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                handleShareStorefront();
+                                                            }}
+                                                            className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                                        >
+                                                            Share Link Now
+                                                        </button>
+                                                    </div>
+                                                ) : null}
+                                                {displayOffers.map((req: any, idx) => {
+                                                    // Format deliverables accurately
+                                                    let deliverablesArr: string[] = ['1 Reel', '1 Story', '1 Post'];
+                                                    const rawDeliv = req.raw?.deliverables || req.deliverables;
 
                                                     const processDeliverableItems = (items: any[]) => {
                                                         return items.map((d: any) => {
@@ -3832,24 +3852,24 @@ const MobileDashboardDemo = ({
                                                                             </span>
                                                                         </div>
 
-	                                                                        <button type="button"
-	                                                                            type="button"
-	                                                                            onPointerDown={(e) => e.stopPropagation()}
-	                                                                            onClick={(e) => {
-	                                                                                e.stopPropagation();
-	                                                                                triggerHaptic();
-	                                                                                setSelectedItem(deal);
-	                                                                                setSelectedType('deal');
-	                                                                            }}
-	                                                                            disabled={cta.disabled}
-	                                                                            className={cn(
-	                                                                                "mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]",
-	                                                                                dealPrimaryCtaButtonClass(cta.tone),
-	                                                                                cta.disabled && "opacity-60 cursor-not-allowed active:scale-100"
-	                                                                            )}
-	                                                                        >
-	                                                                            {ctaLabel}
-	                                                                        </button>
+                                                                        <button type="button"
+                                                                            type="button"
+                                                                            onPointerDown={(e) => e.stopPropagation()}
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                triggerHaptic();
+                                                                                setSelectedItem(deal);
+                                                                                setSelectedType('deal');
+                                                                            }}
+                                                                            disabled={cta.disabled}
+                                                                            className={cn(
+                                                                                "mt-4 h-12 w-full rounded-2xl text-[13px] font-black transition active:scale-[0.98]",
+                                                                                dealPrimaryCtaButtonClass(cta.tone),
+                                                                                cta.disabled && "opacity-60 cursor-not-allowed active:scale-100"
+                                                                            )}
+                                                                        >
+                                                                            {ctaLabel}
+                                                                        </button>
                                                                     </>
                                                                 );
                                                             })()}
@@ -3865,9 +3885,9 @@ const MobileDashboardDemo = ({
                                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/20">
                                                     <Zap className="w-7 h-7 text-white" />
                                                 </div>
-                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No active deals yet</h3>
+                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No brand requests yet</h3>
                                                 <p className={cn("text-[13px] leading-relaxed opacity-70 mb-5", textColor)}>
-                                                    Accepted offers will show up here while you work on content, reviews, and payments.
+                                                    Share your link to start getting offers.
                                                 </p>
                                                 <button
                                                     type="button"
@@ -3971,9 +3991,9 @@ const MobileDashboardDemo = ({
                                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 mx-auto mb-4 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                                                     <CheckCircle2 className="w-7 h-7 text-white" />
                                                 </div>
-                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No completed deals yet</h3>
+                                                <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No brand requests yet</h3>
                                                 <p className={cn("text-[13px] leading-relaxed opacity-70", textColor)}>
-                                                    Finished collaborations and paid deals will show here once a campaign is fully closed.
+                                                    Share your link to start getting offers.
                                                 </p>
                                             </div>
                                         )}
@@ -4064,48 +4084,48 @@ const MobileDashboardDemo = ({
                                                         </motion.div>
                                                     );
                                                 })}
-		                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
-		                                                    const expiresDays = 2 + (idx % 3);
-		                                                    const sentAt = req.created_at || req.raw?.created_at || null;
-		                                                    const sentHours = sentAt ? Math.max(0, Math.round((Date.now() - new Date(sentAt).getTime()) / 3600000)) : null;
-		                                                    const sentText = sentHours !== null && Number.isFinite(sentHours) ? `Sent ${sentHours}h ago` : null;
-	                                                    const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
+                                                {collabRequests.slice(0, 10).map((req: any, idx: number) => {
+                                                    const expiresDays = 2 + (idx % 3);
+                                                    const sentAt = req.created_at || req.raw?.created_at || null;
+                                                    const sentHours = sentAt ? Math.max(0, Math.round((Date.now() - new Date(sentAt).getTime()) / 3600000)) : null;
+                                                    const sentText = sentHours !== null && Number.isFinite(sentHours) ? `Sent ${sentHours}h ago` : null;
+                                                    const amount = req.deal_amount || req.exact_budget || (idx === 0 ? 8000 : idx === 1 ? 15000 : idx === 2 ? 12000 : 5000);
 
-	                                                    const expTone =
-	                                                        expiresDays <= 1
-	                                                            ? 'danger'
-	                                                            : expiresDays <= 2
-	                                                                ? 'danger'
-	                                                                : expiresDays <= 4
-	                                                                    ? 'warn'
-	                                                                    : 'neutral';
+                                                    const expTone =
+                                                        expiresDays <= 1
+                                                            ? 'danger'
+                                                            : expiresDays <= 2
+                                                                ? 'danger'
+                                                                : expiresDays <= 4
+                                                                    ? 'warn'
+                                                                    : 'neutral';
 
-	                                                    return (
-	                                                        <motion.div
-	                                                            key={idx}
-	                                                            whileTap={{ scale: 0.983 }}
-	                                                            onTap={() => {
-	                                                                console.log("Card tapped: pending offer", req);
-	                                                                triggerHaptic();
-	                                                                setSelectedItem(req);
+                                                    return (
+                                                        <motion.div
+                                                            key={idx}
+                                                            whileTap={{ scale: 0.983 }}
+                                                            onTap={() => {
+                                                                console.log("Card tapped: pending offer", req);
+                                                                triggerHaptic();
+                                                                setSelectedItem(req);
                                                                 setSelectedType('offer');
                                                             }}
                                                             className={cn(
                                                                 "p-4 rounded-2xl border transition-all duration-300 group active:scale-[0.99] relative cursor-pointer",
                                                                 borderColor,
-	                                                                isDark
-	                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-	                                                                    : "bg-card shadow-sm hover:shadow-md active:bg-background"
-	                                                            )}
-	                                                        >
-	                                                            <div className="flex flex-wrap items-center gap-2 mb-3">
-	                                                                <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
-	                                                                    isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning"
-	                                                                )}>
-	                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-warning" : "text-warning")} strokeWidth={3} />
-	                                                                    Action required
-	                                                                </span>
-	                                                            </div>
+                                                                isDark
+                                                                    ? "bg-[#111827]/40 hover:bg-[#111827]/60 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                                                                    : "bg-card shadow-sm hover:shadow-md active:bg-background"
+                                                            )}
+                                                        >
+                                                            <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                                <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest",
+                                                                    isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning"
+                                                                )}>
+                                                                    <AlertTriangle className={cn("w-3.5 h-3.5", isDark ? "text-warning" : "text-warning")} strokeWidth={3} />
+                                                                    Action required
+                                                                </span>
+                                                            </div>
                                                             <div className="flex items-start justify-between mb-3.5">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-11 h-11 rounded-xl overflow-hidden border border-border shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300">
@@ -4171,7 +4191,7 @@ const MobileDashboardDemo = ({
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                                
+
                                                                 {/* Expected Payment Time callout */}
                                                                 <div className={cn("flex items-start gap-2 px-3 py-2 rounded-xl text-[11px] font-semibold leading-relaxed border", isDark ? "bg-[#1C2C2A]/70 text-primary border-primary/20" : "bg-primary text-primary border-primary")}>
                                                                     <Landmark className="w-3.5 h-3.5 shrink-0 mt-[2px]" />
@@ -4228,8 +4248,8 @@ const MobileDashboardDemo = ({
                                                                 )}
                                                             </div>
                                                         </motion.div>
-	                                                    );
-	                                                })}
+                                                    );
+                                                })}
                                             </div>
                                         ) : (
                                             <div className={cn(
@@ -4247,14 +4267,11 @@ const MobileDashboardDemo = ({
                                                     type="button"
                                                     onClick={() => {
                                                         triggerHaptic();
-                                                        setActiveTab('dashboard');
-                                                        const next = new URLSearchParams(searchParams);
-                                                        next.set('tab', 'dashboard');
-                                                        setSearchParams(next, { replace: true });
+                                                        handleShareOnWhatsApp();
                                                     }}
                                                     className="h-12 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
                                                 >
-                                                    Share Link
+                                                    Share on WhatsApp
                                                 </button>
                                             </div>
                                         )}
@@ -4277,22 +4294,29 @@ const MobileDashboardDemo = ({
                                         exit={{ opacity: 0, x: -20 }}
                                         className="w-full"
                                     >
-                                        <div className={cn("px-6 pt-16 pb-5 bg-transparent")}>
-                                            <h1 className={cn("text-3xl font-black tracking-tight", textColor)}>Account</h1>
+                                        <div className={cn("px-5 pt-14 pb-4 bg-transparent")}>
+                                            <h1 className={cn("text-[32px] leading-none font-black tracking-tight", textColor)}>Account</h1>
                                             <p className={cn("text-[13px] mt-1 font-medium opacity-60", textColor)}>
-                                                Manage your creator profile, public link, payouts, alerts, and support.
+                                                Manage your creator profile, link, payouts, and alerts
                                             </p>
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <div className="px-4 mb-6">
+                                        <div className="space-y-3">
+                                            {/* 1. TOP CARD (Identity + quick actions) */}
+                                            <div className="px-4">
                                                 <div className={cn(
-                                                    "p-5 rounded-3xl transition-all border",
-                                                    isDark ? "bg-card border-[#2C2C2E]" : "bg-card border-[#E5E5EA] shadow-sm"
+                                                    "p-5 rounded-[28px] transition-all border shadow-sm relative overflow-hidden",
+                                                    isDark ? "bg-card border-[#2C2C2E]" : "bg-white border-[#E5E7EB]"
                                                 )}>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="relative">
-                                                            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-border shadow-md">
+                                                    <div className={cn(
+                                                        "absolute inset-x-0 top-0 h-24 opacity-80 pointer-events-none",
+                                                        isDark
+                                                            ? "bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-blue-500/10"
+                                                            : "bg-gradient-to-r from-emerald-50 via-cyan-50 to-blue-50"
+                                                    )} />
+                                                    <div className="relative flex items-start gap-4 mb-5">
+                                                        <div className="relative shrink-0">
+                                                            <div className="w-20 h-20 rounded-[24px] overflow-hidden border border-border">
                                                                 <img
                                                                     src={avatarUrl}
                                                                     alt="avatar"
@@ -4303,151 +4327,185 @@ const MobileDashboardDemo = ({
                                                                     }}
                                                                 />
                                                             </div>
-                                                            <button type="button" className="absolute -bottom-1 -right-1 w-7 h-7 bg-info rounded-full border-2 border-[#1C1C1E] flex items-center justify-center shadow-lg active:scale-90 transition-transform">
-                                                                <Camera className="w-3.5 h-3.5 text-foreground" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setActiveSettingsPage('personal')}
+                                                                className={cn(
+                                                                    "absolute -bottom-1 -right-1 w-8 h-8 rounded-full border-2 flex items-center justify-center shadow-sm active:scale-95",
+                                                                    isDark ? "bg-card border-[#2C2C2E] text-foreground" : "bg-white border-white text-[#0F172A]"
+                                                                )}
+                                                            >
+                                                                <Camera className="w-4 h-4" />
                                                             </button>
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <h2 className={cn("text-xl font-bold tracking-tight", textColor)}>{displayName}</h2>
-                                                            <p className={cn("text-[14px] opacity-40 font-medium mb-2", textColor)}>@{username || 'creator'}</p>
-                                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-info/10 border border-info/20">
-                                                                <ShieldCheck className="w-3 h-3 text-info" />
-                                                                <span className="text-[10px] font-black uppercase tracking-wider text-info">Verified Creator</span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                                <h2 className={cn("text-[30px] leading-none font-black tracking-tight", textColor)}>
+                                                                    {profile?.first_name || username || 'Creator'}
+                                                                </h2>
+                                                                <span className={cn(
+                                                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.16em] border",
+                                                                    isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-50 text-blue-600 border-blue-100"
+                                                                )}>
+                                                                    <ShieldCheck className="w-3 h-3" />
+                                                                    Verified
+                                                                </span>
+                                                            </div>
+                                                            <p className={cn("text-[18px] font-semibold opacity-55", textColor)}>
+                                                                @{username || 'creator'}
+                                                            </p>
+                                                            <div className="mt-4 flex flex-wrap gap-2">
+                                                                <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
+                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>Creator link</p>
+                                                                    <p className={cn("text-[12px] font-bold", textColor)}>
+                                                                        {profile?.instagram_handle ? 'Ready' : 'Setup needed'}
+                                                                    </p>
+                                                                </div>
+                                                                <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
+                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>New offers</p>
+                                                                    <p className={cn("text-[12px] font-bold", textColor)}>{pendingOffersCount}</p>
+                                                                </div>
+                                                                <div className={cn("px-3 py-2 rounded-2xl border", isDark ? "bg-background border-border" : "bg-background border-[#E5E7EB]")}>
+                                                                    <p className={cn("text-[10px] font-black uppercase tracking-[0.16em] opacity-45 mb-1", textColor)}>Pending ₹</p>
+                                                                    <p className={cn("text-[12px] font-bold", textColor)}>₹{pendingAmount.toLocaleString()}</p>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="grid grid-cols-3 gap-2 mt-4">
-                                                        <div className={cn("rounded-2xl border px-3 py-2", isDark ? "bg-background border-border" : "bg-background border-border")}>
-                                                            <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-50 mb-1", textColor)}>Link</p>
-                                                            <p className={cn("text-[12px] font-bold", textColor)}>{profile?.instagram_handle ? 'Ready' : 'Setup'}</p>
-                                                        </div>
-                                                        <div className={cn("rounded-2xl border px-3 py-2", isDark ? "bg-background border-border" : "bg-background border-border")}>
-                                                            <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-50 mb-1", textColor)}>Offers</p>
-                                                            <p className={cn("text-[12px] font-bold", textColor)}>{pendingOffersCount}</p>
-                                                        </div>
-                                                        <div className={cn("rounded-2xl border px-3 py-2", isDark ? "bg-background border-border" : "bg-background border-border")}>
-                                                            <p className={cn("text-[9px] font-black uppercase tracking-widest opacity-50 mb-1", textColor)}>Pending</p>
-                                                            <p className={cn("text-[12px] font-bold", textColor)}>₹{pendingAmount.toLocaleString()}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-2 mt-4">
+                                                    <div className="relative grid grid-cols-2 gap-3 mb-4">
                                                         <button
                                                             type="button"
                                                             onClick={() => setActiveSettingsPage('portfolio')}
-                                                            className="h-11 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-[12px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                                                            className={cn(
+                                                                "h-12 rounded-2xl font-black text-[13px] active:scale-95 transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-primary text-white" : "bg-primary text-white shadow-lg shadow-primary/15"
+                                                            )}
                                                         >
+                                                            <Edit3 className="w-4 h-4" />
                                                             Edit Public Profile
                                                         </button>
                                                         <button
                                                             type="button"
                                                             onClick={() => window.open(`/${username || 'creator'}`, '_blank')}
-                                                            className={cn("h-11 rounded-2xl border text-[12px] font-bold active:scale-95 transition-all", isDark ? "bg-background border-border text-foreground" : "bg-background border-border text-muted-foreground")}
+                                                            className={cn(
+                                                                "h-12 rounded-2xl border font-bold text-[13px] active:scale-95 transition-all flex items-center justify-center gap-2",
+                                                                isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm"
+                                                            )}
                                                         >
+                                                            <Eye className="w-4 h-4" />
                                                             Preview Link
+                                                        </button>
+                                                    </div>
+                                                    <div className={cn(
+                                                        "flex items-center justify-between gap-3 p-3 rounded-2xl border",
+                                                        isDark ? "bg-background border-border" : "bg-[#F8FAFC] border-[#E5E7EB]"
+                                                    )}>
+                                                        <div className="min-w-0">
+                                                            <p className={cn("text-[10px] font-black uppercase tracking-[0.18em] opacity-45 mb-1", textColor)}>Creator link</p>
+                                                            <p className={cn("text-[13px] font-bold truncate", textColor)}>
+                                                                creatorarmour.com/{profile?.instagram_handle || username || 'creator'}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleCopyStorefront}
+                                                            className={cn(
+                                                                "shrink-0 h-10 px-4 rounded-xl font-black text-[12px] active:scale-95 transition-all",
+                                                                isDark ? "bg-primary/10 text-primary border border-primary/20" : "bg-white text-primary border border-primary/20"
+                                                            )}
+                                                        >
+                                                            Copy
                                                         </button>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <SectionHeader title="Creator Profile" isDark={isDark} />
-                                            <SettingsGroup isDark={isDark}>
-                                                <SettingsRow
-                                                    icon={<User />} iconBg="bg-info"
-                                                    label="Personal Information"
-                                                    subtext="Name, identity, and legal details"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('personal')}
-                                                />
-                                                <SettingsRow
-                                                    icon={<FileText />} iconBg="bg-primary"
-                                                    label="Public Portfolio"
-                                                    subtext="Bio, proof, and what brands see"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('portfolio')}
-                                                />
-                                                <SettingsRow
-                                                    icon={<Link2 />} iconBg="bg-violet-500"
-                                                    label="Creator Link"
-                                                    subtext="Manage your public intake page"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('collab-link')}
-                                                />
-                                            </SettingsGroup>
+                                            {/* Status Feedback */}
+                                            {activeDealsCount === 0 && pendingOffersCount === 0 ? (
+                                                <div className="px-4">
+                                                    <div className={cn("p-4 rounded-2xl border", isDark ? "bg-[#111827]/40 border-border" : "bg-green-50 border-green-100")}>
+                                                        <p className={cn("text-sm font-bold mb-1", isDark ? "text-foreground" : "text-green-800")}>No brand requests yet</p>
+                                                        <p className={cn("text-xs opacity-70 mb-3", isDark ? "text-foreground" : "text-green-700")}>Share your creator link once and your first offer will appear here.</p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleShareOnWhatsApp}
+                                                            className={cn(
+                                                                "h-10 px-4 rounded-xl font-black text-[12px] active:scale-95 transition-all",
+                                                                isDark ? "bg-primary text-white" : "bg-[#16A34A] text-white"
+                                                            )}
+                                                        >
+                                                            Share link now
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : null}
 
-                                            <SectionHeader title="App Preferences" isDark={isDark} />
-                                            <SettingsGroup isDark={isDark}>
-                                                <SettingsRow
-                                                    icon={isDark ? <Sun /> : <Moon />} iconBg="bg-background"
-                                                    label="Dark Mode"
-                                                    subtext="System default or custom"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('dark-mode')}
-                                                />
-                                                <SettingsRow
-                                                    icon={<Bell />} iconBg="bg-rose-500"
-                                                    label="Notifications"
-                                                    subtext="Offer alerts, contracts, and payments"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('notifications')}
-                                                />
-                                            </SettingsGroup>
+                                            {/* 2. QUICK NAV */}
+                                            <div className="px-4">
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setActiveTab('deals'); setCollabSubTab('pending'); }}
+                                                        className={cn("h-14 rounded-2xl border font-bold text-[12px] active:scale-95 transition-all flex flex-col items-center justify-center leading-tight", isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm")}
+                                                    >
+                                                        <span className="text-primary text-[16px] font-black">{pendingOffersCount}</span>
+                                                        New offers
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setActiveTab('payments')}
+                                                        className={cn("h-14 rounded-2xl border font-bold text-[12px] active:scale-95 transition-all flex flex-col items-center justify-center leading-tight", isDark ? "bg-card border-border text-foreground" : "bg-white border-border text-black shadow-sm")}
+                                                    >
+                                                        <span className="text-primary text-[16px] font-black">₹{pendingAmount.toLocaleString()}</span>
+                                                        Pending payouts
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                                            <SectionHeader title="Money" isDark={isDark} />
-                                            <SettingsGroup isDark={isDark}>
-                                                <SettingsRow
-                                                    icon={<Landmark />} iconBg="bg-indigo-500"
-                                                    label="Payout Methods"
-                                                    subtext="Manage UPI & bank accounts"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('payouts')}
-                                                />
-                                                <SettingsRow
-                                                    icon={<CreditCard />} iconBg="bg-cyan-500"
-                                                    label="Earnings & History"
-                                                    subtext="Revenue, payouts, and payment history"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('earnings')}
-                                                />
-                                            </SettingsGroup>
+                                            {/* 3. CREATOR PROFILE */}
+                                            <div className="pt-2">
+                                                <SectionHeader title="Profile & Link" isDark={isDark} />
+                                                <SettingsGroup isDark={isDark}>
+                                                    <SettingsRow icon={<FileText />} iconBg="bg-primary" label="Public Portfolio" subtext="Bio, proof, and what brands see" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('portfolio')} />
+                                                    <SettingsRow icon={<Link2 />} iconBg="bg-violet-500" label="Creator Link" subtext="Manage your public intake page" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('collab-link')} />
+                                                    <SettingsRow icon={<User />} iconBg="bg-slate-500" label="Personal Information" subtext="Name, identity, and legal details" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('personal')} />
+                                                </SettingsGroup>
+                                            </div>
 
-                                            <SectionHeader title="Trust & Support" isDark={isDark} />
-                                            <SettingsGroup isDark={isDark}>
-                                                <SettingsRow
-                                                    icon={<ShieldCheck />} iconBg="bg-info"
-                                                    label="Armour Verification"
-                                                    subtext="Trust features & fraud protection"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('verification')}
-                                                />
-                                                <SettingsRow
-                                                    icon={<Info />} iconBg="bg-background"
-                                                    label="About Creator Armour"
-                                                    subtext="Version 2.4.1 • Support"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('about')}
-                                                />
-                                            </SettingsGroup>
+                                            {/* 4. MONEY */}
+                                            <div>
+                                                <SectionHeader title="Money" isDark={isDark} />
+                                                <SettingsGroup isDark={isDark}>
+                                                    <SettingsRow icon={<Landmark />} iconBg="bg-indigo-500" label="Payout Methods" subtext="Manage UPI and bank accounts" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('payouts')} />
+                                                    <SettingsRow icon={<CreditCard />} iconBg="bg-cyan-500" label="Earnings & History" subtext="Revenue, payouts, and statements" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('earnings')} />
+                                                </SettingsGroup>
+                                            </div>
 
-                                            <SectionHeader title="Session" isDark={isDark} />
-                                            <SettingsGroup isDark={isDark}>
-                                                <SettingsRow
-                                                    icon={<LogOut />} iconBg="bg-destructive"
-                                                    label="Log Out"
-                                                    subtext="Securely sign out of your account"
-                                                    isDark={isDark} textColor={textColor}
-                                                    hasChevron
-                                                    onClick={() => setActiveSettingsPage('logout')}
-                                                />
-                                            </SettingsGroup>
+                                            {/* 5. APP PREFERENCES */}
+                                            <div>
+                                                <SectionHeader title="App Preferences" isDark={isDark} />
+                                                <SettingsGroup isDark={isDark}>
+                                                    <SettingsRow icon={<Bell />} iconBg="bg-rose-500" label="Notifications" subtext="Offer alerts, contracts, and payments" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('notifications')} />
+                                                    <SettingsRow icon={isDark ? <Sun /> : <Moon />} iconBg="bg-background" label="Appearance" subtext="Dark mode and theme" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('dark-mode')} />
+                                                </SettingsGroup>
+                                            </div>
+
+                                            {/* 6. TRUST & SUPPORT */}
+                                            <div>
+                                                <SectionHeader title="Trust & Support" isDark={isDark} />
+                                                <SettingsGroup isDark={isDark}>
+                                                    <SettingsRow icon={<ShieldCheck />} iconBg="bg-info" label="Armour Verification" subtext="Trust features and fraud protection" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('verification')} />
+                                                    <SettingsRow icon={<Info />} iconBg="bg-slate-500" label="About Creator Armour" subtext="Version, help, and support" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('about')} />
+                                                </SettingsGroup>
+                                            </div>
+
+                                            {/* 7. SESSION */}
+                                            <div>
+                                                <SectionHeader title="Session" isDark={isDark} />
+                                                <SettingsGroup isDark={isDark}>
+                                                    <SettingsRow icon={<LogOut />} iconBg="bg-destructive" label="Log Out" subtext="Securely sign out of your account" isDark={isDark} textColor={textColor} hasChevron onClick={() => setActiveSettingsPage('logout')} />
+                                                </SettingsGroup>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 ) : (
@@ -4478,42 +4536,42 @@ const MobileDashboardDemo = ({
                                 </button>
                             </div>
 
-	                            {/* Main Highlight: Pending Amount */}
-	                            <motion.div
-	                                initial={{ scale: 0.95, opacity: 0 }}
-	                                animate={{ scale: 1, opacity: 1 }}
-	                                transition={{ delay: 0.1 }}
-	                                className={cn(
-	                                    "py-7 px-7 rounded-[2.25rem] shadow-xl border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
-	                                    isDark
-	                                        ? "from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
-	                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
-	                                )}
-	                            >
-	                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
-	                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
-	                                <div className="relative z-10">
-	                                    <div className="flex items-center justify-between text-foreground/90 mb-3">
-	                                        <div className="space-y-0.5">
-	                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-foreground">Pending Amount</span>
-	                                            <span className="block text-[11px] font-semibold text-foreground/70">Released after content approval</span>
-	                                        </div>
-	                                        <div className="p-2 rounded-xl bg-secondary/12 backdrop-blur-md border border-border">
-	                                            <Clock className="w-4 h-4 text-foreground" />
-	                                        </div>
-	                                    </div>
-	                                    <div className="text-4xl font-black text-foreground mb-5 flex items-baseline gap-1 font-outfit">
-	                                        <span className="text-2xl font-bold opacity-75">₹</span>
-	                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
-	                                    </div>
-	                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-border w-fit">
-	                                        <div className="w-5 h-5 rounded-full bg-secondary/15 flex items-center justify-center border border-border">
-	                                            <ShieldCheck className="w-3 h-3 text-foreground/90" />
-	                                        </div>
-	                                        <span className="text-[9px] font-black text-foreground tracking-[0.15em] uppercase">Creator Armour protection active</span>
-	                                    </div>
-	                                </div>
-	                            </motion.div>
+                            {/* Main Highlight: Pending Amount */}
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.1 }}
+                                className={cn(
+                                    "py-7 px-7 rounded-[2.25rem] shadow-xl border-0 mb-6 bg-gradient-to-br relative overflow-hidden",
+                                    isDark
+                                        ? "from-emerald-400 via-cyan-500 to-blue-600 shadow-blue-500/20"
+                                        : "from-emerald-500 via-cyan-500 to-blue-700 shadow-blue-500/15"
+                                )}
+                            >
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
+                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/50 rounded-full blur-3xl" />
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between text-foreground/90 mb-3">
+                                        <div className="space-y-0.5">
+                                            <span className="block text-[10px] font-black uppercase tracking-[0.2em] opacity-85 text-foreground">Pending Amount</span>
+                                            <span className="block text-[11px] font-semibold text-foreground/70">Released after content approval</span>
+                                        </div>
+                                        <div className="p-2 rounded-xl bg-secondary/12 backdrop-blur-md border border-border">
+                                            <Clock className="w-4 h-4 text-foreground" />
+                                        </div>
+                                    </div>
+                                    <div className="text-4xl font-black text-foreground mb-5 flex items-baseline gap-1 font-outfit">
+                                        <span className="text-2xl font-bold opacity-75">₹</span>
+                                        <AnimatedCounter value={brandDeals.reduce((sum, d) => sum + (d.status?.toLowerCase() !== 'completed' ? (d.deal_amount || 0) : 0), 0)} />
+                                    </div>
+                                    <div className="flex items-center gap-2.5 py-2 px-3.5 rounded-xl bg-black/10 backdrop-blur-md border border-border w-fit">
+                                        <div className="w-5 h-5 rounded-full bg-secondary/15 flex items-center justify-center border border-border">
+                                            <ShieldCheck className="w-3 h-3 text-foreground/90" />
+                                        </div>
+                                        <span className="text-[9px] font-black text-foreground tracking-[0.15em] uppercase">Creator Armour protection active</span>
+                                    </div>
+                                </div>
+                            </motion.div>
 
                             {/* Secondary Stats Row */}
                             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -4527,57 +4585,69 @@ const MobileDashboardDemo = ({
                                 </div>
                             </div>
 
-	                            {/* Transaction List */}
-	                            <div className="space-y-3">
-	                                {brandDeals.length > 0 ? (
-	                                    brandDeals.map((deal: any, idx: number) => (
-	                                        (() => {
-	                                            const payUx = getCreatorPaymentListUX(deal);
-	                                            const badgeClass = payUx.tone === 'success'
-	                                                ? (isDark ? "bg-primary/12 text-primary border-primary/20" : "bg-primary/10 text-primary border-primary/15")
-	                                                : payUx.tone === 'warning'
-	                                                    ? (isDark ? "bg-warning/14 text-warning border-warning/25" : "bg-warning/10 text-warning border-warning/15")
-	                                                    : payUx.tone === 'neutral'
-	                                                        ? (isDark ? "bg-secondary/50 text-foreground/80 border-border" : "bg-background/5 text-muted-foreground border-border")
-	                                                        : (isDark ? "bg-info/14 text-info border-sky-400/25" : "bg-info/10 text-info border-sky-500/15");
+                            {/* Transaction List */}
+                            <div className="space-y-3">
+                                {brandDeals.length > 0 ? (
+                                    brandDeals.map((deal: any, idx: number) => (
+                                        (() => {
+                                            const payUx = getCreatorPaymentListUX(deal);
+                                            const badgeClass = payUx.tone === 'success'
+                                                ? (isDark ? "bg-primary/12 text-primary border-primary/20" : "bg-primary/10 text-primary border-primary/15")
+                                                : payUx.tone === 'warning'
+                                                    ? (isDark ? "bg-warning/14 text-warning border-warning/25" : "bg-warning/10 text-warning border-warning/15")
+                                                    : payUx.tone === 'neutral'
+                                                        ? (isDark ? "bg-secondary/50 text-foreground/80 border-border" : "bg-background/5 text-muted-foreground border-border")
+                                                        : (isDark ? "bg-info/14 text-info border-sky-400/25" : "bg-info/10 text-info border-sky-500/15");
 
-	                                        <motion.div
-	                                            key={idx}
-	                                            initial={{ opacity: 0, y: 10 }}
-	                                            animate={{ opacity: 1, y: 0 }}
-	                                            transition={{ delay: idx * 0.05 }}
-	                                            onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
-	                                            className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
-	                                        >
-	                                            <div className="flex items-center gap-4">
-	                                                <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-card" : "bg-background")}>
-	                                                    {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
-	                                                </div>
-	                                                <div>
-	                                                    <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
-	                                                    <div className="mt-1 flex items-center gap-2 min-w-0">
-	                                                        <span className={cn("inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", badgeClass)}>
-	                                                            {payUx.label}
-	                                                        </span>
-	                                                        <span className={cn("text-[11px] font-semibold opacity-60 truncate", textColor)}>{payUx.sublabel}</span>
-	                                                    </div>
-	                                                </div>
-	                                            </div>
-	                                            <div className="flex items-center gap-2">
-	                                                <div className="text-right">
-	                                                    <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
-	                                                </div>
-	                                                <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
-	                                            </div>
-	                                        </motion.div>
-	                                        })()
-	                                    ))
-	                                ) : (
-	                                    <div className="text-center py-12">
-	                                        <div className="w-16 h-16 rounded-full bg-background/10 flex items-center justify-center mx-auto mb-4 border border-border">
-	                                            <CreditCard className={cn("w-8 h-8 opacity-20", textColor)} />
+                                            <motion.div
+                                                key={idx}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: idx * 0.05 }}
+                                                onClick={() => { triggerHaptic(); setSelectedPayment(deal); }}
+                                                className={cn("p-5 rounded-2xl border flex items-center justify-between group active:scale-[0.98] transition-all cursor-pointer", cardBgColor, borderColor)}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className={cn("w-10 h-10 rounded-xl border overflow-hidden flex items-center justify-center text-lg font-black", borderColor, isDark ? "bg-card" : "bg-background")}>
+                                                        {getBrandIcon(deal.brand_logo_url || deal.logo_url, deal.category, deal.brand_name)}
+                                                    </div>
+                                                    <div>
+                                                        <p className={cn("font-bold text-[15px]", textColor)}>{deal.brand_name || 'Brand Partner'}</p>
+                                                        <div className="mt-1 flex items-center gap-2 min-w-0">
+                                                            <span className={cn("inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border", badgeClass)}>
+                                                                {payUx.label}
+                                                            </span>
+                                                            <span className={cn("text-[11px] font-semibold opacity-60 truncate", textColor)}>{payUx.sublabel}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-right">
+                                                        <p className={cn("font-black text-[16px] font-outfit", textColor)}>₹{(deal.deal_amount || 0).toLocaleString()}</p>
+                                                    </div>
+                                                    <ChevronRight className={cn("w-4 h-4 opacity-30", textColor)} />
+                                                </div>
+                                            </motion.div>
+                                        })()
+                                    ))
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 rounded-full bg-background/10 flex items-center justify-center mx-auto mb-4 border border-border">
+                                            <CreditCard className={cn("w-8 h-8 opacity-20", textColor)} />
                                         </div>
-                                        <p className={cn("text-sm font-bold opacity-30", textColor)}>No transactions found</p>
+                                        <h3 className={cn("text-[18px] font-black tracking-tight mb-2 font-outfit", textColor)}>No payments yet</h3>
+                                        <p className={cn("text-sm font-bold opacity-30", textColor)}>Complete your first brand deal to start earning</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                triggerHaptic();
+                                                handleShareOnWhatsApp();
+                                            }}
+                                            className="mt-4 h-11 px-5 rounded-2xl bg-primary text-white font-black text-[13px] shadow-lg shadow-primary/20 active:scale-95 transition-all inline-flex items-center justify-center gap-2"
+                                        >
+                                            <MessageCircle className="w-4 h-4" />
+                                            Share link to get first offer
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -4590,25 +4660,25 @@ const MobileDashboardDemo = ({
                     className={cn('fixed bottom-0 inset-x-0 border-t z-[1050] transition-all duration-500', isDark ? 'border-[#1F2937] bg-[#0B0F14]/90' : 'border-border bg-secondary/90')}
                     style={{ backdropFilter: 'blur(30px)', WebkitBackdropFilter: 'blur(30px)' }}
                 >
-                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-6 py-3 pb-safe" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className="flex flex-col items-center gap-1 w-14">
-                            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
+                    <div className="max-w-md md:max-w-2xl mx-auto flex items-center justify-between px-4 py-3 pb-safe gap-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('dashboard'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'dashboard' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <LayoutDashboard className={cn('w-[22px] h-[22px]', activeTab === 'dashboard' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'dashboard' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Home</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('deals'); }} className="flex flex-col items-center gap-1 w-14">
-                            <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'deals' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Deals</span>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('deals'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'deals' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <Briefcase className={cn('w-[22px] h-[22px]', activeTab === 'deals' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'deals' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Collabs</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className="flex flex-col items-center gap-1 w-14">
-                            <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('payments'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'payments' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <CreditCard className={cn('w-[22px] h-[22px]', activeTab === 'payments' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'payments' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Payments</span>
                         </motion.button>
 
-                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className="flex flex-col items-center gap-1 w-14">
-                            <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-muted-foreground') : secondaryTextColor)} />
-                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-muted-foreground font-bold') : cn('font-medium', secondaryTextColor))}>Profile</span>
+                        <motion.button whileTap={{ scale: 0.94 }} onClick={() => { triggerHaptic(); setActiveTab('profile'); }} className={cn("flex flex-col items-center justify-center gap-1 min-w-[64px] h-[54px] px-2 rounded-2xl transition-all", activeTab === 'profile' ? (isDark ? 'bg-white/8 shadow-[0_8px_20px_rgba(0,0,0,0.18)]' : 'bg-white shadow-sm border border-[#E5E7EB]') : 'bg-transparent')}>
+                            <User className={cn('w-[22px] h-[22px]', activeTab === 'profile' ? (isDark ? 'text-foreground' : 'text-[#111827]') : secondaryTextColor)} />
+                            <span className={cn('text-[10px] tracking-tight', activeTab === 'profile' ? (isDark ? 'text-foreground font-bold' : 'text-[#111827] font-bold') : cn('font-medium', secondaryTextColor))}>Account</span>
                         </motion.button>
                     </div>
                 </div>
@@ -4746,899 +4816,899 @@ const MobileDashboardDemo = ({
                                     className="fixed inset-0 z-[1100] flex flex-col overflow-hidden isolate"
                                     style={{ backgroundColor: bgColor }}
                                 >
-                            {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
-                            <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
+                                    {/* Solid base (prevents underlying collabs list bleeding through on iOS) */}
+                                    <div className="absolute inset-0 z-0" style={{ backgroundColor: bgColor }} />
 
-                            {/* Background gradient + blobs (match brand dashboard vibe) */}
-                            {isDark ? (
-                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                                    <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
-                                    <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
-                                    <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
-                                    <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
-                                </div>
-                            ) : (
-                                <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
-                                    <div className="absolute inset-0 bg-background" />
-                                </div>
-                            )}
-
-                            {/* Fixed Header */}
-                            <div className={cn(
-                                "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
-                                isDark ? "bg-[#061318]/70 backdrop-blur-xl border-border" : "bg-secondary/95 backdrop-blur-md border-border"
-                            )}>
-                                <div className="flex items-center gap-3">
-                                    <button type="button"
-                                        onClick={closeItemDetail}
-                                        className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
-                                    >
-                                        <ChevronRight className="w-4 h-4 rotate-180" />
-                                    </button>
-                                    <div>
-                                        <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>
-                                            {selectedType === 'deal' ? 'Deal Detail' : 'Offer Brief'}
-                                        </h2>
-                                        <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>
-                                            {selectedItem.brand_name || selectedItem.raw?.brand_name || 'Brand Partner'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <button type="button"
-                                    onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
-                                    className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card" : "bg-card")}
-                                >
-                                    <MoreHorizontal className="w-4 h-4 opacity-40" />
-                                </button>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 relative z-10">
-
-                                {/* ── COMPACT BRAND HERO ── */}
-                                <div className={cn("rounded-3xl border p-5 mb-6 flex flex-col items-center text-center", cardBgColor, borderColor)}>
-                                    <div className="flex flex-col items-center gap-2 mb-5 w-full">
-                                        {/* Status Row */}
-                                        <div className={cn("flex items-center px-3 py-1.5 rounded-full border shadow-sm mb-1",
-                                            selectedType === 'deal'
-                                                ? (isDark ? "bg-primary/10 border-primary/20" : "bg-primary border-primary")
-                                                : (isDark ? "bg-warning/10 border-warning/20" : "bg-warning border-warning")
-                                        )}>
-                                            <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-primary' : 'text-primary') : (isDark ? 'text-warning' : 'text-warning'))}>
-                                                {selectedType === 'deal' ? '🟢 Active Collaboration' : <><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5}/> Awaiting Your Decision</>}
-                                            </span>
+                                    {/* Background gradient + blobs (match brand dashboard vibe) */}
+                                    {isDark ? (
+                                        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+                                            <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/15 via-sky-500/10 to-transparent" />
+                                            <div className="absolute top-[-12%] left-[-14%] w-[45%] h-[45%] bg-primary/20 rounded-full blur-[140px]" />
+                                            <div className="absolute top-[8%] right-[-18%] w-[48%] h-[48%] bg-info/18 rounded-full blur-[160px]" />
+                                            <div className="absolute bottom-[-14%] left-[20%] w-[52%] h-[52%] bg-primary/12 rounded-full blur-[170px]" />
                                         </div>
-
-                                        {/* Campaign Type Tag */}
-                                        {selectedItem.collab_type === 'barter' ? (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
-                                        ) : (
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
-                                        )}
-
-                                        {/* Hero Budget */}
-                                        <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
-                                            {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
-                                        </p>
-
-                                        {/* Deliverables */}
-                                        <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-muted-foreground" : "text-muted-foreground")}>
-                                            {(() => {
-                                                const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                                let items: string[] = ['🎬 1 Reel', '📱 2 Stories'];
-                                                try {
-                                                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                    if (Array.isArray(parsed) && parsed.length > 0) {
-                                                        items = parsed.map((d: any) => {
-                                                            if (typeof d === 'string') return d;
-                                                            const ct = (d.contentType || d.type || '').toLowerCase();
-                                                            const count = d.count || d.quantity || 1;
-                                                            let emoji = '📋', label = 'Content';
-                                                            if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
-                                                            else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
-                                                            else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
-                                                            return `${emoji} ${count} ${label}`;
-                                                        });
-                                                    }
-                                                } catch (_) { }
-                                                return items.map((d, i) => (
-                                                    <React.Fragment key={i}>
-                                                        <span>{d}</span>
-                                                        {i < items.length - 1 && <span className="opacity-40 px-1">•</span>}
-                                                    </React.Fragment>
-                                                ));
-                                            })()}
+                                    ) : (
+                                        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+                                            <div className="absolute inset-0 bg-background" />
                                         </div>
+                                    )}
 
-                                        {/* Deadline Top */}
-                                        {selectedType === 'offer' && (() => {
-                                            const rawDeadline = selectedItem.deadline || selectedItem.raw?.deadline;
-                                            const deadline = rawDeadline ? new Date(rawDeadline) : null;
-                                            if (!deadline || Number.isNaN(deadline.getTime())) {
-                                                return <p className={cn("text-[12px] font-semibold mt-2", secondaryTextColor)}>No Deadline Set</p>;
-                                            }
-                                            return (
-                                                <div className="flex items-center justify-center gap-1.5 mt-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full shadow-sm">
-                                                    <Clock className="w-3.5 h-3.5" />
-                                                    <span className="text-[11px] font-black uppercase tracking-wider">Deadline: {deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                                </div>
-                                            );
-                                        })()}
-                                    </div>
-
-                                    {/* Brand Logo & Name */}
-                                    <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-border" : "border-border")}>
-                                        <div className={cn("w-8 h-8 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
-                                            selectedItem.collab_type === 'barter'
-                                                ? (isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")
-                                                : (isDark ? "bg-info/10 border-info/20" : "bg-info border-info")
-                                        )}>
-                                            {getBrandIcon(
-                                                selectedItem.brand_logo ||
-                                                selectedItem.brand_logo_url ||
-                                                selectedItem.logo_url ||
-                                                selectedItem.raw?.brand_logo ||
-                                                selectedItem.raw?.brand_logo_url ||
-                                                selectedItem.raw?.logo_url ||
-                                                (selectedItem as any)?.brand?.logo_url,
-                                                selectedItem.category,
-                                                selectedItem.brand_name || selectedItem.raw?.brand_name
-                                            )}
-                                        </div>
-                                        <div className="flex flex-col text-left">
-                                            <div className="flex items-center gap-1.5">
-                                                <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
-                                                    {selectedItem.brand_name || 'Brand Name'}
-                                                </p>
-                                                <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
-                                            </div>
-                                            <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-muted-foreground")}>Verified Brand</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* ── BRAND DETAILS (Progressive Disclosure) ── */}
-                                <motion.div
-                                    className={cn("rounded-xl border mb-5 overflow-hidden", cardBgColor, borderColor)}
-                                    layout
-                                >
-                                    {/* Collapsed trigger */}
-                                    <button type="button"
-                                        onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity"
-                                    >
-                                        <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-info/10" : "bg-info")}>
-                                            <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2} />
-                                        </div>
-                                        <div className="flex-1 text-left min-w-0">
-                                            <p className={cn("text-[13px] font-bold leading-tight", textColor)}>Brand Information</p>
-                                            <p className={cn("text-[11px] mt-0.5", secondaryTextColor)}>Verified Business · View Company Details</p>
-                                        </div>
-                                        <motion.div
-                                            animate={{ rotate: showBrandDetails ? 90 : 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <ChevronRight className={cn("w-4 h-4", secondaryTextColor)} />
-                                        </motion.div>
-                                    </button>
-
-                                    {/* Expanded content */}
-                                    <AnimatePresence initial={false}>
-                                        {showBrandDetails && (
-                                            <motion.div
-                                                key="brand-details"
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.25, ease: 'easeInOut' }}
-                                                className="overflow-hidden"
+                                    {/* Fixed Header */}
+                                    <div className={cn(
+                                        "px-5 py-3.5 flex items-center justify-between border-b sticky top-0 z-20",
+                                        isDark ? "bg-[#061318]/70 backdrop-blur-xl border-border" : "bg-secondary/95 backdrop-blur-md border-border"
+                                    )}>
+                                        <div className="flex items-center gap-3">
+                                            <button type="button"
+                                                onClick={closeItemDetail}
+                                                className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
                                             >
-                                                <div className={cn("border-t mx-0", isDark ? "border-border/8" : "border-border")} />
+                                                <ChevronRight className="w-4 h-4 rotate-180" />
+                                            </button>
+                                            <div>
+                                                <h2 className={cn("text-[16px] font-bold tracking-tight leading-tight", textColor)}>
+                                                    {selectedType === 'deal' ? 'Deal Detail' : 'Offer Brief'}
+                                                </h2>
+                                                <p className={cn("text-[10px] font-bold uppercase tracking-widest opacity-40 leading-tight", textColor)}>
+                                                    {selectedItem.brand_name || selectedItem.raw?.brand_name || 'Brand Partner'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                            onClick={() => { triggerHaptic(); setShowItemMenu(true); }}
+                                            className={cn("w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90", borderColor, isDark ? "bg-card" : "bg-card")}
+                                        >
+                                            <MoreHorizontal className="w-4 h-4 opacity-40" />
+                                        </button>
+                                    </div>
 
-                                                {/* Trust badges */}
-                                                <div className="px-4 pt-3 pb-2">
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40", textColor)}>Verified Identity</p>
-                                                    <div className="flex flex-wrap gap-1.5">
-                                                        {[
-                                                            { icon: '✓', label: 'GST Verified', color: 'text-primary bg-primary/10 border-primary/20' },
-                                                            { icon: '✓', label: 'Email Verified', color: 'text-primary bg-primary/10 border-primary/20' },
-                                                            { icon: '✓', label: 'Domain Verified', color: 'text-primary bg-primary/10 border-primary/20' },
-                                                        ].map((badge) => (
-                                                            <span key={badge.label} className={cn("px-2 py-0.5 rounded-md text-[10px] font-black border", badge.color)}>
-                                                                {badge.icon} {badge.label}
-                                                            </span>
+                                    <div className="flex-1 overflow-y-auto px-5 pt-5 pb-40 relative z-10">
+
+                                        {/* ── COMPACT BRAND HERO ── */}
+                                        <div className={cn("rounded-3xl border p-5 mb-6 flex flex-col items-center text-center", cardBgColor, borderColor)}>
+                                            <div className="flex flex-col items-center gap-2 mb-5 w-full">
+                                                {/* Status Row */}
+                                                <div className={cn("flex items-center px-3 py-1.5 rounded-full border shadow-sm mb-1",
+                                                    selectedType === 'deal'
+                                                        ? (isDark ? "bg-primary/10 border-primary/20" : "bg-primary border-primary")
+                                                        : (isDark ? "bg-warning/10 border-warning/20" : "bg-warning border-warning")
+                                                )}>
+                                                    <span className={cn("text-[11px] font-black tracking-widest uppercase flex items-center gap-1.5", selectedType === 'deal' ? (isDark ? 'text-primary' : 'text-primary') : (isDark ? 'text-warning' : 'text-warning'))}>
+                                                        {selectedType === 'deal' ? '🟢 Active Collaboration' : <><AlertTriangle className="w-3.5 h-3.5" strokeWidth={2.5} /> Awaiting Your Decision</>}
+                                                    </span>
+                                                </div>
+
+                                                {/* Campaign Type Tag */}
+                                                {selectedItem.collab_type === 'barter' ? (
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md">Free products Campaign</span>
+                                                ) : (
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md">Paid Campaign</span>
+                                                )}
+
+                                                {/* Hero Budget */}
+                                                <p className={cn("text-[38px] font-black leading-none my-2 font-outfit tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
+                                                    {renderBudgetValue(selectedItem)} <span className={cn("text-[20px] font-bold opacity-60 ml-1", textColor)}>Offer</span>
+                                                </p>
+
+                                                {/* Deliverables */}
+                                                <div className={cn("flex items-center justify-center flex-wrap gap-2 text-[14px] font-bold mt-1", isDark ? "text-muted-foreground" : "text-muted-foreground")}>
+                                                    {(() => {
+                                                        const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                        let items: string[] = ['🎬 1 Reel', '📱 2 Stories'];
+                                                        try {
+                                                            const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                                                items = parsed.map((d: any) => {
+                                                                    if (typeof d === 'string') return d;
+                                                                    const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                    const count = d.count || d.quantity || 1;
+                                                                    let emoji = '📋', label = 'Content';
+                                                                    if (ct.includes('reel')) { emoji = '🎬'; label = 'Reel'; }
+                                                                    else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
+                                                                    else if (ct.includes('post')) { emoji = '🖼'; label = 'Post'; }
+                                                                    return `${emoji} ${count} ${label}`;
+                                                                });
+                                                            }
+                                                        } catch (_) { }
+                                                        return items.map((d, i) => (
+                                                            <React.Fragment key={i}>
+                                                                <span>{d}</span>
+                                                                {i < items.length - 1 && <span className="opacity-40 px-1">•</span>}
+                                                            </React.Fragment>
+                                                        ));
+                                                    })()}
+                                                </div>
+
+                                                {/* Deadline Top */}
+                                                {selectedType === 'offer' && (() => {
+                                                    const rawDeadline = selectedItem.deadline || selectedItem.raw?.deadline;
+                                                    const deadline = rawDeadline ? new Date(rawDeadline) : null;
+                                                    if (!deadline || Number.isNaN(deadline.getTime())) {
+                                                        return <p className={cn("text-[12px] font-semibold mt-2", secondaryTextColor)}>No Deadline Set</p>;
+                                                    }
+                                                    return (
+                                                        <div className="flex items-center justify-center gap-1.5 mt-2 bg-destructive/10 text-destructive px-3 py-1 rounded-full shadow-sm">
+                                                            <Clock className="w-3.5 h-3.5" />
+                                                            <span className="text-[11px] font-black uppercase tracking-wider">Deadline: {deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+
+                                            {/* Brand Logo & Name */}
+                                            <div className={cn("flex items-center justify-center gap-3 w-full border-t pt-5 mt-1", isDark ? "border-border" : "border-border")}>
+                                                <div className={cn("w-8 h-8 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 shadow-sm",
+                                                    selectedItem.collab_type === 'barter'
+                                                        ? (isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")
+                                                        : (isDark ? "bg-info/10 border-info/20" : "bg-info border-info")
+                                                )}>
+                                                    {getBrandIcon(
+                                                        selectedItem.brand_logo ||
+                                                        selectedItem.brand_logo_url ||
+                                                        selectedItem.logo_url ||
+                                                        selectedItem.raw?.brand_logo ||
+                                                        selectedItem.raw?.brand_logo_url ||
+                                                        selectedItem.raw?.logo_url ||
+                                                        (selectedItem as any)?.brand?.logo_url,
+                                                        selectedItem.category,
+                                                        selectedItem.brand_name || selectedItem.raw?.brand_name
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col text-left">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <p className={cn("text-[14px] font-bold tracking-tight", textColor)}>
+                                                            {selectedItem.brand_name || 'Brand Name'}
+                                                        </p>
+                                                        <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2.5} />
+                                                    </div>
+                                                    <p className={cn("text-[10px] font-semibold mt-0.5", secondaryTextColor, isDark ? "" : "text-muted-foreground")}>Verified Brand</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* ── BRAND DETAILS (Progressive Disclosure) ── */}
+                                        <motion.div
+                                            className={cn("rounded-xl border mb-5 overflow-hidden", cardBgColor, borderColor)}
+                                            layout
+                                        >
+                                            {/* Collapsed trigger */}
+                                            <button type="button"
+                                                onClick={() => { triggerHaptic(); setShowBrandDetails(v => !v); }}
+                                                className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 transition-opacity"
+                                            >
+                                                <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", isDark ? "bg-info/10" : "bg-info")}>
+                                                    <ShieldCheck className="w-3.5 h-3.5 text-info" strokeWidth={2} />
+                                                </div>
+                                                <div className="flex-1 text-left min-w-0">
+                                                    <p className={cn("text-[13px] font-bold leading-tight", textColor)}>Brand Information</p>
+                                                    <p className={cn("text-[11px] mt-0.5", secondaryTextColor)}>Verified Business · View Company Details</p>
+                                                </div>
+                                                <motion.div
+                                                    animate={{ rotate: showBrandDetails ? 90 : 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    <ChevronRight className={cn("w-4 h-4", secondaryTextColor)} />
+                                                </motion.div>
+                                            </button>
+
+                                            {/* Expanded content */}
+                                            <AnimatePresence initial={false}>
+                                                {showBrandDetails && (
+                                                    <motion.div
+                                                        key="brand-details"
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                                                        className="overflow-hidden"
+                                                    >
+                                                        <div className={cn("border-t mx-0", isDark ? "border-border/8" : "border-border")} />
+
+                                                        {/* Trust badges */}
+                                                        <div className="px-4 pt-3 pb-2">
+                                                            <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40", textColor)}>Verified Identity</p>
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {[
+                                                                    { icon: '✓', label: 'GST Verified', color: 'text-primary bg-primary/10 border-primary/20' },
+                                                                    { icon: '✓', label: 'Email Verified', color: 'text-primary bg-primary/10 border-primary/20' },
+                                                                    { icon: '✓', label: 'Domain Verified', color: 'text-primary bg-primary/10 border-primary/20' },
+                                                                ].map((badge) => (
+                                                                    <span key={badge.label} className={cn("px-2 py-0.5 rounded-md text-[10px] font-black border", badge.color)}>
+                                                                        {badge.icon} {badge.label}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Company info rows */}
+                                                        <div className="px-4 pb-3 space-y-0">
+                                                            <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40 pt-2", textColor)}>Company Details</p>
+                                                            {[
+                                                                { label: 'Company', value: selectedItem.company_name || selectedItem.brand_name || selectedItem.raw?.brand_name || 'Pronto Pvt Ltd' },
+                                                                { label: 'GST', value: selectedItem.gst_number || selectedItem.brand_gstin || selectedItem.raw?.brand_gstin || '27ABCDE1234F1Z5' },
+                                                                { label: 'Address', value: selectedItem.address || selectedItem.brand_address || selectedItem.raw?.brand_address || 'Mumbai, India' },
+                                                                { label: 'Contact', value: selectedItem.contact_person || selectedItem.contact_name || selectedItem.raw?.contact_name || 'Brand Manager' },
+                                                                { label: 'Email', value: selectedItem.contact_email || selectedItem.email || selectedItem.brand_email || selectedItem.raw?.brand_email || '—' },
+                                                                { label: 'Phone', value: selectedItem.contact_phone || selectedItem.phone || selectedItem.brand_phone || selectedItem.raw?.brand_phone || '—' },
+                                                            ].map((row, i) => (
+                                                                <div key={i} className={cn("flex items-start justify-between py-2", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
+                                                                    <span className={cn("text-[12px] shrink-0 w-16", secondaryTextColor)}>{row.label}</span>
+                                                                    <span className={cn("text-[12px] font-semibold text-right flex-1 ml-3", textColor)}>{row.value}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </motion.div>
+
+                                        {/* ── DELIVERY TIMELINE (Offers) ── */}
+                                        {selectedType === 'offer' && (
+                                            <div className="mb-6">
+                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Timeline</h4>
+                                                <div className={cn("rounded-2xl border px-2 py-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
+                                                    <div className="flex items-center justify-between px-2 mb-4 text-[11px] font-black uppercase tracking-wider">
+                                                        <span className={isDark ? "text-info" : "text-info"}>Step 1 of 5</span>
+                                                        <span className={textColor}>Offer Received</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between px-2 relative">
+                                                        <div className={cn("absolute left-4 right-4 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-secondary/50" : "bg-background")} />
+                                                        <div className={cn("absolute left-4 w-1 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-info" : "bg-info")} />
+                                                        {['Offer', 'Accept', 'Create', 'Submit', 'Payment'].map((step, i) => (
+                                                            <div key={step} className="relative z-10 flex flex-col items-center gap-2">
+                                                                <div className={cn("w-[15px] h-[15px] rounded-full border-[3px]",
+                                                                    i === 0 ? "bg-card border-info shadow-[0_0_8px_rgba(59,130,246,0.6)] box-content" : (isDark ? "bg-[#111827] border-border" : "bg-card border-border")
+                                                                )} />
+                                                                <span className={cn("text-[9px] font-bold uppercase", i === 0 ? (isDark ? "text-info" : "text-info") : "opacity-40")}>{step}</span>
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 </div>
-
-                                                {/* Company info rows */}
-                                                <div className="px-4 pb-3 space-y-0">
-                                                    <p className={cn("text-[10px] font-black uppercase tracking-wider mb-2 opacity-40 pt-2", textColor)}>Company Details</p>
-                                                    {[
-                                                        { label: 'Company', value: selectedItem.company_name || selectedItem.brand_name || selectedItem.raw?.brand_name || 'Pronto Pvt Ltd' },
-                                                        { label: 'GST', value: selectedItem.gst_number || selectedItem.brand_gstin || selectedItem.raw?.brand_gstin || '27ABCDE1234F1Z5' },
-                                                        { label: 'Address', value: selectedItem.address || selectedItem.brand_address || selectedItem.raw?.brand_address || 'Mumbai, India' },
-                                                        { label: 'Contact', value: selectedItem.contact_person || selectedItem.contact_name || selectedItem.raw?.contact_name || 'Brand Manager' },
-                                                        { label: 'Email', value: selectedItem.contact_email || selectedItem.email || selectedItem.brand_email || selectedItem.raw?.brand_email || '—' },
-                                                        { label: 'Phone', value: selectedItem.contact_phone || selectedItem.phone || selectedItem.brand_phone || selectedItem.raw?.brand_phone || '—' },
-                                                    ].map((row, i) => (
-                                                        <div key={i} className={cn("flex items-start justify-between py-2", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
-                                                            <span className={cn("text-[12px] shrink-0 w-16", secondaryTextColor)}>{row.label}</span>
-                                                            <span className={cn("text-[12px] font-semibold text-right flex-1 ml-3", textColor)}>{row.value}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                            </motion.div>
+                                            </div>
                                         )}
-                                    </AnimatePresence>
-                                </motion.div>
 
-                                {/* ── DELIVERY TIMELINE (Offers) ── */}
-                                {selectedType === 'offer' && (
-                                    <div className="mb-6">
-                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Timeline</h4>
-                                        <div className={cn("rounded-2xl border px-2 py-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
-                                            <div className="flex items-center justify-between px-2 mb-4 text-[11px] font-black uppercase tracking-wider">
-                                                <span className={isDark ? "text-info" : "text-info"}>Step 1 of 5</span>
-                                                <span className={textColor}>Offer Received</span>
-                                            </div>
-                                            <div className="flex items-center justify-between px-2 relative">
-                                                <div className={cn("absolute left-4 right-4 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-secondary/50" : "bg-background")} />
-                                                <div className={cn("absolute left-4 w-1 top-[6px] h-[3px] z-0 rounded-full", isDark ? "bg-info" : "bg-info")} />
-                                                {['Offer', 'Accept', 'Create', 'Submit', 'Payment'].map((step, i) => (
-                                                    <div key={step} className="relative z-10 flex flex-col items-center gap-2">
-                                                        <div className={cn("w-[15px] h-[15px] rounded-full border-[3px]", 
-                                                            i === 0 ? "bg-card border-info shadow-[0_0_8px_rgba(59,130,246,0.6)] box-content" : (isDark ? "bg-[#111827] border-border" : "bg-card border-border")
-                                                        )} />
-                                                        <span className={cn("text-[9px] font-bold uppercase", i === 0 ? (isDark ? "text-info" : "text-info") : "opacity-40")}>{step}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── CAMPAIGN BRIEF (Offers) ── */}
-                                {selectedType === 'offer' && (
-                                    <div className="mb-6">
-                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Brief</h4>
-                                        <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
-                                            <p className={cn("text-[13px] leading-relaxed font-semibold whitespace-pre-wrap", isDark ? "text-foreground/80" : "text-muted-foreground")}>
-                                                {selectedItem.campaign_description || selectedItem.raw?.campaign_description || '—'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── DELIVERABLES ── */}
-                                <div className="mb-6">
-                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Deliverables</h4>
-                                    <div className="flex flex-wrap gap-2.5">
-                                        {(() => {
-                                            const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
-                                            let items: string[] = ['🎬 1 Instagram Reel', '📱 2 Stories'];
-                                            try {
-                                                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-                                                if (Array.isArray(parsed) && parsed.length > 0) {
-                                                    items = parsed.map((d: any) => {
-                                                        if (typeof d === 'string') return d;
-                                                        const ct = (d.contentType || d.type || '').toLowerCase();
-                                                        const count = d.count || d.quantity || 1;
-                                                        let emoji = '📋', label = 'Content';
-                                                        if (ct.includes('reel')) { emoji = '🎬'; label = 'Instagram Reel'; }
-                                                        else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
-                                                        else if (ct.includes('post')) { emoji = '🖼'; label = 'Static Post'; }
-                                                        return `${emoji} ${count} ${label}`;
-                                                    });
-                                                }
-                                            } catch (_) { }
-                                            return items.map((d, i) => (
-                                                <div key={i} className={cn(
-                                                    "px-3.5 py-2.5 rounded-xl text-[14px] font-black border flex items-center gap-2 shadow-sm",
-                                                    isDark ? "bg-card border-border" : "bg-card border-border"
-                                                )}>
-                                                    {d}
-                                                </div>
-                                            ));
-                                        })()}
-                                    </div>
-                                </div>
-
-                                {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
-                                {selectedRequiresShipping && (
-                                    <div className="mb-6">
-                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
-                                        <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
-                                            <div className="w-16 h-16 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
-                                                <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
-                                            </div>
-                                            <div>
-                                                <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
-                                                <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>
-                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedType === 'deal' && selectedRequiresShipping && (
-                                    <div className="mb-6">
-                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Shipping</h4>
-                                        <div className={cn("rounded-2xl border p-4 space-y-4", cardBgColor, borderColor)}>
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div>
-                                                    <p className={cn("text-[16px] font-black leading-tight", textColor)}>Product delivery</p>
-                                                    <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
-                                                        {selectedShippingStatus === 'shipped'
-                                                            ? 'Track the package and confirm once it reaches you.'
-                                                            : selectedShippingDelivered
-                                                                ? 'Receipt confirmed. You can continue with the collaboration.'
-                                                                : selectedShippingStatus === 'issue_reported'
-                                                                    ? 'A shipping issue has been reported to the brand.'
-                                                                    : 'Waiting for the brand to add courier and tracking details.'}
+                                        {/* ── CAMPAIGN BRIEF (Offers) ── */}
+                                        {selectedType === 'offer' && (
+                                            <div className="mb-6">
+                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Campaign Brief</h4>
+                                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
+                                                    <p className={cn("text-[13px] leading-relaxed font-semibold whitespace-pre-wrap", isDark ? "text-foreground/80" : "text-muted-foreground")}>
+                                                        {selectedItem.campaign_description || selectedItem.raw?.campaign_description || '—'}
                                                     </p>
                                                 </div>
-                                                <span className={cn(
-                                                    "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
-                                                    selectedShippingDelivered
-                                                        ? (isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-primary text-primary border-primary")
-                                                        : selectedShippingStatus === 'shipped'
-                                                            ? (isDark ? "bg-info/10 text-info border-sky-500/20" : "bg-info text-info border-sky-200")
-                                                            : selectedShippingStatus === 'issue_reported'
-                                                                ? (isDark ? "bg-rose-500/10 text-rose-300 border-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-200")
-                                                                : (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
-                                                )}>
-                                                    {selectedShippingDelivered ? 'RECEIVED' : selectedShippingStatus === 'shipped' ? 'SHIPPED' : selectedShippingStatus === 'issue_reported' ? 'ISSUE' : 'PENDING'}
-                                                </span>
                                             </div>
+                                        )}
 
-                                            {(selectedItem.courier_name || selectedItem.tracking_number || selectedItem.tracking_url || selectedItem.expected_delivery_date) && (
-                                                <div className={cn("rounded-2xl border p-4 space-y-3", isDark ? "bg-secondary/3 border-border" : "bg-card border-border")}>
-                                                    {selectedItem.courier_name && (
-                                                        <div>
-                                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Courier</p>
-                                                            <p className={cn("text-[13px] font-semibold", textColor)}>{selectedItem.courier_name}</p>
+                                        {/* ── DELIVERABLES ── */}
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Deliverables</h4>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {(() => {
+                                                    const raw = selectedItem.deliverables || selectedItem.raw?.deliverables;
+                                                    let items: string[] = ['🎬 1 Instagram Reel', '📱 2 Stories'];
+                                                    try {
+                                                        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                                                        if (Array.isArray(parsed) && parsed.length > 0) {
+                                                            items = parsed.map((d: any) => {
+                                                                if (typeof d === 'string') return d;
+                                                                const ct = (d.contentType || d.type || '').toLowerCase();
+                                                                const count = d.count || d.quantity || 1;
+                                                                let emoji = '📋', label = 'Content';
+                                                                if (ct.includes('reel')) { emoji = '🎬'; label = 'Instagram Reel'; }
+                                                                else if (ct.includes('story')) { emoji = '📱'; label = 'Story'; }
+                                                                else if (ct.includes('post')) { emoji = '🖼'; label = 'Static Post'; }
+                                                                return `${emoji} ${count} ${label}`;
+                                                            });
+                                                        }
+                                                    } catch (_) { }
+                                                    return items.map((d, i) => (
+                                                        <div key={i} className={cn(
+                                                            "px-3.5 py-2.5 rounded-xl text-[14px] font-black border flex items-center gap-2 shadow-sm",
+                                                            isDark ? "bg-card border-border" : "bg-card border-border"
+                                                        )}>
+                                                            {d}
                                                         </div>
-                                                    )}
-                                                    {selectedItem.tracking_number && (
-                                                        <div>
-                                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Tracking number</p>
-                                                            <p className={cn("text-[13px] font-semibold break-all", textColor)}>{selectedItem.tracking_number}</p>
-                                                        </div>
-                                                    )}
-                                                    {selectedItem.expected_delivery_date && (
-                                                        <div>
-                                                            <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Expected delivery</p>
-                                                            <p className={cn("text-[13px] font-semibold", textColor)}>
-                                                                {new Date(selectedItem.expected_delivery_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                            </p>
-                                                        </div>
-                                                    )}
-                                                    {selectedItem.tracking_url && (
-                                                        <a
-                                                            href={selectedItem.tracking_url}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className={cn("inline-flex items-center gap-2 text-[13px] font-bold underline", isDark ? "text-info" : "text-info")}
-                                                        >
-                                                            <ExternalLink className="w-4 h-4" />
-                                                            Track package
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            )}
+                                                    ));
+                                                })()}
+                                            </div>
+                                        </div>
 
-                                            {selectedShippingStatus === 'shipped' && (
-                                                <div className="grid grid-cols-1 gap-2.5">
-                                                    <button type="button"
-                                                        onClick={confirmSelectedProductReceived}
-                                                        disabled={isConfirmingReceived}
-                                                        className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
-                                                    >
-                                                        {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                                                        Confirm Product Received
-                                                    </button>
-                                                    <button type="button"
-                                                        onClick={() => {
-                                                            triggerHaptic();
-                                                            setShowReportIssueModal(true);
-                                                        }}
-                                                        className={cn("w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2", isDark ? "bg-card border-border text-foreground" : "bg-card border-border text-muted-foreground")}
-                                                    >
-                                                        <AlertCircle className="w-4 h-4" />
-                                                        Report Shipping Issue
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {selectedShippingStatus === 'pending' && (
-                                                <div className={cn("rounded-2xl border p-4 flex items-start gap-3", isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")}>
-                                                    <Package className={cn("w-5 h-5 mt-0.5", isDark ? "text-warning" : "text-warning")} />
+                                        {/* ── PRODUCT PREVIEW (IF BARTER) ── */}
+                                        {selectedRequiresShipping && (
+                                            <div className="mb-6">
+                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Product Included</h4>
+                                                <div className={cn("rounded-xl border p-3 flex items-center gap-4", isDark ? "bg-card border-border" : "bg-background border-border")}>
+                                                    <div className="w-16 h-16 rounded-xl bg-warning shrink-0 overflow-hidden border border-black/5">
+                                                        <img src={selectedItem.product_image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=300"} alt="Product" className="w-full h-full object-cover" />
+                                                    </div>
                                                     <div>
-                                                        <p className={cn("text-[13px] font-black", textColor)}>Waiting for shipping update</p>
-                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
-                                                            The brand still needs to submit the courier and tracking details.
-                                                        </p>
+                                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>{selectedItem.product_name || 'Signature Hoodie + Apparel Box'}</p>
+                                                        <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>Product Value {renderBudgetValue(selectedItem)}</p>
+                                                        <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Ships within 3 days</p>
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            {selectedShippingStatus === 'issue_reported' && (
-                                                <div className={cn("rounded-2xl border p-4 space-y-2", isDark ? "bg-rose-500/5 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
-                                                    <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-700")}>Issue reported</p>
-                                                    {String(selectedItem?.shipping_issue_reason || '').trim() && (
-                                                        <p className={cn("text-[12px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/85" : "text-rose-700")}>
-                                                            {String(selectedItem?.shipping_issue_reason || '').trim()}
-                                                        </p>
-                                                    )}
-                                                    <a
-                                                        href="/#/creator-contracts"
-                                                        className={cn("inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider", isDark ? "text-rose-200" : "text-rose-700")}
-                                                    >
-                                                        <Flag className="w-4 h-4" />
-                                                        Legal support
-                                                    </a>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── USAGE RIGHTS ── */}
-                                <div className="mb-6">
-                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Usage Rights</h4>
-                                    <div className={cn("rounded-2xl border p-4 flex flex-col gap-1", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[14px] font-black leading-tight", textColor)}>Organic social media only</p>
-                                        <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>90 days limit</p>
-                                    </div>
-                                </div>
-
-                                {selectedType !== 'offer' && (
-                                <>
-                                {/* ── PAYMENT ── */}
-                                <div className="mb-6 grid grid-cols-2 gap-3">
-                                    <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>
-                                            {selectedRequiresPayment ? 'Payment Method' : selectedRequiresShipping ? 'Fulfillment' : 'Deal Type'}
-                                        </p>
-                                        <div className="flex items-center gap-2.5 mb-1">
-                                            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
-                                                <Landmark className="w-4 h-4 text-info" />
                                             </div>
-                                            <span className={cn("text-[14px] font-black leading-tight", textColor)}>
-                                                {selectedRequiresPayment ? <>UPI<br />Payout</> : selectedRequiresShipping ? <>Product<br />Shipping</> : <>Collab<br />Only</>}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
-                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
-                                        {(() => {
-                                            const rawDeadline = selectedItem.due_date || selectedItem.deadline;
-                                            const d = rawDeadline ? new Date(rawDeadline) : new Date(Date.now() + 13 * 86400000);
-                                            const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
-                                            const deadlineColor = diff < 3 ? 'text-destructive' : diff < 7 ? 'text-warning' : 'text-info';
-                                            const deadlineStr = rawDeadline
-                                                ? new Date(rawDeadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                                                : '21 Mar 2026';
-                                            return (
-                                                <>
-                                                    <span className={cn("text-[14px] font-black leading-tight mb-2", textColor)}>
-                                                        {deadlineStr}
-                                                    </span>
-                                                    <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1", deadlineColor)}>
-                                                        ⚡ {diff > 0 ? `${diff} days remaining` : 'Overdue'}
-                                                    </span>
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
-                                </div>
+                                        )}
 
-                                {/* ── CONTRACT DETAILS ── */}
-                                <div ref={contractSectionRef} className="mb-6 scroll-mt-24">
-                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Contract Details</h4>
-                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
-                                        {(() => {
-                                            const status = String(selectedItem.status || '').toLowerCase();
-                                            const hasContract = Boolean(selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url);
-                                            const signedAt = selectedItem.signed_at || selectedItem.creator_signed_at || selectedItem.brand_signed_at || selectedItem.raw?.signed_at || null;
-                                            const contractUrl = selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url || '';
-                                            const contractName = contractUrl
-                                                ? decodeURIComponent(contractUrl.split('/').pop() || 'collaboration-contract.pdf')
-                                                : 'Contract is being prepared';
-                                            const contractState = status.includes('signed')
-                                                ? 'Signed and active'
-                                                : hasContract
-                                                    ? 'Ready for review'
-                                                    : (status === 'drafting' || status === 'brand_details_pending')
-                                                        ? 'Brand is preparing the contract'
-                                                        : 'Contract details unavailable';
-
-                                            return (
-                                                <>
-                                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                        {selectedType === 'deal' && selectedRequiresShipping && (
+                                            <div className="mb-6">
+                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Shipping</h4>
+                                                <div className={cn("rounded-2xl border p-4 space-y-4", cardBgColor, borderColor)}>
+                                                    <div className="flex items-start justify-between gap-3">
                                                         <div>
-                                                            <p className={cn("text-[16px] font-black leading-tight", textColor)}>{contractState}</p>
+                                                            <p className={cn("text-[16px] font-black leading-tight", textColor)}>Product delivery</p>
                                                             <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
-                                                                {signedAt
-                                                                    ? `Signed on ${new Date(signedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
-                                                                    : hasContract
-                                                                        ? 'Your contract is ready to review and download.'
-                                                                        : 'The contract will appear here once the brand finalizes the setup.'}
+                                                                {selectedShippingStatus === 'shipped'
+                                                                    ? 'Track the package and confirm once it reaches you.'
+                                                                    : selectedShippingDelivered
+                                                                        ? 'Receipt confirmed. You can continue with the collaboration.'
+                                                                        : selectedShippingStatus === 'issue_reported'
+                                                                            ? 'A shipping issue has been reported to the brand.'
+                                                                            : 'Waiting for the brand to add courier and tracking details.'}
                                                             </p>
                                                         </div>
                                                         <span className={cn(
                                                             "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
-                                                            status.includes('signed')
+                                                            selectedShippingDelivered
                                                                 ? (isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-primary text-primary border-primary")
-                                                                : hasContract
-                                                                    ? (isDark ? "bg-info/10 text-info border-info/20" : "bg-info text-info border-info")
-                                                                    : (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
+                                                                : selectedShippingStatus === 'shipped'
+                                                                    ? (isDark ? "bg-info/10 text-info border-sky-500/20" : "bg-info text-info border-sky-200")
+                                                                    : selectedShippingStatus === 'issue_reported'
+                                                                        ? (isDark ? "bg-rose-500/10 text-rose-300 border-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-200")
+                                                                        : (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
                                                         )}>
-                                                            {status.includes('signed') ? 'Signed' : hasContract ? 'Ready' : 'Pending'}
+                                                            {selectedShippingDelivered ? 'RECEIVED' : selectedShippingStatus === 'shipped' ? 'SHIPPED' : selectedShippingStatus === 'issue_reported' ? 'ISSUE' : 'PENDING'}
                                                         </span>
                                                     </div>
 
-                                                    <div className={cn("rounded-2xl border px-4 py-3 mb-4", isDark ? "bg-card border-border" : "bg-card border-border")}>
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Document</p>
-                                                        <p className={cn("text-[13px] font-bold break-all", textColor)}>{contractName}</p>
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                                        <button type="button"
-                                                            onClick={() => { triggerHaptic(); openDealContractReview(selectedItem); }}
-                                                            className={cn(
-                                                                "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
-                                                                isDark ? "bg-card text-[#0B0F14] border-white" : "bg-background text-foreground border-border"
+                                                    {(selectedItem.courier_name || selectedItem.tracking_number || selectedItem.tracking_url || selectedItem.expected_delivery_date) && (
+                                                        <div className={cn("rounded-2xl border p-4 space-y-3", isDark ? "bg-secondary/3 border-border" : "bg-card border-border")}>
+                                                            {selectedItem.courier_name && (
+                                                                <div>
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Courier</p>
+                                                                    <p className={cn("text-[13px] font-semibold", textColor)}>{selectedItem.courier_name}</p>
+                                                                </div>
                                                             )}
-                                                        >
-                                                            Open Contract
-                                                        </button>
-                                                        <button type="button"
-                                                            onClick={() => { triggerHaptic(); copySelectedItemLink(); }}
-                                                            className={cn(
-                                                                "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
-                                                                isDark ? "bg-card text-foreground border-border" : "bg-card text-muted-foreground border-border"
+                                                            {selectedItem.tracking_number && (
+                                                                <div>
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Tracking number</p>
+                                                                    <p className={cn("text-[13px] font-semibold break-all", textColor)}>{selectedItem.tracking_number}</p>
+                                                                </div>
                                                             )}
-                                                        >
-                                                            Copy Deal Link
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
-                                </div>
-                                </>
-                                )}
-
-                                {/* ── LEGAL PROTECTION ── */}
-                                <div className="mb-6">
-                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
-                                    <div className={cn(
-                                        "rounded-2xl border p-4 relative overflow-hidden",
-                                        isDark ? "bg-primary/5 border-primary/20" : "bg-primary border-primary"
-                                    )}>
-                                        <div className="absolute inset-y-0 left-0 w-1.5 bg-primary rounded-r-full" />
-                                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
-
-                                        <div className="flex items-center gap-3 relative">
-                                            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
-                                                <ShieldCheck className="w-5 h-5 text-foreground" strokeWidth={2.5} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-primary")}>Protected by Creator Armour</p>
-                                                <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-primary/70" : "text-primary/80")}>Contract + rights + dispute support</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
-                                            {[
-                                                'Contract auto-generated',
-                                                'Content rights secured',
-                                                'Dispute protection included',
-                                            ].map((t) => (
-                                                <div key={t} className="flex items-center gap-2">
-                                                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                                                    <span className={cn("text-[12px] font-bold", isDark ? "text-primary/85" : "text-primary/90")}>{t}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* ── EARNINGS BREAKDOWN (Offers) ── */}
-                                {selectedType === 'offer' && (
-                                    <div className="mb-6">
-                                        <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Earnings Breakdown</h4>
-                                        <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
-                                            <div className="mb-5">
-                                                <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-primary" : "text-primary")}>You Receive</p>
-                                                <p className={cn("text-[32px] font-black leading-none", textColor)}>{renderBudgetValue(selectedItem)}</p>
-                                            </div>
-
-                                            <div className="space-y-2.5 text-[12px]">
-                                                <div className="flex items-center justify-between">
-                                                    <span className={cn("font-medium opacity-70", textColor)}>Offer budget</span>
-                                                    <span className={cn("font-bold", textColor)}>{renderBudgetValue(selectedItem)}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className={cn("font-medium opacity-70", textColor)}>Platform fee</span>
-                                                    <span className={cn("font-bold text-primary")}>₹0</span>
-                                                </div>
-                                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-                                                    <span className={cn("font-medium opacity-70", textColor)}>Payment Method</span>
-                                                    <span className={cn("font-bold", textColor)}>Bank Transfer</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* ── STICKY CTA BAR ── */}
-                            <div className={cn(
-                                "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t",
-                                isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-border" : "bg-secondary/98 backdrop-blur-xl border-border"
-                            )}>
-                                <div className="space-y-2.5">
-	                                    <motion.button
-	                                        whileTap={{ scale: 0.97 }}
-	                                        onClick={() => {
-	                                            if (selectedType === 'offer') {
-	                                                if (selectedItem.isDemo) {
-                                                    toast.success("This is a demo offer! Complete your profile to get real brand deals.");
-                                                    triggerHaptic(HapticPatterns.success);
-                                                    return;
-	                                                }
-	                                                handleAccept(selectedItem);
-	                                            } else {
-	                                                const cta = getDealPrimaryCta({ role: 'creator', deal: selectedItem });
-	                                                triggerHaptic();
-
-	                                                if (cta.disabled) return;
-
-	                                                if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') {
-	                                                    setShowDeliverContentModal(true);
-	                                                    return;
-	                                                }
-
-	                                                if (cta.action === 'review_sign_contract') {
-	                                                    setCreatorSigningStep('send');
-	                                                    setCreatorOTP('');
-	                                                    setShowCreatorSigningModal(true);
-	                                                    return;
-	                                                }
-
-	                                                if (cta.action === 'start_working') {
-	                                                    // Move deal into "working" state without showing the progress sheet.
-	                                                    void handleProgressStageSelect('content_making');
-	                                                    return;
-	                                                }
-
-	                                                if (cta.action === 'view_contract') {
-	                                                    contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	                                                    return;
-	                                                }
-
-	                                                // Default: show progress/actions sheet (creator control panel).
-	                                                setShowProgressSheet(true);
-	                                            }
-	                                        }}
-	                                        disabled={processingDeal === selectedItem.id || (selectedType !== 'offer' && getDealPrimaryCta({ role: 'creator', deal: selectedItem }).disabled)}
-	                                        className={cn(
-	                                            "w-full py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all flex flex-col items-center justify-center active:scale-[0.98] border disabled:opacity-50",
-	                                            selectedType === 'offer'
-	                                                ? (selectedItem.collab_type === 'barter' ? "bg-warning text-foreground border-warning shadow-amber-500/30" : "bg-info text-foreground border-info shadow-blue-500/30")
-	                                                : cn(
-	                                                    dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
-	                                                    isDark ? "border-border" : "border-border"
-	                                                  )
-	                                        )}
-	                                    >
-                                        {processingDeal === selectedItem.id ? (
-                                            <Loader2 className="w-6 h-6 animate-spin" />
-                                        ) : selectedType === 'offer' ? (
-                                            <>
-                                                <span className="text-[17px] font-black leading-tight">
-                                                    Accept Offer {renderBudgetValue(selectedItem)}
-                                                </span>
-                                                <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
-                                                    Contract generated instantly
-                                                </span>
-                                            </>
-	                                        ) : (
-	                                            <span className="text-[16px] font-black">
-	                                                {getDealPrimaryCta({ role: 'creator', deal: selectedItem }).label}
-	                                            </span>
-	                                        )}
-	                                    </motion.button>
-
-                                    {selectedType === 'offer' && (
-                                        <div className="flex flex-col gap-2.5 mt-3 pt-3">
-                                            <button type="button"
-                                                onClick={() => {
-                                                    triggerHaptic();
-                                                    if (selectedItem.isDemo) {
-                                                        toast.info("This is a demo offer! 😉");
-                                                        return;
-                                                    }
-                                                    toast.success("Messaging thread opened");
-                                                }}
-                                                className={cn("w-full py-3 rounded-2xl flex items-center justify-center gap-2 border transition-all active:scale-95",
-                                                    isDark ? "bg-card border-border hover:bg-secondary/50 text-foreground" : "bg-background border-border hover:bg-background text-muted-foreground")}
-                                            >
-                                                <MessageCircle className="w-4 h-4" />
-                                                <span className="font-bold text-[14px]">Ask Brand Question</span>
-                                            </button>
-                                            
-                                            <div className="flex gap-2.5">
-                                                <button type="button"
-                                                    onClick={() => {
-                                                        triggerHaptic();
-                                                        if (selectedItem.isDemo) {
-                                                            toast.info("You can't counter a demo offer! 😉");
-                                                            return;
-                                                        }
-                                                        navigate(`/collab-requests/${selectedItem.id}/counter`, { state: { request: selectedItem.raw || selectedItem } });
-                                                    }}
-                                                    className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95")}
-                                                >
-                                                    <Edit3 className="w-3.5 h-3.5 opacity-50 text-muted-foreground" /> 
-                                                    <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Suggest New Price</span>
-                                                </button>
-                                                <button type="button"
-                                                    onClick={() => {
-                                                        triggerHaptic();
-                                                        if (selectedItem.isDemo) {
-                                                            toast.info("You can't decline a demo offer! 😉");
-                                                            return;
-                                                        }
-                                                        if (onDeclineRequest) onDeclineRequest(selectedItem.id);
-                                                        closeItemDetail();
-                                                    }}
-                                                    className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-destructive/80")}
-                                                >
-                                                    <XCircle className="w-3.5 h-3.5 opacity-50 text-destructive/60" /> 
-                                                    <span className="font-bold text-[13px] opacity-90">Decline Offer</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Item menu (three-dots) */}
-                            <AnimatePresence>
-                                {showItemMenu && (
-                                    <>
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            onClick={() => setShowItemMenu(false)}
-                                            className="fixed inset-0 z-[20100] bg-black/40 backdrop-blur-md"
-                                        />
-                                        <motion.div
-                                            initial={{ y: '100%' }}
-                                            animate={{ y: 0 }}
-                                            exit={{ y: '100%' }}
-                                            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-                                            className={cn(
-                                                "fixed bottom-0 inset-x-0 z-[20110] rounded-t-[2.25rem] border-t p-5 pb-safe shadow-2xl",
-                                                isDark ? "bg-background border-border" : "bg-card border-border"
-                                            )}
-                                        >
-                                            <div className="w-12 h-1 bg-background/20 rounded-full mx-auto mb-5" />
-                                            <div className="max-w-md mx-auto">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <div className="min-w-0">
-                                                        <p className={cn("text-[11px] font-black uppercase tracking-[0.18em] opacity-40", textColor)}>Options</p>
-                                                        <p className={cn("text-[16px] font-extrabold tracking-tight truncate", textColor)}>
-                                                            {selectedType === 'deal' ? 'Deal actions' : 'Offer actions'}
-                                                        </p>
-                                                    </div>
-                                                    <motion.button
-                                                        whileTap={{ scale: 0.92 }}
-                                                        onClick={() => setShowItemMenu(false)}
-                                                        className={cn("w-10 h-10 rounded-full flex items-center justify-center border", borderColor, isDark ? "bg-card" : "bg-background")}
-                                                    >
-                                                        <X className={cn("w-4 h-4", textColor)} />
-                                                    </motion.button>
-                                                </div>
-
-                                                <div className={cn("rounded-2xl border overflow-hidden", borderColor)}>
-                                                    <button type="button"
-                                                        onClick={async () => { triggerHaptic(); await copySelectedItemLink(); setShowItemMenu(false); }}
-                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
-                                                    >
-                                                        <span className="flex items-center gap-3">
-                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
-                                                                <Copy className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} />
-                                                            </span>
-                                                            <span>
-                                                                <p className={cn("text-[14px] font-bold", textColor)}>Copy link</p>
-                                                                <p className={cn("text-[12px] opacity-60", textColor)}>Share this offer/deal</p>
-                                                            </span>
-                                                        </span>
-                                                        <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
-                                                    </button>
-                                                    <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
-                                                    <button type="button"
-                                                        onClick={async () => { triggerHaptic(); await shareSelectedItemLink(); setShowItemMenu(false); }}
-                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
-                                                    >
-                                                        <span className="flex items-center gap-3">
-                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
-                                                                <Share2 className={cn("w-4 h-4", isDark ? "text-info" : "text-info")} />
-                                                            </span>
-                                                            <span>
-                                                                <p className={cn("text-[14px] font-bold", textColor)}>Share</p>
-                                                                <p className={cn("text-[12px] opacity-60", textColor)}>Send via WhatsApp, etc.</p>
-                                                            </span>
-                                                        </span>
-                                                        <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
-                                                    </button>
-                                                    <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
-
-                                                    {selectedType === 'deal' && (() => {
-                                                        const statusLower = String(selectedItem?.status || '').toLowerCase();
-                                                        const isCompleted = statusLower.includes('completed') || statusLower === 'paid';
-                                                        if (isCompleted) return null;
-
-                                                        return (
-                                                            <>
-                                                                <button type="button"
-                                                                    onClick={() => {
-                                                                        triggerHaptic();
-                                                                        setShowItemMenu(false);
-                                                                        setShowProgressSheet(true);
-                                                                    }}
-                                                                    className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                            {selectedItem.expected_delivery_date && (
+                                                                <div>
+                                                                    <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Expected delivery</p>
+                                                                    <p className={cn("text-[13px] font-semibold", textColor)}>
+                                                                        {new Date(selectedItem.expected_delivery_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                    </p>
+                                                                </div>
+                                                            )}
+                                                            {selectedItem.tracking_url && (
+                                                                <a
+                                                                    href={selectedItem.tracking_url}
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className={cn("inline-flex items-center gap-2 text-[13px] font-bold underline", isDark ? "text-info" : "text-info")}
                                                                 >
-                                                                    <span className="flex items-center gap-3">
-                                                                        <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
-                                                                            <TrendingUp className={cn("w-4 h-4", isDark ? "text-secondary" : "text-secondary")} />
-                                                                        </span>
-                                                                        <span>
-                                                                            <p className={cn("text-[14px] font-bold", textColor)}>Update progress</p>
-                                                                            <p className={cn("text-[12px] opacity-60", textColor)}>Move the deal to the next stage</p>
-                                                                        </span>
-                                                                    </span>
-                                                                    <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
-                                                                </button>
-                                                                <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
-                                                            </>
-                                                        );
-                                                    })()}
+                                                                    <ExternalLink className="w-4 h-4" />
+                                                                    Track package
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    )}
 
+                                                    {selectedShippingStatus === 'shipped' && (
+                                                        <div className="grid grid-cols-1 gap-2.5">
+                                                            <button type="button"
+                                                                onClick={confirmSelectedProductReceived}
+                                                                disabled={isConfirmingReceived}
+                                                                className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground font-black text-[14px] transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+                                                            >
+                                                                {isConfirmingReceived ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                                                                Confirm Product Received
+                                                            </button>
+                                                            <button type="button"
+                                                                onClick={() => {
+                                                                    triggerHaptic();
+                                                                    setShowReportIssueModal(true);
+                                                                }}
+                                                                className={cn("w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2", isDark ? "bg-card border-border text-foreground" : "bg-card border-border text-muted-foreground")}
+                                                            >
+                                                                <AlertCircle className="w-4 h-4" />
+                                                                Report Shipping Issue
+                                                            </button>
+                                                        </div>
+                                                    )}
+
+                                                    {selectedShippingStatus === 'pending' && (
+                                                        <div className={cn("rounded-2xl border p-4 flex items-start gap-3", isDark ? "bg-warning/5 border-warning/20" : "bg-warning border-warning")}>
+                                                            <Package className={cn("w-5 h-5 mt-0.5", isDark ? "text-warning" : "text-warning")} />
+                                                            <div>
+                                                                <p className={cn("text-[13px] font-black", textColor)}>Waiting for shipping update</p>
+                                                                <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
+                                                                    The brand still needs to submit the courier and tracking details.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {selectedShippingStatus === 'issue_reported' && (
+                                                        <div className={cn("rounded-2xl border p-4 space-y-2", isDark ? "bg-rose-500/5 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
+                                                            <p className={cn("text-[13px] font-black", isDark ? "text-rose-200" : "text-rose-700")}>Issue reported</p>
+                                                            {String(selectedItem?.shipping_issue_reason || '').trim() && (
+                                                                <p className={cn("text-[12px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/85" : "text-rose-700")}>
+                                                                    {String(selectedItem?.shipping_issue_reason || '').trim()}
+                                                                </p>
+                                                            )}
+                                                            <a
+                                                                href="/#/creator-contracts"
+                                                                className={cn("inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-wider", isDark ? "text-rose-200" : "text-rose-700")}
+                                                            >
+                                                                <Flag className="w-4 h-4" />
+                                                                Legal support
+                                                            </a>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* ── USAGE RIGHTS ── */}
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Usage Rights</h4>
+                                            <div className={cn("rounded-2xl border p-4 flex flex-col gap-1", cardBgColor, borderColor)}>
+                                                <p className={cn("text-[14px] font-black leading-tight", textColor)}>Organic social media only</p>
+                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>90 days limit</p>
+                                            </div>
+                                        </div>
+
+                                        {selectedType !== 'offer' && (
+                                            <>
+                                                {/* ── PAYMENT ── */}
+                                                <div className="mb-6 grid grid-cols-2 gap-3">
+                                                    <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>
+                                                            {selectedRequiresPayment ? 'Payment Method' : selectedRequiresShipping ? 'Fulfillment' : 'Deal Type'}
+                                                        </p>
+                                                        <div className="flex items-center gap-2.5 mb-1">
+                                                            <div className="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center">
+                                                                <Landmark className="w-4 h-4 text-info" />
+                                                            </div>
+                                                            <span className={cn("text-[14px] font-black leading-tight", textColor)}>
+                                                                {selectedRequiresPayment ? <>UPI<br />Payout</> : selectedRequiresShipping ? <>Product<br />Shipping</> : <>Collab<br />Only</>}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={cn("rounded-2xl border p-4 flex flex-col justify-center", cardBgColor, borderColor)}>
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-2 opacity-50", textColor)}>Deadline</p>
+                                                        {(() => {
+                                                            const rawDeadline = selectedItem.due_date || selectedItem.deadline;
+                                                            const d = rawDeadline ? new Date(rawDeadline) : new Date(Date.now() + 13 * 86400000);
+                                                            const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
+                                                            const deadlineColor = diff < 3 ? 'text-destructive' : diff < 7 ? 'text-warning' : 'text-info';
+                                                            const deadlineStr = rawDeadline
+                                                                ? new Date(rawDeadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                                : '21 Mar 2026';
+                                                            return (
+                                                                <>
+                                                                    <span className={cn("text-[14px] font-black leading-tight mb-2", textColor)}>
+                                                                        {deadlineStr}
+                                                                    </span>
+                                                                    <span className={cn("text-[11px] font-black tracking-tight flex items-center mt-1", deadlineColor)}>
+                                                                        ⚡ {diff > 0 ? `${diff} days remaining` : 'Overdue'}
+                                                                    </span>
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </div>
+
+                                                {/* ── CONTRACT DETAILS ── */}
+                                                <div ref={contractSectionRef} className="mb-6 scroll-mt-24">
+                                                    <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Contract Details</h4>
+                                                    <div className={cn("rounded-2xl border p-4", cardBgColor, borderColor)}>
+                                                        {(() => {
+                                                            const status = String(selectedItem.status || '').toLowerCase();
+                                                            const hasContract = Boolean(selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url);
+                                                            const signedAt = selectedItem.signed_at || selectedItem.creator_signed_at || selectedItem.brand_signed_at || selectedItem.raw?.signed_at || null;
+                                                            const contractUrl = selectedItem.contract_file_url || selectedItem.signed_contract_url || selectedItem.safe_contract_url || '';
+                                                            const contractName = contractUrl
+                                                                ? decodeURIComponent(contractUrl.split('/').pop() || 'collaboration-contract.pdf')
+                                                                : 'Contract is being prepared';
+                                                            const contractState = status.includes('signed')
+                                                                ? 'Signed and active'
+                                                                : hasContract
+                                                                    ? 'Ready for review'
+                                                                    : (status === 'drafting' || status === 'brand_details_pending')
+                                                                        ? 'Brand is preparing the contract'
+                                                                        : 'Contract details unavailable';
+
+                                                            return (
+                                                                <>
+                                                                    <div className="flex items-start justify-between gap-3 mb-4">
+                                                                        <div>
+                                                                            <p className={cn("text-[16px] font-black leading-tight", textColor)}>{contractState}</p>
+                                                                            <p className={cn("text-[12px] font-semibold mt-1", secondaryTextColor)}>
+                                                                                {signedAt
+                                                                                    ? `Signed on ${new Date(signedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                                                                                    : hasContract
+                                                                                        ? 'Your contract is ready to review and download.'
+                                                                                        : 'The contract will appear here once the brand finalizes the setup.'}
+                                                                            </p>
+                                                                        </div>
+                                                                        <span className={cn(
+                                                                            "px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border",
+                                                                            status.includes('signed')
+                                                                                ? (isDark ? "bg-primary/10 text-primary border-primary/20" : "bg-primary text-primary border-primary")
+                                                                                : hasContract
+                                                                                    ? (isDark ? "bg-info/10 text-info border-info/20" : "bg-info text-info border-info")
+                                                                                    : (isDark ? "bg-warning/10 text-warning border-warning/20" : "bg-warning text-warning border-warning")
+                                                                        )}>
+                                                                            {status.includes('signed') ? 'Signed' : hasContract ? 'Ready' : 'Pending'}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className={cn("rounded-2xl border px-4 py-3 mb-4", isDark ? "bg-card border-border" : "bg-card border-border")}>
+                                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider opacity-50 mb-1", textColor)}>Document</p>
+                                                                        <p className={cn("text-[13px] font-bold break-all", textColor)}>{contractName}</p>
+                                                                    </div>
+
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                                        <button type="button"
+                                                                            onClick={() => { triggerHaptic(); openDealContractReview(selectedItem); }}
+                                                                            className={cn(
+                                                                                "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
+                                                                                isDark ? "bg-card text-[#0B0F14] border-white" : "bg-background text-foreground border-border"
+                                                                            )}
+                                                                        >
+                                                                            Open Contract
+                                                                        </button>
+                                                                        <button type="button"
+                                                                            onClick={() => { triggerHaptic(); copySelectedItemLink(); }}
+                                                                            className={cn(
+                                                                                "w-full py-3 rounded-2xl border text-[14px] font-black transition-all active:scale-[0.98]",
+                                                                                isDark ? "bg-card text-foreground border-border" : "bg-card text-muted-foreground border-border"
+                                                                            )}
+                                                                        >
+                                                                            Copy Deal Link
+                                                                        </button>
+                                                                    </div>
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* ── LEGAL PROTECTION ── */}
+                                        <div className="mb-6">
+                                            <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Legal Protection</h4>
+                                            <div className={cn(
+                                                "rounded-2xl border p-4 relative overflow-hidden",
+                                                isDark ? "bg-primary/5 border-primary/20" : "bg-primary border-primary"
+                                            )}>
+                                                <div className="absolute inset-y-0 left-0 w-1.5 bg-primary rounded-r-full" />
+                                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
+
+                                                <div className="flex items-center gap-3 relative">
+                                                    <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-[0_4px_15px_rgba(16,185,129,0.3)]">
+                                                        <ShieldCheck className="w-5 h-5 text-foreground" strokeWidth={2.5} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className={cn("font-black text-[14px] leading-tight", isDark ? "text-primary" : "text-primary")}>Protected by Creator Armour</p>
+                                                        <p className={cn("text-[11px] font-semibold mt-0.5", isDark ? "text-primary/70" : "text-primary/80")}>Contract + rights + dispute support</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 relative z-10">
+                                                    {[
+                                                        'Contract auto-generated',
+                                                        'Content rights secured',
+                                                        'Dispute protection included',
+                                                    ].map((t) => (
+                                                        <div key={t} className="flex items-center gap-2">
+                                                            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                                            <span className={cn("text-[12px] font-bold", isDark ? "text-primary/85" : "text-primary/90")}>{t}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* ── EARNINGS BREAKDOWN (Offers) ── */}
+                                        {selectedType === 'offer' && (
+                                            <div className="mb-6">
+                                                <h4 className={cn("text-[13px] font-black uppercase tracking-wider mb-3 opacity-50", textColor)}>Earnings Breakdown</h4>
+                                                <div className={cn("rounded-2xl border p-4", isDark ? "bg-card border-border" : "bg-card border-border shadow-sm")}>
+                                                    <div className="mb-5">
+                                                        <p className={cn("text-[11px] font-black uppercase tracking-wider mb-1", isDark ? "text-primary" : "text-primary")}>You Receive</p>
+                                                        <p className={cn("text-[32px] font-black leading-none", textColor)}>{renderBudgetValue(selectedItem)}</p>
+                                                    </div>
+
+                                                    <div className="space-y-2.5 text-[12px]">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={cn("font-medium opacity-70", textColor)}>Offer budget</span>
+                                                            <span className={cn("font-bold", textColor)}>{renderBudgetValue(selectedItem)}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={cn("font-medium opacity-70", textColor)}>Platform fee</span>
+                                                            <span className={cn("font-bold text-primary")}>₹0</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+                                                            <span className={cn("font-medium opacity-70", textColor)}>Payment Method</span>
+                                                            <span className={cn("font-bold", textColor)}>Bank Transfer</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* ── STICKY CTA BAR ── */}
+                                    <div className={cn(
+                                        "sticky bottom-0 left-0 right-0 px-5 pb-8 pt-4 border-t",
+                                        isDark ? "bg-[#0B0F14]/98 backdrop-blur-xl border-border" : "bg-secondary/98 backdrop-blur-xl border-border"
+                                    )}>
+                                        <div className="space-y-2.5">
+                                            <motion.button
+                                                whileTap={{ scale: 0.97 }}
+                                                onClick={() => {
+                                                    if (selectedType === 'offer') {
+                                                        if (selectedItem.isDemo) {
+                                                            toast.success("This is a demo offer! Complete your profile to get real brand deals.");
+                                                            triggerHaptic(HapticPatterns.success);
+                                                            return;
+                                                        }
+                                                        handleAccept(selectedItem);
+                                                    } else {
+                                                        const cta = getDealPrimaryCta({ role: 'creator', deal: selectedItem });
+                                                        triggerHaptic();
+
+                                                        if (cta.disabled) return;
+
+                                                        if (cta.action === 'mark_delivered' || cta.action === 'upload_revision') {
+                                                            setShowDeliverContentModal(true);
+                                                            return;
+                                                        }
+
+                                                        if (cta.action === 'review_sign_contract') {
+                                                            setCreatorSigningStep('send');
+                                                            setCreatorOTP('');
+                                                            setShowCreatorSigningModal(true);
+                                                            return;
+                                                        }
+
+                                                        if (cta.action === 'start_working') {
+                                                            // Move deal into "working" state without showing the progress sheet.
+                                                            void handleProgressStageSelect('content_making');
+                                                            return;
+                                                        }
+
+                                                        if (cta.action === 'view_contract') {
+                                                            contractSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                            return;
+                                                        }
+
+                                                        // Default: show progress/actions sheet (creator control panel).
+                                                        setShowProgressSheet(true);
+                                                    }
+                                                }}
+                                                disabled={processingDeal === selectedItem.id || (selectedType !== 'offer' && getDealPrimaryCta({ role: 'creator', deal: selectedItem }).disabled)}
+                                                className={cn(
+                                                    "w-full py-3.5 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] transition-all flex flex-col items-center justify-center active:scale-[0.98] border disabled:opacity-50",
+                                                    selectedType === 'offer'
+                                                        ? (selectedItem.collab_type === 'barter' ? "bg-warning text-foreground border-warning shadow-amber-500/30" : "bg-info text-foreground border-info shadow-blue-500/30")
+                                                        : cn(
+                                                            dealPrimaryCtaButtonClass(getDealPrimaryCta({ role: 'creator', deal: selectedItem }).tone),
+                                                            isDark ? "border-border" : "border-border"
+                                                        )
+                                                )}
+                                            >
+                                                {processingDeal === selectedItem.id ? (
+                                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                                ) : selectedType === 'offer' ? (
+                                                    <>
+                                                        <span className="text-[17px] font-black leading-tight">
+                                                            Accept Offer {renderBudgetValue(selectedItem)}
+                                                        </span>
+                                                        <span className="text-[11px] font-semibold opacity-85 mt-0.5 leading-tight">
+                                                            Contract generated instantly
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-[16px] font-black">
+                                                        {getDealPrimaryCta({ role: 'creator', deal: selectedItem }).label}
+                                                    </span>
+                                                )}
+                                            </motion.button>
+
+                                            {selectedType === 'offer' && (
+                                                <div className="flex flex-col gap-2.5 mt-3 pt-3">
                                                     <button type="button"
                                                         onClick={() => {
                                                             triggerHaptic();
-                                                            const path = getSelectedItemUrl();
-                                                            if (path) navigate(path);
-                                                            else toast.error('No page available for this item.');
-                                                            setShowItemMenu(false);
+                                                            if (selectedItem.isDemo) {
+                                                                toast.info("This is a demo offer! 😉");
+                                                                return;
+                                                            }
+                                                            toast.success("Messaging thread opened");
                                                         }}
-                                                        className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                        className={cn("w-full py-3 rounded-2xl flex items-center justify-center gap-2 border transition-all active:scale-95",
+                                                            isDark ? "bg-card border-border hover:bg-secondary/50 text-foreground" : "bg-background border-border hover:bg-background text-muted-foreground")}
                                                     >
-                                                        <span className="flex items-center gap-3">
-                                                            <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
-                                                                <Eye className={cn("w-4 h-4", isDark ? "text-foreground/80" : "text-muted-foreground")} />
-                                                            </span>
-                                                            <span>
-                                                                <p className={cn("text-[14px] font-bold", textColor)}>Open full page</p>
-                                                                <p className={cn("text-[12px] opacity-60", textColor)}>View outside the dashboard</p>
-                                                            </span>
-                                                        </span>
-                                                        <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                        <MessageCircle className="w-4 h-4" />
+                                                        <span className="font-bold text-[14px]">Ask Brand Question</span>
                                                     </button>
+
+                                                    <div className="flex gap-2.5">
+                                                        <button type="button"
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                if (selectedItem.isDemo) {
+                                                                    toast.info("You can't counter a demo offer! 😉");
+                                                                    return;
+                                                                }
+                                                                navigate(`/collab-requests/${selectedItem.id}/counter`, { state: { request: selectedItem.raw || selectedItem } });
+                                                            }}
+                                                            className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95")}
+                                                        >
+                                                            <Edit3 className="w-3.5 h-3.5 opacity-50 text-muted-foreground" />
+                                                            <span className={cn("font-bold text-[13px] opacity-70", isDark ? "text-foreground" : "text-muted-foreground")}>Suggest New Price</span>
+                                                        </button>
+                                                        <button type="button"
+                                                            onClick={() => {
+                                                                triggerHaptic();
+                                                                if (selectedItem.isDemo) {
+                                                                    toast.info("You can't decline a demo offer! 😉");
+                                                                    return;
+                                                                }
+                                                                if (onDeclineRequest) onDeclineRequest(selectedItem.id);
+                                                                closeItemDetail();
+                                                            }}
+                                                            className={cn("flex-1 py-3 border-none flex items-center justify-center gap-1.5 transition-all active:scale-95 text-destructive/80")}
+                                                        >
+                                                            <XCircle className="w-3.5 h-3.5 opacity-50 text-destructive/60" />
+                                                            <span className="font-bold text-[13px] opacity-90">Decline Offer</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </motion.div>
-                                    </>
-                                )}
-                            </AnimatePresence>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Item menu (three-dots) */}
+                                    <AnimatePresence>
+                                        {showItemMenu && (
+                                            <>
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    onClick={() => setShowItemMenu(false)}
+                                                    className="fixed inset-0 z-[20100] bg-black/40 backdrop-blur-md"
+                                                />
+                                                <motion.div
+                                                    initial={{ y: '100%' }}
+                                                    animate={{ y: 0 }}
+                                                    exit={{ y: '100%' }}
+                                                    transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+                                                    className={cn(
+                                                        "fixed bottom-0 inset-x-0 z-[20110] rounded-t-[2.25rem] border-t p-5 pb-safe shadow-2xl",
+                                                        isDark ? "bg-background border-border" : "bg-card border-border"
+                                                    )}
+                                                >
+                                                    <div className="w-12 h-1 bg-background/20 rounded-full mx-auto mb-5" />
+                                                    <div className="max-w-md mx-auto">
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <div className="min-w-0">
+                                                                <p className={cn("text-[11px] font-black uppercase tracking-[0.18em] opacity-40", textColor)}>Options</p>
+                                                                <p className={cn("text-[16px] font-extrabold tracking-tight truncate", textColor)}>
+                                                                    {selectedType === 'deal' ? 'Deal actions' : 'Offer actions'}
+                                                                </p>
+                                                            </div>
+                                                            <motion.button
+                                                                whileTap={{ scale: 0.92 }}
+                                                                onClick={() => setShowItemMenu(false)}
+                                                                className={cn("w-10 h-10 rounded-full flex items-center justify-center border", borderColor, isDark ? "bg-card" : "bg-background")}
+                                                            >
+                                                                <X className={cn("w-4 h-4", textColor)} />
+                                                            </motion.button>
+                                                        </div>
+
+                                                        <div className={cn("rounded-2xl border overflow-hidden", borderColor)}>
+                                                            <button type="button"
+                                                                onClick={async () => { triggerHaptic(); await copySelectedItemLink(); setShowItemMenu(false); }}
+                                                                className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                            >
+                                                                <span className="flex items-center gap-3">
+                                                                    <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                        <Copy className={cn("w-4 h-4", isDark ? "text-primary" : "text-primary")} />
+                                                                    </span>
+                                                                    <span>
+                                                                        <p className={cn("text-[14px] font-bold", textColor)}>Copy link</p>
+                                                                        <p className={cn("text-[12px] opacity-60", textColor)}>Share this offer/deal</p>
+                                                                    </span>
+                                                                </span>
+                                                                <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                            </button>
+                                                            <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
+                                                            <button type="button"
+                                                                onClick={async () => { triggerHaptic(); await shareSelectedItemLink(); setShowItemMenu(false); }}
+                                                                className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                            >
+                                                                <span className="flex items-center gap-3">
+                                                                    <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                        <Share2 className={cn("w-4 h-4", isDark ? "text-info" : "text-info")} />
+                                                                    </span>
+                                                                    <span>
+                                                                        <p className={cn("text-[14px] font-bold", textColor)}>Share</p>
+                                                                        <p className={cn("text-[12px] opacity-60", textColor)}>Send via WhatsApp, etc.</p>
+                                                                    </span>
+                                                                </span>
+                                                                <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                            </button>
+                                                            <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
+
+                                                            {selectedType === 'deal' && (() => {
+                                                                const statusLower = String(selectedItem?.status || '').toLowerCase();
+                                                                const isCompleted = statusLower.includes('completed') || statusLower === 'paid';
+                                                                if (isCompleted) return null;
+
+                                                                return (
+                                                                    <>
+                                                                        <button type="button"
+                                                                            onClick={() => {
+                                                                                triggerHaptic();
+                                                                                setShowItemMenu(false);
+                                                                                setShowProgressSheet(true);
+                                                                            }}
+                                                                            className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                                        >
+                                                                            <span className="flex items-center gap-3">
+                                                                                <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                                    <TrendingUp className={cn("w-4 h-4", isDark ? "text-secondary" : "text-secondary")} />
+                                                                                </span>
+                                                                                <span>
+                                                                                    <p className={cn("text-[14px] font-bold", textColor)}>Update progress</p>
+                                                                                    <p className={cn("text-[12px] opacity-60", textColor)}>Move the deal to the next stage</p>
+                                                                                </span>
+                                                                            </span>
+                                                                            <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                                        </button>
+                                                                        <div className={cn("h-px", isDark ? "bg-secondary/50" : "bg-background")} />
+                                                                    </>
+                                                                );
+                                                            })()}
+
+                                                            <button type="button"
+                                                                onClick={() => {
+                                                                    triggerHaptic();
+                                                                    const path = getSelectedItemUrl();
+                                                                    if (path) navigate(path);
+                                                                    else toast.error('No page available for this item.');
+                                                                    setShowItemMenu(false);
+                                                                }}
+                                                                className={cn("w-full flex items-center justify-between px-4 py-3.5 text-left", isDark ? "bg-card hover:bg-secondary/50" : "bg-card hover:bg-background")}
+                                                            >
+                                                                <span className="flex items-center gap-3">
+                                                                    <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", isDark ? "bg-card" : "bg-background")}>
+                                                                        <Eye className={cn("w-4 h-4", isDark ? "text-foreground/80" : "text-muted-foreground")} />
+                                                                    </span>
+                                                                    <span>
+                                                                        <p className={cn("text-[14px] font-bold", textColor)}>Open full page</p>
+                                                                        <p className={cn("text-[12px] opacity-60", textColor)}>View outside the dashboard</p>
+                                                                    </span>
+                                                                </span>
+                                                                <ChevronRight className={cn("w-4 h-4 opacity-40", textColor)} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -5670,133 +5740,133 @@ const MobileDashboardDemo = ({
                 >
                     <DialogHeader>
                         <DialogTitle className={cn("flex items-center gap-2 px-6 pt-6 text-2xl font-black tracking-tight", isDark ? "text-foreground" : "text-muted-foreground")}>
-	                            <Send className="w-6 h-6 text-primary" />
-	                            {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
-	                            String(selectedItem?.status || '').toLowerCase().includes('changes_requested') ||
-	                            String((selectedItem as any)?.brand_approval_status || '').toLowerCase().includes('changes_requested')
-	                                ? 'Upload Revision'
-	                                : 'Deliver Content'}
-	                        </DialogTitle>
-	                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
-	                            Paste your content link(s) so the brand can review and approve. Use Instagram or Google Drive links — no uploads needed.
-		                        </DialogDescription>
-		                    </DialogHeader>
+                            <Send className="w-6 h-6 text-primary" />
+                            {String(selectedItem?.status || '').toLowerCase().includes('revision_requested') ||
+                                String(selectedItem?.status || '').toLowerCase().includes('changes_requested') ||
+                                String((selectedItem as any)?.brand_approval_status || '').toLowerCase().includes('changes_requested')
+                                ? 'Upload Revision'
+                                : 'Deliver Content'}
+                        </DialogTitle>
+                        <DialogDescription className={cn("px-6 pb-2 text-sm font-medium leading-relaxed opacity-60", isDark ? "text-foreground" : "text-muted-foreground")}>
+                            Paste your content link(s) so the brand can review and approve. Use Instagram or Google Drive links — no uploads needed.
+                        </DialogDescription>
+                    </DialogHeader>
 
                     <div className="px-6 py-5 space-y-5">
-	                        {String((selectedItem as any)?.brand_feedback || '').trim() && (
-	                            <div className={cn("p-4 rounded-2xl border", isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
-	                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-70", isDark ? "text-rose-200" : "text-rose-700")}>Revision note from brand</p>
-	                                <p className={cn("mt-2 text-[13px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/90" : "text-rose-700")}>
-	                                    {String((selectedItem as any)?.brand_feedback || '').trim()}
-	                                </p>
-	                            </div>
-		                        )}
-		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
-		                                Main Content Link (Required)
-		                            </label>
-		                            <input
-		                                value={deliverContentUrlDraft}
-		                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
-		                                placeholder="Paste Instagram/Drive link (full URL)"
-		                                className={cn(
-		                                    "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border",
-		                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
-		                                )}
-		                                inputMode="url"
-		                                autoComplete="url"
-		                                autoCapitalize="none"
-		                                autoCorrect="off"
-		                            />
-		                            <p className={cn("text-[11px] font-semibold px-1", isDark ? "text-foreground/45" : "text-muted-foreground")}>
-		                                Examples: `instagram.com/reel/...` or `drive.google.com/...`
-		                            </p>
-		                        </div>
+                        {String((selectedItem as any)?.brand_feedback || '').trim() && (
+                            <div className={cn("p-4 rounded-2xl border", isDark ? "bg-rose-500/10 border-rose-500/20" : "bg-rose-50 border-rose-200")}>
+                                <p className={cn("text-[11px] font-black uppercase tracking-[0.14em] opacity-70", isDark ? "text-rose-200" : "text-rose-700")}>Revision note from brand</p>
+                                <p className={cn("mt-2 text-[13px] font-semibold whitespace-pre-wrap", isDark ? "text-rose-100/90" : "text-rose-700")}>
+                                    {String((selectedItem as any)?.brand_feedback || '').trim()}
+                                </p>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
+                                Main Content Link (Required)
+                            </label>
+                            <input
+                                value={deliverContentUrlDraft}
+                                onChange={(e) => setDeliverContentUrlDraft(e.target.value)}
+                                placeholder="Paste Instagram/Drive link (full URL)"
+                                className={cn(
+                                    "w-full rounded-2xl px-4 py-3.5 text-[13px] font-semibold outline-none transition-all border",
+                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
+                                )}
+                                inputMode="url"
+                                autoComplete="url"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                            />
+                            <p className={cn("text-[11px] font-semibold px-1", isDark ? "text-foreground/45" : "text-muted-foreground")}>
+                                Examples: `instagram.com/reel/...` or `drive.google.com/...`
+                            </p>
+                        </div>
 
-		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
-		                                Content Status (Required)
-		                            </label>
-		                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
-		                                <button type="button"
-		                                    type="button"
-		                                    onClick={() => setDeliverContentStatusDraft('draft')}
-		                                    className={cn(
-		                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
-		                                        deliverContentStatusDraft === 'draft'
-		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
-		                                            : isDark ? "text-foreground/85 hover:bg-card" : "text-muted-foreground hover:bg-card"
-		                                    )}
-		                                    aria-pressed={deliverContentStatusDraft === 'draft'}
-		                                >
-		                                    <span>Draft for review</span>
-		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'draft' ? "text-foreground/90" : isDark ? "text-foreground/55" : "text-muted-foreground")}>
-		                                        Not posted yet
-		                                    </span>
-		                                </button>
-		                                <button type="button"
-		                                    type="button"
-		                                    onClick={() => setDeliverContentStatusDraft('posted')}
-		                                    className={cn(
-		                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
-		                                        deliverContentStatusDraft === 'posted'
-		                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
-		                                            : isDark ? "text-foreground/85 hover:bg-card" : "text-muted-foreground hover:bg-card"
-		                                    )}
-		                                    aria-pressed={deliverContentStatusDraft === 'posted'}
-		                                >
-		                                    <span>Already posted</span>
-		                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'posted' ? "text-foreground/90" : isDark ? "text-foreground/55" : "text-muted-foreground")}>
-		                                        Live on profile
-		                                    </span>
-		                                </button>
-		                            </div>
-		                        </div>
-		
-		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
-		                                Caption (Optional)
-		                            </label>
-		                            <textarea
-		                                value={deliverCaptionDraft}
+                        <div className="space-y-2">
+                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
+                                Content Status (Required)
+                            </label>
+                            <div className={cn("grid grid-cols-2 gap-2 rounded-2xl p-1 border", isDark ? "bg-card border-border" : "bg-background border-border")}>
+                                <button type="button"
+                                    type="button"
+                                    onClick={() => setDeliverContentStatusDraft('draft')}
+                                    className={cn(
+                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
+                                        deliverContentStatusDraft === 'draft'
+                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
+                                            : isDark ? "text-foreground/85 hover:bg-card" : "text-muted-foreground hover:bg-card"
+                                    )}
+                                    aria-pressed={deliverContentStatusDraft === 'draft'}
+                                >
+                                    <span>Draft for review</span>
+                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'draft' ? "text-foreground/90" : isDark ? "text-foreground/55" : "text-muted-foreground")}>
+                                        Not posted yet
+                                    </span>
+                                </button>
+                                <button type="button"
+                                    type="button"
+                                    onClick={() => setDeliverContentStatusDraft('posted')}
+                                    className={cn(
+                                        "h-14 rounded-2xl font-black text-[12px] transition-all active:scale-[0.98] flex flex-col items-center justify-center leading-tight",
+                                        deliverContentStatusDraft === 'posted'
+                                            ? "bg-gradient-to-r from-emerald-600 to-sky-600 text-foreground shadow-[0_10px_30px_rgba(16,185,129,0.20)] ring-1 ring-white/10"
+                                            : isDark ? "text-foreground/85 hover:bg-card" : "text-muted-foreground hover:bg-card"
+                                    )}
+                                    aria-pressed={deliverContentStatusDraft === 'posted'}
+                                >
+                                    <span>Already posted</span>
+                                    <span className={cn("text-[10px] font-bold opacity-75", deliverContentStatusDraft === 'posted' ? "text-foreground/90" : isDark ? "text-foreground/55" : "text-muted-foreground")}>
+                                        Live on profile
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
+                                Caption (Optional)
+                            </label>
+                            <textarea
+                                value={deliverCaptionDraft}
                                 onChange={(e) => setDeliverCaptionDraft(e.target.value)}
                                 placeholder="Paste your caption here..."
                                 className={cn(
                                     "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
                                     isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
                                 )}
-		                            />
-		                        </div>
+                            />
+                        </div>
 
-		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
-		                                Additional Links (Optional)
-		                            </label>
-		                            <textarea
-		                                value={deliverAdditionalLinksDraft}
-		                                onChange={(e) => setDeliverAdditionalLinksDraft(e.target.value)}
-		                                placeholder={"Add any extra links (one per line)\nhttps://drive.google.com/...\nhttps://instagram.com/p/..."}
-		                                className={cn(
-		                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
-		                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
-		                                )}
-		                            />
-		                        </div>
+                        <div className="space-y-2">
+                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
+                                Additional Links (Optional)
+                            </label>
+                            <textarea
+                                value={deliverAdditionalLinksDraft}
+                                onChange={(e) => setDeliverAdditionalLinksDraft(e.target.value)}
+                                placeholder={"Add any extra links (one per line)\nhttps://drive.google.com/...\nhttps://instagram.com/p/..."}
+                                className={cn(
+                                    "w-full min-h-[88px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
+                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
+                                )}
+                            />
+                        </div>
 
-		                        <div className="space-y-2">
-		                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
-		                                Message to Brand (Optional)
-		                            </label>
-		                            <textarea
-		                                value={deliverMessageDraft}
-		                                onChange={(e) => setDeliverMessageDraft(e.target.value)}
-		                                placeholder="Any context for review (timelines, instructions, etc.)"
-		                                className={cn(
-		                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
-		                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
-		                                )}
-		                            />
-		                        </div>
+                        <div className="space-y-2">
+                            <label className={cn("text-[11px] font-black uppercase tracking-[0.14em] px-1", isDark ? "text-foreground/70" : "text-muted-foreground/60")}>
+                                Message to Brand (Optional)
+                            </label>
+                            <textarea
+                                value={deliverMessageDraft}
+                                onChange={(e) => setDeliverMessageDraft(e.target.value)}
+                                placeholder="Any context for review (timelines, instructions, etc.)"
+                                className={cn(
+                                    "w-full min-h-[72px] rounded-2xl px-4 py-3 text-[13px] font-semibold outline-none transition-all border resize-none",
+                                    isDark ? "bg-card border-border text-foreground placeholder:text-foreground/40 focus:border-primary/50" : "bg-background border-border text-muted-foreground placeholder:text-muted-foreground focus:border-primary/50"
+                                )}
+                            />
+                        </div>
                     </div>
 
                     <div className={cn(
@@ -5906,7 +5976,7 @@ const MobileDashboardDemo = ({
                     <div className="px-6 py-5">
                         {creatorSigningStep === 'send' ? (
                             <div className="space-y-6">
-                                <div className={cn("p-4 rounded-2xl flex items-start gap-3 border", 
+                                <div className={cn("p-4 rounded-2xl flex items-start gap-3 border",
                                     isDark ? "bg-primary/5 border-primary/20" : "bg-primary/50 border-primary")}>
                                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                                         <Mail className="w-5 h-5 text-primary" />
@@ -6045,7 +6115,7 @@ const MobileDashboardDemo = ({
                 {selectedPayment && (() => {
                     const pay = selectedPayment;
                     const isPaid = (pay.status || '').toLowerCase().includes('paid') || (pay.status || '').toLowerCase().includes('complete');
-	                    const dueDate = pay.due_date || pay.payment_expected_date || pay.deadline;
+                    const dueDate = pay.due_date || pay.payment_expected_date || pay.deadline;
                     const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
                     const daysPast = dueDate ? Math.ceil((Date.now() - new Date(dueDate).getTime()) / 86400000) : 0;
                     const invoiceId = pay.invoice_id || pay.id?.slice(0, 8).toUpperCase() || 'CA-' + Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -6131,23 +6201,23 @@ const MobileDashboardDemo = ({
                                     <div className="absolute inset-y-0 left-0 w-1 rounded-r-full" style={{ background: isPaid ? '#10b981' : '#ef4444' }} />
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                                     <div className="relative">
-	                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-primary/70" : "text-primary/70") : (isDark ? "text-destructive/70" : "text-destructive/70"))}>
-	                                            Payment Status
-	                                        </p>
-	                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-primary") : (isDark ? "text-destructive" : "text-destructive"))}>
-	                                            {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
-	                                        </p>
-	                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
-	                                        {isPaid ? (
-	                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
-	                                        ) : (
-	                                            <div className="space-y-1">
-	                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
-	                                                {daysPast > 0 && <p className="text-[11px] font-black text-destructive">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
-	                                            </div>
-	                                        )}
-	                                    </div>
-	                                </div>
+                                        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", isPaid ? (isDark ? "text-primary/70" : "text-primary/70") : (isDark ? "text-destructive/70" : "text-destructive/70"))}>
+                                            Payment Status
+                                        </p>
+                                        <p className={cn("text-[22px] font-black leading-tight mb-0.5", isPaid ? (isDark ? "text-primary" : "text-primary") : (isDark ? "text-destructive" : "text-destructive"))}>
+                                            {isPaid ? 'RECEIVED' : (daysPast > 0 ? 'OVERDUE' : 'PENDING')}
+                                        </p>
+                                        <p className={cn("text-3xl font-black font-outfit mb-3", textColor)}>{renderBudgetValue(pay)}</p>
+                                        {isPaid ? (
+                                            <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Paid on {dueDateStr}</p>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                <p className={cn("text-[12px] font-semibold", secondaryTextColor)}>Due on: {dueDateStr}</p>
+                                                {daysPast > 0 && <p className="text-[11px] font-black text-destructive">{daysPast} day{daysPast > 1 ? 's' : ''} past due</p>}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
                                 {/* ── DEAL BREAKDOWN ── */}
                                 <div className={cn("rounded-2xl border overflow-hidden", cardBgColor, borderColor)}>
@@ -6233,7 +6303,7 @@ const MobileDashboardDemo = ({
                                         { label: 'Invoice ID', value: invoiceId },
                                         { label: 'Payment Method', value: pay.payment_terms || 'Direct Bank Transfer' },
                                         { label: 'Agreement Signed', value: signedDateStr },
-	                                        { label: 'Creator Armour Protection', value: '✓ Active' },
+                                        { label: 'Creator Armour Protection', value: '✓ Active' },
                                     ].map((row, i) => (
                                         <div key={i} className={cn("flex items-center justify-between px-4 py-3", i > 0 ? (isDark ? "border-t border-border/5" : "border-t border-border") : "")}>
                                             <span className={cn("text-[12px] font-semibold opacity-60", textColor)}>{row.label}</span>
