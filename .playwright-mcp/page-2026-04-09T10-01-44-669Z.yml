@@ -1,0 +1,142 @@
+- generic [ref=e2]:
+  - region "Notifications alt+T"
+  - generic [ref=e5]:
+    - link "Skip to main content" [ref=e6] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e12]:
+      - main [ref=e13]:
+        - generic [ref=e15]:
+          - generic:
+            - generic:
+              - img
+          - generic [ref=e16]:
+            - generic [ref=e17]:
+              - generic [ref=e18]:
+                - generic [ref=e19]:
+                  - img [ref=e21]
+                  - generic [ref=e24]:
+                    - paragraph [ref=e25]: Complete Your Brand Deal Page
+                    - paragraph [ref=e26]: 1/4 done • 25%
+                - button [ref=e27] [cursor=pointer]:
+                  - img [ref=e28]
+              - generic [ref=e33]:
+                - button "Add intro line" [ref=e34] [cursor=pointer]
+                - button "Set rates" [ref=e35] [cursor=pointer]
+                - button "Add payout" [ref=e36] [cursor=pointer]
+            - generic [ref=e37]:
+              - generic [ref=e38]:
+                - button "Open menu" [ref=e39] [cursor=pointer]:
+                  - img [ref=e40]
+                - generic [ref=e41]:
+                  - img [ref=e42]
+                  - generic [ref=e45]: CreatorArmour
+                - generic [ref=e46]:
+                  - button "Preview your collab page" [ref=e47] [cursor=pointer]:
+                    - img [ref=e48]
+                  - button "Share your deal page" [ref=e51] [cursor=pointer]:
+                    - img [ref=e52]
+                  - button "Light" [ref=e58] [cursor=pointer]:
+                    - img [ref=e60]
+                    - generic [ref=e66]: Light
+                  - button "Notifications (1 new)" [ref=e67] [cursor=pointer]:
+                    - img [ref=e68]
+                    - generic [ref=e71]: "1"
+                  - button "avatar" [ref=e72] [cursor=pointer]:
+                    - img "avatar" [ref=e73]
+              - generic [ref=e74]:
+                - generic [ref=e75]:
+                  - heading "Good afternoon, Test" [level=1] [ref=e76]
+                  - generic [ref=e79]: Active
+                - paragraph [ref=e80]: "@test.creator123"
+            - generic [ref=e82]:
+              - paragraph [ref=e83]: Share your link to get your first offer
+              - button "Share Link" [ref=e84] [cursor=pointer]
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - generic [ref=e91]:
+                  - paragraph [ref=e92]: Pending Amount
+                  - paragraph [ref=e93]: Released after content approval
+                - img [ref=e95]
+              - generic [ref=e98]:
+                - generic [ref=e99]: ₹
+                - generic [ref=e100]: "0"
+              - generic [ref=e101]:
+                - img [ref=e103]
+                - generic [ref=e106]: Creator Armour protection active
+            - generic [ref=e107]:
+              - generic [ref=e111]:
+                - generic [ref=e112]:
+                  - generic [ref=e113]: Monthly Revenue
+                  - img [ref=e114]
+                - generic [ref=e116]:
+                  - generic [ref=e117]: ₹
+                  - generic [ref=e118]: "0"
+                - generic [ref=e119]:
+                  - img [ref=e121]
+                  - generic [ref=e124]: Secured by Armour
+              - generic [ref=e125]:
+                - generic [ref=e126] [cursor=pointer]:
+                  - generic [ref=e127]:
+                    - img [ref=e128]
+                    - generic [ref=e131]: Active Deals
+                  - paragraph [ref=e132]: "0"
+                - generic [ref=e133] [cursor=pointer]:
+                  - generic [ref=e134]:
+                    - img [ref=e135]
+                    - generic [ref=e140]: Pending Offers
+                  - paragraph [ref=e141]: "1"
+            - generic [ref=e143]:
+              - img [ref=e145]
+              - generic [ref=e148]:
+                - img [ref=e150]
+                - generic [ref=e153]:
+                  - heading "Promote Collab Link" [level=3] [ref=e154]
+                  - paragraph [ref=e155]: Quick Share Tools
+              - generic [ref=e156]:
+                - button "Copy Bio Link" [ref=e157] [cursor=pointer]:
+                  - img [ref=e158]
+                  - generic [ref=e161]: Copy Bio Link
+                - button "Copy DM Reply" [ref=e162] [cursor=pointer]:
+                  - img [ref=e163]
+                  - generic [ref=e165]: Copy DM Reply
+              - paragraph [ref=e166]: "Pro tip: Direct brands to your intake storefront"
+            - generic [ref=e167]:
+              - heading "Active Collaborations" [level=2] [ref=e169]
+              - generic [ref=e173]:
+                - generic [ref=e174]:
+                  - generic [ref=e176]: D
+                  - generic [ref=e177]:
+                    - generic [ref=e178]:
+                      - paragraph [ref=e179]: Demo Brand Co
+                      - generic [ref=e180]: 💳 Paid
+                    - generic [ref=e181]:
+                      - generic [ref=e182]: Lifestyle
+                      - generic [ref=e183]: •
+                      - generic [ref=e184]:
+                        - img [ref=e185]
+                        - generic [ref=e188]: Verified
+                  - generic [ref=e189]:
+                    - paragraph [ref=e190]: ₹2,300
+                    - paragraph [ref=e191]: Cash
+                - generic [ref=e192]:
+                  - generic [ref=e193]: Reel
+                  - generic [ref=e194]: Story (x2)
+                  - generic [ref=e195]: 📅 12 Apr
+                  - generic [ref=e196]: ⚡3d left
+                - generic [ref=e197]:
+                  - button "Details" [ref=e198] [cursor=pointer]
+                  - button "Accept Offer" [ref=e199] [cursor=pointer]
+          - generic [ref=e201]:
+            - button "Home" [ref=e202] [cursor=pointer]:
+              - img [ref=e203]
+              - generic [ref=e208]: Home
+            - button "Deals" [ref=e209] [cursor=pointer]:
+              - img [ref=e210]
+              - generic [ref=e213]: Deals
+            - button "Payments" [ref=e214] [cursor=pointer]:
+              - img [ref=e215]
+              - generic [ref=e217]: Payments
+            - button "Profile" [ref=e218] [cursor=pointer]:
+              - img [ref=e219]
+              - generic [ref=e222]: Profile
+      - generic [ref=e223]: © 2026 Creator Armour
